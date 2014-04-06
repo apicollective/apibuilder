@@ -1,6 +1,6 @@
 package controllers
 
-import db.User
+import core.User
 
 import play.api._
 import play.api.mvc._
@@ -62,7 +62,8 @@ object LoginController extends Controller {
         case Some(email: String) => {
           val fullname = info.attributes.get("fullname")
           val imageUrl = info.attributes.get("image_url")
-          val user = User.upsert(email, fullname, imageUrl)
+          //val user = User.upsert(email, fullname, imageUrl)
+          val user = User(java.util.UUID.randomUUID.toString, email, fullname, imageUrl)
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }
       }

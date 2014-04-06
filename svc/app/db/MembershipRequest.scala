@@ -1,5 +1,6 @@
 package db
 
+import core.{ Organization, User }
 import lib.Constants
 import anorm._
 import play.api.db._
@@ -7,16 +8,16 @@ import play.api.Play.current
 import java.sql.Timestamp
 import java.util.UUID
 
-case class MembershipRequestQuery(guid: Option[UUID] = None,
-                                  org: Option[Organization] = None,
-                                  user: Option[User] = None,
+case class MembershipRequestQuery(guid: Option[String] = None,
+                                  organization_guid: Option[String] = None,
+                                  user_guid: Option[String] = None,
                                   role: Option[String] = None,
                                   canBeApprovedBy: Option[User] = None,
                                   limit: Int = 50,
                                   offset: Int = 0)
 
 
-case class MembershipRequest(guid: UUID,
+case class MembershipRequest(guid: String,
                              createdAt: String, // TODO Timestamp type
                              org: Organization,
                              user: User,
@@ -93,12 +94,12 @@ object MembershipRequest {
                   'created_by_guid -> createdBy.guid).execute()
     }
 
-    findByGuid(guid).getOrElse {
+    findByGuid(guid.toString).getOrElse {
       sys.error("Failed to create membership_request")
     }
   }
 
-  def softDelete(user: User, guid: UUID) {
+  def softDelete(user: User, guid: String) {
     DB.withConnection { implicit c =>
       SQL("""
           update membership_requests set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where membership_requests.guid = {guid}::uuid and deleted_at is null
@@ -106,16 +107,16 @@ object MembershipRequest {
     }
   }
 
-  def findByGuid(guid: UUID): Option[MembershipRequest] = {
-    findAll(MembershipRequestQuery(guid = Some(guid), limit = 1)).headOption
+  def findByGuid(guid: String): Option[MembershipRequest] = {
+    findAll(MembershipRequestQuery(guid = Some(guid.toString), limit = 1)).headOption
   }
 
   def findAllForOrganization(org: Organization): Seq[MembershipRequest] = {
-    findAll(MembershipRequestQuery(org = Some(org)))
+    findAll(MembershipRequestQuery(organization_guid = Some(org.guid)))
   }
 
   def findAllForUser(user: User): Seq[MembershipRequest] = {
-    findAll(MembershipRequestQuery(user = Some(user)))
+    findAll(MembershipRequestQuery(user_guid = Some(user.guid)))
   }
 
   def findAllPendingApproval(user: User): Seq[MembershipRequest] = {
@@ -123,18 +124,18 @@ object MembershipRequest {
   }
 
   private def findByOrganizationAndUserAndRole(org: Organization, user: User, role: String): Option[MembershipRequest] = {
-    findAll(MembershipRequestQuery(org = Some(org),
-                                               user = Some(user),
-                                               role = Some(role),
-                                               limit = 1)).headOption
+    findAll(MembershipRequestQuery(organization_guid = Some(org.guid),
+                                   user_guid = Some(user.guid),
+                                   role = Some(role),
+                                   limit = 1)).headOption
   }
 
   def findAll(query: MembershipRequestQuery): Seq[MembershipRequest] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       query.guid.map { v => "and membership_requests.guid = {guid}::uuid" },
-      query.org.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
-      query.user.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
+      query.organization_guid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
+      query.user_guid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
       query.role.map { v => "and membership_requests.role = {role}" },
       query.canBeApprovedBy.map { user =>
         """
@@ -151,24 +152,24 @@ object MembershipRequest {
 
     val bind = Seq(
       query.guid.map { v => 'guid -> toParameterValue(v) },
-      query.org.map { org => 'organization_guid -> toParameterValue(org.guid) },
-      query.user.map { user => 'user_guid -> toParameterValue(user.guid) },
+      query.organization_guid.map { v => 'organization_guid -> toParameterValue(v) },
+      query.user_guid.map { v => 'user_guid -> toParameterValue(v) },
       query.canBeApprovedBy.map { user => 'approving_user_guid -> toParameterValue(user.guid) },
       query.role.map { role => 'role -> toParameterValue(role) }
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        MembershipRequest(guid = UUID.fromString(row[String]("guid")),
-                                      createdAt = row[String]("created_at"),
-                                      org = Organization(guid = UUID.fromString(row[String]("organization_guid")),
-                                                         name = row[String]("organization_name"),
-                                                         key = row[String]("organization_key")),
-                                      user = User(guid = UUID.fromString(row[String]("user_guid")),
-                                                  email = row[String]("user_email"),
-                                                  name = row[Option[String]]("user_name"),
-                                                  imageUrl = row[Option[String]]("user_image_url")),
-                                      role = row[String]("role"))
+        MembershipRequest(guid = row[String]("guid"),
+                          createdAt = row[String]("created_at"),
+                          org = Organization(guid = row[String]("organization_guid"),
+                                             name = row[String]("organization_name"),
+                                             key = row[String]("organization_key")),
+                          user = User(guid = row[String]("user_guid"),
+                                      email = row[String]("user_email"),
+                                      name = row[Option[String]]("user_name"),
+                                      imageUrl = row[Option[String]]("user_image_url")),
+                          role = row[String]("role"))
       }.toSeq
     }
   }

@@ -1,19 +1,13 @@
 package db
 
+import core.{ User, UserQuery }
 import lib.Constants
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-case class User(guid: UUID, email: String, name: Option[String], imageUrl: Option[String])
-case class UserQuery(guid: Option[UUID] = None,
-                     email: Option[String] = None,
-                     token: Option[String] = None,
-                     limit: Int = 50,
-                     offset: Int = 0)
-
-object User {
+object UserDao {
 
   private val BaseQuery = """
     select guid::varchar, email, name, image_url
@@ -81,19 +75,19 @@ object User {
   }
 
   def findByToken(token: String): Option[User] = {
-    findAll(UserQuery(token = Some(token), limit = 1)).headOption
+    findAll(UserQuery(token = Some(token))).headOption
   }
 
   def findByEmail(email: String): Option[User] = {
-    findAll(UserQuery(email = Some(email), limit = 1)).headOption
+    findAll(UserQuery(email = Some(email))).headOption
   }
 
   def findByGuid(guid: String): Option[User] = {
-    findByGuid(UUID.fromString(guid))
+    findAll(UserQuery(guid = Some(guid))).headOption
   }
 
   def findByGuid(guid: UUID): Option[User] = {
-    findAll(UserQuery(guid = Some(guid), limit = 1)).headOption
+    findByGuid(guid.toString)
   }
 
   def findAll(query: UserQuery): Seq[User] = {
@@ -101,8 +95,7 @@ object User {
       Some(BaseQuery.trim),
       query.guid.map { v => "and users.guid = {guid}::uuid" },
       query.email.map { v => "and users.email = trim(lower({email}))" },
-      query.token.map { v => "and users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)"},
-      Some(s"order by lower(users.email) limit ${query.limit} offset ${query.offset}")
+      query.token.map { v => "and users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)"}
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
@@ -113,7 +106,7 @@ object User {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        User(guid = UUID.fromString(row[String]("guid")),
+        User(guid = row[String]("guid"),
              email = row[String]("email"),
              name = row[Option[String]]("name"),
              imageUrl = row[Option[String]]("image_url"))

@@ -1,6 +1,6 @@
 package db
 
-import core.Role
+import core.{ Role, User }
 import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID
@@ -8,12 +8,12 @@ import java.util.UUID
 class MembershipRequestSpec extends FlatSpec {
   new play.core.StaticApplication(new java.io.File("."))
 
-  lazy val createdBy = User.upsert("otto@gilt.com")
-  lazy val member = User.upsert("gilt-member@gilt.com")
-  lazy val admin = User.upsert("gilt-admin@gilt.com")
+  lazy val createdBy = UserDao.upsert("otto@gilt.com")
+  lazy val member = UserDao.upsert("gilt-member@gilt.com")
+  lazy val admin = UserDao.upsert("gilt-admin@gilt.com")
   lazy val gilt = {
-    Organization.findByUserAndKey(createdBy, "gilt").getOrElse {
-      Organization.createWithAdministrator(createdBy, "Gilt")
+    OrganizationDao.findByUserAndKey(createdBy, "gilt").getOrElse {
+      OrganizationDao.createWithAdministrator(createdBy, "Gilt")
     }
   }
 
@@ -37,14 +37,14 @@ class MembershipRequestSpec extends FlatSpec {
   }
 
   it should "findAllForOrganization" in {
-    val newOrg = Organization.createWithAdministrator(createdBy, UUID.randomUUID().toString)
+    val newOrg = OrganizationDao.createWithAdministrator(createdBy, UUID.randomUUID().toString)
     val request = MembershipRequest.upsert(createdBy, newOrg, member, Role.Admin.key)
     assertEquals(Seq(request), MembershipRequest.findAllForOrganization(newOrg))
   }
 
   it should "findAllForUser" in {
-    val newUser = User.upsert(UUID.randomUUID().toString + "@gilttest.com")
-    val newOrg = Organization.createWithAdministrator(createdBy, UUID.randomUUID().toString)
+    val newUser = UserDao.upsert(UUID.randomUUID().toString + "@gilttest.com")
+    val newOrg = OrganizationDao.createWithAdministrator(createdBy, UUID.randomUUID().toString)
 
     val request1 = MembershipRequest.upsert(createdBy, newOrg, newUser, Role.Admin.key)
     assertEquals(Seq(request1), MembershipRequest.findAllForUser(newUser))
@@ -60,7 +60,7 @@ class MembershipRequestSpec extends FlatSpec {
   }
 
   it should "create a membership record when approving" in {
-    val newOrg = Organization.createWithAdministrator(createdBy, UUID.randomUUID().toString)
+    val newOrg = OrganizationDao.createWithAdministrator(createdBy, UUID.randomUUID().toString)
     val request = MembershipRequest.upsert(createdBy, newOrg, member, Role.Member.key)
 
     assertEquals(None, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member.key))
@@ -72,7 +72,7 @@ class MembershipRequestSpec extends FlatSpec {
   }
 
   it should "not create a membership record when declining" in {
-    val newOrg = Organization.createWithAdministrator(createdBy, UUID.randomUUID().toString)
+    val newOrg = OrganizationDao.createWithAdministrator(createdBy, UUID.randomUUID().toString)
     val request = MembershipRequest.upsert(createdBy, newOrg, member, Role.Member.key)
 
     assertEquals(None, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member.key))

@@ -1,5 +1,6 @@
 package db
 
+import core.{ Organization, User }
 import lib.Constants
 import anorm._
 import play.api.db._
@@ -122,10 +123,10 @@ object Membership {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Membership(guid = UUID.fromString(row[String]("guid")),
-                               org = Organization(guid = UUID.fromString(row[String]("organization_guid")),
+                               org = Organization(guid = row[String]("organization_guid"),
                                                   name = row[String]("organization_name"),
                                                   key = row[String]("organization_key")),
-                               user = User(guid = UUID.fromString(row[String]("user_guid")),
+                               user = User(guid = row[String]("user_guid"),
                                            email = row[String]("user_email"),
                                            name = row[Option[String]]("user_name"),
                                            imageUrl = row[Option[String]]("user_image_url")),

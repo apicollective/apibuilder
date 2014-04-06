@@ -4,9 +4,12 @@ curl \
      -X PUT \
      -H "X-Auth: 12345" \
      -H "Content-Type: application/json" \
-     -d @/web/cavellc/apiserver/svc/api.json \
-     http://localhost:9000/gilt/apiserver/1.0.0
+     -d @./api.json \
+     http://localhost:9001/gilt/apiserver/1.0.0
 
 curl \
      -H "X-Auth: 12345" \
-     http://localhost:9000/gilt/apiserver/1.0.0
+     http://localhost:9001/gilt/apiserver/1.0.0
+curl \
+     -H "X-Auth: 12345" \
+     http://localhost:9001/gilt/apiserver/1.0.0

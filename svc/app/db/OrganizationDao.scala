@@ -1,21 +1,13 @@
 package db
 
-import core.Role
+import core.{Organization, OrganizationQuery, Role, User}
 import lib.UrlKey
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-case class Organization(guid: UUID, name: String, key: String)
-
-case class OrganizationQuery(user: User,
-                             guid: Option[UUID] = None,
-                             key: Option[String] = None,
-                             limit: Int = 50,
-                             offset: Int = 0)
-
-object Organization {
+object OrganizationDao {
 
   private val BaseQuery = """
     select guid::varchar, name, key
@@ -36,7 +28,7 @@ object Organization {
   }
 
   private def create(createdBy: User, name: String): Organization = {
-    val org = Organization(guid = UUID.randomUUID,
+    val org = Organization(guid = UUID.randomUUID.toString,
                            key = UrlKey.generate(name),
                            name = name)
 
@@ -60,11 +52,11 @@ object Organization {
   }
 
   def findByUserAndKey(user: User, key: String): Option[Organization] = {
-    findAll(OrganizationQuery(user = user, key = Some(key), limit = 1)).headOption
+    findAll(OrganizationQuery(user_guid = user.guid, key = Some(key), limit = 1)).headOption
   }
 
   def findByUserAndGuid(user: User, guid: UUID): Option[Organization] = {
-    findAll(OrganizationQuery(user = user, guid = Some(guid), limit = 1)).headOption
+    findAll(OrganizationQuery(user_guid = user.guid, guid = Some(guid.toString), limit = 1)).headOption
   }
 
   def findAll(query: OrganizationQuery): Seq[Organization] = {
@@ -78,13 +70,13 @@ object Organization {
 
     val bind = Seq(
       query.guid.map { v => 'guid -> toParameterValue(v) },
-      Some('user_guid -> toParameterValue(query.user.guid)),
+      Some('user_guid -> toParameterValue(query.user_guid)),
       query.key.map { v => 'key -> toParameterValue(v) }
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        Organization(guid = UUID.fromString(row[String]("guid")),
+        Organization(guid = row[String]("guid"),
                      name = row[String]("name"),
                      key = row[String]("key"))
       }.toSeq

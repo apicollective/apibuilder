@@ -8,7 +8,7 @@ import play.api.mvc._
 object Internal extends Controller {
 
   def routes() = Action { request =>
-    val generator = RouteGenerator.fromFile("./api.json")
+    val generator = RouteGenerator.fromFile("./svc/api.json")
     Ok(generator.generate())
   }
 

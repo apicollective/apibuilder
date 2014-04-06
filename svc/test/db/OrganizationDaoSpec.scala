@@ -4,7 +4,7 @@ import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID
 
-class OrganizationSpec extends FlatSpec {
+class OrganizationDaoSpec extends FlatSpec {
 
   it should "create" in {
     assertEquals(Util.gilt.name, "Gilt")

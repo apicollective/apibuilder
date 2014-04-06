@@ -1,21 +1,28 @@
 package controllers
 
-import db.{ Organization, OrganizationQuery, MembershipRequest }
+import core.OrganizationQuery
 import lib.{ Pagination, PaginatedCollection }
 
 import play.api._
 import play.api.mvc._
 
+
+
 object Application extends Controller {
 
-  def index(page: Int = 0) = Authenticated { request =>
-    val orgs = Organization.findAll(OrganizationQuery(user = Some(request.user),
-                                                      limit = Pagination.DefaultLimit+1,
-                                                      offset = page * Pagination.DefaultLimit))
-    val collection = PaginatedCollection(page, orgs)
-    val membershipRequests = MembershipRequest.findAllForUser(request.user)
+  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-    Ok(views.html.organizations.index(request.user, collection, membershipRequests))
+  def index(page: Int = 0) = Authenticated.async { request =>
+    for {
+      orgs <- Apidoc.organizations.findAll(OrganizationQuery(user_guid = request.user.guid,
+                                                             limit = Pagination.DefaultLimit+1,
+                                                             offset = page * Pagination.DefaultLimit))
+      //val membershipRequests = MembershipRequest.findAllForUser(request.user)
+    } yield {
+      val collection = PaginatedCollection(page, orgs)
+      // Ok(views.html.organizations.index(request.user, collection, membershipRequests))
+      Ok("ok")
+    }
   }
 
 }

@@ -1,6 +1,16 @@
 package lib
 
-import models.Operation
+import core.{ Operation, Resource }
+
+object OperationKey {
+
+  def lookup(resource: Resource, key: String): Option[Operation] = {
+    resource.operations.find { op =>
+      OperationKey(op).key == key
+    }
+  }
+
+}
 
 case class OperationKey(op: Operation) {
 

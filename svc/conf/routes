@@ -1,6 +1,8 @@
 GET        /_internal_/routes          controllers.Internal.routes
 GET        /_internal_/healthcheck     controllers.Internal.healthcheck
 
+GET        /users                      controllers.Users.get(guid: Option[String], email: Option[String], token: Option[String])
+POST       /users                      controllers.Users.post()
 GET        /:org                       controllers.Services.get(org: String, name: Option[String], key: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 DELETE     /:org/:service              controllers.Services.deleteService(org: String, service: String)
 GET        /:org/:service/:version     controllers.Versions.getServiceVersion(org: String, service: String, version: String)

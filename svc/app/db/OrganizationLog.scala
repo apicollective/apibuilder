@@ -1,14 +1,15 @@
 package db
 
+import core.{ Organization, User }
 import lib.Constants
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-case class OrganizationLog(guid: UUID, organization_guid: UUID, message: String)
+case class OrganizationLog(guid: String, organization_guid: String, message: String)
 
-case class OrganizationLogQuery(org: Organization,
+case class OrganizationLogQuery(organization_guid: String,
                                 limit: Int = 50,
                                 offset: Int = 0)
 
@@ -24,7 +25,7 @@ object OrganizationLog {
   """
 
   def create(createdBy: User, organization: Organization, message: String): OrganizationLog = {
-    val log = OrganizationLog(guid = UUID.randomUUID,
+    val log = OrganizationLog(guid = UUID.randomUUID.toString,
                               organization_guid = organization.guid,
                               message = message)
 
@@ -44,7 +45,7 @@ object OrganizationLog {
   }
 
   def findAllForOrganization(org: Organization): Seq[OrganizationLog] = {
-    findAll(OrganizationLogQuery(org = org))
+    findAll(OrganizationLogQuery(organization_guid = org.guid))
   }
 
   def findAll(query: OrganizationLogQuery): Seq[OrganizationLog] = {
@@ -55,13 +56,13 @@ object OrganizationLog {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      Some('organization_guid -> toParameterValue(query.org.guid))
+      Some('organization_guid -> toParameterValue(query.organization_guid))
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        OrganizationLog(guid = UUID.fromString(row[String]("guid")),
-                        organization_guid = UUID.fromString(row[String]("organization_guid")),
+        OrganizationLog(guid = row[String]("guid"),
+                        organization_guid = row[String]("organization_guid"),
                         message = row[String]("message"))
       }.toSeq
     }

@@ -24,9 +24,9 @@
           <a class="navbar-brand" href="/">Api doc</a>
         </div>
         <div class="navbar-collapse collapse">
-          @metadata.organization.map { org =>
+          @metadata.org.map { org =>
             <ul class="nav navbar-nav">
-              <li><a href="@lib.Path.url(org)">@org.name</a></li>
+              <li><a href="@routes.Organizations.show(org.key)">@@org.name</a></li>
             </ul>
           }
           @metadata.user.map { user =>
@@ -48,32 +48,33 @@
         <div class="col-sm-3 col-md-2 sidebar">
           @metadata.service.map { service =>
             <ul class="nav nav-sidebar">
-              <li@if(metadata.resource.isEmpty) { class="active" }><a href="@lib.Path.url(service)">@service.name Overview</a></li>
+              <li@if(metadata.resource.isEmpty) { class="active" }><a href="#">@service.name Overview</a></li>
               @service.resources.map { resource =>
-                <li@if(metadata.resource == Some(resource)) { class="active" }><a href="@lib.Path.url(service, resource)">@resource.name</a></li>
+                <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#">@resource.name</a></li>
               }
             </ul>
           }
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
-            @metadata.service.map { service =>
-              <div class="btn-group pull-right">
+            <div class="btn-group pull-right">
+              @metadata.version.map { version =>
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                  @service.version.version <span class="caret"></span>
+                  @metadata.version <span class="caret"></span>
                 </button>
+              }
 
-                <ul class="dropdown-menu" role="menu">
-                  @service.allVersions.zipWithIndex.map { case(version, index) =>
-                    @if(index == 0) {
-                      <li><a href="@lib.Path.url(metadata.service.get)">@version.version</a></li>
-                    } else {
-                      <li><a href="@lib.Path.url(metadata.service.get, version.version)">@version.version</a></li>
-                    }
+              <ul class="dropdown-menu" role="menu">
+                @metadata.allServiceVersions.zipWithIndex.map { case(version, index) =>
+                  @if(index == 0) {
+                    <li><a href="#">@version</a></li> <!-- latest -->
+                  } else {
+                    <li><a href="#">@version</a></li>
                   }
-                </ul>
-              </div>
-            }
+                }
+              </ul>
+          </div>
+        </div>
 
       <h2>@metadata.title</h2>
       <p>@content</p>

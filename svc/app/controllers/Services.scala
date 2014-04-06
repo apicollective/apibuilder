@@ -1,6 +1,6 @@
 package controllers
 
-import db.{ Organization, Service, ServiceQuery }
+import db.{ OrganizationDao, Service, ServiceQuery }
 import play.api.mvc._
 import play.api.libs.json.Json
 
@@ -16,7 +16,7 @@ object Services extends Controller {
   }
 
   def deleteService(org: String, service: String) = Authenticated { request =>
-    Organization.findByUserAndKey(request.user, org).map { org =>
+    OrganizationDao.findByUserAndKey(request.user, org).map { org =>
       Service.findByOrganizationAndKey(org, service).map { service =>
         service.softDelete(request.user)
       }

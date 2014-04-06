@@ -1,9 +1,10 @@
 package controllers
 
-import db.User
+import core.User
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
-import scala.concurrent.Future
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration._
 
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request)
 
@@ -11,8 +12,9 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]) = {
 
-    request.session.get("user_guid").map { user_guid =>
-      User.findByGuid(user_guid) match {
+    request.session.get("user_guid").map { userGuid =>
+      val user = Await.result(Apidoc.users.findByGuid(userGuid), 100 millis)
+      user match {
 
         case None => {
           // have a user guid, but user does not exist

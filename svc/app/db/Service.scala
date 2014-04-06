@@ -1,5 +1,6 @@
 package db
 
+import core.{ Organization, User }
 import lib.{ Constants, UrlKey }
 import anorm._
 import play.api.db._
@@ -64,7 +65,7 @@ object Service {
           insert into services
           (guid, organization_guid, name, key, created_by_guid, updated_by_guid)
           values
-          ({guid}::uuid, {organization_guid}, {name}, {key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+          ({guid}::uuid, {organization_guid}::uuid, {name}, {key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
           """).on('guid -> guid,
                   'organization_guid -> org.guid,
                   'name -> name,

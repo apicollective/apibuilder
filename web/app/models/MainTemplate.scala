@@ -1,19 +1,15 @@
 package models
 
-import db.{ Organization, User }
+import core.{ Organization, Resource, ServiceDescription, User }
 
 case class MainTemplate(title: String,
                         org: Option[Organization] = None,
+                        service: Option[ServiceDescription] = None,
+                        version: Option[String] = None,
                         user: Option[User] = None,
-                        service: Option[Service] = None,
                         resource: Option[Resource] = None) {
 
-  lazy val organization: Option[Organization] = {
-    if (org.isEmpty) {
-      service.map(_.org)
-    } else {
-      org
-    }
-  }
+  // TODO
+  def allServiceVersions: Seq[String] = Seq.empty
 
 }

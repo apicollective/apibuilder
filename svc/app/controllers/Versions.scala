@@ -1,7 +1,8 @@
 package controllers
 
 import core.{ ServiceDescription, ServiceDescriptionValidator }
-import db.{ Organization, Service, User, Version, VersionQuery }
+import core.{ Organization, User }
+import db.{ Service, Version, OrganizationDao, VersionDao, VersionQuery }
 import play.api.mvc._
 import play.api.libs.json.Json
 
@@ -15,7 +16,7 @@ object Versions extends Controller {
   }
 
   def putServiceVersion(orgKey: String, serviceKey: String, version: String) = Authenticated(parse.json) { request =>
-    Organization.findByUserAndKey(request.user, orgKey) match {
+    OrganizationDao.findByUserAndKey(request.user, orgKey) match {
       case None => BadRequest(s"Organization[$orgKey] does not exist or you are not authorized to access it")
       case Some(org: Organization) => {
 
@@ -27,8 +28,8 @@ object Versions extends Controller {
             Service.create(request.user, org, serviceDescription.name, Some(serviceKey))
           }
 
-          Version.findByServiceAndVersion(service, version) match {
-            case None => Version.create(request.user, service, version, request.body.toString)
+          VersionDao.findByServiceAndVersion(service, version) match {
+            case None => VersionDao.create(request.user, service, version, request.body.toString)
             case Some(existing: Version) => existing.replace(request.user, service, request.body.toString)
           }
 
@@ -51,9 +52,9 @@ object Versions extends Controller {
 
 
   private def getVersion(user: User, org: String, service: String, version: String): Option[Version] = {
-    Organization.findByUserAndKey(user, org).flatMap { org =>
+    OrganizationDao.findByUserAndKey(user, org).flatMap { org =>
       Service.findByOrganizationAndKey(org, service).flatMap { service =>
-        Version.findByServiceAndVersion(service, version)
+        VersionDao.findByServiceAndVersion(service, version)
       }
     }
   }

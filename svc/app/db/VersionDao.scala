@@ -1,5 +1,6 @@
 package db
 
+import core.User
 import lib.{ Constants, VersionSortKey }
 import anorm._
 import play.api.db._
@@ -20,20 +21,26 @@ case class Version(guid: String, version: String, json: String) {
   def replace(user: User, service: Service, newJson: String): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user)
-      Version.create(user, service, version, newJson)
+      VersionDao.create(user, service, version, newJson)
     }
   }
 
 }
 
+object Version {
 
-case class VersionQuery(serviceGuid: String,
-                        guid: Option[UUID] = None,
+  implicit val versionReads = Json.reads[Version]
+  implicit val versionWrites = Json.writes[Version]
+
+}
+
+case class VersionQuery(service_guid: String,
+                        guid: Option[String] = None,
                         version: Option[String] = None,
                         limit: Int = 50,
                         offset: Int = 0)
 
-object Version {
+object VersionDao {
 
   implicit val versionReads = Json.reads[Version]
   implicit val versionWrites = Json.writes[Version]
@@ -67,9 +74,9 @@ object Version {
   }
 
   def findByServiceAndVersion(service: Service, version: String): Option[Version] = {
-    Version.findAll(VersionQuery(serviceGuid = service.guid,
-                                 version = Some(version),
-                                 limit = 1)).headOption
+    VersionDao.findAll(VersionQuery(service_guid = service.guid,
+                                    version = Some(version),
+                                    limit = 1)).headOption
   }
 
   def findAll(query: VersionQuery): Seq[Version] = {
@@ -83,7 +90,7 @@ object Version {
 
     val bind = Seq(
       query.guid.map { v => 'guid -> toParameterValue(v) },
-      Some('service_guid -> toParameterValue(query.serviceGuid)),
+      Some('service_guid -> toParameterValue(query.service_guid)),
       query.version.map { v => 'version -> toParameterValue(v) }
     ).flatten
 
