@@ -1,0 +1,34 @@
+GET     /                                                         controllers.Application.index(page: Int ?= 0)
+
+POST    /memberships/approve                                      controllers.MembershipsController.approve(guid: String)
+POST    /memberships/decline                                      controllers.MembershipsController.decline(guid: String)
+
+GET     /login                                                    controllers.LoginController.redirect
+GET     /login/                                                   controllers.LoginController.index
+POST    /login/                                                   controllers.LoginController.indexPost
+GET     /login/callback                                           controllers.LoginController.callback
+
+GET     /logout                                                   controllers.LogoutController.logout
+GET     /logged_out                                               controllers.LogoutController.logged_out
+
+GET     /setup                                                    controllers.SetupController.index
+
+GET     /org/create                                               controllers.OrganizationController.create
+POST    /org/createPost                                           controllers.OrganizationController.createPost
+
+POST    /:orgKey/memberships/request                              controllers.OrganizationController.requestMembership(orgKey: String)
+
+GET     /:orgKey                                                       controllers.OrganizationController.show(orgKey: String, page: Int ?= 0)
+GET     /:orgKey/register                                              controllers.OrganizationController.register(orgKey: String)
+GET     /:orgKey/references/:serviceKey/:version/:reference            controllers.ServiceController.reference(orgKey: String, serviceKey: String, version: String, reference: String)
+
+GET     /:orgKey/docs                                                  controllers.ServiceController.redirect(orgKey: String)
+GET     /:orgKey/docs/:serviceKey                                      controllers.ServiceController.redirectToLatestVersion(orgKey: String, serviceKey: String)
+GET     /:orgKey/docs/:serviceKey/latest                               controllers.ServiceController.latest(orgKey: String, serviceKey: String)
+GET     /:orgKey/docs/:serviceKey/:version                             controllers.ServiceController.show(orgKey: String, serviceKey: String, version: String)
+GET     /:orgKey/docs/:serviceKey/:version/:resourceKey                controllers.ServiceController.resource(orgKey: String, serviceKey: String, version: String, resourceKey: String)
+GET     /:orgKey/docs/:serviceKey/:version/:resourceKey/:opKey         controllers.ServiceController.operation(orgKey: String, serviceKey: String, version: String, resourceKey: String, opKey: String)
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file                                             controllers.Assets.at(path="/public", file)

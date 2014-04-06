@@ -1,0 +1,90 @@
+@(metadata: models.MainTemplate,
+  jsFiles: Seq[String] = Seq.empty
+)(content: Html)
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@metadata.title</title>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.1.1/css/bootstrap.min.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Api doc</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          @metadata.organization.map { org =>
+            <ul class="nav navbar-nav">
+              <li><a href="@lib.Path.url(org)">@org.name</a></li>
+            </ul>
+          }
+          @metadata.user.map { user =>
+            <ul class="nav navbar-nav navbar-right">
+              <li class="dropdown">
+                <a href="/account" class="dropdown-toggle" data-toggle="dropdown">@user.name.getOrElse(user.email) <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="/logout">Logout</a></li>
+                </ul>
+              </li>
+            </ul>
+          }
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          @metadata.service.map { service =>
+            <ul class="nav nav-sidebar">
+              <li@if(metadata.resource.isEmpty) { class="active" }><a href="@lib.Path.url(service)">@service.name Overview</a></li>
+              @service.resources.map { resource =>
+                <li@if(metadata.resource == Some(resource)) { class="active" }><a href="@lib.Path.url(service, resource)">@resource.name</a></li>
+              }
+            </ul>
+          }
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+
+            @metadata.service.map { service =>
+              <div class="btn-group pull-right">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                  @service.version.version <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu" role="menu">
+                  @service.allVersions.zipWithIndex.map { case(version, index) =>
+                    @if(index == 0) {
+                      <li><a href="@lib.Path.url(metadata.service.get)">@version.version</a></li>
+                    } else {
+                      <li><a href="@lib.Path.url(metadata.service.get, version.version)">@version.version</a></li>
+                    }
+                  }
+                </ul>
+              </div>
+            }
+
+      <h2>@metadata.title</h2>
+      <p>@content</p>
+    </div>
+    </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="@routes.Assets.at("bootstrap-3.1.1/js/bootstrap.min.js")" type="text/javascript"></script>
+    @jsFiles.map { path =>
+      <script src="@routes.Assets.at(path)" type="text/javascript"></script>
+    }
+  </body>
+</html>

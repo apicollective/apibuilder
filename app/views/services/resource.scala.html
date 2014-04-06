@@ -1,0 +1,32 @@
+@(user: db.User, service: models.Service, resource: models.Resource)
+
+@main(models.MainTemplate(title = resource.name, user = Some(user), service = Some(service), resource = Some(resource))) {
+
+  @resource.description.getOrElse("")
+
+  <h3>Fields</h3>
+  @fields(service, resource.fields)
+
+  <h3>Operations</h3>
+  @if(resource.operations.isEmpty) {
+    <em>No operations</em>
+  } else {
+    <table class="table table-hover table-condensed">
+      <thead>
+        <tr>
+          <th>Method and Path</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+       @resource.operations.map { op =>
+         <tr>
+           <td class="nowrap"><a href="@lib.Path.url(service, resource, op)">@op.method @service.url(resource, op)</a></td>
+           <td>@op.description.getOrElse("")</td>
+         </tr>
+       }
+      </tbody>
+    </table>
+  }
+
+}

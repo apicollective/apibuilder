@@ -1,0 +1,56 @@
+@(tpl: models.MainTemplate,
+  services: lib.PaginatedCollection[db.ServiceDao],
+  role: UserRole,
+  requests: Seq[db.MembershipRequest])
+
+
+@main(tpl) {
+
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @services.items.map { service =>
+       <tr>
+         <td><a href="@lib.Path.url(service)">@service.name</a></td>
+         <td>@lib.Text.truncate(service.description.getOrElse(""))</td>
+       </tr>
+     }
+    </tbody>
+  </table>
+
+  @tpl.org.map { org =>
+    @if(services.hasPrevious || services.hasNext) {
+      <ul class="pager">
+        @if(services.hasPrevious) {
+          <li><a href="@routes.OrganizationController.show(org.key, services.page - 1)">Previous</a></li>
+        }
+        @if(services.hasNext) {
+          <li><a href="@routes.OrganizationController.show(org.key, services.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+  <h2>Your Role(s)</h2>
+  @role.label
+
+  @if(!requests.isEmpty) {
+    <h2>Membership requests pending approval</h2>
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @requests.map { request =>
+         <tr>
+           <td>@request.org.name</td>
+           <td>@request.user.name.getOrElse("")</td>
+           <td>@request.user.email</td>
+           <td>@request.role</td>
+           <td>
+             <a href="@routes.MembershipsController.approve(request.guid.toString)">Approve</a> |
+             <a href="@routes.MembershipsController.decline(request.guid.toString)">Decline</a>
+           </td>
+         </tr>
+       }
+      </tbody>
+    </table>
+  }
+
+}
