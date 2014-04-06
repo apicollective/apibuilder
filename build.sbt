@@ -8,7 +8,13 @@ playScalaSettings
 
 lazy val apidoc = project.in(file("."))
 
+lazy val core = project
+
 lazy val svc = project
   .aggregate(core)
   .dependsOn(core)
-lazy val core = project
+
+lazy val web = project
+  .aggregate(core)
+  .dependsOn(core)
+
