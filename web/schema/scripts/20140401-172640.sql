@@ -123,6 +123,7 @@ create table services (
 
 select schema_evolution_manager.create_basic_audit_data('public', 'services');
 
+create unique index services_organization_guid_name_not_deleted_un_idx on services(organization_guid, lower(name)) where deleted_at is null;
 create unique index services_organization_guid_key_not_deleted_un_idx on services(organization_guid, key) where deleted_at is null;
 create index on services(organization_guid);
 

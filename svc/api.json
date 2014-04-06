@@ -1,0 +1,94 @@
+{
+    "base_url": "http://localhost:9000",
+    "name": "Api Doc",
+    "description": "Host API documentation for REST services, and facilities design of resource first APIs.",
+    "resources": {
+
+        "services": {
+            "path": "/:org",
+            "description": "A service has a name and multiple versions of an API (Interface).",
+            "fields": [
+                { "name": "guid", "type": "string", "description": "Internal unique identifier for this service." },
+                { "name": "name", "type": "string", "description": "The unique name for this service." },
+                { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the service name." },
+                { "name": "description", "type": "string", "required": false }
+            ],
+
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all services. Results are always paginated.",
+                    "parameters": [
+                        { "name": "org", "type": "string", "description": "Organization key." },
+                        { "name": "name", "type": "string", "required": false, "description": "Finds the service with this name. Exact match" },
+                        { "name": "key", "type": "string", "required": false, "description": "Finds the service with this key. Exact match" },
+                        { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "response": ["service"]
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/:service",
+                    "description": "Deletes this service and all of its associated versions.",
+                    "parameters": [
+                        { "name": "org", "type": "string", "description": "Organization key." },
+                        { "name": "service", "type": "string", "description": "The service key.", "example": "apidoc" }
+                    ],
+                    "response_code": 204
+                }
+
+            ]
+        },
+
+        "versions": {
+            "path": "/:org",
+            "description": "Represents a unique version of the service.",
+            "fields": [
+                { "name": "guid", "type": "string", "description": "Internal unique identifier for this version." },
+                { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
+                { "name": "json", "type": "string", "description": "JSON description of the service." }
+            ],
+            "operations": [
+
+                {
+                    "method": "GET",
+                    "path": "/:service/:version",
+                    "description": "Returns detailed information about this service version.",
+                    "parameters": [
+                        { "name": "org", "type": "string", "description": "Organization key." },
+                        { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },
+                        { "name": "version", "type": "string", "description": "The version number. You can specify latest to always get the latest version of this service.", "example": "1.0.0 or latest" }
+                    ],
+                    "response": "version"
+                },
+
+                {
+                    "method": "PUT",
+                    "path": "/:service/:version",
+                    "description": "Create a version of this service by PUTing the contents of an api.json file. The service interface is fully described by the file you post. Example: curl -X POST -H 'X-Auth: token' -d @api.json 'http://localhost:9000/gilt/apiserver/1.0.0'",
+                    "parameters": [
+                        { "name": "org", "type": "string", "description": "Organization key." },
+                        { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },
+                        { "name": "version", "type": "string", "description": "The version number. You can specify latest to always get the latest version of this service.", "example": "1.0.0 or latest" }
+                    ],
+                    "response_code": 204
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/:service/:version",
+                    "description": "Deletes a version of this service.",
+                    "parameters": [
+                        { "name": "org", "type": "string", "description": "Organization key." },
+                        { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },
+                        { "name": "version", "type": "string", "description": "The version number. You can specify latest to always get the latest version of this service.", "example": "1.0.0 or latest" }
+                    ],
+                    "response_code": 204
+                }
+            ]
+        }
+    }
+
+}

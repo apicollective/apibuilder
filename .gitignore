@@ -1,4 +1,6 @@
-logs/*
-project/project/*
-project/target/*
-target/*
+svc/target/*
+svc/project/target/*
+svc/logs/*
+web/target/*
+web/project/target/*
+web/logs/*

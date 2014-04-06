@@ -1,11 +1,17 @@
-package models
+package core
 
-import scala.io.Source
-import java.io.File
-import play.api.libs.json.{ Json, JsArray, JsValue, JsUndefined }
+import play.api.libs.json.{ Json, JsArray, JsObject, JsValue, JsUndefined }
 
-case class JsonParser(contents: String) {
-  lazy val json = Json.parse(contents)
+object JsonParser {
+
+  def apply(contents: String): JsonParser = {
+    val json = Json.parse(contents)
+    JsonParser(json)
+  }
+
+}
+
+case class JsonParser(json: JsValue) {
 
   def getValue(value: JsValue, fieldName: String): JsValue = {
     getOptionalValue(value, fieldName).getOrElse {
