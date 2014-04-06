@@ -10,6 +10,5 @@ curl \
 curl \
      -H "X-Auth: 12345" \
      http://localhost:9001/gilt/apiserver/1.0.0
-curl \
-     -H "X-Auth: 12345" \
-     http://localhost:9001/gilt/apiserver/1.0.0
+
+curl -H "X-Auth: 12345" 'http://localhost:9001/users?email=otto@gilt.com"

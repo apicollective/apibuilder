@@ -10,7 +10,7 @@ object Apidoc {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  private lazy val baseUrl = "http://localhost:9001/users"
+  private lazy val baseUrl = "http://localhost:9001"
 
   lazy val organizations = OrganizationsResource(s"$baseUrl/organizations")
   lazy val users = UsersResource(s"$baseUrl/users")
@@ -18,15 +18,18 @@ object Apidoc {
   case class UsersResource(url: String) {
 
     def findByGuid(userGuid: String): Future[Option[User]] = {
+      val token = "12345"
       //val query = UserQuery(guid = Some(userGuid), limit = 1)
-      WS.url(url).withQueryString("guid" -> userGuid).get().map { response =>
+      println("URL: " + url)
+      WS.url(url).withHeaders("X-Auth" -> token).withQueryString("guid" -> userGuid).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.headOption
       }
     }
 
     /*
     def findAll(query: UserQuery): Future[Seq[User]] = {
-      WS.url(url).withQueryString(query.params).get().map { response =>
+      println("URL: " + url)
+      * WS.url(url).withQueryString(query.params).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }
       }
     }
@@ -36,6 +39,7 @@ object Apidoc {
   case class OrganizationsResource(url: String) {
 
     def findByKey(key: String): Future[Option[Organization]] = {
+      println("URL: " + url)
       WS.url(url).withQueryString(key -> key).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }.headOption
       }
@@ -43,6 +47,7 @@ object Apidoc {
 
     def findAll(query: OrganizationQuery): Future[Seq[Organization]] = {
       // TODO: query parameters
+      println("URL: " + url)
       WS.url(url).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }
       }
