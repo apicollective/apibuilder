@@ -26,6 +26,15 @@ object Apidoc {
       }
     }
 
+    def findByEmail(email: String): Future[Option[User]] = {
+      val token = "12345"
+      //val query = UserQuery(email = Some(email), limit = 1)
+      println("URL: " + url)
+      WS.url(url).withHeaders("X-Auth" -> token).withQueryString("email" -> email).get().map { response =>
+        response.json.as[JsArray].value.map { v => v.as[User] }.headOption
+      }
+    }
+
     /*
     def findAll(query: UserQuery): Future[Seq[User]] = {
       println("URL: " + url)

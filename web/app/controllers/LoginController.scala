@@ -62,7 +62,20 @@ object LoginController extends Controller {
         case Some(email: String) => {
           val fullname = info.attributes.get("fullname")
           val imageUrl = info.attributes.get("image_url")
-          //val user = User.upsert(email, fullname, imageUrl)
+
+          for {
+            user <- Apidoc.users.findByEmail(email)
+          } yield {
+            user match {
+              case None => {
+                println("User with email[%s] not found".format(email))
+              }
+              case Some(u: User) => {
+                println("User with email[%s] found: %s".format(email, u.toString))
+              }
+            }
+          }
+
           val user = User(java.util.UUID.randomUUID.toString, email, fullname, imageUrl)
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }
