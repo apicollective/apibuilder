@@ -1,6 +1,8 @@
 svc/target/*
+svc/project/project/*
 svc/project/target/*
 svc/logs/*
 web/target/*
+web/project/project/*
 web/project/target/*
 web/logs/*
