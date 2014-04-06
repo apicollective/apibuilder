@@ -1,3 +1,6 @@
+core/target/*
+core/project/project/*
+core/project/target/*
 svc/target/*
 svc/project/project/*
 svc/project/target/*
