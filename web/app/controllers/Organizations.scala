@@ -17,10 +17,18 @@ object Organizations extends Controller {
     // TODO: Fetch all services
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
+      services <- Apidoc.services.findAllByOrganization(org)
     } yield {
       org match {
-        case None => Ok("not found")
-        case Some(org: Organization) => Ok(org.name)
+        case None => {
+          Redirect("/").flashing(
+            "warning" -> "Organization not found"
+          )
+        }
+
+        case Some(org: Organization) => {
+          Ok(org.name + " services: " + services.length)
+        }
       }
     }
   }

@@ -1,6 +1,6 @@
 package db
 
-import core.User
+import core.{ Service, User }
 import lib.{ Constants, VersionSortKey }
 import anorm._
 import play.api.db._

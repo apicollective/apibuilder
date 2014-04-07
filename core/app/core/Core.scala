@@ -34,3 +34,17 @@ case class OrganizationQuery(user_guid: String,
   lazy val params = Seq("user_guid" -> user_guid, "guid" -> guid, "name" -> name, "key" -> key, "limit" -> limit, "offset" -> offset) collect { case (k,Some(v)) => (k -> v) }
 
 }
+
+object Service {
+  implicit val serviceReads = Json.reads[Service]
+  implicit val serviceWrites = Json.writes[Service]
+}
+
+case class Service(guid: String, name: String, key: String, description: Option[String])
+
+case class ServiceQuery(org_key: String,
+                        guid: Option[String] = None,
+                        name: Option[String] = None,
+                        key: Option[String] = None,
+                        limit: Int = 50,
+                        offset: Int = 0)

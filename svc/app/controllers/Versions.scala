@@ -1,8 +1,7 @@
 package controllers
 
-import core.{ ServiceDescription, ServiceDescriptionValidator }
-import core.{ Organization, User }
-import db.{ Service, Version, OrganizationDao, VersionDao, VersionQuery }
+import core.{ Organization, ServiceDescription, ServiceDescriptionValidator, User }
+import db.{ Version, OrganizationDao, ServiceDao, VersionDao, VersionQuery }
 import play.api.mvc._
 import play.api.libs.json.Json
 
@@ -24,8 +23,8 @@ object Versions extends Controller {
         val errors = ServiceDescriptionValidator(serviceDescription).validate
 
         if (errors.isEmpty) {
-          val service = Service.findByOrganizationAndKey(org, serviceKey).getOrElse {
-            Service.create(request.user, org, serviceDescription.name, Some(serviceKey))
+          val service = ServiceDao.findByOrganizationAndKey(org, serviceKey).getOrElse {
+            ServiceDao.create(request.user, org, serviceDescription.name, Some(serviceKey))
           }
 
           VersionDao.findByServiceAndVersion(service, version) match {
@@ -53,7 +52,7 @@ object Versions extends Controller {
 
   private def getVersion(user: User, org: String, service: String, version: String): Option[Version] = {
     OrganizationDao.findByUserAndKey(user, org).flatMap { org =>
-      Service.findByOrganizationAndKey(org, service).flatMap { service =>
+      ServiceDao.findByOrganizationAndKey(org, service).flatMap { service =>
         VersionDao.findByServiceAndVersion(service, version)
       }
     }

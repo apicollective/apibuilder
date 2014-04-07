@@ -1,6 +1,6 @@
 package db
 
-import core.{ Organization, User }
+import core.{ Organization, User, Service, ServiceQuery }
 import lib.{ Constants, UrlKey }
 import anorm._
 import play.api.db._
@@ -8,26 +8,7 @@ import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-case class Service(guid: String, name: String, key: String, description: Option[String]) {
-
-  def softDelete(deletedBy: User) {
-    DB.withConnection { implicit c =>
-      SQL("""
-          update services set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where guid = {guid}::uuid and deleted_at is null
-          """).on('deleted_by_guid -> deletedBy.guid, 'guid -> guid).execute()
-    }
-  }
-
-}
-
-case class ServiceQuery(orgKey: String,
-                        guid: Option[UUID] = None,
-                        name: Option[String] = None,
-                        key: Option[String] = None,
-                        limit: Int = 50,
-                        offset: Int = 0)
-
-object Service {
+object ServiceDao {
 
   implicit val serviceReads = Json.reads[Service]
   implicit val serviceWrites = Json.writes[Service]
@@ -79,13 +60,22 @@ object Service {
     }
   }
 
+  def softDelete(deletedBy: User, service: Service) {
+    DB.withConnection { implicit c =>
+      SQL("""
+          update services set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where guid = {guid}::uuid and deleted_at is null
+          """).on('deleted_by_guid -> deletedBy.guid, 'guid -> service.guid).execute()
+    }
+  }
+
+
   def findByOrganizationAndName(org: Organization, name: String): Option[Service] = {
     val key = UrlKey.generate(name)
     findByOrganizationAndKey(org, key)
   }
 
   def findByOrganizationAndKey(org: Organization, key: String): Option[Service] = {
-    findAll(ServiceQuery(orgKey = org.key, key = Some(key), limit = 1)).headOption
+    findAll(ServiceQuery(org_key = org.key, key = Some(key), limit = 1)).headOption
   }
 
   def findAll(query: ServiceQuery): Seq[Service] = {
@@ -100,7 +90,7 @@ object Service {
 
     val bind = Seq(
       query.guid.map { v => 'guid -> toParameterValue(v) },
-      Some('organization_key -> toParameterValue(query.orgKey)),
+      Some('organization_key -> toParameterValue(query.org_key)),
       query.name.map { v => 'name -> toParameterValue(v) },
       query.key.map { v => 'key -> toParameterValue(v) }
     ).flatten

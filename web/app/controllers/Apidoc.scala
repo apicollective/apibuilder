@@ -12,6 +12,7 @@ object Apidoc {
   private val Token = "12345"
 
   lazy val organizations = OrganizationsResource(s"$BaseUrl/organizations")
+  lazy val services = ServicesResource(s"$BaseUrl/organizations")
   lazy val users = UsersResource(s"$BaseUrl/users")
 
   def wsUrl(url: String) = {
@@ -60,7 +61,7 @@ object Apidoc {
     }
 
     /*
-    def findAll(query: UserQuery): Future[Seq[User]] = {
+    private def findAll(query: UserQuery): Future[Seq[User]] = {
       println("URL: " + url)
       * WS.url(url).withQueryString(query.params).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }
@@ -83,7 +84,7 @@ object Apidoc {
       }
     }
 
-    def findAll(query: OrganizationQuery): Future[Seq[Organization]] = {
+    private def findAll(query: OrganizationQuery): Future[Seq[Organization]] = {
       // TODO: query parameters
       wsUrl(url).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }
@@ -98,6 +99,24 @@ object Apidoc {
 
       wsUrl(url).post(json).map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }.head
+      }
+    }
+
+  }
+
+  case class ServicesResource(url: String) {
+
+    private def findAllByService(org: Service): Future[Seq[Service]] = {
+      // TODO: query parameters
+      wsUrl(url).withQueryString(org_key -> org.key).get().map { response =>
+        response.json.as[JsArray].value.map { v => v.as[Service] }
+      }
+    }
+
+    private def findAll(query: ServiceQuery): Future[Seq[Service]] = {
+      // TODO: query parameters
+      wsUrl(url).get().map { response =>
+        response.json.as[JsArray].value.map { v => v.as[Service] }
       }
     }
 

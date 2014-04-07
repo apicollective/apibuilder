@@ -9,8 +9,8 @@ class VersionSpec extends FlatSpec {
 
   private lazy val service = {
     val name = UUID.randomUUID.toString
-    Service.findByOrganizationAndName(Util.testOrg, name).getOrElse {
-      Service.create(Util.createdBy, Util.testOrg, name)
+    ServiceDao.findByOrganizationAndName(Util.testOrg, name).getOrElse {
+      ServiceDao.create(Util.createdBy, Util.testOrg, name)
     }
   }
 

@@ -1,5 +1,6 @@
 package db
 
+import core.{ Service, ServiceQuery }
 import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID
@@ -12,8 +13,8 @@ class ServiceSpec extends FlatSpec {
 
   private def upsertService(nameOption: Option[String] = None): Service = {
     val n = nameOption.getOrElse(name)
-    Service.findByOrganizationAndName(Util.testOrg, n).getOrElse {
-      Service.create(Util.createdBy, Util.testOrg, n)
+    ServiceDao.findByOrganizationAndName(Util.testOrg, n).getOrElse {
+      ServiceDao.create(Util.createdBy, Util.testOrg, n)
     }
   }
 
@@ -26,14 +27,14 @@ class ServiceSpec extends FlatSpec {
 
     val name2 = "Service %s".format(UUID.randomUUID)
     val service2 = upsertService(Some(name2))
-    val names = Service.findAll(ServiceQuery(orgKey = Util.testOrg.key)).map(_.name)
+    val names = ServiceDao.findAll(ServiceQuery(org_key = Util.testOrg.key)).map(_.name)
     assertTrue(names.contains(name))
     assertTrue(names.contains(name2))
   }
 
   it should "find by name" in {
     val service = upsertService()
-    assertEquals(service, Service.findByOrganizationAndName(Util.testOrg, name).get)
+    assertEquals(service, ServiceDao.findByOrganizationAndName(Util.testOrg, name).get)
   }
 
   it should "not create a new record if already exists" in {
