@@ -32,6 +32,8 @@ object Util {
  */
 case class RouteGenerator(json: String) {
 
+  private val JsonDocumentMethods = Seq("POST", "PUT")
+
   private val GlobalPad = 5
 
   private lazy val service = ServiceDescription(json)
@@ -46,6 +48,12 @@ case class RouteGenerator(json: String) {
     val maxUrlLength = all.map(_.url.length).sorted.last
 
     all.map { r =>
+      val params = if (JsonDocumentMethods.contains(r.verb)) {
+        r.pathParameters
+      } else {
+        r.parameters
+      }
+
       Seq(
         r.verb,
         " " * (maxVerbLength - r.verb.length + GlobalPad),
@@ -53,7 +61,7 @@ case class RouteGenerator(json: String) {
         " " * (maxUrlLength - r.url.length + GlobalPad),
         r.method,
         "(",
-        r.parameters.mkString(", "),
+        params.mkString(", "),
         ")"
       ).mkString("")
     }.mkString("\n")
@@ -70,12 +78,17 @@ case class RouteGenerator(json: String) {
     lazy val method = {
       s"$controllerName.$methodName"
     }
-    lazy val parameters = {
-      op.parameters.map { param =>
-        Seq(
-          Some(s"${param.name}: ${Util.scalaDataType(param)}"),
-          param.default.map( d => s"?= ${d}" )
-        ).flatten.mkString(" ")
+    lazy val parameters = parametersWithTypes(op.parameters)
+    lazy val pathParameters = parametersWithTypes(op.parameters.filter { param => namedParametersInPath.contains(param.name) })
+
+    // Select out named parameters in the path. E.g. /:org/:service/foo would return [org, service]
+    private lazy val namedParametersInPath = {
+      (resource.path + op.path.getOrElse("")).split("/").flatMap { name =>
+        if (name.startsWith(":")) {
+          Some(name.slice(1, name.length))
+        } else {
+          None
+        }
       }
     }
 
@@ -104,6 +117,15 @@ case class RouteGenerator(json: String) {
 
     private def initCap(parts: Seq[String]): String = {
       parts.map(s => initCap(s)).mkString("")
+    }
+
+    private def parametersWithTypes(params: Seq[Field]): Seq[String] = {
+      params.map { param =>
+        Seq(
+          Some(s"${param.name}: ${Util.scalaDataType(param)}"),
+          param.default.map( d => s"?= ${d}" )
+        ).flatten.mkString(" ")
+      }
     }
 
   }

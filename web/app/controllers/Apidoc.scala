@@ -4,17 +4,20 @@ import core._
 import play.api.libs.json._
 import play.api.libs.ws._
 import scala.concurrent.Future
-import java.util.UUID
 
 object Apidoc {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private val BaseUrl = "http://localhost:9001"
+  private val Token = "12345"
 
-  private lazy val baseUrl = "http://localhost:9001"
+  lazy val organizations = OrganizationsResource(s"$BaseUrl/organizations")
+  lazy val users = UsersResource(s"$BaseUrl/users")
 
-  lazy val organizations = OrganizationsResource(s"$baseUrl/organizations")
-  lazy val users = UsersResource(s"$baseUrl/users")
-  val token = "12345"
+  def wsUrl(url: String) = {
+    println("URL: " + url)
+    WS.url(url).withHeaders("X-Auth" -> Token)
+  }
 
   case class UsersResource(url: String) {
 
@@ -25,9 +28,7 @@ object Apidoc {
         "image_url" -> user.imageUrl
       )
 
-      //val query = UserQuery(guid = Some(userGuid), limit = 1)
-      println("URL: " +  url + s"/${user.guid}")
-      WS.url(url + s"/${user.guid}").withHeaders("X-Auth" -> token).put(json).map { response =>
+      wsUrl(url + s"/${user.guid}").put(json).map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.head
       }
     }
@@ -39,27 +40,21 @@ object Apidoc {
         "image_url" -> imageUrl
       )
 
-      //val query = UserQuery(guid = Some(userGuid), limit = 1)
-      println("URL: " + url)
-      WS.url(url).withHeaders("X-Auth" -> token).post(json).map { response =>
+      wsUrl(url).post(json).map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.head
       }
     }
 
     def findByGuid(userGuid: String): Future[Option[User]] = {
-      val token = "12345"
       //val query = UserQuery(guid = Some(userGuid), limit = 1)
-      println("URL: " + url)
-      WS.url(url).withHeaders("X-Auth" -> token).withQueryString("guid" -> userGuid).get().map { response =>
+      wsUrl(url).withQueryString("guid" -> userGuid).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.headOption
       }
     }
 
     def findByEmail(email: String): Future[Option[User]] = {
-      val token = "12345"
       //val query = UserQuery(email = Some(email), limit = 1)
-      println("URL: " + url)
-      WS.url(url).withHeaders("X-Auth" -> token).withQueryString("email" -> email).get().map { response =>
+      wsUrl(url).withQueryString("email" -> email).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.headOption
       }
     }
@@ -77,19 +72,35 @@ object Apidoc {
   case class OrganizationsResource(url: String) {
 
     def findByKey(key: String): Future[Option[Organization]] = {
-      println("URL: " + url)
-      WS.url(url).withQueryString(key -> key).get().map { response =>
+      wsUrl(url).withQueryString(key -> key).get().map { response =>
+        response.json.as[JsArray].value.map { v => v.as[Organization] }.headOption
+      }
+    }
+
+    def findByName(name: String): Future[Option[Organization]] = {
+      wsUrl(url).withQueryString(name -> name).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }.headOption
       }
     }
 
     def findAll(query: OrganizationQuery): Future[Seq[Organization]] = {
       // TODO: query parameters
-      println("URL: " + url)
-      WS.url(url).get().map { response =>
+      wsUrl(url).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }
       }
     }
+
+    def create(user: User, name: String): Future[Organization] = {
+      val json = Json.obj(
+        "user_guid" -> user.guid,
+        "name" -> name
+      )
+
+      wsUrl(url).post(json).map { response =>
+        response.json.as[JsArray].value.map { v => v.as[Organization] }.head
+      }
+    }
+
   }
 
 }

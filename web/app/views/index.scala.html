@@ -1,0 +1,31 @@
+@(user: core.User,
+  organizations: lib.PaginatedCollection[core.Organization])
+
+@main(models.MainTemplate(user = Some(user), title = "Organizations")) {
+
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.create">Add organization</a>
+  </div>
+
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @organizations.items.map { organization =>
+       <tr>
+         <td><a href="@routes.Organizations.show(organization.key)">@organization.name</a></td>
+       </tr>
+     }
+    </tbody>
+  </table>
+
+  @if(organizations.hasPrevious || organizations.hasNext) {
+    <ul class="pager">
+      @if(organizations.hasPrevious) {
+        <li><a href="@routes.Application.index(organizations.page - 1)">Previous</a></li>
+      }
+      @if(organizations.hasNext) {
+        <li><a href="@routes.Application.index(organizations.page + 1)">Next</a></li>
+      }
+    </ul>
+  }
+
+}

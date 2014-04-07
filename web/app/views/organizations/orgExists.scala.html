@@ -1,0 +1,15 @@
+@(tpl: models.MainTemplate, org: core.Organization)
+
+@main(tpl) {
+
+<p>
+  <form role="form" method="post" action="@routes.Organizations.requestMembership(org.key)">
+    <button type="submit" class="btn btn-primary">Request to join this organization</button>
+  </form>
+</p>
+
+<p>
+  <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.create">Add organization</a>
+</p>
+
+}

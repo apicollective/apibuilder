@@ -11,10 +11,10 @@ GET     /login/callback                                           controllers.Lo
 GET     /logout                                                   controllers.LogoutController.logout
 GET     /logged_out                                               controllers.LogoutController.logged_out
 
-# GET     /org/create                                               controllers.Organizations.create
+GET     /org/create                                               controllers.Organizations.create
 # POST    /org/createPost                                           controllers.Organizations.createPost
 
-# POST    /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
+POST    /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 
 GET     /:orgKey                                                       controllers.Organizations.show(orgKey: String, page: Int ?= 0)
 # GET     /:orgKey/register                                              controllers.Organizations.register(orgKey: String)

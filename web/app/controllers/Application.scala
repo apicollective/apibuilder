@@ -6,8 +6,6 @@ import lib.{ Pagination, PaginatedCollection }
 import play.api._
 import play.api.mvc._
 
-
-
 object Application extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
@@ -21,7 +19,7 @@ object Application extends Controller {
     } yield {
       val collection = PaginatedCollection(page, orgs)
       // Ok(views.html.organizations.index(request.user, collection, membershipRequests))
-      Ok("ok")
+      Ok(views.html.index(request.user, collection))
     }
   }
 
