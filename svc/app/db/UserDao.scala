@@ -37,7 +37,7 @@ object UserDao {
     }
   }
 
-  private def update(user: User) {
+  def update(user: User) {
     DB.withConnection { implicit c =>
       SQL("""
           update users
@@ -93,6 +93,15 @@ object UserDao {
   def findAll(query: UserQuery): Seq[User] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      query.guid.map { v =>
+        try {
+          val uuid = UUID.fromString(v)
+          "and users.guid = {guid}::uuid"
+        } catch {
+          // not a valid guid - won't match anything
+          case e: IllegalArgumentException => "and false"
+        }
+      },
       query.guid.map { v => "and users.guid = {guid}::uuid" },
       query.email.map { v => "and users.email = trim(lower({email}))" },
       query.token.map { v => "and users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)"}

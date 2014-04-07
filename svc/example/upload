@@ -13,3 +13,6 @@ curl \
 
 curl -H "X-Auth: 12345" 'http://localhost:9001/users?email=otto@gilt.com'
 curl -H "X-Auth: 12345" 'http://localhost:9001/users?email=mbryzek@yahoo.com'
+
+
+curl -H "X-Auth: 12345" -XPOST -d@./example/user.json 'http://localhost:9001/users'

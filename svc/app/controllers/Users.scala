@@ -15,8 +15,43 @@ object Users extends Controller {
   }
 
   def post() = Authenticated(parse.json) { request =>
-    println("POST USERS: " + request.body)
-    Ok("TODO")
+    (request.body \ "email").asOpt[String] match {
+      case None => {
+        BadRequest("email is required")
+      }
+
+      case Some(email: String) => {
+        UserDao.findByEmail(email) match {
+          case None => {
+            val user = UserDao.upsert(email = email,
+                                      name = (request.body \ "name").asOpt[String],
+                                      imageUrl = (request.body \ "image_url").asOpt[String])
+            Ok(Json.toJson(user))
+          }
+
+          case Some(u: User) => {
+            BadRequest("user with this email already exists")
+          }
+        }
+      }
+    }
+  }
+
+  def put(guid: String) = Authenticated(parse.json) { request =>
+    UserDao.findByGuid(guid) match {
+      case None => {
+        BadRequest("user not found")
+      }
+
+      case Some(user: User) => {
+        val newUser = user.copy(email = (request.body \ "name").asOpt[String].getOrElse(user.email),
+                                name = (request.body \ "name").asOpt[String],
+                                imageUrl = (request.body \ "image_url").asOpt[String])
+        UserDao.update(newUser)
+        println("user: " + newUser)
+        Ok(Json.toJson(newUser))
+      }
+    }
   }
 
 }

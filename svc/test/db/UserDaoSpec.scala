@@ -19,4 +19,14 @@ class UserDaoSpec extends FlatSpec {
     assertNotEquals(user1.guid, user2.guid)
   }
 
+  it should "return empty list without error guid is not a valid format" in {
+    assertEquals(None, UserDao.findByGuid("ASDF"))
+  }
+
+  it should "findByGuid" in {
+    val user = UserDao.upsert("michael@mailinator.com")
+    assertEquals(None, UserDao.findByGuid(UUID.randomUUID.toString))
+    assertEquals(Some(user), UserDao.findByGuid(user.guid))
+  }
+
 }

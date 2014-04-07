@@ -8,6 +8,9 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.libs.openid.{ Errors, OpenID, OpenIDError }
 
+import scala.concurrent.{ Await, Future }
+import scala.concurrent.duration._
+
 object LoginController extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -63,21 +66,10 @@ object LoginController extends Controller {
           val fullname = info.attributes.get("fullname")
           val imageUrl = info.attributes.get("image_url")
 
-          for {
-            user <- Apidoc.users.findByEmail(email)
-          } yield {
-            user match {
-              case None => {
-                println("User with email[%s] not found".format(email))
-              }
-              case Some(u: User) => {
-                println("User with email[%s] found: %s".format(email, u.toString))
-              }
-            }
+          val user = Await.result(Apidoc.users.findByEmail(email), 100 millis).getOrElse {
+            Await.result(Apidoc.users.create(email, fullname, imageUrl), 100 millis)
           }
-
-          val user = User(java.util.UUID.randomUUID.toString, email, fullname, imageUrl)
-          Redirect("/").withSession { "user_guid" -> user.guid.toString }
+          Redirect("/").withSession { "user_guid" -> user.guid }
         }
       }
     })

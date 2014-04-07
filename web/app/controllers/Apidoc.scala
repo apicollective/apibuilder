@@ -14,8 +14,37 @@ object Apidoc {
 
   lazy val organizations = OrganizationsResource(s"$baseUrl/organizations")
   lazy val users = UsersResource(s"$baseUrl/users")
+  val token = "12345"
 
   case class UsersResource(url: String) {
+
+    def update(user: User): Future[User] = {
+      val json = Json.obj(
+        "email" -> user.email,
+        "name" -> user.name,
+        "image_url" -> user.imageUrl
+      )
+
+      //val query = UserQuery(guid = Some(userGuid), limit = 1)
+      println("URL: " +  url + s"/${user.guid}")
+      WS.url(url + s"/${user.guid}").withHeaders("X-Auth" -> token).put(json).map { response =>
+        response.json.as[JsArray].value.map { v => v.as[User] }.head
+      }
+    }
+
+    def create(email: String, name: Option[String], imageUrl: Option[String]): Future[User] = {
+      val json = Json.obj(
+        "email" -> email,
+        "name" -> name,
+        "image_url" -> imageUrl
+      )
+
+      //val query = UserQuery(guid = Some(userGuid), limit = 1)
+      println("URL: " + url)
+      WS.url(url).withHeaders("X-Auth" -> token).post(json).map { response =>
+        response.json.as[JsArray].value.map { v => v.as[User] }.head
+      }
+    }
 
     def findByGuid(userGuid: String): Future[Option[User]] = {
       val token = "12345"
