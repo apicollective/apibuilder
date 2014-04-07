@@ -92,6 +92,7 @@ case class RouteGenerator(json: String) {
       }
     }
 
+
     private lazy val methodName = {
       op.path match {
         case None => {
@@ -105,7 +106,7 @@ case class RouteGenerator(json: String) {
     }
 
     private lazy val controllerName: String = {
-      s"controllers.${initCap(resource.name)}"
+      s"controllers.${initCap(resource.name.split("_"))}"
     }
 
     private val Regexp = """([^0-9a-z])""".r
