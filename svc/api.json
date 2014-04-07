@@ -98,6 +98,43 @@
             ]
         },
 
+        "membership_requests": {
+            "description": "A membership request represents a user requesting to join an organization with a specificed role (e.g. as a member or an admin). Membership requests can be reviewed by any current admin of the organization who can either accept or decline the request.",
+            "fields": [
+                { "name": "guid", "type": "string", "description": "Internal unique identifier for this membership request." },
+                { "name": "user_guid", "type": "string", "references": "users.guid" },
+                { "name": "organization_guid", "type": "string", "references": "organizations.guid" },
+                { "name": "role", "type": "string", "description": "The requested role for membership to this organization. Typically member or admin.", "example": "member" }
+            ],
+
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all pending membership requests. Results are always paginated.",
+                    "parameters": [
+                        { "name": "organization_guid", "type": "string", "description": "Find memberships for this organization", "required": false },
+                        { "name": "user_guid", "type": "string", "description": "Find memberships for this user", "required": false },
+                        { "name": "role", "type": "string", "description": "Limit to memberships with this role", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "response": ["membership_request"]
+                },
+
+                {
+                    "method": "POST",
+                    "description": "Create a membership request.",
+                    "parameters": [
+                        { "name": "organization_guid", "type": "string", "description": "Find memberships for this organization" },
+                        { "name": "user_guid", "type": "string", "description": "Find memberships for this user" },
+                        { "name": "role", "type": "string", "description": "Limit to memberships with this role" }
+                    ],
+                    "response": "membership_request"
+                }
+
+            ]
+        },
+
         "services": {
             "path": "/:org",
             "description": "A service has a name and multiple versions of an API (Interface).",

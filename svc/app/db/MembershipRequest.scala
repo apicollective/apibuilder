@@ -6,22 +6,37 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.sql.Timestamp
+import play.api.libs.json._
 import java.util.UUID
 
-case class MembershipRequestQuery(guid: Option[String] = None,
-                                  organization_guid: Option[String] = None,
-                                  user_guid: Option[String] = None,
-                                  role: Option[String] = None,
-                                  canBeApprovedBy: Option[User] = None,
-                                  limit: Int = 50,
-                                  offset: Int = 0)
+case class MembershipRequestJson(guid: String,
+                                 created_at: String, // TODO Timestamp type
+                                 organization_guid: String,
+                                 organization_name: String,
+                                 user_guid: String,
+                                 user_email: String,
+                                 user_name: Option[String],
+                                 role: String)
+
+object MembershipRequestJson {
+  implicit val membershipRequestJsonWrites = Json.writes[MembershipRequestJson]
+}
 
 
 case class MembershipRequest(guid: String,
-                             createdAt: String, // TODO Timestamp type
+                             created_at: String, // TODO Timestamp type
                              org: Organization,
                              user: User,
                              role: String) {
+
+  lazy val json = MembershipRequestJson(guid = guid.toString,
+                                        created_at = created_at,
+                                        organization_guid = org.guid,
+                                        organization_name = org.name,
+                                        user_guid = user.guid.toString,
+                                        user_email = user.guid,
+                                        user_name = user.name,
+                                        role = role)
 
   /**
    * Approves this request. The request will be deleted, the
@@ -108,60 +123,69 @@ object MembershipRequest {
   }
 
   def findByGuid(guid: String): Option[MembershipRequest] = {
-    findAll(MembershipRequestQuery(guid = Some(guid.toString), limit = 1)).headOption
+    findAll(guid = Some(guid.toString), limit = 1).headOption
   }
 
   def findAllForOrganization(org: Organization): Seq[MembershipRequest] = {
-    findAll(MembershipRequestQuery(organization_guid = Some(org.guid)))
+    findAll(organization_guid = Some(org.guid))
   }
 
   def findAllForUser(user: User): Seq[MembershipRequest] = {
-    findAll(MembershipRequestQuery(user_guid = Some(user.guid)))
+    findAll(user_guid = Some(user.guid))
   }
 
-  def findAllPendingApproval(user: User): Seq[MembershipRequest] = {
-    findAll(MembershipRequestQuery(canBeApprovedBy = Some(user)))
+  def findAllPendingReview(user: User): Seq[MembershipRequest] = {
+    findAll(can_be_reviewed_by = Some(user))
   }
 
   private def findByOrganizationAndUserAndRole(org: Organization, user: User, role: String): Option[MembershipRequest] = {
-    findAll(MembershipRequestQuery(organization_guid = Some(org.guid),
-                                   user_guid = Some(user.guid),
-                                   role = Some(role),
-                                   limit = 1)).headOption
+    findAll(organization_guid = Some(org.guid),
+            user_guid = Some(user.guid),
+            role = Some(role),
+            limit = 1).headOption
   }
 
-  def findAll(query: MembershipRequestQuery): Seq[MembershipRequest] = {
+  def findAll(user: Option[User] = None,
+              guid: Option[String] = None,
+              organization_guid: Option[String] = None,
+              user_guid: Option[String] = None,
+              role: Option[String] = None,
+              can_be_reviewed_by: Option[User] = None,
+              limit: Int = 50,
+              offset: Int = 0): Seq[MembershipRequest] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      query.guid.map { v => "and membership_requests.guid = {guid}::uuid" },
-      query.organization_guid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
-      query.user_guid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
-      query.role.map { v => "and membership_requests.role = {role}" },
-      query.canBeApprovedBy.map { user =>
+      user.map { u => "and (membership_requests.user_guid = {user_guid} or membership_requests.organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}" },
+      guid.map { v => "and membership_requests.guid = {guid}::uuid" },
+      organization_guid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
+      user_guid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
+      role.map { v => "and membership_requests.role = {role}" },
+      can_be_reviewed_by.map { user =>
         """
          and membership_requests.organization_guid in
              (select organization_guid
                 from memberships
-                 where deleted_at is null
+               where deleted_at is null
+                 and user_guid = {reviewing_user_guid}::uuid)
                  and role = 'admin'
-                 and user_guid = {approving_user_guid}::uuid)
         """
       },
-      Some(s"order by membership_requests.created_at desc limit ${query.limit} offset ${query.offset}")
+      Some(s"order by membership_requests.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      query.guid.map { v => 'guid -> toParameterValue(v) },
-      query.organization_guid.map { v => 'organization_guid -> toParameterValue(v) },
-      query.user_guid.map { v => 'user_guid -> toParameterValue(v) },
-      query.canBeApprovedBy.map { user => 'approving_user_guid -> toParameterValue(user.guid) },
-      query.role.map { role => 'role -> toParameterValue(role) }
+      user.map { u => 'user_guid -> toParameterValue(u.guid) },
+      guid.map { v => 'guid -> toParameterValue(v) },
+      organization_guid.map { v => 'organization_guid -> toParameterValue(v) },
+      user_guid.map { v => 'user_guid -> toParameterValue(v) },
+      can_be_reviewed_by.map { user => 'reviewing_user_guid -> toParameterValue(user.guid) },
+      role.map { role => 'role -> toParameterValue(role) }
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         MembershipRequest(guid = row[String]("guid"),
-                          createdAt = row[String]("created_at"),
+                          created_at = row[String]("created_at"),
                           org = Organization(guid = row[String]("organization_guid"),
                                              name = row[String]("organization_name"),
                                              key = row[String]("organization_key")),
