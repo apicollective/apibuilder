@@ -130,6 +130,26 @@
                         { "name": "role", "type": "string", "description": "Limit to memberships with this role" }
                     ],
                     "response": "membership_request"
+                },
+
+                {
+                    "path": "/:guid/approve",
+                    "method": "PUT",
+                    "description": "Approves this membership request.",
+                    "parameters": [
+                        { "name": "guid", "type": "string", "description": "The membership request guid" }
+                    ],
+                    "response_code": 204
+                },
+
+                {
+                    "path": "/:guid/decline",
+                    "method": "PUT",
+                    "description": "Declines this membership request.",
+                    "parameters": [
+                        { "name": "guid", "type": "string", "description": "The membership request guid" }
+                    ],
+                    "response_code": 204
                 }
 
             ]

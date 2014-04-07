@@ -18,4 +18,31 @@ object MembershipRequests extends Controller {
 
   def post() = TODO
 
+  def putGuidApprove(guid: String) = Authenticated { request =>
+    MembershipRequest.findAll(guid = Some(guid), can_be_reviewed_by = Some(request.user), limit = 1).headOption match {
+      case None => {
+        NotFound
+      }
+
+      case Some(r: MembershipRequest) => {
+        r.approve(request.user)
+        Ok
+      }
+    }
+  }
+
+  def putGuidDecline(guid: String) = Authenticated { request =>
+    MembershipRequest.findAll(guid = Some(guid), can_be_reviewed_by = Some(request.user), limit = 1).headOption match {
+      case None => {
+        NotFound
+      }
+
+      case Some(r: MembershipRequest) => {
+        r.decline(request.user)
+        Ok
+      }
+    }
+  }
+
+
 }
