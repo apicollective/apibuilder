@@ -8,7 +8,7 @@ object Apidoc {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
   private val BaseUrl = "http://localhost:9001"
-  private val Token = "12345"
+  private val Token = "ZdRD61ODVPspeV8Wf18EmNuKNxUfjfROyJXtNJXj9GMMwrAxqi8I4aUtNAT6"
 
   lazy val organizations = OrganizationsResource(s"$BaseUrl/organizations")
   lazy val services = ServicesResource(BaseUrl)
