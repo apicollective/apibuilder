@@ -89,8 +89,8 @@
                     "description": "Search all services. Results are always paginated.",
                     "parameters": [
                         { "name": "org", "type": "string", "description": "Organization key." },
-                        { "name": "name", "type": "string", "required": false, "description": "Finds the service with this name. Exact match" },
-                        { "name": "key", "type": "string", "required": false, "description": "Finds the service with this key. Exact match" },
+                        { "name": "name", "type": "string", "description": "Finds the service with this name. Exact match", "required": false },
+                        { "name": "key", "type": "string", "description": "Finds the service with this key. Exact match", "required": false },
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],

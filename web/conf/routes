@@ -22,7 +22,7 @@ GET     /:orgKey                                                       controlle
 
 # GET     /:orgKey/docs                                                  controllers.ServiceController.redirect(orgKey: String)
 # GET     /:orgKey/docs/:serviceKey                                      controllers.ServiceController.redirectToLatestVersion(orgKey: String, serviceKey: String)
-# GET     /:orgKey/docs/:serviceKey/latest                               controllers.ServiceController.latest(orgKey: String, serviceKey: String)
+GET     /:orgKey/docs/:serviceKey/latest                               controllers.Services.latest(orgKey: String, serviceKey: String)
 # GET     /:orgKey/docs/:serviceKey/:version                             controllers.ServiceController.show(orgKey: String, serviceKey: String, version: String)
 # GET     /:orgKey/docs/:serviceKey/:version/:resourceKey                controllers.ServiceController.resource(orgKey: String, serviceKey: String, version: String, resourceKey: String)
 # GET     /:orgKey/docs/:serviceKey/:version/:resourceKey/:opKey         controllers.ServiceController.operation(orgKey: String, serviceKey: String, version: String, resourceKey: String, opKey: String)

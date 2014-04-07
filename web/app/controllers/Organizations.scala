@@ -14,10 +14,8 @@ object Organizations extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = Authenticated.async { request =>
-    // TODO: Fetch all services
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
-      services <- Apidoc.services.findAllByOrganization(org)
     } yield {
       org match {
         case None => {
@@ -27,6 +25,10 @@ object Organizations extends Controller {
         }
 
         case Some(org: Organization) => {
+          // TODO
+          // role: UserRole,
+          // requests: Seq[db.MembershipRequest])
+          val services = Await.result(Apidoc.services.findAllByOrganization(org), 100 millis)
           Ok(org.name + " services: " + services.length)
         }
       }

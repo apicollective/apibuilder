@@ -84,7 +84,7 @@ object Apidoc {
       }
     }
 
-    private def findAll(query: OrganizationQuery): Future[Seq[Organization]] = {
+    def findAll(query: OrganizationQuery): Future[Seq[Organization]] = {
       // TODO: query parameters
       wsUrl(url).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }
@@ -106,15 +106,19 @@ object Apidoc {
 
   case class ServicesResource(url: String) {
 
-    private def findAllByService(org: Service): Future[Seq[Service]] = {
-      // TODO: query parameters
-      wsUrl(url).withQueryString(org_key -> org.key).get().map { response =>
+    def findByOrganizationKeyAndKey(orgKey: String, serviceKey: String): Future[Option[Service]] = {
+      wsUrl(url).withQueryString("org" -> orgKey, "key" -> serviceKey).get().map { response =>
+        response.json.as[JsArray].value.map { v => v.as[Service] }.headOption
+      }
+    }
+
+    def findAllByOrganization(org: Organization): Future[Seq[Service]] = {
+      wsUrl(url).withQueryString("org" -> org.key).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Service] }
       }
     }
 
     private def findAll(query: ServiceQuery): Future[Seq[Service]] = {
-      // TODO: query parameters
       wsUrl(url).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Service] }
       }
