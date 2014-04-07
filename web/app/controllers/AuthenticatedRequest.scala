@@ -1,12 +1,12 @@
 package controllers
 
-import core.User
+import client.Apidoc
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 
-class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request)
+class AuthenticatedRequest[A](val user: Apidoc.User, request: Request[A]) extends WrappedRequest[A](request)
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
@@ -21,7 +21,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
           Future.successful(Redirect("/login").withNewSession)
         }
 
-        case Some(u: User) => {
+        case Some(u: Apidoc.User) => {
           block(new AuthenticatedRequest(u, request))
         }
 

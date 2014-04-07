@@ -1,6 +1,6 @@
 package controllers
 
-import core.User
+import client.Apidoc
 
 import play.api._
 import play.api.mvc._

@@ -1,8 +1,9 @@
 package controllers
 
 import models.MainTemplate
-import Apidoc.Version
-import core.{ Organization, Service, ServiceDescription, User }
+import core.ServiceDescription
+import client.Apidoc
+import client.Apidoc.{ Organization, Service, User, Version }
 import play.api._
 import play.api.mvc._
 import scala.concurrent.Await

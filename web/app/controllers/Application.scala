@@ -1,6 +1,6 @@
 package controllers
 
-import core.OrganizationQuery
+import client.Apidoc
 import lib.{ Pagination, PaginatedCollection }
 
 import play.api._
@@ -12,9 +12,9 @@ object Application extends Controller {
 
   def index(page: Int = 0) = Authenticated.async { request =>
     for {
-      orgs <- Apidoc.organizations.findAll(OrganizationQuery(user_guid = request.user.guid,
-                                                             limit = Pagination.DefaultLimit+1,
-                                                             offset = page * Pagination.DefaultLimit))
+      orgs <- Apidoc.organizations.findAll(userGuid = request.user.guid,
+                                           limit = Pagination.DefaultLimit+1,
+                                           offset = page * Pagination.DefaultLimit)
       //val membershipRequests = MembershipRequest.findAllForUser(request.user)
     } yield {
       val collection = PaginatedCollection(page, orgs)

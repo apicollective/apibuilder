@@ -2,7 +2,8 @@ package controllers
 
 import lib.PaginatedCollection
 import models.MainTemplate
-import core.Organization
+import client.Apidoc
+import client.Apidoc.Organization
 import play.api._
 import play.api.mvc._
 import play.api.data._

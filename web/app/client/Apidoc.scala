@@ -1,6 +1,5 @@
-package controllers
+package client
 
-import core._
 import play.api.libs.json._
 import play.api.libs.ws._
 import scala.concurrent.Future
@@ -21,10 +20,24 @@ object Apidoc {
     WS.url(url).withHeaders("X-Auth" -> Token)
   }
 
+  case class Organization(guid: String, name: String, key: String)
+  object Organization {
+    implicit val organizationReads = Json.reads[Organization]
+  }
+
+  case class User(guid: String, email: String, name: Option[String], imageUrl: Option[String])
+  object User {
+    implicit val userReads = Json.reads[User]
+  }
+
   case class Version(guid: String, version: String, json: Option[String])
   object Version {
     implicit val versionReads = Json.reads[Version]
-    implicit val versionWrites = Json.writes[Version]
+  }
+
+  case class Service(guid: String, name: String, key: String, description: Option[String])
+  object Service {
+    implicit val serviceReads = Json.reads[Service]
   }
 
   case class UsersResource(url: String) {
@@ -81,9 +94,8 @@ object Apidoc {
       }
     }
 
-    def findAll(query: OrganizationQuery): Future[Seq[Organization]] = {
-      // TODO: query parameters
-      wsUrl(url).get().map { response =>
+    def findAll(userGuid: String, limit: Int = 50, offset: Int = 0): Future[Seq[Organization]] = {
+      wsUrl(url).withQueryString("user_guid" -> userGuid, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }
       }
     }

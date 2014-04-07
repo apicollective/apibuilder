@@ -1,5 +1,5 @@
-@(user: core.User,
-  organizations: lib.PaginatedCollection[core.Organization])
+@(user: client.Apidoc.User,
+  organizations: lib.PaginatedCollection[client.Apidoc.Organization])
 
 @main(models.MainTemplate(user = Some(user), title = "Organizations")) {
 
