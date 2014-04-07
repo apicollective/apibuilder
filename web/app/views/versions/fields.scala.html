@@ -1,0 +1,31 @@
+@(fields: Iterable[core.Field])
+
+<table class="table table-hover table-condensed">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Datatype</th>
+      <th>Required?</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+   @fields.map { field =>
+     <tr>
+       <td>@field.name</td>
+       <td>@field.dataType @field.format.map { v => (@v) }</td>
+       <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
+       <td>@field.default.getOrElse("-")</td>
+       <td>@field.description.getOrElse("")
+           <p>
+             @field.references.map { r => References: <a href="#">@r</a><br/> }
+             @field.example.map { v => Example: @v<br/> }
+             @field.minimum.map { v => Minimum: @v<br/> }
+             @field.maximum.map { v => Maximum: @v<br/> }
+           </p>
+       </td>
+     </tr>
+   }
+  </tbody>
+</table>

@@ -18,12 +18,6 @@ POST    /:orgKey/memberships/request                              controllers.Or
 
 GET     /:orgKey                                                       controllers.Organizations.show(orgKey: String, page: Int ?= 0)
 # GET     /:orgKey/register                                              controllers.Organizations.register(orgKey: String)
-# GET     /:orgKey/references/:serviceKey/:version/:reference            controllers.ServiceController.reference(orgKey: String, serviceKey: String, version: String, reference: String)
-
-# GET     /:orgKey/docs                                                  controllers.ServiceController.redirect(orgKey: String)
-# GET     /:orgKey/docs/:serviceKey                                      controllers.ServiceController.redirectToLatestVersion(orgKey: String, serviceKey: String)
-GET     /:orgKey/docs/:serviceKey/:version/:resourceKey                controllers.Services.resource(orgKey: String, serviceKey: String, version: String, resourceKey: String)
-# GET     /:orgKey/docs/:serviceKey/:version/:resourceKey/:opKey         controllers.ServiceController.operation(orgKey: String, serviceKey: String, version: String, resourceKey: String, opKey: String)
 
 GET     /:orgKey/docs/:serviceKey/latest                               controllers.Versions.latest(orgKey: String, serviceKey: String)
 GET     /:orgKey/docs/:serviceKey/:version                             controllers.Versions.show(orgKey: String, serviceKey: String, version: String)

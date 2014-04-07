@@ -1,0 +1,59 @@
+@(tpl: models.MainTemplate, service: core.ServiceDescription)
+
+@main(tpl) {
+
+  @service.description.getOrElse("")
+
+  <h2>Resources</h2>
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @service.resources.map { resource =>
+       <tr>
+         <td><a href="#resource-@lib.UrlKey.generate(resource.name)">@resource.name</a></td>
+         <td>@lib.Text.truncate(resource.description.getOrElse(""))</td>
+       </tr>
+     }
+    </tbody>
+  </table>
+
+
+  @service.resources.map { resource =>
+    <a name="resource-@lib.UrlKey.generate(resource.name)"></a>
+    <div class="version_resource">
+      <h2>@resource.name</h2>
+
+      @resource.description.getOrElse("")
+
+      <h3>Fields</h3>
+      @fields(resource.fields)
+
+      <h3>Operations</h3>
+      @if(resource.operations.isEmpty) {
+        <em>No operations</em>
+      } else {
+        <table class="table table-hover table-condensed">
+          <thead>
+            <tr>
+              <th>Method and Path</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+           @resource.operations.zipWithIndex.map { case(op, index) =>
+             <tr>
+               <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.name)-@index').toggle()">@op.method @service.basePath@resource.path</a></td>
+               <td>@op.description.getOrElse("")</td>
+             </tr>
+             <tr id="operation-@lib.UrlKey.generate(resource.name)-@index" style="display:none">
+               <td></td>
+               <td>@operation(service, resource, op)</td>
+             </tr>
+           }
+          </tbody>
+        </table>
+      }
+
+    </div>
+  }
+
+}

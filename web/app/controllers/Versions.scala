@@ -2,7 +2,7 @@ package controllers
 
 import models.MainTemplate
 import Apidoc.Version
-import core.{ Organization, Service, User }
+import core.{ Organization, Service, ServiceDescription, User }
 import play.api._
 import play.api.mvc._
 import scala.concurrent.Await
@@ -15,6 +15,7 @@ object Versions extends Controller {
   def latest(orgKey: String, serviceKey: String) = Authenticated.async { request =>
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
+      service <- Apidoc.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
       versions <- Apidoc.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 1)
     } yield {
       versions.headOption match {
@@ -26,7 +27,11 @@ object Versions extends Controller {
 
         case Some(version: Version) => {
           val v = Await.result(Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, version.version), 100 millis)
-          Ok("v: " + v.version)
+          val tpl = MainTemplate(service.get.name + " " + v.version,
+                                 user = Some(request.user),
+                                 org = Some(org.get))
+          val sd = ServiceDescription(v.json.get)
+          Ok(views.html.versions.show(tpl, sd))
         }
       }
     }
@@ -35,6 +40,7 @@ object Versions extends Controller {
   def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { request =>
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
+      service <- Apidoc.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
       version <- Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
       Ok("v: " + version.toString)

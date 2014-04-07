@@ -109,6 +109,12 @@ object Apidoc {
       }
     }
 
+    def findByOrganizationKeyAndKey(orgKey: String, serviceKey: String): Future[Option[Service]] = {
+      wsUrl(url + s"/${orgKey}").withQueryString("key" -> serviceKey).get().map { response =>
+        response.json.as[JsArray].value.map { v => v.as[Service] }.headOption
+      }
+    }
+
   }
 
   case class VersionsResource(url: String) {

@@ -71,3 +71,7 @@ body {
 .main .page-header {
   margin-top: 0;
 }
+
+.version_resource {
+  padding-top: 50px;
+}
