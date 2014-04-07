@@ -5,7 +5,7 @@ import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID
 
-class ServiceSpec extends FlatSpec {
+class ServiceDaoSpec extends FlatSpec {
   new play.core.StaticApplication(new java.io.File("."))
 
   private lazy val name = "Service %s".format(UUID.randomUUID)

@@ -5,9 +5,22 @@ import lib.Constants
 import anorm._
 import play.api.db._
 import play.api.Play.current
+import play.api.libs.json._
 import java.util.UUID
 
+case class MembershipJson(guid: String, organization_guid: String, user_guid: String, role: String)
+
+object MembershipJson {
+  implicit val membershipJsonWrites = Json.writes[MembershipJson]
+}
+
+
 case class Membership(guid: UUID, org: Organization, user: User, role: String) {
+
+  lazy val json = MembershipJson(guid = guid.toString,
+                                 organization_guid = org.guid.toString,
+                                 user_guid = user.guid.toString,
+                                 role = role)
 
   /**
    * Removes this membership record and logs the action
@@ -21,13 +34,6 @@ case class Membership(guid: UUID, org: Organization, user: User, role: String) {
   }
 
 }
-
-case class MembershipQuery(guid: Option[UUID] = None,
-                                       org: Option[Organization] = None,
-                                       user: Option[User] = None,
-                                       role: Option[String] = None,
-                                       limit: Int = 50,
-                                       offset: Int = 0)
 
 object Membership {
 
@@ -71,7 +77,7 @@ object Membership {
                   'created_by_guid -> createdBy.guid).execute()
     }
 
-    findByGuid(guid).getOrElse {
+    findAll(guid = Some(guid.toString), limit = 1).headOption.getOrElse {
       sys.error("Failed to create membership")
     }
   }
@@ -87,50 +93,46 @@ object Membership {
     }
   }
 
-  private def findByGuid(guid: UUID): Option[Membership] = {
-    findAll(MembershipQuery(guid = Some(guid))).headOption
+  def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: String): Option[Membership] = {
+    findAll(organization_guid = Some(organization.guid), user_guid = Some(user.guid), role = Some(role)).headOption
   }
 
-  def findAllForOrganization(org: Organization): Seq[Membership] = {
-    findAll(MembershipQuery(org = Some(org)))
-  }
-
-  def findAllForOrganizationAndUser(org: Organization, user: User): Seq[Membership] = {
-    findAll(MembershipQuery(org = Some(org), user = Some(user)))
-  }
-
-  def findByOrganizationAndUserAndRole(org: Organization, user: User, role: String): Option[Membership] = {
-    findAll(MembershipQuery(org = Some(org), user = Some(user), role = Some(role), limit = 1)).headOption
-  }
-
-  def findAll(query: MembershipQuery): Seq[Membership] = {
+  def findAll(user: Option[User] = None,
+              guid: Option[String] = None,
+              organization_guid: Option[String] = None,
+              user_guid: Option[String] = None,
+              role: Option[String] = None,
+              limit: Int = 50,
+              offset: Int = 0): Seq[Membership] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      query.guid.map { v => "and memberships.guid = {guid}::uuid" },
-      query.org.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
-      query.user.map { v => "and memberships.user_guid = {user_guid}::uuid" },
-      query.role.map { v => "and role = {role}" },
-      Some(s"order by lower(users.name), lower(users.email) limit ${query.limit} offset ${query.offset}")
+      user.map { u => "and organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {authorized_user_guid} and role = 'admin')" },
+      guid.map { v => "and memberships.guid = {guid}::uuid" },
+      organization_guid.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
+      user_guid.map { v => "and memberships.user_guid = {user_guid}::uuid" },
+      role.map { v => "and role = {role}" },
+      Some(s"order by lower(users.name), lower(users.email) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      query.guid.map { v => 'guid -> toParameterValue(v) },
-      query.org.map { o => 'organization_guid -> toParameterValue(o.guid) },
-      query.user.map { u => 'user_guid -> toParameterValue(u.guid) },
-      query.role.map { v => 'role -> toParameterValue(v) }
+      user.map { u => 'authorized_user_guid -> toParameterValue(u.guid) },
+      guid.map { v => 'guid -> toParameterValue(v) },
+      organization_guid.map { v => 'organization_guid -> toParameterValue(v) },
+      user_guid.map { v => 'user_guid -> toParameterValue(v) },
+      role.map { v => 'role -> toParameterValue(v) }
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Membership(guid = UUID.fromString(row[String]("guid")),
-                               org = Organization(guid = row[String]("organization_guid"),
-                                                  name = row[String]("organization_name"),
-                                                  key = row[String]("organization_key")),
-                               user = User(guid = row[String]("user_guid"),
-                                           email = row[String]("user_email"),
-                                           name = row[Option[String]]("user_name"),
-                                           imageUrl = row[Option[String]]("user_image_url")),
-                               role = row[String]("role"))
+                   org = Organization(guid = row[String]("organization_guid"),
+                                      name = row[String]("organization_name"),
+                                      key = row[String]("organization_key")),
+                   user = User(guid = row[String]("user_guid"),
+                               email = row[String]("user_email"),
+                               name = row[Option[String]]("user_name"),
+                               imageUrl = row[Option[String]]("user_image_url")),
+                   role = row[String]("role"))
       }.toSeq
     }
   }

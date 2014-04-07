@@ -24,4 +24,4 @@ curl -H "X-Auth: 12345" 'http://localhost:9001/users?email=mbryzek@yahoo.com'
 curl -H "X-Auth: 12345" 'http://localhost:9001/organizations?name=gilt'
 curl -H "X-Auth: 12345" 'http://localhost:9001/gilt'
 
-curl -H "X-Auth: 12345" -XPOST -d@./example/user.json 'http://localhost:9001/users'
+curl -XPOST -H "X-Auth: 12345" -H "Content-Type: application/json" -d@./example/user.json 'http://localhost:9001/users'

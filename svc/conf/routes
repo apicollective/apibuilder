@@ -5,6 +5,7 @@ GET        /users                      controllers.Users.get(guid: Option[String
 POST       /users                      controllers.Users.post()
 GET        /organizations              controllers.Organizations.get(guid: Option[String], key: Option[String], name: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 POST       /organizations              controllers.Organizations.post()
+GET        /memberships                controllers.Memberships.get(organization_guid: Option[String], user_guid: Option[String], role: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 GET        /:org                       controllers.Services.get(org: String, name: Option[String], key: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 DELETE     /:org/:service              controllers.Services.deleteService(org: String, service: String)
 GET        /:org/:service              controllers.Versions.getService(org: String, service: String, limit: Int ?= 50, offset: Int ?= 0)

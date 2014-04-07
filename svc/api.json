@@ -30,7 +30,7 @@
                     "description": "Create a new user.",
                     "parameters": [
                         { "name": "email", "type": "string" },
-                        { "name": "name", "type": "string" },
+                        { "name": "name", "type": "string", "required": false },
                         { "name": "image_url", "type": "string", "required": false }
                     ],
                     "response": "user"
@@ -70,6 +70,31 @@
                     "response": "organization"
                 }
 
+            ]
+        },
+
+        "memberships": {
+            "description": "A membership represents a user in a specific role to an organization. Memberships cannot be created directly. Instead you first create a membership request, then that request is either accepted or declined.",
+            "fields": [
+                { "name": "guid", "type": "string", "description": "Internal unique identifier for this membership." },
+                { "name": "user_guid", "type": "string", "references": "users.guid" },
+                { "name": "organization_guid", "type": "string", "references": "organizations.guid" },
+                { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" }
+            ],
+
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all memberships. Results are always paginated.",
+                    "parameters": [
+                        { "name": "organization_guid", "type": "string", "description": "Find memberships for this organization", "required": false },
+                        { "name": "user_guid", "type": "string", "description": "Find memberships for this user", "required": false },
+                        { "name": "role", "type": "string", "description": "Limit to memberships with this role", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "response": ["membership"]
+                }
             ]
         },
 
