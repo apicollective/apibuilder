@@ -14,7 +14,7 @@ object Apidoc {
   lazy val organizations = OrganizationsResource(s"$BaseUrl/organizations")
   lazy val services = ServicesResource(BaseUrl)
   lazy val users = UsersResource(s"$BaseUrl/users")
-  lazy val versions = VersionsResource(s"$BaseUrl/versions")
+  lazy val versions = VersionsResource(BaseUrl)
 
   def wsUrl(url: String) = {
     println("URL: " + url)
@@ -109,24 +109,18 @@ object Apidoc {
       }
     }
 
-    def findByOrganizationKeyAndKey(orgKey: String, serviceKey: String): Future[Option[Service]] = {
-      wsUrl(url + s"/${orgKey}/${serviceKey}").get().map { response =>
-        response.json.as[JsArray].value.map { v => v.as[Service] }.headOption
-      }
-    }
-
   }
 
   case class VersionsResource(url: String) {
 
-    def findByOrganizationKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String): Future[Option[Version]] = {
-      wsUrl(url).withQueryString("org" -> orgKey, "service" -> serviceKey, "version" -> version).get().map { response =>
-        response.json.as[JsArray].value.map { v => v.as[Version] }.headOption
+    def findByOrganizationKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String): Future[Version] = {
+      wsUrl(url + s"/${orgKey}/${serviceKey}/${version}").get().map { response =>
+        response.json.as[Version]
       }
     }
 
-    def findAllByOrganizationKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 50, offset: Int = 50): Future[Seq[Version]] = {
-      wsUrl(url).withQueryString("org" -> orgKey, "service" -> serviceKey, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
+    def findAllByOrganizationKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 50, offset: Int = 0): Future[Seq[Version]] = {
+      wsUrl(url + s"/${orgKey}/${serviceKey}").withQueryString("limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Version] }
       }
     }

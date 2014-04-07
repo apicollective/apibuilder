@@ -12,7 +12,7 @@
       <tbody>
         @services.items.map { service =>
          <tr>
-           <td><a href="@routes.Services.latest(tpl.org.get.key, service.key)">@service.name</a></td>
+           <td><a href="@routes.Versions.latest(tpl.org.get.key, service.key)">@service.name</a></td>
            <td>@lib.Text.truncate(service.description.getOrElse(""))</td>
          </tr>
        }

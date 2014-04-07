@@ -2,7 +2,7 @@ package controllers
 
 import models.MainTemplate
 import Apidoc.Version
-import core.{ Organization, Service }
+import core.{ Organization, Service, User }
 import play.api._
 import play.api.mvc._
 import scala.concurrent.Await
@@ -12,21 +12,32 @@ object Versions extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, serviceKey: String, version: String) = Authenticated.async { request =>
+  def latest(orgKey: String, serviceKey: String) = Authenticated.async { request =>
     for {
-      version <- Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, version)
+      org <- Apidoc.organizations.findByKey(orgKey)
+      versions <- Apidoc.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 1)
     } yield {
-      version match {
+      versions.headOption match {
         case None => {
           Redirect("/").flashing(
-            "warning" -> "Service version does not exist"
+            "warning" -> "Service does not have any versions"
           )
         }
 
         case Some(version: Version) => {
-          Ok(version.json.getOrElse("Missing json"))
+          val v = Await.result(Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, version.version), 100 millis)
+          Ok("v: " + v.version)
         }
       }
+    }
+  }
+
+  def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { request =>
+    for {
+      org <- Apidoc.organizations.findByKey(orgKey)
+      version <- Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+    } yield {
+      Ok("v: " + version.toString)
     }
   }
 
