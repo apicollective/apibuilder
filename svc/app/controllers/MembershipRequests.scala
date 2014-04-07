@@ -1,8 +1,10 @@
 package controllers
 
-import db.{ MembershipRequest, MembershipRequestJson }
+import core.{ Organization, User }
+import db.{ MembershipRequest, MembershipRequestJson, OrganizationDao, UserDao }
 import play.api.mvc._
 import play.api.libs.json.Json
+import java.util.UUID
 
 object MembershipRequests extends Controller {
 
@@ -16,7 +18,24 @@ object MembershipRequests extends Controller {
     Ok(Json.toJson(requests.map(_.json)))
   }
 
-  def post() = TODO
+  def post() = Authenticated(parse.json) { request =>
+    val role = (request.body \ "role").as[String]
+    val organizationGuid = (request.body \ "organization_guid").as[String]
+    val userGuid = (request.body \ "user_guid").as[String]
+
+    OrganizationDao.findByUserAndGuid(request.user, UUID.fromString(organizationGuid)) match {
+      case None => NotFound("Organization not found or you are not authorized to create membership requests for this org")
+      case Some(org: Organization) => {
+        UserDao.findByGuid(userGuid) match {
+          case None => NotFound("User not found")
+          case Some(user: User) => {
+            val mr = MembershipRequest.upsert(request.user, org, user, role)
+            Created(Json.toJson(mr.json))
+          }
+        }
+      }
+    }
+  }
 
   def putGuidApprove(guid: String) = Authenticated { request =>
     MembershipRequest.findAll(guid = Some(guid), can_be_reviewed_by = Some(request.user), limit = 1).headOption match {
