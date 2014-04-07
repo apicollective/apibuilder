@@ -21,12 +21,13 @@ class VersionSpec extends FlatSpec {
 
   it should "findByServiceAndVersion" in {
     val version = VersionDao.create(Util.createdBy, service, "1.0.1", "{}")
-    assertEquals(version, VersionDao.findByServiceAndVersion(service, version.version).get)
+    assertEquals(Version(version.guid, version.version),
+                 VersionDao.findByServiceAndVersion(service, version.version).get)
   }
 
   it should "soft delete" in {
     val version1 = VersionDao.create(Util.createdBy, service, "1.0.2", "{}")
-    version1.softDelete(Util.createdBy)
+    VersionDao.softDelete(Util.createdBy, Version(guid = version1.guid, version = version1.version))
 
     val version2 = VersionDao.create(Util.createdBy, service, "1.0.2", "{}")
     assertEquals(version1, version2.copy(guid = version1.guid))

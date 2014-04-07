@@ -1,0 +1,23 @@
+  <h2>Your Role(s)</h2>
+  @role.label
+
+  @if(!requests.isEmpty) {
+    <h2>Membership requests pending approval</h2>
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @requests.map { request =>
+         <tr>
+           <td>@request.org.name</td>
+           <td>@request.user.name.getOrElse("")</td>
+           <td>@request.user.email</td>
+           <td>@request.role</td>
+           <td>
+             <a href="@routes.MembershipsController.approve(request.guid.toString)">Approve</a> |
+             <a href="@routes.MembershipsController.decline(request.guid.toString)">Decline</a>
+           </td>
+         </tr>
+       }
+      </tbody>
+    </table>
+  }
+

@@ -1,0 +1,36 @@
+@(tpl: models.MainTemplate,
+  org: core.Organization,
+  services: lib.PaginatedCollection[core.Service])
+
+@main(tpl) {
+
+  @if(services.isEmpty) {
+    <em>There are no services defined</em>
+
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @services.items.map { service =>
+         <tr>
+           <td><a href="@routes.Services.latest(tpl.org.get.key, service.key)">@service.name</a></td>
+           <td>@lib.Text.truncate(service.description.getOrElse(""))</td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+    @tpl.org.map { org =>
+      @if(services.hasPrevious || services.hasNext) {
+        <ul class="pager">
+          @if(services.hasPrevious) {
+            <li><a href="@routes.Organizations.show(org.key, services.page - 1)">Previous</a></li>
+          }
+          @if(services.hasNext) {
+            <li><a href="@routes.Organizations.show(org.key, services.page + 1)">Next</a></li>
+          }
+        </ul>
+      }
+    }
+  }
+
+}

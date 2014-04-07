@@ -7,6 +7,7 @@ GET        /organizations              controllers.Organizations.get(guid: Optio
 POST       /organizations              controllers.Organizations.post()
 GET        /:org                       controllers.Services.get(org: String, name: Option[String], key: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 DELETE     /:org/:service              controllers.Services.deleteService(org: String, service: String)
+GET        /:org/:service              controllers.Versions.getService(org: String, service: String, limit: Int ?= 50, offset: Int ?= 0)
 GET        /:org/:service/:version     controllers.Versions.getServiceVersion(org: String, service: String, version: String)
 PUT        /:org/:service/:version     controllers.Versions.putServiceVersion(org: String, service: String, version: String)
 DELETE     /:org/:service/:version     controllers.Versions.deleteServiceVersion(org: String, service: String, version: String)

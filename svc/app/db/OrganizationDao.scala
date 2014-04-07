@@ -65,13 +65,15 @@ object OrganizationDao {
       query.guid.map { v => "and guid = {guid}::uuid" },
       Some("and guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"),
       query.key.map { v => "and key = lower(trim({key}))" },
+      query.name.map { v => "and lower(name) = lower(trim({name}))" },
       Some(s"order by lower(name) limit ${query.limit} offset ${query.offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
       query.guid.map { v => 'guid -> toParameterValue(v) },
       Some('user_guid -> toParameterValue(query.user_guid)),
-      query.key.map { v => 'key -> toParameterValue(v) }
+      query.key.map { v => 'key -> toParameterValue(v) },
+      query.name.map { v => 'name -> toParameterValue(v) }
     ).flatten
 
     DB.withConnection { implicit c =>

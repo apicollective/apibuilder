@@ -18,4 +18,8 @@ case class PaginatedCollection[T](page: Int, allItems: Seq[T], limit: Int = Pagi
     allItems.length > limit
   }
 
+  lazy val isEmpty: Boolean = {
+    allItems.isEmpty
+  }
+
 }

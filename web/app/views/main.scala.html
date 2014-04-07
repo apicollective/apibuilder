@@ -26,7 +26,7 @@
         <div class="navbar-collapse collapse">
           @metadata.org.map { org =>
             <ul class="nav navbar-nav">
-              <li><a href="@routes.Organizations.show(org.key)">@@org.name</a></li>
+              <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
             </ul>
           }
           @metadata.user.map { user =>

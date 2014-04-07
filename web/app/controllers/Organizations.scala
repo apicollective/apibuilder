@@ -1,5 +1,6 @@
 package controllers
 
+import lib.PaginatedCollection
 import models.MainTemplate
 import core.Organization
 import play.api._
@@ -17,6 +18,8 @@ object Organizations extends Controller {
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
     } yield {
+      println("orgKey: " + orgKey)
+      println("ORG: " + org)
       org match {
         case None => {
           Redirect("/").flashing(
@@ -28,8 +31,12 @@ object Organizations extends Controller {
           // TODO
           // role: UserRole,
           // requests: Seq[db.MembershipRequest])
-          val services = Await.result(Apidoc.services.findAllByOrganization(org), 100 millis)
-          Ok(org.name + " services: " + services.length)
+          val services = Await.result(Apidoc.services.findAllByOrganizationKey(org.key), 100 millis)
+          val collection = PaginatedCollection(page, services)
+          val tpl = MainTemplate(title = org.name,
+                                 org = Some(org),
+                                 user = Some(request.user))
+          Ok(views.html.organizations.show(tpl, org, collection))
         }
       }
     }

@@ -123,8 +123,21 @@
 
                 {
                     "method": "GET",
+                    "path": "/:service",
+                    "description": "Returns summary information about all of the versions for this service, ordered with most recent version first.",
+                    "parameters": [
+                        { "name": "org", "type": "string", "description": "Organization key." },
+                        { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },
+                        { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "response": "version"
+                },
+
+                {
+                    "method": "GET",
                     "path": "/:service/:version",
-                    "description": "Returns detailed information about this service version.",
+                    "description": "Returns detailed information about this service version, including the full json description of the version.",
                     "parameters": [
                         { "name": "org", "type": "string", "description": "Organization key." },
                         { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },

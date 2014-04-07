@@ -12,7 +12,7 @@ GET     /logout                                                   controllers.Lo
 GET     /logged_out                                               controllers.LogoutController.logged_out
 
 GET     /org/create                                               controllers.Organizations.create
-# POST    /org/createPost                                           controllers.Organizations.createPost
+POST    /org/createPost                                           controllers.Organizations.createPost
 
 POST    /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 
@@ -23,9 +23,10 @@ GET     /:orgKey                                                       controlle
 # GET     /:orgKey/docs                                                  controllers.ServiceController.redirect(orgKey: String)
 # GET     /:orgKey/docs/:serviceKey                                      controllers.ServiceController.redirectToLatestVersion(orgKey: String, serviceKey: String)
 GET     /:orgKey/docs/:serviceKey/latest                               controllers.Services.latest(orgKey: String, serviceKey: String)
-# GET     /:orgKey/docs/:serviceKey/:version                             controllers.ServiceController.show(orgKey: String, serviceKey: String, version: String)
-# GET     /:orgKey/docs/:serviceKey/:version/:resourceKey                controllers.ServiceController.resource(orgKey: String, serviceKey: String, version: String, resourceKey: String)
+GET     /:orgKey/docs/:serviceKey/:version/:resourceKey                controllers.Services.resource(orgKey: String, serviceKey: String, version: String, resourceKey: String)
 # GET     /:orgKey/docs/:serviceKey/:version/:resourceKey/:opKey         controllers.ServiceController.operation(orgKey: String, serviceKey: String, version: String, resourceKey: String, opKey: String)
+
+GET     /:orgKey/docs/:serviceKey/:version                             controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                             controllers.Assets.at(path="/public", file)
