@@ -16,7 +16,7 @@ object Versions extends Controller {
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
       service <- Apidoc.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
-      versions <- Apidoc.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 1)
+      versions <- Apidoc.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 10)
     } yield {
       versions.headOption match {
         case None => {
@@ -27,10 +27,14 @@ object Versions extends Controller {
 
         case Some(version: Version) => {
           val v = Await.result(Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, version.version), 100 millis)
+          val sd = ServiceDescription(v.json.get)
           val tpl = MainTemplate(service.get.name + " " + v.version,
                                  user = Some(request.user),
-                                 org = Some(org.get))
-          val sd = ServiceDescription(v.json.get)
+                                 org = Some(org.get),
+                                 service = Some(service.get),
+                                 version = Some(v.version),
+                                 allServiceVersions = versions.map(_.version),
+                                 serviceDescription = Some(sd))
           Ok(views.html.versions.show(tpl, sd))
         }
       }
@@ -41,9 +45,18 @@ object Versions extends Controller {
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
       service <- Apidoc.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
+      versions <- Apidoc.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 10)
       version <- Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
-      Ok("v: " + version.toString)
+      val sd = ServiceDescription(version.json.get)
+      val tpl = MainTemplate(service.get.name + " " + version.version,
+                             user = Some(request.user),
+                             org = Some(org.get),
+                             service = Some(service.get),
+                             version = Some(version.version),
+                             allServiceVersions = versions.map(_.version),
+                             serviceDescription = Some(sd))
+      Ok(views.html.versions.show(tpl, sd))
     }
   }
 
