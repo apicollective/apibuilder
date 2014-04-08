@@ -130,28 +130,28 @@
                         { "name": "role", "type": "string", "description": "Limit to memberships with this role" }
                     ],
                     "response": "membership_request"
-                },
+                }
 
-                {
-                    "path": "/:guid/approve",
-                    "method": "PUT",
-                    "description": "Approves this membership request.",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "description": "The membership request guid" }
-                    ],
-                    "response_code": 204
-                },
+            ]
+        },
 
-                {
-                    "path": "/:guid/decline",
-                    "method": "PUT",
-                    "description": "Declines this membership request.",
+        "membership_request_reviews": {
+            "description": "A membership request review allows a user to either accept or decline a membership request.",
+            "fields": [
+                { "name": "action", "type": "string", "description": "'accept' or 'decline'", "example": "accept" },
+                { "name": "membership_request_guid", "type": "string", "references": "membership_requests.guid" }
+            ],
+
+            "operations": [
+                 {
+                    "method": "POST",
+                    "description": "Create a membership request.",
                     "parameters": [
-                        { "name": "guid", "type": "string", "description": "The membership request guid" }
+                        { "name": "action", "type": "string" },
+                        { "name": "membership_request_guid", "type": "string" }
                     ],
                     "response_code": 204
                 }
-
             ]
         },
 
