@@ -9,18 +9,14 @@ import java.util.UUID
 
 case class OrganizationLog(guid: String, organization_guid: String, message: String)
 
-case class OrganizationLogQuery(organization_guid: String,
-                                limit: Int = 50,
-                                offset: Int = 0)
-
 /**
- * Journal of changes to organization memberships
+ * Journal of changes to organizations
  */
 object OrganizationLog {
 
   private val BaseQuery = """
     select guid::varchar, organization_guid::varchar, message
-      from membership_logs
+      from organization_logs
      where true
   """
 
@@ -31,7 +27,7 @@ object OrganizationLog {
 
     DB.withConnection { implicit c =>
       SQL("""
-          insert into membership_logs
+          insert into organization_logs
           (guid, organization_guid, message, created_by_guid)
           values
           ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
@@ -45,18 +41,21 @@ object OrganizationLog {
   }
 
   def findAllForOrganization(org: Organization): Seq[OrganizationLog] = {
-    findAll(OrganizationLogQuery(organization_guid = org.guid))
+    findAll(organization_guid = org.guid)
   }
 
-  def findAll(query: OrganizationLogQuery): Seq[OrganizationLog] = {
+
+  def findAll(organization_guid: String,
+              limit: Int = 50,
+              offset: Int = 0): Seq[OrganizationLog] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       Some("and organization_guid = {organization_guid}::uuid"),
-      Some(s"order by created_at desc limit ${query.limit} offset ${query.offset}")
+      Some(s"order by created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      Some('organization_guid -> toParameterValue(query.organization_guid))
+      Some('organization_guid -> toParameterValue(organization_guid))
     ).flatten
 
     DB.withConnection { implicit c =>

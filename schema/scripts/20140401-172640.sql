@@ -97,20 +97,20 @@ comment on column membership_requests.role is '
   The role that this user is requesting in this organization.
 ';
 
-create table membership_logs (
+create table organization_logs (
   guid                                uuid primary key,
   organization_guid                   uuid not null references organizations,
   message                             text not null
 );
 
-select schema_evolution_manager.create_basic_created_audit_data('public', 'membership_logs');
-select schema_evolution_manager.create_prevent_update_trigger('public', 'membership_logs');
-select schema_evolution_manager.create_prevent_delete_trigger('public', 'membership_logs');
+select schema_evolution_manager.create_basic_created_audit_data('public', 'organization_logs');
+select schema_evolution_manager.create_prevent_update_trigger('public', 'organization_logs');
+select schema_evolution_manager.create_prevent_delete_trigger('public', 'organization_logs');
 
-create index on membership_logs(organization_guid);
+create index on organization_logs(organization_guid);
 
-comment on table membership_logs is '
-  An event log related to membership decisions.
+comment on table organization_logs is '
+  An event log related to changes made to an organization.
 ';
 
 create table services (
