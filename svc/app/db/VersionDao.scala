@@ -1,6 +1,6 @@
 package db
 
-import lib.{ Constants, VersionSortKey }
+import lib.VersionSortKey
 import anorm._
 import play.api.db._
 import play.api.libs.json._

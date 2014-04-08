@@ -4,6 +4,6 @@ import java.util.UUID
 
 object Constants {
 
-  val DefaultUserGuid = "c1712020-9831-0131-7605-64ce8f423758"
+  val DefaultUserGuid = "f3973f60-be9f-11e3-b1b6-0800200c9a66"
 
 }

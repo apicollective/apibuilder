@@ -1,6 +1,6 @@
 package db
 
-import lib.{ Constants, UrlKey }
+import lib.UrlKey
 import anorm._
 import play.api.db._
 import play.api.libs.json._

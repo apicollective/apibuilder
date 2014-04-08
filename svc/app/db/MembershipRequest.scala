@@ -1,6 +1,5 @@
 package db
 
-import lib.Constants
 import anorm._
 import play.api.db._
 import play.api.Play.current
