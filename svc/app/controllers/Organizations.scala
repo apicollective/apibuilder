@@ -1,19 +1,18 @@
 package controllers
 
-import core.{ Organization, OrganizationQuery }
-import db.OrganizationDao
+import db.{ Organization, OrganizationDao }
 import play.api.mvc._
 import play.api.libs.json.Json
 
 object Organizations extends Controller {
 
   def get(guid: Option[String], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val orgs = OrganizationDao.findAll(OrganizationQuery(user_guid = request.user.guid,
-                                                         guid = guid,
-                                                         key = key,
-                                                         name = name,
-                                                         limit = limit,
-                                                         offset = offset))
+    val orgs = OrganizationDao.findAll(user_guid = request.user.guid,
+                                       guid = guid,
+                                       key = key,
+                                       name = name,
+                                       limit = limit,
+                                       offset = offset)
     Ok(Json.toJson(orgs))
   }
 

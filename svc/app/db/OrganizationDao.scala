@@ -1,11 +1,19 @@
 package db
 
-import core.{Organization, OrganizationQuery, Role, User}
+import core.{Role, User}
 import lib.UrlKey
 import anorm._
 import play.api.db._
 import play.api.Play.current
+import play.api.libs.json._
 import java.util.UUID
+
+object Organization {
+  implicit val organizationWrites = Json.writes[Organization]
+}
+
+case class Organization(guid: String, name: String, key: String)
+
 
 object OrganizationDao {
 
@@ -52,28 +60,33 @@ object OrganizationDao {
   }
 
   def findByUserAndKey(user: User, key: String): Option[Organization] = {
-    findAll(OrganizationQuery(user_guid = user.guid, key = Some(key), limit = 1)).headOption
+    findAll(user_guid = user.guid, key = Some(key), limit = 1).headOption
   }
 
   def findByUserAndGuid(user: User, guid: UUID): Option[Organization] = {
-    findAll(OrganizationQuery(user_guid = user.guid, guid = Some(guid.toString), limit = 1)).headOption
+    findAll(user_guid = user.guid, guid = Some(guid.toString), limit = 1).headOption
   }
 
-  def findAll(query: OrganizationQuery): Seq[Organization] = {
+  def findAll(user_guid: String,
+              guid: Option[String] = None,
+              name: Option[String] = None,
+              key: Option[String] = None,
+              limit: Int = 50,
+              offset: Int = 0): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      query.guid.map { v => "and guid = {guid}::uuid" },
+      guid.map { v => "and guid = {guid}::uuid" },
       Some("and guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"),
-      query.key.map { v => "and key = lower(trim({key}))" },
-      query.name.map { v => "and lower(name) = lower(trim({name}))" },
-      Some(s"order by lower(name) limit ${query.limit} offset ${query.offset}")
+      key.map { v => "and key = lower(trim({key}))" },
+      name.map { v => "and lower(name) = lower(trim({name}))" },
+      Some(s"order by lower(name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      query.guid.map { v => 'guid -> toParameterValue(v) },
-      Some('user_guid -> toParameterValue(query.user_guid)),
-      query.key.map { v => 'key -> toParameterValue(v) },
-      query.name.map { v => 'name -> toParameterValue(v) }
+      guid.map { v => 'guid -> toParameterValue(v) },
+      Some('user_guid -> toParameterValue(user_guid)),
+      key.map { v => 'key -> toParameterValue(v) },
+      name.map { v => 'name -> toParameterValue(v) }
     ).flatten
 
     DB.withConnection { implicit c =>

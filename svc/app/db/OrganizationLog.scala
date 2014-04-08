@@ -1,6 +1,6 @@
 package db
 
-import core.{ Organization, User }
+import core.User
 import lib.Constants
 import anorm._
 import play.api.db._

@@ -1,7 +1,7 @@
 package controllers
 
-import core.{ Organization, User }
-import db.{ MembershipRequest, MembershipRequestJson, OrganizationDao, UserDao }
+import core.User
+import db.{ MembershipRequest, MembershipRequestJson, Organization, OrganizationDao, UserDao }
 import play.api.mvc._
 import play.api.libs.json.Json
 import java.util.UUID
