@@ -41,7 +41,7 @@
           <tbody>
            @resource.operations.zipWithIndex.map { case(op, index) =>
              <tr>
-               <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.name)-@index').toggle()">@op.method @service.basePath@resource.path</a></td>
+               <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.name)-@index').toggle()">@op.method @service.basePath@resource.path@op.path.getOrElse("")</a></td>
                <td>@op.description.getOrElse("")</td>
              </tr>
              <tr id="operation-@lib.UrlKey.generate(resource.name)-@index" style="display:none">
