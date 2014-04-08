@@ -30,11 +30,9 @@ case class ServiceDescriptionValidator(sd: ServiceDescription) {
 
   private def validateRequiredFields(): Seq[String] = {
     RequiredFields.flatMap { field =>
-      val value = (sd.json \ field).asOpt[JsObject]
-      if (value.isEmpty) {
-        Some(s"Missing field named[$field]")
-      } else {
-        None
+      (sd.json \ field).asOpt[JsValue] match {
+        case None => Some(s"Missing field named[$field]")
+        case Some(_) => None
       }
     }
   }
