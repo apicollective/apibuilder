@@ -1,7 +1,7 @@
 package controllers
 
 import core.{ Organization, ServiceDescription, ServiceDescriptionValidator, User }
-import db.{ Version, OrganizationDao, ServiceDao, VersionDao, VersionQuery }
+import db.{ Version, OrganizationDao, ServiceDao, VersionDao }
 import play.api.mvc._
 import play.api.libs.json.Json
 
@@ -10,9 +10,9 @@ object Versions extends Controller {
   def getService(org: String, service: String, limit: Int = 50, offset: Int = 0) = Authenticated { request =>
     val versions = OrganizationDao.findByUserAndKey(request.user, org).flatMap { org =>
       ServiceDao.findByOrganizationAndKey(org, service).map { service =>
-        VersionDao.findAll(VersionQuery(service_guid = service.guid,
-                                        limit = limit,
-                                        offset = offset))
+        VersionDao.findAll(service_guid = service.guid,
+                           limit = limit,
+                           offset = offset)
       }
     }
     Ok(Json.toJson(versions))

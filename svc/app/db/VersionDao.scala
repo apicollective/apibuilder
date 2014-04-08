@@ -24,12 +24,6 @@ object DetailedVersion {
 
 }
 
-case class VersionQuery(service_guid: String,
-                        guid: Option[String] = None,
-                        version: Option[String] = None,
-                        limit: Int = 50,
-                        offset: Int = 0)
-
 object VersionDao {
 
   implicit val versionReads = Json.reads[Version]
@@ -86,9 +80,9 @@ object VersionDao {
   }
 
   def findByServiceAndVersion(service: Service, version: String): Option[Version] = {
-    VersionDao.findAll(VersionQuery(service_guid = service.guid,
-                                    version = Some(version),
-                                    limit = 1)).headOption
+    VersionDao.findAll(service_guid = service.guid,
+                       version = Some(version),
+                       limit = 1).headOption
   }
 
   def getDetails(version: Version): Option[DetailedVersion] = {
@@ -101,19 +95,23 @@ object VersionDao {
     }
   }
 
-  def findAll(query: VersionQuery): Seq[Version] = {
+  def findAll(service_guid: String,
+              guid: Option[String] = None,
+              version: Option[String] = None,
+              limit: Int = 50,
+              offset: Int = 0): Seq[Version] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      query.guid.map { v => "and versions.guid = {guid}::uuid" },
+      guid.map { v => "and versions.guid = {guid}::uuid" },
       Some("and versions.service_guid = {service_guid}::uuid"),
-      query.version.map { v => "and versions.version = {version}" },
-      Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${query.limit} offset ${query.offset}")
+      version.map { v => "and versions.version = {version}" },
+      Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      query.guid.map { v => 'guid -> toParameterValue(v) },
-      Some('service_guid -> toParameterValue(query.service_guid)),
-      query.version.map { v => 'version -> toParameterValue(v) }
+      guid.map { v => 'guid -> toParameterValue(v) },
+      Some('service_guid -> toParameterValue(service_guid)),
+      version.map { v => 'version -> toParameterValue(v) }
     ).flatten
 
     DB.withConnection { implicit c =>
