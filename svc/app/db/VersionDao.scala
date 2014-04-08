@@ -1,6 +1,6 @@
 package db
 
-import core.{ Service, User }
+import core.User
 import lib.{ Constants, VersionSortKey }
 import anorm._
 import play.api.db._
@@ -12,7 +12,6 @@ case class Version(guid: String, version: String)
 
 object Version {
 
-  implicit val versionReads = Json.reads[Version]
   implicit val versionWrites = Json.writes[Version]
 
 }
@@ -21,7 +20,6 @@ case class DetailedVersion(guid: String, version: String, json: String)
 
 object DetailedVersion {
 
-  implicit val versionReads = Json.reads[DetailedVersion]
   implicit val versionWrites = Json.writes[DetailedVersion]
 
 }

@@ -3,7 +3,6 @@ package core
 import play.api.libs.json._
 
 object User {
-  implicit val userReads = Json.reads[User]
   implicit val userWrites = Json.writes[User]
 }
 
@@ -19,7 +18,6 @@ case class UserQuery(guid: Option[String] = None,
 }
 
 object Organization {
-  implicit val organizationReads = Json.reads[Organization]
   implicit val organizationWrites = Json.writes[Organization]
 }
 
@@ -35,16 +33,3 @@ case class OrganizationQuery(user_guid: String,
 
 }
 
-object Service {
-  implicit val serviceReads = Json.reads[Service]
-  implicit val serviceWrites = Json.writes[Service]
-}
-
-case class Service(guid: String, name: String, key: String, description: Option[String])
-
-case class ServiceQuery(org_key: String,
-                        guid: Option[String] = None,
-                        name: Option[String] = None,
-                        key: Option[String] = None,
-                        limit: Int = 50,
-                        offset: Int = 0)
