@@ -20,9 +20,15 @@ object LoginController extends Controller {
     Redirect(routes.LoginController.index())
   }
 
-  def index = Action {
-    Ok(views.html.login())
+  def index = Action.async {
+    for {
+      user <- Apidoc.users.findByEmail("admin@apidoc.com")
+    } yield {
+      Redirect("/").withSession { "user_guid" -> user.get.guid }
+    }
+
   }
+
 
   def indexPost = Action.async { implicit request =>
     Form(single(

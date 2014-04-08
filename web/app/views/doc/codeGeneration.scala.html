@@ -1,0 +1,81 @@
+@doc.main("Code Generation") {
+
+  <p>
+
+    At a high level, Apidoc is designed and built to work 100% on its
+    own with zero dependencies. That is - if you like the quality of
+    the documentation, you can simply use Apidoc for hosting your
+    documentation.
+
+  </p>
+
+  <p>
+
+    Over time, we've seen interest in exploring ways of taking the
+    schema design provided through api.json and linking it further
+    into the development process. A lot of pragmatic ways to do this
+    is to use code generation in various forms. We are generally
+    very cautious about code generation and an in each area we explore
+    the opportunities and tradeoffs for code generation. In some case,
+    we have found the code generation to be particularly useful in
+    terms of ensuring that the services we create actually conform
+    to the specification or in consuming services that are described
+    by api.json.
+
+  </p>
+
+  <p>
+
+    Our general philosophy on code generation is to focus generally
+    on these benefits:
+
+    <ol>
+
+      <li> Scaffolding: One time code generation to speed up initial
+      development. Also a huge benefit for learning how to use
+      services.</li>
+
+      <li> Quality: Can we help ensure services meet their specifications?</li>
+
+      <li> Reduction of dependencies: If we code generate, can we leverage
+      the native libraries already present in your application rather than
+      introducing new dependencies?</li>
+
+    </ol>
+
+  </p>
+
+  <table class="table table-hover table-condensed">
+    <tmain>
+       <tr>
+         <th>Status</th>
+         <th>Platform</th>
+         <th>Notes</th>
+       </tr>
+    </tmain>
+
+    <tbody>
+
+       <tr>
+         <td>In progress</td>
+         <td>Play Framework 2.2 Scala</td>
+         <td>We are exploring generating the play routes file directly from api.json. The primary benefit here is that the routes file is standalone in Play. By code generating the routes file, the compiler will tell you if you are missing any operations defined by api.json. While this does not provide full testing (e.g. does not validate the responses), we have found it very pragmatic to write api.json first, then generate the routes and then can rely on the compiler to inform us when we have implements all operations.</td>
+       </tr>
+
+       <tr>
+         <td>Proposal</td>
+         <td>Play Client Library</td>
+         <td>Play Framework 2.2 offers a very rich <a href="http://www.playframework.com/documentation/2.2.x/ScalaWS">WS API</a>. We are exploring the ability to code generate a client library that will integrate natively with the Play WS API to make it simpler to consume api.json web services.</td>
+       </tr>
+
+       <tr>
+         <td>Proposal</td>
+         <td>Ruby Client Library</td>
+         <td>We are also exploring code generation of a pure ruby library to consume api.json web services. The idea is to be able to download a complete client that then can be immediately published as a gem. At Gilt, we have an initial solid example of a client library to an api.json service published as a gem - we are working on automating this process.</td>
+       </tr>
+
+    </tbody>
+  </table>
+
+}
+

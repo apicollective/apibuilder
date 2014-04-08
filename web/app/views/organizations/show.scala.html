@@ -4,6 +4,10 @@
 
 @main(tpl) {
 
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Versions.create(org.key)">Add service</a>
+  </div>
+
   @if(services.isEmpty) {
     <em>There are no services defined</em>
 

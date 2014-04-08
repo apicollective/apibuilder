@@ -1,0 +1,87 @@
+@doc.main("api.json") {
+
+  <h2>Schema declaration</h2>
+
+  <p>
+    A schema is represented in JSON as a JSON object of the form:
+
+    <pre>
+    {
+      "base_url": <em>baseUrl</em>,
+      "name": <em>name</em>,
+      "resources": <em>resources</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>baseUrl</em> specifies the base URL where this service is hosted.</li>
+      <li><em>name</em> specifies the human readable name of this service - used for display and as the basis for generating a unique key for URL</li>
+      <li><em>resources</em> a JSON array defining all of the resources in this API.</li>
+    </ul>
+
+    the following optional fields ae also supported:
+    <ul>
+      <li><em>basePath</em> specifies a url path for where to find this resource. All resources must be available at <em>base_url</em> + <em>base_path<em> + <em>resource_path</em> (resource_path is discussed below)</li>
+      <li><em>description</em> optional longer description for what this service provides.</li>
+      <li><em>version</em> version of the apidoc specification that this document conforms to. If not specified, the latest version of the specification is assumed.</li>
+    </ul>
+
+  </p>
+
+  <h2>Resource declaration</h2>
+
+  <p>
+    A resource is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "name" => {
+        "path": <em>path (optional)</em>,
+        "description": <em>description (optional)</em>,
+        "fields": <em>JSON Array of Field</em>,
+        "operations": <em>JSON Array of Operation</em>
+      }
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>name</em> the name of the resource. By convention plural, lowercase with underscores.</li>
+      <li><em>path</em> optional path for the location of this resource. Defaults to the name of the resource</li>
+      <li><em>description</em> optional longer description for what this service provides.</li>
+      <li><em>fields</em> one or more fields is required. See <a href="#fields">Fields</a> below</li>
+      <li><em>operations</em> optional - each operation specifies a specific action that can be performed. See <a href="#operations">Operations</a> below</li>
+    </ul>
+  </p>
+
+  <a name="field"></a>
+  <h2>Field declaration</h2>
+
+  <p>
+    A field is represented as a JSON object of the form:
+
+    <pre>
+    { "name": <em>name</em>,
+      "type": <em>type</em>,
+      "description": <em>description (optional)</em>,
+      "required": <em>required (optional, true by default)</em>,
+      "references": <em>references (optional)</em>,
+      "example": <em>example (optional)</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>name</em> the name of this field.</li>
+      <li><em>type</em> the datatype of this field. This is an enumeration. Acceptable values are: string, integer, long, boolean.</li>
+      <li><em>description</em> optional longer description for this field.</li>
+      <li><em>required</em> boolean: true|false. By default all fields are considered required. To make a field optional, set "required" to false</li>
+      <li><em>references</em> optional - if this field references another resource, include that reference here in the format <em>resource.field</em> For example, if you have a <code>user_guid</code> field that references the <code>guid</code> field of the <code>users</code> resource, you can include a reference of <code>users.guid</code>. The references field is included only to facilitate documentation, providing the ability to link resources together</li>
+      <li><em>example</em> optional - an example value for this field</li>
+    </ul>
+
+  </p>
+
+}
+

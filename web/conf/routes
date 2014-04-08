@@ -11,6 +11,13 @@ GET     /login/callback                                           controllers.Lo
 GET     /logout                                                   controllers.LogoutController.logout
 GET     /logged_out                                               controllers.LogoutController.logged_out
 
+GET     /doc                                                      controllers.DocController.redirect
+GET     /doc/                                                     controllers.DocController.index
+GET     /doc/apiJson                                              controllers.DocController.apiJson
+GET     /doc/examples                                             controllers.DocController.examples
+GET     /doc/codeGeneration                                       controllers.DocController.codeGeneration
+GET     /doc/todo                                                 controllers.DocController.todo
+
 GET     /org/create                                               controllers.Organizations.create
 POST    /org/createPost                                           controllers.Organizations.createPost
 
@@ -18,6 +25,8 @@ POST    /:orgKey/memberships/request                              controllers.Or
 
 GET     /:orgKey                                                       controllers.Organizations.show(orgKey: String, page: Int ?= 0)
 # GET     /:orgKey/register                                              controllers.Organizations.register(orgKey: String)
+
+GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String)
 
 GET     /:orgKey/docs/:serviceKey/latest                               controllers.Versions.latest(orgKey: String, serviceKey: String)
 GET     /:orgKey/docs/:serviceKey/:version                             controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
