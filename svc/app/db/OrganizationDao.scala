@@ -1,6 +1,6 @@
 package db
 
-import core.{Role, User}
+import core.Role
 import lib.UrlKey
 import anorm._
 import play.api.db._

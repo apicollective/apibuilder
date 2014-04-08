@@ -1,16 +1,15 @@
 package controllers
 
-import core.{ User, UserQuery }
-import db.UserDao
+import db.{ User, UserDao }
 import play.api.mvc._
 import play.api.libs.json.Json
 
 object Users extends Controller {
 
   def get(guid: Option[String], email: Option[String], token: Option[String]) = Authenticated { request =>
-    val users = UserDao.findAll(UserQuery(guid = guid,
-                                          email = email,
-                                          token = token))
+    val users = UserDao.findAll(guid = guid,
+                                email = email,
+                                token = token)
     Ok(Json.toJson(users))
   }
 

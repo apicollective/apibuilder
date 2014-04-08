@@ -1,7 +1,7 @@
 package controllers
 
-import core.{ ServiceDescription, ServiceDescriptionValidator, User }
-import db.{ Organization, OrganizationDao, ServiceDao, Version, VersionDao }
+import core.{ ServiceDescription, ServiceDescriptionValidator }
+import db.{ Organization, OrganizationDao, ServiceDao, User, Version, VersionDao }
 import play.api.mvc._
 import play.api.libs.json.Json
 

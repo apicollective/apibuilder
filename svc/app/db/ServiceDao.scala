@@ -1,6 +1,5 @@
 package db
 
-import core.User
 import lib.{ Constants, UrlKey }
 import anorm._
 import play.api.db._

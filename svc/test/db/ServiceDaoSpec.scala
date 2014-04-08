@@ -1,6 +1,5 @@
 package db
 
-import core.{ Service, ServiceQuery }
 import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID
@@ -27,7 +26,7 @@ class ServiceDaoSpec extends FlatSpec {
 
     val name2 = "Service %s".format(UUID.randomUUID)
     val service2 = upsertService(Some(name2))
-    val names = ServiceDao.findAll(ServiceQuery(org_key = Util.testOrg.key)).map(_.name)
+    val names = ServiceDao.findAll(org_key = Util.testOrg.key).map(_.name)
     assertTrue(names.contains(name))
     assertTrue(names.contains(name2))
   }

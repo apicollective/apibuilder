@@ -1,7 +1,6 @@
 package controllers
 
-import core.User
-import db.UserDao
+import db.{ User, UserDao }
 import play.api.mvc._
 import play.api.mvc.Results.Unauthorized
 import scala.concurrent.Future

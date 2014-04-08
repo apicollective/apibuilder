@@ -1,11 +1,17 @@
 package db
 
-import core.{ User, UserQuery }
 import lib.Constants
 import anorm._
 import play.api.db._
 import play.api.Play.current
+import play.api.libs.json._
 import java.util.UUID
+
+object User {
+  implicit val userWrites = Json.writes[User]
+}
+
+case class User(guid: String, email: String, name: Option[String], imageUrl: Option[String])
 
 object UserDao {
 
@@ -75,25 +81,29 @@ object UserDao {
   }
 
   def findByToken(token: String): Option[User] = {
-    findAll(UserQuery(token = Some(token))).headOption
+    findAll(token = Some(token)).headOption
   }
 
   def findByEmail(email: String): Option[User] = {
-    findAll(UserQuery(email = Some(email))).headOption
+    findAll(email = Some(email)).headOption
   }
 
   def findByGuid(guid: String): Option[User] = {
-    findAll(UserQuery(guid = Some(guid))).headOption
+    findAll(guid = Some(guid)).headOption
   }
 
   def findByGuid(guid: UUID): Option[User] = {
     findByGuid(guid.toString)
   }
 
-  def findAll(query: UserQuery): Seq[User] = {
+  def findAll(guid: Option[String] = None,
+              email: Option[String] = None,
+              token: Option[String] = None): Seq[User] = {
+    require(!guid.isEmpty || !email.isEmpty || !token.isEmpty, "Must have either a guid, email or token")
+
     val sql = Seq(
       Some(BaseQuery.trim),
-      query.guid.map { v =>
+      guid.map { v =>
         try {
           val uuid = UUID.fromString(v)
           "and users.guid = {guid}::uuid"
@@ -102,15 +112,16 @@ object UserDao {
           case e: IllegalArgumentException => "and false"
         }
       },
-      query.guid.map { v => "and users.guid = {guid}::uuid" },
-      query.email.map { v => "and users.email = trim(lower({email}))" },
-      query.token.map { v => "and users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)"}
+      guid.map { v => "and users.guid = {guid}::uuid" },
+      email.map { v => "and users.email = trim(lower({email}))" },
+      token.map { v => "and users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)"},
+      Some("limit 1")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      query.guid.map { v => 'guid -> toParameterValue(v) },
-      query.email.map { v => 'email -> toParameterValue(v) },
-      query.token.map { v => 'token -> toParameterValue(v) }
+      guid.map { v => 'guid -> toParameterValue(v) },
+      email.map { v => 'email -> toParameterValue(v) },
+      token.map { v => 'token -> toParameterValue(v) }
     ).flatten
 
     DB.withConnection { implicit c =>
