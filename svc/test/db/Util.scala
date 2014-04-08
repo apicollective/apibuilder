@@ -5,7 +5,7 @@ import java.util.UUID
 object Util {
   new play.core.StaticApplication(new java.io.File("."))
 
-  lazy val createdBy = UserDao.upsert("otto@gilt.com")
+  lazy val createdBy = UserDao.upsert("admin@apidoc.com")
   lazy val gilt = OrganizationDao.findByUserAndName(createdBy, "gilt").getOrElse {
     OrganizationDao.createWithAdministrator(createdBy, "Gilt")
   }
