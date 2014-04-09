@@ -105,8 +105,12 @@ case class RouteGenerator(json: String) {
       }
     }
 
+    private def underscoreToInitCap(value: String): String = {
+      initCap(value.split("_"))
+    }
+
     private lazy val controllerName: String = {
-      s"controllers.${initCap(resource.name.split("_"))}"
+      s"controllers.${resource.name}"
     }
 
     private val Regexp = """([^0-9a-z])""".r
@@ -122,8 +126,10 @@ case class RouteGenerator(json: String) {
 
     private def parametersWithTypes(params: Seq[Field]): Seq[String] = {
       params.map { param =>
+        val underscore = underscoreToInitCap(param.name)
+        val paramName = underscore.head.toString.toLowerCase + underscore.drop(1)
         Seq(
-          Some(s"${param.name}: ${Util.scalaDataType(param)}"),
+          Some(s"${paramName}: ${Util.scalaDataType(param)}"),
           param.default.map( d => s"?= ${d}" )
         ).flatten.mkString(" ")
       }
