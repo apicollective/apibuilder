@@ -1,4 +1,3 @@
-GET        /_internal_/routes          controllers.Internal.routes
 GET        /_internal_/healthcheck     controllers.Internal.healthcheck
 
 GET        /users                                 controllers.Users.get(guid: Option[String], email: Option[String], token: Option[String])
