@@ -19,8 +19,6 @@ object Organizations extends Controller {
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
     } yield {
-      println("orgKey: " + orgKey)
-      println("ORG: " + org)
       org match {
         case None => {
           Redirect("/").flashing(

@@ -47,7 +47,6 @@ object Users extends Controller {
                                 name = (request.body \ "name").asOpt[String],
                                 imageUrl = (request.body \ "image_url").asOpt[String])
         UserDao.update(newUser)
-        println("user: " + newUser)
         Ok(Json.toJson(newUser))
       }
     }
