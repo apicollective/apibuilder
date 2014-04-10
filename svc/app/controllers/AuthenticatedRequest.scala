@@ -11,6 +11,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]) = {
     request.headers.get("X-Auth").map { token =>
+
       UserDao.findByToken(token) match {
 
         case None => {

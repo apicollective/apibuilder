@@ -48,7 +48,7 @@
         <div class="col-sm-3 col-md-2 sidebar">
           @metadata.service.map { service =>
             <ul class="nav nav-sidebar">
-              <li@if(metadata.resource.isEmpty) { class="active" }><a href="@routes.Versions.latest(metadata.org.get.key, service.key)">@service.name</a></li>
+              <li@if(metadata.resource.isEmpty) { class="active" }><a href="@routes.Versions.show(metadata.org.get.key, service.key, "latest")">@service.name</a></li>
               @metadata.serviceDescription.map { sd =>
                 @sd.resources.map { resource =>
                   <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@lib.UrlKey.generate(resource.name)">@resource.name</a></li>
@@ -71,7 +71,7 @@
                   @metadata.service.map { service =>
                     @metadata.allServiceVersions.zipWithIndex.map { case(version, index) =>
                       @if(index == 0) {
-                        <li><a href="@routes.Versions.latest(org.key, service.key)">@version</a></li>
+                        <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@version</a></li>
                       } else {
                         <li><a href="@routes.Versions.show(org.key, service.key, version)">@version</a></li>
                       }

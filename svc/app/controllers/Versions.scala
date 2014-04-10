@@ -69,7 +69,11 @@ object Versions extends Controller {
   private def getVersion(user: User, org: String, service: String, version: String): Option[Version] = {
     OrganizationDao.findByUserAndKey(user, org).flatMap { org =>
       ServiceDao.findByOrganizationAndKey(org, service).flatMap { service =>
-        VersionDao.findByServiceAndVersion(service, version)
+        if (version == "latest") {
+          VersionDao.findAll(service_guid = service.guid, limit = 1).headOption
+        } else {
+          VersionDao.findByServiceAndVersion(service, version)
+        }
       }
     }
   }

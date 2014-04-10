@@ -28,7 +28,6 @@ GET     /:orgKey                                                  controllers.Or
 
 GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String)
 
-GET     /:orgKey/docs/:serviceKey/latest                          controllers.Versions.latest(orgKey: String, serviceKey: String)
 GET     /:orgKey/docs/:serviceKey/:version                        controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
 
 GET     /:org/codegen/:service/:version/play2/routes              controllers.codegen.Play2.routes(org: String, service: String, version: String)

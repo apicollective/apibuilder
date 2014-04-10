@@ -21,6 +21,21 @@ object UserDao {
      where deleted_at is null
   """
 
+  private val InsertQuery = """
+    insert into users
+    (guid, email, name, image_url, created_by_guid, updated_by_guid)
+    values
+    ({guid}::uuid, {email}, {name}, {image_url}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
+  """
+
+  private val UpdateQuery = """
+  update users
+     set email = {email},
+         name = {name},
+         image_url = {image_url}
+   where guid = {guid}
+  """
+
   def upsert(email: String,
              name: Option[String] = None,
              imageUrl: Option[String] = None): User = {
@@ -45,34 +60,23 @@ object UserDao {
 
   def update(user: User) {
     DB.withConnection { implicit c =>
-      SQL("""
-          update users
-             set email = {email},
-                 name = {name},
-                 image_url = {image_url}
-           where guid = {guid}
-          """).on('guid -> user.guid,
-                  'email -> user.email,
-                  'name -> user.name,
-                  'imageUrl -> user.imageUrl,
-                  'updated_by_guid -> Constants.DefaultUserGuid).execute()
+      SQL(UpdateQuery).on('guid -> user.guid,
+                          'email -> user.email,
+                          'name -> user.name,
+                          'imageUrl -> user.imageUrl,
+                          'updated_by_guid -> Constants.DefaultUserGuid).execute()
     }
   }
 
   private def create(email: String, name: Option[String], imageUrl: Option[String]): User = {
     val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
-      SQL("""
-          insert into users
-          (guid, email, name, image_url, created_by_guid, updated_by_guid)
-          values
-          ({guid}::uuid, {email}, {name}, {image_url}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
-          """).on('guid -> guid,
-                  'email -> email,
-                  'name -> name,
-                  'image_url -> imageUrl,
-                  'created_by_guid -> Constants.DefaultUserGuid,
-                  'updated_by_guid -> Constants.DefaultUserGuid).execute()
+      SQL(InsertQuery).on('guid -> guid,
+                          'email -> email,
+                          'name -> name,
+                          'image_url -> imageUrl,
+                          'created_by_guid -> Constants.DefaultUserGuid,
+                          'updated_by_guid -> Constants.DefaultUserGuid).execute()
     }
 
     findByGuid(guid).getOrElse {

@@ -175,10 +175,19 @@ object Field {
           description = (json \ "description").asOpt[String],
           references = (json \ "references").asOpt[String],
           required = (json \ "required").asOpt[Boolean].getOrElse(true),
-          default = (json \ "default").asOpt[String],
+          default = asString(json, "default"),
           minimum = (json \ "minimum").asOpt[Int],
           maximum = (json \ "maximum").asOpt[Int],
           format = (json \ "format").asOpt[String],
-          example = (json \ "example").asOpt[String])
+          example = asString(json, "example"))
   }
+
+  private def asString(json: JsValue, field: String): Option[String] = {
+    (json \ field) match {
+      case (_: JsUndefined) => None
+      case (v: JsValue) => Some(v.toString)
+    }
+  }
+
+
 }

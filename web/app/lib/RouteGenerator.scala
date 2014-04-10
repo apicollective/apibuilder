@@ -32,7 +32,7 @@ object Util {
  */
 case class RouteGenerator(json: String) {
 
-  private val JsonDocumentMethods = Seq("POST", "PUT")
+  private val JsonDocumentMethods = Seq("POST", "PUT", "PATCH")
 
   private val GlobalPad = 5
 
@@ -110,7 +110,7 @@ case class RouteGenerator(json: String) {
     }
 
     private lazy val controllerName: String = {
-      s"controllers.${resource.name}"
+      s"controllers.${underscoreToInitCap(resource.name)}"
     }
 
     private val Regexp = """([^0-9a-z])""".r
@@ -126,6 +126,7 @@ case class RouteGenerator(json: String) {
 
     private def parametersWithTypes(params: Seq[Field]): Seq[String] = {
       params.map { param =>
+        println("param: " + param)
         val underscore = underscoreToInitCap(param.name)
         val paramName = underscore.head.toString.toLowerCase + underscore.drop(1)
         Seq(

@@ -218,6 +218,17 @@
 
                 {
                     "method": "GET",
+                    "path": "/:service/latest",
+                    "description": "Returns detailed information about the latest version of this service.",
+                    "parameters": [
+                        { "name": "org", "type": "string", "description": "Organization key." },
+                        { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" }
+                    ],
+                    "response": "version"
+                },
+
+                {
+                    "method": "GET",
                     "path": "/:service/:version",
                     "description": "Returns detailed information about this service version, including the full json description of the version.",
                     "parameters": [
