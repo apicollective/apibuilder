@@ -126,11 +126,8 @@ case class RouteGenerator(json: String) {
 
     private def parametersWithTypes(params: Seq[Field]): Seq[String] = {
       params.map { param =>
-        println("param: " + param)
-        val underscore = underscoreToInitCap(param.name)
-        val paramName = underscore.head.toString.toLowerCase + underscore.drop(1)
         Seq(
-          Some(s"${paramName}: ${Util.scalaDataType(param)}"),
+          Some(s"${param.name}: ${Util.scalaDataType(param)}"),
           param.default.map( d => s"?= ${d}" )
         ).flatten.mkString(" ")
       }
