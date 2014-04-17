@@ -15,7 +15,7 @@
     <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target=".resources">
 
     <!-- Fixed navbar -->
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -45,7 +45,7 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
+        <div class="col-sm-3 col-md-2 sidebar resources">
           @metadata.service.map { service =>
             <ul class="nav nav-sidebar">
               <li@if(metadata.resource.isEmpty) { class="active" }><a href="@routes.Versions.show(metadata.org.get.key, service.key, "latest")">@service.name</a></li>

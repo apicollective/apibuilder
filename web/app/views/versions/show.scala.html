@@ -18,6 +18,7 @@
 
 
   @service.resources.map { resource =>
+    <div id="resource-@lib.UrlKey.generate(resource.name)"></div>
     <a name="resource-@lib.UrlKey.generate(resource.name)"></a>
     <div class="version_resource">
       <h2>@resource.name</h2>
