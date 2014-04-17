@@ -1,6 +1,6 @@
 @(tpl: models.MainTemplate,
   org: client.Apidoc.Organization,
-  services: lib.PaginatedCollection[client.Apidoc.Service])
+  services: lib.PaginatedCollection[client.Apidoc.Service])(implicit flash: Flash)
 
 @main(tpl) {
 

@@ -1,8 +1,6 @@
 @(metadata: models.MainTemplate,
   jsFiles: Seq[String] = Seq.empty
-)(content: Html)
-
-
+)(content: Html)(implicit flash: Flash)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -81,8 +79,14 @@
               </ul>
             </div>
 
+          @flash.get("success").map { msg => <span class="label label-success">@msg</span> }
+          @flash.get("warning").map { msg => <span class="label label-warning">@msg</span> }
+          @flash.get("error").map { msg => <span class="label label-error">@msg</span> }
+
           <h2>@metadata.title</h2>
+
           <p>@content</p>
+
         </div>
       </div>
     </div>

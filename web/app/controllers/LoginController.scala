@@ -20,7 +20,7 @@ object LoginController extends Controller {
     Redirect(routes.LoginController.index())
   }
 
-  def index = Action.async {
+  def index = Action.async { implicit request =>
     for {
       user <- Apidoc.users.findByEmail("admin@apidoc.com")
     } yield {

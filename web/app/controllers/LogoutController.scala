@@ -5,7 +5,7 @@ import play.api.mvc._
 
 object LogoutController extends Controller {
 
-  def logged_out = Action {
+  def logged_out = Action { implicit request =>
     Ok(views.html.logged_out())
   }
 

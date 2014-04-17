@@ -10,7 +10,7 @@ object Application extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index(page: Int = 0) = Authenticated.async { request =>
+  def index(page: Int = 0) = Authenticated.async { implicit request =>
     for {
       orgs <- Apidoc.organizations.findAll(userGuid = request.user.guid,
                                            limit = Pagination.DefaultLimit+1,

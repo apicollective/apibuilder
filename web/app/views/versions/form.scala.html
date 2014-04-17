@@ -1,4 +1,4 @@
-@(org: client.Apidoc.Organization)
+@(org: client.Apidoc.Organization)(implicit flash: Flash)
 
 @main(models.MainTemplate(title = s"${org.name}: Add Service")) {
   <div class="container">

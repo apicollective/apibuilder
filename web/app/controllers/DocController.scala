@@ -5,27 +5,27 @@ import play.api.mvc._
 
 object DocController extends Controller {
 
-  def redirect = Action {
+  def redirect = Action { implicit request =>
     Redirect(routes.DocController.index)
   }
 
-  def index = Action {
+  def index = Action { implicit request =>
     Ok(views.html.doc.index())
   }
 
-  def examples = Action {
+  def examples = Action { implicit request =>
     Ok(views.html.doc.examples())
   }
 
-  def apiJson = Action {
+  def apiJson = Action { implicit request =>
     Ok(views.html.doc.apiJson())
   }
 
-  def todo = Action {
+  def todo = Action { implicit request =>
     Ok(views.html.doc.todo())
   }
 
-  def codeGeneration = Action {
+  def codeGeneration = Action { implicit request =>
     Ok(views.html.doc.codeGeneration())
   }
 

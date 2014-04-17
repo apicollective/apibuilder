@@ -15,7 +15,7 @@ object Versions extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { request =>
+  def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
       service <- Apidoc.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
@@ -35,7 +35,7 @@ object Versions extends Controller {
   }
 
 
-  def create(orgKey: String) = Authenticated.async { request =>
+  def create(orgKey: String) = Authenticated.async { implicit request =>
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
     } yield {

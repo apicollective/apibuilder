@@ -5,11 +5,11 @@ import play.api.mvc._
 
 object MembershipsController extends Controller {
 
-  def approve(guid: String) = Authenticated { request =>
+  def approve(guid: String) = Authenticated { implicit request =>
     Ok("TODO")
   }
 
-  def decline(guid: String) = Authenticated { request =>
+  def decline(guid: String) = Authenticated { implicit request =>
     Ok("TODO")
   }
 

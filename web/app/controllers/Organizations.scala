@@ -15,17 +15,14 @@ object Organizations extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, page: Int = 0) = Authenticated.async { request =>
+  def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
       services <- Apidoc.services.findAllByOrganizationKey(orgKey)
     } yield {
       org match {
-        case None => {
-          Redirect("/").flashing(
-            "warning" -> "Organization not found"
-          )
-        }
+
+        case None => Redirect("/").flashing("warning" -> "Organization not found")
 
         case Some(org: Organization) => {
           // TODO
@@ -41,7 +38,7 @@ object Organizations extends Controller {
     }
   }
 
-  def requestMembership(orgKey: String) = Authenticated { request =>
+  def requestMembership(orgKey: String) = Authenticated { implicit request =>
     Await.result(Apidoc.organizations.findByKey(orgKey), 100 millis) match {
       case None => {
         Redirect("/").flashing(
@@ -59,7 +56,7 @@ object Organizations extends Controller {
     }
   }
 
-  def create() = Authenticated { request =>
+  def create() = Authenticated { implicit request =>
     Ok(views.html.organizations.form())
   }
 

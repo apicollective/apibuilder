@@ -1,5 +1,5 @@
 @(user: client.Apidoc.User,
-  organizations: lib.PaginatedCollection[client.Apidoc.Organization])
+  organizations: lib.PaginatedCollection[client.Apidoc.Organization])(implicit flash: Flash)
 
 @main(models.MainTemplate(user = Some(user), title = "Organizations")) {
 
