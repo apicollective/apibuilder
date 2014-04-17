@@ -18,6 +18,7 @@ object Organizations extends Controller {
   def show(orgKey: String, page: Int = 0) = Authenticated.async { request =>
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
+      services <- Apidoc.services.findAllByOrganizationKey(orgKey)
     } yield {
       org match {
         case None => {
@@ -30,7 +31,6 @@ object Organizations extends Controller {
           // TODO
           // role: UserRole,
           // requests: Seq[db.MembershipRequest])
-          val services = Await.result(Apidoc.services.findAllByOrganizationKey(org.key), 100 millis)
           val collection = PaginatedCollection(page, services)
           val tpl = MainTemplate(title = org.name,
                                  org = Some(org),
