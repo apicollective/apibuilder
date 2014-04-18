@@ -11,6 +11,7 @@ object Apidoc {
   private val Token = "ZdRD61ODVPspeV8Wf18EmNuKNxUfjfROyJXtNJXj9GMMwrAxqi8I4aUtNAT6"
 
   lazy val organizations = OrganizationsResource(s"$BaseUrl/organizations")
+  lazy val membershipRequests = MembershipRequestsResource(s"$BaseUrl/membership_requests")
   lazy val services = ServicesResource(BaseUrl)
   lazy val users = UsersResource(s"$BaseUrl/users")
   lazy val versions = VersionsResource(BaseUrl)
@@ -23,6 +24,11 @@ object Apidoc {
   case class Organization(guid: String, name: String, key: String)
   object Organization {
     implicit val organizationReads = Json.reads[Organization]
+  }
+
+  case class MembershipRequest(guid: String, user_guid: String, organization_guid: String, role: String)
+  object MembershipRequest {
+    implicit val membershipRequestReads = Json.reads[MembershipRequest]
   }
 
   case class User(guid: String, email: String, name: Option[String], imageUrl: Option[String])
@@ -108,6 +114,33 @@ object Apidoc {
 
       wsUrl(url).post(json).map { response =>
         response.json.as[Organization]
+      }
+    }
+
+  }
+
+  case class MembershipRequestsResource(url: String) {
+
+    def findByGuid(guid: String): Future[Option[MembershipRequest]] = {
+      wsUrl(url).withQueryString("guid" -> guid).get().map { response =>
+        response.json.as[JsArray].value.map { v => v.as[MembershipRequest] }.headOption
+      }
+    }
+
+    def findAll(userGuid: String, limit: Int = 50, offset: Int = 0): Future[Seq[MembershipRequest]] = {
+      wsUrl(url).withQueryString("user_guid" -> userGuid, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
+        response.json.as[JsArray].value.map { v => v.as[MembershipRequest] }
+      }
+    }
+
+    def create(user: User, name: String): Future[MembershipRequest] = {
+      val json = Json.obj(
+        "user_guid" -> user.guid,
+        "name" -> name
+      )
+
+      wsUrl(url).post(json).map { response =>
+        response.json.as[MembershipRequest]
       }
     }
 

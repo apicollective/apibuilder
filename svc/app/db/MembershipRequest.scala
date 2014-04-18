@@ -153,7 +153,7 @@ object MembershipRequest {
               offset: Int = 0): Seq[MembershipRequest] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      user.map { u => "and (membership_requests.user_guid = {user_guid} or membership_requests.organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}" },
+      user.map { u => "and (membership_requests.user_guid = {user_guid}::uuid or membership_requests.organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid))" },
       guid.map { v => "and membership_requests.guid = {guid}::uuid" },
       organization_guid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
       user_guid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },

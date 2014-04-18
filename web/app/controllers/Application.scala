@@ -10,16 +10,18 @@ object Application extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index(page: Int = 0) = Authenticated.async { implicit request =>
+  def index(orgsPage: Int = 0, membershipRequestsPage: Int = 0) = Authenticated.async { implicit request =>
     for {
       orgs <- Apidoc.organizations.findAll(userGuid = request.user.guid,
                                            limit = Pagination.DefaultLimit+1,
-                                           offset = page * Pagination.DefaultLimit)
-      //val membershipRequests = MembershipRequest.findAllForUser(request.user)
+                                           offset = orgsPage * Pagination.DefaultLimit)
+      membershipRequests <- Apidoc.membershipRequests.findAll(userGuid = request.user.guid,
+                                                              limit = Pagination.DefaultLimit+1,
+                                                              offset = membershipRequestsPage * Pagination.DefaultLimit)
     } yield {
-      val collection = PaginatedCollection(page, orgs)
-      // Ok(views.html.organizations.index(request.user, collection, membershipRequests))
-      Ok(views.html.index(request.user, collection))
+      Ok(views.html.index(request.user,
+                          PaginatedCollection(orgsPage, orgs),
+                          PaginatedCollection(membershipRequestsPage, membershipRequests)))
     }
   }
 

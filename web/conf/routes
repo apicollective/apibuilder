@@ -1,4 +1,4 @@
-GET     /                                                         controllers.Application.index(page: Int ?= 0)
+GET     /                                                         controllers.Application.index(orgsPage: Int ?= 0, membershipRequestsPage: Int ?= 0)
 
 POST    /memberships/approve                                      controllers.MembershipsController.approve(guid: String)
 POST    /memberships/decline                                      controllers.MembershipsController.decline(guid: String)

@@ -1,5 +1,6 @@
 @(user: client.Apidoc.User,
-  organizations: lib.PaginatedCollection[client.Apidoc.Organization])(implicit flash: Flash)
+  organizations: lib.PaginatedCollection[client.Apidoc.Organization],
+  membershipRequests: lib.PaginatedCollection[client.Apidoc.MembershipRequest])(implicit flash: Flash)
 
 @main(models.MainTemplate(user = Some(user), title = "Organizations")) {
 
@@ -20,12 +21,35 @@
   @if(organizations.hasPrevious || organizations.hasNext) {
     <ul class="pager">
       @if(organizations.hasPrevious) {
-        <li><a href="@routes.Application.index(organizations.page - 1)">Previous</a></li>
+        <li><a href="@routes.Application.index(organizations.page - 1, membershipRequests.page)">Previous</a></li>
       }
       @if(organizations.hasNext) {
-        <li><a href="@routes.Application.index(organizations.page + 1)">Next</a></li>
+        <li><a href="@routes.Application.index(organizations.page + 1, membershipRequests.page)">Next</a></li>
       }
     </ul>
+  }
+
+  @if(membershipRequests.isEmpty) {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @membershipRequests.items.map { organization =>
+         <tr>
+           <td>Hey</td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+    @if(membershipRequests.hasPrevious || membershipRequests.hasNext) {
+      <ul class="pager">
+        @if(membershipRequests.hasPrevious) {
+          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page - 1)">Previous</a></li>
+        }
+        @if(membershipRequests.hasNext) {
+          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
   }
 
 }
