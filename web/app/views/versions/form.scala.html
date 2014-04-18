@@ -1,27 +1,23 @@
-@(org: client.Apidoc.Organization)(implicit flash: Flash)
+@(tpl: models.MainTemplate)(implicit flash: Flash)
 
-@main(models.MainTemplate(title = s"${org.name}: Add Service")) {
+@main(tpl) {
   <div class="container">
 
     <p>
-
       A service is fully defined using JSON. To add a service or to
       create a new version of a service, upload the JSON file here.
-
     </p>
 
     <p>
-
       If you are creating your first service, the best path is to
       browse the <a href="@routes.DocController.examples">example api.json files</a>
       or to <a href="@routes.DocController.index">read the documentation</a>.
-
     </p>
 
-      <form method="post" action="/org/createPost">
-        <input type="file" name="file" class="input-block-level">
-        <button class="btn btn-large btn-primary" type="submit">Submit</button>
-      </form>
+    <form method="post" action="/org/createPost">
+      <input type="file" name="file" class="input-block-level">
+      <button class="btn btn-large btn-primary" type="submit">Submit</button>
+    </form>
 
   </div>
 

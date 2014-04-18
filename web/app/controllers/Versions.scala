@@ -41,7 +41,12 @@ object Versions extends Controller {
     } yield {
       org match {
         case None => Redirect("/").flashing("warning" -> "Org not found")
-        case Some(o: Organization) => Ok(views.html.versions.form(o))
+        case Some(o: Organization) => {
+          val tpl = MainTemplate(title = s"${o.name}: Add Service",
+                                 user = Some(request.user),
+                                 org = Some(o))
+          Ok(views.html.versions.form(tpl))
+        }
       }
     }
   }
@@ -50,20 +55,26 @@ object Versions extends Controller {
     for {
       orgOption <- Apidoc.organizations.findByKey(orgKey)
     } yield {
-      val org = orgOption.get
-      versionForm.bindFromRequest.fold (
+      orgOption match {
+        case None => Redirect("/").flashing("warning" -> "Org not found")
+        case Some(org: Organization) => {
+          versionForm.bindFromRequest.fold (
 
-        errors => {
-          // TODO: Display errors
-          // Ok(views.html.versions.form(errors))
-          Ok(views.html.versions.form(org))
-        },
+            errors => {
+              // TODO: Display errors
+              // Ok(views.html.versions.form(errors))
+              val tpl = MainTemplate(title = s"${org.name}: Add Service",
+                                     user = Some(request.user),
+                                     org = Some(org))
+              Ok(views.html.versions.form(tpl))
+            },
 
-        valid => {
-          sys.error("TODO: Uploaded file for org: " + org.name)
+            valid => {
+              sys.error("TODO: Uploaded file for org: " + org.name)
+            }
+          )
         }
-
-      )
+      }
     }
   }
 
