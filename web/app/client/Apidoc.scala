@@ -176,6 +176,10 @@ object Apidoc {
       }
     }
 
+    def put(orgKey: String, serviceKey: String, version: String, file: java.io.File) = {
+      wsUrl(url + s"/${orgKey}/${serviceKey}/${version}").put(file)
+    }
+
   }
 
 }

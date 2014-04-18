@@ -242,7 +242,7 @@
                 {
                     "method": "PUT",
                     "path": "/:service/:version",
-                    "description": "Create a version of this service by PUTing the contents of an api.json file. The service interface is fully described by the file you post. Example: curl -X POST -H 'X-Auth: token' -d @api.json 'http://localhost:9000/gilt/apiserver/1.0.0'",
+                    "description": "Create a version of this service by PUTing the contents of an api.json file. The service interface is fully described by the file you post. Example: curl -X PUT -H 'X-Auth: token' -d @api.json 'http://localhost:9000/gilt/apiserver/1.0.0'",
                     "parameters": [
                         { "name": "org", "type": "string", "description": "Organization key." },
                         { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },

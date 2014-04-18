@@ -14,10 +14,10 @@
       or to <a href="@routes.DocController.index">read the documentation</a>.
     </p>
 
-    <form method="post" action="/org/createPost">
+    @helper.form(action = routes.Versions.createPost(tpl.org.get.key), 'enctype -> "multipart/form-data") {
       <input type="file" name="file" class="input-block-level">
       <button class="btn btn-large btn-primary" type="submit">Submit</button>
-    </form>
+    }
 
   </div>
 

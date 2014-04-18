@@ -51,39 +51,34 @@ object Versions extends Controller {
     }
   }
 
-  def createPost(orgKey: String) = Authenticated.async { implicit request =>
+  def createPost(orgKey: String) = Authenticated.async(parse.multipartFormData) { implicit request =>
     for {
       orgOption <- Apidoc.organizations.findByKey(orgKey)
     } yield {
       orgOption match {
-        case None => Redirect("/").flashing("warning" -> "Org not found")
+
+        case None => {
+          Redirect("/").flashing("warning" -> "Org not found")
+        }
+
         case Some(org: Organization) => {
-          versionForm.bindFromRequest.fold (
-
-            errors => {
-              // TODO: Display errors
-              // Ok(views.html.versions.form(errors))
-              val tpl = MainTemplate(title = s"${org.name}: Add Service",
-                                     user = Some(request.user),
-                                     org = Some(org))
-              Ok(views.html.versions.form(tpl))
-            },
-
-            valid => {
-              sys.error("TODO: Uploaded file for org: " + org.name)
-            }
-          )
+          request.body.file("file").map { file =>
+            val serviceKey = "apidoc"
+            val version = "1.0.0"
+            val path = new java.io.File(s"/tmp/api.json")
+            file.ref.moveTo(path, true)
+            val response = Await.result(Apidoc.versions.put(org.key, serviceKey, version, path), 1000 millis)
+            Ok(s"File uploaded: " + response)
+          }.getOrElse {
+            val tpl = MainTemplate(title = s"${org.name}: Add Service",
+                                   user = Some(request.user),
+                                   org = Some(org))
+            Ok(views.html.versions.form(tpl)).flashing("error" -> "Missing file")
+          }
         }
       }
     }
   }
-
-  case class VersionForm(name: String)
-  private val versionForm = Form(
-    mapping(
-      "file" -> nonEmptyText
-    )(VersionForm.apply)(VersionForm.unapply)
-  )
 
 
 }

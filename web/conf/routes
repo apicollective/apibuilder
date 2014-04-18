@@ -27,6 +27,7 @@ GET     /:orgKey                                                  controllers.Or
 # GET     /:orgKey/register                                       controllers.Organizations.register(orgKey: String)
 
 GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String)
+POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String)
 
 GET     /:orgKey/docs/:serviceKey/:version                        controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
 
