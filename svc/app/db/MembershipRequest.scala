@@ -107,7 +107,7 @@ object MembershipRequest {
                   'created_by_guid -> createdBy.guid).execute()
     }
 
-    findByGuid(guid.toString).getOrElse {
+    findAll(guid = Some(guid.toString), limit = 1).headOption.getOrElse {
       sys.error("Failed to create membership_request")
     }
   }
@@ -118,22 +118,6 @@ object MembershipRequest {
           update membership_requests set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where membership_requests.guid = {guid}::uuid and deleted_at is null
           """).on('deleted_by_guid -> user.guid, 'guid -> guid).execute()
     }
-  }
-
-  def findByGuid(guid: String): Option[MembershipRequest] = {
-    findAll(guid = Some(guid.toString), limit = 1).headOption
-  }
-
-  def findAllForOrganization(org: Organization): Seq[MembershipRequest] = {
-    findAll(organization_guid = Some(org.guid))
-  }
-
-  def findAllForUser(user: User): Seq[MembershipRequest] = {
-    findAll(user_guid = Some(user.guid))
-  }
-
-  def findAllPendingReview(user: User): Seq[MembershipRequest] = {
-    findAll(can_be_reviewed_by = Some(user))
   }
 
   private def findByOrganizationAndUserAndRole(org: Organization, user: User, role: String): Option[MembershipRequest] = {
@@ -153,7 +137,7 @@ object MembershipRequest {
               offset: Int = 0): Seq[MembershipRequest] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      user.map { u => "and (membership_requests.user_guid = {user_guid}::uuid or membership_requests.organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid))" },
+      user.map { v => "and (membership_requests.user_guid = {current_user_guid}::uuid or membership_requests.organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {current_user_guid}::uuid and role='admin'))" },
       guid.map { v => "and membership_requests.guid = {guid}::uuid" },
       organization_guid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
       user_guid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
@@ -172,7 +156,7 @@ object MembershipRequest {
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      user.map { u => 'user_guid -> toParameterValue(u.guid) },
+      user.map { u => 'current_user_guid -> toParameterValue(u.guid) },
       guid.map { v => 'guid -> toParameterValue(v) },
       organization_guid.map { v => 'organization_guid -> toParameterValue(v) },
       user_guid.map { v => 'user_guid -> toParameterValue(v) },

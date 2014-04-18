@@ -112,9 +112,9 @@
                     "method": "GET",
                     "description": "Search all pending membership requests. Results are always paginated.",
                     "parameters": [
-                        { "name": "organization_guid", "type": "string", "description": "Find memberships for this organization", "required": false },
-                        { "name": "user_guid", "type": "string", "description": "Find memberships for this user", "required": false },
-                        { "name": "role", "type": "string", "description": "Limit to memberships with this role", "required": false },
+                        { "name": "organization_guid", "type": "string", "description": "Find membership requests for this organization", "required": false },
+                        { "name": "user_guid", "type": "string", "description": "Find membership requests initiated by this user", "required": false },
+                        { "name": "role", "type": "string", "description": "Limit to membership requests with this role", "required": false },
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
