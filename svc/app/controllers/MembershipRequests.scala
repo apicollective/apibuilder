@@ -2,7 +2,7 @@ package controllers
 
 import core.Role
 import lib.Validation
-import db.{ MembershipRequest, MembershipRequestJson, Organization, OrganizationDao, User, UserDao }
+import db.{ MembershipRequest, Organization, OrganizationDao, User, UserDao }
 import play.api.mvc._
 import play.api.libs.json.Json
 
@@ -17,7 +17,7 @@ object MembershipRequests extends Controller {
                                              role = role,
                                              limit = limit,
                                              offset = offset)
-    Ok(Json.toJson(requests.map(_.json)))
+    Ok(Json.toJson(requests))
   }
 
   def post() = Authenticated(parse.json) { request =>
@@ -43,8 +43,7 @@ object MembershipRequests extends Controller {
 
           case Some(user: User) => {
             val mr = MembershipRequest.upsert(request.user, org, user, role)
-            println(Json.toJson(mr.json))
-            Created(Json.toJson(mr.json))
+            Created(Json.toJson(mr))
           }
         }
       }

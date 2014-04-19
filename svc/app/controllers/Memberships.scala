@@ -1,6 +1,6 @@
 package controllers
 
-import db.{ Membership, MembershipJson }
+import db.Membership
 import play.api.mvc._
 import play.api.libs.json.Json
 
@@ -13,7 +13,7 @@ object Memberships extends Controller {
                                          role = role,
                                          limit = limit,
                                          offset = offset)
-    Ok(Json.toJson(memberships.map(_.json)))
+    Ok(Json.toJson(memberships))
   }
 
 }

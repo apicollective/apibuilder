@@ -89,6 +89,7 @@
                     "description": "Search all memberships. Results are always paginated.",
                     "parameters": [
                         { "name": "organization_guid", "type": "string", "description": "Find memberships for this organization", "required": false, "references": "organizations.guid" },
+                        { "name": "organization_key", "type": "string", "description": "Find memberships for this organization key", "required": false, "references": "organizations.key" },
                         { "name": "user_guid", "type": "string", "description": "Find memberships for this user", "required": false, "references": "users.guid" },
                         { "name": "role", "type": "string", "description": "Limit to memberships with this role", "required": false },
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },

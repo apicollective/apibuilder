@@ -40,6 +40,7 @@ object Apidoc {
     }
 
     lazy val organizations = OrganizationsResource(this)
+    lazy val memberships = MembershipsResource(this)
     lazy val membershipRequests = MembershipRequestsResource(this)
     lazy val membershipRequestReviews = MembershipRequestReviewsResource(this)
     lazy val services = ServicesResource(this)
@@ -53,18 +54,29 @@ object Apidoc {
     implicit val validationReads = Json.reads[Validation]
   }
 
+  case class User(guid: String, email: String, name: Option[String], imageUrl: Option[String])
+  object User {
+    implicit val userReads = Json.reads[User]
+  }
+
   case class Organization(guid: String, name: String, key: String)
   object Organization {
     implicit val organizationReads = Json.reads[Organization]
   }
 
+  case class Membership(guid: String,
+                        user: User,
+                        org: Organization,
+                        role: String)
+
+  object Membership {
+    implicit val membershipReads = Json.reads[Membership]
+  }
+
   case class MembershipRequest(guid: String,
                                created_at: String,
-                               organization_guid: String,
-                               organization_name: String,
-                               user_guid: String,
-                               user_email: String,
-                               user_name: Option[String],
+                               org: Organization,
+                               user: User,
                                role: String)
   object MembershipRequest {
     implicit val membershipRequestReads = Json.reads[MembershipRequest]
@@ -73,11 +85,6 @@ object Apidoc {
   case class MembershipRequestReview(membership_request_guid: String, action: String)
   object MembershipRequestReview {
     implicit val membershipRequestReviewReads = Json.reads[MembershipRequestReview]
-  }
-
-  case class User(guid: String, email: String, name: Option[String], imageUrl: Option[String])
-  object User {
-    implicit val userReads = Json.reads[User]
   }
 
   case class Version(guid: String, version: String, json: Option[String])
@@ -155,6 +162,22 @@ object Apidoc {
 
       client.wsUrl("/organizations").post(json).map { response =>
         response.json.as[Organization]
+      }
+    }
+
+  }
+
+  case class MembershipsResource(client: Client) {
+
+    def findAll(organization_guid: Option[String] = None,
+                organization_key: Option[String] = None,
+                user_guid: Option[String] = None,
+                role: Option[String] = None,
+                limit: Int = 50,
+                offset: Int = 0): Future[Seq[Membership]] = {
+      client.wsUrl("/memberships").withQueryString("organization_key" -> organization_key.get, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
+        println("JSON: " + response.json.toString)
+        response.json.as[JsArray].value.map { v => v.as[Membership] }
       }
     }
 

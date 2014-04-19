@@ -7,34 +7,11 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-case class MembershipJson(guid: String, organization_guid: String, user_guid: String, role: String)
-
-object MembershipJson {
-  implicit val membershipJsonWrites = Json.writes[MembershipJson]
-}
-
-
-case class Membership(guid: UUID, org: Organization, user: User, role: String) {
-
-  lazy val json = MembershipJson(guid = guid.toString,
-                                 organization_guid = org.guid.toString,
-                                 user_guid = user.guid.toString,
-                                 role = role)
-
-  /**
-   * Removes this membership record and logs the action
-   */
-  def remove(user: User) {
-    val message = "Removed user[%s][%s] as %s".format(user.guid, user.email, role)
-    DB.withTransaction { implicit conn =>
-      OrganizationLog.create(user, org, message)
-      Membership.softDelete(user, guid)
-    }
-  }
-
-}
+case class Membership(guid: String, org: Organization, user: User, role: String)
 
 object Membership {
+
+  implicit val membershipWrites = Json.writes[Membership]
 
   private val BaseQuery = """
     select memberships.guid::varchar,
@@ -81,15 +58,8 @@ object Membership {
     }
   }
 
-  def softDelete(user: User, guid: UUID) {
-    DB.withConnection { implicit c =>
-      SQL("""
-          update memberships
-             set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
-           where memberships.guid = {guid}::uuid
-             and deleted_at is null
-          """).on('deleted_by_guid -> user.guid, 'guid -> guid).execute()
-    }
+  def softDelete(user: User, membership: Membership) {
+    SoftDelete.delete("memberships", user, membership.guid)
   }
 
   def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: String): Option[Membership] = {
@@ -105,7 +75,13 @@ object Membership {
               offset: Int = 0): Seq[Membership] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      user.map { u => "and organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {authorized_user_guid} and role = 'admin')" },
+      user.map { u => """
+                and (memberships.user_guid = {authorized_user_guid}::uuid
+                     or organization_guid in (select organization_guid
+                                                from memberships
+                                               where deleted_at is null
+                                                 and user_guid = {authorized_user_guid}::uuid))
+                """ },
       guid.map { v => "and memberships.guid = {guid}::uuid" },
       organization_guid.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
       user_guid.map { v => "and memberships.user_guid = {user_guid}::uuid" },
@@ -123,7 +99,7 @@ object Membership {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        Membership(guid = UUID.fromString(row[String]("guid")),
+        Membership(guid = row[String]("guid"),
                    org = Organization(guid = row[String]("organization_guid"),
                                       name = row[String]("organization_name"),
                                       key = row[String]("organization_key")),

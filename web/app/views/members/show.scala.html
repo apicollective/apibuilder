@@ -1,0 +1,38 @@
+@(tpl: models.MainTemplate,
+  members: lib.PaginatedCollection[client.Apidoc.Membership])(implicit flash: Flash)
+
+@main(tpl) {
+
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Members.add(tpl.org.get.key)">Add member</a>
+  </div>
+
+  @if(members.isEmpty) {
+    <em>There are no members</em>
+
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @members.items.map { member =>
+         <tr>
+           <td>@member.role</td>
+           <td>@member.user.name</td>
+           <td>@member.user.email</td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+    @if(members.hasPrevious || members.hasNext) {
+      <ul class="pager">
+        @if(members.hasPrevious) {
+          <li><a href="@routes.Members.show(tpl.org.get.key, members.page - 1)">Previous</a></li>
+        }
+        @if(members.hasNext) {
+          <li><a href="@routes.Members.show(tpl.org.get.key, members.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

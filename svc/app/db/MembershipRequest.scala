@@ -8,34 +8,12 @@ import java.sql.Timestamp
 import play.api.libs.json._
 import java.util.UUID
 
-case class MembershipRequestJson(guid: String,
-                                 created_at: String, // TODO Timestamp type
-                                 organization_guid: String,
-                                 organization_name: String,
-                                 user_guid: String,
-                                 user_email: String,
-                                 user_name: Option[String],
-                                 role: String)
-
-object MembershipRequestJson {
-  implicit val membershipRequestJsonWrites = Json.writes[MembershipRequestJson]
-}
-
 
 case class MembershipRequest(guid: String,
                              created_at: String, // TODO Timestamp type
                              org: Organization,
                              user: User,
                              role: String) {
-
-  lazy val json = MembershipRequestJson(guid = guid.toString,
-                                        created_at = created_at,
-                                        organization_guid = org.guid,
-                                        organization_name = org.name,
-                                        user_guid = user.guid.toString,
-                                        user_email = user.email,
-                                        user_name = user.name,
-                                        role = role)
 
   /**
    * Accepts this request. The request will be deleted, the
@@ -46,7 +24,7 @@ case class MembershipRequest(guid: String,
     val message = "Approved membership request for %s to join as %s".format(user.email, role)
     DB.withTransaction { implicit conn =>
       OrganizationLog.create(createdBy, org, message)
-      MembershipRequest.softDelete(createdBy, guid)
+      MembershipRequest.softDelete(createdBy, this)
       Membership.upsert(createdBy, org, user, Role.fromString(role).get)
     }
   }
@@ -59,13 +37,16 @@ case class MembershipRequest(guid: String,
     val message = "Declined membership request for %s to join as %s".format(user.email, role)
     DB.withTransaction { implicit conn =>
       OrganizationLog.create(createdBy, org, message)
-      MembershipRequest.softDelete(createdBy, guid)
+      MembershipRequest.softDelete(createdBy, this)
     }
   }
 
 }
 
 object MembershipRequest {
+
+  implicit val membershipRequestWrites = Json.writes[MembershipRequest]
+
 
   private val BaseQuery = """
     select membership_requests.guid::varchar,
@@ -113,12 +94,8 @@ object MembershipRequest {
     }
   }
 
-  def softDelete(user: User, guid: String) {
-    DB.withConnection { implicit c =>
-      SQL("""
-          update membership_requests set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where membership_requests.guid = {guid}::uuid and deleted_at is null
-          """).on('deleted_by_guid -> user.guid, 'guid -> guid).execute()
-    }
+  def softDelete(user: User, membershipRequest: MembershipRequest) {
+    SoftDelete.delete("membership_requests", user, membershipRequest.guid)
   }
 
   private def findByOrganizationAndUserAndRole(org: Organization, user: User, role: String): Option[MembershipRequest] = {

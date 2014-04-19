@@ -18,6 +18,9 @@ GET     /doc/todo                                                 controllers.Do
 GET     /org/create                                               controllers.Organizations.create
 POST    /org/createPost                                           controllers.Organizations.createPost
 
+GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
+GET     /:orgKey/members/add                                      controllers.Members.add(orgKey: String)
+
 POST    /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 GET     /:orgKey/membershipRequests                               controllers.Organizations.membershipRequests(orgKey: String, page: Int ?= 0)
 POST    /:orgKey/membership_request_reviews/accept                controllers.MembershipRequestReviews.accept(orgKey: String, membership_request_guid: String)
