@@ -19,7 +19,7 @@ object Versions extends Controller {
     for {
       org <- request.client.organizations.findByKey(orgKey)
       service <- request.client.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
-      versions <- request.client.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 10)
+      versions <- request.client.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, limit = 10)
       version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
       version match {

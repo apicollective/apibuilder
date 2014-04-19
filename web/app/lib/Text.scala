@@ -1,5 +1,7 @@
 package lib
 
+import scala.collection.immutable.StringOps
+
 object Text {
 
   private val Ellipsis = "..."
@@ -28,6 +30,28 @@ object Text {
       val letters = value.split("")
       letters.slice(0, letters.length-4).mkString("") + Ellipsis
     }
+  }
+
+  private val RemoveUnsafeCharacters = """([^0-9a-zA-Z])""".r
+  def safeName(name: String): String = {
+    RemoveUnsafeCharacters.replaceAllIn(name, m => "").trim
+  }
+
+  private val MakeSingular = """s$""".r
+  def singular(name: String) = {
+    MakeSingular.replaceAllIn(name, m => "").trim
+  }
+
+  def underscoreToInitCap(value: String): String = {
+    initCap(value.split("_"))
+  }
+
+  def initCap(word: String): String = {
+    new StringOps(Text.safeName(word).toLowerCase).capitalize
+  }
+
+  def initCap(parts: Seq[String]): String = {
+    parts.map(s => initCap(s)).mkString("")
   }
 
 }

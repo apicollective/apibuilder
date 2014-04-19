@@ -269,24 +269,21 @@ object Apidoc {
   case class VersionsResource(client: Apidoc.Client) {
 
     def findByOrganizationKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String): Future[Option[Version]] = {
-      client.wsUrl(s"/versions/${orgKey}/${serviceKey}/${version}").get().map { response =>
-        // TODO: If a 404, return none
-        try {
-          Some(response.json.as[Version])
-        } catch {
-          case _: Throwable => None
-        }
+      client.wsUrl(s"/${orgKey}/${serviceKey}/${version}").get().map { response =>
+        println("S:" + response.body.toString)
+        println("S:" + response.json.toString)
+        Some(response.json.as[Version])
       }
     }
 
     def findAllByOrganizationKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 50, offset: Int = 0): Future[Seq[Version]] = {
-      client.wsUrl(s"/versions/${orgKey}/${serviceKey}").withQueryString("limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
+      client.wsUrl(s"/${orgKey}/${serviceKey}").withQueryString("limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Version] }
       }
     }
 
     def put(orgKey: String, serviceKey: String, version: String, file: java.io.File) = {
-      client.wsUrl(s"/versions/${orgKey}/${serviceKey}/${version}").withHeaders("Content-type" -> "application/json").put(file)
+      client.wsUrl(s"/${orgKey}/${serviceKey}/${version}").withHeaders("Content-type" -> "application/json").put(file)
     }
 
   }
