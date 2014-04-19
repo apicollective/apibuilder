@@ -13,20 +13,24 @@ object DocController extends Controller {
     Ok(views.html.doc.index())
   }
 
-  def examples = Action { implicit request =>
-    Ok(views.html.doc.examples())
-  }
-
   def apiJson = Action { implicit request =>
     Ok(views.html.doc.apiJson())
   }
 
-  def todo = Action { implicit request =>
-    Ok(views.html.doc.todo())
-  }
-
   def codeGeneration = Action { implicit request =>
     Ok(views.html.doc.codeGeneration())
+  }
+
+  def examples = Action { implicit request =>
+    Ok(views.html.doc.examples())
+  }
+
+  def history = Action { implicit request =>
+    Ok(views.html.doc.history())
+  }
+
+  def todo = Action { implicit request =>
+    Ok(views.html.doc.todo())
   }
 
 }

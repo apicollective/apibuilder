@@ -28,6 +28,7 @@
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
             <li@if(title == "Introduction") { class="active" }><a href="@routes.DocController.index">Introduction</a></li>
+            <li@if(title == "History") { class="active" }><a href="@routes.DocController.history">History</a></li>
             <li@if(title == "api.json") { class="active" }><a href="@routes.DocController.apiJson">api.json Format</a></li>
             <li@if(title == "Examples") { class="active" }><a href="@routes.DocController.examples">Examples</a></li>
             <li@if(title == "Code Generation") { class="active" }><a href="@routes.DocController.codeGeneration">Codegen</a></li>

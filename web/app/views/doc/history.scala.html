@@ -1,0 +1,68 @@
+@doc.main("History") {
+
+  <p>
+
+   This project is based on practical learnings from scaling the Gilt
+   technology organization across code, people, teams, and
+   practices. At the time we started on this project, Gilt had over
+   100 active committers, a distributed micro services architecture
+   with over 300 independent applications, and significant revenue and
+   traffic.
+
+  </p>
+
+  <p>
+
+   We were reaching another pivot in our growth that required a new
+   approach to handling the complexity of software development in
+   order to continue to iterate and grow.
+
+  </p>
+
+  <p>
+
+   One of the core principles that emerged is the notion of Schema
+   First development; namely, that if the interface is truly critical,
+   it is actually helpful in practice to define your API by hand as a
+   first class artifact of software development.
+
+  </p>
+
+  <p>
+
+   From this point, we started to explore what was available on the
+   market, hand writing interfaces for a few systems we were actively
+   building. We looked at I protobufs, thrift, avro, swagger, apiary
+   ad others before identifying our key requirements:
+
+   <ul>
+
+    <li> JSON: HTTP/JSON is everywhere. By focusing on this standard,
+    we can ensure that the tooling we provide is available to all web
+    developers - seamlessly including native app, web, and backend
+    developers</li>
+
+    <li> REST first: Specifically api.json starts with a list of
+    resources instead of operations as we want to encourage the
+    identification of REST resources as early as possible in the
+    development process.</li>
+
+    <li> Simple and terse schema for a web developer: We wanted a web
+    developer to be able to learn the schema by looking at a few
+    simple examples. We also are writing the JSON by hand and need it
+    to be terse and clear.</li>
+
+    <li> No code annotations: we found that too many annotations made
+    it difficult to see the code. Especially in a micro-services
+    world, we want to keep our applications simple and pure.</li>
+
+    <li> Compatibility with existing tools: We borrowed everything we
+    could from other projects and thus where possible we adopted
+    standards from <a href="swagger.wordnik.com">swagger</a> and other
+    projects.</li>
+
+   </ul>
+
+  </p>
+
+}

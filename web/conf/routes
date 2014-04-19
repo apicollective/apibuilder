@@ -11,8 +11,9 @@ GET     /logged_out                                               controllers.Lo
 GET     /doc                                                      controllers.DocController.redirect
 GET     /doc/                                                     controllers.DocController.index
 GET     /doc/apiJson                                              controllers.DocController.apiJson
-GET     /doc/examples                                             controllers.DocController.examples
 GET     /doc/codeGeneration                                       controllers.DocController.codeGeneration
+GET     /doc/examples                                             controllers.DocController.examples
+GET     /doc/history                                              controllers.DocController.history
 GET     /doc/todo                                                 controllers.DocController.todo
 
 GET     /org/create                                               controllers.Organizations.create
