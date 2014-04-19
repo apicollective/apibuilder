@@ -20,6 +20,7 @@ POST    /org/createPost                                           controllers.Or
 
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/add                                      controllers.Members.add(orgKey: String)
+POST    /:orgKey/members/addPost                                  controllers.Members.addPost(orgKey: String)
 
 POST    /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 GET     /:orgKey/membershipRequests                               controllers.Organizations.membershipRequests(orgKey: String, page: Int ?= 0)

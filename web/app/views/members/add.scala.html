@@ -1,0 +1,34 @@
+@(tpl: models.MainTemplate,
+  form: Form[controllers.Members.AddMemberData],
+  error: Option[String] = None
+ )(implicit flash: Flash)
+
+@main(models.MainTemplate(title = "Add Organization")) {
+  <div class="container">
+
+    @helper.form(action = routes.Members.addPost(tpl.org.get.key)) {
+
+      @error.map { msg => <li><span class="error">@msg</span> }
+
+      <fieldset>
+
+          @helper.inputText(
+              form("email"),
+              '_label -> "Email address of user to add",
+              '_error -> form.error("email")
+          )
+
+          @helper.inputText(
+              form("role"),
+              '_label -> "Role",
+              '_error -> form.error("role")
+          )
+
+      </fieldset>
+
+      <button class="btn btn-large btn-primary" type="submit">Submit</button>
+
+    }
+
+  </div>
+}
