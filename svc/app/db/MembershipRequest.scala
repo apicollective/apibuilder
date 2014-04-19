@@ -1,5 +1,6 @@
 package db
 
+import core.Role
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -32,21 +33,21 @@ case class MembershipRequest(guid: String,
                                         organization_guid = org.guid,
                                         organization_name = org.name,
                                         user_guid = user.guid.toString,
-                                        user_email = user.guid,
+                                        user_email = user.email,
                                         user_name = user.name,
                                         role = role)
 
   /**
-   * Approves this request. The request will be deleted, the
-   * action logged, and the * user added to the organization
+   * Accepts this request. The request will be deleted, the
+   * action logged, and the user added to the organization
    * in this role if not already in this role for this org.
    */
-  def approve(createdBy: User) {
+  def accept(createdBy: User) {
     val message = "Approved membership request for %s to join as %s".format(user.email, role)
     DB.withTransaction { implicit conn =>
       OrganizationLog.create(createdBy, org, message)
       MembershipRequest.softDelete(createdBy, guid)
-      Membership.upsert(createdBy, org, user, role)
+      Membership.upsert(createdBy, org, user, Role.fromString(role).get)
     }
   }
 
@@ -83,8 +84,8 @@ object MembershipRequest {
      where membership_requests.deleted_at is null
   """
 
-  def upsert(createdBy: User, organization: Organization, user: User, role: String): MembershipRequest = {
-    findByOrganizationAndUserAndRole(organization, user, role) match {
+  def upsert(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
+    findByOrganizationAndUserAndRole(organization, user, role.key) match {
       case Some(r: MembershipRequest) => r
       case None => {
         create(createdBy, organization, user, role)
@@ -92,7 +93,7 @@ object MembershipRequest {
     }
   }
 
-  private def create(createdBy: User, organization: Organization, user: User, role: String): MembershipRequest = {
+  private def create(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
     val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
       SQL("""
@@ -103,7 +104,7 @@ object MembershipRequest {
           """).on('guid -> guid,
                   'organization_guid -> organization.guid,
                   'user_guid -> user.guid,
-                  'role -> role,
+                  'role -> role.key,
                   'created_by_guid -> createdBy.guid).execute()
     }
 
@@ -121,35 +122,38 @@ object MembershipRequest {
   }
 
   private def findByOrganizationAndUserAndRole(org: Organization, user: User, role: String): Option[MembershipRequest] = {
-    findAll(organization_guid = Some(org.guid),
-            user_guid = Some(user.guid),
+    findAll(organizationGuid = Some(org.guid),
+            userGuid = Some(user.guid),
             role = Some(role),
             limit = 1).headOption
   }
 
   def findAll(user: Option[User] = None,
               guid: Option[String] = None,
-              organization_guid: Option[String] = None,
-              user_guid: Option[String] = None,
+              organizationGuid: Option[String] = None,
+              organizationKey: Option[String] = None,
+              userGuid: Option[String] = None,
               role: Option[String] = None,
-              can_be_reviewed_by: Option[User] = None,
+              canBeReviewedByGuid: Option[String] = None,
               limit: Int = 50,
               offset: Int = 0): Seq[MembershipRequest] = {
+
     val sql = Seq(
       Some(BaseQuery.trim),
       user.map { v => "and (membership_requests.user_guid = {current_user_guid}::uuid or membership_requests.organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {current_user_guid}::uuid and role='admin'))" },
       guid.map { v => "and membership_requests.guid = {guid}::uuid" },
-      organization_guid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
-      user_guid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
+      organizationGuid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
+      organizationKey.map { v => "and membership_requests.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
+      userGuid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
       role.map { v => "and membership_requests.role = {role}" },
-      can_be_reviewed_by.map { user =>
+      canBeReviewedByGuid.map { v =>
         """
          and membership_requests.organization_guid in
              (select organization_guid
                 from memberships
                where deleted_at is null
-                 and user_guid = {reviewing_user_guid}::uuid)
-                 and role = 'admin'
+                 and user_guid = {reviewing_user_guid}::uuid
+                 and role = 'admin')
         """
       },
       Some(s"order by membership_requests.created_at desc limit ${limit} offset ${offset}")
@@ -158,10 +162,11 @@ object MembershipRequest {
     val bind = Seq(
       user.map { u => 'current_user_guid -> toParameterValue(u.guid) },
       guid.map { v => 'guid -> toParameterValue(v) },
-      organization_guid.map { v => 'organization_guid -> toParameterValue(v) },
-      user_guid.map { v => 'user_guid -> toParameterValue(v) },
-      can_be_reviewed_by.map { user => 'reviewing_user_guid -> toParameterValue(user.guid) },
-      role.map { role => 'role -> toParameterValue(role) }
+      organizationGuid.map { v => 'organization_guid -> toParameterValue(v) },
+      organizationKey.map { v => 'organization_key -> toParameterValue(v) },
+      userGuid.map { v => 'user_guid -> toParameterValue(v) },
+      role.map { v => 'role -> toParameterValue(v) },
+      canBeReviewedByGuid.map { v => 'reviewing_user_guid -> toParameterValue(v) }
     ).flatten
 
     DB.withConnection { implicit c =>

@@ -1,0 +1,43 @@
+@(tpl: models.MainTemplate,
+  requests: lib.PaginatedCollection[client.Apidoc.MembershipRequest])(implicit flash: Flash)
+
+@main(tpl) {
+
+  @if(requests.isEmpty) {
+    <em>There are no membership requests</em>
+
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @requests.items.map { request =>
+         <tr>
+           <td>
+               @helper.form(action = routes.MembershipRequestReviews.accept(tpl.org.get.key, request.guid)) {
+                 <button class="btn btn-primary" type="submit">Accept</button>
+               }
+           </td>
+           <td>
+               @helper.form(action = routes.MembershipRequestReviews.decline(tpl.org.get.key, request.guid)) {
+                 <button class="btn btn-primary" type="submit">Decline</button>
+               }
+           </td>
+           <td>@request.role</td>
+           <td>@request.user_name &lt;@request.user_email&gt;</td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+    @if(requests.hasPrevious || requests.hasNext) {
+      <ul class="pager">
+        @if(requests.hasPrevious) {
+          <li><a href="@routes.Organizations.membershipRequests(tpl.org.get.key, requests.page - 1)">Previous</a></li>
+        }
+        @if(requests.hasNext) {
+          <li><a href="@routes.Organizations.membershipRequests(tpl.org.get.key, requests.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

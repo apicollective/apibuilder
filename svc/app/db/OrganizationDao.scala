@@ -28,7 +28,7 @@ object OrganizationDao {
   def createWithAdministrator(user: User, name: String): Organization = {
     DB.withTransaction { implicit c =>
       val org = create(user, name)
-      Membership.upsert(user, org, user, Role.Admin.key)
+      Membership.upsert(user, org, user, Role.Admin)
       OrganizationLog.create(user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
     }
@@ -54,28 +54,16 @@ object OrganizationDao {
     org
   }
 
-  def findByUserAndName(user: User, name: String): Option[Organization] = {
-    findByUserAndKey(user, UrlKey.generate(name))
-  }
-
-  def findByUserAndKey(user: User, key: String): Option[Organization] = {
-    findAll(user_guid = user.guid, key = Some(key), limit = 1).headOption
-  }
-
-  def findByUserAndGuid(user: User, guid: UUID): Option[Organization] = {
-    findAll(user_guid = user.guid, guid = Some(guid.toString), limit = 1).headOption
-  }
-
-  def findAll(user_guid: String,
-              guid: Option[String] = None,
-              name: Option[String] = None,
+  def findAll(guid: Option[String] = None,
+              userGuid: Option[String] = None,
               key: Option[String] = None,
+              name: Option[String] = None,
               limit: Int = 50,
               offset: Int = 0): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      userGuid.map { v => "and guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
       guid.map { v => "and guid = {guid}::uuid" },
-      Some("and guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"),
       key.map { v => "and key = lower(trim({key}))" },
       name.map { v => "and lower(name) = lower(trim({name}))" },
       Some(s"order by lower(name) limit ${limit} offset ${offset}")
@@ -83,7 +71,7 @@ object OrganizationDao {
 
     val bind = Seq(
       guid.map { v => 'guid -> toParameterValue(v) },
-      Some('user_guid -> toParameterValue(user_guid)),
+      userGuid.map { v => 'user_guid -> toParameterValue(v) },
       key.map { v => 'key -> toParameterValue(v) },
       name.map { v => 'name -> toParameterValue(v) }
     ).flatten

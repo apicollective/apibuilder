@@ -19,7 +19,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]) = {
 
     request.session.get("user_guid").map { userGuid =>
-      val user = Await.result(masterClient.users.findByGuid(userGuid), 100 millis)
+      val user = Await.result(masterClient.users.findByGuid(userGuid), 1500 millis)
       user match {
 
         case None => {

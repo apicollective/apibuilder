@@ -2,10 +2,10 @@ GET        /_internal_/healthcheck     controllers.Internal.healthcheck
 
 GET        /users                          controllers.Users.get(guid: Option[String], email: Option[String], token: Option[String])
 POST       /users                          controllers.Users.post()
-GET        /organizations                  controllers.Organizations.get(guid: Option[String], key: Option[String], name: Option[String], limit: Int ?= 50, offset: Int ?= 0)
+GET        /organizations                  controllers.Organizations.get(guid: Option[String], userGuid: Option[String], key: Option[String], name: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 POST       /organizations                  controllers.Organizations.post()
 GET        /memberships                    controllers.Memberships.get(organization_guid: Option[String], user_guid: Option[String], role: Option[String], limit: Int ?= 50, offset: Int ?= 0)
-GET        /membership_requests            controllers.MembershipRequests.get(organization_guid: Option[String], user_guid: Option[String], role: Option[String], limit: Int ?= 50, offset: Int ?= 0)
+GET        /membership_requests            controllers.MembershipRequests.get(organization_guid: Option[String], organization_key: Option[String], can_be_reviewed_by_guid: Option[String], user_guid: Option[String], role: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 POST       /membership_requests            controllers.MembershipRequests.post()
 POST       /membership_request_reviews     controllers.MembershipRequestReviews.post()
 GET        /:org                           controllers.Services.get(org: String, name: Option[String], key: Option[String], limit: Int ?= 50, offset: Int ?= 0)

@@ -15,10 +15,11 @@ object Application extends Controller {
       orgs <- request.client.organizations.findAll(userGuid = request.user.guid,
                                                    limit = Pagination.DefaultLimit+1,
                                                    offset = orgsPage * Pagination.DefaultLimit)
-      membershipRequests <- request.client.membershipRequests.findAll(userGuid = request.user.guid,
+      membershipRequests <- request.client.membershipRequests.findAll(userGuid = Some(request.user.guid),
                                                                       limit = Pagination.DefaultLimit+1,
                                                                       offset = membershipRequestsPage * Pagination.DefaultLimit)
     } yield {
+      println("membershipRequests: " + membershipRequests)
       Ok(views.html.index(request.user,
                           PaginatedCollection(orgsPage, orgs),
                           PaginatedCollection(membershipRequestsPage, membershipRequests)))

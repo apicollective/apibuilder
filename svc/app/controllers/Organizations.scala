@@ -1,13 +1,14 @@
 package controllers
 
+import lib.Validation
 import db.{ Organization, OrganizationDao }
 import play.api.mvc._
 import play.api.libs.json.Json
 
 object Organizations extends Controller {
 
-  def get(guid: Option[String], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val orgs = OrganizationDao.findAll(user_guid = request.user.guid,
+  def get(guid: Option[String], userGuid: Option[String], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
+    val orgs = OrganizationDao.findAll(userGuid = userGuid,
                                        guid = guid,
                                        key = key,
                                        name = name,
@@ -19,18 +20,18 @@ object Organizations extends Controller {
   def post() = Authenticated(parse.json) { request =>
     (request.body \ "name").asOpt[String] match {
       case None => {
-        BadRequest("name is required")
+        BadRequest(Json.toJson(Validation.error("name is required")))
       }
 
       case Some(name: String) => {
-        OrganizationDao.findByUserAndName(request.user, name) match {
+        OrganizationDao.findAll(name = Some(name), limit = 1).headOption match {
           case None => {
             val org = OrganizationDao.createWithAdministrator(request.user, name)
             Ok(Json.toJson(org))
           }
 
           case Some(org: Organization) => {
-            BadRequest("Org with this name already exists")
+            BadRequest(Json.toJson(Validation.error("Org with this name already exists")))
           }
         }
       }

@@ -1,5 +1,6 @@
 package db
 
+import core.Role
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -51,8 +52,8 @@ object Membership {
      where memberships.deleted_at is null
   """
 
-  def upsert(createdBy: User, organization: Organization, user: User, role: String): Membership = {
-    findByOrganizationAndUserAndRole(organization, user, role) match {
+  def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+    findByOrganizationAndUserAndRole(organization, user, role.key) match {
       case Some(r: Membership) => r
       case None => {
         create(createdBy, organization, user, role)
@@ -60,7 +61,7 @@ object Membership {
     }
   }
 
-  private def create(createdBy: User, organization: Organization, user: User, role: String): Membership = {
+  private def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
       SQL("""
@@ -71,7 +72,7 @@ object Membership {
           """).on('guid -> guid,
                   'organization_guid -> organization.guid,
                   'user_guid -> user.guid,
-                  'role -> role,
+                  'role -> role.key,
                   'created_by_guid -> createdBy.guid).execute()
     }
 

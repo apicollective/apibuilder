@@ -1,13 +1,25 @@
-@()(implicit flash: Flash)
+@(form: Form[controllers.Organizations.OrgData])(implicit flash: Flash)
 
 @main(models.MainTemplate(title = "Add Organization")) {
   <div class="container">
 
-      <form method="post" action="/org/createPost">
-        <input type="text" name="name" class="input-block-level">
-        <button class="btn btn-large btn-primary" type="submit">Submit</button>
-      </form>
+    @helper.form(action = routes.Organizations.createPost) {
+
+      <fieldset>
+          <legend>Service Information</legend>
+
+          @helper.inputText(
+              form("name"),
+              '_label -> "Organization Name",
+              '_help -> "Your organization's name will be used to group your services together.",
+              '_error -> form.error("name")
+          )
+
+      </fieldset>
+
+      <button class="btn btn-large btn-primary" type="submit">Submit</button>
+
+    }
 
   </div>
-
 }

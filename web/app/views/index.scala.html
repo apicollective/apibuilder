@@ -29,12 +29,13 @@
     </ul>
   }
 
-  @if(membershipRequests.isEmpty) {
+  @if(!membershipRequests.isEmpty) {
+    <h2>Your pending membership requests</h2>
     <table class="table table-hover table-condensed">
       <tbody>
-        @membershipRequests.items.map { organization =>
+        @membershipRequests.items.map { mr =>
          <tr>
-           <td>Hey</td>
+           <td>@mr.organization_name - requested at @mr.created_at</td>
          </tr>
        }
       </tbody>

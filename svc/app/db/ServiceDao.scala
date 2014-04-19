@@ -79,10 +79,10 @@ object ServiceDao {
   }
 
   def findByOrganizationAndKey(org: Organization, key: String): Option[Service] = {
-    findAll(org_key = org.key, key = Some(key), limit = 1).headOption
+    findAll(orgKey = org.key, key = Some(key), limit = 1).headOption
   }
 
-  def findAll(org_key: String,
+  def findAll(orgKey: String,
               guid: Option[String] = None,
               name: Option[String] = None,
               key: Option[String] = None,
@@ -99,7 +99,7 @@ object ServiceDao {
 
     val bind = Seq(
       guid.map { v => 'guid -> toParameterValue(v) },
-      Some('organization_key -> toParameterValue(org_key)),
+      Some('organization_key -> toParameterValue(orgKey)),
       name.map { v => 'name -> toParameterValue(v) },
       key.map { v => 'key -> toParameterValue(v) }
     ).flatten

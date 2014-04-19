@@ -74,8 +74,8 @@ object LoginController extends Controller {
           val fullname = info.attributes.get("fullname")
           val imageUrl = info.attributes.get("image_url")
 
-          val user = Await.result(masterClient.users.findByEmail(email), 100 millis).getOrElse {
-            Await.result(masterClient.users.create(email, fullname, imageUrl), 100 millis)
+          val user = Await.result(masterClient.users.findByEmail(email), 1500 millis).getOrElse {
+            Await.result(masterClient.users.create(email, fullname, imageUrl), 1500 millis)
           }
           Redirect("/").withSession { "user_guid" -> user.guid }
         }

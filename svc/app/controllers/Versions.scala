@@ -1,5 +1,6 @@
 package controllers
 
+import lib.Validation
 import core.{ ServiceDescription, ServiceDescriptionValidator }
 import db.{ Organization, OrganizationDao, ServiceDao, User, Version, VersionDao }
 import play.api.mvc._
@@ -8,7 +9,7 @@ import play.api.libs.json.Json
 object Versions extends Controller {
 
   def getService(org: String, service: String, limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val versions = OrganizationDao.findByUserAndKey(request.user, org).flatMap { org =>
+    val versions = findOrganizationByUserAndKey(request.user, org).flatMap { org =>
       ServiceDao.findByOrganizationAndKey(org, service).map { service =>
         VersionDao.findAll(service_guid = service.guid,
                            limit = limit,
@@ -43,8 +44,11 @@ object Versions extends Controller {
   }
 
   def putServiceVersion(orgKey: String, serviceKey: String, version: String) = Authenticated(parse.json) { request =>
-    OrganizationDao.findByUserAndKey(request.user, orgKey) match {
-      case None => BadRequest(s"Organization[$orgKey] does not exist or you are not authorized to access it")
+    findOrganizationByUserAndKey(request.user, orgKey) match {
+      case None => {
+        BadRequest(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
+      }
+
       case Some(org: Organization) => {
 
         val validator = ServiceDescriptionValidator(request.body.toString)
@@ -62,7 +66,7 @@ object Versions extends Controller {
           NoContent
 
         } else {
-          BadRequest(validator.errors.mkString(", "))
+          BadRequest(Json.toJson(Validation.errors(validator.errors)))
 
         }
       }
@@ -78,7 +82,7 @@ object Versions extends Controller {
 
 
   private def getVersion(user: User, org: String, service: String, version: String): Option[Version] = {
-    OrganizationDao.findByUserAndKey(user, org).flatMap { org =>
+    findOrganizationByUserAndKey(user, org).flatMap { org =>
       ServiceDao.findByOrganizationAndKey(org, service).flatMap { service =>
         if (version == "latest") {
           VersionDao.findAll(service_guid = service.guid, limit = 1).headOption
@@ -87,6 +91,10 @@ object Versions extends Controller {
         }
       }
     }
+  }
+
+  private def findOrganizationByUserAndKey(user: User, org: String): Option[Organization] = {
+    OrganizationDao.findAll(userGuid = Some(user.guid), key = Some(org), limit = 1).headOption
   }
 
 }

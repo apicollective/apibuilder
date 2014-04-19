@@ -1,12 +1,16 @@
 @(tpl: models.MainTemplate,
-  org: client.Apidoc.Organization,
-  services: lib.PaginatedCollection[client.Apidoc.Service])(implicit flash: Flash)
+  services: lib.PaginatedCollection[client.Apidoc.Service],
+  haveRequests: Boolean)(implicit flash: Flash)
 
 @main(tpl) {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Versions.create(org.key)">Add service</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Versions.create(tpl.org.get.key)">Add service</a>
   </div>
+
+ @if(haveRequests) {
+    <p><em><a href="@routes.Organizations.membershipRequests(tpl.org.get.key)">Review pending membership requests</a></em></p>
+  }
 
   @if(services.isEmpty) {
     <em>There are no services defined</em>
@@ -23,17 +27,15 @@
       </tbody>
     </table>
 
-    @tpl.org.map { org =>
-      @if(services.hasPrevious || services.hasNext) {
-        <ul class="pager">
-          @if(services.hasPrevious) {
-            <li><a href="@routes.Organizations.show(org.key, services.page - 1)">Previous</a></li>
-          }
-          @if(services.hasNext) {
-            <li><a href="@routes.Organizations.show(org.key, services.page + 1)">Next</a></li>
-          }
-        </ul>
-      }
+    @if(services.hasPrevious || services.hasNext) {
+      <ul class="pager">
+        @if(services.hasPrevious) {
+          <li><a href="@routes.Organizations.show(tpl.org.get.key, services.page - 1)">Previous</a></li>
+        }
+        @if(services.hasNext) {
+          <li><a href="@routes.Organizations.show(tpl.org.get.key, services.page + 1)">Next</a></li>
+        }
+      </ul>
     }
   }
 

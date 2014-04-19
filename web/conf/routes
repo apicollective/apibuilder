@@ -1,8 +1,5 @@
 GET     /                                                         controllers.Application.index(orgsPage: Int ?= 0, membershipRequestsPage: Int ?= 0)
 
-POST    /memberships/approve                                      controllers.MembershipsController.approve(guid: String)
-POST    /memberships/decline                                      controllers.MembershipsController.decline(guid: String)
-
 GET     /login                                                    controllers.LoginController.redirect
 GET     /login/                                                   controllers.LoginController.index
 POST    /login/                                                   controllers.LoginController.indexPost
@@ -22,6 +19,9 @@ GET     /org/create                                               controllers.Or
 POST    /org/createPost                                           controllers.Organizations.createPost
 
 POST    /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
+GET     /:orgKey/membershipRequests                               controllers.Organizations.membershipRequests(orgKey: String, page: Int ?= 0)
+POST    /:orgKey/membership_request_reviews/accept                controllers.MembershipRequestReviews.accept(orgKey: String, membership_request_guid: String)
+POST    /:orgKey/membership_request_reviews/decline               controllers.MembershipRequestReviews.decline(orgKey: String, membership_request_guid: String)
 
 GET     /:orgKey                                                  controllers.Organizations.show(orgKey: String, page: Int ?= 0)
 # GET     /:orgKey/register                                       controllers.Organizations.register(orgKey: String)
