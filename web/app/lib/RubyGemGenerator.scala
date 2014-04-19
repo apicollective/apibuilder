@@ -19,22 +19,55 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val resourceDir = new File(moduleDir, "resources")
     resourceDir.mkdirs
 
-    val clientDir = new File(moduleDir, "client")
-    clientDir.mkdirs
+    val clientsDir = new File(moduleDir, "clients")
+    clientsDir.mkdirs
 
     service.resources.foreach { r =>
       val resourceFilename = s"${Text.singular(r.name)}.rb"
       writeToFile(new File(resourceDir, resourceFilename), generateResource(r))
 
       val clientFilename = s"${r.name}.rb"
-      writeToFile(new File(clientDir, clientFilename), generateClient(r))
-      println(generateClient(r))
+      writeToFile(new File(clientsDir, clientFilename), generateClientForResource(r))
     }
+
+    val clientFile = new File(moduleDir, "client.rb")
+    writeToFile(clientFile, generateClient)
+    println(generateClient)
+    println(clientFile)
 
     baseDir.toString
   }
 
-  def generateClient(resource: core.Resource): String = {
+  def generateClient(): String = {
+    val sb = scala.collection.mutable.ListBuffer[String]()
+    val url = service.baseUrl + service.basePath.getOrElse("")
+
+    sb.append(s"""
+module ${moduleName}
+
+  class Client
+
+    def initialize(authorization)
+      @url = '${url}'
+      @authorization = Preconditions.assert_class(authorization, Authorization)
+    end
+""")
+
+    service.resources.foreach { resource =>
+      sb.append("")
+      sb.append(s"    def ${resource.name}")
+      sb.append(s"      // TODO")
+      sb.append("    end")
+    }
+
+    sb.append("  end")
+    sb.append("")
+    sb.append("end")
+
+    sb.mkString("\n")
+  }
+
+  def generateClientForResource(resource: core.Resource): String = {
     val sb = scala.collection.mutable.ListBuffer[String]()
 
     sb.append("      def initialize(client)")
