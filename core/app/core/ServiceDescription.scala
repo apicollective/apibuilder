@@ -44,7 +44,7 @@ case class Operation(method: String,
                      response: Response)
 
 case class Field(name: String,
-                 dataType: String,
+                 dataType: String,  // TODO: Enum
                  description: Option[String] = None,
                  required: Boolean = true,
                  format: Option[String] = None,
@@ -159,12 +159,16 @@ object Response {
 object Field {
 
   def parse(json: JsObject): Field = {
+    val dataType = (json \ "type").as[String]
+    val default = asOptString(json, "default")
+    default.map { v => assertValidDefault(dataType, v) }
+
     Field(name = (json \ "name").as[String],
-          dataType = (json \ "type").as[String],
+          dataType = dataType,
           description = (json \ "description").asOpt[String],
           references = (json \ "references").asOpt[String].map { Reference(_) },
           required = (json \ "required").asOpt[Boolean].getOrElse(true),
-          default = asOptString(json, "default"),
+          default = default,
           minimum = (json \ "minimum").asOpt[Int],
           maximum = (json \ "maximum").asOpt[Int],
           format = (json \ "format").asOpt[String],
@@ -175,6 +179,14 @@ object Field {
     (json \ field) match {
       case (_: JsUndefined) => None
       case (v: JsValue) => Some(v.toString)
+    }
+  }
+
+  private def assertValidDefault(dataType: String, value: String) {
+    if (dataType == "boolean") {
+      if (value != "true" && value != "false") {
+        sys.error(s"defaults for boolean fields must be the string true or false and not[${value}]")
+      }
     }
   }
 

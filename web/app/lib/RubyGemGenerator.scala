@@ -38,16 +38,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
   def generateClient(resource: core.Resource): String = {
     val sb = scala.collection.mutable.ListBuffer[String]()
 
-    sb.append("      def initialize(client, uri)")
+    sb.append("      def initialize(client)")
     sb.append(s"        @client = Apidoc::Preconditions.assert_class(client, Apidoc::Client)")
-    sb.append(s"        @uri = Apidoc::Preconditions.assert_class(uri, String)")
-    sb.append("      end")
-
-    sb.append("")
-    sb.append("      def new_request(verb, path=nil)")
-    sb.append("        Preconditions.assert_class(verb, Apidoc::HttpVerb)")
-    sb.append("        Preconditions.assert_class_or_nil(path, String)")
-    sb.append("        ApidocRequest.new(@uri + path.to_s, verb)")
     sb.append("      end")
 
     resource.operations.foreach { op =>
@@ -58,42 +50,82 @@ case class RubyGemGenerator(service: ServiceDescription) {
       val pathParams = op.parameters.filter { p => namedParams.contains(p.name) }
       val otherParams = op.parameters.filter { p => !namedParams.contains(p.name) }
 
-      val paramString = new StringBuilder()
-      paramString.append(pathParams.map(_.name).mkString(", "))
+      val paramStrings = scala.collection.mutable.ListBuffer[String]()
+      pathParams.map(_.name).foreach { n => paramStrings.append(n) }
+
+      val hasQueryParams = (!GeneratorUtil.isJsonDocumentMethod(op.method) && !otherParams.isEmpty)
+      if (hasQueryParams) {
+        paramStrings.append("opts={}")
+      }
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        if (!pathParams.isEmpty) {
-          paramString.append(", ")
-        }
-        // TODO: Check for collision on the name json
-        paramString.append("json")
-      } else if (!otherParams.isEmpty) {
-        if (!pathParams.isEmpty) {
-          paramString.append(", ")
-        }
-        paramString.append("opts={}")
+        paramStrings.append("json_document")
       }
 
       sb.append("")
-      sb.append(s"      def ${methodName}(" + paramString.toString + ")")
+      op.description.map { desc =>
+        sb.append(s"      # ${desc}")
+      }
+      sb.append(s"      def ${methodName}(" + paramStrings.mkString(", ") + ")")
 
       pathParams.foreach { param =>
         val klass = rubyClass(param.dataType)
         sb.append(s"        Apidoc::Preconditions.assert_class(${param.name}, ${klass})")
       }
 
-      if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-          sb.append(s"        Apidoc::Preconditions.assert_class_or_nil(json, String)")
+      if (hasQueryParams) {
+        val paramBuilder = scala.collection.mutable.ListBuffer[String]()
 
-      } else {
         otherParams.foreach { param =>
+          val assertMethod = if (param.required) { "assert_class" } else { "assert_class_or_nil" }
           val klass = rubyClass(param.dataType)
-          sb.append(s"        ${param.name} = Apidoc::Preconditions.assert_class_or_nil(opts.delete(:${param.name}), ${klass})")
-          if (param.required) {
-          sb.append(s"        Apidoc::Preconditions.check_not_null(${param.name}, '${param.name} is required')")
+          paramBuilder.append(s":${param.name} => Apidoc::Preconditions.${assertMethod}(opts.delete(:${param.name}), ${klass})")
+        }
+
+        sb.append("        query = {")
+        sb.append("          " + paramBuilder.mkString(",\n          "))
+        sb.append("        }")
+        sb.append(s"        Apidoc::Preconditions.assert_empty_opts(opts)")
+      }
+
+      val rubyPath = if (namedParams.isEmpty) {
+        path
+      } else {
+        "/" + path.split("/").flatMap { name =>
+          if (name.startsWith(":")) {
+            "#{" + name.slice(1, name.length) + "}"
+          } else {
+            name
           }
+        }.mkString("/")
+      }
+
+      val requestBuilder = new StringBuilder()
+      requestBuilder.append("Apidoc::Request.new(\"" + rubyPath + "\")")
+
+      if (hasQueryParams) {
+        requestBuilder.append(".with_query(query)")
+      }
+
+      if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
+        sb.append(s"        Apidoc::Preconditions.assert_not_empty(json_document, String)")
+        requestBuilder.append(s".${op.method.toLowerCase}(json_document)")
+      } else {
+        requestBuilder.append(s".${op.method.toLowerCase}()")
+      }
+
+      val responseBuilder = new StringBuilder()
+      op.response.resource match {
+        case None => {}
+        case Some(resourceName: String) => {
+          if (op.response.multiple) {
+            responseBuilder.append(".map")
+          }
+          responseBuilder.append(s" { v => ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.from_hash(v) } ")
         }
       }
+
+      sb.append(s"        ${requestBuilder.toString}${responseBuilder.toString}")
 
       sb.append("      end")
     }
@@ -125,29 +157,21 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append("      def initialize(opts={})")
 
     resource.fields.map { field =>
+      if (field.default.isEmpty) {
+        sb.append(s"        @${field.name} = opts.delete(:${field.name})")
+      } else if (field.dataType == "string") {
+        sb.append(s"        @${field.name} = opts.delete(:${field.name}) || \'#{field.default}\'")
+      } else if (field.dataType == "boolean") {
+        sb.append(s"        @${field.name} = opts.has_key?(:${field.name}) ? (opts.delete(:${field.name}) ? true : false) : #{field.default}")
+      } else {
+        sb.append(s"        @${field.name} = opts.delete(:${field.name}) || #{field.default}")
+      }
+
       val klass = rubyClass(field.dataType)
-
-      sb.append(s"        @${field.name} = opts.delete(:${field.name})")
-
-      if (!field.default.isEmpty) {
-        if (klass == "String") {
-          sb.append(s"        @${field.name} ||= \'#{field.default}\'")
-        } else {
-          sb.append(s"        @${field.name} ||= #{field.default}")
-        }
-
-      }
-
-      sb.append(s"        Apidoc::Preconditions.assert_class_or_nil(@${field.name}, ${klass})")
-
-      if (field.required) {
-        sb.append(s"        Apidoc::Preconditions.check_not_nil(@${field.name}, \'${field.name} is required\')")
-      }
-
+      val assertMethod = if (field.required) { "assert_class" } else { "assert_class_or_nil" }
+      sb.append(s"        Apidoc::Preconditions.${assertMethod}(@${field.name}, ${klass})")
       sb.append("")
-
     }
-
 
     sb.append("        Apidoc::Preconditions.check_empty_opts(opts)")
     sb.append("      end")
