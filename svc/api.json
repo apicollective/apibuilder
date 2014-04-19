@@ -24,7 +24,9 @@
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
-                    "response": ["user"]
+                    "responses": [
+                        { "code": 200, "result": ["user"] }
+                    ]
                 },
 
                 {
@@ -35,7 +37,9 @@
                         { "name": "name", "type": "string", "required": false },
                         { "name": "image_url", "type": "string", "required": false }
                     ],
-                    "response": "user"
+                    "responses": [
+                        { "code": 200, "result": "user" }
+                    ]
                 }
 
             ]
@@ -61,7 +65,9 @@
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
-                    "response": ["organization"]
+                    "responses": [
+                        { "code": 200, "result": ["organization"] }
+                    ]
                 },
 
                 {
@@ -70,7 +76,9 @@
                     "parameters": [
                         { "name": "name", "type": "string" }
                     ],
-                    "response": "organization"
+                    "responses": [
+                        { "code": 200, "result": "organization" }
+                    ]
                 }
 
             ]
@@ -97,7 +105,9 @@
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
-                    "response": ["membership"]
+                    "responses": [
+                        { "code": 200, "result": ["membership"] }
+                    ]
                 }
             ]
         },
@@ -124,7 +134,9 @@
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
-                    "response": ["membership_request"]
+                    "responses": [
+                        { "code": 200, "result": ["membership_request"] }
+                    ]
                 },
 
                 {
@@ -135,7 +147,9 @@
                         { "name": "user_guid", "type": "string", "description": "Find memberships for this user" },
                         { "name": "role", "type": "string", "description": "Limit to memberships with this role" }
                     ],
-                    "response": "membership_request"
+                    "responses": [
+                        { "code": 200, "result": "membership_request" }
+                    ]
                 }
 
             ]
@@ -156,7 +170,9 @@
                         { "name": "membership_request_guid", "type": "string" },
                         { "name": "action", "type": "string" }
                     ],
-                    "response_code": 204
+                    "responses": [
+                        { "code": 201, "result": "membership_request_review" }
+                    ]
                 }
             ]
         },
@@ -182,7 +198,9 @@
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
-                    "response": ["service"]
+                    "responses": [
+                        { "code": 200, "result": ["service"] }
+                    ]
                 },
 
                 {
@@ -193,7 +211,9 @@
                         { "name": "org", "type": "string", "description": "Organization key." },
                         { "name": "service", "type": "string", "description": "The service key.", "example": "apidoc" }
                     ],
-                    "response_code": 204
+                    "responses": [
+                        { "code": 204 }
+                    ]
                 }
 
             ]
@@ -230,7 +250,10 @@
                         { "name": "org", "type": "string", "description": "Organization key." },
                         { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" }
                     ],
-                    "response": "version"
+                    "responses": [
+                        { "code": 200, "result": "version" },
+                        { "code": 400, "description": "If version is not found" }
+                    ]
                 },
 
                 {
@@ -242,19 +265,23 @@
                         { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },
                         { "name": "version", "type": "string", "description": "The version number. You can specify latest to always get the latest version of this service.", "example": "1.0.0 or latest" }
                     ],
-                    "response": "version"
+                    "responses": [
+                        { "code": 200, "result": "version" }
+                    ]
                 },
 
                 {
                     "method": "PUT",
                     "path": "/:service/:version",
-                    "description": "Create a version of this service by PUTing the contents of an api.json file. The service interface is fully described by the file you post. Example: curl -X PUT -H 'X-Auth: token' -d @api.json 'http://localhost:9000/gilt/apiserver/1.0.0'",
+                    "description": "Create a version of this service by PUTing the contents of an api.json file. The service interface is fully described by the file you post. Example: curl -X PUT -u 'token:' -d @api.json 'http://localhost:9000/gilt/apiserver/1.0.0'",
                     "parameters": [
                         { "name": "org", "type": "string", "description": "Organization key." },
                         { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },
                         { "name": "version", "type": "string", "description": "The version number. You can specify latest to always get the latest version of this service.", "example": "1.0.0 or latest" }
                     ],
-                    "response_code": 204
+                    "responses": [
+                        { "code": 201, "result": "version" }
+                    ]
                 },
 
                 {
@@ -266,7 +293,9 @@
                         { "name": "service", "type": "string", "description": "The service key", "example": "apidoc" },
                         { "name": "version", "type": "string", "description": "The version number. You can specify latest to always get the latest version of this service.", "example": "1.0.0 or latest" }
                     ],
-                    "response_code": 204
+                    "responses": [
+                        { "code": 204 }
+                    ]
                 }
             ]
         }

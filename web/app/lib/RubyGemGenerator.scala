@@ -28,6 +28,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
       val clientFilename = s"${r.name}.rb"
       writeToFile(new File(clientDir, clientFilename), generateClient(r))
+      println(generateClient(r))
     }
 
     baseDir.toString
@@ -41,12 +42,27 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append("      end")
 
     resource.operations.foreach { op =>
-      val methodName = op.method.toLowerCase + op.path.getOrElse("").split("/").mkString("_")
-
       val path = resource.path + op.path.getOrElse("")
+
       val namedParams = GeneratorUtil.namedParametersInPath(path)
       val pathParams = op.parameters.filter { p => namedParams.contains(p.name) }
       val otherParams = op.parameters.filter { p => !namedParams.contains(p.name) }
+
+      val rubyPath = path.split("/").map { name =>
+        if (name.startsWith(":")) {
+          "#{" + name.slice(1, name.length) + "}"
+        } else {
+          name
+        }
+      }.mkString("/")
+
+      val methodName = op.method.toLowerCase + op.path.getOrElse("").split("/").map { name =>
+        if (name.startsWith(":")) {
+          name.slice(1, name.length)
+        } else {
+          name
+        }
+      }.mkString("_")
 
       val paramStrings = scala.collection.mutable.ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
@@ -84,18 +100,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
         sb.append(s"        Apidoc::Preconditions.assert_empty_opts(opts)")
       }
 
-      val rubyPath = if (namedParams.isEmpty) {
-        path
-      } else {
-        "/" + path.split("/").flatMap { name =>
-          if (name.startsWith(":")) {
-            "#{" + name.slice(1, name.length) + "}"
-          } else {
-            name
-          }
-        }.mkString("/")
-      }
-
       val requestBuilder = new StringBuilder()
       requestBuilder.append("Apidoc::Request.new(\"" + rubyPath + "\")")
 
@@ -111,18 +115,20 @@ case class RubyGemGenerator(service: ServiceDescription) {
       }
 
       val responseBuilder = new StringBuilder()
-      op.response.resource match {
-        case None => {
-          println("OP HAS NORESPONSE: " + op.response)
-          // TODO: maybe we should assert the response code here
-          responseBuilder.append("\n        nil")
-        }
-
-        case Some(resourceName: String) => {
-          if (op.response.multiple) {
-            responseBuilder.append(".map")
+      // TODO: match on all response codes
+      op.responses.headOption.map { response =>
+        response.resource match {
+          case None => {
+            // TODO: match on response code
+            responseBuilder.append("\n        nil")
           }
-          responseBuilder.append(s" { hash => ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.new(hash) } ")
+
+          case Some(resourceName: String) => {
+            if (op.responses.head.multiple) {
+              responseBuilder.append(".map")
+            }
+            responseBuilder.append(s" { hash => ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.new(hash) } ")
+          }
         }
       }
 

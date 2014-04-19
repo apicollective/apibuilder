@@ -41,7 +41,7 @@ case class Operation(method: String,
                      path: Option[String],
                      description: Option[String],
                      parameters: Seq[Field],
-                     response: Response)
+                     responses: Seq[Response])
 
 case class Field(name: String,
                  dataType: Datatype,
@@ -97,10 +97,17 @@ object Resource {
              }
            }
 
+           val responses = (json \ "responses").asOpt[JsArray] match {
+             case None => Seq.empty
+             case Some(a: JsArray) => {
+               a.value.map { data => Response.parse(data.as[JsObject]) }
+             }
+           }
+
            Operation(method = (json \ "method").as[String],
                      path = (json \ "path").asOpt[String],
                      description = (json \ "description").asOpt[String],
-                     response = Response.parse(json.as[JsObject]),
+                     responses = responses,
                      parameters = parameters)
          }
        }
@@ -119,42 +126,31 @@ object Resource {
 object Response {
 
   def parse(json: JsObject): Response = {
-    (json \ "response_code").asOpt[Int] match {
-
-      case Some(code: Int) => {
+    val code = (json \ "code").as[Int]
+    (json \ "result") match {
+      case (v: JsUndefined) => {
         Response(code = code)
       }
 
-      case None => {
-        (json \ "response").asOpt[JsValue] match {
-
-          case None => {
-            sys.error("Missing response. Must contain either 'response' or 'response_code' key")
-          }
-
-          case Some(v: JsArray) => {
-            assert(v.value.size == 1,
-                   "When an array, response must contain exactly 1 element: %s".format(v.value.mkString(", ")))
-            Response(code = 200,
-                     resource = Some(v.value.head.as[JsString].value),
-                     multiple = true)
-          }
-
-          case Some(v: JsString) => {
-            Response(code = 200,
-                     resource = Some(v.value))
-          }
-
-          case Some(v: Any) => {
-            sys.error(s"Could not parse response: $v")
-          }
-        }
-
+      case v: JsString => {
+        Response(code = code,
+                 resource = Some(v.value),
+                 multiple = false)
       }
 
+      case v: JsArray => {
+        assert(v.value.size == 1,
+               "When an array, response must contain exactly 1 element: %s".format(v.value.mkString(", ")))
+        Response(code = code,
+                 resource = Some(v.value.head.as[JsString].value),
+                 multiple = true)
+      }
+
+      case v: Any => {
+        sys.error(s"Unhandled response value[$v]")
+      }
     }
   }
-
 }
 
 object Datatype {

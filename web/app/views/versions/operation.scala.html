@@ -11,12 +11,16 @@
 }
 
 <h3>Response</h3>
-HTTP @operation.response.code
-<br/>
-@operation.response.resource.map { resource =>
-  @if(operation.response.multiple) {
-    List[@resource]
-  } else {
-    @resource
-  }
+@operation.responses.map { response =>
+
+  <p>
+    HTTP @response.code:
+    response.resource.map { resource =>
+      @if(response.multiple) {
+        List[@resource]
+      } else {
+        @resource
+      }
+    }
+  </p>
 }
