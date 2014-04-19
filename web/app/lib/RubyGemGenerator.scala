@@ -1,6 +1,6 @@
 package lib
 
-import core.{ ServiceDescription, Resource }
+import core.{ Datatype, Field, ServiceDescription, Resource }
 import java.io.File
 
 /**
@@ -77,14 +77,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
         val paramBuilder = scala.collection.mutable.ListBuffer[String]()
 
         otherParams.foreach { param =>
-          val assertMethod = if (param.required) { "assert_class" } else { "assert_class_or_nil" }
-          val klass = rubyClass(param.dataType)
-          paramBuilder.append(s":${param.name} => Apidoc::Preconditions.${assertMethod}(opts.delete(:${param.name}), ${klass})")
+          paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
         }
 
         sb.append("        query = {")
         sb.append("          " + paramBuilder.mkString(",\n          "))
-        sb.append("        }")
+        sb.append("        }.compact")
         sb.append(s"        Apidoc::Preconditions.assert_empty_opts(opts)")
       }
 
@@ -130,14 +128,19 @@ case class RubyGemGenerator(service: ServiceDescription) {
       sb.append("      end")
     }
 
-    wrap("Clients", Text.underscoreToInitCap(resource.name), sb.mkString("\n"))
+    wrap("Clients", Text.underscoreToInitCap(resource.name), resource.description, sb.mkString("\n"))
   }
 
-  def wrap(submoduleName: String, className: String, body: String): String = {
+  def wrap(submoduleName: String, className: String, comments: Option[String], body: String): String = {
+    val classWithComments = comments match {
+      case None => s"    class ${className}"
+      case Some(c: String) => s"    # ${c}\n    class ${className}"
+    }
+
     Seq(
       s"module ${moduleName}",
       s"  module ${submoduleName}",
-      s"    class ${className}",
+      classWithComments,
       body,
       "    end",
       "  end",
@@ -157,34 +160,37 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append("      def initialize(opts={})")
 
     resource.fields.map { field =>
-      if (field.default.isEmpty) {
-        sb.append(s"        @${field.name} = opts.delete(:${field.name})")
-      } else if (field.dataType == "string") {
-        sb.append(s"        @${field.name} = opts.delete(:${field.name}) || \'#{field.default}\'")
-      } else if (field.dataType == "boolean") {
-        sb.append(s"        @${field.name} = opts.has_key?(:${field.name}) ? (opts.delete(:${field.name}) ? true : false) : #{field.default}")
-      } else {
-        sb.append(s"        @${field.name} = opts.delete(:${field.name}) || #{field.default}")
-      }
-
-      val klass = rubyClass(field.dataType)
-      val assertMethod = if (field.required) { "assert_class" } else { "assert_class_or_nil" }
-      sb.append(s"        Apidoc::Preconditions.${assertMethod}(@${field.name}, ${klass})")
-      sb.append("")
+      sb.append(s"        @${field.name} = ${parseArgument(field)}")
     }
 
     sb.append("        Apidoc::Preconditions.check_empty_opts(opts)")
     sb.append("      end")
 
-    wrap("Resources", Text.underscoreToInitCap(resourceNameSingular), sb.mkString("\n"))
+    wrap("Resources", Text.underscoreToInitCap(resourceNameSingular), None, sb.mkString("\n"))
   }
 
-  private def rubyClass(dataType: String): String = {
+  private def parseArgument(field: Field): String = {
+    val value = if (field.default.isEmpty) {
+      s"opts.delete(:${field.name})"
+    } else if (field.dataType == Datatype.String) {
+      s"opts.delete(:${field.name}) || \'${field.default.get}\'"
+    } else if (field.dataType == Datatype.Boolean) {
+      s"opts.has_key?(:${field.name}) ? (opts.delete(:${field.name}) ? true : false) : ${field.default.get}"
+    } else {
+      s"opts.delete(:${field.name}) || ${field.default.get}"
+    }
+
+    val assertMethod = if (field.required) { "assert_class" } else { "assert_class_or_nil" }
+    val klass = rubyClass(field.dataType)
+    s"Apidoc::Preconditions.${assertMethod}(${value}, ${klass})"
+  }
+
+  private def rubyClass(dataType: Datatype): String = {
     dataType match {
-      case "string" => "String"
-      case "long" => "Integer"
-      case "integer" => "Integer"
-      case "boolean" => "String"
+      case Datatype.String => "String"
+      case Datatype.Long => "Integer"
+      case Datatype.Integer => "Integer"
+      case Datatype.Boolean => "String"
       case _ => {
         sys.error(s"Cannot map data type[${dataType}] to ruby class")
       }

@@ -1,6 +1,6 @@
 package lib
 
-import core.{ Field, Operation, Resource, ServiceDescription }
+import core.{ Datatype, Field, Operation, Resource, ServiceDescription }
 import io.Source
 
 /**
@@ -83,10 +83,10 @@ case class Play2RouteGenerator(service: ServiceDescription) {
 
     private def scalaDataType(param: Field): String = {
       val scalaType = param.dataType match {
-        case "string" => "String"
-        case "long" => "Long"
-        case "integer" => "Int"
-        case "boolean" => "Boolean"
+        case Datatype.String => "String"
+        case Datatype.Long => "Long"
+        case Datatype.Integer => "Int"
+        case Datatype.Boolean => "Boolean"
         case _ => {
           sys.error(s"Cannot map data type[${param.dataType}] to scala type")
         }

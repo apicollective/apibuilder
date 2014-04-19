@@ -44,15 +44,17 @@ case class Operation(method: String,
                      response: Response)
 
 case class Field(name: String,
-                 dataType: String,  // TODO: Enum
+                 dataType: Datatype,
                  description: Option[String] = None,
                  required: Boolean = true,
                  format: Option[String] = None,
                  references: Option[Reference] = None,
                  default: Option[String] = None,
                  example: Option[String] = None,
-                 minimum: Option[Int] = None,
-                 maximum: Option[Int] = None)
+                 minimum: Option[Long] = None,
+                 maximum: Option[Long] = None)
+
+case class Datatype(name: String)
 
 case class Reference(resource: String, field: String) {
 
@@ -155,22 +157,41 @@ object Response {
 
 }
 
+object Datatype {
+
+  val String = Datatype("string")
+  val Integer = Datatype("integer")
+  val Long = Datatype("long")
+  val Boolean = Datatype("boolean")
+
+  val All = Seq(String, Integer, Long, Boolean)
+
+  def findByName(name: String): Option[Datatype] = {
+    All.find { dt => dt.name == name }
+  }
+
+}
+
 
 object Field {
 
   def parse(json: JsObject): Field = {
-    val dataType = (json \ "type").as[String]
+    val datatypeName = (json \ "type").as[String]
+    val datatype = Datatype.findByName(datatypeName).getOrElse {
+      sys.error(s"Invalid datatype[${datatypeName}]")
+    }
+
     val default = asOptString(json, "default")
-    default.map { v => assertValidDefault(dataType, v) }
+    default.map { v => assertValidDefault(datatype, v) }
 
     Field(name = (json \ "name").as[String],
-          dataType = dataType,
+          dataType = datatype,
           description = (json \ "description").asOpt[String],
           references = (json \ "references").asOpt[String].map { Reference(_) },
           required = (json \ "required").asOpt[Boolean].getOrElse(true),
           default = default,
-          minimum = (json \ "minimum").asOpt[Int],
-          maximum = (json \ "maximum").asOpt[Int],
+          minimum = (json \ "minimum").asOpt[Long],
+          maximum = (json \ "maximum").asOpt[Long],
           format = (json \ "format").asOpt[String],
           example = asOptString(json, "example"))
   }
@@ -182,14 +203,23 @@ object Field {
     }
   }
 
-  private def assertValidDefault(dataType: String, value: String) {
-    if (dataType == "boolean") {
-      if (value != "true" && value != "false") {
-        sys.error(s"defaults for boolean fields must be the string true or false and not[${value}]")
+  private def assertValidDefault(dataType: Datatype, value: String) {
+    dataType match {
+      case Datatype.Boolean => {
+        if (value != "true" && value != "false") {
+          sys.error(s"defaults for boolean fields must be the string true or false and not[${value}]")
+        }
+      }
+
+      case Datatype.Integer => {
+        value.toInt
+      }
+
+      case Datatype.Long => {
+        value.toLong
       }
     }
   }
-
 
 }
 
