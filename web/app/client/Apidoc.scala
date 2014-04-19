@@ -3,12 +3,14 @@ package client
 import play.api.libs.json._
 import play.api.libs.ws._
 import scala.concurrent.Future
+import com.ning.http.client.Realm.AuthScheme
 
 object Apidoc {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
   private val BaseUrl = "http://localhost:9001"
   private val Token = "ZdRD61ODVPspeV8Wf18EmNuKNxUfjfROyJXtNJXj9GMMwrAxqi8I4aUtNAT6"
+  private val Password = ""
 
   lazy val organizations = OrganizationsResource(s"$BaseUrl/organizations")
   lazy val membershipRequests = MembershipRequestsResource(s"$BaseUrl/membership_requests")
@@ -18,7 +20,7 @@ object Apidoc {
 
   def wsUrl(url: String) = {
     println("URL: " + url)
-    WS.url(url).withHeaders("X-Auth" -> Token)
+    WS.url(url).withAuth(Token, Password, AuthScheme.BASIC)
   }
 
   case class Organization(guid: String, name: String, key: String)

@@ -4,30 +4,30 @@ import db.{ User, UserDao }
 import play.api.mvc._
 import play.api.mvc.Results.Unauthorized
 import scala.concurrent.Future
+import util.BasicAuthorization
 
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request)
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]) = {
-    request.headers.get("X-Auth").map { token =>
 
-      UserDao.findByToken(token) match {
+    BasicAuthorization.get(request.headers) match {
 
-        case None => {
-          Future.successful(Unauthorized("Invalid token"))
+      case Some(auth: BasicAuthorization.Token) => {
+        UserDao.findByToken(auth.token) match {
+
+          case Some(u: User) => block(new AuthenticatedRequest(u, request))
+
+          case None => Future.successful(Unauthorized("Invalid token"))
+
         }
-
-        case Some(u: User) => {
-          block(new AuthenticatedRequest(u, request))
-        }
-
       }
 
-    } getOrElse {
-      Future.successful(Unauthorized("Missing token header"))
+      case _ => Future.successful(Unauthorized("Missing authorization token"))
 
     }
 
   }
+
 }
