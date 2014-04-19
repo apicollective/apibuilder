@@ -22,14 +22,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val clientDir = new File(moduleDir, "client")
     clientDir.mkdirs
 
-    service.resources.find { r => r.name == "users" }.foreach { r =>
+    service.resources.foreach { r =>
       val resourceFilename = s"${Text.singular(r.name)}.rb"
       writeToFile(new File(resourceDir, resourceFilename), generateResource(r))
-      println(generateResource(r))
 
       val clientFilename = s"${r.name}.rb"
-      writeToFile(new File(resourceDir, clientFilename), generateClient(r))
-      println(generateClient(r))
+      writeToFile(new File(clientDir, clientFilename), generateClient(r))
     }
 
     baseDir.toString
@@ -106,7 +104,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       }
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        sb.append(s"        Apidoc::Preconditions.assert_not_empty(json_document, String)")
+        sb.append(s"        Apidoc::Preconditions.assert_not_blank(json_document, String)")
         requestBuilder.append(s".${op.method.toLowerCase}(json_document)")
       } else {
         requestBuilder.append(s".${op.method.toLowerCase}()")
@@ -114,43 +112,30 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
       val responseBuilder = new StringBuilder()
       op.response.resource match {
-        case None => {}
+        case None => {
+          println("OP HAS NORESPONSE: " + op.response)
+          // TODO: maybe we should assert the response code here
+          responseBuilder.append("\n        nil")
+        }
+
         case Some(resourceName: String) => {
           if (op.response.multiple) {
             responseBuilder.append(".map")
           }
-          responseBuilder.append(s" { v => ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.from_hash(v) } ")
+          responseBuilder.append(s" { hash => ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.new(hash) } ")
         }
       }
 
       sb.append(s"        ${requestBuilder.toString}${responseBuilder.toString}")
-
       sb.append("      end")
     }
 
     wrap("Clients", Text.underscoreToInitCap(resource.name), resource.description, sb.mkString("\n"))
   }
 
-  def wrap(submoduleName: String, className: String, comments: Option[String], body: String): String = {
-    val classWithComments = comments match {
-      case None => s"    class ${className}"
-      case Some(c: String) => s"    # ${c}\n    class ${className}"
-    }
-
-    Seq(
-      s"module ${moduleName}",
-      s"  module ${submoduleName}",
-      classWithComments,
-      body,
-      "    end",
-      "  end",
-      "end"
-    ).mkString("\n\n")
-  }
-
-
   def generateResource(resource: core.Resource): String = {
     val resourceNameSingular = Text.singular(resource.name)
+    val className = Text.underscoreToInitCap(resourceNameSingular)
 
     val sb = scala.collection.mutable.ListBuffer[String]()
 
@@ -166,7 +151,25 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append("        Apidoc::Preconditions.check_empty_opts(opts)")
     sb.append("      end")
 
-    wrap("Resources", Text.underscoreToInitCap(resourceNameSingular), None, sb.mkString("\n"))
+
+    wrap("Resources", className, None, sb.mkString("\n"))
+  }
+
+  private def wrap(submoduleName: String, className: String, comments: Option[String], body: String): String = {
+    val classWithComments = comments match {
+      case None => s"    class ${className}"
+      case Some(c: String) => s"    # ${c}\n    class ${className}"
+    }
+
+    Seq(
+      s"module ${moduleName}",
+      s"  module ${submoduleName}",
+      classWithComments,
+      body,
+      "    end",
+      "  end",
+      "end"
+    ).mkString("\n\n")
   }
 
   private def parseArgument(field: Field): String = {
