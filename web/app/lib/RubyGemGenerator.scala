@@ -47,9 +47,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append("      def new_request(verb, path=nil)")
     sb.append("        Preconditions.assert_class(verb, Apidoc::HttpVerb)")
     sb.append("        Preconditions.assert_class_or_nil(path, String)")
-    sb.append("")
-    sb.append("        request = ApidocRequest.new(@uri + path.to_s, verb)")
-    sb.append("        request.with_auth(@client.authorization.token)")
+    sb.append("        ApidocRequest.new(@uri + path.to_s, verb)")
     sb.append("      end")
 
     resource.operations.foreach { op =>

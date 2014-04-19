@@ -5,7 +5,7 @@ import controllers.Authenticated
 import client.Apidoc.Version
 import play.api._
 import play.api.mvc._
-import lib.RouteGenerator
+import lib.Play2RouteGenerator
 
 import play.api._
 import play.api.mvc._
@@ -24,7 +24,7 @@ object Play2 extends Controller {
         }
 
         case Some(v: Version) => {
-          val generator = RouteGenerator(ServiceDescription(v.json.get))
+          val generator = Play2RouteGenerator(ServiceDescription(v.json.get))
           Ok(generator.generate())
         }
 

@@ -7,7 +7,7 @@ import io.Source
  * Generates a Play routes file based on the service description
  * from api.json
  */
-case class RouteGenerator(service: ServiceDescription) {
+case class Play2RouteGenerator(service: ServiceDescription) {
 
   private val GlobalPad = 5
 
