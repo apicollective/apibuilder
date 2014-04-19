@@ -75,3 +75,11 @@ body {
 .version_resource {
   padding-top: 50px;
 }
+
+dd.error {
+  color: #cc3333;
+}
+
+span.error {
+  color: #cc3333;
+}

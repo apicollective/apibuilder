@@ -1,6 +1,6 @@
 package db
 
-import lib.UrlKey
+import core.UrlKey
 import anorm._
 import play.api.db._
 import play.api.libs.json._

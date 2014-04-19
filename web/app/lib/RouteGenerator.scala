@@ -30,13 +30,11 @@ object Util {
  * Generates a Play routes file based on the service description
  * from api.json
  */
-case class RouteGenerator(json: String) {
+case class RouteGenerator(service: ServiceDescription) {
 
   private val JsonDocumentMethods = Seq("POST", "PUT", "PATCH")
 
   private val GlobalPad = 5
-
-  private lazy val service = ServiceDescription(json)
 
   def generate(): String = {
     val all = service.resources.flatMap { resource =>

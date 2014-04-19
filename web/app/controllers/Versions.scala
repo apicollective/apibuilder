@@ -1,7 +1,7 @@
 package controllers
 
 import models.MainTemplate
-import core.ServiceDescription
+import core.{ ServiceDescription, ServiceDescriptionValidator, UrlKey }
 import client.Apidoc
 import client.Apidoc.{ Organization, Service, User, Version }
 import play.api._
@@ -22,20 +22,29 @@ object Versions extends Controller {
       versions <- Apidoc.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 10)
       version <- Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
-      val sd = ServiceDescription(version.json.get)
-      val tpl = MainTemplate(service.get.name + " " + version.version,
-                             user = Some(request.user),
-                             org = Some(org.get),
-                             service = Some(service.get),
-                             version = Some(version.version),
-                             allServiceVersions = versions.map(_.version),
-                             serviceDescription = Some(sd))
-      Ok(views.html.versions.show(tpl, sd))
+      version match {
+
+        case None => {
+          Redirect(controllers.routes.Organizations.show(orgKey)).flashing("warning" -> s"Service version ${versionName} not found")
+        }
+
+        case Some(v: Version) => {
+          val sd = ServiceDescription(v.json.get)
+          val tpl = MainTemplate(service.get.name + " " + v.version,
+                                 user = Some(request.user),
+                                 org = Some(org.get),
+                                 service = Some(service.get),
+                                 version = Some(v.version),
+                                 allServiceVersions = versions.map(_.version),
+                                 serviceDescription = Some(sd))
+          Ok(views.html.versions.show(tpl, sd))
+        }
+      }
     }
   }
 
 
-  def create(orgKey: String) = Authenticated.async { implicit request =>
+  def create(orgKey: String, version: Option[String]) = Authenticated.async { implicit request =>
     for {
       org <- Apidoc.organizations.findByKey(orgKey)
     } yield {
@@ -45,7 +54,8 @@ object Versions extends Controller {
           val tpl = MainTemplate(title = s"${o.name}: Add Service",
                                  user = Some(request.user),
                                  org = Some(o))
-          Ok(views.html.versions.form(tpl))
+          val filledForm = uploadForm.fill(UploadData(version.getOrElse("")))
+          Ok(views.html.versions.form(tpl, filledForm))
         }
       }
     }
@@ -62,23 +72,49 @@ object Versions extends Controller {
         }
 
         case Some(org: Organization) => {
-          request.body.file("file").map { file =>
-            val serviceKey = "apidoc"
-            val version = "1.0.0"
-            val path = new java.io.File(s"/tmp/api.json")
-            file.ref.moveTo(path, true)
-            val response = Await.result(Apidoc.versions.put(org.key, serviceKey, version, path), 1000 millis)
-            Ok(s"File uploaded: " + response)
-          }.getOrElse {
-            val tpl = MainTemplate(title = s"${org.name}: Add Service",
-                                   user = Some(request.user),
-                                   org = Some(org))
-            Ok(views.html.versions.form(tpl)).flashing("error" -> "Missing file")
-          }
+          val tpl = MainTemplate(title = s"${org.name}: Add Service",
+                                 user = Some(request.user),
+                                 org = Some(org))
+
+          val boundForm = uploadForm.bindFromRequest
+          boundForm.fold (
+
+            errors => {
+              Ok(views.html.versions.form(tpl, errors))
+            },
+
+            valid => {
+
+              request.body.file("file").map { file =>
+                // TODO: Use a real temporary file
+                val path = new java.io.File(s"/tmp/api.json")
+                file.ref.moveTo(path, true)
+                val contents = scala.io.Source.fromFile(path).getLines.mkString("\n")
+
+                val validator = ServiceDescriptionValidator(contents)
+                if (validator.isValid) {
+                  val serviceKey = UrlKey.generate(validator.serviceDescription.get.name)
+                  val response = Await.result(Apidoc.versions.put(org.key, serviceKey, valid.version, path), 1000 millis)
+                  Redirect(routes.Versions.show(org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
+                } else {
+                  Ok(views.html.versions.form(tpl, boundForm, validator.errors))
+                }
+
+              }.getOrElse {
+                Ok(views.html.versions.form(tpl, boundForm, Seq("Please select a non empty file to upload")))
+              }
+            }
+          )
         }
       }
     }
   }
 
+  case class UploadData(version: String)
+  private val uploadForm = Form(
+    mapping(
+      "version" -> nonEmptyText
+    )(UploadData.apply)(UploadData.unapply)
+  )
 
 }

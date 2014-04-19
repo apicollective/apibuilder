@@ -1,4 +1,4 @@
-package lib
+package core
 
 import org.scalatest.FlatSpec
 import org.junit.Assert._

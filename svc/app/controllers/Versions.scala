@@ -14,8 +14,20 @@ object Versions extends Controller {
                            limit = limit,
                            offset = offset)
       }
-    }
+    }.getOrElse(Seq.empty)
     Ok(Json.toJson(versions))
+  }
+
+  def getServiceLatest(org: String, service: String) = Authenticated { request =>
+    getVersion(request.user, org, service, "latest") match {
+      case None => NotFound
+      case Some(v: Version) => {
+        val detailedVersion = VersionDao.getDetails(v).getOrElse {
+          sys.error(s"Error fetching details for version[${v}]")
+        }
+        Ok(Json.toJson(detailedVersion))
+      }
+    }
   }
 
   def getServiceVersion(org: String, service: String, version: String) = Authenticated { request =>
@@ -35,12 +47,11 @@ object Versions extends Controller {
       case None => BadRequest(s"Organization[$orgKey] does not exist or you are not authorized to access it")
       case Some(org: Organization) => {
 
-        val serviceDescription = ServiceDescription(request.body)
-        val errors = ServiceDescriptionValidator(serviceDescription).validate
+        val validator = ServiceDescriptionValidator(request.body.toString)
 
-        if (errors.isEmpty) {
+        if (validator.isValid) {
           val service = ServiceDao.findByOrganizationAndKey(org, serviceKey).getOrElse {
-            ServiceDao.create(request.user, org, serviceDescription.name, Some(serviceKey))
+            ServiceDao.create(request.user, org, validator.serviceDescription.get.name, Some(serviceKey))
           }
 
           VersionDao.findByServiceAndVersion(service, version) match {
@@ -51,7 +62,7 @@ object Versions extends Controller {
           NoContent
 
         } else {
-          BadRequest(errors.mkString(", "))
+          BadRequest(validator.errors.mkString(", "))
 
         }
       }

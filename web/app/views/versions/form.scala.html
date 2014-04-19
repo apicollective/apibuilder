@@ -1,22 +1,48 @@
-@(tpl: models.MainTemplate)(implicit flash: Flash)
+@(tpl: models.MainTemplate,
+  form: Form[controllers.Versions.UploadData],
+  errors: Seq[String] = Seq.empty
+)(implicit flash: Flash)
 
 @main(tpl) {
   <div class="container">
 
     <p>
-      A service is fully defined using JSON. To add a service or to
-      create a new version of a service, upload the JSON file here.
-    </p>
-
-    <p>
-      If you are creating your first service, the best path is to
-      browse the <a href="@routes.DocController.examples">example api.json files</a>
-      or to <a href="@routes.DocController.index">read the documentation</a>.
+      If you are creating your first service, start by browsing the
+      <a href="@routes.DocController.examples">example api.json files</a>
+      and <a href="@routes.DocController.index">reading the documentation</a>.
     </p>
 
     @helper.form(action = routes.Versions.createPost(tpl.org.get.key), 'enctype -> "multipart/form-data") {
-      <input type="file" name="file" class="input-block-level">
-      <button class="btn btn-large btn-primary" type="submit">Submit</button>
+
+      <fieldset>
+          <legend>Service Information</legend>
+
+          @if(!errors.isEmpty) {
+            <ul>
+              @errors.map { msg => <li><span class="error">@msg</span></li> }
+            </ul>
+          }
+
+          @helper.inputText(
+              form("version"),
+              '_label -> "Version",
+              '_error -> form.error("version")
+          )
+
+          @helper.inputFile(
+              form("file"),
+              '_label -> "api.json file describing this service",
+              '_error -> form.error("file")
+          )
+
+      </fieldset>
+
+      <div class="actions">
+        <button class="btn btn-large btn-primary" type="submit">Submit</button>
+        <a href="@routes.Organizations.show(tpl.org.get.key)" class="btn">Cancel</a>
+      </div>
+
+
     }
 
   </div>

@@ -4,6 +4,12 @@
 
   @service.description.getOrElse("")
 
+  <div class="pull-right">
+    <a href="@routes.Versions.create(orgKey = tpl.org.get.key, version = Some(tpl.version.get))">Upload new version</a>
+    <br/>
+    <a href="@codegen.routes.Play2.getRoutes(org = tpl.org.get.key, service = tpl.service.get.key, version = tpl.version.get)">Codegen: Play 2</a>
+  </div>
+
   <h2>Resources</h2>
   <table class="table table-hover table-condensed">
     <tbody>

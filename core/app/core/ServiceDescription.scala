@@ -11,49 +11,6 @@ object ServiceDescription {
 
 }
 
-case class ServiceDescriptionValidator(sd: ServiceDescription) {
-
-  private val RequiredFields = Seq("base_url", "name", "resources")
-
-  /**
-   * Validate basic structure, returning a list of error messages
-   */
-  def validate(): Seq[String] = {
-    val errors = validateRequiredFields()
-
-    if (errors.isEmpty) {
-      validateResources
-    } else {
-      errors
-    }
-  }
-
-  private def validateRequiredFields(): Seq[String] = {
-    RequiredFields.flatMap { field =>
-      (sd.json \ field).asOpt[JsValue] match {
-        case None => Some(s"Missing field named[$field]")
-        case Some(_) => None
-      }
-    }
-  }
-
-  private def validateResources(): Seq[String] = {
-    try {
-      if (sd.resources.isEmpty) {
-        Seq("Must have at least one resource")
-      } else {
-        Seq.empty
-      }
-    } catch {
-      case e: Throwable => {
-        Seq("Error parsing resources: "  + e.toString)
-      }
-    }
-  }
-
-
-}
-
 /**
  * Parses api.json file into a set of case classes
  */
@@ -91,11 +48,18 @@ case class Field(name: String,
                  description: Option[String] = None,
                  required: Boolean = true,
                  format: Option[String] = None,
-                 references: Option[String] = None,
+                 references: Option[Reference] = None,
                  default: Option[String] = None,
                  example: Option[String] = None,
                  minimum: Option[Int] = None,
                  maximum: Option[Int] = None)
+
+case class Reference(resource: String, field: String) {
+
+  lazy val label = s"$resource.$field"
+
+}
+
 
 case class Response(code: Int,
                     resource: Option[String] = None,
@@ -106,14 +70,39 @@ object Resource {
   def parse(name: String, value: JsObject): Resource = {
      val path = (value \ "path").asOpt[String].getOrElse( s"/${name}" )
      val description = (value \ "description").asOpt[String]
-     val fields = (value \ "fields").as[JsArray].value.map { json => Field.parse(json.as[JsObject]) }
 
-     val operations = (value \ "operations").as[JsArray].value.map { json =>
-      Operation(method = (json \ "method").as[String],
-                path = (json \ "path").asOpt[String],
-                description = (json \ "description").asOpt[String],
-                response = Response.parse(json.as[JsObject]),
-                parameters = (json \ "parameters").as[JsArray].value.map { data => Field.parse(data.as[JsObject]) })
+     val fields = (value \ "fields").asOpt[JsArray] match {
+
+       case None => Seq.empty
+
+       case Some(a: JsArray) => {
+         a.value.map { json => Field.parse(json.as[JsObject]) }
+       }
+
+     }
+
+     val operations = (value \ "operations").asOpt[JsArray] match {
+
+       case None => Seq.empty
+
+       case Some(a: JsArray) => {
+         a.value.map { json =>
+
+           val parameters = (json \ "parameters").asOpt[JsArray] match {
+             case None => Seq.empty
+             case Some(a: JsArray) => {
+               a.value.map { data => Field.parse(data.as[JsObject]) }
+             }
+           }
+
+           Operation(method = (json \ "method").as[String],
+                     path = (json \ "path").asOpt[String],
+                     description = (json \ "description").asOpt[String],
+                     response = Response.parse(json.as[JsObject]),
+                     parameters = parameters)
+         }
+       }
+
     }
 
     Resource(name = name,
@@ -173,21 +162,32 @@ object Field {
     Field(name = (json \ "name").as[String],
           dataType = (json \ "type").as[String],
           description = (json \ "description").asOpt[String],
-          references = (json \ "references").asOpt[String],
+          references = (json \ "references").asOpt[String].map { Reference(_) },
           required = (json \ "required").asOpt[Boolean].getOrElse(true),
-          default = asString(json, "default"),
+          default = asOptString(json, "default"),
           minimum = (json \ "minimum").asOpt[Int],
           maximum = (json \ "maximum").asOpt[Int],
           format = (json \ "format").asOpt[String],
-          example = asString(json, "example"))
+          example = asOptString(json, "example"))
   }
 
-  private def asString(json: JsValue, field: String): Option[String] = {
+  private def asOptString(json: JsValue, field: String): Option[String] = {
     (json \ field) match {
       case (_: JsUndefined) => None
       case (v: JsValue) => Some(v.toString)
     }
   }
 
+
+}
+
+object Reference {
+
+  def apply(value: String): Reference = {
+    val parts = value.split("\\.")
+    require(parts.length == 2,
+            s"Invalid reference[${value}]. Expected <resource name>.<field name>")
+    Reference(parts.head, parts.last)
+  }
 
 }

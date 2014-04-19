@@ -166,9 +166,14 @@ object Apidoc {
 
   case class VersionsResource(url: String) {
 
-    def findByOrganizationKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String): Future[Version] = {
+    def findByOrganizationKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String): Future[Option[Version]] = {
       wsUrl(url + s"/${orgKey}/${serviceKey}/${version}").get().map { response =>
-        response.json.as[Version]
+        // TODO: If a 404, return none
+        try {
+          Some(response.json.as[Version])
+        } catch {
+          case _: Throwable => None
+        }
       }
     }
 
@@ -179,7 +184,7 @@ object Apidoc {
     }
 
     def put(orgKey: String, serviceKey: String, version: String, file: java.io.File) = {
-      wsUrl(url + s"/${orgKey}/${serviceKey}/${version}").put(file)
+      wsUrl(url + s"/${orgKey}/${serviceKey}/${version}").withHeaders("Content-type" -> "application/json").put(file)
     }
 
   }
