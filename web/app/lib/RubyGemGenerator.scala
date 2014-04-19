@@ -78,7 +78,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
       sb.append("")
       op.description.map { desc =>
-        sb.append(s"      # ${desc}")
+        sb.append(formatComment(desc, 6))
       }
       sb.append(s"      def ${methodName}(" + paramStrings.mkString(", ") + ")")
 
@@ -108,7 +108,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
       }
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        sb.append(s"        Apidoc::Preconditions.assert_not_blank(json_document, String)")
+        sb.append("        Apidoc::Preconditions.assert_class(json_document, String)")
+        sb.append("        Apidoc::Preconditions.assert_not_blank(json_document, \"json_document cannot be blank\")")
         requestBuilder.append(s".${op.method.toLowerCase}(json_document)")
       } else {
         requestBuilder.append(s".${op.method.toLowerCase}()")
@@ -161,10 +162,38 @@ case class RubyGemGenerator(service: ServiceDescription) {
     wrap("Resources", className, None, sb.mkString("\n"))
   }
 
+  // Format into a multi-line comment w/ a set number of spaces for
+  // leading indentation
+  private def formatComment(comment: String, numberSpaces: Int): String = {
+    val maxLineLength = 80 - 2 - numberSpaces
+    val sb = new StringBuilder()
+    var currentWord = new StringBuilder()
+    comment.split(" ").foreach { word =>
+      if (word.length + currentWord.length >= maxLineLength) {
+        if (!currentWord.isEmpty) {
+          if (!sb.isEmpty) {
+            sb.append("\n")
+          }
+          sb.append((" " * numberSpaces)).append("#").append(currentWord.toString)
+        }
+        currentWord = new StringBuilder()
+      } else {
+        currentWord.append(" ").append(word)
+      }
+    }
+    if (!currentWord.isEmpty) {
+      if (!sb.isEmpty) {
+        sb.append("\n")
+      }
+      sb.append((" " * numberSpaces)).append("#").append(currentWord.toString)
+    }
+    sb.toString
+  }
+
   private def wrap(submoduleName: String, className: String, comments: Option[String], body: String): String = {
     val classWithComments = comments match {
       case None => s"    class ${className}"
-      case Some(c: String) => s"    # ${c}\n    class ${className}"
+      case Some(c: String) => formatComment(c, 4) + s"\n    class ${className}"
     }
 
     Seq(

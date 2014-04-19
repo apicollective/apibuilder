@@ -239,7 +239,9 @@
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
-                    "response": "version"
+                    "responses": [
+                        { "code": 200, "result": "version" }
+                    ]
                 },
 
                 {
