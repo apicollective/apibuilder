@@ -17,10 +17,10 @@ object Versions extends Controller {
 
   def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
     for {
-      org <- Apidoc.organizations.findByKey(orgKey)
-      service <- Apidoc.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
-      versions <- Apidoc.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 10)
-      version <- Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+      org <- request.client.organizations.findByKey(orgKey)
+      service <- request.client.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
+      versions <- request.client.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, 10)
+      version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
       version match {
 
@@ -46,7 +46,7 @@ object Versions extends Controller {
 
   def create(orgKey: String, version: Option[String]) = Authenticated.async { implicit request =>
     for {
-      org <- Apidoc.organizations.findByKey(orgKey)
+      org <- request.client.organizations.findByKey(orgKey)
     } yield {
       org match {
         case None => Redirect("/").flashing("warning" -> "Org not found")
@@ -63,7 +63,7 @@ object Versions extends Controller {
 
   def createPost(orgKey: String) = Authenticated.async(parse.multipartFormData) { implicit request =>
     for {
-      orgOption <- Apidoc.organizations.findByKey(orgKey)
+      orgOption <- request.client.organizations.findByKey(orgKey)
     } yield {
       orgOption match {
 
@@ -94,7 +94,7 @@ object Versions extends Controller {
                 val validator = ServiceDescriptionValidator(contents)
                 if (validator.isValid) {
                   val serviceKey = UrlKey.generate(validator.serviceDescription.get.name)
-                  val response = Await.result(Apidoc.versions.put(org.key, serviceKey, valid.version, path), 1000 millis)
+                  val response = Await.result(request.client.versions.put(org.key, serviceKey, valid.version, path), 1000 millis)
                   Redirect(routes.Versions.show(org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
                 } else {
                   Ok(views.html.versions.form(tpl, boundForm, validator.errors))

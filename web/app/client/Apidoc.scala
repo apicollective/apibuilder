@@ -5,22 +5,36 @@ import play.api.libs.ws._
 import scala.concurrent.Future
 import com.ning.http.client.Realm.AuthScheme
 
+object ApidocClient {
+
+  def instance(userGuid: String): Apidoc.Client = {
+    Apidoc.Client(baseUrl = "http://localhost:9001",
+                  token = "ZdRD61ODVPspeV8Wf18EmNuKNxUfjfROyJXtNJXj9GMMwrAxqi8I4aUtNAT6")
+  }
+
+}
+
+
+
 object Apidoc {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
-  private val BaseUrl = "http://localhost:9001"
-  private val Token = "ZdRD61ODVPspeV8Wf18EmNuKNxUfjfROyJXtNJXj9GMMwrAxqi8I4aUtNAT6"
-  private val Password = ""
 
-  lazy val organizations = OrganizationsResource(s"$BaseUrl/organizations")
-  lazy val membershipRequests = MembershipRequestsResource(s"$BaseUrl/membership_requests")
-  lazy val services = ServicesResource(BaseUrl)
-  lazy val users = UsersResource(s"$BaseUrl/users")
-  lazy val versions = VersionsResource(BaseUrl)
+  case class Client(baseUrl: String, token: String) {
 
-  def wsUrl(url: String) = {
-    println("URL: " + url)
-    WS.url(url).withAuth(Token, Password, AuthScheme.BASIC)
+    private val Password = ""
+
+    def wsUrl(url: String) = {
+      println("URL: " + baseUrl + url)
+      WS.url(baseUrl + url).withAuth(token, Password, AuthScheme.BASIC)
+    }
+
+    lazy val organizations = OrganizationsResource(this)
+    lazy val membershipRequests = MembershipRequestsResource(this)
+    lazy val services = ServicesResource(this)
+    lazy val users = UsersResource(this)
+    lazy val versions = VersionsResource(this)
+
   }
 
   case class Organization(guid: String, name: String, key: String)
@@ -48,7 +62,7 @@ object Apidoc {
     implicit val serviceReads = Json.reads[Service]
   }
 
-  case class UsersResource(url: String) {
+  case class UsersResource(client: Apidoc.Client) {
 
     def update(user: User): Future[User] = {
       val json = Json.obj(
@@ -57,7 +71,7 @@ object Apidoc {
         "image_url" -> user.imageUrl
       )
 
-      wsUrl(url + s"/${user.guid}").put(json).map { response =>
+      client.wsUrl(s"/users/${user.guid}").put(json).map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.head
       }
     }
@@ -69,41 +83,41 @@ object Apidoc {
         "image_url" -> imageUrl
       )
 
-      wsUrl(url).post(json).map { response =>
+      client.wsUrl("/users").post(json).map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.head
       }
     }
 
     def findByGuid(userGuid: String): Future[Option[User]] = {
-      wsUrl(url).withQueryString("guid" -> userGuid).get().map { response =>
+      client.wsUrl("/users").withQueryString("guid" -> userGuid).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.headOption
       }
     }
 
     def findByEmail(email: String): Future[Option[User]] = {
-      wsUrl(url).withQueryString("email" -> email).get().map { response =>
+      client.wsUrl("/users").withQueryString("email" -> email).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.headOption
       }
     }
 
   }
 
-  case class OrganizationsResource(url: String) {
+  case class OrganizationsResource(client: Client) {
 
     def findByKey(key: String): Future[Option[Organization]] = {
-      wsUrl(url).withQueryString("key" -> key).get().map { response =>
+      client.wsUrl("/organizations").withQueryString("key" -> key).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }.headOption
       }
     }
 
     def findByName(name: String): Future[Option[Organization]] = {
-      wsUrl(url).withQueryString("name" -> name).get().map { response =>
+      client.wsUrl("/organizations").withQueryString("name" -> name).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }.headOption
       }
     }
 
     def findAll(userGuid: String, limit: Int = 50, offset: Int = 0): Future[Seq[Organization]] = {
-      wsUrl(url).withQueryString("user_guid" -> userGuid, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
+      client.wsUrl("/organizations").withQueryString("user_guid" -> userGuid, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Organization] }
       }
     }
@@ -114,23 +128,23 @@ object Apidoc {
         "name" -> name
       )
 
-      wsUrl(url).post(json).map { response =>
+      client.wsUrl("/organizations").post(json).map { response =>
         response.json.as[Organization]
       }
     }
 
   }
 
-  case class MembershipRequestsResource(url: String) {
+  case class MembershipRequestsResource(client: Apidoc.Client) {
 
     def findByGuid(guid: String): Future[Option[MembershipRequest]] = {
-      wsUrl(url).withQueryString("guid" -> guid).get().map { response =>
+      client.wsUrl("/membership_requests").withQueryString("guid" -> guid).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[MembershipRequest] }.headOption
       }
     }
 
     def findAll(userGuid: String, limit: Int = 50, offset: Int = 0): Future[Seq[MembershipRequest]] = {
-      wsUrl(url).withQueryString("user_guid" -> userGuid, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
+      client.wsUrl("/membership_requests").withQueryString("user_guid" -> userGuid, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[MembershipRequest] }
       }
     }
@@ -141,33 +155,33 @@ object Apidoc {
         "name" -> name
       )
 
-      wsUrl(url).post(json).map { response =>
+      client.wsUrl("/membership_requests").post(json).map { response =>
         response.json.as[MembershipRequest]
       }
     }
 
   }
 
-  case class ServicesResource(url: String) {
+  case class ServicesResource(client: Apidoc.Client) {
 
     def findAllByOrganizationKey(orgKey: String): Future[Seq[Service]] = {
-      wsUrl(url + s"/${orgKey}").get().map { response =>
+      client.wsUrl(s"/${orgKey}").get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Service] }
       }
     }
 
     def findByOrganizationKeyAndKey(orgKey: String, serviceKey: String): Future[Option[Service]] = {
-      wsUrl(url + s"/${orgKey}").withQueryString("key" -> serviceKey).get().map { response =>
+      client.wsUrl(s"/${orgKey}").withQueryString("key" -> serviceKey).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Service] }.headOption
       }
     }
 
   }
 
-  case class VersionsResource(url: String) {
+  case class VersionsResource(client: Apidoc.Client) {
 
     def findByOrganizationKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String): Future[Option[Version]] = {
-      wsUrl(url + s"/${orgKey}/${serviceKey}/${version}").get().map { response =>
+      client.wsUrl(s"/versions/${orgKey}/${serviceKey}/${version}").get().map { response =>
         // TODO: If a 404, return none
         try {
           Some(response.json.as[Version])
@@ -178,13 +192,13 @@ object Apidoc {
     }
 
     def findAllByOrganizationKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 50, offset: Int = 0): Future[Seq[Version]] = {
-      wsUrl(url + s"/${orgKey}/${serviceKey}").withQueryString("limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
+      client.wsUrl(s"/versions/${orgKey}/${serviceKey}").withQueryString("limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Version] }
       }
     }
 
     def put(orgKey: String, serviceKey: String, version: String, file: java.io.File) = {
-      wsUrl(url + s"/${orgKey}/${serviceKey}/${version}").withHeaders("Content-type" -> "application/json").put(file)
+      client.wsUrl(s"/versions/${orgKey}/${serviceKey}/${version}").withHeaders("Content-type" -> "application/json").put(file)
     }
 
   }

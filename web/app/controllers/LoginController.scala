@@ -1,6 +1,6 @@
 package controllers
 
-import client.Apidoc
+import client.ApidocClient
 
 import play.api._
 import play.api.mvc._
@@ -13,6 +13,8 @@ import scala.concurrent.duration._
 
 object LoginController extends Controller {
 
+  private lazy val masterClient = ApidocClient.instance("f3973f60-be9f-11e3-b1b6-0800200c9a66")
+
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent.Future
 
@@ -22,7 +24,7 @@ object LoginController extends Controller {
 
   def index = Action.async { implicit request =>
     for {
-      user <- Apidoc.users.findByEmail("admin@apidoc.com")
+      user <- masterClient.users.findByEmail("admin@apidoc.com")
     } yield {
       Redirect("/").withSession { "user_guid" -> user.get.guid }
     }
@@ -72,8 +74,8 @@ object LoginController extends Controller {
           val fullname = info.attributes.get("fullname")
           val imageUrl = info.attributes.get("image_url")
 
-          val user = Await.result(Apidoc.users.findByEmail(email), 100 millis).getOrElse {
-            Await.result(Apidoc.users.create(email, fullname, imageUrl), 100 millis)
+          val user = Await.result(masterClient.users.findByEmail(email), 100 millis).getOrElse {
+            Await.result(masterClient.users.create(email, fullname, imageUrl), 100 millis)
           }
           Redirect("/").withSession { "user_guid" -> user.guid }
         }

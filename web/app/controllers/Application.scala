@@ -12,12 +12,12 @@ object Application extends Controller {
 
   def index(orgsPage: Int = 0, membershipRequestsPage: Int = 0) = Authenticated.async { implicit request =>
     for {
-      orgs <- Apidoc.organizations.findAll(userGuid = request.user.guid,
-                                           limit = Pagination.DefaultLimit+1,
-                                           offset = orgsPage * Pagination.DefaultLimit)
-      membershipRequests <- Apidoc.membershipRequests.findAll(userGuid = request.user.guid,
-                                                              limit = Pagination.DefaultLimit+1,
-                                                              offset = membershipRequestsPage * Pagination.DefaultLimit)
+      orgs <- request.client.organizations.findAll(userGuid = request.user.guid,
+                                                   limit = Pagination.DefaultLimit+1,
+                                                   offset = orgsPage * Pagination.DefaultLimit)
+      membershipRequests <- request.client.membershipRequests.findAll(userGuid = request.user.guid,
+                                                                      limit = Pagination.DefaultLimit+1,
+                                                                      offset = membershipRequestsPage * Pagination.DefaultLimit)
     } yield {
       Ok(views.html.index(request.user,
                           PaginatedCollection(orgsPage, orgs),

@@ -17,8 +17,8 @@ object Organizations extends Controller {
 
   def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
-      org <- Apidoc.organizations.findByKey(orgKey)
-      services <- Apidoc.services.findAllByOrganizationKey(orgKey)
+      org <- request.client.organizations.findByKey(orgKey)
+      services <- request.client.services.findAllByOrganizationKey(orgKey)
     } yield {
       org match {
 
@@ -39,7 +39,7 @@ object Organizations extends Controller {
   }
 
   def requestMembership(orgKey: String) = Authenticated { implicit request =>
-    Await.result(Apidoc.organizations.findByKey(orgKey), 100 millis) match {
+    Await.result(request.client.organizations.findByKey(orgKey), 100 millis) match {
       case None => {
         Redirect("/").flashing(
           "success" -> s"Could not find organization ${orgKey}"
@@ -70,9 +70,9 @@ object Organizations extends Controller {
       },
 
       valid => {
-        Await.result(Apidoc.organizations.findByName(valid.name), 100 millis) match {
+        Await.result(request.client.organizations.findByName(valid.name), 100 millis) match {
           case None => {
-            val org = Await.result(Apidoc.organizations.create(request.user, valid.name), 100 millis)
+            val org = Await.result(request.client.organizations.create(request.user, valid.name), 100 millis)
             Redirect(routes.Organizations.show(org.key))
           }
 

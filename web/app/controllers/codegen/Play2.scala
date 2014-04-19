@@ -2,7 +2,6 @@ package controllers.codegen
 
 import core.ServiceDescription
 import controllers.Authenticated
-import client.Apidoc
 import client.Apidoc.Version
 import play.api._
 import play.api.mvc._
@@ -17,7 +16,7 @@ object Play2 extends Controller {
 
   def getRoutes(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { request =>
     for {
-      version <- Apidoc.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+      version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
       version match {
         case None => {
