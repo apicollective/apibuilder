@@ -36,12 +36,18 @@ case class RubyGemGenerator(service: ServiceDescription) {
       writeToFile(new File(clientsDir, clientFilename), generateClientForResource(r))
     }
 
-    val clientFile = new File(moduleDir, "client.rb")
-    writeToFile(clientFile, generateClient)
-    println(generateClient)
-    println(clientFile)
+    val topLevelFile = new File(baseDir, s"${moduleKey}.rb")
+    writeToFile(topLevelFile, generateTopLevelInclude())
 
     moduleDir.toString
+  }
+
+  def generateTopLevelInclude(): String = {
+    Seq("load File.join(File.dirname(__FILE__), \"http_client.rb\")",
+        "dir = File.join(File.dirname(__FILE__), \"" + moduleKey + "\")",
+        "Dir.glob(\"#{dir}/resources/*.rb\").each { |f| load f }",
+        "Dir.glob(\"#{dir}/clients/*.rb\").each { |f| load f }",
+        "load File.join(dir, 'client.rb')").mkString("\n\n")
   }
 
   def generateClient(): String = {
@@ -132,7 +138,7 @@ module ${moduleName}
       }
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        paramStrings.append("json_document")
+        paramStrings.append("hash")
       }
 
       sb.append("")
@@ -167,12 +173,10 @@ module ${moduleName}
       }
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        sb.append("        HttpClient::Preconditions.assert_class(json_document, String)")
-        sb.append("        HttpClient::Preconditions.assert_not_blank(json_document, \"json_document cannot be blank\")")
-        requestBuilder.append(s".${op.method.toLowerCase}(json_document)")
-      } else {
-        requestBuilder.append(s".${op.method.toLowerCase}")
+        sb.append("        HttpClient::Preconditions.assert_class(hash, Hash)")
+        requestBuilder.append(".with_json(hash.to_json)")
       }
+      requestBuilder.append(s".${op.method.toLowerCase}")
 
       val responseBuilder = new StringBuilder()
       // TODO: match on all response codes
@@ -186,7 +190,7 @@ module ${moduleName}
             if (op.responses.head.multiple) {
               responseBuilder.append(".map")
             }
-            responseBuilder.append(s" { |hash| ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.new(hash) } ")
+            responseBuilder.append(s" { |hash| ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.new(hash) }")
           }
         }
       }
@@ -210,7 +214,8 @@ module ${moduleName}
     sb.append("      attr_reader " + resource.fields.map( f => s":${f.name}" ).mkString(", "))
 
     sb.append("")
-    sb.append("      def initialize(opts={})")
+    sb.append("      def initialize(incoming={})")
+    sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
 
     resource.fields.map { field =>
       sb.append(s"        @${field.name} = ${parseArgument(field)}")
@@ -270,13 +275,13 @@ module ${moduleName}
 
   private def parseArgument(field: Field): String = {
     val value = if (field.default.isEmpty) {
-      s"opts.delete('${field.name}')"
+      s"opts.delete(:${field.name})"
     } else if (field.dataType == Datatype.String) {
-      s"opts.delete('${field.name}') || \'${field.default.get}\'"
+      s"opts.delete(:${field.name}) || \'${field.default.get}\'"
     } else if (field.dataType == Datatype.Boolean) {
-      s"opts.has_key?('${field.name}') ? (opts.delete('${field.name}') ? true : false) : ${field.default.get}"
+      s"opts.has_key?(:${field.name}) ? (opts.delete(:${field.name}) ? true : false) : ${field.default.get}"
     } else {
-      s"opts.delete('${field.name}') || ${field.default.get}"
+      s"opts.delete(:${field.name}) || ${field.default.get}"
     }
 
     val assertMethod = if (field.required) { "assert_class" } else { "assert_class_or_nil" }
