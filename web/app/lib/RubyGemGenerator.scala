@@ -183,7 +183,6 @@ module ${moduleName}
           }
 
           case Some(resourceName: String) => {
-            responseBuilder.append(s".${op.method.toLowerCase}")
             if (op.responses.head.multiple) {
               responseBuilder.append(".map")
             }
