@@ -54,4 +54,14 @@ object Text {
     parts.map(s => initCap(s)).mkString("")
   }
 
+  private val Capitals = """([A-Z])""".r
+  def camelCaseToUnderscore(phrase: String): String = {
+    val word = Capitals.replaceAllIn(phrase, m => s"_${m}").trim
+    if (word.startsWith("_")) {
+      word.slice(1, word.length)
+    } else {
+      word
+    }
+  }
+
 }

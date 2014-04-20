@@ -10,12 +10,18 @@ import java.io.File
 case class RubyGemGenerator(service: ServiceDescription) {
 
   private val moduleName = Text.safeName(service.name)
-  private val moduleKey = UrlKey.generate(moduleName)
+
+  private val Underscores = """([\_+])""".r
+  private val moduleKey = {
+    val name = Text.camelCaseToUnderscore(moduleName).toLowerCase
+    Underscores.replaceAllIn(name, m => s"-")
+  }
 
   def generate(): String = {
-    val baseDir = new File("/tmp/ruby_gem")
-    val libDir = new File(baseDir, "lib")
-    val moduleDir = new File(libDir, moduleKey)
+    //val moduleDir = new File("libDir, moduleKey)
+    val baseDir = new File("/web/gem-apidoc/lib")
+    val moduleDir = new File(baseDir, moduleKey)
+
     val resourceDir = new File(moduleDir, "resources")
     resourceDir.mkdirs
 
@@ -35,7 +41,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
     println(generateClient)
     println(clientFile)
 
-    baseDir.toString
+    moduleDir.toString
   }
 
   def generateClient(): String = {
@@ -47,18 +53,38 @@ module ${moduleName}
 
   class Client
 
-    def initialize(authorization)
-      @url = '${url}'
-      @authorization = Preconditions.assert_class(authorization, Authorization)
+    def initialize(url, opts={})
+      HttpClient::Preconditions.assert_class(url, String)
+      @url = URI.parse(url)
+      @authorization = HttpClient::Preconditions.assert_class_or_nil(opts.delete(:authorization), HttpClient::Authorization)
+      HttpClient::Preconditions.assert_empty_opts(opts)
+    end
+
+    def Client.authorize(url, token)
+      HttpClient::Preconditions.assert_class(url, String)
+      HttpClient::Preconditions.assert_class(token, String)
+      authorization = HttpClient::Authorization::Basic.new(token)
+      Client.new(url, :authorization => authorization)
+    end
+
+    def request(path=nil)
+      HttpClient::Preconditions.assert_class_or_nil(path, String)
+      request = HttpClient::Request.new(@url + path.to_s)
+      if @authorization
+        request.with_auth(@authorization)
+      else
+        request
+      end
     end
 """)
 
-    service.resources.foreach { resource =>
-      sb.append("")
-      sb.append(s"    def ${resource.name}")
-      sb.append(s"      // TODO")
-      sb.append("    end")
-    }
+    sb.append(service.resources.map { resource =>
+      val className = resourceClassName(resource.name)
+
+      s"    def ${resource.name}\n" +
+      s"      @${resource.name} ||= ${moduleName}::Clients::${className}.new(self)\n" +
+      "    end"
+    }.mkString("\n\n"))
 
     sb.append("  end")
     sb.append("")
@@ -71,7 +97,7 @@ module ${moduleName}
     val sb = scala.collection.mutable.ListBuffer[String]()
 
     sb.append("      def initialize(client)")
-    sb.append(s"        @client = Apidoc::Preconditions.assert_class(client, Apidoc::Client)")
+    sb.append(s"        @client = HttpClient::Preconditions.assert_class(client, ApiDoc::Client)")
     sb.append("      end")
 
     resource.operations.foreach { op =>
@@ -117,7 +143,7 @@ module ${moduleName}
 
       pathParams.foreach { param =>
         val klass = rubyClass(param.dataType)
-        sb.append(s"        Apidoc::Preconditions.assert_class(${param.name}, ${klass})")
+        sb.append(s"        HttpClient::Preconditions.assert_class(${param.name}, ${klass})")
       }
 
       if (hasQueryParams) {
@@ -129,23 +155,23 @@ module ${moduleName}
 
         sb.append("        query = {")
         sb.append("          " + paramBuilder.mkString(",\n          "))
-        sb.append("        }.compact")
-        sb.append(s"        Apidoc::Preconditions.assert_empty_opts(opts)")
+        sb.append("        }.delete_if { |k, v| v.nil? }")
+        sb.append(s"        HttpClient::Preconditions.assert_empty_opts(opts)")
       }
 
       val requestBuilder = new StringBuilder()
-      requestBuilder.append("Apidoc::Request.new(\"" + rubyPath + "\")")
+      requestBuilder.append("@client.request(\"" + rubyPath + "\")")
 
       if (hasQueryParams) {
         requestBuilder.append(".with_query(query)")
       }
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        sb.append("        Apidoc::Preconditions.assert_class(json_document, String)")
-        sb.append("        Apidoc::Preconditions.assert_not_blank(json_document, \"json_document cannot be blank\")")
+        sb.append("        HttpClient::Preconditions.assert_class(json_document, String)")
+        sb.append("        HttpClient::Preconditions.assert_not_blank(json_document, \"json_document cannot be blank\")")
         requestBuilder.append(s".${op.method.toLowerCase}(json_document)")
       } else {
-        requestBuilder.append(s".${op.method.toLowerCase}()")
+        requestBuilder.append(s".${op.method.toLowerCase}")
       }
 
       val responseBuilder = new StringBuilder()
@@ -153,15 +179,15 @@ module ${moduleName}
       op.responses.headOption.map { response =>
         response.resource match {
           case None => {
-            // TODO: match on response code
             responseBuilder.append("\n        nil")
           }
 
           case Some(resourceName: String) => {
+            responseBuilder.append(s".${op.method.toLowerCase}")
             if (op.responses.head.multiple) {
               responseBuilder.append(".map")
             }
-            responseBuilder.append(s" { hash => ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.new(hash) } ")
+            responseBuilder.append(s" { |hash| ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.new(hash) } ")
           }
         }
       }
@@ -173,9 +199,12 @@ module ${moduleName}
     wrap("Clients", Text.underscoreToInitCap(resource.name), resource.description, sb.mkString("\n"))
   }
 
+  def resourceClassName(name: String): String = {
+    Text.underscoreToInitCap(name)
+  }
+
   def generateResource(resource: core.Resource): String = {
-    val resourceNameSingular = Text.singular(resource.name)
-    val className = Text.underscoreToInitCap(resourceNameSingular)
+    val className = resourceClassName(Text.singular(resource.name))
 
     val sb = scala.collection.mutable.ListBuffer[String]()
 
@@ -188,7 +217,7 @@ module ${moduleName}
       sb.append(s"        @${field.name} = ${parseArgument(field)}")
     }
 
-    sb.append("        Apidoc::Preconditions.check_empty_opts(opts)")
+    sb.append("        HttpClient::Preconditions.assert_empty_opts(opts)")
     sb.append("      end")
 
 
@@ -242,18 +271,18 @@ module ${moduleName}
 
   private def parseArgument(field: Field): String = {
     val value = if (field.default.isEmpty) {
-      s"opts.delete(:${field.name})"
+      s"opts.delete('${field.name}')"
     } else if (field.dataType == Datatype.String) {
-      s"opts.delete(:${field.name}) || \'${field.default.get}\'"
+      s"opts.delete('${field.name}') || \'${field.default.get}\'"
     } else if (field.dataType == Datatype.Boolean) {
-      s"opts.has_key?(:${field.name}) ? (opts.delete(:${field.name}) ? true : false) : ${field.default.get}"
+      s"opts.has_key?('${field.name}') ? (opts.delete('${field.name}') ? true : false) : ${field.default.get}"
     } else {
-      s"opts.delete(:${field.name}) || ${field.default.get}"
+      s"opts.delete('${field.name}') || ${field.default.get}"
     }
 
     val assertMethod = if (field.required) { "assert_class" } else { "assert_class_or_nil" }
     val klass = rubyClass(field.dataType)
-    s"Apidoc::Preconditions.${assertMethod}(${value}, ${klass})"
+    s"HttpClient::Preconditions.${assertMethod}(${value}, ${klass})"
   }
 
   private def rubyClass(dataType: Datatype): String = {
@@ -277,36 +306,3 @@ module ${moduleName}
   }
 
 }
-
-/*
-module IrisHub
-  module Resources
-
-    class Vendors < IrisHub::RestClient
-
-      def initialize(client)
-        super(client, "/vendors")
-      end
-
-      def get(params={})
-        new_request(GET).with_query(params).get.map { |v| from_hash(v) }
-      end
-
-      def put(json)
-        new_request(PUT).with_json(json).get { |v| from_hash(v) }
-      end
-
-      def post(json)
-        new_request(POST).with_json(json).get { |v| from_hash(v) }
-      end
-
-      private
-      def from_hash(hash)
-        Vendor.new(hash['guid'], hash['name'])
-      end
-
-    end
-
-  end
-end
-*/
