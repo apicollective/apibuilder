@@ -94,7 +94,8 @@ object Versions extends Controller {
   }
 
   private def findOrganizationByUserAndKey(user: User, org: String): Option[Organization] = {
-    OrganizationDao.findAll(userGuid = Some(user.guid), key = Some(org), limit = 1).headOption
+    // TODO: User authorization
+    OrganizationDao.findAll(key = Some(org), limit = 1).headOption
   }
 
 }

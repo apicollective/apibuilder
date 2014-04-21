@@ -1,25 +1,32 @@
 package core
 
 import play.api.libs.json.JsValue
+import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
+import com.fasterxml.jackson.databind.JsonMappingException
 
 case class ServiceDescriptionValidator(apiJson: String) {
 
   private val RequiredFields = Seq("base_url", "name", "resources")
 
+  private var parseError: Option[String] = None
+
   lazy val serviceDescription: Option[ServiceDescription] = {
     try {
       Some(ServiceDescription(apiJson))
     } catch {
-/* TODO
-      case jpe: JsonParseException => {
+      case e: JsonParseException => {
+        parseError = Some(e.getMessage)
         None
       }
-*/
-
-      case e: Throwable => {
-       // TODO throw e
-       None
+      case e: JsonProcessingException => {
+        parseError = Some(e.getMessage)
+        None
       }
+      case e: JsonMappingException => {
+        parseError = Some(e.getMessage)
+        None
+      }
+      case e: Throwable => throw e
     }
   }
 
@@ -30,7 +37,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         if (apiJson == "") {
           Seq("No Data")
         } else {
-          Seq("Invalid JSON")
+          Seq(parseError.getOrElse("Invalid JSON"))
         }
       }
 
@@ -38,7 +45,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateResources ++ validateReferences
+          validateResources ++ validateReferences ++ validateResponses
         } else {
           requiredFieldErrors
         }
@@ -77,18 +84,18 @@ case class ServiceDescriptionValidator(apiJson: String) {
         field.references.flatMap { ref =>
           serviceDescription.get.resources.find { r => r.name == ref.resource } match {
 
-            case None => Some(s"Reference ${ref.label} points to a non existent resource")
+            case None => Some(s"Resource ${resource.name} field ${field.name} reference ${ref.label} points to a non existent resource (${ref.resource})")
 
             case Some(r: Resource) => {
               r.fields.find(f => f.name == ref.field ) match {
-                case None => Some(s"Reference ${ref.label} points to a non existent field")
+                case None => Some(s"Resource ${resource.name} field ${field.name} reference ${ref.label} points to a non existent field (${ref.field})")
                 case Some(f: Field) => None
               }
             }
           }
         }
       }
-    }.distinct
+    }
   }
 
   private def validateResources(): Seq[String] = {
@@ -105,5 +112,16 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
   }
 
-}
+  private def validateResponses(): Seq[String] = {
+    serviceDescription.get.resources.flatMap { r =>
+      r.operations.filter { op => op.responses.isEmpty }.map { op =>
+        val path = op.path match {
+          case None => ""
+          case Some(p: String) => s" $p"
+        }
+        s"${r.name} ${op.method}${path} missing responses element"
+      }
+    }
+  }
 
+}

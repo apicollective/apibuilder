@@ -8,6 +8,8 @@
     <a href="@routes.Versions.create(orgKey = tpl.org.get.key, version = Some(tpl.version.get))">Upload new version</a>
     <br/>
     <a href="@codegen.routes.Play2.getRoutes(org = tpl.org.get.key, service = tpl.service.get.key, version = tpl.version.get)">Codegen: Play 2</a>
+    <br/>
+    <a href="@codegen.routes.RubyGenerator.gem(org = tpl.org.get.key, service = tpl.service.get.key, version = tpl.version.get)">Codegen: Ruby Gem</a>
   </div>
 
   <h2>Resources</h2>

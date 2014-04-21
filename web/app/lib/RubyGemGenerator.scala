@@ -19,7 +19,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
   def generate(): String = {
     //val moduleDir = new File("libDir, moduleKey)
-    val baseDir = new File("/web/gem-apidoc/lib")
+    // val baseDir = new File("/web/gem-apidoc/lib")
+    val baseDir = new File("/web/gem-iris-hub/lib")
     val moduleDir = new File(baseDir, moduleKey)
 
     val resourceDir = new File(moduleDir, "resources")
@@ -35,6 +36,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
       val clientFilename = s"${r.name}.rb"
       writeToFile(new File(clientsDir, clientFilename), generateClientForResource(r))
     }
+
+    writeToFile(new File(moduleDir, "client.rb"), generateClient())
 
     val topLevelFile = new File(baseDir, s"${moduleKey}.rb")
     writeToFile(topLevelFile, generateTopLevelInclude())
@@ -66,11 +69,15 @@ module ${moduleName}
       HttpClient::Preconditions.assert_empty_opts(opts)
     end
 
-    def Client.authorize(url, token)
+    def Client.authorize(url, opts={})
       HttpClient::Preconditions.assert_class(url, String)
-      HttpClient::Preconditions.assert_class(token, String)
-      authorization = HttpClient::Authorization::Basic.new(token)
-      Client.new(url, :authorization => authorization)
+      token = HttpClient::Preconditions.assert_class_or_nil(opts.delete(:token), String)
+      HttpClient::Preconditions.assert_empty_opts(opts)
+      if token
+        Client.new(url, :authorization => HttpClient::Authorization.basic(token))
+      else
+        Client.new(url)
+      end
     end
 
     def request(path=nil)
@@ -103,7 +110,7 @@ module ${moduleName}
     val sb = scala.collection.mutable.ListBuffer[String]()
 
     sb.append("      def initialize(client)")
-    sb.append(s"        @client = HttpClient::Preconditions.assert_class(client, ApiDoc::Client)")
+    sb.append(s"        @client = HttpClient::Preconditions.assert_class(client, ${moduleName}::Client)")
     sb.append("      end")
 
     resource.operations.foreach { op =>
@@ -284,9 +291,19 @@ module ${moduleName}
       s"opts.delete(:${field.name}) || ${field.default.get}"
     }
 
-    val assertMethod = if (field.required) { "assert_class" } else { "assert_class_or_nil" }
+    val hasValue = (field.required || !field.default.isEmpty)
+    val assertMethod = if (hasValue) { "assert_class" } else { "assert_class_or_nil" }
     val klass = rubyClass(field.dataType)
-    s"HttpClient::Preconditions.${assertMethod}(${value}, ${klass})"
+
+    if (field.dataType == Datatype.Decimal) {
+      if (hasValue) {
+        s"BigDecimal.new(HttpClient::Preconditions.check_not_nil(${value}, '${field.name} is required').to_s)"
+      } else {
+        s"HttpClient::Helper.to_big_decimal_or_nil(${value})"
+      }
+    } else {
+      s"HttpClient::Preconditions.${assertMethod}(${value}, ${klass})"
+    }
   }
 
   private def rubyClass(dataType: Datatype): String = {
@@ -295,6 +312,7 @@ module ${moduleName}
       case Datatype.Long => "Integer"
       case Datatype.Integer => "Integer"
       case Datatype.Boolean => "String"
+      case Datatype.Decimal => "BigDecimal"
       case _ => {
         sys.error(s"Cannot map data type[${dataType}] to ruby class")
       }

@@ -14,7 +14,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
   it("should detect invalid json") {
     val validator = ServiceDescriptionValidator(" { ")
     validator.isValid should be(false)
-    validator.errors.mkString should be("Invalid JSON")
+    validator.errors.mkString.indexOf("expected close marker") should be >= 0
   }
 
   describe("missing fields") {
@@ -84,7 +84,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("Reference foo.bar points to a non existent resource")
+    validator.errors.mkString should be("Resource users field guid reference foo.bar points to a non existent resource (foo)")
     validator.isValid should be(false)
   }
 
@@ -103,11 +103,11 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("Reference users.bar points to a non existent field")
+    validator.errors.mkString should be("Resource users field guid reference users.bar points to a non existent field (bar)")
     validator.isValid should be(false)
   }
 
-  it("multiple errors w/ same text are collapsed into one message") {
+  it("operations must have at least one response") {
     val json = """
     {
       "base_url": "http://localhost:9000",
@@ -115,17 +115,55 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "resources": {
         "users": {
           "fields": [
-            { "name": "a", "type": "string", "references": "users.bar" },
-            { "name": "b", "type": "string", "references": "users.bar" },
-            { "name": "c", "type": "string", "references": "users.baz" }
+            { "name": "guid", "type": "string" }
+          ],
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:guid",
+              "parameters": [
+                { "name": "guid", "type": "string" }
+              ]
+            }
           ]
         }
       }
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString(", ") should be("Reference users.bar points to a non existent field, Reference users.baz points to a non existent field")
+    validator.errors.mkString(", ") should be("users GET /:guid missing responses element")
     validator.isValid should be(false)
+  }
+
+  it("operations w/ a valid response validates correct") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "resources": {
+        "users": {
+          "fields": [
+            { "name": "guid", "type": "string" }
+          ],
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:guid",
+              "parameters": [
+                { "name": "guid", "type": "string" }
+              ],
+              "responses": [
+                { "code": 200, "result": "vendor" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString(", ") should be("")
+    validator.isValid should be(true)
   }
 
 }

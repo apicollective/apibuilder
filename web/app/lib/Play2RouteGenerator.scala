@@ -87,6 +87,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
         case Datatype.Long => "Long"
         case Datatype.Integer => "Int"
         case Datatype.Boolean => "Boolean"
+        case Datatype.Decimal => "BigDecimal"
         case _ => {
           sys.error(s"Cannot map data type[${param.dataType}] to scala type")
         }

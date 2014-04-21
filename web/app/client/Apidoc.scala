@@ -35,7 +35,7 @@ object Apidoc {
     private val Password = ""
 
     def wsUrl(url: String) = {
-      println("URL: " + baseUrl + url)
+      println("curl -u \"" + token + ":\" " + baseUrl + url)
       WS.url(baseUrl + url).withAuth(token, Password, AuthScheme.BASIC)
     }
 
@@ -176,7 +176,6 @@ object Apidoc {
                 limit: Int = 50,
                 offset: Int = 0): Future[Seq[Membership]] = {
       client.wsUrl("/memberships").withQueryString("organization_key" -> organization_key.get, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
-        println("JSON: " + response.json.toString)
         response.json.as[JsArray].value.map { v => v.as[Membership] }
       }
     }
@@ -270,8 +269,6 @@ object Apidoc {
 
     def findByOrganizationKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String): Future[Option[Version]] = {
       client.wsUrl(s"/${orgKey}/${serviceKey}/${version}").get().map { response =>
-        println("S:" + response.body.toString)
-        println("S:" + response.json.toString)
         Some(response.json.as[Version])
       }
     }

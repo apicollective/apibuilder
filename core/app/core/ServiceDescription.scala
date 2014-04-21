@@ -159,8 +159,9 @@ object Datatype {
   val Integer = Datatype("integer")
   val Long = Datatype("long")
   val Boolean = Datatype("boolean")
+  val Decimal = Datatype("decimal")
 
-  val All = Seq(String, Integer, Long, Boolean)
+  val All = Seq(String, Integer, Long, Boolean, Decimal)
 
   def findByName(name: String): Option[Datatype] = {
     All.find { dt => dt.name == name }
