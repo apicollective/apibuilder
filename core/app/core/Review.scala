@@ -7,14 +7,11 @@ object Review {
   val Accept = Review("accept", "Accept")
   val Decline = Review("decline", "Decline")
 
-  def fromString(role: String): Option[Review] = {
-    if (Accept.key == role) {
-      Some(Accept)
-    } else if (Decline.key == role) {
-      Some(Decline)
-    } else {
-      None
-    }
+  val All = Seq(Accept, Decline)
+
+  def fromString(key: String): Option[Review] = {
+    val lowerKey = key.toLowerCase
+    All.find(_.key == lowerKey)
   }
 
 }

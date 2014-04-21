@@ -1,6 +1,6 @@
 package controllers
 
-import core.Review
+import core.{ Review, Role }
 import lib.{ Pagination, PaginatedCollection }
 import models.MainTemplate
 import client.Apidoc
@@ -45,11 +45,12 @@ object Members extends Controller {
       orgOption <- request.client.organizations.findByKey(orgKey)
     } yield {
       val org = orgOption.getOrElse { sys.error("invalid org") }
+      val filledForm = addMemberForm.fill(AddMemberData(role = Role.Member.key, email = ""))
 
       Ok(views.html.members.add(MainTemplate(title = s"#{org.name}: Add member",
                                              org = Some(org),
                                              user = Some(request.user)),
-                                addMemberForm))
+                                filledForm))
     }
   }
 

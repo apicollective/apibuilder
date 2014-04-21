@@ -1,7 +1,11 @@
 @(tpl: models.MainTemplate,
-  form: Form[controllers.Members.AddMemberData],
+  addForm: Form[controllers.Members.AddMemberData],
   error: Option[String] = None
  )(implicit flash: Flash)
+
+@import helper._
+@import helper.twitterBootstrap._
+
 
 @main(models.MainTemplate(title = "Add Organization")) {
   <div class="container">
@@ -13,15 +17,16 @@
       <fieldset>
 
           @helper.inputText(
-              form("email"),
+              addForm("email"),
               '_label -> "Email address of user to add",
-              '_error -> form.error("email")
+              '_error -> addForm.error("email")
           )
 
-          @helper.inputText(
-              form("role"),
+          @select(
+              addForm("role"),
+              options = core.Role.All.map( r => (r.key, r.name) ),
               '_label -> "Role",
-              '_error -> form.error("role")
+              '_error -> addForm("role")
           )
 
       </fieldset>

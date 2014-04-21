@@ -7,14 +7,11 @@ object Role {
   val Admin = Role("admin", "Admin")
   val Member = Role("member", "Member")
 
-  def fromString(role: String): Option[Role] = {
-    if (Admin.key == role) {
-      Some(Admin)
-    } else if (Member.key == role) {
-      Some(Member)
-    } else {
-      None
-    }
+  val All = Seq(Member, Admin)
+
+  def fromString(key: String): Option[Role] = {
+    val lowerKey = key.toLowerCase
+    All.find(_.key == lowerKey)
   }
 
 }

@@ -7,6 +7,9 @@
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Versions.create(tpl.org.get.key)">Add service</a>
   </div>
+  <div class="pull-right">
+    <br/><a href="@routes.Members.show(orgKey = tpl.org.get.key)">Members</a>
+  </div>
 
  @if(haveRequests) {
     <p><em><a href="@routes.Organizations.membershipRequests(tpl.org.get.key)">Review pending membership requests</a></em></p>
