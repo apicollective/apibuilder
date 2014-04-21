@@ -15,7 +15,7 @@
 
   <p>
     HTTP @response.code:
-    response.resource.map { resource =>
+    @response.resource.map { resource =>
       @if(response.multiple) {
         List[@resource]
       } else {
