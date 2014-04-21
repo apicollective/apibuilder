@@ -10,6 +10,7 @@ import play.api.data._
 import play.api.data.Forms._
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import java.io.File
 
 object Versions extends Controller {
 
@@ -86,8 +87,7 @@ object Versions extends Controller {
             valid => {
 
               request.body.file("file").map { file =>
-                // TODO: Use a real temporary file
-                val path = new java.io.File(s"/tmp/api.json")
+                val path = File.createTempFile("api", "json")
                 file.ref.moveTo(path, true)
                 val contents = scala.io.Source.fromFile(path).getLines.mkString("\n")
 
