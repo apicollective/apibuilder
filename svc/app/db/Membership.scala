@@ -69,6 +69,7 @@ object Membership {
   def findAll(user: Option[User] = None,
               guid: Option[String] = None,
               organization_guid: Option[String] = None,
+              organization_key: Option[String] = None,
               user_guid: Option[String] = None,
               role: Option[String] = None,
               limit: Int = 50,
@@ -76,14 +77,14 @@ object Membership {
     val sql = Seq(
       Some(BaseQuery.trim),
       user.map { u => """
-                and (memberships.user_guid = {authorized_user_guid}::uuid
-                     or organization_guid in (select organization_guid
-                                                from memberships
-                                               where deleted_at is null
-                                                 and user_guid = {authorized_user_guid}::uuid))
+                and organization_guid in (select organization_guid
+                                            from memberships
+                                           where deleted_at is null
+                                             and user_guid = {authorized_user_guid}::uuid)
                 """ },
       guid.map { v => "and memberships.guid = {guid}::uuid" },
       organization_guid.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
+      organization_key.map { v => "and memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
       user_guid.map { v => "and memberships.user_guid = {user_guid}::uuid" },
       role.map { v => "and role = {role}" },
       Some(s"order by lower(users.name), lower(users.email) limit ${limit} offset ${offset}")
@@ -93,6 +94,7 @@ object Membership {
       user.map { u => 'authorized_user_guid -> toParameterValue(u.guid) },
       guid.map { v => 'guid -> toParameterValue(v) },
       organization_guid.map { v => 'organization_guid -> toParameterValue(v) },
+      organization_key.map { v => 'organization_key -> toParameterValue(v) },
       user_guid.map { v => 'user_guid -> toParameterValue(v) },
       role.map { v => 'role -> toParameterValue(v) }
     ).flatten

@@ -23,6 +23,7 @@ object Organizations extends Controller {
                                                                    limit = Pagination.DefaultLimit+1,
                                                                    offset = page * Pagination.DefaultLimit)
       requests <- request.client.membershipRequests.findAll(organization_key = Some(orgKey), can_be_reviewed_by_guid = Some(request.user.guid), limit = 1)
+
     } yield {
       org match {
 
