@@ -169,13 +169,13 @@ object Apidoc {
 
   case class MembershipsResource(client: Client) {
 
-    def findAll(organization_guid: Option[String] = None,
-                organization_key: Option[String] = None,
-                user_guid: Option[String] = None,
+    def findAll(organizationGuid: Option[String] = None,
+                organizationKey: Option[String] = None,
+                userGuid: Option[String] = None,
                 role: Option[String] = None,
                 limit: Int = 50,
                 offset: Int = 0): Future[Seq[Membership]] = {
-      client.wsUrl("/memberships").withQueryString("organization_key" -> organization_key.get, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
+      client.wsUrl("/memberships").withQueryString("organization_key" -> organizationKey.get, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[Membership] }
       }
     }
@@ -203,27 +203,25 @@ object Apidoc {
       }
     }
 
-    def findAll(userGuid: Option[String] = None, organization_key: Option[String] = None, can_be_reviewed_by_guid: Option[String] = None, limit: Int = 50, offset: Int = 0): Future[Seq[MembershipRequest]] = {
+    def findAll(userGuid: Option[String] = None, organizationKey: Option[String] = None, limit: Int = 50, offset: Int = 0): Future[Seq[MembershipRequest]] = {
       // TODO: How to build query params correctly
-      val request = if (userGuid.isEmpty && organization_key.isEmpty) {
+      val request = if (userGuid.isEmpty && organizationKey.isEmpty) {
         client.wsUrl("/membership_requests").withQueryString("limit" -> limit.toString,
                                                              "offset" -> offset.toString)
 
-      } else if (!userGuid.isEmpty && !organization_key.isEmpty) {
+      } else if (!userGuid.isEmpty && !organizationKey.isEmpty) {
         client.wsUrl("/membership_requests").withQueryString("user_guid" -> userGuid.get,
-                                                             "organization_key" -> organization_key.get,
-                                                             "can_be_reviewed_by_guid" -> can_be_reviewed_by_guid.get,
+                                                             "organization_key" -> organizationKey.get,
                                                              "limit" -> limit.toString,
                                                              "offset" -> offset.toString)
 
-      } else if (!userGuid.isEmpty && organization_key.isEmpty) {
+      } else if (!userGuid.isEmpty && organizationKey.isEmpty) {
         client.wsUrl("/membership_requests").withQueryString("user_guid" -> userGuid.get,
                                                              "limit" -> limit.toString,
                                                              "offset" -> offset.toString)
 
       } else {
-        client.wsUrl("/membership_requests").withQueryString("organization_key" -> organization_key.get,
-                                                             "can_be_reviewed_by_guid" -> can_be_reviewed_by_guid.get,
+        client.wsUrl("/membership_requests").withQueryString("organization_key" -> organizationKey.get,
                                                              "limit" -> limit.toString,
                                                              "offset" -> offset.toString)
       }

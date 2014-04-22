@@ -8,7 +8,7 @@ import play.api.libs.json.Json
 
 object MembershipRequests extends Controller {
 
-  def get(organization_guid: Option[String], organization_key: Option[String], can_be_reviewed_by_guid: Option[String], user_guid: Option[String], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
+  def get(organization_guid: Option[String], organization_key: Option[String], user_guid: Option[String], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
     val requests = MembershipRequest.findAll(organizationGuid = organization_guid,
                                              organizationKey = organization_key,
                                              userGuid = user_guid,

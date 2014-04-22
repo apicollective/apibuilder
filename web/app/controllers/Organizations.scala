@@ -22,19 +22,25 @@ object Organizations extends Controller {
       services <- request.client.services.findAllByOrganizationKey(orgKey,
                                                                    limit = Pagination.DefaultLimit+1,
                                                                    offset = page * Pagination.DefaultLimit)
-      requests <- request.client.membershipRequests.findAll(organization_key = Some(orgKey), can_be_reviewed_by_guid = Some(request.user.guid), limit = 1)
-
+      isAdmin <- request.client.memberships.findAll(organizationKey = Some(orgKey), userGuid = Some(request.user.guid), role = Some(Role.Admin.key), limit = 1)
     } yield {
       org match {
 
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
         case Some(org: Organization) => {
+          val haveRequests = if (isAdmin.isEmpty) {
+            false
+          } else {
+            val pendingRequests = Await.result(request.client.membershipRequests.findAll(organizationKey = Some(orgKey), limit = 1), 1500 millis)
+            !pendingRequests.isEmpty
+          }
+
           Ok(views.html.organizations.show(MainTemplate(title = org.name,
                                                         org = Some(org),
                                                         user = Some(request.user)),
                                            services = PaginatedCollection(page, services),
-                                           haveRequests = !requests.isEmpty))
+                                           haveRequests = haveRequests))
         }
       }
     }
@@ -43,8 +49,7 @@ object Organizations extends Controller {
   def membershipRequests(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
       org <- request.client.organizations.findByKey(orgKey)
-      requests = request.client.membershipRequests.findAll(organization_key = Some(orgKey),
-                                                           can_be_reviewed_by_guid = Some(request.user.guid),
+      requests = request.client.membershipRequests.findAll(organizationKey = Some(orgKey),
                                                            limit = Pagination.DefaultLimit+1,
                                                            offset = page * Pagination.DefaultLimit)
     } yield {
@@ -53,7 +58,8 @@ object Organizations extends Controller {
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
         case Some(org: Organization) => {
-          // TODO: Why if requests still a Future here?
+          // TODO: Make sure user is an admin
+          // TODO: Why is requests still a Future here?
           val fetchedRequests = Await.result(requests, 1500 millis)
           Ok(views.html.organizations.membershipRequests(MainTemplate(title = org.name,
                                                                       org = Some(org),

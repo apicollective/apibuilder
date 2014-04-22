@@ -19,7 +19,7 @@ object Members extends Controller {
   def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
       org <- request.client.organizations.findByKey(orgKey)
-      members <- request.client.memberships.findAll(organization_key = Some(orgKey),
+      members <- request.client.memberships.findAll(organizationKey = Some(orgKey),
                                                     limit = Pagination.DefaultLimit+1,
                                                     offset = page * Pagination.DefaultLimit)
     } yield {
