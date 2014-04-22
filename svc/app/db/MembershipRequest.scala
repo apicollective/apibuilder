@@ -21,6 +21,7 @@ case class MembershipRequest(guid: String,
    * in this role if not already in this role for this org.
    */
   def accept(createdBy: User) {
+    assertUserCanReview(createdBy)
     val message = "Approved membership request for %s to join as %s".format(user.email, role)
     DB.withTransaction { implicit conn =>
       OrganizationLog.create(createdBy, org, message)
@@ -34,11 +35,17 @@ case class MembershipRequest(guid: String,
    * action logged.
    */
   def decline(createdBy: User) {
+    assertUserCanReview(createdBy)
     val message = "Declined membership request for %s to join as %s".format(user.email, role)
     DB.withTransaction { implicit conn =>
       OrganizationLog.create(createdBy, org, message)
       MembershipRequest.softDelete(createdBy, this)
     }
+  }
+
+  private def assertUserCanReview(user: User) {
+    require(Membership.isUserAdmin(user, org),
+            s"User[${user.guid}] is not an administrator of org[${org.guid}]")
   }
 
 }
@@ -105,45 +112,30 @@ object MembershipRequest {
             limit = 1).headOption
   }
 
-  def findAll(user: Option[User] = None,
-              guid: Option[String] = None,
+  def findAll(guid: Option[String] = None,
               organizationGuid: Option[String] = None,
               organizationKey: Option[String] = None,
               userGuid: Option[String] = None,
               role: Option[String] = None,
-              canBeReviewedByGuid: Option[String] = None,
               limit: Int = 50,
               offset: Int = 0): Seq[MembershipRequest] = {
 
     val sql = Seq(
       Some(BaseQuery.trim),
-      user.map { v => "and (membership_requests.user_guid = {current_user_guid}::uuid or membership_requests.organization_guid in (select organization_guid from memberships where deleted_at is null and user_guid = {current_user_guid}::uuid and role='admin'))" },
       guid.map { v => "and membership_requests.guid = {guid}::uuid" },
       organizationGuid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
       organizationKey.map { v => "and membership_requests.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
       userGuid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
       role.map { v => "and membership_requests.role = {role}" },
-      canBeReviewedByGuid.map { v =>
-        """
-         and membership_requests.organization_guid in
-             (select organization_guid
-                from memberships
-               where deleted_at is null
-                 and user_guid = {reviewing_user_guid}::uuid
-                 and role = 'admin')
-        """
-      },
       Some(s"order by membership_requests.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq(
-      user.map { u => 'current_user_guid -> toParameterValue(u.guid) },
       guid.map { v => 'guid -> toParameterValue(v) },
       organizationGuid.map { v => 'organization_guid -> toParameterValue(v) },
       organizationKey.map { v => 'organization_key -> toParameterValue(v) },
       userGuid.map { v => 'user_guid -> toParameterValue(v) },
-      role.map { v => 'role -> toParameterValue(v) },
-      canBeReviewedByGuid.map { v => 'reviewing_user_guid -> toParameterValue(v) }
+      role.map { v => 'role -> toParameterValue(v) }
     ).flatten
 
     DB.withConnection { implicit c =>

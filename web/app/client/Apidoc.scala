@@ -184,15 +184,13 @@ object Apidoc {
 
   case class MembershipRequestReviewsResource(client: Apidoc.Client) {
 
-    def post(membershipRequestGuid: String, action: String): Future[MembershipRequestReview] = {
+    def post(membershipRequestGuid: String, action: String): Future[Unit] = {
       val json = Json.obj(
         "membership_request_guid" -> membershipRequestGuid,
         "action" -> action
       )
 
-      client.wsUrl("/membership_request_reviews").post(json).map { response =>
-        response.json.as[MembershipRequestReview]
-      }
+      client.wsUrl("/membership_request_reviews").post(json).map { response => Unit }
     }
 
   }

@@ -62,6 +62,13 @@ object Membership {
     SoftDelete.delete("memberships", user, membership.guid)
   }
 
+  def isUserAdmin(user: User, organization: Organization): Boolean = {
+    findByOrganizationAndUserAndRole(organization, user, Role.Admin.key) match {
+      case None => false
+      case Some(m: Membership) => true
+    }
+  }
+
   def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: String): Option[Membership] = {
     findAll(organization_guid = Some(organization.guid), user_guid = Some(user.guid), role = Some(role)).headOption
   }

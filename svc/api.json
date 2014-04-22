@@ -128,7 +128,6 @@
                     "parameters": [
                         { "name": "organization_guid", "type": "string", "description": "Find membership requests for this organization gyud", "required": false, "references": "organizations.guid" },
                         { "name": "organization_key", "type": "string", "description": "Find membership requests for this organization key", "required": false, "references": "organizations.key" },
-                        { "name": "can_be_reviewed_by_guid", "type": "string", "description": "Filters to membership requests that this user guid can act on", "required": false, "references": "users.guid" },
                         { "name": "user_guid", "type": "string", "description": "Find membership requests initiated by this user", "required": false, "references": "users.guid" },
                         { "name": "role", "type": "string", "description": "Limit to membership requests with this role", "required": false },
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
