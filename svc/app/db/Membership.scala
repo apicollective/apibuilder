@@ -13,6 +13,13 @@ object Membership {
 
   implicit val membershipWrites = Json.writes[Membership]
 
+  private val InsertQuery = """
+    insert into memberships
+    (guid, organization_guid, user_guid, role, created_by_guid)
+    values
+    ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
+  """
+
   private val BaseQuery = """
     select memberships.guid::varchar,
            role,
@@ -30,27 +37,33 @@ object Membership {
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
-    findByOrganizationAndUserAndRole(organization, user, role.key) match {
+    val membership = findByOrganizationAndUserAndRole(organization, user, role.key) match {
       case Some(r: Membership) => r
       case None => {
         create(createdBy, organization, user, role)
       }
     }
+
+    // If we made this user an admin, and s/he already exists as a
+    // member, remove the member role - this is akin to an upgrade
+    // in membership from member to admin.
+    if (role == Role.Admin) {
+      findByOrganizationAndUserAndRole(organization, user: User, Role.Member.key).foreach { membership =>
+        softDelete(user, membership: Membership)
+      }
+    }
+
+    membership
   }
 
   private def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
-      SQL("""
-          insert into memberships
-          (guid, organization_guid, user_guid, role, created_by_guid)
-          values
-          ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
-          """).on('guid -> guid,
-                  'organization_guid -> organization.guid,
-                  'user_guid -> user.guid,
-                  'role -> role.key,
-                  'created_by_guid -> createdBy.guid).execute()
+      SQL(InsertQuery).on('guid -> guid,
+                          'organization_guid -> organization.guid,
+                          'user_guid -> user.guid,
+                          'role -> role.key,
+                          'created_by_guid -> createdBy.guid).execute()
     }
 
     findAll(guid = Some(guid.toString), limit = 1).headOption.getOrElse {
