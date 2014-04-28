@@ -22,11 +22,15 @@ case class MembershipRequest(guid: String,
    */
   def accept(createdBy: User) {
     assertUserCanReview(createdBy)
-    val message = "Approved membership request for %s to join as %s".format(user.email, role)
+    val r = Role.fromString(role).getOrElse {
+      sys.error(s"Invalid role[$role]")
+    }
+
+    val message = s"Accepted membership request for ${user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
       OrganizationLog.create(createdBy, org, message)
       MembershipRequest.softDelete(createdBy, this)
-      Membership.upsert(createdBy, org, user, Role.fromString(role).get)
+      Membership.upsert(createdBy, org, user, r)
     }
   }
 
@@ -36,7 +40,11 @@ case class MembershipRequest(guid: String,
    */
   def decline(createdBy: User) {
     assertUserCanReview(createdBy)
-    val message = "Declined membership request for %s to join as %s".format(user.email, role)
+    val r = Role.fromString(role).getOrElse {
+      sys.error(s"Invalid role[$role]")
+    }
+
+    val message = s"Declined membership request for ${user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
       OrganizationLog.create(createdBy, org, message)
       MembershipRequest.softDelete(createdBy, this)
@@ -73,7 +81,7 @@ object MembershipRequest {
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
-    findByOrganizationAndUserAndRole(organization, user, role.key) match {
+    findByOrganizationAndUserAndRole(organization, user, role) match {
       case Some(r: MembershipRequest) => r
       case None => {
         create(createdBy, organization, user, role)
@@ -96,7 +104,7 @@ object MembershipRequest {
                   'created_by_guid -> createdBy.guid).execute()
     }
 
-    findAll(guid = Some(guid.toString), limit = 1).headOption.getOrElse {
+    findByGuid(guid.toString).getOrElse {
       sys.error("Failed to create membership_request")
     }
   }
@@ -105,11 +113,15 @@ object MembershipRequest {
     SoftDelete.delete("membership_requests", user, membershipRequest.guid)
   }
 
-  private def findByOrganizationAndUserAndRole(org: Organization, user: User, role: String): Option[MembershipRequest] = {
+  private def findByOrganizationAndUserAndRole(org: Organization, user: User, role: Role): Option[MembershipRequest] = {
     findAll(organizationGuid = Some(org.guid),
             userGuid = Some(user.guid),
-            role = Some(role),
+            role = Some(role.key),
             limit = 1).headOption
+  }
+
+  def findByGuid(guid: String): Option[MembershipRequest] = {
+    findAll(guid = Some(guid)).headOption
   }
 
   def findAll(guid: Option[String] = None,

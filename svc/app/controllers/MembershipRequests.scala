@@ -26,7 +26,7 @@ object MembershipRequests extends Controller {
     val organizationGuid = (request.body \ "organization_guid").as[String]
     val userGuid = (request.body \ "user_guid").as[String]
 
-    OrganizationDao.findAll(guid = Some(organizationGuid), limit = 1).headOption match {
+    OrganizationDao.findByGuid(organizationGuid) match {
 
       case None => {
         BadRequest(Json.toJson(Validation.error("Organization not found")))

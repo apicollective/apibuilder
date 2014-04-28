@@ -12,11 +12,11 @@ class OrganizationDaoSpec extends FlatSpec {
   }
 
   it should "find by guid" in {
-    assertEquals(Organization.findByGuid(Util.gilt.guid).get.guid, Util.gilt.guid)
+    assertEquals(OrganizationDao.findByGuid(Util.gilt.guid).get.guid, Util.gilt.guid)
   }
 
-  it should "find by key" in {
-    assertEquals(Organization.findByKey(Util.gilt.key).get.key, Util.gilt.key)
+  it should "findAll by key" in {
+    assertEquals(OrganizationDao.findAll(key = Some(Util.gilt.key)).head.key, Util.gilt.key)
   }
 
 }

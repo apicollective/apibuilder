@@ -37,7 +37,7 @@ object Membership {
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
-    val membership = findByOrganizationAndUserAndRole(organization, user, role.key) match {
+    val membership = findByOrganizationAndUserAndRole(organization, user, role) match {
       case Some(r: Membership) => r
       case None => {
         create(createdBy, organization, user, role)
@@ -48,7 +48,7 @@ object Membership {
     // member, remove the member role - this is akin to an upgrade
     // in membership from member to admin.
     if (role == Role.Admin) {
-      findByOrganizationAndUserAndRole(organization, user: User, Role.Member.key).foreach { membership =>
+      findByOrganizationAndUserAndRole(organization, user: User, Role.Member).foreach { membership =>
         softDelete(user, membership: Membership)
       }
     }
@@ -76,14 +76,14 @@ object Membership {
   }
 
   def isUserAdmin(user: User, organization: Organization): Boolean = {
-    findByOrganizationAndUserAndRole(organization, user, Role.Admin.key) match {
+    findByOrganizationAndUserAndRole(organization, user, Role.Admin) match {
       case None => false
       case Some(m: Membership) => true
     }
   }
 
-  def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: String): Option[Membership] = {
-    findAll(organization_guid = Some(organization.guid), user_guid = Some(user.guid), role = Some(role)).headOption
+  def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: Role): Option[Membership] = {
+    findAll(organization_guid = Some(organization.guid), user_guid = Some(user.guid), role = Some(role.key)).headOption
   }
 
   def findAll(user: Option[User] = None,

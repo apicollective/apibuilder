@@ -54,6 +54,10 @@ object OrganizationDao {
     org
   }
 
+  def findByGuid(guid: String): Option[Organization] = {
+    findAll(guid = Some(guid)).headOption
+  }
+
   def findAll(guid: Option[String] = None,
               userGuid: Option[String] = None,
               key: Option[String] = None,
