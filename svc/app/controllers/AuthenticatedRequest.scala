@@ -12,7 +12,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]) = {
 
-    BasicAuthorization.get(request.headers) match {
+    BasicAuthorization.get(request.headers.get("Authorization")) match {
 
       case Some(auth: BasicAuthorization.Token) => {
         UserDao.findByToken(auth.token) match {
