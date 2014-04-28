@@ -67,6 +67,7 @@ module ${moduleName}
       @url = URI.parse(url)
       @authorization = HttpClient::Preconditions.assert_class_or_nil(opts.delete(:authorization), HttpClient::Authorization)
       HttpClient::Preconditions.assert_empty_opts(opts)
+      HttpClient::Preconditions.check_state(url.match(/http.+/i), "URL[%s] must start with http" % url)
     end
 
     def Client.authorize(url, opts={})
