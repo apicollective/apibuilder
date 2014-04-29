@@ -24,7 +24,7 @@
         @services.items.map { service =>
          <tr>
            <td><a href="@routes.Versions.show(tpl.org.get.key, service.key, "latest")">@service.name</a></td>
-           <td>@lib.Text.truncate(service.description.getOrElse(""))</td>
+           <td>@core.Text.truncate(service.description.getOrElse(""))</td>
          </tr>
        }
       </tbody>

@@ -1,6 +1,6 @@
-package lib
+package core.generator
 
-import core.{ Datatype, Field, Operation, Resource, ServiceDescription }
+import core.{ Datatype, Field, Operation, Resource, ServiceDescription, Text }
 import io.Source
 
 /**

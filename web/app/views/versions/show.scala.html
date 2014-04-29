@@ -17,8 +17,8 @@
     <tbody>
       @service.resources.map { resource =>
        <tr>
-         <td><a href="#resource-@lib.UrlKey.generate(resource.name)">@resource.name</a></td>
-         <td>@lib.Text.truncate(resource.description.getOrElse(""))</td>
+         <td><a href="#resource-@core.UrlKey.generate(resource.name)">@resource.name</a></td>
+         <td>@core.Text.truncate(resource.description.getOrElse(""))</td>
        </tr>
      }
     </tbody>
@@ -26,8 +26,8 @@
 
 
   @service.resources.map { resource =>
-    <div id="resource-@lib.UrlKey.generate(resource.name)"></div>
-    <a name="resource-@lib.UrlKey.generate(resource.name)"></a>
+    <div id="resource-@core.UrlKey.generate(resource.name)"></div>
+    <a name="resource-@core.UrlKey.generate(resource.name)"></a>
     <div class="version_resource">
       <h2>@resource.name</h2>
 
@@ -50,10 +50,10 @@
           <tbody>
            @resource.operations.zipWithIndex.map { case(op, index) =>
              <tr>
-               <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.name)-@index').toggle()">@op.method @service.basePath@resource.path@op.path.getOrElse("")</a></td>
+               <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.name)-@index').toggle()">@op.method @service.basePath@resource.path@op.path.getOrElse("")</a></td>
                <td>@op.description.getOrElse("")</td>
              </tr>
-             <tr id="operation-@lib.UrlKey.generate(resource.name)-@index" style="display:none">
+             <tr id="operation-@core.UrlKey.generate(resource.name)-@index" style="display:none">
                <td></td>
                <td>@operation(service, resource, op)</td>
              </tr>

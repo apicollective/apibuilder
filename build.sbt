@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 
 playScalaSettings
 
-lazy val apidoc = project.in(file("."))
+lazy val apidoc = project.in(file(".")).aggregate(core, svc, web)
 
 lazy val core = project
 

@@ -49,7 +49,7 @@
               <li@if(metadata.resource.isEmpty) { class="active" }><a href="@routes.Versions.show(metadata.org.get.key, service.key, "latest")">@service.name</a></li>
               @metadata.serviceDescription.map { sd =>
                 @sd.resources.map { resource =>
-                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@lib.UrlKey.generate(resource.name)">@resource.name</a></li>
+                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@core.UrlKey.generate(resource.name)">@resource.name</a></li>
                 }
               }
             </ul>
