@@ -19,7 +19,7 @@
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
            <p>
-             @field.references.map { r => References: <a href="#">@r</a><br/> }
+             @field.references.map { r => References: <a href="#">@r.label</a><br/> }
              @field.example.map { v => Example: @v<br/> }
              @field.minimum.map { v => Minimum: @v<br/> }
              @field.maximum.map { v => Maximum: @v<br/> }
