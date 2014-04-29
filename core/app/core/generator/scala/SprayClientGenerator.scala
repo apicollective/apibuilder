@@ -38,7 +38,7 @@ import play.api.libs.functional.syntax._
         pw.write(imp + "\n")
       }
 
-      val companions = caseClasses.map { cc =>
+      val jsonFormats = caseClasses.map { cc =>
         val className = cc.name
         pw.write(cc.src)
         JsonFormatDefs(cc)
@@ -64,7 +64,7 @@ object Client {
   }
 """
 }
-companions.foreach { c => pw.write(c.src) }
+jsonFormats.foreach { c => pw.write(c.src) }
 pw.write {
 """
 }
@@ -75,11 +75,12 @@ object Tester extends App {
   import scala.concurrent.duration._
 
   import Client.jsonReadsItem
+  import Client.jsonWritesItem
 
   val f = Client.req("/items").get().map {
     r => r.json.as[JsArray].value.map { _.as[Item] }
   }
-  println(Await.result(f, 1 seconds))
+  println(Json.prettyPrint(Json.toJson(Await.result(f, 1 seconds))))
 }
 
 trait Client {
