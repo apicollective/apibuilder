@@ -3,6 +3,8 @@ package core.generator
 import core.{ Datatype, Field, ServiceDescription, Resource, Text }
 import java.io.File
 
+import scala.collection.mutable.ListBuffer
+
 /**
  * Generates a Play routes file based on the service description
  * from api.json
@@ -54,7 +56,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   def generateClient(): String = {
-    val sb = scala.collection.mutable.ListBuffer[String]()
+    val sb = ListBuffer[String]()
     val url = service.baseUrl + service.basePath.getOrElse("")
 
     sb.append(s"""
@@ -108,7 +110,7 @@ module ${moduleName}
   }
 
   def generateClientForResource(resource: core.Resource): String = {
-    val sb = scala.collection.mutable.ListBuffer[String]()
+    val sb = ListBuffer[String]()
 
     sb.append("      def initialize(client)")
     sb.append(s"        @client = HttpClient::Preconditions.assert_class(client, ${moduleName}::Client)")
@@ -137,7 +139,7 @@ module ${moduleName}
         }
       }.mkString("_")
 
-      val paramStrings = scala.collection.mutable.ListBuffer[String]()
+      val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
 
       val hasQueryParams = (!GeneratorUtil.isJsonDocumentMethod(op.method) && !otherParams.isEmpty)
@@ -161,7 +163,7 @@ module ${moduleName}
       }
 
       if (hasQueryParams) {
-        val paramBuilder = scala.collection.mutable.ListBuffer[String]()
+        val paramBuilder = ListBuffer[String]()
 
         otherParams.foreach { param =>
           paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
@@ -217,7 +219,7 @@ module ${moduleName}
   def generateResource(resource: core.Resource): String = {
     val className = resourceClassName(Text.singular(resource.name))
 
-    val sb = scala.collection.mutable.ListBuffer[String]()
+    val sb = ListBuffer[String]()
 
     sb.append("      attr_reader " + resource.fields.map( f => s":${f.name}" ).mkString(", "))
 

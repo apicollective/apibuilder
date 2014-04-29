@@ -46,6 +46,12 @@ object Text {
     initCap(value.split("_"))
   }
 
+  def dashToInitCap(value: String): String = {
+    initCap(value.split("-"))
+  }
+
+  def snakeToCamelCase(value: String) = underscoreToCamelCase(value)
+
   def underscoreToCamelCase(value: String): String = {
     value.split("_").toList match {
       case Nil => ""
@@ -68,6 +74,13 @@ object Text {
       word.slice(1, word.length)
     } else {
       word
+    }
+  }
+
+  implicit class Indentable(s: String) {
+    def indent: String = indent(2)
+    def indent(width: Int): String = {
+      s.split("\n").map((" " * width) + _).mkString("\n")
     }
   }
 
