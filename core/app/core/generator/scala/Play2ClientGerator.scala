@@ -4,11 +4,11 @@ import core.{ Datatype, Field, ServiceDescription, Resource, Text }
 import java.io.File
 import java.io.PrintWriter
 
-object SprayClientGenerator {
-  def apply(service: ServiceDescription) = new SprayClientGenerator(service).generate
+object Play2ClientGenerator {
+  def apply(service: ServiceDescription) = new Play2ClientGenerator(service).generate
 }
 
-class SprayClientGenerator(service: ServiceDescription) {
+class Play2ClientGenerator(service: ServiceDescription) {
   private val projectName = service.name.replaceAll("""\s+""", "-").toLowerCase
 
   private val packageName = projectName.replaceAll("-", "")
