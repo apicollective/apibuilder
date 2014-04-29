@@ -1,8 +1,7 @@
 package core.generator.scala
 
 import core.{ Datatype, Field, ServiceDescription, Resource, Text }
-import java.io.File
-import java.io.PrintWriter
+import java.io.StringWriter
 
 object Play2ClientGenerator {
   def apply(service: ServiceDescription) = new Play2ClientGenerator(service).generate
@@ -14,14 +13,9 @@ class Play2ClientGenerator(service: ServiceDescription) {
   private val packageName = projectName.replaceAll("-", "")
 
   def generate: String = {
-    val baseDir = new File(s"/web/${projectName}-client/")
-
-    val clientPkg = new File(baseDir, s"app/$packageName")
-
-    clientPkg.mkdirs
-    val pw = new PrintWriter(new File(clientPkg, "Client.scala"))
+    val writer = new StringWriter()
     try {
-      pw.write {
+      writer.write {
 s"""package $packageName
 
 import play.api.libs.ws._
@@ -35,16 +29,16 @@ import play.api.libs.functional.syntax._
       val imports = caseClasses.flatMap(_.imports).distinct
 
       imports.map { imp =>
-        pw.write(imp + "\n")
+        writer.write(imp + "\n")
       }
 
       val jsonFormats = caseClasses.map { cc =>
         val className = cc.name
-        pw.write(cc.src)
+        writer.write(cc.src)
         JsonFormatDefs(cc)
       }
 
-      pw.write {
+      writer.write {
 s"""
 object Client {
   val apiToken = sys.props.getOrElse(
@@ -64,8 +58,8 @@ object Client {
   }
 """
 }
-jsonFormats.foreach { c => pw.write(c.src) }
-pw.write {
+jsonFormats.foreach { c => writer.write(c.src) }
+writer.write {
 """
 }
 
@@ -90,11 +84,11 @@ trait Client {
       }
 
       ClientGenerator(service).map { case (className, classSource) =>
-        pw.write(classSource)
+        writer.write(classSource)
       }
     }
-    finally pw.close
-    baseDir.toString
+    finally writer.close
+    writer.toString
   }
 
 // WARNING: This does not support recursive types right now. I think it is possible,
