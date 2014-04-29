@@ -1,6 +1,6 @@
-package lib
+package core.generator
 
-import core.{ Datatype, Field, ServiceDescription, Resource }
+import core.{ Datatype, Field, ServiceDescription, Resource, Text }
 import java.io.File
 
 /**

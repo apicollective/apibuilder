@@ -1,6 +1,6 @@
 package lib
 
-import core.{ Operation, Resource }
+import core.{ Operation, Resource, UrlKey }
 
 object OperationKey {
 

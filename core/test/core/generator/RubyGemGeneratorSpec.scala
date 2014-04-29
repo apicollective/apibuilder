@@ -1,4 +1,4 @@
-package lib
+package core.generator
 
 import core.ServiceDescription
 import org.scalatest.FlatSpec

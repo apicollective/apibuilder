@@ -5,7 +5,7 @@ import controllers.Authenticated
 import client.Apidoc.Version
 import play.api._
 import play.api.mvc._
-import lib.Play2RouteGenerator
+import core.generator.Play2RouteGenerator
 
 import play.api._
 import play.api.mvc._

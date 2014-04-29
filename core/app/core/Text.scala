@@ -1,4 +1,4 @@
-package lib
+package core
 
 import scala.collection.immutable.StringOps
 
@@ -44,6 +44,13 @@ object Text {
 
   def underscoreToInitCap(value: String): String = {
     initCap(value.split("_"))
+  }
+
+  def underscoreToCamelCase(value: String): String = {
+    value.split("_").toList match {
+      case Nil => ""
+      case part :: rest => part + initCap(rest)
+    }
   }
 
   def initCap(word: String): String = {

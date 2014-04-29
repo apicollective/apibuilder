@@ -1,6 +1,6 @@
-package lib
+package core.generator
 
-private[lib] object GeneratorUtil {
+private[generator] object GeneratorUtil {
 
   private val JsonDocumentMethods = Seq("POST", "PUT", "PATCH")
   def isJsonDocumentMethod(verb: String): Boolean = {
