@@ -3,9 +3,15 @@ package core.generator.scala
 import core.{ Datatype, Field, Text }
 import Datatype._
 
-case class ScalaField(name: String, typeName: String, imports: Seq[String])
+case class ScalaField(name: String, typeName: String, imports: Seq[String], originalField: Field)
 extends Source {
-  override val src: String = s"$name: $typeName"
+  def isOption = !originalField.required
+
+  def fullTypeName = if (isOption) s"Option[$typeName]" else typeName
+
+  override val src: String = {
+    s"$name: $fullTypeName"
+  }
 }
 
 object FieldGenerator {
@@ -25,10 +31,10 @@ object FieldGenerator {
       case dt => Text.underscoreToInitCap(dt.name)
     }
     val imports = typeName match {
-      case "DateTime" => "org.joda.time.DateTime" :: Nil
-      case "UUID" => "java.util.UUID" :: Nil
+      case "DateTime" => "import org.joda.time.DateTime" :: Nil
+      case "UUID" => "import java.util.UUID" :: Nil
       case _ => Nil
     }
-    new ScalaField(name, typeName, imports)
+    new ScalaField(name, typeName, imports, field)
   }
 }

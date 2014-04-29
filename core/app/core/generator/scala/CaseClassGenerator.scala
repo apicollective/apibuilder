@@ -2,32 +2,37 @@ package core.generator.scala
 
 import core.{ Datatype, Field, ServiceDescription, Resource, Text }
 
+case class ScalaCaseClass(name: String, fields: Seq[ScalaField], resource: Resource)
+extends Source {
+  val imports = fields.flatMap(_.imports)
+
+  override val src: String = {
+    val fieldSource = fields.map { field =>
+      s"  ${field.src}"
+    }.mkString(",\n")
+s"""
+case class $name(
+$fieldSource
+)
+"""
+  }
+}
+
 object CaseClassGenerator {
   def apply(service: ServiceDescription) = new CaseClassGenerator(service).generate
 }
 
 class CaseClassGenerator(service: ServiceDescription) {
-  def generate: Map[String, String] = {
+  def generate: Seq[ScalaCaseClass] = {
     service.resources.map { resource =>
       val className = Text.singular(Text.underscoreToInitCap(resource.name))
-      className -> generateResource(className, resource)
-    }.toMap
+      generateResource(className, resource)
+    }
   }
 
-  def generateResource(className: String, resource: Resource): String = {
+  def generateResource(className: String, resource: Resource): ScalaCaseClass = {
     val scalaFields = generateFields(resource.fields)
-    val importSource = scalaFields.flatMap { scalaField =>
-      scalaField.imports.map { "import " + _ }
-    }.sorted.distinct.mkString("\n")
-    val fieldSource = scalaFields.map { scalaField =>
-s"  ${scalaField.src}"
-    }.mkString(",\n")
-    val classSource = s"""
-case class $className(
-$fieldSource
-)
-"""
-    importSource + classSource
+    new ScalaCaseClass(className, scalaFields, resource)
   }
 
   def generateFields(fields: Seq[Field]): Seq[ScalaField] = {
