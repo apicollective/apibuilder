@@ -50,9 +50,7 @@ object Text {
     initCap(value.split("-"))
   }
 
-  def snakeToCamelCase(value: String) = underscoreToCamelCase(value)
-
-  def underscoreToCamelCase(value: String): String = {
+  def snakeToCamelCase(value: String) = {
     value.split("_").toList match {
       case Nil => ""
       case part :: rest => part + initCap(rest)
