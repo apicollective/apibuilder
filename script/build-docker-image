@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+# Example:
+#   DOCKER_HOST=tcp://localhost:4244 /web/metadata-direct/exec script/build-docker-image apidoc svc 0.0.1
+
+load File.join(File.dirname(__FILE__), 'docker-deploy.rb')
+
+args = parse_args(:project_name, :subproject_name, :tag)
+
+docker_image_tag = docker_image_tag(args[:project_name], args[:subproject_name], args[:tag])
+
+path = "%s/target/universal/stage" % args[:subproject_name]
+run("rm -rf #{path}")
+run("sbt %s/stage" % args[:subproject_name])
+run("cp %s/Dockerfile %s" % [args[:subproject_name], path])
+
+run("export DOCKER_HOST=tcp://localhost:4244")
+run("docker build -t #{docker_image_tag} #{path}")
+run("docker login --email=#{env('DOCKER_INDEX_EMAIL')} --username #{env('DOCKER_INDEX_USERNAME')} --password #{env('DOCKER_INDEX_PASSWORD')}")
+run("docker push #{docker_image_tag}")

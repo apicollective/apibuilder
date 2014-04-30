@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+# Usage:
+#   /web/metadata-direct/exec script/deploy <domain> <project_name> <subproject_name> <tag>
+#
+# Example:
+#   /web/metadata-direct/exec script/deploy api.apidoc.me apidoc-svc 0.0.1
+#   /web/metadata-direct/exec script/deploy www.apidoc.me apidoc-www 0.0.1
+
+load File.join(File.dirname(__FILE__), 'docker-deploy.rb')
+
+DB_URL='jdbc:postgresql://apidoc.cqe9ob8rnh0u.us-east-1.rds.amazonaws.com:5432/apidoc'
+
+args = parse_args(:domain, :project_name, :subproject_name, :tag)
+
+stack_name = stack_name("production", args[:project_name], args[:subproject_name], args[:tag])
+docker_image_tag = docker_image_tag(args[:project_name], args[:subproject_name], args[:tag])
+login = [env('DOCKER_INDEX_USERNAME'), env('DOCKER_INDEX_PASSWORD'), env('DOCKER_INDEX_EMAIL')].join(":")
+
+params = {
+  "-Dhttp.port" => 80,
+  "-Ddb.default.url" => DB_URL
+}.map { |k,v| "%s=%s" % [k, v] }.join(" ")
+
+run("./script/ionblaster new-stack -login #{login} -sg web -run \"-expose 80 -p 9000:80 #{docker_image_tag} #{params}\" #{stack_name} #{args[:domain]}")
