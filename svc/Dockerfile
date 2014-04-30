@@ -10,5 +10,5 @@ RUN apt-get -y install oracle-java8-installer && apt-get clean
 RUN update-alternatives --display java
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
-ADD target/universal/apiserver/* /web/apiserver
-CMD ["/web/apiserver/bin/apiserver"]
+ADD target/universal/stage /web/apiserver
+CMD ["/web/apiserver/bin/apidoc-svc"]
