@@ -47,6 +47,7 @@ case class Field(name: String,
                  dataType: Datatype,
                  description: Option[String] = None,
                  required: Boolean = true,
+                 multiple: Boolean = false,
                  format: Option[String] = None,
                  references: Option[Reference] = None,
                  default: Option[String] = None,
@@ -78,7 +79,7 @@ object Resource {
        case None => Seq.empty
 
        case Some(a: JsArray) => {
-         a.value.map { json => Field.parse(json.as[JsObject]) }
+         a.value.map { json => Field(json.as[JsObject]) }
        }
 
      }
@@ -93,7 +94,7 @@ object Resource {
            val parameters = (json \ "parameters").asOpt[JsArray] match {
              case None => Seq.empty
              case Some(a: JsArray) => {
-               a.value.map { data => Field.parse(data.as[JsObject]) }
+               a.value.map { data => Field(data.as[JsObject]) }
              }
            }
 
@@ -172,7 +173,7 @@ object Datatype {
 
 object Field {
 
-  def parse(json: JsObject): Field = {
+  def apply(json: JsObject): Field = {
     val datatypeName = (json \ "type").as[String]
     val datatype = Datatype.findByName(datatypeName).getOrElse {
       sys.error(s"Invalid datatype[${datatypeName}]")
@@ -186,6 +187,7 @@ object Field {
           description = (json \ "description").asOpt[String],
           references = (json \ "references").asOpt[String].map { Reference(_) },
           required = (json \ "required").asOpt[Boolean].getOrElse(true),
+          multiple = (json \ "multiple").asOpt[Boolean].getOrElse(false),
           default = default,
           minimum = (json \ "minimum").asOpt[Long],
           maximum = (json \ "maximum").asOpt[Long],
