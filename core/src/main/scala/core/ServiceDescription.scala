@@ -44,7 +44,7 @@ case class Operation(method: String,
                      responses: Seq[Response])
 
 case class Field(name: String,
-                 fieldType: FieldType,
+                 dataType: Datatype,
                  description: Option[String] = None,
                  required: Boolean = true,
                  format: Option[String] = None,
@@ -54,7 +54,7 @@ case class Field(name: String,
                  minimum: Option[Long] = None,
                  maximum: Option[Long] = None)
 
-case class FieldType(datatype: Datatype, multiple: Boolean)
+case class Datatype(name: String)
 
 case class Reference(resource: String, field: String) {
 
@@ -151,10 +151,7 @@ object Response {
       }
     }
   }
-
 }
-
-case class Datatype(name: String)
 
 object Datatype {
 
@@ -169,37 +166,6 @@ object Datatype {
   def findByName(name: String): Option[Datatype] = {
     All.find { dt => dt.name == name }
   }
-}
-
-object FieldType {
-  def apply(json: JsValue): Option[FieldType] = {
-    json match {
-      case (v: JsUndefined) => {
-        None
-      }
-
-      case v: JsString => {
-        val datatype = Datatype.findByName(v.value).getOrElse {
-          sys.error("Invalid datatype[${v.value}]")
-        }
-        Some(FieldType(datatype = datatype, multiple = false))
-      }
-
-      case v: JsArray => {
-        assert(v.value.size == 1,
-               "When an array, type must contain exactly 1 element: %s".format(v.value.mkString(", ")))
-        val typeName = v.value.head.as[JsString].value
-        val datatype = Datatype.findByName(typeName).getOrElse {
-          sys.error("Invalid datatype[${typeName}]")
-        }
-        Some(FieldType(datatype = datatype, multiple = true))
-      }
-
-      case v: Any => {
-        sys.error(s"Unhandled type value[$v]")
-      }
-    }
-  }
 
 }
 
@@ -207,19 +173,16 @@ object FieldType {
 object Field {
 
   def parse(json: JsObject): Field = {
-
-    val name = (json \ "name").as[String]
-    val typeString = (json \ "type")
-
-    val fieldType = FieldType(json \ "type").getOrElse {
-      sys.error(s"Field[%s] is missing datatype".format(name))
+    val datatypeName = (json \ "type").as[String]
+    val datatype = Datatype.findByName(datatypeName).getOrElse {
+      sys.error(s"Invalid datatype[${datatypeName}]")
     }
 
     val default = asOptString(json, "default")
-    default.map { v => assertValidDefault(fieldType.datatype, v) }
+    default.map { v => assertValidDefault(datatype, v) }
 
-    Field(name = name,
-          fieldType = fieldType,
+    Field(name = (json \ "name").as[String],
+          dataType = datatype,
           description = (json \ "description").asOpt[String],
           references = (json \ "references").asOpt[String].map { Reference(_) },
           required = (json \ "required").asOpt[Boolean].getOrElse(true),
