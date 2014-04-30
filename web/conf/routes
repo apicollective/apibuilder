@@ -1,5 +1,3 @@
-GET     /                                                         controllers.Application.index(orgsPage: Int ?= 0, membershipRequestsPage: Int ?= 0)
-
 GET     /login                                                    controllers.LoginController.redirect
 GET     /login/                                                   controllers.LoginController.index
 POST    /login/                                                   controllers.LoginController.indexPost
@@ -41,3 +39,6 @@ GET     /:org/codegen/:service/:version/ruby/gem                  controllers.co
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                             controllers.Assets.at(path="/public", file)
+
+GET        /_internal_/healthcheck         controllers.Internal.healthcheck
+GET        /                               controllers.Internal.healthcheck
