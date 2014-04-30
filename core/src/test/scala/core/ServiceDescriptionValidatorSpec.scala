@@ -166,4 +166,22 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     validator.isValid should be(true)
   }
 
+  it("support ararys as types") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "resources": {
+        "vendors": {
+          "fields": [
+            { "name": "guid", "type": "string" },
+            { "name": "tags", "type": ["string"] }
+          ]
+        }
+      }
+    }
+    """
+    ServiceDescriptionValidator(json).errors.mkString should be("")
+  }
+
 }

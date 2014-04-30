@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ Datatype, Field, ServiceDescription, Resource, Text }
+import core.{ Datatype, Field, FieldType, ServiceDescription, Resource, Text }
 import java.io.File
 
 /**
@@ -156,7 +156,7 @@ module ${moduleName}
       sb.append(s"      def ${methodName}(" + paramStrings.mkString(", ") + ")")
 
       pathParams.foreach { param =>
-        val klass = rubyClass(param.dataType)
+        val klass = rubyClass(param.fieldType)
         sb.append(s"        HttpClient::Preconditions.assert_class(${param.name}, ${klass})")
       }
 
@@ -284,9 +284,9 @@ module ${moduleName}
   private def parseArgument(field: Field): String = {
     val value = if (field.default.isEmpty) {
       s"opts.delete(:${field.name})"
-    } else if (field.dataType == Datatype.String) {
+    } else if (field.fieldType.datatype == Datatype.String) {
       s"opts.delete(:${field.name}) || \'${field.default.get}\'"
-    } else if (field.dataType == Datatype.Boolean) {
+    } else if (field.fieldType.datatype == Datatype.Boolean) {
       s"opts.has_key?(:${field.name}) ? (opts.delete(:${field.name}) ? true : false) : ${field.default.get}"
     } else {
       s"opts.delete(:${field.name}) || ${field.default.get}"
@@ -294,9 +294,9 @@ module ${moduleName}
 
     val hasValue = (field.required || !field.default.isEmpty)
     val assertMethod = if (hasValue) { "assert_class" } else { "assert_class_or_nil" }
-    val klass = rubyClass(field.dataType)
+    val klass = rubyClass(field.fieldType)
 
-    if (field.dataType == Datatype.Decimal) {
+    if (field.fieldType.datatype == Datatype.Decimal) {
       if (hasValue) {
         s"BigDecimal.new(HttpClient::Preconditions.check_not_nil(${value}, '${field.name} is required').to_s)"
       } else {
@@ -307,15 +307,15 @@ module ${moduleName}
     }
   }
 
-  private def rubyClass(dataType: Datatype): String = {
-    dataType match {
+  private def rubyClass(fieldType: FieldType): String = {
+    fieldType.datatype match {
       case Datatype.String => "String"
       case Datatype.Long => "Integer"
       case Datatype.Integer => "Integer"
       case Datatype.Boolean => "String"
       case Datatype.Decimal => "BigDecimal"
       case _ => {
-        sys.error(s"Cannot map data type[${dataType}] to ruby class")
+        sys.error(s"Cannot map data type[${fieldType.datatype}] to ruby class")
       }
     }
   }
