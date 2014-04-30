@@ -1,5 +1,5 @@
-apiserver
-=========
+apidoc
+======
 
 Designed to host API documentation for REST services. See svc/api.json for
 description of the API.
