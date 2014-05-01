@@ -32,7 +32,7 @@ object Plugin extends sbt.Plugin {
 
   lazy val apiGeneratorSettings: Seq[Setting[_]] = inConfig(Compile)(baseApiGeneratorSettings) ++ Seq(
     // TODO: Figure out dependencies for inside/outside Play.
-    libraryDependencies += "com.typesafe.play" %% "play" % "2.2.2"
+    libraryDependencies += "com.typesafe.play" %% "play" % "2.2.3"
   )
 
   lazy val baseApiGeneratorSettings: Seq[Setting[_]] = Seq(
