@@ -15,16 +15,16 @@ object Plugin extends sbt.Plugin {
 
   object ApiGenerator {
     def apply(sourceDir: Seq[sbt.File], outDir: sbt.File, s: TaskStreams): Seq[java.io.File] = {
-      s.log("Generating APIs")
+      s.log.info("Generating APIs")
       for {
         (jsonSource, idx) <- sourceDir.zipWithIndex
-        _ = { s.log(s"Reading from ${jsonSource.getName}") }
+        _ = { s.log.debug(s"Reading from ${jsonSource.getName}") }
         jsonStr = IO.read(jsonSource)
         generated = Play2ClientGenerator.apply(jsonStr)
         newFile = outDir / s"Client_${idx}.scala"
       } yield {
         IO.write(newFile, generated)
-        s.log(s"Wrote to ${newFile}")
+        s.log.debug(s"Wrote to ${newFile}")
         newFile
       }
     }
