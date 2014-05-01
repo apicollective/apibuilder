@@ -22,11 +22,10 @@
           <a class="navbar-brand" href="/">Api doc</a>
         </div>
         <div class="navbar-collapse collapse">
-          @metadata.org.map { org =>
-            <ul class="nav navbar-nav">
-              <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
-            </ul>
-          }
+          <ul class="nav navbar-nav">
+            <li><a href="@routes.DocController.index()">Documentation</a></li>
+            <li><a href="https://github.com/gilt/apidoc">github</a></li>
+          </ul>
           @metadata.user.map { user =>
             <ul class="nav navbar-nav navbar-right">
               <li class="dropdown">
@@ -44,6 +43,12 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar resources">
+          @metadata.org.map { org =>
+            <ul class="nav nav-sidebar">
+              <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
+            </ul>
+          }
+
           @metadata.service.map { service =>
             <ul class="nav nav-sidebar">
               <li@if(metadata.resource.isEmpty) { class="active" }><a href="@routes.Versions.show(metadata.org.get.key, service.key, "latest")">@service.name</a></li>

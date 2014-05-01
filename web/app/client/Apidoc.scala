@@ -18,7 +18,7 @@ object ApidocClient {
       sys.error(s"No token for user guid[$userGuid]")
     }
 
-    Apidoc.Client(baseUrl = "http://api.apidoc.me/",
+    Apidoc.Client(baseUrl = "http://localhost:9001",
                   token = token)
   }
 
