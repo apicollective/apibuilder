@@ -103,10 +103,13 @@ case class ServiceDescriptionValidator(apiJson: String) {
       Seq("Must have at least one resource")
     } else {
       serviceDescription.get.resources.flatMap { resource =>
-        if (resource.fields.isEmpty) {
-          Some(s"${resource.name} resource must have at least one field")
-        } else {
-          None
+        resource.fields match {
+          case Nil => Some(s"${resource.name} resource must have at least one field")
+          case fields =>
+            fields.collect {
+              case field if field.default.nonEmpty =>
+                s"Field ${field.name} of resource ${resource.name} should not have a default attribute. Default is only valid on an operation parameter."
+            }
         }
       }
     }

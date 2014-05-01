@@ -26,3 +26,15 @@ sbt-apigen
 ==========
 SBT plugin which can generate client APIs from an API description, where
 the JSON files are stored in src/main/api.
+
+# Code Generation
+
+## Scala
+
+API doc supports generating a Play 2 routes file as well as a Play 2 client.
+
+### TODO
+
+- Support nested resource types
+- Proper string formatting for dates
+- Better return types in generated clients

@@ -69,30 +69,26 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
 
   def description: String = field.description.map(textToComment).getOrElse("")
 
-  def isOption: Boolean = !field.required && field.default.isEmpty
+  def isOption: Boolean = !field.required || field.default.nonEmpty
 
   def typeName: String = if (isOption) s"Option[${dataType.name}]" else dataType.name
 
-  def default: Option[String] = if (isOption) Some("None") else field.default
-
-  def hasDefault: Boolean = default.nonEmpty
-
   override def src: String = {
     val decl = s"$description$name: $typeName"
-    default.map(decl + " = " + _).getOrElse(decl)
+    if (isOption) decl + " = None" else decl
   }
 
   // we just want to make sure that fields with defaults
   // always come after those without, so that argument lists will
   // be valid. otherwise, preserve existing order
   override def compare(that: ScalaField): Int = {
-    if (hasDefault) {
-      if (that.hasDefault) {
+    if (isOption) {
+      if (that.isOption) {
         0
       } else {
         1
       }
-    } else if (that.hasDefault) {
+    } else if (that.isOption) {
       -1
     } else {
       0
