@@ -35,7 +35,6 @@ object ${ssd.name} {
   import play.api.libs.functional.syntax._
   import play.api.Logger
 
-  // TODO only import these when classes need them
   import java.util.UUID
   import org.joda.time.DateTime
 
@@ -50,7 +49,7 @@ object ${ssd.name} {
       sys.error("API URL must be provided")
     )
 
-    private val logger = Logger
+    private val logger = Logger("$packageName.${ssd.name}.Client")
 
     def requestHolder(resource: String) = {
       val url = apiUrl + resource
@@ -69,9 +68,12 @@ object ${ssd.name} {
       // auth should always be present, but just in case it isn't,
       // we'll supply a default
       val (apiToken, _, _) = req.auth.getOrElse(("", "", AuthScheme.BASIC))
-      Logger.info(s"curl -X $$method -u '$$apiToken:' $${req.url}")
+      logger.info(s"curl -X $$method -u '[REDACTED]:' $${req.url}")
       req
     }
+
+    // TODO return a Future[Response] instead of a Future[JsValue] so the code
+    // generated for the operation can decide what to do with it
 
     private def processResponse(f: Future[Response])(implicit ec: ExecutionContext): Future[JsValue] = {
       f.map { response =>
@@ -147,8 +149,6 @@ $objArgs
       val builder = List.newBuilder[String]
       builder += "val qBuilder = List.newBuilder[(String, String)]"
       operation.parameters.foreach { param =>
-        // TODO support more complicated types
-        require(Set("String", "Long", "Int", "Boolean", "BigDecimal", "UUID")(param.dataType.name))
         if (param.isOption) {
           builder += s"""qBuilder ++= ${param.name}.map("${param.originalName}" -> _.toString)"""
         } else {
@@ -157,6 +157,8 @@ $objArgs
       }
       builder.result.mkString("\n")
     }
+
+    // TODO generate resposne types based on the responses list on the operation
 
     def body = method match {
       case "POST" => s"""$buildPayload
