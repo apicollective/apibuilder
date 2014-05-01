@@ -18,8 +18,13 @@ docker_image_tag = docker_image_tag(args[:project_name], args[:subproject_name],
 login = [env('DOCKER_INDEX_USERNAME'), env('DOCKER_INDEX_PASSWORD'), env('DOCKER_INDEX_EMAIL')].join(":")
 
 params = {
-  "-Dhttp.port" => 80,
-  "-Ddb.default.url" => DB_URL
-}.map { |k,v| "%s=%s" % [k, v] }.join(" ")
+  "-Dhttp.port" => 80
+}
 
-run("./script/ionblaster new-stack -login #{login} -sg web -run \"-expose 80 -p 9000:80 #{docker_image_tag} #{params}\" #{stack_name} #{args[:domain]}")
+if args[:subproject_name] == "svc"
+  params["-Ddb.default.url"] = DB_URL
+end
+
+param_string = params.map { |k,v| "%s=%s" % [k, v] }.join(" ")
+
+run("./script/ionblaster new-stack -login #{login} -sg web -run \"--expose 80 -p 9000:80 #{docker_image_tag} #{param_string}\" #{stack_name} #{args[:domain]}")
