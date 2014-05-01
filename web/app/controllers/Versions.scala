@@ -6,6 +6,7 @@ import client.Apidoc
 import client.Apidoc.{ Organization, Service, User, Version }
 import play.api._
 import play.api.mvc._
+import play.api.libs.json.Json
 import play.api.data._
 import play.api.data.Forms._
 import scala.concurrent.Await
@@ -39,6 +40,23 @@ object Versions extends Controller {
                                  allServiceVersions = versions.map(_.version),
                                  serviceDescription = Some(sd))
           Ok(views.html.versions.show(tpl, sd))
+        }
+      }
+    }
+  }
+
+  def apiJson(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
+    for {
+      version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+    } yield {
+      version match {
+
+        case None => {
+          Redirect(controllers.routes.Organizations.show(orgKey)).flashing("warning" -> s"Service version ${versionName} not found")
+        }
+
+        case Some(v: Version) => {
+          Ok(v.json.get).withHeaders("Content-Type" -> "application/json")
         }
       }
     }
@@ -94,7 +112,7 @@ object Versions extends Controller {
                 val validator = ServiceDescriptionValidator(contents)
                 if (validator.isValid) {
                   val serviceKey = UrlKey.generate(validator.serviceDescription.get.name)
-                  val response = Await.result(request.client.versions.put(org.key, serviceKey, valid.version, path), 1000 millis)
+                  val response = Await.result(request.client.versions.put(org.key, serviceKey, valid.version, path), 5000 millis)
                   Redirect(routes.Versions.show(org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
                 } else {
                   Ok(views.html.versions.form(tpl, boundForm, validator.errors))

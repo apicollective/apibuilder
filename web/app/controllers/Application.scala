@@ -19,7 +19,6 @@ object Application extends Controller {
                                                                       limit = Pagination.DefaultLimit+1,
                                                                       offset = membershipRequestsPage * Pagination.DefaultLimit)
     } yield {
-      println("membershipRequests: " + membershipRequests)
       Ok(views.html.index(request.user,
                           PaginatedCollection(orgsPage, orgs),
                           PaginatedCollection(membershipRequestsPage, membershipRequests)))

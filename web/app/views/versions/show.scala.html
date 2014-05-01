@@ -7,6 +7,8 @@
   <div class="pull-right">
     <a href="@routes.Versions.create(orgKey = tpl.org.get.key, version = Some(tpl.version.get))">Upload new version</a>
     <br/>
+    <a href="@routes.Versions.apiJson(orgKey = tpl.org.get.key, serviceKey = tpl.service.get.key, version = tpl.version.get)">api.json</a>
+    <br/>
     <a href="@codegen.routes.Play2.getClient(org = tpl.org.get.key, service = tpl.service.get.key, version = tpl.version.get)">Codegen: Play 2 Client</a>
     <br/>
     <a href="@codegen.routes.Play2.getRoutes(org = tpl.org.get.key, service = tpl.service.get.key, version = tpl.version.get)">Codegen: Play 2 Routes</a>
