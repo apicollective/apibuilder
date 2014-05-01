@@ -13,18 +13,18 @@ Installing Docker on mac
 
   http://docs.docker.io/installation/mac/
 
-Releasing code
+Deploying
 ==============
 
-    git tag -a -m 0.5.9 0.5.9
+    git tag -a -m 0.0.9 0.0.9
     git push --tags origin
-    DOCKER_HOST=tcp://localhost:4244 /web/metadata-architecture/exec script/build-docker-image apidoc svc 0.5.9
-    /web/metadata-architecture/exec script/deploy api.iris.gilt.com apidoc svc 0.5.9
 
-Putting traffic on your new version
-===================================
-
+    DOCKER_HOST=tcp://localhost:4244 /web/metadata-architecture/exec script/build-docker-image apidoc svc 0.0.9
+    /web/metadata-architecture/exec script/deploy api.origin.apidoc.com apidoc svc 0.0.9
     /web/metadata-architecture/exec script/ionblaster set-load-balancers -lb <HOST> api.origin.apidoc.me
+
+    DOCKER_HOST=tcp://localhost:4244 /web/metadata-architecture/exec script/build-docker-image apidoc web 0.0.9
+    /web/metadata-architecture/exec script/deploy www.origin.apidoc.com apidoc web 0.0.9
     /web/metadata-architecture/exec script/ionblaster set-load-balancers -lb <HOST> www.origin.apidoc.me
 
 Metadata about your app EC2 Configuration
