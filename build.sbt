@@ -1,6 +1,5 @@
 name := "apidoc"
 
-
 playScalaSettings
 
 lazy val core = project
@@ -32,6 +31,18 @@ lazy val web = project
   .settings(commonPlaySettings: _*)
   .settings(
     version := "1.0-SNAPSHOT"
+  )
+
+lazy val sbtGenerator = project
+  .in(file("sbt-apigen"))
+  .dependsOn(core)
+  .aggregate(core)
+  .settings(commonSettings: _*)
+  .settings(
+    version := "1.0-SNAPSHOT",
+    name := "sbt-apigen",
+    sbtPlugin := true,
+    description := """SBT plugin to generate Scala client code"""
   )
 
 lazy val commonPlaySettings: Seq[Setting[_]] = Seq(
