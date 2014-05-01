@@ -65,7 +65,7 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
 
   def originalName: String = field.name
 
-  def dataType: ScalaDataType = new ScalaDataType(field.dataType)
+  def dataType: ScalaDataType = new ScalaDataType(field.dataType, field.format)
 
   def description: String = field.description.map(textToComment).getOrElse("")
 
@@ -100,10 +100,15 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
   }
 }
 
-class ScalaDataType(dataType: Datatype) extends Source {
+class ScalaDataType(dataType: Datatype, format: Option[String]) extends Source {
   import Datatype._
   val name = dataType match {
-    case String => "String"
+    case String => format.map {
+      case "uuid" => "UUID"
+      case "date-time" => "DateTime"
+    }.getOrElse {
+      "String"
+    }
     case Integer => "Int"
     case Long => "Long"
     case Boolean => "Boolean"

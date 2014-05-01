@@ -24,11 +24,20 @@ extends Source
 
 object ${ssd.name} {
 
-  import play.api.libs.ws._
-  import play.api.libs.json._
-  import play.api.libs.functional.syntax._
   import scala.concurrent.ExecutionContext
   import scala.concurrent.Future
+
+  import com.ning.http.client.Realm.AuthScheme
+
+  import play.api.libs.ws._
+  import play.api.libs.ws.WS.WSRequestHolder
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+  import play.api.Logger
+
+  // TODO only import these when classes need them
+  import java.util.UUID
+  import org.joda.time.DateTime
 
   object Client {
     private val apiToken = sys.props.getOrElse(
@@ -41,8 +50,9 @@ object ${ssd.name} {
       sys.error("API URL must be provided")
     )
 
-    def req(resource: String) = {
-      import com.ning.http.client.Realm.AuthScheme
+    private val logger = Logger
+
+    def requestHolder(resource: String) = {
       val url = apiUrl + resource
       WS.url(url).withAuth(apiToken, "", AuthScheme.BASIC)
     }
@@ -53,24 +63,37 @@ object ${ssd.name} {
 
     def resource: String
 
-    protected def req(path: String) = Client.req(resource + path)
+    protected def requestHolder(path: String) = Client.requestHolder(resource + path)
 
-    // TODO these methods need logging
+    private def logRequest(method: String, req: WSRequestHolder)(implicit ec: ExecutionContext): WSRequestHolder = {
+      // auth should always be present, but just in case it isn't,
+      // we'll supply a default
+      val (apiToken, _, _) = req.auth.getOrElse(("", "", AuthScheme.BASIC))
+      Logger.info(s"curl -X $$method -u '$$apiToken:' $${req.url}")
+      req
+    }
+
+    private def processResponse(f: Future[Response])(implicit ec: ExecutionContext): Future[JsValue] = {
+      f.map { response =>
+        logger.debug(response.body)
+        response.json
+      }
+    }
 
     protected def POST[T](path: String, data: JsValue)(implicit ec: ExecutionContext): Future[JsValue] = {
-      req(path).post(data).map(_.json)
+      processResponse(logRequest("POST", requestHolder(path)).post(data))
     }
 
     protected def GET(path: String, q: Seq[(String, String)])(implicit ec: ExecutionContext): Future[JsValue] = {
-      req(path).withQueryString(q:_*).get().map(_.json)
+      processResponse(logRequest("GET", requestHolder(path).withQueryString(q:_*)).get())
     }
 
     protected def PUT[T](path: String, data: JsValue)(implicit ec: ExecutionContext): Future[JsValue] = {
-      req(path).put(data).map(_.json)
+      processResponse(logRequest("PUT", requestHolder(path)).put(data))
     }
 
     protected def DELETE[T](path: String)(implicit ec: ExecutionContext): Future[JsValue] = {
-      req(path).delete().map(_.json)
+      processResponse(logRequest("DELETE", requestHolder(path)).delete())
     }
   }
 $body
@@ -82,8 +105,16 @@ $body
       val defs = ssd.resources.map(JsonFormatDefs(_).src.indent(4)).mkString("\n")
       s"""
   object JsonFormats {
+    implicit val jsonReadsUUID: Reads[UUID] = __.read[String].map(UUID.fromString)
+
+    implicit val jsonWritesUUID = new Writes[UUID] {
+      override def writes(value: UUID) = {
+        JsString(value.toString)
+      }
+    }
 $defs
   }
+  import JsonFormats.jsonWritesUUID
 """
     }
     val resourceDefs = resources.map(_.src.indent).mkString("\n")
@@ -127,7 +158,6 @@ $objArgs
       builder.result.mkString("\n")
     }
 
-    // TODO finish implementing method generation
     def body = method match {
       case "POST" => s"""$buildPayload
 POST(
