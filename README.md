@@ -4,7 +4,7 @@ apidoc
 Designed to host API documentation for REST services. See svc/api.json for
 description of the API.
 
-There are three SBT subprojects
+There are four SBT subprojects
 
 core
 ====
@@ -21,3 +21,8 @@ of the API.
 web
 ===
 Actual UI for apidoc.
+
+sbt-apigen
+==========
+SBT plugin which can generate client APIs from an API description, where
+the JSON files are stored in src/main/api.
