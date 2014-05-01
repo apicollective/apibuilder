@@ -55,8 +55,6 @@ case class Field(name: String,
                  minimum: Option[Long] = None,
                  maximum: Option[Long] = None)
 
-case class Datatype(name: String)
-
 case class Reference(resource: String, field: String) {
 
   lazy val label = s"$resource.$field"
@@ -154,13 +152,15 @@ object Response {
   }
 }
 
+sealed abstract class Datatype(val name: String)
+
 object Datatype {
 
-  val String = Datatype("string")
-  val Integer = Datatype("integer")
-  val Long = Datatype("long")
-  val Boolean = Datatype("boolean")
-  val Decimal = Datatype("decimal")
+  case object String extends Datatype("string")
+  case object Integer extends Datatype("integer")
+  case object Long extends Datatype("long")
+  case object Boolean extends Datatype("boolean")
+  case object Decimal extends Datatype("decimal")
 
   val All = Seq(String, Integer, Long, Boolean, Decimal)
 
@@ -170,17 +170,19 @@ object Datatype {
 
 }
 
-case class Format(name: String, example: String, description: String)
+sealed abstract class Format(val name: String, val example: String, val description: String)
 
 object Format {
 
-  val Uuid = Format(name = "uuid",
-                    example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
-                    description = "String representation of a universally unique identifier (UUID)")
+  case object Uuid extends Format(
+    name = "uuid",
+    example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
+    description = "String representation of a universally unique identifier (UUID)")
 
-  val DateTime = Format(name = "date-time",
-                        example = "2014-04-29T11:56:52Z",
-                        description = "Date time format in ISO 8601")
+  case object DateTime extends Format(
+    name = "date-time",
+    example = "2014-04-29T11:56:52Z",
+    description = "Date time format in ISO 8601")
 
   val All = Seq(Uuid, DateTime)
 
@@ -241,6 +243,12 @@ object Field {
       case Datatype.Long => {
         value.toLong
       }
+
+      case Datatype.Decimal => {
+        BigDecimal(value)
+      }
+
+      case Datatype.String => ()
     }
   }
 
