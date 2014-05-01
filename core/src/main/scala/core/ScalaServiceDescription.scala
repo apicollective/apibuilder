@@ -100,10 +100,10 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
   }
 }
 
-class ScalaDataType(dataType: Datatype, format: Option[String]) extends Source {
+class ScalaDataType(dataType: Datatype, format: Option[Format]) extends Source {
   import Datatype._
   val name = dataType match {
-    case String => format.map {
+    case String => format.map(_.name).map {
       case "uuid" => "UUID"
       case "date-time" => "DateTime"
     }.getOrElse {
