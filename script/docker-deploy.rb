@@ -44,3 +44,7 @@ def env(name)
   end
   value
 end
+
+def docker(command)
+  run("export DOCKER_HOST=tcp://localhost:4244 && docker %s" % command)
+end

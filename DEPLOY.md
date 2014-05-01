@@ -25,6 +25,7 @@ Putting traffic on your new version
 ===================================
 
     /web/metadata-architecture/exec script/ionblaster set-load-balancers -lb <HOST> api.origin.apidoc.me
+    /web/metadata-architecture/exec script/ionblaster set-load-balancers -lb <HOST> www.origin.apidoc.me
 
 Metadata about your app EC2 Configuration
 =========================================
