@@ -132,7 +132,7 @@ $defs
       if (tmp.isEmpty) {
         "\"\""
       } else {
-        if (tmp.startsWith("/")) "\"" + tmp + "\"" else "\"/\" + " + tmp
+        if (tmp.startsWith("/")) "\"" + tmp + "\"" else "\"/\" + \"" + tmp + "\""
       }
     }
 
