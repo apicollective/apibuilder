@@ -48,7 +48,7 @@ case class Field(name: String,
                  description: Option[String] = None,
                  required: Boolean = true,
                  multiple: Boolean = false,
-                 format: Option[String] = None,
+                 format: Option[Format] = None,
                  references: Option[Reference] = None,
                  default: Option[String] = None,
                  example: Option[String] = None,
@@ -170,6 +170,26 @@ object Datatype {
 
 }
 
+case class Format(name: String, example: String, description: String)
+
+object Format {
+
+  val Uuid = Format(name = "uuid",
+                    example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
+                    description = "String representation of a universally unique identifier (UUID)")
+
+  val DateTime = Format(name = "date-time",
+                        example = "2014-04-29T11:56:52Z",
+                        description = "Date time format in ISO 8601")
+
+  val All = Seq(Uuid, DateTime)
+
+  def apply(name: String): Option[Format] = {
+    All.find { _.name == name.toLowerCase }
+  }
+
+}
+
 
 object Field {
 
@@ -191,7 +211,11 @@ object Field {
           default = default,
           minimum = (json \ "minimum").asOpt[Long],
           maximum = (json \ "maximum").asOpt[Long],
-          format = (json \ "format").asOpt[String],
+          format = (json \ "format").asOpt[String].map( s =>
+            Format(s).getOrElse {
+              sys.error(s"Invalid format[$s]")
+            }
+          ),
           example = asOptString(json, "example"))
   }
 
