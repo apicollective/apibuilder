@@ -114,6 +114,20 @@ $body
         JsString(value.toString)
       }
     }
+
+    import org.joda.time.format.ISODateTimeFormat
+
+    private val dateTimeFormat = ISODateTimeFormat.basicDateTime
+
+    implicit val jsonDateTimeReads: Reads[DateTime] = {
+      __.read[String].map(dateTimeFormat.parseDateTime)
+    }
+
+    implicit val jsonDateTimeWrites = new Writes[DateTime] {
+      override def writes(value: DateTime) = {
+        JsString(dateTimeFormat.print(value))
+      }
+    }
 $defs
   }
   import JsonFormats._
