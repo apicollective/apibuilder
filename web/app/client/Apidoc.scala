@@ -4,8 +4,13 @@ import play.api.libs.json._
 import play.api.libs.ws._
 import scala.concurrent.Future
 import com.ning.http.client.Realm.AuthScheme
+import play.api.Play.current
 
 object ApidocClient {
+
+  private val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
+    sys.error("apidoc.url is required")
+  }
 
   private val Tokens = Map(
     "f3973f60-be9f-11e3-b1b6-0800200c9a66" -> "ZdRD61ODVPspeV8Wf18EmNuKNxUfjfROyJXtNJXj9GMMwrAxqi8I4aUtNAT6",
@@ -18,9 +23,7 @@ object ApidocClient {
       sys.error(s"No token for user guid[$userGuid]")
     }
 
-    // Apidoc.Client(baseUrl = "http://localhost:9001", token = token)
-
-    Apidoc.Client(baseUrl = "http://api.apidoc.me", token = token)
+    Apidoc.Client(baseUrl = apiUrl, token = token)
   }
 
 }

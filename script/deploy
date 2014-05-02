@@ -18,7 +18,8 @@ docker_image_tag = docker_image_tag(args[:project_name], args[:subproject_name],
 login = [env('DOCKER_INDEX_USERNAME'), env('DOCKER_INDEX_PASSWORD'), env('DOCKER_INDEX_EMAIL')].join(":")
 
 params = {
-  "-Dhttp.port" => 80
+  "-Dhttp.port" => 80,
+  "-Dconfig.resource" => "application.prod.conf"
 }
 
 if args[:subproject_name] == "svc"
