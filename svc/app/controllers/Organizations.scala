@@ -7,8 +7,8 @@ import play.api.libs.json.Json
 
 object Organizations extends Controller {
 
-  def get(guid: Option[String], userGuid: Option[String], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val orgs = OrganizationDao.findAll(userGuid = userGuid,
+  def get(guid: Option[String], user_guid: Option[String], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
+    val orgs = OrganizationDao.findAll(userGuid = user_guid,
                                        guid = guid,
                                        key = key,
                                        name = name,

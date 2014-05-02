@@ -6,7 +6,7 @@ import play.api.libs.json.Json
 
 object Users extends Controller {
 
-  def get(guid: Option[String], email: Option[String], token: Option[String]) = Authenticated { request =>
+  def get(guid: Option[String], email: Option[String], token: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
     val users = UserDao.findAll(guid = guid,
                                 email = email,
                                 token = token)

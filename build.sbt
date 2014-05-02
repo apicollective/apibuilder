@@ -10,7 +10,7 @@ lazy val core = project
       "com.typesafe.play" %% "play-json" % "2.2.2"
     ),
     // Temporary addition until api.json is moved.
-    unmanagedClasspath in Test += (baseDirectory in ThisBuild).value / "svc"
+    unmanagedClasspath in Test += (baseDirectory in ThisBuild).value / "svc" / "api"
   )
 
 lazy val svc = project
@@ -19,6 +19,7 @@ lazy val svc = project
   .settings(playScalaSettings: _*)
   .settings(commonSettings: _*)
   .settings(commonPlaySettings: _*)
+  .settings(routesGeneratorSettings: _*)
   .settings(
     version := "1.0-SNAPSHOT"
   )
@@ -43,6 +44,18 @@ lazy val sbtGenerator = project
     name := "sbt-apigen",
     sbtPlugin := true,
     description := """SBT plugin to generate Scala client code"""
+  )
+
+lazy val routesApiGenerator = project
+  .in(file("play-api-routesgen"))
+  .dependsOn(core)
+  .aggregate(core)
+  .settings(commonSettings: _*)
+  .settings(
+    version := "1.0-SNAPSHOT",
+    name := "play-api-routesgen",
+    sbtPlugin := true,
+    description := """SBT plugin to generate Play routes file"""
   )
 
 lazy val commonPlaySettings: Seq[Setting[_]] = Seq(
