@@ -35,6 +35,5 @@ API doc supports generating a Play 2 routes file as well as a Play 2 client.
 
 ### TODO
 
-- Support nested resource types
 - Proper string formatting for dates
 - Better return types in generated clients

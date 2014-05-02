@@ -161,6 +161,7 @@ object Datatype {
   case object Long extends Datatype("long")
   case object Boolean extends Datatype("boolean")
   case object Decimal extends Datatype("decimal")
+  case class UserType(override val name: String) extends Datatype(name)
 
   val All = Seq(String, Integer, Long, Boolean, Decimal)
 
@@ -198,7 +199,7 @@ object Field {
   def apply(json: JsObject): Field = {
     val datatypeName = (json \ "type").as[String]
     val datatype = Datatype.findByName(datatypeName).getOrElse {
-      sys.error(s"Invalid datatype[${datatypeName}]")
+      new Datatype.UserType(datatypeName)
     }
 
     val default = asOptString(json, "default")
@@ -249,6 +250,9 @@ object Field {
       }
 
       case Datatype.String => ()
+
+      case _: Datatype.UserType =>
+        sys.error("Defaults not supported for user defined types.")
     }
   }
 

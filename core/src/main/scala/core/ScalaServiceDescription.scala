@@ -110,7 +110,7 @@ class ScalaDataType(dataType: Datatype, format: Option[Format]) extends Source {
     case Long => "Long"
     case Boolean => "Boolean"
     case Decimal => "BigDecimal"
-    case _ => underscoreToInitCap(dataType.name)
+    case UserType(name) => underscoreToInitCap(name)
   }
 
   override val src: String = dataType.name

@@ -116,7 +116,7 @@ $body
     }
 $defs
   }
-  import JsonFormats.jsonWritesUUID
+  import JsonFormats._
 """
     }
     val resourceDefs = resources.map(_.src.indent).mkString("\n")
