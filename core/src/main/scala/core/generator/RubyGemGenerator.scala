@@ -20,48 +20,26 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   def generate(): String = {
-    //val moduleDir = new File("libDir, moduleKey)
-    // val baseDir = new File("/web/gem-apidoc/lib")
-    val baseDir = new File("/web/gem-iris-hub/lib")
-    val moduleDir = new File(baseDir, moduleKey)
-
-    val resourceDir = new File(moduleDir, "resources")
-    resourceDir.mkdirs
-
-    val clientsDir = new File(moduleDir, "clients")
-    clientsDir.mkdirs
-
-    service.resources.foreach { r =>
-      val resourceFilename = s"${Text.singular(r.name)}.rb"
-      writeToFile(new File(resourceDir, resourceFilename), generateResource(r))
-
-      val clientFilename = s"${r.name}.rb"
-      writeToFile(new File(clientsDir, clientFilename), generateClientForResource(r))
-    }
-
-    writeToFile(new File(moduleDir, "client.rb"), generateClient())
-
-    val topLevelFile = new File(baseDir, s"${moduleKey}.rb")
-    writeToFile(topLevelFile, generateTopLevelInclude())
-
-    moduleDir.toString
+    RubyHttpClient.require +
+    "\n" +
+    service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +
+    s"module ${moduleName}\n" +
+    generateClient() +
+    "\n\n  module Resources\n" +
+    service.resources.map { generateResource(_) }.mkString("\n\n") +
+    "\n\n  end" +
+    "\n\n  module Clients\n" +
+    service.resources.map { generateClientForResource(_) }.mkString("\n\n") +
+    "\n\n  end\n\n" +
+    RubyHttpClient.contents +
+    "end"
   }
 
-  def generateTopLevelInclude(): String = {
-    Seq("load File.join(File.dirname(__FILE__), \"http_client.rb\")",
-        "dir = File.join(File.dirname(__FILE__), \"" + moduleKey + "\")",
-        "Dir.glob(\"#{dir}/resources/*.rb\").each { |f| load f }",
-        "Dir.glob(\"#{dir}/clients/*.rb\").each { |f| load f }",
-        "load File.join(dir, 'client.rb')").mkString("\n\n")
-  }
-
-  def generateClient(): String = {
+  private def generateClient(): String = {
     val sb = ListBuffer[String]()
     val url = service.baseUrl + service.basePath.getOrElse("")
 
     sb.append(s"""
-module ${moduleName}
-
   class Client
 
     def initialize(url, opts={})
@@ -76,6 +54,7 @@ module ${moduleName}
       HttpClient::Preconditions.assert_class(url, String)
       token = HttpClient::Preconditions.assert_class_or_nil(opts.delete(:token), String)
       HttpClient::Preconditions.assert_empty_opts(opts)
+
       if token
         Client.new(url, :authorization => HttpClient::Authorization.basic(token))
       else
@@ -86,6 +65,7 @@ module ${moduleName}
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil(path, String)
       request = HttpClient::Request.new(@url + path.to_s)
+
       if @authorization
         request.with_auth(@authorization)
       else
@@ -103,15 +83,16 @@ module ${moduleName}
     }.mkString("\n\n"))
 
     sb.append("  end")
-    sb.append("")
-    sb.append("end")
 
     sb.mkString("\n")
   }
 
   def generateClientForResource(resource: core.Resource): String = {
-    val sb = ListBuffer[String]()
+    val className = Text.underscoreToInitCap(resource.name)
 
+    val sb = ListBuffer[String]()
+    sb.append(s"    class ${className}")
+    sb.append("")
     sb.append("      def initialize(client)")
     sb.append(s"        @client = HttpClient::Preconditions.assert_class(client, ${moduleName}::Client)")
     sb.append("      end")
@@ -144,7 +125,7 @@ module ${moduleName}
 
       val hasQueryParams = (!GeneratorUtil.isJsonDocumentMethod(op.method) && !otherParams.isEmpty)
       if (hasQueryParams) {
-        paramStrings.append("opts={}")
+        paramStrings.append("incoming={}")
       }
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
@@ -153,7 +134,7 @@ module ${moduleName}
 
       sb.append("")
       op.description.map { desc =>
-        sb.append(formatComment(desc, 6))
+        sb.append(GeneratorUtil.formatComment(desc, 6))
       }
       sb.append(s"      def ${methodName}(" + paramStrings.mkString(", ") + ")")
 
@@ -169,6 +150,7 @@ module ${moduleName}
           paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
         }
 
+        sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
         sb.append("        query = {")
         sb.append("          " + paramBuilder.mkString(",\n          "))
         sb.append("        }.delete_if { |k, v| v.nil? }")
@@ -209,7 +191,10 @@ module ${moduleName}
       sb.append("      end")
     }
 
-    wrap("Clients", Text.underscoreToInitCap(resource.name), resource.description, sb.mkString("\n"))
+    sb.append("")
+    sb.append("    end")
+
+    sb.mkString("\n")
   }
 
   def resourceClassName(name: String): String = {
@@ -221,6 +206,8 @@ module ${moduleName}
 
     val sb = ListBuffer[String]()
 
+    resource.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
+    sb.append(s"    class $className\n")
     sb.append("      attr_reader " + resource.fields.map( f => s":${f.name}" ).mkString(", "))
 
     sb.append("")
@@ -232,55 +219,10 @@ module ${moduleName}
     }
 
     sb.append("        HttpClient::Preconditions.assert_empty_opts(opts)")
-    sb.append("      end")
+    sb.append("      end\n")
+    sb.append("    end")
 
-
-    wrap("Resources", className, None, sb.mkString("\n"))
-  }
-
-  // Format into a multi-line comment w/ a set number of spaces for
-  // leading indentation
-  private def formatComment(comment: String, numberSpaces: Int): String = {
-    val maxLineLength = 80 - 2 - numberSpaces
-    val sb = new StringBuilder()
-    var currentWord = new StringBuilder()
-    comment.split(" ").foreach { word =>
-      if (word.length + currentWord.length >= maxLineLength) {
-        if (!currentWord.isEmpty) {
-          if (!sb.isEmpty) {
-            sb.append("\n")
-          }
-          sb.append((" " * numberSpaces)).append("#").append(currentWord.toString)
-        }
-        currentWord = new StringBuilder()
-      } else {
-        currentWord.append(" ").append(word)
-      }
-    }
-    if (!currentWord.isEmpty) {
-      if (!sb.isEmpty) {
-        sb.append("\n")
-      }
-      sb.append((" " * numberSpaces)).append("#").append(currentWord.toString)
-    }
-    sb.toString
-  }
-
-  private def wrap(submoduleName: String, className: String, comments: Option[String], body: String): String = {
-    val classWithComments = comments match {
-      case None => s"    class ${className}"
-      case Some(c: String) => formatComment(c, 4) + s"\n    class ${className}"
-    }
-
-    Seq(
-      s"module ${moduleName}",
-      s"  module ${submoduleName}",
-      classWithComments,
-      body,
-      "    end",
-      "  end",
-      "end"
-    ).mkString("\n\n")
+    sb.mkString("\n")
   }
 
   private def parseArgument(field: Field): String = {
