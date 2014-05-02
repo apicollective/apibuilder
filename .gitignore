@@ -2,9 +2,15 @@ target/*
 logs/*
 project/project/*
 project/target/*
+client/target/*
+client/project/project/*
+client/project/target/*
 core/target/*
 core/project/project/*
 core/project/target/*
+sbt-apigen/target/*
+sbt-apigen/project/project/*
+sbt-apigen/project/target/*
 svc/target/*
 svc/project/project/*
 svc/project/target/*
