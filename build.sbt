@@ -10,7 +10,7 @@ lazy val core = project
       "com.typesafe.play" %% "play-json" % "2.2.2"
     ),
     // Temporary addition until api.json is moved.
-    unmanagedClasspath in Test += (baseDirectory in ThisBuild).value / "svc" / "api"
+    unmanagedClasspath in Test += (baseDirectory in ThisBuild).value / "svc" / "conf" / "api"
   )
 
 lazy val svc = project

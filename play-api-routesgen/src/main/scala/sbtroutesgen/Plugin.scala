@@ -39,8 +39,8 @@ object Plugin extends sbt.Plugin {
   }
 
   lazy val routesGeneratorSettings: Seq[Setting[_]] = Seq(
-    sourceDirectory in routesGenerator <<= baseDirectory(_ / "api"),
-    routesGenerate in routesGenerator <<= (sourceDirectory in routesGenerator, baseDirectory) map {
+    resourceDirectory in routesGenerator <<= (resourceDirectory in Compile)(_ / "api"),
+    routesGenerate in routesGenerator <<= (resourceDirectory in routesGenerator, baseDirectory) map {
       (sourceDir, baseDirectory) =>
         val confDirectory = baseDirectory / "conf"
         createRoutes((sourceDir ** "*.json").get.head, confDirectory)

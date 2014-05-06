@@ -38,12 +38,12 @@ object Plugin extends sbt.Plugin {
   lazy val baseApiGeneratorSettings: Seq[Setting[_]] = Seq(
     sourceGenerators <+= sbtapigen.Plugin.ApiGenKeys.apiGenerate,
     apiGenerate <<= apiGenerate in apiGenerator,
-    apiGenerate in apiGenerator <<= (clean in apiGenerator, sourceDirectory in apiGenerator, sourceManaged in apiGenerator, streams) map {
+    apiGenerate in apiGenerator <<= (clean in apiGenerator, resourceDirectory in apiGenerator, sourceManaged in apiGenerator, streams) map {
       (_, sourceDir, outDir, streams) =>
         ApiGenerator((sourceDir ** "*.json").get, outDir, streams)
     },
     sourceManaged in apiGenerator <<= sourceManaged(_ / "apigen"),
-    sourceDirectory in apiGenerator <<= sourceDirectory(_ / "api"),
+    resourceDirectory in apiGenerator <<= resourceDirectory(_ / "api"),
     clean in apiGenerator <<= (sourceManaged in apiGenerator) map { dir =>
       IO.delete((dir ** "*").get)
     }
