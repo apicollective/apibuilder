@@ -11,8 +11,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
   private var parseError: Option[String] = None
 
   lazy val serviceDescription: Option[ServiceDescription] = {
+    internalServiceDescription.map { ServiceDescription(_) }
+  }
+
+  lazy val internalServiceDescription: Option[InternalServiceDescription] = {
     try {
-      Some(ServiceDescription(apiJson))
+      Some(InternalServiceDescription(apiJson))
     } catch {
       case e: JsonParseException => {
         parseError = Some(e.getMessage)
@@ -31,7 +35,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   lazy val errors: Seq[String] = {
-    serviceDescription match {
+    internalServiceDescription match {
 
       case None => {
         if (apiJson == "") {
@@ -41,7 +45,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         }
       }
 
-      case Some(sd: ServiceDescription) => {
+      case Some(sd: InternalServiceDescription) => {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
@@ -63,7 +67,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
    */
   private def validateRequiredFields(): Seq[String] = {
     val missing = RequiredFields.filter { field =>
-      (serviceDescription.get.json \ field).asOpt[JsValue] match {
+      (internalServiceDescription.get.json \ field).asOpt[JsValue] match {
         case None => true
         case Some(_) => false
       }
@@ -79,17 +83,22 @@ case class ServiceDescriptionValidator(apiJson: String) {
    * Validate references to ensure they refer to proper data
    */
   private def validateReferences(): Seq[String] = {
-    serviceDescription.get.resources.flatMap { resource =>
-      resource.fields.flatMap { field =>
+    internalServiceDescription.get.resources.flatMap { resource =>
+      resource.fields.filter { f => !f.name.isEmpty }.flatMap { field =>
         field.references.flatMap { ref =>
-          serviceDescription.get.resources.find { r => r.name == ref.resource } match {
+          if (ref.resource.isEmpty || ref.field.isEmpty) {
+            Some("Resource ${resource.name} field ${field.name.get} reference[${ref.label}] must contain a resource and field (e.g. users.guid)")
 
-            case None => Some(s"Resource ${resource.name} field ${field.name} reference ${ref.label} points to a non existent resource (${ref.resource})")
+          } else {
+            internalServiceDescription.get.resources.find { r => r.name == ref.resource.get } match {
 
-            case Some(r: Resource) => {
-              r.fields.find(f => f.name == ref.field ) match {
-                case None => Some(s"Resource ${resource.name} field ${field.name} reference ${ref.label} points to a non existent field (${ref.field})")
-                case Some(f: Field) => None
+              case None => Some(s"Resource ${resource.name} field ${field.name.get} reference ${ref.label} points to a non existent resource (${ref.resource.get})")
+
+              case Some(r: InternalResource) => {
+                r.fields.find(f => f.name == ref.field.get ) match {
+                  case None => Some(s"Resource ${resource.name} field ${field.name.get} reference ${ref.label} points to a non existent field (${ref.field.get})")
+                  case Some(f: InternalField) => None
+                }
               }
             }
           }
@@ -99,10 +108,10 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validateResources(): Seq[String] = {
-    if (serviceDescription.get.resources.isEmpty) {
+    if (internalServiceDescription.get.resources.isEmpty) {
       Seq("Must have at least one resource")
     } else {
-      serviceDescription.get.resources.flatMap { resource =>
+      internalServiceDescription.get.resources.flatMap { resource =>
         resource.fields match {
           case Nil => Some(s"${resource.name} resource must have at least one field")
           case fields =>
@@ -116,13 +125,13 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validateResponses(): Seq[String] = {
-    serviceDescription.get.resources.flatMap { r =>
-      r.operations.filter { op => op.responses.isEmpty }.map { op =>
+    internalServiceDescription.get.resources.flatMap { r =>
+      r.operations.filter { op => !op.method.isEmpty && op.responses.isEmpty }.map { op =>
         val path = op.path match {
           case None => ""
           case Some(p: String) => s" $p"
         }
-        s"${r.name} ${op.method}${path} missing responses element"
+        s"${r.name} ${op.method.get}${path} missing responses element"
       }
     }
   }

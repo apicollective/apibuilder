@@ -139,7 +139,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       sb.append(s"      def ${methodName}(" + paramStrings.mkString(", ") + ")")
 
       pathParams.foreach { param =>
-        val klass = rubyClass(param.dataType)
+        val klass = rubyClass(param.datatype)
         sb.append(s"        HttpClient::Preconditions.assert_class(${param.name}, ${klass})")
       }
 
@@ -174,11 +174,11 @@ case class RubyGemGenerator(service: ServiceDescription) {
       // TODO: match on all response codes
       op.responses.headOption.map { response =>
         response.resource match {
-          case None => {
+          case Datatype.Unit.name => {
             responseBuilder.append("\n        nil")
           }
 
-          case Some(resourceName: String) => {
+          case resourceName: String => {
             if (op.responses.head.multiple) {
               responseBuilder.append(".map")
             }
@@ -228,9 +228,9 @@ case class RubyGemGenerator(service: ServiceDescription) {
   private def parseArgument(field: Field): String = {
     val value = if (field.default.isEmpty) {
       s"opts.delete(:${field.name})"
-    } else if (field.dataType == Datatype.String) {
+    } else if (field.datatype == Datatype.String) {
       s"opts.delete(:${field.name}) || \'${field.default.get}\'"
-    } else if (field.dataType == Datatype.Boolean) {
+    } else if (field.datatype == Datatype.Boolean) {
       s"opts.has_key?(:${field.name}) ? (opts.delete(:${field.name}) ? true : false) : ${field.default.get}"
     } else {
       s"opts.delete(:${field.name}) || ${field.default.get}"
@@ -238,9 +238,9 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
     val hasValue = (field.required || !field.default.isEmpty)
     val assertMethod = if (hasValue) { "assert_class" } else { "assert_class_or_nil" }
-    val klass = rubyClass(field.dataType)
+    val klass = rubyClass(field.datatype)
 
-    if (field.dataType == Datatype.Decimal) {
+    if (field.datatype == Datatype.Decimal) {
       if (hasValue) {
         s"BigDecimal.new(HttpClient::Preconditions.check_not_nil(${value}, '${field.name} is required').to_s)"
       } else {
@@ -251,15 +251,16 @@ case class RubyGemGenerator(service: ServiceDescription) {
     }
   }
 
-  private def rubyClass(dataType: Datatype): String = {
-    dataType match {
+  private def rubyClass(datatype: Datatype): String = {
+    datatype match {
       case Datatype.String => "String"
       case Datatype.Long => "Integer"
       case Datatype.Integer => "Integer"
       case Datatype.Boolean => "String"
       case Datatype.Decimal => "BigDecimal"
+      case Datatype.Unit => "nil"
       case _ => {
-        sys.error(s"Cannot map data type[${dataType}] to ruby class")
+        sys.error(s"Cannot map data type[${datatype}] to ruby class")
       }
     }
   }

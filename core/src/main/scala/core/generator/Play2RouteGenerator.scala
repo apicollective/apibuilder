@@ -82,14 +82,15 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     }
 
     private def scalaDataType(param: Field): String = {
-      val scalaType = param.dataType match {
+      val scalaType = param.datatype match {
         case Datatype.String => "String"
         case Datatype.Long => "Long"
         case Datatype.Integer => "Int"
         case Datatype.Boolean => "Boolean"
         case Datatype.Decimal => "BigDecimal"
+        case Datatype.Unit => "Unit"
         case _ => {
-          sys.error(s"Cannot map data type[${param.dataType}] to scala type")
+          sys.error(s"Cannot map data type[${param.datatype}] to scala type")
         }
       }
 

@@ -65,13 +65,13 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
 
   def originalName: String = field.name
 
-  def dataType: ScalaDataType = new ScalaDataType(field.dataType, field.format)
+  def datatype: ScalaDataType = new ScalaDataType(field.datatype, field.format)
 
   def description: String = field.description.map(textToComment).getOrElse("")
 
   def isOption: Boolean = !field.required || field.default.nonEmpty
 
-  def typeName: String = if (isOption) s"Option[${dataType.name}]" else dataType.name
+  def typeName: String = if (isOption) s"Option[${datatype.name}]" else datatype.name
 
   override def src: String = {
     val decl = s"$description$name: $typeName"
@@ -96,13 +96,13 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
   }
 }
 
-class ScalaDataType(dataType: Datatype, format: Option[Format]) extends Source {
+class ScalaDataType(datatype: Datatype, format: Option[Format]) extends Source {
   import Datatype._
   import Format._
-  val name = dataType match {
+  val name = datatype match {
     case String => format.map {
       case Uuid => "UUID"
-      case DateTime => "DateTime"
+      case DateTimeIso8601 => "DateTime"
     }.getOrElse {
       "String"
     }
@@ -110,8 +110,8 @@ class ScalaDataType(dataType: Datatype, format: Option[Format]) extends Source {
     case Long => "Long"
     case Boolean => "Boolean"
     case Decimal => "BigDecimal"
-    case UserType(name) => underscoreToInitCap(name)
+    case Unit => "Unit"
   }
 
-  override val src: String = dataType.name
+  override val src: String = datatype.name
 }

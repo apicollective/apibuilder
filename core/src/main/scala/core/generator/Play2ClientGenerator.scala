@@ -223,7 +223,7 @@ case class ${name}(${argList})
     def jsonReadsBody: String = {
       if (resource.fields.size > 1) {
         val inner = resource.fields.map { field =>
-          val typeName = field.dataType.name
+          val typeName = field.datatype.name
           if (field.isOption) {
             s"""(__ \\ "${field.originalName}").readNullable[${typeName}]"""
           } else {
@@ -250,7 +250,7 @@ s"""
     def jsonWritesBody: String = {
       if (resource.fields.size > 1) {
         val inner = resource.fields.map { field =>
-          val typeName = field.dataType.name
+          val typeName = field.datatype.name
           if (field.isOption) {
             s"""(__ \\ "${field.name}").writeNullable[${typeName}]"""
           } else {

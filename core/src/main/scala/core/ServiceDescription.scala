@@ -9,25 +9,20 @@ object ServiceDescription {
     ServiceDescription(jsValue)
   }
 
-}
-
-/**
- * Parses api.json file into a set of case classes
- */
-case class ServiceDescription(json: JsValue) {
-
-  lazy val resources: Seq[Resource] = {
-    (json \ "resources").as[JsObject].fields.map { v =>
-      v match {
-        case(key, value) => Resource.parse(key, value.as[JsObject])
-      }
-    }
+  def apply(json: JsValue): ServiceDescription = {
+    val internal = InternalServiceDescription(json)
+    ServiceDescription(internal)
   }
 
-  lazy val baseUrl = (json \ "base_url").as[String]
-  lazy val basePath = (json \ "base_path").asOpt[String]
-  lazy val name = (json \ "name").as[String]
-  lazy val description = (json \ "description").asOpt[String]
+}
+
+case class ServiceDescription(internal: InternalServiceDescription) {
+
+  lazy val resources = internal.resources.map { Resource(_) }
+  lazy val baseUrl = internal.baseUrl.getOrElse { sys.error("Missing base_url") }
+  lazy val name = internal.name.getOrElse { sys.error("Missing name") }
+  lazy val basePath = internal.basePath
+  lazy val description = internal.description
 
 }
 
@@ -43,8 +38,20 @@ case class Operation(method: String,
                      parameters: Seq[Field],
                      responses: Seq[Response])
 
+object Operation {
+
+  def apply(internal: InternalOperation): Operation = {
+    Operation(method = internal.method.getOrElse { sys.error("Missing method") },
+              path = internal.path,
+              description = internal.description,
+              parameters = internal.parameters.map { Field(_) },
+              responses = internal.responses.map { Response(_) })
+  }
+
+}
+
 case class Field(name: String,
-                 dataType: Datatype,
+                 datatype: Datatype,
                  description: Option[String] = None,
                  required: Boolean = true,
                  multiple: Boolean = false,
@@ -61,109 +68,66 @@ case class Reference(resource: String, field: String) {
 
 }
 
-
+// TODO: Rename resource to datatype
 case class Response(code: Int,
-                    resource: Option[String] = None,
+                    resource: String,
                     multiple: Boolean = false)
 
 object Resource {
 
-  def parse(name: String, value: JsObject): Resource = {
-     val path = (value \ "path").asOpt[String].getOrElse( s"/${name}" )
-     val description = (value \ "description").asOpt[String]
-
-     val fields = (value \ "fields").asOpt[JsArray] match {
-
-       case None => Seq.empty
-
-       case Some(a: JsArray) => {
-         a.value.map { json => Field(json.as[JsObject]) }
-       }
-
-     }
-
-     val operations = (value \ "operations").asOpt[JsArray] match {
-
-       case None => Seq.empty
-
-       case Some(a: JsArray) => {
-         a.value.map { json =>
-
-           val parameters = (json \ "parameters").asOpt[JsArray] match {
-             case None => Seq.empty
-             case Some(a: JsArray) => {
-               a.value.map { data => Field(data.as[JsObject]) }
-             }
-           }
-
-           val responses = (json \ "responses").asOpt[JsArray] match {
-             case None => Seq.empty
-             case Some(a: JsArray) => {
-               a.value.map { data => Response.parse(data.as[JsObject]) }
-             }
-           }
-
-           Operation(method = (json \ "method").as[String],
-                     path = (json \ "path").asOpt[String],
-                     description = (json \ "description").asOpt[String],
-                     responses = responses,
-                     parameters = parameters)
-         }
-       }
-
-    }
-
-    Resource(name = name,
-             path = path,
-             description = description,
-             fields = fields,
-             operations = operations)
+  def apply(ir: InternalResource): Resource = {
+    Resource(name = ir.name,
+             path = ir.path,
+             description = ir.description,
+             fields = ir.fields.map { Field(_) },
+             operations = ir.operations.map { Operation(_) })
   }
 
 }
 
 object Response {
 
-  def parse(json: JsObject): Response = {
-    val code = (json \ "code").as[Int]
-    (json \ "result") match {
-      case (v: JsUndefined) => {
-        Response(code = code)
-      }
-
-      case v: JsString => {
-        Response(code = code,
-                 resource = Some(v.value),
-                 multiple = false)
-      }
-
-      case v: JsArray => {
-        assert(v.value.size == 1,
-               "When an array, response must contain exactly 1 element: %s".format(v.value.mkString(", ")))
-        Response(code = code,
-                 resource = Some(v.value.head.as[JsString].value),
-                 multiple = true)
-      }
-
-      case v: Any => {
-        sys.error(s"Unhandled response value[$v]")
-      }
-    }
+  def apply(ir: InternalResponse): Response = {
+    val wd = WrappedDatatype(ir.datatype.get)
+    Response(code = ir.code.toInt,
+             resource = wd.datatype.name,
+             multiple = wd.multiple)
   }
+
+}
+
+case class WrappedDatatype(datatype: Datatype, multiple: Boolean)
+
+object WrappedDatatype {
+
+  private val ArrayRx = """^\[(.+)\]$""".r
+
+  def apply(value: String): WrappedDatatype = {
+    // TODO: Parse ir.datatype properly
+    //val multiple = ArrayRx.matches(ir.datatype)
+    val datatype = Datatype.findByName(value).getOrElse {
+      sys.error("Invalid datatype[${value}]")
+    }
+    WrappedDatatype(datatype = datatype, multiple = false)
+  }
+
 }
 
 sealed abstract class Datatype(val name: String)
 
+// TODO:
+// abstract def isValid(value: String): Boolean
+
 object Datatype {
 
-  case object String extends Datatype("string")
-  case object Integer extends Datatype("integer")
-  case object Long extends Datatype("long")
   case object Boolean extends Datatype("boolean")
   case object Decimal extends Datatype("decimal")
-  case class UserType(override val name: String) extends Datatype(name)
+  case object Integer extends Datatype("integer")
+  case object Long extends Datatype("long")
+  case object String extends Datatype("string")
+  case object Unit extends Datatype("unit")
 
-  val All = Seq(String, Integer, Long, Boolean, Decimal)
+  val All = Seq(Boolean, Decimal, Integer, Long, String, Unit)
 
   def findByName(name: String): Option[Datatype] = {
     All.find { dt => dt.name == name }
@@ -180,12 +144,12 @@ object Format {
     example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
     description = "String representation of a universally unique identifier (UUID)")
 
-  case object DateTime extends Format(
-    name = "date-time",
+  case object DateTimeIso8601 extends Format(
+    name = "date-time-iso-8601",
     example = "2014-04-29T11:56:52Z",
     description = "Date time format in ISO 8601")
 
-  val All = Seq(Uuid, DateTime)
+  val All = Seq(Uuid, DateTimeIso8601)
 
   def apply(name: String): Option[Format] = {
     All.find { _.name == name.toLowerCase }
@@ -196,41 +160,26 @@ object Format {
 
 object Field {
 
-  def apply(json: JsObject): Field = {
-    val datatypeName = (json \ "type").as[String]
-    val datatype = Datatype.findByName(datatypeName).getOrElse {
-      new Datatype.UserType(datatypeName)
-    }
+  def apply(internal: InternalField): Field = {
+    val wd = WrappedDatatype(internal.datatype.get)
 
-    val default = asOptString(json, "default")
-    default.map { v => assertValidDefault(datatype, v) }
+    internal.default.map { v => assertValidDefault(wd.datatype, v) }
 
-    Field(name = (json \ "name").as[String],
-          dataType = datatype,
-          description = (json \ "description").asOpt[String],
-          references = (json \ "references").asOpt[String].map { Reference(_) },
-          required = (json \ "required").asOpt[Boolean].getOrElse(true),
-          multiple = (json \ "multiple").asOpt[Boolean].getOrElse(false),
-          default = default,
-          minimum = (json \ "minimum").asOpt[Long],
-          maximum = (json \ "maximum").asOpt[Long],
-          format = (json \ "format").asOpt[String].map( s =>
-            Format(s).getOrElse {
-              sys.error(s"Invalid format[$s]")
-            }
-          ),
-          example = asOptString(json, "example"))
+    Field(name = internal.name.get,
+          datatype = wd.datatype,
+          description = internal.description,
+          references = internal.references.map { Reference(_) },
+          required = internal.required,
+          multiple = internal.multiple,
+          default = internal.default,
+          minimum = internal.minimum.map(_.toLong),
+          maximum = internal.maximum.map(_.toLong),
+          format = internal.format.map { s => Format(s).getOrElse(sys.error(s"Invalid format[$s]")) },
+          example = internal.example)
   }
 
-  private def asOptString(json: JsValue, field: String): Option[String] = {
-    (json \ field) match {
-      case (_: JsUndefined) => None
-      case (v: JsValue) => Some(v.toString)
-    }
-  }
-
-  private def assertValidDefault(dataType: Datatype, value: String) {
-    dataType match {
+  private def assertValidDefault(datatype: Datatype, value: String) {
+    datatype match {
       case Datatype.Boolean => {
         if (value != "true" && value != "false") {
           sys.error(s"defaults for boolean fields must be the string true or false and not[${value}]")
@@ -249,10 +198,12 @@ object Field {
         BigDecimal(value)
       }
 
+      case Datatype.Unit => {
+        value == ""
+      }
+
       case Datatype.String => ()
 
-      case _: Datatype.UserType =>
-        sys.error("Defaults not supported for user defined types.")
     }
   }
 
@@ -260,11 +211,8 @@ object Field {
 
 object Reference {
 
-  def apply(value: String): Reference = {
-    val parts = value.split("\\.")
-    require(parts.length == 2,
-            s"Invalid reference[${value}]. Expected <resource name>.<field name>")
-    Reference(parts.head, parts.last)
+  def apply(internal: InternalReference): Reference = {
+    Reference(internal.resource.get, internal.field.get)
   }
 
 }

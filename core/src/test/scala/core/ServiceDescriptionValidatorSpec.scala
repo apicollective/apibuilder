@@ -152,9 +152,9 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
               "parameters": [
                 { "name": "guid", "type": "string" }
               ],
-              "responses": [
-                { "code": 200, "result": "vendor" }
-              ]
+              "responses": {
+                "200" => { "type": "vendor" }
+              }
             }
           ]
         }
@@ -204,11 +204,11 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
               "method": "POST",
               "parameters": [
                 { "name": "guid", "type": "string" },
-                { "name": "tag", "type": "string", "multiple": true, "required": false }
+                { "name": "tag", "type": "[string]", "required": false }
               ],
-              "responses": [
-                { "code": 200, "result": "vendors" }
-              ]
+              "responses": {
+                "200" => { "type": "vendors" }
+              }
             }
           ]
         }

@@ -15,7 +15,7 @@
    @fields.map { field =>
      <tr>
        <td>@field.name</td>
-       <td>@field.dataType.name @field.format.map { v => (@v.name) }</td>
+       <td>@field.datatype.name @field.format.map { v => (@v.name) }</td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
        <td>@if(field.multiple) { Yes } else { No }</td>
        <td>@field.default.getOrElse("-")</td>
