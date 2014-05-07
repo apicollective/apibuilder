@@ -90,13 +90,15 @@ case class ServiceDescriptionValidator(apiJson: String) {
             Some("Resource ${resource.name} field ${field.name.get} reference[${ref.label}] must contain a resource and field (e.g. users.guid)")
 
           } else {
+            val matching = internalServiceDescription.get.resources.find { r => r.name == ref.resource.get }
+
             internalServiceDescription.get.resources.find { r => r.name == ref.resource.get } match {
 
-              case None => Some(s"Resource ${resource.name} field ${field.name.get} reference ${ref.label} points to a non existent resource (${ref.resource.get})")
+              case None => Some(s"${resource.name}.${field.name.get} reference ${ref.label} is invalid. Resource[${ref.resource.get}] does not exist")
 
               case Some(r: InternalResource) => {
-                r.fields.find(f => f.name == ref.field.get ) match {
-                  case None => Some(s"Resource ${resource.name} field ${field.name.get} reference ${ref.label} points to a non existent field (${ref.field.get})")
+                r.fields.find(f => f.name == ref.field ) match {
+                  case None => Some(s"${resource.name}.${field.name.get} reference ${ref.label} is invalid. Resource[${ref.resource.get}] does not have a field named[${ref.field.get}]")
                   case Some(f: InternalField) => None
                 }
               }

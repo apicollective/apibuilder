@@ -13,7 +13,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
       val contents = scala.io.Source.fromFile(path).getLines.mkString("\n")
       val validator = ServiceDescriptionValidator(contents)
       if (!validator.isValid) {
-        fail("Error parsing json file ${path}:\n  - " + validator.errors.mkString("\n  - "))
+        fail(s"Error parsing json file ${path}:\n  - " + validator.errors.mkString("\n  - "))
       }
     }
   }

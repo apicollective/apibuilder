@@ -44,6 +44,7 @@ case class InternalResource(name: String,
 case class InternalOperation(method: Option[String],
                              path: Option[String],
                              description: Option[String],
+                             namedParameters: Seq[String],
                              parameters: Seq[InternalField],
                              responses: Seq[InternalResponse])
 
@@ -61,8 +62,8 @@ case class InternalField(name: Option[String],
 
 
 case class InternalResponse(code: String,
-                            datatype: Option[String],
-                            fields: Option[Set[String]])
+                            datatype: Option[String] = None,
+                            fields: Option[Set[String]] = None)
 
 object InternalResource {
 
@@ -86,8 +87,10 @@ object InternalResource {
 
        case Some(a: JsArray) => {
          a.value.map { json =>
+           val opPath = (json \ "path").asOpt[String]
 
-           // TODO: Add in path parameters
+           val namedParameters = Util.namedParametersInPath(path + opPath.getOrElse(""))
+
            val parameters = (json \ "parameters").asOpt[JsArray] match {
              case None => Seq.empty
              case Some(a: JsArray) => {
@@ -95,17 +98,27 @@ object InternalResource {
              }
            }
 
-           val responses = (json \ "responses").asOpt[JsArray] match {
-             case None => Seq.empty
-             case Some(a: JsArray) => {
-               a.value.flatMap { data => InternalResponse(data.as[JsObject]) }
+           lazy val responses: Seq[InternalResponse] = {
+             (json \ "responses").asOpt[JsObject] match {
+               case None => {
+                 Seq(InternalResponse(code = "204", datatype = Some(Datatype.Unit.name)))
+               }
+
+               case Some(responses: JsObject) => {
+                 responses.fields.map { v =>
+                   v match {
+                     case(code, value) => InternalResponse(code, value.as[JsObject])
+                   }
+                 }
+               }
              }
            }
 
            InternalOperation(method = (json \ "method").asOpt[String],
-                             path = (json \ "path").asOpt[String],
+                             path = opPath,
                              description = (json \ "description").asOpt[String],
                              responses = responses,
+                             namedParameters = namedParameters,
                              parameters = parameters)
          }
        }
@@ -123,16 +136,10 @@ object InternalResource {
 
 object InternalResponse {
 
-  def apply(json: JsObject): Seq[InternalResponse] = {
-    json.fields.map { v =>
-      v match {
-        case(code, data) => {
-          val datatype = (json \ "type").asOpt[String]
-          val fields = (json \ "fields").asOpt[Set[String]]
-          InternalResponse(code = code, datatype = datatype, fields = fields)
-        }
-      }
-    }
+  def apply(code: String, json: JsObject): InternalResponse = {
+    val datatype = (json \ "type").asOpt[String]
+    val fields = (json \ "fields").asOpt[Set[String]]
+    InternalResponse(code = code, datatype = datatype, fields = fields)
   }
 }
 

@@ -1,5 +1,7 @@
 package core.generator
 
+import core.Util
+
 private[generator] object GeneratorUtil {
 
   private val JsonDocumentMethods = Seq("POST", "PUT", "PATCH")
@@ -8,16 +10,8 @@ private[generator] object GeneratorUtil {
     JsonDocumentMethods.contains(verb)
   }
 
-  // Select out named parameters in the path. E.g. /:org/:service/foo would return [org, service]
-  def namedParametersInPath(path: String): Seq[String] = {
-    path.split("/").flatMap { name =>
-      if (name.startsWith(":")) {
-        Some(name.slice(1, name.length))
-      } else {
-        None
-      }
-    }
-  }
+  // TODO: Remove wrapper
+  def namedParametersInPath(path: String) = Util.namedParametersInPath(path)
 
   /**
    * Format into a multi-line comment w/ a set number of spaces for

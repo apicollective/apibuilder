@@ -84,7 +84,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("Resource users field guid reference foo.bar points to a non existent resource (foo)")
+    validator.errors.mkString should be("users.guid reference foo.bar is invalid. Resource[foo] does not exist")
     validator.isValid should be(false)
   }
 
@@ -103,11 +103,34 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("Resource users field guid reference users.bar points to a non existent field (bar)")
+    validator.errors.mkString should be("users.guid reference foo.bar is invalid. Resource[foo] does not have a field named[bar]")
     validator.isValid should be(false)
   }
 
-  it("operations must have at least one response") {
+  it("parses reference to field") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "resources": {
+        "users": {
+          "fields": [
+            { "name": "guid", "type": "string", "format": "uuid" }
+          ]
+        },
+        "accounts": {
+          "fields": [
+            { "name": "user_guid", "type": "string", "references": "users.guid" }
+          ]
+        }
+      }
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("")
+  }
+
+  it("defaults to a NoContent response") {
     val json = """
     {
       "base_url": "http://localhost:9000",
@@ -119,11 +142,8 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
           ],
           "operations": [
             {
-              "method": "GET",
-              "path": "/:guid",
-              "parameters": [
-                { "name": "guid", "type": "string" }
-              ]
+              "method": "DELETE",
+              "path": "/:guid"
             }
           ]
         }
@@ -131,8 +151,9 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString(", ") should be("users GET /:guid missing responses element")
-    validator.isValid should be(false)
+    validator.errors.mkString("") should be("")
+    val response = validator.serviceDescription.get.resources.head.operations.head.responses.head
+    response.code should be(204)
   }
 
   it("operations w/ a valid response validates correct") {
@@ -153,7 +174,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
                 { "name": "guid", "type": "string" }
               ],
               "responses": {
-                "200" => { "type": "vendor" }
+                "200": { "type": "vendor" }
               }
             }
           ]
@@ -166,49 +187,20 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     validator.isValid should be(true)
   }
 
-  it("support arrays as types in fields") {
+  it("includes path parameter in operations") {
     val json = """
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
       "resources": {
-        "vendors": {
+        "users": {
           "fields": [
-            { "name": "guid", "type": "string" },
-            { "name": "tags", "type": "string", "multiple": true }
-          ]
-        }
-      }
-    }
-    """
-    val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("")
-    val fields = validator.serviceDescription.get.resources.head.fields
-    fields.find { _.name == "guid" }.get.multiple should be(false)
-    fields.find { _.name == "tags" }.get.multiple should be(true)
-  }
-
-
-  it("support arrays as types in operations") {
-    val json = """
-    {
-      "base_url": "http://localhost:9000",
-      "name": "Api Doc",
-      "resources": {
-        "vendors": {
-          "fields": [
-            { "name": "guid", "type": "string" }
+            { "name": "guid", "type": "string", "format": "uuid" }
           ],
           "operations": [
             {
-              "method": "POST",
-              "parameters": [
-                { "name": "guid", "type": "string" },
-                { "name": "tag", "type": "[string]", "required": false }
-              ],
-              "responses": {
-                "200" => { "type": "vendors" }
-              }
+              "method": "DELETE",
+              "path": "/:guid"
             }
           ]
         }
@@ -216,18 +208,9 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("")
-    val operation = validator.serviceDescription.get.resources.head.operations.head
-    operation.method should be("POST")
-    operation.parameters.find { _.name == "guid" }.get.multiple should be(false)
-
-    val guid = operation.parameters.find { _.name == "guid" }.get
-    guid.multiple should be(false)
-    guid.required should be(true)
-
-    val tag = operation.parameters.find { _.name == "tag" }.get
-    tag.multiple should be(true)
-    tag.required should be(false)
+    validator.errors.mkString("") should be("")
+    val op = validator.serviceDescription.get.resources.head.operations.head
+    op.parameters.map(_.name) should be(Seq("guid"))
   }
 
 }

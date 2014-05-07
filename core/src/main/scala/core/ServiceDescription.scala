@@ -18,6 +18,11 @@ object ServiceDescription {
 
 case class ServiceDescription(internal: InternalServiceDescription) {
 
+  // TODO: Turn into a map
+  val canonicalFieldsByResourceName = internal.resources.map { ir =>
+    (ir.name -> ir.fields.filter { !_.datatype.isEmpty })
+  }
+
   lazy val resources = internal.resources.map { Resource(_) }
   lazy val baseUrl = internal.baseUrl.getOrElse { sys.error("Missing base_url") }
   lazy val name = internal.name.getOrElse { sys.error("Missing name") }
@@ -40,11 +45,17 @@ case class Operation(method: String,
 
 object Operation {
 
-  def apply(internal: InternalOperation): Operation = {
+  def apply(fields: Seq[Field], internal: InternalOperation): Operation = {
+    val namedParameters = internal.namedParameters.map { paramName =>
+      fields.find { _.name == paramName }.getOrElse {
+        sys.error(s"Could not find field definittion for parameter named[$paramName]")
+      }
+    }
+
     Operation(method = internal.method.getOrElse { sys.error("Missing method") },
               path = internal.path,
               description = internal.description,
-              parameters = internal.parameters.map { Field(_) },
+              parameters = namedParameters ++ internal.parameters.map { Field(fields, _) },
               responses = internal.responses.map { Response(_) })
   }
 
@@ -76,11 +87,13 @@ case class Response(code: Int,
 object Resource {
 
   def apply(ir: InternalResource): Resource = {
+    val fields = ir.fields.map { Field(Seq.empty, _) }
+
     Resource(name = ir.name,
              path = ir.path,
              description = ir.description,
-             fields = ir.fields.map { Field(_) },
-             operations = ir.operations.map { Operation(_) })
+             fields = fields,
+             operations = ir.operations.map { Operation(fields, _) })
   }
 
 }
@@ -106,7 +119,7 @@ object WrappedDatatype {
     // TODO: Parse ir.datatype properly
     //val multiple = ArrayRx.matches(ir.datatype)
     val datatype = Datatype.findByName(value).getOrElse {
-      sys.error("Invalid datatype[${value}]")
+      sys.error(s"Invalid datatype[${value}]")
     }
     WrappedDatatype(datatype = datatype, multiple = false)
   }
@@ -160,13 +173,33 @@ object Format {
 
 object Field {
 
-  def apply(internal: InternalField): Field = {
-    val wd = WrappedDatatype(internal.datatype.get)
+  def apply(fields: Seq[Field], internal: InternalField): Field = {
+    fields.foreach { f => println(f) }
 
-    internal.default.map { v => assertValidDefault(wd.datatype, v) }
+    val datatype = internal.datatype match {
+      case Some(t: String) => {
+        Datatype.findByName(t).getOrElse {
+          sys.error(s"Invalid datatype[${t}]")
+        }
+      }
+
+      case None => {
+        val ref = internal.references.getOrElse {
+          sys.error("Missing datatype and/or reference for field: " + internal)
+        }
+
+        val referencedField = fields.find { _.name == ref.field.get }.getOrElse {
+          sys.error(s"Reference not found[${ref.label}]. Fields: " + fields.map(_.name).mkString(" "))
+        }
+
+        referencedField.datatype
+      }
+    }
+
+    internal.default.map { v => assertValidDefault(datatype, v) }
 
     Field(name = internal.name.get,
-          datatype = wd.datatype,
+          datatype = datatype,
           description = internal.description,
           references = internal.references.map { Reference(_) },
           required = internal.required,

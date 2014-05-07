@@ -26,7 +26,7 @@
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200" => { "type": "[vendor]" }
+                        "200": { "type": "[vendor]" }
                     }
                 },
 
@@ -34,11 +34,8 @@
                     "method": "GET",
                     "path": "/:guid",
                     "description": "Retrieve this vendor.",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ],
                     "responses": {
-                      { "200" => "vendor" }
+                        "200": { "type": "vendor" }
                     }
                 },
 
@@ -48,8 +45,8 @@
                         { "name": "name", "type": "string" }
                     ],
                     "responses": {
-                        "201" => { "type": "vendor" },
-                        "409" => { "type": "validation" }
+                        "201": { "type": "vendor" },
+                        "409": { "type": "validation" }
                     }
                 },
 
@@ -78,7 +75,6 @@
                     "description": "Search all items. Results are always paginated.",
                     "parameters": [
                         { "name": "guid", "type": "string", "format": "uuid", "required": false },
-                        { "name": "guids", "type": "[string]", "format": "uuid", "required": false, "maximum": 100 },
                         { "name": "vendor_guid", "type": "string", "format": "uuid", "required": false, "references": "vendors.guid" },
                         { "name": "agreement_guid", "type": "string", "format": "uuid", "required": false, "description": "Fetches items for the fulfilling vendor according to the specific agreement guid.", "references": "agreements.guid" },
                         { "name": "number", "type": "string", "required": false },
@@ -86,18 +82,15 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200" => { "type": "[item]", "fields": ["guid", "vendor", "number", "quantity"] }
+                        "200": { "type": "[item]", "fields": ["guid", "vendor", "number", "quantity"] }
                     }
                 },
                 {
                     "method": "GET",
                     "path": "/:guid",
                     "description": "Gets the detailed view of this item, including the full json document of all of the attributes.",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid", "references": "items.guid" }
-                    ],
                     "responses": {
-                        "200" => { "type": "item" }
+                        "200": { "type": "item" }
                     }
                 },
                 {
@@ -108,7 +101,7 @@
                         { "name": "quantity", "type": "long", "required": false, "default": 0 }
                     ],
                     "responses": {
-                        "201" => { "type": "item" }
+                        "201": { "type": "item" }
                     }
                 },
                 {
@@ -120,7 +113,7 @@
                         { "name": "quantity", "type": "long" }
                     ],
                     "responses": {
-                        "200" => { "type": "item" }
+                        "200": { "type": "item" }
                     }
                 },
                 {
@@ -133,15 +126,12 @@
                         { "name": "quantity", "type": "long" }
                     ],
                     "responses": {
-                        "200" => { "type": "item" }
+                        "200": { "type": "item" }
                     }
                 },
                 {
                     "method": "DELETE",
-                    "path": "/:guid",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ]
+                    "path": "/:guid"
                 }
             ]
         },
@@ -166,7 +156,7 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200" => { "type": "[term]" }
+                        "200": { "type": "[term]" }
                     }
 
                 },
@@ -178,15 +168,12 @@
                         { "name": "description", "type": "string", "required": false }
                     ],
                     "responses": {
-                        "200" => { "type": "term" }
+                        "200": { "type": "term" }
                     }
                 },
                 {
                     "method": "DELETE",
-                    "path": "/:guid",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ]
+                    "path": "/:guid"
                 }
             ]
         },
@@ -216,7 +203,7 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200" => { "type": "[agreement]" }
+                        "200": { "type": "[agreement]" }
                     }
                 },
                 {
@@ -230,15 +217,12 @@
                         { "name": "currency", "type": "string", "description": "3-character upper case iso4217 code for this currency", "example": "USD or EUR" }
                     ],
                     "responses": {
-                        "200" => { "type": "agreement" }
+                        "200": { "type": "agreement" }
                     }
                 },
                 {
                     "method": "DELETE",
-                    "path": "/:guid",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ]
+                    "path": "/:guid"
                 }
             ]
         },
@@ -264,7 +248,7 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200" =>  { "type": "[shipment_schedule]" }
+                        "200":  { "type": "[shipment_schedule]" }
                     }
                 },
                 {
@@ -275,15 +259,12 @@
                         { "name": "begin_datetime", "type": "string", "format": "date-time-iso8601" }
                     ],
                     "responses": {
-                        "200", { "type": "shipment_schedule" }
+                        "200": { "type": "shipment_schedule" }
                     }
                 },
                 {
                     "method": "DELETE",
-                    "path": "/:guid",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ]
+                    "path": "/:guid"
                 }
             ]
         },
@@ -305,7 +286,7 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200" => { "type": "[planned_shipment]" }
+                        "200": { "type": "[planned_shipment]" }
                     }
                 }
             ]
@@ -342,18 +323,15 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200" => { "type": "[purchase]" }
+                        "200": { "type": "[purchase]" }
                     }
                 },
                 {
                     "method": "GET",
                     "path": "/:guid",
                     "description": "Returns the purchase with this guid.",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ],
                     "responses": {
-                        "200" => { "type": "purchase" }
+                        "200": { "type": "purchase" }
                     }
                 },
                 {
@@ -375,7 +353,7 @@
                         { "name": "currency", "type": "string", "description": "3-character upper case iso4217 code for this currency. Validated against the currency in the agreement.", "example": "USD or EUR" }
                     ],
                     "responses": {
-                        "201" => { "type": "purchase" }
+                        "201": { "type": "purchase" }
                     }
                 }
             ]
@@ -412,18 +390,15 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200" => { "type": "[shipment_request]" }
+                        "200": { "type": "[shipment_request]" }
                     }
                 },
                 {
                     "method": "PUT",
                     "path": "/:guid",
                     "description": "Closes an open shipment request ahead of schedule.",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ],
                     "responses": {
-                        "201" => { "type": "shipment_request" }
+                        "201": { "type": "shipment_request" }
                     }
                 }
             ]
@@ -449,7 +424,7 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200" => { "type": "[shipment_request_item]" }
+                        "200": { "type": "[shipment_request_item]" }
                     }
                 }
             ]
@@ -468,11 +443,8 @@
                 {
                     "method": "GET",
                     "path": "/:guid",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ],
                     "responses": {
-                        "200" => { "type": "[receipt]" }
+                        "200": { "type": "[receipt]" }
                     }
                 },
                 {
@@ -484,15 +456,12 @@
                         { "name": "price", "type": "decimal" }
                     ],
                     "responses": {
-                        "200" => { "type": "receipt" }
+                        "200": { "type": "receipt" }
                     }
                 },
                 {
                     "method": "DELETE",
-                    "path": "/:guid",
-                    "parameters": [
-                        { "name": "guid", "type": "string", "format": "uuid" }
-                    ]
+                    "path": "/:guid"
                 }
             ]
         },
