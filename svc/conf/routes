@@ -1,6 +1,6 @@
-GET        /users                          controllers.Users.get(guid: Option[String], email: Option[String], token: Option[String])
+GET        /users                          controllers.Users.get(guid: Option[String], email: Option[String], token: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 POST       /users                          controllers.Users.post()
-GET        /organizations                  controllers.Organizations.get(guid: Option[String], userGuid: Option[String], key: Option[String], name: Option[String], limit: Int ?= 50, offset: Int ?= 0)
+GET        /organizations                  controllers.Organizations.get(guid: Option[String], user_guid: Option[String], key: Option[String], name: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 POST       /organizations                  controllers.Organizations.post()
 GET        /memberships                    controllers.Memberships.get(organization_guid: Option[String], organization_key: Option[String], user_guid: Option[String], role: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 GET        /membership_requests            controllers.MembershipRequests.get(organization_guid: Option[String], organization_key: Option[String], user_guid: Option[String], role: Option[String], limit: Int ?= 50, offset: Int ?= 0)
@@ -14,5 +14,8 @@ GET        /:org/:service/:version         controllers.Versions.getServiceVersio
 PUT        /:org/:service/:version         controllers.Versions.putServiceVersion(org: String, service: String, version: String)
 DELETE     /:org/:service/:version         controllers.Versions.deleteServiceVersion(org: String, service: String, version: String)
 
+#-----------------------------------
+# Custom routes                    |
+#-----------------------------------
 GET        /_internal_/healthcheck         controllers.Internal.healthcheck
 GET        /                               controllers.Internal.healthcheck

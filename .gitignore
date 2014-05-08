@@ -19,3 +19,7 @@ web/target/*
 web/project/project/*
 web/project/target/*
 web/logs/*
+.idea
+.idea_modules/
+play-api-routesgen/target/
+sbt-apigen/target/
