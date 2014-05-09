@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 
 # Usage:
-#   /web/metadata-direct/exec script/deploy <domain> <project_name> <subproject_name> <tag>
+#   /web/metadata-architecture/exec script/deploy <domain> <project_name> <subproject_name> <tag>
 #
 # Example:
-#   /web/metadata-direct/exec script/deploy api.apidoc.me apidoc-svc 0.0.1
-#   /web/metadata-direct/exec script/deploy www.apidoc.me apidoc-www 0.0.1
+#   /web/metadata-architecture/exec script/deploy api.origin.apidoc.me apidoc svc 0.0.17
+#   /web/metadata-architecture/exec script/deploy www.origin.apidoc.me apidoc www 0.0.17
 
 load File.join(File.dirname(__FILE__), 'docker-deploy.rb')
 

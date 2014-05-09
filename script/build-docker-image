@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # Example:
-#   DOCKER_HOST=tcp://localhost:4244 /web/metadata-direct/exec script/build-docker-image apidoc svc 0.0.1
+#   DOCKER_HOST=tcp://localhost:4244 /web/metadata-architecture/exec script/build-docker-image apidoc svc 0.0.17
 
 load File.join(File.dirname(__FILE__), 'docker-deploy.rb')
 
