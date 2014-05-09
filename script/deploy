@@ -19,7 +19,7 @@ login = [env('DOCKER_INDEX_USERNAME'), env('DOCKER_INDEX_PASSWORD'), env('DOCKER
 
 params = {
   "-Dhttp.port" => 80,
-  "-Dconfig.resource" => "application.prod.conf"
+  "-Dconfig.resource" => "application.production.conf"
 }
 
 if args[:subproject_name] == "svc"
