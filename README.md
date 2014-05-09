@@ -42,6 +42,34 @@ Installing Docker on mac
 
   http://docs.docker.io/installation/mac/
 
+Developing
+==========
+
+You'll need to get the api schema into your dev database; to do that:
+
+$ psql
+psql> CREATE DATABASE api;
+
+$ cd /web/apidoc/schema
+$ ./dev.rb
+
+The application consists of a service on port 9001, and a web app on port 9000.
+
+One way to do this is to run a screen session, and in one screen do:
+
+  $ sbt
+  sbt> project svc
+  sbt> run 9001
+
+...then in another screen, do:
+
+  $ sbt
+  sbt> project web
+  sbt> run
+
+Now both should be running and able to talk to each other, and should recompile
+in situ for a nice development experience.
+
 Releasing code
 ==============
 
