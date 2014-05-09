@@ -59,3 +59,5 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatest" %% "scalatest" % "2.1.5" % "test"
   )
 )
+
+gilt.DependencyGraph.settings
