@@ -136,7 +136,7 @@ object Datatype {
                                     example = Some("5ecf6502-e532-4738-aad5-7ac9701251dd"),
                                     description = Some("String representation of a universally unique identifier (UUID)"))
 
-  case object DateTimeIso8601 extends Datatype(name = "date-time-iso-8601",
+  case object DateTimeIso8601 extends Datatype(name = "date-time-iso8601",
                                                example = Some("2014-04-29T11:56:52Z"),
                                                description = Some("Date time format in ISO 8601"))
 

@@ -32,10 +32,31 @@ object Text {
     }
   }
 
+  private val Plurals = Map("datum" -> "data",
+                            "person" -> "people")
+  private val KnownPlurals = Plurals.values.toSet
+
+  /**
+   * Handle only base cases for pluralization. User can specify own plural
+   * form via api.json if needed.
+   */
   def pluralize(value: String): String = {
-    // TODO. Make this work for most words; provide explicit value in
-    // api.json file to avoid calling this function.
-    value + "s"
+    if (KnownPlurals.contains(value.toLowerCase)) {
+      value
+
+    } else if (Plurals.contains(value)) {
+      Plurals(value)
+
+    } else if (value.endsWith("ss")) {
+      value + "es"
+
+    } else if (value.endsWith("y")) {
+      val letters = value.split("")
+      letters.slice(0, letters.size - 1).mkString("") + "ies"
+
+    } else {
+      value + "s"
+    }
   }
 
   private val RemoveUnsafeCharacters = """([^0-9a-zA-Z])""".r

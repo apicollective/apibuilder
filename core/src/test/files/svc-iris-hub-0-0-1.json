@@ -39,6 +39,64 @@
             ]
         },
 
+        "agreement": {
+            "description": "An agreement outlines the terms by which two vendors work together.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this agreement" },
+                { "name": "identifier", "type": "string", "description": "A human readable unique identifier for this agreement. Format will be something like IA2014-123456 - IA: Iris Agreement followed by the year followed by a number." },
+                { "name": "purchasing_vendor", "references": "vendors.guid", "description": "The vendor that will be purchasing items - i.e. the vendor that will be responsible for creating the Purchases in Iris Hub" },
+                { "name": "fulfilling_vendor", "references": "vendors.guid", "description": "The vendor that will be fulfilling items - i.e. the vendor that will be responsible for receiving a shipment request and actually shipping the goods." },
+                { "name": "term", "references": "terms.guid", "description": "The specific payment terms in place for this agreement" },
+                { "name": "begin_datetime", "type": "date-time-iso8601", "description": "The date on which this agreement goes into effect." },
+                { "name": "end_datetime", "type": "date-time-iso8601", "required": false, "description": "The date on which this agreement ends. If not specified, this agreement is considered perpetual and it never ends." },
+                { "name": "currency", "type": "string", "description": "Determines the currency in which transactions pertaining to this agreement are made. The value is the 3-character upper case iso4217 code for this currency", "example": "USD or EUR" }
+            ]
+        },
+
+        "shipment_schedule": {
+            "description": "A shipment schedule defines how frequently a vendor would like to ship. A common use case is to ship every week on monday. IRIS will then aggregate pending purchases into a single shipment request on Mondays for the vendor to ship in bulk.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
+                { "name": "vendor", "references": "vendors.guid" },
+                { "name": "frequency", "type": "string", "description": "supported values: immediate (e.g. for drop ship orders create shipment requests immediately following purchase), daily (create one shipment request / day), weekly (create one shipment request / week)." },
+                { "name": "begin_datetime", "type": "date-time-iso8601", "description": "Date on which to start schedule. For daily/weekly schedules, determines the day of the week on which to generate a shipment request" }
+            ]
+        },
+
+        "planned_shipment": {
+            "description": "A date of the next planned shipment (tied to the closure of the shipment request). It's based on the shipment schedule frequency and begin_datetime",
+            "fields": [
+                { "name": "datetime", "type": "date-time-iso8601", "description": "The date and time of an upcoming shipment." }
+            ]
+        },
+
+        "address": {
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Uniquely idenfies this address" },
+                { "name": "name", "type": "string", "required": false },
+                { "name": "line1", "type": "string" },
+                { "name": "line2", "type": "string", "required": false },
+                { "name": "line3", "type": "string", "required": false },
+                { "name": "city", "type": "string", "required": false },
+                { "name": "state", "type": "string", "required": false },
+                { "name": "postal_code", "type": "string" },
+                { "name": "country", "type": "string" },
+                { "name": "phone", "type": "string", "required": false }
+            ]
+        },
+
+        "purchase": {
+            "description": "A purchase represents one vendor purchasing one unit of an item from another vendor. In many ERP systems, the purchase will map to the concept of an order item - e.g. one item on an order. IRIS operates solely on the level of line items to provide a simple interface that gracefully handles many of the operational differences that occur in real life including short shipments, split shipments, etc. Each purchase a destination address which represents the recipient of the purchase - i.e. where the item should be delivered.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
+                { "name": "vendor_purchase_number", "type": "string", "description": "Unique identifier in vendor's system for this purchase. This token is used to ensure that a purchase is not duplicated in IRIS" },
+                { "name": "agreement", "references": "agreements.guid" },
+                { "name": "item", "references": "items.guid" },
+                { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." },
+                { "name": "address", "references": "addresses.guid" }
+            ]
+        },
+
         "error_message": {
             "description": "A wrapper containing any error messages where appropriate. Will be commonly used with 4xx HTTP response codes primarily for PUT, POST, and PATCH operations.",
             "fields": [
