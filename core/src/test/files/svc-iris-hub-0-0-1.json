@@ -134,7 +134,6 @@
                 { "name": "code", "type": "string", "description": "Unique error code for this validation error" },
                 { "name": "messages", "type": "[string]", "description": "Description of what went wrong. Guaranteed to have at least one message, but there can be multiple messages if there are multiple validation errors", "minimum": 1 }
             ]
-
         }
 
     },

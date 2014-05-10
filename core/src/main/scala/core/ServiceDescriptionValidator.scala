@@ -110,22 +110,15 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validateModels(): Seq[String] = {
-    val fieldErrors = internalServiceDescription.get.models.flatMap { model =>
-      model.fields match {
-        case Nil => Some(s"Model ${model.name} must have at least one field")
-        case fields => None
-      }
+    val fieldErrors = internalServiceDescription.get.models.filter { _.fields.isEmpty }.map { model =>
+      s"Model[${model.name}] must have at least one field"
     }
 
-    val allNames = internalServiceDescription.get.models.map(_.name)
-    val uniqueNames = allNames.distinct
-    val duplicateNameErrors = if (allNames.size > uniqueNames.size) {
-      Seq("Model names must be unique") // TODO Better error msg
-    } else {
-      Seq.empty
+    val duplicates = internalServiceDescription.get.models.groupBy(_.name).filter { _._2.size > 1 }.keys.map { modelName =>
+      s"Model[$modelName] appears more than once"
     }
 
-    fieldErrors ++ duplicateNameErrors
+    fieldErrors ++ duplicates
   }
 
   private def validateFields(): Seq[String] = {
@@ -150,14 +143,27 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
+    val modelNames = internalServiceDescription.get.models.map { _.name }.toSet
+
     val missingTypes: Seq[String] = internalServiceDescription.get.operations.flatMap { op =>
       op.responses.flatMap { r =>
         r.datatype match {
           case None => {
             Some(s"${op.label} with response code[${r.code}]: Missing type")
           }
-          case _ => {
-            None
+          case Some(typeName: String) => {
+            Datatype.findByName(typeName) match {
+              case Some(dt: Datatype) => {
+                None
+              }
+              case None => {
+                if (modelNames.contains(typeName)) {
+                  None
+                } else {
+                  Some(s"${op.label} with response code[${r.code}] has an invalid type[${typeName}]. Must be one of: ${ValidDatatypes} or the name of a model")
+                }
+              }
+            }
           }
         }
       }

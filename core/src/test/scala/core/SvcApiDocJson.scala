@@ -9,7 +9,7 @@ class SvcApiDocJson extends FunSpec with Matchers {
 
   it("parses models") {
     val service = TestHelper.parseFile(Path).serviceDescription.get
-    service.models.map(_.name).sorted.mkString(" ") should be("membership membership_request membership_request_review organization service user version")
+    service.models.map(_.name).sorted.mkString(" ") should be("error_message membership membership_request membership_request_review organization service user version")
 
     val user = service.models.find(_.name == "user").get
     user.fields.map(_.name).mkString(" ") should be("guid email name image_url")

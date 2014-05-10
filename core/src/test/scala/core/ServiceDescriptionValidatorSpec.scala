@@ -35,7 +35,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("Model user must have at least one field")
+    validator.errors.mkString should be("Model[user] must have at least one field")
     validator.isValid should be(false)
   }
 
@@ -149,16 +149,16 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
               { "name": "guid", "type": "string" }
             ],
             "responses": {
-              "200": { "type": "vendor" }
+              "200": { "type": "%s" }
             }
           }
         ]
       }
     }
     """
-    val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString(", ") should be("")
-    validator.isValid should be(true)
+
+    ServiceDescriptionValidator(json.format("user")).isValid should be(true)
+    ServiceDescriptionValidator(json.format("unknown_model")).isValid should be(false)
   }
 
   it("includes path parameter in operations") {

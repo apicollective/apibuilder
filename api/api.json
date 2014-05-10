@@ -69,6 +69,14 @@
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
                 { "name": "json", "type": "string", "description": "JSON description of the service." }
             ]
+        },
+
+        "error_message": {
+            "description": "A wrapper containing any error messages where appropriate. Will be commonly used with 4xx HTTP response codes primarily for PUT, POST, and PATCH operations.",
+            "fields": [
+                { "name": "code", "type": "string", "description": "Unique error code for this validation error" },
+                { "name": "messages", "type": "[string]", "description": "Description of what went wrong. Guaranteed to have at least one message, but there can be multiple messages if there are multiple validation errors", "minimum": 1 }
+            ]
         }
     },
 
@@ -109,7 +117,37 @@
                     "409": { "type": "error_message" }
                 }
             }
+        ],
+
+        "organizations": [
+            {
+                "method": "GET",
+                "description": "Search all organizations. Results are always paginated.",
+                "parameters": [
+                    { "name": "user_guid", "type": "uuid", "required": false },
+                    { "name": "key", "type": "string", "description": "Find organizations with this key. Case in-sensitive. Exact match", "required": false },
+                    { "name": "name", "type": "string", "description": "Find organizations with this name. Case in-sensitive. Exact match", "required": false },
+                    { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                    { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                ],
+                "responses": {
+                    "200": { "type": "[organization]" }
+                }
+            },
+
+            {
+                "method": "POST",
+                "description": "Create a new organization.",
+                "parameters": [
+                    { "name": "name", "type": "string" }
+                ],
+                "responses": {
+                    "201": { "type": "organization" },
+                    "409": { "type": "error_message" }
+                }
+            }
         ]
+
     }
 
 }
