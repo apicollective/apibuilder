@@ -1,11 +1,3 @@
-
-        "planned_shipments": {
-            "path": "/planned-shipments",
-        },
-
-        "purchases": {
-        },
-
         "shipment_requests": {
             "path": "/shipment-requests",
             "operations": [
