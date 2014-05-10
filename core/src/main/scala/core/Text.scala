@@ -64,11 +64,6 @@ object Text {
     RemoveUnsafeCharacters.replaceAllIn(name, m => "").trim
   }
 
-  private val MakeSingular = """s$""".r
-  def singular(name: String) = {
-    MakeSingular.replaceAllIn(name, m => "").trim
-  }
-
   def underscoreToInitCap(value: String): String = {
     initCap(value.split("_"))
   }

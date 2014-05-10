@@ -149,10 +149,26 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
 
     val parameterErrors = internalServiceDescription.get.operations.flatMap { op =>
-      op.parameters.filter( !_.datatype.isEmpty ).flatMap { param =>
-        Datatype.findByName(param.datatype.get) match {
-          case None => Some(s"${op.method.get} ${op.path}: Parameter[${param.name.get}] has an invalid datatype[${param.datatype.get}]. Must be one of: ${ValidDatatypes}")
-          case Some(d: Datatype) => None
+      op.parameters.filter( !_.paramtype.isEmpty ).flatMap { param =>
+
+        val typeName = param.paramtype.get
+
+        Datatype.findByName(typeName) match {
+
+          case Some(dt: Datatype) => {
+            None
+          }
+
+          case None => {
+            internalServiceDescription.get.models.find(_.name == typeName) match {
+              case None => {
+                Some(s"${op.method.get} ${op.path}: Parameter[${param.name.get}] has an invalid datatype[${typeName}]. Must be one of: ${ValidDatatypes} or the name of a model")
+              }
+              case Some(m: InternalModel) => {
+                None
+              }
+            }
+          }
         }
       }
     }

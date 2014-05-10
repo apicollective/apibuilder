@@ -266,7 +266,7 @@
             {
                 "method": "POST",
                 "parameters": [
-                    { "name": "vendor_guid", "references": "vendors.guid" },
+                    { "name": "vendor_guid", "type": "vendor" },
                     { "name": "code", "type": "string" },
                     { "name": "description", "type": "string", "required": false }
                 ],

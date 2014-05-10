@@ -69,7 +69,7 @@ case class InternalOperation(resourceName: String,
                              path: String,
                              description: Option[String],
                              namedParameters: Seq[String],
-                             parameters: Seq[InternalField],
+                             parameters: Seq[InternalParameter],
                              responses: Seq[InternalResponse])
 
 case class InternalField(name: Option[String] = None,
@@ -82,6 +82,16 @@ case class InternalField(name: Option[String] = None,
                          example: Option[String] = None,
                          minimum: Option[Long] = None,
                          maximum: Option[Long] = None)
+
+case class InternalParameter(name: Option[String] = None,
+                             paramtype: Option[String] = None,
+                             description: Option[String] = None,
+                             required: Boolean = true,
+                             multiple: Boolean = false,
+                             default: Option[String] = None,
+                             example: Option[String] = None,
+                             minimum: Option[Long] = None,
+                             maximum: Option[Long] = None)
 
 
 case class InternalResponse(code: String,
@@ -124,7 +134,7 @@ object InternalOperation {
     val parameters = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {
-        a.value.map { data => InternalField(data.as[JsObject]) }
+        a.value.map { data => InternalParameter(data.as[JsObject]) }
       }
     }
 
@@ -182,6 +192,24 @@ object InternalField {
                   minimum = (json \ "minimum").asOpt[Long],
                   maximum = (json \ "maximum").asOpt[Long],
                   example = (json \ "example").asOpt[String])
+  }
+
+}
+
+object InternalParameter {
+
+  def apply(json: JsObject): InternalParameter = {
+    val dt = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
+
+    InternalParameter(name = (json \ "name").asOpt[String],
+                      paramtype = dt.map(_.name),
+                      description = (json \ "description").asOpt[String],
+                      required = (json \ "required").asOpt[Boolean].getOrElse(true),
+                      multiple = dt.map(_.multiple).getOrElse(false),
+                      default = (json \ "default").asOpt[String],
+                      minimum = (json \ "minimum").asOpt[Long],
+                      maximum = (json \ "maximum").asOpt[Long],
+                      example = (json \ "example").asOpt[String])
   }
 
 }

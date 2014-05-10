@@ -41,7 +41,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
     val service = parseFile("svc-iris-hub-0-0-1.json").serviceDescription.get
     val operations = service.operations.filter(_.model.name == "item")
 
-    val gets = operations.filter(op => op.method == "GET" && op.path == None)
+    val gets = operations.filter(op => op.method == "GET" && op.path == "/items")
     gets.size should be(1)
     gets.head.parameters.map(_.name).mkString(" ") should be("vendor_guid agreement_guid number limit offset")
     val response = gets.head.responses.head
@@ -49,7 +49,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
     response.datatype should be("item")
     response.multiple should be(true)
 
-    val getsByGuid = operations.filter(op => op.method == "GET" && op.path == Some("/:guid"))
+    val getsByGuid = operations.filter(op => op.method == "GET" && op.path == "/:guid")
     getsByGuid.size should be(1)
     getsByGuid.head.parameters.map(_.name).mkString(" ") should be("guid")
     getsByGuid.head.responses.map(_.code) should be(Seq(200))

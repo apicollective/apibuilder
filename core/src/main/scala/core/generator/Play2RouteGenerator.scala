@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ Datatype, Field, Operation, Model, ServiceDescription, Text }
+import core.{ Datatype, Field, Operation, Model, ModelParameterType, Parameter, ParameterLocation, PrimitiveParameterType, ServiceDescription, Text }
 import io.Source
 
 /**
@@ -45,16 +45,15 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     lazy val verb = op.method
     lazy val url = service.basePath.getOrElse("") + op.path
     lazy val method = s"$controllerName.$methodName"
-    lazy val parameters = parametersWithTypes(op.parameters)
-    lazy val pathParameters = parametersWithTypes(op.parameters.filter { param => namedParametersInPath.contains(param.name) })
 
-    private lazy val namedParametersInPath = GeneratorUtil.namedParametersInPath(op.path)
+    lazy val parameters = parametersWithTypes(op.parameters)
+    lazy val pathParameters = parametersWithTypes(op.parameters.filter { param => param.location == ParameterLocation.Path })
 
     private lazy val methodName = op.method.toLowerCase + Text.initCap(op.path.split("/"))
 
     private lazy val controllerName: String = "controllers." + Text.underscoreToInitCap(op.model.name)
 
-    private def parametersWithTypes(params: Seq[Field]): Seq[String] = {
+    private def parametersWithTypes(params: Seq[Parameter]): Seq[String] = {
       params.map { param =>
         Seq(
           Some(s"${param.name}: ${scalaDataType(param)}"),
@@ -63,22 +62,31 @@ case class Play2RouteGenerator(service: ServiceDescription) {
       }
     }
 
-    private def scalaDataType(param: Field): String = {
-      val scalaType = param.datatype match {
-        case Datatype.String => "String"
-        case Datatype.Long => "Long"
-        case Datatype.Integer => "Int"
-        case Datatype.Boolean => "Boolean"
-        case Datatype.Decimal => "BigDecimal"
-        case Datatype.Uuid => "UUID"
-        case Datatype.DateTimeIso8601 => "DateTime"
-        case Datatype.Unit => "Unit"
-      }
+    private def scalaDataType(param: Parameter): String = {
+      param.paramtype match {
 
-      if (param.required) {
-        scalaType
-      } else {
-        s"Option[$scalaType]"
+        case dt: ModelParameterType => {
+          sys.error("Model parameter types not supported in play routes")
+        }
+
+        case dt: PrimitiveParameterType => {
+          val scalaType = dt.datatype match {
+            case Datatype.String => "String"
+            case Datatype.Long => "Long"
+            case Datatype.Integer => "Int"
+            case Datatype.Boolean => "Boolean"
+            case Datatype.Decimal => "BigDecimal"
+            case Datatype.Uuid => "UUID"
+            case Datatype.DateTimeIso8601 => "DateTime"
+            case Datatype.Unit => "Unit"
+          }
+
+          if (param.required) {
+            scalaType
+          } else {
+            s"Option[$scalaType]"
+          }
+        }
       }
     }
   }

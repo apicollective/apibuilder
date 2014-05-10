@@ -38,7 +38,7 @@ case class Operation(model: Model,
                      method: String,
                      path: String,
                      description: Option[String],
-                     parameters: Seq[Field],
+                     parameters: Seq[Parameter],
                      responses: Seq[Response])
 
 object Operation {
@@ -49,16 +49,19 @@ object Operation {
     }
 
     val pathParameters = internal.namedParameters.map { paramName =>
-      model.fields.find { _.name == paramName }.getOrElse {
+      model.fields.find { _.name == paramName }.map( f => Parameter(f, ParameterLocation.Path) ).getOrElse {
         sys.error(s"Could not find operation path parameter with name[${paramName}] for model[${model.name}]")
       }
     }
 
+    val method = internal.method.getOrElse { sys.error("Missing method") }
+    val location = if (method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
+
     Operation(model = model,
-              method = internal.method.getOrElse { sys.error("Missing method") },
+              method = method,
               path = internal.path,
               description = internal.description,
-              parameters = pathParameters ++ internal.parameters.map { Field(models, _, None, Seq.empty) },
+              parameters = pathParameters ++ internal.parameters.map { Parameter(models, _, location) },
               responses = internal.responses.map { Response(_) })
   }
 
@@ -74,6 +77,23 @@ case class Field(name: String,
                  example: Option[String] = None,
                  minimum: Option[Long] = None,
                  maximum: Option[Long] = None)
+
+sealed trait ParameterType
+
+case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
+case class ModelParameterType(model: Model) extends ParameterType
+
+case class Parameter(name: String,
+                     paramtype: ParameterType,
+                     location: ParameterLocation,
+                     description: Option[String] = None,
+                     required: Boolean = true,
+                     multiple: Boolean = false,
+                     references: Option[Reference] = None,
+                     default: Option[String] = None,
+                     example: Option[String] = None,
+                     minimum: Option[Long] = None,
+                     maximum: Option[Long] = None)
 
 case class Reference(modelPlural: String, fieldName: String) {
 
@@ -150,6 +170,55 @@ object Datatype {
 
 }
 
+sealed abstract class ParameterLocation(val name: String)
+
+object ParameterLocation {
+
+  case object Path extends ParameterLocation("path")
+  case object Query extends ParameterLocation("query")
+  case object Form extends ParameterLocation("form")
+
+}
+
+object Parameter {
+
+  def apply(field: Field, location: ParameterLocation): Parameter = {
+    Parameter(name = field.name,
+              paramtype = PrimitiveParameterType(field.datatype),
+              location = location,
+              description = field.description,
+              required = true)
+  }
+
+  def apply(models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
+    val paramtype = Datatype.findByName(internal.paramtype.get) match {
+      case None => {
+        assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
+        ModelParameterType(models.find(_.name == internal.paramtype.get).getOrElse {
+          sys.error(s"Param type[${internal.paramtype.get}] is invalid. Must be a valid primitive datatype or the name of a known model")
+        })
+      }
+
+      case Some(dt: Datatype) => {
+        internal.default.map { v => Field.assertValidDefault(dt, v) }
+        PrimitiveParameterType(dt)
+      }
+    }
+
+    Parameter(name = internal.name.get,
+              paramtype = paramtype,
+              location = location,
+              description = internal.description,
+              required = internal.required,
+              multiple = internal.multiple,
+              default = internal.default,
+              minimum = internal.minimum.map(_.toLong),
+              maximum = internal.maximum.map(_.toLong),
+              example = internal.example)
+  }
+
+}
+
 object Field {
 
   def findByModelPluralAndFieldName(models: Seq[Model], modelPlural: String, fieldName: String): Option[Field] = {
@@ -200,7 +269,7 @@ object Field {
 
   private val BooleanValues = Seq("true", "false")
 
-  private def assertValidDefault(datatype: Datatype, value: String) {
+  def assertValidDefault(datatype: Datatype, value: String) {
     datatype match {
       case Datatype.Boolean => {
         if (!BooleanValues.contains(value)) {

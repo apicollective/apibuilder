@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ Datatype, Field, ServiceDescription, Model, Operation, Text }
+import core.{ Datatype, Field, ServiceDescription, Model, ModelParameterType, Operation, Parameter, PrimitiveParameterType, Text }
 
 import scala.collection.mutable.ListBuffer
 
@@ -141,7 +141,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
       sb.append(s"      def ${methodName}(" + paramStrings.mkString(", ") + ")")
 
       pathParams.foreach { param =>
-        val klass = rubyClass(param.datatype)
+
+        val klass = param.paramtype match {
+          case t: PrimitiveParameterType => rubyClass(t.datatype)
+          case m: ModelParameterType => Text.underscoreToInitCap(m.model.name)
+        }
+
         sb.append(s"        HttpClient::Preconditions.assert_class(${param.name}, ${klass})")
       }
 
@@ -205,7 +210,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   def generateModel(model: core.Model): String = {
-    val className = modelClassName(Text.singular(model.name))
+    val className = modelClassName(model.name)
 
     val sb = ListBuffer[String]()
 
@@ -229,26 +234,44 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   private def parseArgument(field: Field): String = {
-    val value = if (field.default.isEmpty) {
-      s"opts.delete(:${field.name})"
-    } else if (field.datatype == Datatype.String) {
-      s"opts.delete(:${field.name}) || \'${field.default.get}\'"
-    } else if (field.datatype == Datatype.Boolean) {
-      s"opts.has_key?(:${field.name}) ? (opts.delete(:${field.name}) ? true : false) : ${field.default.get}"
+    parsePrimitiveArgument(field.name, field.datatype, field.required, field.default)
+  }
+
+  private def parseArgument(param: Parameter): String = {
+    param.paramtype match {
+      case dt: PrimitiveParameterType => {
+        parsePrimitiveArgument(param.name, dt.datatype, param.required, param.default)
+      }
+      case mt: ModelParameterType => {
+        sys.error("TODO")
+      }
+    }
+  }
+
+  private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String]): String = {
+    val value = if (default.isEmpty) {
+      s"opts.delete(:${name})"
+    } else if (datatype == Datatype.String) {
+      s"opts.delete(:${name}) || \'${default.get}\'"
+    } else if (datatype == Datatype.Boolean) {
+      s"opts.has_key?(:${name}) ? (opts.delete(:${name}) ? true : false) : ${default.get}"
     } else {
-      s"opts.delete(:${field.name}) || ${field.default.get}"
+      s"opts.delete(:${name}) || ${default.get}"
     }
 
-    val hasValue = (field.required || !field.default.isEmpty)
+    val hasValue = (required || !default.isEmpty)
     val assertMethod = if (hasValue) { "assert_class" } else { "assert_class_or_nil" }
-    val klass = rubyClass(field.datatype)
+    val klass = rubyClass(datatype)
 
-    if (field.datatype == Datatype.Decimal) {
-      if (hasValue) {
-        s"BigDecimal.new(HttpClient::Preconditions.check_not_nil(${value}, '${field.name} is required').to_s)"
-      } else {
-        s"HttpClient::Helper.to_big_decimal_or_nil(${value})"
-      }
+    if (datatype == Datatype.Decimal) {
+      s"HttpClient::Helper.to_big_decimal(${value}, :required => true)"
+
+    } else if (datatype == Datatype.Uuid) {
+      s"HttpClient::Helper.to_uuid(${value}, :required => true)"
+
+    } else if (datatype == Datatype.DateTimeIso8601) {
+      s"HttpClient::Helper.to_date_time_iso8601(${value}, :required => true)"
+
     } else {
       s"HttpClient::Preconditions.${assertMethod}(${value}, ${klass})"
     }
@@ -261,6 +284,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case Datatype.Integer => "Integer"
       case Datatype.Boolean => "String"
       case Datatype.Decimal => "BigDecimal"
+      case Datatype.Uuid => "String"
+      case Datatype.DateTimeIso8601 => "DateTime"
       case Datatype.Unit => "nil"
       case _ => {
         sys.error(s"Cannot map data type[${datatype}] to ruby class")

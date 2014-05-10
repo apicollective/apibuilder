@@ -4,10 +4,8 @@ import core.Util
 
 private[generator] object GeneratorUtil {
 
-  private val JsonDocumentMethods = Seq("POST", "PUT", "PATCH")
-
   def isJsonDocumentMethod(verb: String): Boolean = {
-    JsonDocumentMethods.contains(verb)
+    verb != "GET"
   }
 
   // TODO: Remove wrapper
