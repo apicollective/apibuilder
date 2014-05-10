@@ -32,6 +32,12 @@ object Text {
     }
   }
 
+  def pluralize(value: String): String = {
+    // TODO. Make this work for most words; provide explicit value in
+    // api.json file to avoid calling this function.
+    value + "s"
+  }
+
   private val RemoveUnsafeCharacters = """([^0-9a-zA-Z])""".r
   def safeName(name: String): String = {
     RemoveUnsafeCharacters.replaceAllIn(name, m => "").trim

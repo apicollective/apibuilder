@@ -1,7 +1,6 @@
 package core.generator
 
-import core.{ Datatype, Field, ServiceDescription, Resource, Text }
-import java.io.File
+import core.{ Datatype, Field, ServiceDescription, Model, Operation, Text }
 
 import scala.collection.mutable.ListBuffer
 
@@ -20,16 +19,18 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   def generate(): String = {
+    val operationNames = service.operations.map { _.resourceName }.distinct.sorted
+
     RubyHttpClient.require +
     "\n" +
     service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +
     s"module ${moduleName}\n" +
     generateClient() +
-    "\n\n  module Resources\n" +
-    service.resources.map { generateResource(_) }.mkString("\n\n") +
+    "\n\n  module Models\n" +
+    service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end" +
     "\n\n  module Clients\n" +
-    service.resources.map { generateClientForResource(_) }.mkString("\n\n") +
+    operationNames.map { name => generateClientForResource(name, service.operations.filter { _.resourceName == name}) }.mkString("\n\n") +
     "\n\n  end\n\n" +
     RubyHttpClient.contents +
     "end"
@@ -74,11 +75,11 @@ case class RubyGemGenerator(service: ServiceDescription) {
     end
 """)
 
-    sb.append(service.resources.map { resource =>
-      val className = resourceClassName(resource.name)
+    sb.append(service.models.map { model =>
+      val className = modelClassName(model.name)
 
-      s"    def ${resource.name}\n" +
-      s"      @${resource.name} ||= ${moduleName}::Clients::${className}.new(self)\n" +
+      s"    def ${model.name}\n" +
+      s"      @${model.name} ||= ${moduleName}::Clients::${className}.new(self)\n" +
       "    end"
     }.mkString("\n\n"))
 
@@ -87,8 +88,11 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.mkString("\n")
   }
 
-  def generateClientForResource(resource: core.Resource): String = {
-    val className = Text.underscoreToInitCap(resource.name)
+  def generateClientForResource(resourceName: String, operations: Seq[Operation]): String = {
+    require(!operations.isEmpty)
+
+    val resourcePath = s"/${resourceName}"
+    val className = Text.underscoreToInitCap(resourceName)
 
     val sb = ListBuffer[String]()
     sb.append(s"    class ${className}")
@@ -97,8 +101,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append(s"        @client = HttpClient::Preconditions.assert_class(client, ${moduleName}::Client)")
     sb.append("      end")
 
-    resource.operations.foreach { op =>
-      val path = resource.path + op.path.getOrElse("")
+    operations.foreach { op =>
+      val path = op.path.getOrElse(resourcePath)
 
       val namedParams = GeneratorUtil.namedParametersInPath(path)
       val pathParams = op.parameters.filter { p => namedParams.contains(p.name) }
@@ -171,6 +175,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       requestBuilder.append(s".${op.method.toLowerCase}")
 
       val responseBuilder = new StringBuilder()
+
       // TODO: match on all response codes
       op.responses.headOption.map { response =>
         response.resource match {
@@ -182,7 +187,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
             if (op.responses.head.multiple) {
               responseBuilder.append(".map")
             }
-            responseBuilder.append(s" { |hash| ${moduleName}::Resources::${Text.underscoreToInitCap(resourceName)}.new(hash) }")
+            responseBuilder.append(s" { |hash| ${moduleName}::Models::${Text.underscoreToInitCap(resourceName)}.new(hash) }")
           }
         }
       }
@@ -197,24 +202,24 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.mkString("\n")
   }
 
-  def resourceClassName(name: String): String = {
+  def modelClassName(name: String): String = {
     Text.underscoreToInitCap(name)
   }
 
-  def generateResource(resource: core.Resource): String = {
-    val className = resourceClassName(Text.singular(resource.name))
+  def generateModel(model: core.Model): String = {
+    val className = modelClassName(Text.singular(model.name))
 
     val sb = ListBuffer[String]()
 
-    resource.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
+    model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
     sb.append(s"    class $className\n")
-    sb.append("      attr_reader " + resource.fields.map( f => s":${f.name}" ).mkString(", "))
+    sb.append("      attr_reader " + model.fields.map( f => s":${f.name}" ).mkString(", "))
 
     sb.append("")
     sb.append("      def initialize(incoming={})")
     sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
 
-    resource.fields.map { field =>
+    model.fields.map { field =>
       sb.append(s"        @${field.name} = ${parseArgument(field)}")
     }
 
@@ -265,12 +270,5 @@ case class RubyGemGenerator(service: ServiceDescription) {
     }
   }
 
-
-  private def writeToFile(file: File, contents: String) {
-    val fstream = new java.io.FileWriter(file)
-    val out = new java.io.BufferedWriter(fstream)
-    out.write(contents)
-    out.close()
-  }
 
 }

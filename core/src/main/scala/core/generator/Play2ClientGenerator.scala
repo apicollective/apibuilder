@@ -15,7 +15,10 @@ object Play2ClientGenerator {
 class Play2ClientGenerator(ssd: ScalaServiceDescription)
 extends Source
 {
-  def resources = ssd.resources.map(Resource(_))
+  def models = ssd.models.map(Model(_))
+
+  // TODO: Need to rethink client in context of operations
+  def operations: Seq[Source] = ssd.operations.map(Operation(_))
 
   def packageName = ssd.name.toLowerCase
 
@@ -51,8 +54,8 @@ object ${ssd.name} {
 
     private val logger = Logger("$packageName.${ssd.name}.Client")
 
-    def requestHolder(resource: String) = {
-      val url = apiUrl + resource
+    def requestHolder(model: String) = {
+      val url = apiUrl + model
       WS.url(url).withAuth(apiToken, "", AuthScheme.BASIC)
     }
   }
@@ -60,9 +63,9 @@ object ${ssd.name} {
   trait Client {
     import Client._
 
-    def resource: String
+    def model: String
 
-    protected def requestHolder(path: String) = Client.requestHolder(resource + path)
+    protected def requestHolder(path: String) = Client.requestHolder(model + path)
 
     private def logRequest(method: String, req: WSRequestHolder)(implicit ec: ExecutionContext): WSRequestHolder = {
       // auth should always be present, but just in case it isn't,
@@ -104,7 +107,7 @@ $body
 
   def body: String = {
     val jsonFormatDefs = {
-      val defs = ssd.resources.map(JsonFormatDefs(_).src.indent(4)).mkString("\n")
+      val defs = ssd.models.map(JsonFormatDefs(_).src.indent(4)).mkString("\n")
       s"""
   object JsonFormats {
     implicit val jsonReadsUUID: Reads[UUID] = __.read[String].map(UUID.fromString)
@@ -133,8 +136,8 @@ $defs
   import JsonFormats._
 """
     }
-    val resourceDefs = resources.map(_.src.indent).mkString("\n")
-    jsonFormatDefs ++ resourceDefs
+    val modelDefs = models.map(_.src.indent).mkString("\n")
+    jsonFormatDefs ++ modelDefs
   }
 
   case class Operation(operation: ScalaOperation) extends Source {
@@ -200,29 +203,16 @@ ${body.indent}
 }
 """
   }
-  case class Resource(resource: ScalaResource) extends Source {
-    import resource._
+  case class Model(model: ScalaModel) extends Source {
+    import model._
 
-    def operations: Seq[Source] = resource.operations.map(Operation(_))
-
-    override def src: String = s"""
-object ${resource.name}Client extends Client {
-  def resource = "$path"
-$body
-}
-case class ${name}(${argList})
-"""
-
-    def body: String = {
-      val methods = operations.map(_.src.indent).mkString("\n")
-      methods
-    }
+    override def src: String = s"case class ${name}(${argList})"
   }
 
-  case class JsonFormatDefs(resource: ScalaResource) extends Source {
+  case class JsonFormatDefs(model: ScalaModel) extends Source {
     def jsonReadsBody: String = {
-      if (resource.fields.size > 1) {
-        val inner = resource.fields.map { field =>
+      if (model.fields.size > 1) {
+        val inner = model.fields.map { field =>
           val typeName = field.datatype.name
           if (field.isOption) {
             s"""(__ \\ "${field.originalName}").readNullable[${typeName}]"""
@@ -231,14 +221,14 @@ case class ${name}(${argList})
           }
         }.mkString("\n     and ")
 s"""
-  ($inner)(${resource.name})"""
+  ($inner)(${model.name})"""
       } else {
-        val field = resource.fields.head
+        val field = model.fields.head
 s"""
-  new Reads[${resource.name}] {
+  new Reads[${model.name}] {
     override def reads(json: JsValue) = {
       (json \\ "${field.originalName}").validate[${field.typeName}].map { value =>
-        new ${resource.name}(
+        new ${model.name}(
           ${field.name} = value
         )
       }
@@ -248,8 +238,8 @@ s"""
     }
 
     def jsonWritesBody: String = {
-      if (resource.fields.size > 1) {
-        val inner = resource.fields.map { field =>
+      if (model.fields.size > 1) {
+        val inner = model.fields.map { field =>
           val typeName = field.datatype.name
           if (field.isOption) {
             s"""(__ \\ "${field.name}").writeNullable[${typeName}]"""
@@ -258,12 +248,12 @@ s"""
           }
         }.mkString("\n     and ")
 s"""
-  ($inner)(unlift(${resource.name}.unapply))"""
+  ($inner)(unlift(${model.name}.unapply))"""
       } else {
-        val field = resource.fields.head
+        val field = model.fields.head
 s"""
-  new Writes[${resource.name}] {
-    override def writes(value: ${resource.name}) = {
+  new Writes[${model.name}] {
+    override def writes(value: ${model.name}) = {
       Json.obj(
         "${field.originalName}" -> Json.toJson(value.${field.name})
       )
@@ -274,10 +264,10 @@ s"""
 
     override def src: String = {
 s"""
-// ${resource.name} JSON format
-implicit val jsonReads${resource.name}: Reads[${resource.name}] =$jsonReadsBody
+// ${model.name} JSON format
+implicit val jsonReads${model.name}: Reads[${model.name}] =$jsonReadsBody
 
-implicit val jsonWrites${resource.name}: Writes[${resource.name}] =$jsonWritesBody
+implicit val jsonWrites${model.name}: Writes[${model.name}] =$jsonWritesBody
 """
     }
   }

@@ -10,15 +10,15 @@ class ReferenceSpec extends FunSpec with Matchers {
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
-      "resources": {
-        "users": {
+      "models": {
+        "user": {
           "fields": [
-            { "name": "guid", "type": "string", "format": "uuid" }
+            { "name": "guid", "type": "uuid" }
           ]
         },
-        "accounts": {
+        "account": {
           "fields": [
-            { "name": "user", "references": "users.guid" }
+            { "name": "user", "references": "user.guid" }
           ]
         }
       }
@@ -26,9 +26,9 @@ class ReferenceSpec extends FunSpec with Matchers {
     """
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
-    val accounts = validator.serviceDescription.get.resources.find { _.name == "accounts" }.get
+    val accounts = validator.serviceDescription.get.models.find { _.name == "accounts" }.get
     accounts.fields.head.name should be("user")
-    accounts.fields.head.datatype.name should be("TODO")
+    accounts.fields.head.datatype.name should be("uuid")
   }
 
 }

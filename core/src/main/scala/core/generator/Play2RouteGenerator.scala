@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ Datatype, Field, Operation, Resource, ServiceDescription, Text }
+import core.{ Datatype, Field, Operation, Model, ServiceDescription, Text }
 import io.Source
 
 /**
@@ -12,11 +12,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
   private val GlobalPad = 5
 
   def generate(): String = {
-    val all = service.resources.flatMap { resource =>
-      resource.operations.map { op =>
-        Route(resource, op)
-      }
-    }
+    val all = service.operations.map { Route(_) }
     val maxVerbLength = all.map(_.verb.length).sorted.last
     val maxUrlLength = all.map(_.url.length).sorted.last
 
@@ -40,13 +36,13 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     }.mkString("\n")
   }
 
-  private[this] case class Route(resource: Resource, op: Operation) {
+  private[this] case class Route(op: Operation) {
 
     lazy val verb = op.method
-    lazy val url = if (service.basePath.isEmpty && resource.path.isEmpty && op.path.isEmpty) {
+    lazy val url = if (service.basePath.isEmpty && op.path.isEmpty) {
       "/"
     } else {
-      service.basePath.getOrElse("") + resource.path + op.path.getOrElse("")
+      service.basePath.getOrElse("") + op.path.getOrElse("")
     }
     lazy val method = {
       s"$controllerName.$methodName"
@@ -54,7 +50,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     lazy val parameters = parametersWithTypes(op.parameters)
     lazy val pathParameters = parametersWithTypes(op.parameters.filter { param => namedParametersInPath.contains(param.name) })
 
-    private lazy val namedParametersInPath = GeneratorUtil.namedParametersInPath(resource.path + op.path.getOrElse(""))
+    private lazy val namedParametersInPath = GeneratorUtil.namedParametersInPath(op.path.getOrElse(""))
 
     private lazy val methodName = {
       op.path match {
@@ -69,7 +65,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     }
 
     private lazy val controllerName: String = {
-      s"controllers.${Text.underscoreToInitCap(resource.name)}"
+      s"controllers.${Text.underscoreToInitCap(op.resourceName)}"
     }
 
     private def parametersWithTypes(params: Seq[Field]): Seq[String] = {

@@ -20,28 +20,52 @@ private[core] object InternalServiceDescription {
 
 private[core] case class InternalServiceDescription(json: JsValue) {
 
-  lazy val resources: Seq[InternalResource] = {
-    (json \ "resources").as[JsObject].fields.map { v =>
-      v match {
-        case(key, value) => InternalResource(key, value.as[JsObject])
+  lazy val name = (json \ "name").asOpt[String]
+  lazy val baseUrl = (json \ "base_url").asOpt[String]
+  lazy val basePath = (json \ "base_path").asOpt[String]
+  lazy val description = (json \ "description").asOpt[String]
+
+  lazy val models: Seq[InternalModel] = {
+    (json \ "models").asOpt[JsObject] match {
+      case None => Seq.empty
+      case Some(models: JsObject) => {
+        models.fields.map { v =>
+          v match {
+            case(key, value) => InternalModel(key, value.as[JsObject])
+          }
+        }
       }
     }
   }
 
-  lazy val baseUrl = (json \ "base_url").asOpt[String]
-  lazy val basePath = (json \ "base_path").asOpt[String]
-  lazy val name = (json \ "name").asOpt[String]
-  lazy val description = (json \ "description").asOpt[String]
+  lazy val operations: Seq[InternalOperation] = {
+    (json \ "operations").asOpt[JsObject] match {
+      case None => Seq.empty
+      case Some(operations: JsObject) => {
+        operations.fields.flatMap { v =>
+          v match {
+            case(key, value) => {
+              val items = value match {
+                case a: JsArray => a.value
+                case _: JsValue => Seq.empty
+              }
+              items.flatMap { _.asOpt[JsObject].map { o => InternalOperation(key, o) } }
+            }
+          }
+        }
+      }
+    }
+  }
 
 }
 
-case class InternalResource(name: String,
-                            path: String,
-                            description: Option[String],
-                            fields: Seq[InternalField],
-                            operations: Seq[InternalOperation])
+case class InternalModel(name: String,
+                         plural: String,
+                         description: Option[String],
+                         fields: Seq[InternalField])
 
-case class InternalOperation(method: Option[String],
+case class InternalOperation(resourceName: String,
+                             method: Option[String],
                              path: Option[String],
                              description: Option[String],
                              namedParameters: Seq[String],
@@ -64,11 +88,11 @@ case class InternalResponse(code: String,
                             datatype: Option[String] = None,
                             fields: Option[Set[String]] = None)
 
-object InternalResource {
+object InternalModel {
 
-  def apply(name: String, value: JsObject): InternalResource = {
-     val path = (value \ "path").asOpt[String].getOrElse( s"/${name}" )
+  def apply(name: String, value: JsObject): InternalModel = {
      val description = (value \ "description").asOpt[String]
+     val plural: String = (value \ "plural").asOpt[String].getOrElse( Text.pluralize(name) )
 
      val fields = (value \ "fields").asOpt[JsArray] match {
 
@@ -80,55 +104,52 @@ object InternalResource {
 
      }
 
-     val operations = (value \ "operations").asOpt[JsArray] match {
 
-       case None => Seq.empty
+    InternalModel(name = name,
+                  plural = plural,
+                  description = description,
+                  fields = fields)
+  }
 
-       case Some(a: JsArray) => {
-         a.value.map { json =>
-           val opPath = (json \ "path").asOpt[String]
+}
 
-           val namedParameters = Util.namedParametersInPath(path + opPath.getOrElse(""))
+object InternalOperation {
 
-           val parameters = (json \ "parameters").asOpt[JsArray] match {
-             case None => Seq.empty
-             case Some(a: JsArray) => {
-               a.value.map { data => InternalField(data.as[JsObject]) }
-             }
-           }
+  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.Unit.name))
 
-           lazy val responses: Seq[InternalResponse] = {
-             (json \ "responses").asOpt[JsObject] match {
-               case None => {
-                 Seq(InternalResponse(code = "204", datatype = Some(Datatype.Unit.name)))
-               }
-
-               case Some(responses: JsObject) => {
-                 responses.fields.map { v =>
-                   v match {
-                     case(code, value) => InternalResponse(code, value.as[JsObject])
-                   }
-                 }
-               }
-             }
-           }
-
-           InternalOperation(method = (json \ "method").asOpt[String],
-                             path = opPath,
-                             description = (json \ "description").asOpt[String],
-                             responses = responses,
-                             namedParameters = namedParameters,
-                             parameters = parameters)
-         }
-       }
-
+  def apply(resourceName: String, json: JsObject): InternalOperation = {
+    val opPath = (json \ "path").asOpt[String]
+    val namedParameters = Util.namedParametersInPath(opPath.getOrElse(""))
+    val parameters = (json \ "parameters").asOpt[JsArray] match {
+      case None => Seq.empty
+      case Some(a: JsArray) => {
+        a.value.map { data => InternalField(data.as[JsObject]) }
+      }
     }
 
-    InternalResource(name = name,
-                     path = path,
-                     description = description,
-                     fields = fields,
-                     operations = operations)
+    val responses: Seq[InternalResponse] = {
+      (json \ "responses").asOpt[JsObject] match {
+        case None => {
+          Seq(NoContentResponse)
+        }
+
+        case Some(responses: JsObject) => {
+          responses.fields.map { v =>
+            v match {
+              case(code, value) => InternalResponse(code, value.as[JsObject])
+            }
+                              }
+        }
+      }
+    }
+
+    InternalOperation(resourceName = resourceName,
+                      method = (json \ "method").asOpt[String],
+                      path = opPath,
+                      description = (json \ "description").asOpt[String],
+                      responses = responses,
+                      namedParameters = namedParameters,
+                      parameters = parameters)
   }
 
 }
@@ -159,7 +180,7 @@ object InternalField {
 
 }
 
-private[core] case class InternalReference(label: String, resource: Option[String], field: Option[String])
+private[core] case class InternalReference(label: String, modelName: Option[String], fieldName: Option[String])
 
 private[core] object InternalReference {
 

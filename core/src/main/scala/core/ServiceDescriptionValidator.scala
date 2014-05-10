@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException
 
 case class ServiceDescriptionValidator(apiJson: String) {
 
-  private val RequiredFields = Seq("base_url", "name", "resources")
+  private val RequiredFields = Seq("base_url", "name")
 
   private var parseError: Option[String] = None
 
@@ -49,7 +49,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateResources ++ validateReferences ++ validateResponses
+          validateModels ++ validateReferences ++ validateOperations
         } else {
           requiredFieldErrors
         }
@@ -83,25 +83,25 @@ case class ServiceDescriptionValidator(apiJson: String) {
    * Validate references to ensure they refer to proper data
    */
   private def validateReferences(): Seq[String] = {
-    internalServiceDescription.get.resources.flatMap { resource =>
-      resource.fields.filter { f => !f.name.isEmpty }.flatMap { field =>
+    internalServiceDescription.get.models.filter { !_.name.isEmpty }.flatMap { model =>
+      model.fields.flatMap { field =>
         field.references.flatMap { ref =>
-          if (ref.resource.isEmpty || ref.field.isEmpty) {
-            Some("Resource ${resource.name} field ${field.name.get} reference[${ref.label}] must contain a resource and field (e.g. users.guid)")
+          if (ref.modelName.isEmpty || ref.fieldName.isEmpty) {
+            Some("Model ${model.name} field ${field.name.get} reference[${ref.label}] must contain a model name and a field name (e.g. users.guid)")
 
           } else {
-            val matching = internalServiceDescription.get.resources.find { r => r.name == ref.resource.get }
+            internalServiceDescription.get.models.find { m => m.name == ref.modelName.get } match {
 
-            internalServiceDescription.get.resources.find { r => r.name == ref.resource.get } match {
+              case None => Some(s"${model.name}.${field.name.get} has invalid reference to ${ref.label}. Model[${ref.modelName.get}] does not exist")
 
-              case None => Some(s"${resource.name}.${field.name.get} reference ${ref.label} is invalid. Resource[${ref.resource.get}] does not exist")
+              case Some(refModel: InternalModel) => {
+                refModel.fields.find(m => m.name == ref.fieldName ) match {
+                  case None => Some(s"${model.name}.${field.name.get} has invalid reference to ${ref.label}. Model[${ref.modelName.get}] does not have a field named[${ref.fieldName.get}]")
 
-              case Some(r: InternalResource) => {
-                r.fields.find(f => f.name == ref.field ) match {
-                  case None => Some(s"${resource.name}.${field.name.get} reference ${ref.label} is invalid. Resource[${ref.resource.get}] does not have a field named[${ref.field.get}]")
                   case Some(f: InternalField) => None
                 }
               }
+
             }
           }
         }
@@ -109,32 +109,20 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
   }
 
-  private def validateResources(): Seq[String] = {
-    if (internalServiceDescription.get.resources.isEmpty) {
-      Seq("Must have at least one resource")
-    } else {
-      internalServiceDescription.get.resources.flatMap { resource =>
-        resource.fields match {
-          case Nil => Some(s"${resource.name} resource must have at least one field")
-          case fields =>
-            fields.collect {
-              case field if field.default.nonEmpty =>
-                s"Field ${field.name} of resource ${resource.name} should not have a default attribute. Default is only valid on an operation parameter."
-            }
-        }
+  private def validateModels(): Seq[String] = {
+    internalServiceDescription.get.models.flatMap { model =>
+      model.fields match {
+        case Nil => Some(s"Model ${model.name} must have at least one field")
+        case fields => None
       }
     }
   }
 
-  private def validateResponses(): Seq[String] = {
-    internalServiceDescription.get.resources.flatMap { r =>
-      r.operations.filter { op => !op.method.isEmpty && op.responses.isEmpty }.map { op =>
-        val path = op.path match {
-          case None => ""
-          case Some(p: String) => s" $p"
-        }
-        s"${r.name} ${op.method.get}${path} missing responses element"
-      }
+  private def validateOperations(): Seq[String] = {
+    val modelNames = internalServiceDescription.get.models.map( _.plural ).toSet
+
+    internalServiceDescription.get.operations.filter { op => !modelNames.contains(op.resourceName) }.map { op =>
+      s"Could not find model for operation with key[{$op.resourceName}]"
     }
   }
 

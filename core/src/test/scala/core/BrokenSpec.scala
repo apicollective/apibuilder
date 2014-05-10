@@ -22,7 +22,7 @@ class BrokenSpec extends FunSpec with Matchers {
     """
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString should be("")
-    val fields = validator.serviceDescription.get.resources.head.fields
+    val fields = validator.serviceDescription.get.models.head.fields
     fields.find { _.name == "guid" }.get.multiple should be(false)
     fields.find { _.name == "tags" }.get.multiple should be(true)
   }
@@ -33,12 +33,14 @@ class BrokenSpec extends FunSpec with Matchers {
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
-      "resources": {
-        "vendors": {
+      "models": {
+        "vendor": {
           "fields": [
             { "name": "guid", "type": "string" }
-          ],
-          "operations": [
+          ]
+       },
+        "operations": {
+          "vendors": [
             {
               "method": "POST",
               "parameters": [
@@ -46,7 +48,7 @@ class BrokenSpec extends FunSpec with Matchers {
                 { "name": "tag", "type": "[string]", "required": false }
               ],
               "responses": {
-                "200": { "type": "vendors" }
+                "200": { "type": "vendor" }
               }
             }
           ]
@@ -56,7 +58,7 @@ class BrokenSpec extends FunSpec with Matchers {
     """
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString should be("")
-    val operation = validator.serviceDescription.get.resources.head.operations.head
+    val operation = validator.serviceDescription.get.operations.head
     operation.method should be("POST")
     operation.parameters.find { _.name == "guid" }.get.multiple should be(false)
 

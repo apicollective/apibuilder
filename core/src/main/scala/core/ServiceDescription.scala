@@ -18,20 +18,10 @@ object ServiceDescription {
 
 }
 
-private case class CanonicalField(resourceName: String, fieldName: String, datatype: Datatype)
-
 case class ServiceDescription(internal: InternalServiceDescription) {
 
-  private val canonicalFields: Seq[CanonicalField] = internal.resources.flatMap { ir =>
-    ir.fields.filter { !_.datatype.isEmpty }.map { f =>
-      CanonicalField(ir.name, f.name.get,
-                     Datatype.findByName(f.datatype.get).getOrElse {
-                       sys.error(s"Invalid datatype[${f.datatype}]")
-                     })
-    }
-  }
-
-  lazy val resources = internal.resources.map { Resource(canonicalFields, _) }
+  lazy val models = internal.models.map { Model(_) }
+  lazy val operations = internal.operations.map { Operation(models, _) }
   lazy val baseUrl = internal.baseUrl.getOrElse { sys.error("Missing base_url") }
   lazy val name = internal.name.getOrElse { sys.error("Missing name") }
   lazy val basePath = internal.basePath
@@ -39,13 +29,13 @@ case class ServiceDescription(internal: InternalServiceDescription) {
 
 }
 
-case class Resource(name: String,
-                    path: String,
-                    description: Option[String],
-                    fields: Seq[Field],
-                    operations: Seq[Operation])
+case class Model(name: String,
+                 plural: String,
+                 description: Option[String],
+                 fields: Seq[Field])
 
-case class Operation(method: String,
+case class Operation(resourceName: String,
+                     method: String,
                      path: Option[String],
                      description: Option[String],
                      parameters: Seq[Field],
@@ -53,17 +43,12 @@ case class Operation(method: String,
 
 object Operation {
 
-  def apply(canonicalFields: Seq[CanonicalField], internal: InternalOperation): Operation = {
-    val namedParameters = internal.namedParameters.map { paramName =>
-      canonicalFields.find { _.fieldName == paramName }.getOrElse {
-        sys.error(s"Could not find field definition for parameter named[$paramName]")
-      }
-    }
-
-    Operation(method = internal.method.getOrElse { sys.error("Missing method") },
+  def apply(models: Seq[Model], internal: InternalOperation): Operation = {
+    Operation(resourceName = internal.resourceName,
+              method = internal.method.getOrElse { sys.error("Missing method") },
               path = internal.path,
               description = internal.description,
-              parameters = internal.parameters.map { Field(canonicalFields, _) },
+              parameters = internal.parameters.map { Field(models, _) },
               responses = internal.responses.map { Response(_) })
   }
 
@@ -91,15 +76,13 @@ case class Response(code: Int,
                     resource: String,
                     multiple: Boolean = false)
 
-object Resource {
+object Model {
 
-  def apply(canonicalFields: Seq[CanonicalField], ir: InternalResource): Resource = {
-    val resourceFields = canonicalFields.filter { _.resourceName == ir.name }
-    Resource(name = ir.name,
-             path = ir.path,
-             description = ir.description,
-             fields = ir.fields.map { Field(canonicalFields, _) },
-             operations = ir.operations.map { Operation(resourceFields, _) })
+  def apply(ir: InternalModel): Model = {
+    Model(name = ir.name,
+          plural = ir.plural,
+          description = ir.description,
+          fields = ir.fields.map { Field(Seq.empty, _) }) // TODO: Reference lookups
   }
 
 }
@@ -178,8 +161,12 @@ object Datatype {
 
 object Field {
 
-  def apply(canonicalFields: Seq[CanonicalField], internal: InternalField): Field = {
-    canonicalFields.foreach { f => println(f) }
+  private def findByModelNameAndFieldName(models: Seq[Model], modelName: String, fieldName: String): Option[Field] = {
+    models.find { m => m.name == modelName }.flatMap { _.fields.find { f => f.name == fieldName } }
+  }
+
+  def apply(models: Seq[Model], internal: InternalField): Field = {
+    println("MODELS: " + models.map(_.name).mkString(" "))
 
     val datatype = internal.datatype match {
       case Some(t: String) => {
@@ -193,11 +180,11 @@ object Field {
           sys.error("Missing datatype and/or reference for field: " + internal)
         }
 
-         val referencedField = canonicalFields.find { cf => cf.resourceName == ref.resource.get && cf.fieldName == ref.field.get }.getOrElse {
-          sys.error(s"Reference not found[${ref.label}]. Fields: " + canonicalFields.map(cf => s"${cf.resourceName}.${cf.fieldName}").mkString(" "))
+        val field = Field.findByModelNameAndFieldName(models, ref.modelName.get, ref.fieldName.get).getOrElse {
+          sys.error(s"Reference[${ref.label}] does not exist")
         }
 
-        referencedField.datatype
+        field.datatype
       }
     }
 
@@ -260,7 +247,7 @@ object Field {
 object Reference {
 
   def apply(internal: InternalReference): Reference = {
-    Reference(internal.resource.get, internal.field.get)
+    Reference(internal.modelName.get, internal.fieldName.get)
   }
 
 }
