@@ -20,7 +20,7 @@ object ServiceDescription {
 
 case class ServiceDescription(internal: InternalServiceDescription) {
 
-  lazy val models = internal.models.map { Model(_) }
+  lazy val models = ModelResolver.build(internal.models)
   lazy val operations = internal.operations.map { Operation(models, _) }
   lazy val baseUrl = internal.baseUrl.getOrElse { sys.error("Missing base_url") }
   lazy val name = internal.name.getOrElse { sys.error("Missing name") }
@@ -48,7 +48,7 @@ object Operation {
               method = internal.method.getOrElse { sys.error("Missing method") },
               path = internal.path,
               description = internal.description,
-              parameters = internal.parameters.map { Field(models, _) },
+              parameters = internal.parameters.map { Field(models, _, None, Seq.empty) },
               responses = internal.responses.map { Response(_) })
   }
 
@@ -65,6 +65,7 @@ case class Field(name: String,
                  minimum: Option[Long] = None,
                  maximum: Option[Long] = None)
 
+// TODO: Rename resource => modelPlural
 case class Reference(resource: String, field: String) {
 
   lazy val label = s"$resource.$field"
@@ -78,11 +79,11 @@ case class Response(code: Int,
 
 object Model {
 
-  def apply(ir: InternalModel): Model = {
-    Model(name = ir.name,
-          plural = ir.plural,
-          description = ir.description,
-          fields = ir.fields.map { Field(Seq.empty, _) }) // TODO: Reference lookups
+  def apply(models: Seq[Model], im: InternalModel): Model = {
+    Model(name = im.name,
+          plural = im.plural,
+          description = im.description,
+          fields = ModelResolver.buildFields(models, im))
   }
 
 }
@@ -161,13 +162,11 @@ object Datatype {
 
 object Field {
 
-  private def findByModelNameAndFieldName(models: Seq[Model], modelName: String, fieldName: String): Option[Field] = {
-    models.find { m => m.name == modelName }.flatMap { _.fields.find { f => f.name == fieldName } }
+  def findByModelPluralAndFieldName(models: Seq[Model], modelPlural: String, fieldName: String): Option[Field] = {
+    models.find { m => m.plural == modelPlural }.flatMap { _.fields.find { f => f.name == fieldName } }
   }
 
-  def apply(models: Seq[Model], internal: InternalField): Field = {
-    println("MODELS: " + models.map(_.name).mkString(" "))
-
+  def apply(models: Seq[Model], internal: InternalField, modelPlural: Option[String], fields: Seq[Field]): Field = {
     val datatype = internal.datatype match {
       case Some(t: String) => {
         Datatype.findByName(t).getOrElse {
@@ -177,11 +176,21 @@ object Field {
 
       case None => {
         val ref = internal.references.getOrElse {
-          sys.error("Missing datatype and/or reference for field: " + internal)
+          sys.error("No datatype nor reference for field: " + internal)
         }
 
-        val field = Field.findByModelNameAndFieldName(models, ref.modelName.get, ref.fieldName.get).getOrElse {
-          sys.error(s"Reference[${ref.label}] does not exist")
+        println("modelPlural: " + modelPlural)
+        println("internal.name: " + internal.name)
+        println("ref: " + ref.label)
+
+        val field = if (modelPlural == ref.modelPlural) {
+          fields.find { _.name == ref.fieldName.get }.getOrElse {
+            sys.error(s"Reference[${ref.label}] does not exist")
+          }
+        } else {
+          Field.findByModelPluralAndFieldName(models, ref.modelPlural.get, ref.fieldName.get).getOrElse {
+            sys.error(s"Reference[${ref.label}] does not exist")
+          }
         }
 
         field.datatype
@@ -247,7 +256,7 @@ object Field {
 object Reference {
 
   def apply(internal: InternalReference): Reference = {
-    Reference(internal.modelName.get, internal.fieldName.get)
+    Reference(internal.modelPlural.get, internal.fieldName.get)
   }
 
 }

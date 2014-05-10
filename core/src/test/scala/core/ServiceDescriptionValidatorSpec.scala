@@ -48,7 +48,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "models": {
         "users": {
           "fields": [
-            { "name": "foo", "references": "foo.bar" }
+            { "name": "foo", "references": "foos.bar" }
           ]
         }
       }

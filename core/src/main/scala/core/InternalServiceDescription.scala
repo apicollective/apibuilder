@@ -72,8 +72,8 @@ case class InternalOperation(resourceName: String,
                              parameters: Seq[InternalField],
                              responses: Seq[InternalResponse])
 
-case class InternalField(name: Option[String],
-                         datatype: Option[String],
+case class InternalField(name: Option[String] = None,
+                         datatype: Option[String] = None,
                          description: Option[String] = None,
                          required: Boolean = true,
                          multiple: Boolean = false,
@@ -180,7 +180,7 @@ object InternalField {
 
 }
 
-private[core] case class InternalReference(label: String, modelName: Option[String], fieldName: Option[String])
+private[core] case class InternalReference(label: String, modelPlural: Option[String], fieldName: Option[String])
 
 private[core] object InternalReference {
 

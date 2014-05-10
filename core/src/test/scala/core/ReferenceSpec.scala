@@ -18,7 +18,7 @@ class ReferenceSpec extends FunSpec with Matchers {
         },
         "account": {
           "fields": [
-            { "name": "user", "references": "user.guid" }
+            { "name": "user", "references": "users.guid" }
           ]
         }
       }
@@ -26,9 +26,9 @@ class ReferenceSpec extends FunSpec with Matchers {
     """
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
-    val accounts = validator.serviceDescription.get.models.find { _.name == "accounts" }.get
-    accounts.fields.head.name should be("user")
-    accounts.fields.head.datatype.name should be("uuid")
+    val account = validator.serviceDescription.get.models.find { _.name == "account" }.get
+    account.fields.head.name should be("user")
+    account.fields.head.datatype.name should be("uuid")
   }
 
 }

@@ -49,7 +49,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateModels ++ validateReferences ++ validateOperations
+          validateModels ++ validateFields ++ validateDatatypes ++ validateReferences ++ validateOperations
         } else {
           requiredFieldErrors
         }
@@ -83,20 +83,20 @@ case class ServiceDescriptionValidator(apiJson: String) {
    * Validate references to ensure they refer to proper data
    */
   private def validateReferences(): Seq[String] = {
-    internalServiceDescription.get.models.filter { !_.name.isEmpty }.flatMap { model =>
+    internalServiceDescription.get.models.flatMap { model =>
       model.fields.flatMap { field =>
         field.references.flatMap { ref =>
-          if (ref.modelName.isEmpty || ref.fieldName.isEmpty) {
+          if (ref.modelPlural.isEmpty || ref.fieldName.isEmpty) {
             Some("Model ${model.name} field ${field.name.get} reference[${ref.label}] must contain a model name and a field name (e.g. users.guid)")
 
           } else {
-            internalServiceDescription.get.models.find { m => m.name == ref.modelName.get } match {
+            internalServiceDescription.get.models.find { m => m.plural == ref.modelPlural.get } match {
 
-              case None => Some(s"${model.name}.${field.name.get} has invalid reference to ${ref.label}. Model[${ref.modelName.get}] does not exist")
+              case None => Some(s"${model.name}.${field.name.get} has invalid reference to ${ref.label}. Model[${ref.modelPlural.get}] does not exist")
 
               case Some(refModel: InternalModel) => {
                 refModel.fields.find(m => m.name == ref.fieldName ) match {
-                  case None => Some(s"${model.name}.${field.name.get} has invalid reference to ${ref.label}. Model[${ref.modelName.get}] does not have a field named[${ref.fieldName.get}]")
+                  case None => Some(s"${model.name}.${field.name.get} has invalid reference to ${ref.label}. Model[${refModel.name}] does not have a field named[${ref.fieldName.get}]")
 
                   case Some(f: InternalField) => None
                 }
@@ -110,12 +110,52 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validateModels(): Seq[String] = {
-    internalServiceDescription.get.models.flatMap { model =>
+    val fieldErrors = internalServiceDescription.get.models.flatMap { model =>
       model.fields match {
         case Nil => Some(s"Model ${model.name} must have at least one field")
         case fields => None
       }
     }
+
+    val allNames = internalServiceDescription.get.models.map(_.name)
+    val uniqueNames = allNames.distinct
+    val duplicateNameErrors = if (allNames.size > uniqueNames.size) {
+      Seq("Model names must be unique") // TODO Better error msg
+    } else {
+      Seq.empty
+    }
+
+    fieldErrors ++ duplicateNameErrors
+  }
+
+  private def validateFields(): Seq[String] = {
+    internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter { f => f.datatype.isEmpty && f.references.isEmpty }.map { f =>
+        s"Model[${model.name}] field[${f.name}] must have either a datatype or references element"
+      }
+    }
+  }
+
+  private def validateDatatypes(): Seq[String] = {
+    val modelErrors = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter( !_.datatype.isEmpty ).flatMap { field =>
+        Datatype.findByName(field.datatype.get) match {
+          case None => Some(s"Invalid datatype for #{model.name}.#{field.name}. Must be one of: ${Datatype.All.mkString(" ")}")
+          case Some(d: Datatype) => None
+        }
+      }
+    }
+
+    val parameterErrors = internalServiceDescription.get.operations.flatMap { op =>
+      op.parameters.filter( !_.datatype.isEmpty ).flatMap { param =>
+        Datatype.findByName(param.datatype.get) match {
+          case None => Some(s"Invalid datatype for parameter[${param.name}] in operation #{op.resourceName} #{op.method} #{op.path}. Must be one of: ${Datatype.All.mkString(" ")}")
+          case Some(d: Datatype) => None
+        }
+      }
+    }
+
+    modelErrors ++ parameterErrors
   }
 
   private def validateOperations(): Seq[String] = {
