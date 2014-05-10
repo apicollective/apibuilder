@@ -5,7 +5,7 @@ import org.scalatest.Matchers
 
 class ModelResolverSpec extends FunSpec with Matchers {
 
-  private val guidField = InternalField(name = Some("guid"), datatype = Some(InternalParsedDatatype("uuid")))
+  private val guidField = InternalField(name = Some("guid"), datatype = Some("uuid"))
   private val userField = InternalField(name = Some("user"), references = Some(InternalReference("users.guid")))
 
   private val user = InternalModel(name = "user",
@@ -39,7 +39,7 @@ class ModelResolverSpec extends FunSpec with Matchers {
   }
 
   it("reference to own field") {
-    val keyField = InternalField(name = Some("key"), datatype = Some(InternalParsedDatatype("string")))
+    val keyField = InternalField(name = Some("key"), datatype = Some("string"))
     val parentKeyField = InternalField(name = Some("parent_key"), references = Some(InternalReference("categories.key")))
 
     val category = InternalModel(name = "category",
@@ -53,13 +53,13 @@ class ModelResolverSpec extends FunSpec with Matchers {
     val foo = InternalModel(name = "foo",
                             plural = "foos",
                             description = None,
-                            fields = Seq(InternalField(name = Some("guid"), datatype = Some(InternalParsedDatatype("uuid"))),
+                            fields = Seq(InternalField(name = Some("guid"), datatype = Some("uuid")),
                                          InternalField(name = Some("bar"), references = Some(InternalReference("bars.guid")))))
 
     val bar = InternalModel(name = "bar",
                             plural = "bars",
                             description = None,
-                            fields = Seq(InternalField(name = Some("guid"), datatype = Some(InternalParsedDatatype("uuid"))),
+                            fields = Seq(InternalField(name = Some("guid"), datatype = Some("uuid")),
                                          InternalField(name = Some("foo"), references = Some(InternalReference("foos.guid")))))
 
     // TODO: Scala test validation of exception

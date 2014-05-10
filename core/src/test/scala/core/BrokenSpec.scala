@@ -10,8 +10,8 @@ class BrokenSpec extends FunSpec with Matchers {
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
-      "resources": {
-        "vendors": {
+      "models": {
+        "vendor": {
           "fields": [
             { "name": "guid", "type": "string" },
             { "name": "tags", "type": "[string]" }
@@ -38,21 +38,21 @@ class BrokenSpec extends FunSpec with Matchers {
           "fields": [
             { "name": "guid", "type": "string" }
           ]
-       },
-        "operations": {
-          "vendors": [
-            {
-              "method": "POST",
-              "parameters": [
-                { "name": "guid", "type": "string" },
-                { "name": "tag", "type": "[string]", "required": false }
-              ],
-              "responses": {
-                "200": { "type": "vendor" }
-              }
-            }
-          ]
         }
+      },
+      "operations": {
+        "vendors": [
+          {
+            "method": "POST",
+            "parameters": [
+              { "name": "guid", "type": "string" },
+              { "name": "tag", "type": "[string]", "required": false }
+            ],
+            "responses": {
+              "200": { "type": "vendor" }
+            }
+          }
+        ]
       }
     }
     """

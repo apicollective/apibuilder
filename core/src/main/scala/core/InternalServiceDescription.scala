@@ -73,7 +73,7 @@ case class InternalOperation(resourceName: String,
                              responses: Seq[InternalResponse])
 
 case class InternalField(name: Option[String] = None,
-                         datatype: Option[InternalParsedDatatype] = None,
+                         datatype: Option[String] = None,
                          description: Option[String] = None,
                          required: Boolean = true,
                          multiple: Boolean = false,
@@ -85,7 +85,8 @@ case class InternalField(name: Option[String] = None,
 
 
 case class InternalResponse(code: String,
-                            datatype: Option[InternalParsedDatatype] = None,
+                            datatype: Option[String] = None,
+                            multiple: Boolean = false,
                             fields: Option[Set[String]] = None)
 
 object InternalModel {
@@ -115,7 +116,7 @@ object InternalModel {
 
 object InternalOperation {
 
-  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(InternalParsedDatatype(Datatype.Unit.name, false)))
+  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.Unit.name))
 
   def apply(resourceName: String, json: JsObject): InternalOperation = {
     val opPath = (json \ "path").asOpt[String]
@@ -138,7 +139,7 @@ object InternalOperation {
             v match {
               case(code, value) => InternalResponse(code, value.as[JsObject])
             }
-                              }
+          }
         }
       }
     }
@@ -157,21 +158,26 @@ object InternalOperation {
 object InternalResponse {
 
   def apply(code: String, json: JsObject): InternalResponse = {
-    val datatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
+    val parsedDatatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
     val fields = (json \ "fields").asOpt[Set[String]]
-    InternalResponse(code = code, datatype = datatype, fields = fields)
+    InternalResponse(code = code,
+                     datatype = parsedDatatype.map(_.name),
+                     multiple = parsedDatatype.map(_.multiple).getOrElse(false),
+                     fields = fields)
   }
 }
 
 object InternalField {
 
   def apply(json: JsObject): InternalField = {
+    val dt = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
+
     InternalField(name = (json \ "name").asOpt[String],
-                  datatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) ),
+                  datatype = dt.map(_.name),
                   description = (json \ "description").asOpt[String],
                   references = (json \ "references").asOpt[String].map { InternalReference(_) },
                   required = (json \ "required").asOpt[Boolean].getOrElse(true),
-                  multiple = (json \ "multiple").asOpt[Boolean].getOrElse(false),
+                  multiple = dt.map(_.multiple).getOrElse(false),
                   default = (json \ "default").asOpt[String],
                   minimum = (json \ "minimum").asOpt[Long],
                   maximum = (json \ "maximum").asOpt[Long],

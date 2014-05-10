@@ -100,23 +100,9 @@ object Model {
 object Response {
 
   def apply(ir: InternalResponse): Response = {
-    val wd = WrappedDatatype(ir.datatype.get)
     Response(code = ir.code.toInt,
-             datatype = wd.datatype.name,
-             multiple = wd.multiple)
-  }
-
-}
-
-case class WrappedDatatype(datatype: Datatype, multiple: Boolean)
-
-object WrappedDatatype {
-
-  def apply(value: InternalParsedDatatype): WrappedDatatype = {
-    val datatype = Datatype.findByName(value.name).getOrElse {
-      sys.error(s"Invalid datatype[${value}]")
-    }
-    WrappedDatatype(datatype = datatype, multiple = value.multiple)
+             datatype = ir.datatype.get,
+             multiple = ir.multiple)
   }
 
 }
@@ -173,9 +159,9 @@ object Field {
 
   def apply(models: Seq[Model], internal: InternalField, modelPlural: Option[String], fields: Seq[Field]): Field = {
     val datatype = internal.datatype match {
-      case Some(t: InternalParsedDatatype) => {
-        Datatype.findByName(t.name).getOrElse {
-          sys.error(s"Invalid datatype[${t.name}]")
+      case Some(name: String) => {
+        Datatype.findByName(name).getOrElse {
+          sys.error(s"Invalid datatype[${name}]")
         }
       }
 
