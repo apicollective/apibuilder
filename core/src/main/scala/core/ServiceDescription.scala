@@ -82,9 +82,8 @@ case class Reference(resource: String, field: String) {
 
 }
 
-// TODO: Rename resource to datatype
 case class Response(code: Int,
-                    resource: String,
+                    datatype: String,
                     multiple: Boolean = false)
 
 object Model {
@@ -103,7 +102,7 @@ object Response {
   def apply(ir: InternalResponse): Response = {
     val wd = WrappedDatatype(ir.datatype.get)
     Response(code = ir.code.toInt,
-             resource = wd.datatype.name,
+             datatype = wd.datatype.name,
              multiple = wd.multiple)
   }
 

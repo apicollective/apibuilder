@@ -178,7 +178,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
       // TODO: match on all response codes
       op.responses.headOption.map { response =>
-        response.resource match {
+        response.datatype match {
           case Datatype.Unit.name => {
             responseBuilder.append("\n        nil")
           }
