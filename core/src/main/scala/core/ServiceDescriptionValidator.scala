@@ -136,11 +136,13 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
   }
 
+  private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted.mkString(" ")
+
   private def validateDatatypes(): Seq[String] = {
     val modelErrors = internalServiceDescription.get.models.flatMap { model =>
       model.fields.filter( !_.datatype.isEmpty ).flatMap { field =>
         Datatype.findByName(field.datatype.get) match {
-          case None => Some(s"Invalid datatype[${field.datatype.get}] for ${model.name}.${field.name.get}. Must be one of: ${Datatype.All.map(_.name).mkString(" ")}")
+          case None => Some(s"Field ${model.name}.${field.name.get} has an invalid datatype[${field.datatype.get}]. Must be one of: ${ValidDatatypes}")
           case Some(d: Datatype) => None
         }
       }
@@ -149,7 +151,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val parameterErrors = internalServiceDescription.get.operations.flatMap { op =>
       op.parameters.filter( !_.datatype.isEmpty ).flatMap { param =>
         Datatype.findByName(param.datatype.get) match {
-          case None => Some(s"${op.resourceName} ${op.method.get} ${op.path}: Parameter[${param.name.get} has an invalid datatype[${param.datatype.get}]. Must be one of: ${Datatype.All.map(_.name).mkString(" ")}")
+          case None => Some(s"${op.method.get} ${op.path}: Parameter[${param.name.get}] has an invalid datatype[${param.datatype.get}]. Must be one of: ${ValidDatatypes}")
           case Some(d: Datatype) => None
         }
       }

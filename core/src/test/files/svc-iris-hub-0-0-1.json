@@ -145,6 +145,12 @@
             {
                 "method": "GET",
                 "description": "Search all vendors. Results are always paginated.",
+                "parameters": [
+                    { "name": "name", "type": "string", "required": false, "description": "Finds the vendor with this name. Exact match" },
+                    { "name": "key", "type": "string", "required": false, "description": "Finds the vendor with this key. Exact match" },
+                    { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                    { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                ],
                 "responses": {
                     "200": { "type": "[vendor]" }
                 }
@@ -202,12 +208,13 @@
             {
                 "method": "POST",
                 "parameters": [
-                    { "name": "vendor_guid", "type": "uuid" },
+                    { "name": "vendor", "type": "vendor" },
                     { "name": "number", "type": "string" },
                     { "name": "quantity", "type": "long", "required": false, "default": 0 }
                 ],
                 "responses": {
-                    "201": { "type": "item" }
+                    "201": { "type": "item" },
+                    "409": { "type": "error_message" }
                 }
             },
             {
@@ -264,7 +271,8 @@
                     { "name": "description", "type": "string", "required": false }
                 ],
                 "responses": {
-                    "200": { "type": "term" }
+                    "201": { "type": "term" },
+                    "409": { "type": "error_message" }
                 }
             },
 
@@ -279,7 +287,6 @@
                 "method": "GET",
                 "description": "Search all agreements. Results are always paginated.",
                 "parameters": [
-                    { "name": "guid", "type": "uuid", "required": false },
                     { "name": "identifier", "type": "string", "required": false },
                     { "name": "purchasing_vendor_guid", "type": "uuid", "required": false },
                     { "name": "fulfilling_vendor_guid", "type": "uuid", "required": false },
@@ -302,7 +309,8 @@
                     { "name": "currency", "type": "string", "description": "3-character upper case iso4217 code for this currency", "example": "USD or EUR" }
                 ],
                 "responses": {
-                    "200": { "type": "agreement" }
+                    "201": { "type": "agreement" },
+                    "409": { "type": "error_message" }
                 }
             },
 
@@ -332,12 +340,13 @@
                 "path": "/shipment-schedules",
                 "method": "POST",
                 "parameters": [
-                    { "name": "vendor_guid", "type": "string" },
+                    { "name": "vendor", "type": "vendor" },
                     { "name": "frequency", "type": "string" },
                     { "name": "begin_datetime", "type": "date-time-iso8601" }
                 ],
                 "responses": {
-                    "200": { "type": "shipment_schedule" }
+                    "201": { "type": "shipment_schedule" },
+                    "409": { "type": "error_message" }
                 }
             },
 
