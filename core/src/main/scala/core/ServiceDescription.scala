@@ -34,7 +34,7 @@ case class Model(name: String,
                  description: Option[String],
                  fields: Seq[Field])
 
-case class Operation(resourceName: String,
+case class Operation(model: Model,
                      method: String,
                      path: Option[String],
                      description: Option[String],
@@ -54,7 +54,7 @@ object Operation {
       }
     }
 
-    Operation(resourceName = internal.resourceName,
+    Operation(model = model,
               method = internal.method.getOrElse { sys.error("Missing method") },
               path = internal.path,
               description = internal.description,

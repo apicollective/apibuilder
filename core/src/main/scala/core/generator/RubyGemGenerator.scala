@@ -19,7 +19,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   def generate(): String = {
-    val operationNames = service.operations.map { _.resourceName }.distinct.sorted
+    val operationNames = service.operations.map { _.model.name }.distinct.sorted
 
     RubyHttpClient.require +
     "\n" +
@@ -30,7 +30,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end" +
     "\n\n  module Clients\n" +
-    operationNames.map { name => generateClientForResource(name, service.operations.filter { _.resourceName == name}) }.mkString("\n\n") +
+    operationNames.map { name => generateClientForResource(name, service.operations.filter { _.model.name == name}) }.mkString("\n\n") +
     "\n\n  end\n\n" +
     RubyHttpClient.contents +
     "end"

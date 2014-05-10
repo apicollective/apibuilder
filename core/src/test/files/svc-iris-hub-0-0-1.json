@@ -181,7 +181,6 @@
                 "method": "GET",
                 "description": "Search all items. Results are always paginated.",
                 "parameters": [
-                    { "name": "guid", "type": "uuid", "required": false },
                     { "name": "vendor_guid", "type": "uuid", "required": false },
                     { "name": "agreement_guid", "type": "uuid", "required": false, "description": "Fetches items for the fulfilling vendor according to the specific agreement guid." },
                     { "name": "number", "type": "string", "required": false },
@@ -236,6 +235,39 @@
                     "200": { "type": "item" }
                 }
             },
+            {
+                "method": "DELETE",
+                "path": "/:guid"
+            }
+        ],
+
+        "terms": [
+            {
+                "method": "GET",
+                "description": "Search all terms. Results are always paginated.",
+                "parameters": [
+                    { "name": "vendor_guid", "type": "uuid", "required": false },
+                    { "name": "code", "type": "string", "required": false },
+                    { "name": "limit", "type": "integer", "default": 50 },
+                    { "name": "offset", "type": "integer", "default": 0 }
+                ],
+                "responses": {
+                    "200": { "type": "[term]" }
+                }
+            },
+
+            {
+                "method": "POST",
+                "parameters": [
+                    { "name": "vendor_guid", "references": "vendors.guid" },
+                    { "name": "code", "type": "string" },
+                    { "name": "description", "type": "string", "required": false }
+                ],
+                "responses": {
+                    "200": { "type": "term" }
+                }
+            },
+
             {
                 "method": "DELETE",
                 "path": "/:guid"

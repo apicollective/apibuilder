@@ -69,7 +69,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     }
 
     private lazy val controllerName: String = {
-      s"controllers.${Text.underscoreToInitCap(op.resourceName)}"
+      s"controllers.${Text.underscoreToInitCap(op.model.name)}"
     }
 
     private def parametersWithTypes(params: Seq[Field]): Seq[String] = {
