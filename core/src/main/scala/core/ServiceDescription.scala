@@ -44,11 +44,21 @@ case class Operation(resourceName: String,
 object Operation {
 
   def apply(models: Seq[Model], internal: InternalOperation): Operation = {
+    val model = models.find { _.plural == internal.resourceName }.getOrElse {
+      sys.error("Could not find model for operation: " + internal)
+    }
+
+    val pathParameters = internal.namedParameters.map { paramName =>
+      model.fields.find { _.name == paramName }.getOrElse {
+        sys.error(s"Could not find operation path parameter with name[${paramName}] for model[${model.name}]")
+      }
+    }
+
     Operation(resourceName = internal.resourceName,
               method = internal.method.getOrElse { sys.error("Missing method") },
               path = internal.path,
               description = internal.description,
-              parameters = internal.parameters.map { Field(models, _, None, Seq.empty) },
+              parameters = pathParameters ++ internal.parameters.map { Field(models, _, None, Seq.empty) },
               responses = internal.responses.map { Response(_) })
   }
 

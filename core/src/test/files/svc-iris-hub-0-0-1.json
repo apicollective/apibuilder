@@ -22,7 +22,7 @@
 
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "vendor", "references": "vendor.guid" },
+                { "name": "vendor", "references": "vendors.guid" },
                 { "name": "number", "type": "string", "description": "This is the vendor's unique identifier for this item. The item number is case sensitive." },
                 { "name": "quantity", "type": "long", "description": "The number of units that this vendor currently has available for sale.", "required": false },
                 { "name": "data", "type": "string", "description": "JSON Document containing extended data about this item.", "required": false }

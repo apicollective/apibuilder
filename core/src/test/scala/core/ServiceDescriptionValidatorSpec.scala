@@ -29,14 +29,13 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
       "models": {
-        "users": {
-
+        "user": {
         }
       }
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("users model must have at least one field")
+    validator.errors.mkString should be("Model user must have at least one field")
     validator.isValid should be(false)
   }
 
@@ -46,7 +45,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
       "models": {
-        "users": {
+        "user": {
           "fields": [
             { "name": "foo", "references": "foos.bar" }
           ]
@@ -55,7 +54,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("users.foo has invalid reference to foo.bar. Model[foo] does not exist")
+    validator.errors.mkString should be("user.foo has invalid reference to foos.bar. Model[foos] does not exist")
     validator.isValid should be(false)
   }
 
@@ -65,7 +64,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
       "models": {
-        "users": {
+        "user": {
           "fields": [
             { "name": "foo", "references": "users.bar" }
           ]
@@ -74,7 +73,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("users.foo reference has invalid reference to users.bar. Model[users] does not have a field named[bar]")
+    validator.errors.mkString should be("user.foo has invalid reference to users.bar. Model[user] does not have a field named[bar]")
     validator.isValid should be(false)
   }
 
@@ -84,12 +83,12 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
       "models": {
-        "users": {
+        "user": {
           "fields": [
             { "name": "guid", "type": "uuid" }
           ]
         },
-        "accounts": {
+        "account": {
           "fields": [
             { "name": "user", "references": "users.guid" }
           ]
@@ -107,20 +106,20 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
       "models": {
-        "users": {
+        "user": {
           "fields": [
             { "name": "guid", "type": "string" }
           ]
         }
       },
       "operations": {
-        "users" => [
+        "users": [
           {
             "method": "DELETE",
             "path": "/:guid"
           }
         ]
-      ]
+      }
     }
     """
     val validator = ServiceDescriptionValidator(json)
@@ -135,7 +134,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
       "models": {
-        "users": {
+        "user": {
           "fields": [
             { "name": "guid", "type": "string" }
           ]
@@ -176,12 +175,11 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       },
       "operations": {
         "users": [
-            {
-              "method": "DELETE",
-              "path": "/:guid"
-            }
-          ]
-        }
+          {
+            "method": "DELETE",
+            "path": "/:guid"
+          }
+        ]
       }
     }
     """
@@ -189,6 +187,8 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val op = validator.serviceDescription.get.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
+    val guid = op.parameters.head
+    guid.datatype should be(Datatype.Uuid)
   }
 
 }

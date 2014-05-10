@@ -140,7 +140,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val modelErrors = internalServiceDescription.get.models.flatMap { model =>
       model.fields.filter( !_.datatype.isEmpty ).flatMap { field =>
         Datatype.findByName(field.datatype.get) match {
-          case None => Some(s"Invalid datatype for #{model.name}.#{field.name}. Must be one of: ${Datatype.All.mkString(" ")}")
+          case None => Some(s"Invalid datatype[${field.datatype.get}] for ${model.name}.${field.name.get}. Must be one of: ${Datatype.All.map(_.name).mkString(" ")}")
           case Some(d: Datatype) => None
         }
       }
@@ -149,7 +149,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val parameterErrors = internalServiceDescription.get.operations.flatMap { op =>
       op.parameters.filter( !_.datatype.isEmpty ).flatMap { param =>
         Datatype.findByName(param.datatype.get) match {
-          case None => Some(s"Invalid datatype for parameter[${param.name}] in operation #{op.resourceName} #{op.method} #{op.path}. Must be one of: ${Datatype.All.mkString(" ")}")
+          case None => Some(s"Invalid datatype[${param.datatype.get}] for parameter[${param.name}] in operation ${op.resourceName} ${op.method} ${op.path}. Must be one of: ${Datatype.All.mkString(" ")}")
           case Some(d: Datatype) => None
         }
       }
