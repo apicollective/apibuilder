@@ -126,7 +126,7 @@
         },
 
         "purchases": {
-b            "operations": [
+            "operations": [
                 {
                     "method": "GET",
                     "description": "Search all purchases. Results are always paginated.",
@@ -177,21 +177,6 @@ b            "operations": [
 
         "shipment_requests": {
             "path": "/shipment-requests",
-            "description": "A shipment request refers to a collection of items that the fulfilling vendor should now ship to a single address, subject to the terms of a single agreement. Conceptually - a shipment request relates to one order that the vendor must now ship - containing at least 1 item in it.",
-            "fields": [
-                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "agreement_guid", "type": "uuid", "references": "agreements.guid" },
-                { "name": "identifier", "type": "string", "description": "A human readable unique identifier for this shipment request. Format will be something like SR2014-123456 - SR: Shipment Request followed by the year followed by a number." },
-                { "name": "address_name", "type": "string", "required": false },
-                { "name": "address_line1", "type": "string" },
-                { "name": "address_line2", "type": "string", "required": false },
-                { "name": "address_line3", "type": "string", "required": false },
-                { "name": "address_city", "type": "string", "required": false },
-                { "name": "address_state", "type": "string", "required": false },
-                { "name": "address_postal_code", "type": "string" },
-                { "name": "address_country", "type": "string" },
-                { "name": "address_phone", "type": "string", "required": false }
-            ],
             "operations": [
                 {
                     "method": "GET",
@@ -222,13 +207,6 @@ b            "operations": [
 
         "shipment_request_items": {
             "path": "/shipment-request-items",
-            "description": "Represents the list of items inside one shipment request.",
-            "fields": [
-                { "name": "shipment_request_guid", "type": "uuid", "references": "shipment_requests.guid" },
-                { "name": "item_guid", "type": "uuid", "references": "items.guid" },
-                { "name": "item_number", "type": "string", "description": "The fulfilling vendor's number", "references": "items.number" },
-                { "name": "quantity", "type": "long", "description": "The quantity requested for this item", "minimum": 1 }
-            ],
 
             "operations": [
                 {
@@ -247,14 +225,6 @@ b            "operations": [
         },
 
         "receipts": {
-            "description": "A receipt represents a single unit of merchandise that was received.",
-            "fields": [
-                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "agreement_guid", "type": "uuid", "references": "agreements.guid" },
-                { "name": "item_guid", "type": "uuid", "references": "items.guid" },
-                { "name": "price", "type": "decimal" },
-                { "name": "vendor_receipt_number", "type": "string", "description": "Uniquely identifies this receipt in the vendor system. Main purpose is to guarantee idempotence" }
-            ],
             "operations": [
                 {
                     "method": "GET",

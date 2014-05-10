@@ -97,6 +97,37 @@
             ]
         },
 
+        "shipment_request": {
+            "description": "A shipment request refers to a collection of items that the fulfilling vendor should now ship to a single address, subject to the terms of a single agreement. Conceptually - a shipment request relates to one order that the vendor must now ship - containing at least 1 item in it.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
+                { "name": "agreement", "references": "agreements.guid" },
+                { "name": "identifier", "type": "string", "description": "A human readable unique identifier for this shipment request. Format will be something like SR2014-123456 - SR: Shipment Request followed by the year followed by a number." },
+                { "name": "address", "references": "addresses.guid" }
+            ]
+        },
+
+        "shipment_request_item": {
+            "description": "Represents the list of items inside one shipment request.",
+            "fields": [
+                { "name": "shipment_request", "references": "shipment_requests.guid" },
+                { "name": "item", "references": "items.guid" },
+                { "name": "item_number", "type": "string", "description": "The fulfilling vendor's number" },
+                { "name": "quantity", "type": "long", "description": "The quantity requested for this item", "minimum": 1 }
+            ]
+        },
+
+        "receipt": {
+            "description": "A receipt represents a single unit of merchandise that was received.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
+                { "name": "agreement", "references": "agreements.guid" },
+                { "name": "item", "references": "items.guid" },
+                { "name": "price", "type": "decimal" },
+                { "name": "vendor_receipt_number", "type": "string", "description": "Uniquely identifies this receipt in the vendor system. Main purpose is to guarantee idempotence" }
+            ]
+        },
+
         "error_message": {
             "description": "A wrapper containing any error messages where appropriate. Will be commonly used with 4xx HTTP response codes primarily for PUT, POST, and PATCH operations.",
             "fields": [
