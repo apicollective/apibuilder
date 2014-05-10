@@ -39,7 +39,7 @@ GET     /:orgKey/api.json/:serviceKey/:version                    controllers.Ve
 
 GET     /:org/codegen/:service/:version/play2/client              controllers.codegen.Play2.getClient(org: String, service: String, version: String)
 GET     /:org/codegen/:service/:version/play2/routes              controllers.codegen.Play2.getRoutes(org: String, service: String, version: String)
-GET     /:org/codegen/:service/:version/ruby/gem                  controllers.codegen.RubyGenerator.gem(org: String, service: String, version: String)
+GET     /:org/codegen/:service/:version/ruby/:filename            controllers.codegen.RubyGenerator.gem(org: String, service: String, version: String, filename: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                             controllers.Assets.at(path="/public", file)

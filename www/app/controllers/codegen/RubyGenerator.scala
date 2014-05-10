@@ -14,7 +14,7 @@ object RubyGenerator extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def gem(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { request =>
+  def gem(orgKey: String, serviceKey: String, versionName: String, filename: String) = Authenticated.async { request =>
     for {
       version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
