@@ -119,8 +119,11 @@ object Model {
 object Response {
 
   def apply(ir: InternalResponse): Response = {
+    val dt = ir.datatype.getOrElse {
+      sys.error("No datatype for respones: " + ir)
+    }
     Response(code = ir.code.toInt,
-             datatype = ir.datatype.get,
+             datatype = dt,
              multiple = ir.multiple)
   }
 

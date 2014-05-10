@@ -49,7 +49,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateModels ++ validateFields ++ validateDatatypes ++ validateReferences ++ validateOperations ++ validateParameters
+          validateModels ++ validateFields ++ validateDatatypes ++ validateReferences ++ validateOperations ++ validateParameters ++ validateResponses
         } else {
           requiredFieldErrors
         }
@@ -134,6 +134,36 @@ case class ServiceDescriptionValidator(apiJson: String) {
         s"Model[${model.name}] field[${f.name}] must have either a datatype or references element"
       }
     }
+  }
+
+  private def validateResponses(): Seq[String] = {
+    val invalidCodes = internalServiceDescription.get.operations.flatMap { op =>
+      op.responses.flatMap { r =>
+        try {
+          r.code.toInt
+          None
+        } catch {
+          case e: java.lang.NumberFormatException => {
+            Some(s"${op.label}: Response code is not an integer[${r.code}]")
+          }
+        }
+      }
+    }
+
+    val missingTypes: Seq[String] = internalServiceDescription.get.operations.flatMap { op =>
+      op.responses.flatMap { r =>
+        r.datatype match {
+          case None => {
+            Some(s"${op.label} with response code[${r.code}]: Missing type")
+          }
+          case _ => {
+            None
+          }
+        }
+      }
+    }
+
+    invalidCodes ++ missingTypes
   }
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted.mkString(" ")

@@ -70,6 +70,46 @@
                 { "name": "json", "type": "string", "description": "JSON description of the service." }
             ]
         }
+    },
+
+    "operations": {
+        "users": [
+            {
+                "method": "GET",
+                "description": "Search all users. Results are always paginated. You must specify at least 1 parameter - either a guid, email or token.",
+                "parameters": [
+                    { "name": "email", "type": "string", "description": "Find user with this email address. Case in-sensitive. Exact match", "required": false },
+                    { "name": "token", "type": "string", "description": "Find the user with this API token. Exact match", "required": false },
+                    { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                    { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                ],
+                "responses": {
+                    "200": { "type": "[user]" }
+                }
+            },
+
+            {
+                "method": "GET",
+                "path": "/:guid",
+                "responses": {
+                    "200": { "type": "user" }
+                }
+            },
+
+            {
+                "method": "POST",
+                "description": "Create a new user.",
+                "parameters": [
+                    { "name": "email", "type": "string" },
+                    { "name": "name", "type": "string", "required": false },
+                    { "name": "image_url", "type": "string", "required": false }
+                ],
+                "responses": {
+                    "201": { "type": "user" },
+                    "409": { "type": "error_message" }
+                }
+            }
+        ]
     }
 
 }

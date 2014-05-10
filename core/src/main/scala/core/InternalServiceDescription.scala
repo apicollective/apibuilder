@@ -70,7 +70,11 @@ case class InternalOperation(resourceName: String,
                              description: Option[String],
                              namedParameters: Seq[String],
                              parameters: Seq[InternalParameter],
-                             responses: Seq[InternalResponse])
+                             responses: Seq[InternalResponse]) {
+
+  lazy val label = "%s %s".format(method.getOrElse(""), path)
+
+}
 
 case class InternalField(name: Option[String] = None,
                          datatype: Option[String] = None,

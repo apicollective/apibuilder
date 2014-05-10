@@ -8,7 +8,11 @@ object TestHelper {
 
   def parseFile(filename: String): ServiceDescriptionValidator = {
     val contents = readFile(filename)
-    ServiceDescriptionValidator(contents)
+    val validator = ServiceDescriptionValidator(contents)
+    if (!validator.isValid) {
+      sys.error(s"Invalid api.json file[${filename}]: " + validator.errors.mkString("\n"))
+    }
+    validator
   }
 
 }
