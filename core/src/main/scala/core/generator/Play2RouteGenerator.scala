@@ -11,29 +11,33 @@ case class Play2RouteGenerator(service: ServiceDescription) {
 
   private val GlobalPad = 5
 
-  def generate(): String = {
+  def generate(): Option[String] = {
     val all = service.operations.map { Route(_) }
-    val maxVerbLength = all.map(_.verb.length).sorted.last
-    val maxUrlLength = all.map(_.url.length).sorted.last
+    if (all.size == 0) {
+      None
+    } else {
+      val maxVerbLength = all.map(_.verb.length).sorted.last
+      val maxUrlLength = all.map(_.url.length).sorted.last
 
-    all.map { r =>
-      val params = if (GeneratorUtil.isJsonDocumentMethod(r.verb)) {
-        r.pathParameters
-      } else {
-        r.parameters
-      }
+      Some(all.map { r =>
+        val params = if (GeneratorUtil.isJsonDocumentMethod(r.verb)) {
+          r.pathParameters
+        } else {
+          r.parameters
+        }
 
-      Seq(
-        r.verb,
-        " " * (maxVerbLength - r.verb.length + GlobalPad),
-        r.url,
-        " " * (maxUrlLength - r.url.length + GlobalPad),
-        r.method,
-        "(",
-        params.mkString(", "),
-        ")"
-      ).mkString("")
-    }.mkString("\n")
+        Seq(
+          r.verb,
+          " " * (maxVerbLength - r.verb.length + GlobalPad),
+          r.url,
+          " " * (maxUrlLength - r.url.length + GlobalPad),
+          r.method,
+          "(",
+          params.mkString(", "),
+          ")"
+        ).mkString("")
+      }.mkString("\n"))
+    }
   }
 
   private[this] case class Route(op: Operation) {
