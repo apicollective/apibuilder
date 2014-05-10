@@ -1,6 +1,6 @@
 package models
 
-import core.{ Resource, ServiceDescription }
+import core.{ Model, ServiceDescription }
 import client.Apidoc.{ Organization, Service, User }
 
 case class MainTemplate(title: String,
@@ -10,4 +10,4 @@ case class MainTemplate(title: String,
                         serviceDescription: Option[ServiceDescription] = None,
                         allServiceVersions: Seq[String] = Seq.empty,
                         user: Option[User] = None,
-                        resource: Option[Resource] = None)
+                        model: Option[Model] = None)

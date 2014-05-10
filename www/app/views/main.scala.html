@@ -13,7 +13,7 @@
     <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
   </head>
 
-  <body data-spy="scroll" data-target=".resources">
+  <body data-spy="scroll" data-target=".models">
 
     <!-- Fixed navbar -->
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -42,7 +42,7 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar resources">
+        <div class="col-sm-3 col-md-2 sidebar models">
           @metadata.org.map { org =>
             <ul class="nav nav-sidebar">
               <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
@@ -51,10 +51,10 @@
 
           @metadata.service.map { service =>
             <ul class="nav nav-sidebar">
-              <li@if(metadata.resource.isEmpty) { class="active" }><a href="@routes.Versions.show(metadata.org.get.key, service.key, "latest")">@service.name</a></li>
+              <li@if(metadata.model.isEmpty) { class="active" }><a href="@routes.Versions.show(metadata.org.get.key, service.key, "latest")">@service.name</a></li>
               @metadata.serviceDescription.map { sd =>
-                @sd.resources.map { resource =>
-                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@core.UrlKey.generate(resource.name)">@resource.name</a></li>
+                @sd.models.map { model =>
+                  <li@if(metadata.model == Some(model)) { class="active" }><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
                 }
               }
             </ul>

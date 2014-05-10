@@ -27,6 +27,10 @@ case class ServiceDescription(internal: InternalServiceDescription) {
   lazy val basePath = internal.basePath
   lazy val description = internal.description
 
+  def operationsForModel(model: Model): Seq[Operation] = {
+    operations.filter(_.model.name == model.name)
+  }
+
 }
 
 case class Model(name: String,
@@ -39,7 +43,11 @@ case class Operation(model: Model,
                      path: String,
                      description: Option[String],
                      parameters: Seq[Parameter],
-                     responses: Seq[Response])
+                     responses: Seq[Response]) {
+
+  lazy val label = "%s %s".format(method, path)
+
+}
 
 object Operation {
 
@@ -79,7 +87,6 @@ case class Field(name: String,
                  maximum: Option[Long] = None)
 
 sealed trait ParameterType
-
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
 case class ModelParameterType(model: Model) extends ParameterType
 

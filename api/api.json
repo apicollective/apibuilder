@@ -98,7 +98,7 @@
 
             {
                 "method": "GET",
-                "path": "/:guid",
+                "path": "/users/:guid",
                 "responses": {
                     "200": { "type": "user" }
                 }

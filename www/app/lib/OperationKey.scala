@@ -1,11 +1,11 @@
 package lib
 
-import core.{ Operation, Resource, UrlKey }
+import core.{ Operation, ServiceDescription, UrlKey }
 
 object OperationKey {
 
-  def lookup(resource: Resource, key: String): Option[Operation] = {
-    resource.operations.find { op =>
+  def lookup(service: ServiceDescription, key: String): Option[Operation] = {
+    service.operations.find { op =>
       OperationKey(op).key == key
     }
   }
@@ -14,11 +14,6 @@ object OperationKey {
 
 case class OperationKey(op: Operation) {
 
-  def key: String = {
-    op.path match {
-      case None => UrlKey.generate(op.method)
-      case Some(path) => UrlKey.generate(s"${op.method}-${path}")
-    }
-  }
+  lazy val key = UrlKey.generate(op.label)
 
 }

@@ -71,6 +71,7 @@
         },
 
         "address": {
+            "description": "Represents a physical address - e.g. an address to where to ship goods",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely idenfies this address" },
                 { "name": "name", "type": "string", "required": false },
@@ -157,7 +158,7 @@
 
             {
                 "method": "GET",
-                "path": "/:guid",
+                "path": "/vendors/:guid",
                 "description": "Retrieve vendor with this guid.",
                 "responses": {
                     "200": { "type": "vendor" }
@@ -177,7 +178,7 @@
 
             {
                 "method": "DELETE",
-                "path": "/:guid"
+                "path": "/vendors/:guid"
             }
         ],
 
@@ -198,7 +199,7 @@
             },
             {
                 "method": "GET",
-                "path": "/:guid",
+                "path": "/items/:guid",
                 "description": "Gets the detailed view of this item, including the full json document of all of the attributes.",
                 "responses": {
                     "200": { "type": "item" }
@@ -218,7 +219,7 @@
             },
             {
                 "method": "PUT",
-                "path": "/:guid",
+                "path": "/items/:guid",
                 "parameters": [
                     { "name": "guid", "type": "uuid" },
                     { "name": "number", "type": "string" },
@@ -232,7 +233,7 @@
             {
                 "method": "PATCH",
                 "description": "Allows an incremental update to an existing item.",
-                "path": "/:guid",
+                "path": "/items/:guid",
                 "parameters": [
                     { "name": "guid", "type": "uuid" },
                     { "name": "number", "type": "string" },
@@ -244,7 +245,7 @@
             },
             {
                 "method": "DELETE",
-                "path": "/:guid"
+                "path": "/items/:guid"
             }
         ],
 
@@ -278,7 +279,7 @@
 
             {
                 "method": "DELETE",
-                "path": "/:guid"
+                "path": "/terms/:guid"
             }
         ],
 
@@ -316,7 +317,7 @@
 
             {
                 "method": "DELETE",
-                "path": "/:guid"
+                "path": "/agreements/:guid"
             }
         ],
 
@@ -351,9 +352,8 @@
             },
 
             {
-                "path": "/shipment-schedules",
-                "method": "DELETE",
-                "path": "/:guid"
+                "path": "/shipment-schedules/:guid",
+                "method": "DELETE"
             }
         ],
 
@@ -392,7 +392,7 @@
 
             {
                 "method": "GET",
-                "path": "/:guid",
+                "path": "/purchases/:guid",
                 "description": "Returns the purchase with this guid.",
                 "responses": {
                     "200": { "type": "purchase" }
@@ -434,9 +434,8 @@
             },
 
             {
-                "path": "/shipment-requests",
+                "path": "/shipment-requests/:guid",
                 "method": "PUT",
-                "path": "/:guid",
                 "description": "Closes an open shipment request ahead of schedule.",
                 "responses": {
                     "201": { "type": "shipment_request" },
@@ -464,7 +463,7 @@
         "receipts": [
             {
                 "method": "GET",
-                "path": "/:guid",
+                "path": "/receipts/:guid",
                 "responses": {
                     "200": { "type": "[receipt]" }
                 }
@@ -486,7 +485,7 @@
 
             {
                 "method": "DELETE",
-                "path": "/:guid"
+                "path": "/receipts/:guid"
             }
         ]
 

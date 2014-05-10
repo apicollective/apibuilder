@@ -25,8 +25,7 @@ object Play2 extends Controller {
         }
 
         case Some(v: Version) => {
-          val generator = Play2RouteGenerator(ServiceDescription(v.json.get))
-          Ok(generator.generate())
+          Ok(Play2RouteGenerator(ServiceDescription(v.json.get)).generate.getOrElse("# No routes found"))
         }
 
       }

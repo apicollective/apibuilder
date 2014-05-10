@@ -16,50 +16,51 @@
     <a href="@codegen.routes.RubyGenerator.gem(org = tpl.org.get.key, service = tpl.service.get.key, version = tpl.version.get)">Codegen: Ruby Gem</a>
   </div>
 
-  <h2>Resources</h2>
+  <h2>Models</h2>
   <table class="table table-hover table-condensed">
     <tbody>
-      @service.resources.map { resource =>
+      @service.models.map { model =>
        <tr>
-         <td><a href="#resource-@core.UrlKey.generate(resource.name)">@resource.name</a></td>
-         <td>@core.Text.truncate(resource.description.getOrElse(""))</td>
+         <td><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></td>
+         <td>@core.Text.truncate(model.description.getOrElse(""))</td>
        </tr>
      }
     </tbody>
   </table>
 
 
-  @service.resources.map { resource =>
-    <div id="resource-@core.UrlKey.generate(resource.name)"></div>
-    <a name="resource-@core.UrlKey.generate(resource.name)"></a>
-    <div class="version_resource">
-      <h2>@resource.name</h2>
+  @service.models.map { model =>
+    <div id="model-@core.UrlKey.generate(model.name)"></div>
+    <a name="model-@core.UrlKey.generate(model.name)"></a>
+    <div class="version_model">
+      <h2>@model.name</h2>
 
-      @resource.description.getOrElse("")
+      @model.description.getOrElse("")
 
       <h3>Fields</h3>
-      @fields(resource.fields)
+      @fields(model.fields)
 
       <h3>Operations</h3>
-      @if(resource.operations.isEmpty) {
+      @if(service.operationsForModel(model).isEmpty) {
         <em>No operations</em>
       } else {
         <table class="table table-hover table-condensed">
           <thead>
             <tr>
-              <th>Method and Path</th>
+              <th colspan="2">Method and Path</th>
               <th>Description</th>
             </tr>
           </thead>
           <tbody>
-           @resource.operations.zipWithIndex.map { case(op, index) =>
+           @service.operationsForModel(model).zipWithIndex.map { case(op, index) =>
              <tr>
-               <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.name)-@index').toggle()">@op.method @service.basePath@resource.path@op.path.getOrElse("")</a></td>
+               <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(model.name)-@index').toggle()">@op.method</a></td>
+               <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(model.name)-@index').toggle()">@service.basePath@op.path</a></td>
                <td>@op.description.getOrElse("")</td>
              </tr>
-             <tr id="operation-@core.UrlKey.generate(resource.name)-@index" style="display:none">
+             <tr id="operation-@core.UrlKey.generate(model.name)-@index" style="display:none">
                <td></td>
-               <td>@operation(service, resource, op)</td>
+               <td colspan="2">@operation(service, op)</td>
              </tr>
            }
           </tbody>

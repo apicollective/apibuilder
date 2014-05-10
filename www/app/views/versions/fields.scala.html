@@ -4,7 +4,7 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th>Datatype</th>
+      <th>Type</th>
       <th>Required?</th>
       <th>Multi valued?</th>
       <th>Default</th>
@@ -15,21 +15,16 @@
    @fields.map { field =>
      <tr>
        <td>@field.name</td>
-       <td>@field.datatype.name @field.format.map { v => (@v.name) }</td>
+       <td>@field.datatype.name</td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
        <td>@if(field.multiple) { Yes } else { No }</td>
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
            <p>
              @field.references.map { r => References: <a href="#">@r.label</a><br/> }
-             @if(field.example.isEmpty) {
-               @field.format.map { f =>
-                 Example: @f.example<br/>
-               }
-             } else {
-               Example: @field.example.get<br/>
+             @field.example.map { example =>
+               Example: @example<br/>
              }
-
              @field.minimum.map { v => Minimum: @v<br/> }
              @field.maximum.map { v => Maximum: @v<br/> }
            </p>

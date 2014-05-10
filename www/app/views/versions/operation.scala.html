@@ -1,13 +1,12 @@
-@(service: core.ServiceDescription, resource: core.Resource, operation: core.Operation)
+@(service: core.ServiceDescription, operation: core.Operation)
 
-<h3>Resource Url</h3>
-@operation.method @service.baseUrl@service.basePath@resource.path
+@operation.method @service.baseUrl@service.basePath@operation.path
 
 <h3>Parameters</h3>
 @if(operation.parameters.isEmpty) {
   <em>No parameters</em>
 } else {
-  @fields(operation.parameters)
+  @parameters(operation.parameters)
 }
 
 <h3>Response</h3>
@@ -15,12 +14,10 @@
 
   <p>
     HTTP @response.code:
-    @response.resource.map { resource =>
-      @if(response.multiple) {
-        List[@resource]
-      } else {
-        @resource
-      }
+    @if(response.multiple) {
+      [@response.datatype]
+    } else {
+      @response.datatype
     }
   </p>
 }
