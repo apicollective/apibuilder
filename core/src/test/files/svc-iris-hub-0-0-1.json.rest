@@ -1,11 +1,4 @@
         "terms": {
-            "description": "Represents the terms by which two vendors are transacting. Primary purpose is to capture things like 'NET30' so that both parties can correctly invoice and pay.",
-            "fields": [
-                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "vendor_guid", "type": "uuid", "references": "vendors.guid" },
-                { "name": "code", "type": "string", "description": "An identifier that people at both vendors understand (e.g. NET30)." },
-                { "name": "description", "type": "string", "required": false, "description": "Description to help people understand the intent of the terms (e.g. Payment is due 30 days after receipt of invoice)" }
-            ],
             "operations": [
                 {
                     "method": "GET",

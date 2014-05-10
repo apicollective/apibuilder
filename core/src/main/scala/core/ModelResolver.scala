@@ -17,7 +17,6 @@ private[core] object ModelResolver {
 
         case Some(nextModel: InternalModel) => {
           val fullModel = Model(models, nextModel)
-          println("Build model for " + fullModel.name)
           val remainingModels = internalModels.filter { _ != nextModel }
           require(remainingModels.size == internalModels.size - 1)
           build(remainingModels, models ++ Seq(fullModel))
