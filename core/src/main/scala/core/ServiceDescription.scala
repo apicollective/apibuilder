@@ -75,10 +75,9 @@ case class Field(name: String,
                  minimum: Option[Long] = None,
                  maximum: Option[Long] = None)
 
-// TODO: Rename resource => modelPlural
-case class Reference(resource: String, field: String) {
+case class Reference(modelPlural: String, fieldName: String) {
 
-  lazy val label = s"$resource.$field"
+  lazy val label = s"$modelPlural.$fieldName"
 
 }
 
