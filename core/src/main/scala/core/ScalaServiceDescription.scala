@@ -65,7 +65,7 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
 
   def originalName: String = field.name
 
-  def datatype: ScalaDataType = new ScalaDataType(field.datatype, field.format)
+  def datatype: ScalaDataType = new ScalaDataType(field.datatype)
 
   def description: String = field.description.map(textToComment).getOrElse("")
 
@@ -96,22 +96,20 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
   }
 }
 
-class ScalaDataType(datatype: Datatype, format: Option[Format]) extends Source {
+class ScalaDataType(datatype: Datatype) extends Source {
   import Datatype._
-  import Format._
+
   val name = datatype match {
-    case String => format.map {
-      case Uuid => "UUID"
-      case DateTimeIso8601 => "DateTime"
-    }.getOrElse {
-      "String"
-    }
+    case String => "String"
     case Integer => "Int"
     case Long => "Long"
     case Boolean => "Boolean"
     case Decimal => "BigDecimal"
     case Unit => "Unit"
+    case Uuid => "UUID"
+    case DateTimeIso8601 => "DateTime"
   }
 
+  // TODO: Remove this and just access datatype directly
   override val src: String = datatype.name
 }

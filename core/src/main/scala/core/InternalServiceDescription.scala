@@ -53,7 +53,6 @@ case class InternalField(name: Option[String],
                          description: Option[String] = None,
                          required: Boolean = true,
                          multiple: Boolean = false,
-                         format: Option[String] = None,
                          references: Option[InternalReference] = None,
                          default: Option[String] = None,
                          example: Option[String] = None,
@@ -155,7 +154,6 @@ object InternalField {
                   default = (json \ "default").asOpt[String],
                   minimum = (json \ "minimum").asOpt[Long],
                   maximum = (json \ "maximum").asOpt[Long],
-                  format = (json \ "format").asOpt[String],
                   example = (json \ "example").asOpt[String])
   }
 
