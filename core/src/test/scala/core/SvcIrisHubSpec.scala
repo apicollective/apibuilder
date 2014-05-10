@@ -6,20 +6,11 @@ import org.scalatest.Matchers
 class SvcIrisHubSpec extends FunSpec with Matchers {
 
   val Filenames = Seq("svc-iris-hub-0-0-1.json")
-
-  private def readFile(filename: String): String = {
-    val path = s"core/src/test/files/${filename}"
-    scala.io.Source.fromFile(path).getLines.mkString("\n")
-  }
-
-  private def parseFile(filename: String): ServiceDescriptionValidator = {
-    val contents = readFile(filename)
-    ServiceDescriptionValidator(contents)
-  }
+  val Dir = "core/src/test/files"
 
   it("should parse valid json") {
     Filenames.foreach { name =>
-      val validator = parseFile(name)
+      val validator = TestHelper.parseFile(s"${Dir}/${name}")
       if (!validator.isValid) {
         fail(s"Error parsing json file ${name}:\n  - " + validator.errors.mkString("\n  - "))
       }
@@ -27,7 +18,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
   }
 
   it("parses models") {
-    val service = parseFile("svc-iris-hub-0-0-1.json").serviceDescription.get
+    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
     service.models.map(_.name).sorted.mkString(" ") should be("address agreement error_message item planned_shipment purchase " +
                                                               "receipt shipment_request shipment_request_item shipment_schedule " +
                                                               "term vendor")
@@ -38,7 +29,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
   }
 
   it("parses operations") {
-    val service = parseFile("svc-iris-hub-0-0-1.json").serviceDescription.get
+    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
     val operations = service.operations.filter(_.model.name == "item")
 
     val gets = operations.filter(op => op.method == "GET" && op.path == "/items")
@@ -61,7 +52,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
   }
 
   it("all POST operations return either a 201 or a 409") {
-    val service = parseFile("svc-iris-hub-0-0-1.json").serviceDescription.get
+    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
     service.operations.filter(_.method == "POST").foreach { op =>
       if (op.responses.map(_.code).sorted != Seq(201, 409)) {
         fail("POST operation should return a 201 or a 409: " + op)
