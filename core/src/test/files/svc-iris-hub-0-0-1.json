@@ -226,7 +226,8 @@
                     { "name": "quantity", "type": "long" }
                 ],
                 "responses": {
-                    "200": { "type": "item" }
+                    "200": { "type": "item" },
+                    "409": { "type": "error_message" }
                 }
             },
             {
@@ -412,6 +413,81 @@
                     "201": { "type": "purchase" },
                     "409": { "type": "error_message" }
                 }
+            }
+        ],
+
+        "shipment_requests": [
+            {
+                "path": "/shipment-requests",
+                "method": "GET",
+                "description": "Search all shipment requests. Results are always paginated.",
+                "parameters": [
+                    { "name": "fulfilling_vendor_guid", "type": "uuid", "required": false },
+                    { "name": "agreement_guid", "type": "uuid", "required": false },
+                    { "name": "identifier", "type": "string", "required": false },
+                    { "name": "is_open", "type": "boolean", "required": false },
+                    { "name": "limit", "type": "integer", "default": 50 },
+                    { "name": "offset", "type": "integer", "default": 0 }
+                ],
+                "responses": {
+                    "200": { "type": "[shipment_request]" }
+                }
+            },
+
+            {
+                "path": "/shipment-requests",
+                "method": "PUT",
+                "path": "/:guid",
+                "description": "Closes an open shipment request ahead of schedule.",
+                "responses": {
+                    "201": { "type": "shipment_request" },
+                    "409": { "type": "error_message" }
+                }
+            }
+        ],
+
+        "shipment_request_items": [
+            {
+                "path": "/shipment-request-items",
+                "method": "GET",
+                "description": "Retrieve the items in a shipment request. Results are always paginated.",
+                "parameters": [
+                    { "name": "shipment_request_guid", "type": "uuid" },
+                    { "name": "limit", "type": "integer", "default": 50 },
+                    { "name": "offset", "type": "integer", "default": 0 }
+                ],
+                "responses": {
+                    "200": { "type": "[shipment_request_item]" }
+                }
+            }
+        ],
+
+        "receipts": [
+            {
+                "method": "GET",
+                "path": "/:guid",
+                "responses": {
+                    "200": { "type": "[receipt]" }
+                }
+            },
+
+            {
+                "method": "POST",
+                "parameters": [
+                    { "name": "agreement", "type": "agreement" },
+                    { "name": "item", "type": "item" },
+                    { "name": "vendor_receipt_number", "type": "string" },
+                    { "name": "price", "type": "decimal" }
+                ],
+                "responses": {
+                    "201": { "type": "receipt" },
+                    "409": { "type": "error_message" }
+                }
+            },
+
+            {
+                "method": "DELETE",
+                "path": "/:guid"
             }
         ]
 
