@@ -7,13 +7,32 @@
 
     "models": {
 
+        "user": {
+            "description": "A user is a top level person interacting with Iris Hub.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this user." },
+                { "name": "email", "type": "string" },
+                { "name": "name", "type": "string" }
+            ]
+        },
+
         "vendor": {
             "description": "A vendor is one of the main concepts in IRIS HUB. All activity is tied to a vendor.",
 
             "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Uniquely identifies this vendor" },
-                { "name": "name", "type": "string", "description": "The name of this vendor - just used as a label for people to read." },
-                { "name": "keys", "type": "[string]" }
+                { "name": "name", "type": "string", "description": "The name of this vendor - just used as a label for people to read." }
+            ]
+        },
+
+        "vendor_tag": {
+            "description": "A user can apply one or more tags to a vendor. Tags are private to the user. When creating a vendor, you can also specify a tag to create a vendor tag transactionally which is a useful tool for attaching your own identifier to all vendors.",
+
+            "fields": [
+		{ "name": "guid", "type": "uuid", "description": "Uniquely identifies this vendor tag." },
+                { "name": "user", "references": "users.guid", "description": "Tags are private to users" },
+                { "name": "vendor", "references": "vendors.guid" },
+                { "name": "tag", "type": "string", "description": "The actual tag you have applied to this vendor" }
             ]
         },
 
