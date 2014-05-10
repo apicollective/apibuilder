@@ -130,7 +130,7 @@ object InternalModel {
 
 object InternalOperation {
 
-  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.UnitDatatype.name))
+  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.UnitType.name))
 
   def apply(resourceName: String, json: JsObject): InternalOperation = {
     val opPath = (json \ "path").asOpt[String].getOrElse(s"/${resourceName}")

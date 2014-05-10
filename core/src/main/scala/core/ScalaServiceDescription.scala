@@ -147,14 +147,14 @@ object ScalaDataType {
 
   def apply(datatype: Datatype): ScalaDataType = {
     val name = datatype match {
-      case Datatype.String => "String"
-      case Datatype.Integer => "Int"
-      case Datatype.Long => "Long"
-      case Datatype.Boolean => "Boolean"
-      case Datatype.Decimal => "BigDecimal"
-      case Datatype.UnitDatatype => "Unit"
-      case Datatype.Uuid => "UUID"
-      case Datatype.DateTimeIso8601 => "DateTime"
+      case Datatype.StringType => "String"
+      case Datatype.IntegerType => "Int"
+      case Datatype.LongType => "Long"
+      case Datatype.BooleanType => "Boolean"
+      case Datatype.DecimalType => "BigDecimal"
+      case Datatype.UnitType => "Unit"
+      case Datatype.UuidType => "UUID"
+      case Datatype.DateTimeIso8601Type => "DateTime"
     }
     new ScalaDataType(name)
   }

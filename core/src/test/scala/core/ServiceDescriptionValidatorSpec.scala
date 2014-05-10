@@ -188,7 +188,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
-    guid.paramtype should be(PrimitiveParameterType(Datatype.Uuid))
+    guid.paramtype should be(PrimitiveParameterType(Datatype.UuidType))
   }
 
 }

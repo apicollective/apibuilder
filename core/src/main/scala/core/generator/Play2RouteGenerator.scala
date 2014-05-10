@@ -71,14 +71,14 @@ case class Play2RouteGenerator(service: ServiceDescription) {
 
         case dt: PrimitiveParameterType => {
           val scalaType = dt.datatype match {
-            case Datatype.String => "String"
-            case Datatype.Long => "Long"
-            case Datatype.Integer => "Int"
-            case Datatype.Boolean => "Boolean"
-            case Datatype.Decimal => "BigDecimal"
-            case Datatype.Uuid => "UUID"
-            case Datatype.DateTimeIso8601 => "DateTime"
-            case Datatype.UnitDatatype => "Unit"
+            case Datatype.StringType => "String"
+            case Datatype.LongType => "Long"
+            case Datatype.IntegerType => "Int"
+            case Datatype.BooleanType => "Boolean"
+            case Datatype.DecimalType => "BigDecimal"
+            case Datatype.UuidType => "UUID"
+            case Datatype.DateTimeIso8601Type => "DateTime"
+            case Datatype.UnitType => "Unit"
           }
 
           if (param.required) {

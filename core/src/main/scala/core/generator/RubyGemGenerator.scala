@@ -114,7 +114,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
         }
       }.mkString("/")
 
-      val methodName = op.method.toLowerCase + op.path.split("/").map { name =>
+      val methodName = op.method.toLowerCase + op.path.split("/").map(Text.safeName(_)).map { name =>
         if (name.startsWith(":")) {
           name.slice(1, name.length)
         } else {
@@ -182,7 +182,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       // TODO: match on all response codes
       op.responses.headOption.map { response =>
         response.datatype match {
-          case Datatype.UnitDatatype.name => {
+          case Datatype.UnitType.name => {
             responseBuilder.append("\n        nil")
           }
 
@@ -251,9 +251,9 @@ case class RubyGemGenerator(service: ServiceDescription) {
   private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String]): String = {
     val value = if (default.isEmpty) {
       s"opts.delete(:${name})"
-    } else if (datatype == Datatype.String) {
+    } else if (datatype == Datatype.StringType) {
       s"opts.delete(:${name}) || \'${default.get}\'"
-    } else if (datatype == Datatype.Boolean) {
+    } else if (datatype == Datatype.BooleanType) {
       s"opts.has_key?(:${name}) ? (opts.delete(:${name}) ? true : false) : ${default.get}"
     } else {
       s"opts.delete(:${name}) || ${default.get}"
@@ -263,13 +263,13 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val assertMethod = if (hasValue) { "assert_class" } else { "assert_class_or_nil" }
     val klass = rubyClass(datatype)
 
-    if (datatype == Datatype.Decimal) {
+    if (datatype == Datatype.DecimalType) {
       s"HttpClient::Helper.to_big_decimal(${value}, :required => true)"
 
-    } else if (datatype == Datatype.Uuid) {
+    } else if (datatype == Datatype.UuidType) {
       s"HttpClient::Helper.to_uuid(${value}, :required => true)"
 
-    } else if (datatype == Datatype.DateTimeIso8601) {
+    } else if (datatype == Datatype.DateTimeIso8601Type) {
       s"HttpClient::Helper.to_date_time_iso8601(${value}, :required => true)"
 
     } else {
@@ -279,14 +279,14 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
   private def rubyClass(datatype: Datatype): String = {
     datatype match {
-      case Datatype.String => "String"
-      case Datatype.Long => "Integer"
-      case Datatype.Integer => "Integer"
-      case Datatype.Boolean => "String"
-      case Datatype.Decimal => "BigDecimal"
-      case Datatype.Uuid => "String"
-      case Datatype.DateTimeIso8601 => "DateTime"
-      case Datatype.UnitDatatype => "nil"
+      case Datatype.StringType => "String"
+      case Datatype.LongType => "Integer"
+      case Datatype.IntegerType => "Integer"
+      case Datatype.BooleanType => "String"
+      case Datatype.DecimalType => "BigDecimal"
+      case Datatype.UuidType => "String"
+      case Datatype.DateTimeIso8601Type => "DateTime"
+      case Datatype.UnitType => "nil"
       case _ => {
         sys.error(s"Cannot map data type[${datatype}] to ruby class")
       }

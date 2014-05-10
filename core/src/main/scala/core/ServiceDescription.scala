@@ -154,28 +154,34 @@ sealed abstract class Datatype(val name: String, val example: Option[String] = N
 
 object Datatype {
 
-  case object Boolean extends Datatype("boolean")
+  case object BooleanType extends Datatype("boolean")
+  case object DecimalType extends Datatype("decimal")
+  case object IntegerType extends Datatype("integer")
+  case object LongType extends Datatype("long")
+  case object StringType extends Datatype("string")
 
-  case object Decimal extends Datatype("decimal")
-  case object Integer extends Datatype("integer")
-  case object Long extends Datatype("long")
-  case object String extends Datatype("string")
-
-  case object DateTimeIso8601 extends Datatype(name = "date-time-iso8601",
+  case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
                                                example = Some("2014-04-29T11:56:52Z"),
                                                description = Some("Date time format in ISO 8601"))
 
-  case object Uuid extends Datatype(name = "uuid",
-                                    example = Some("5ecf6502-e532-4738-aad5-7ac9701251dd"),
-                                    description = Some("String representation of a universally unique identifier (UUID)"))
+  case object UuidType extends Datatype(name = "uuid",
+                                        example = Some("5ecf6502-e532-4738-aad5-7ac9701251dd"),
+                                        description = Some("String representation of a universally unique identifier (UUID)"))
 
-  case object UnitDatatype extends Datatype("unit")
-  // TODO: case object Object extends Datatype("objects")
+  case object UnitType extends Datatype("unit")
 
-  val All: Seq[Datatype] = Seq(Boolean, Decimal, Integer, Long, String, Uuid, DateTimeIso8601, UnitDatatype)
+  // TODO: case object ObjectType extends Datatype("objects")
+
+  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type)
 
   def findByName(name: String): Option[Datatype] = {
-    All.find { dt => dt.name == name }
+    // TODO: This is weird. If we include UnitType in All - it ends up
+    // being a NPE in the all loop. For now pull out unit explicitly
+    if (name == UnitType.name) {
+      Some(UnitType)
+    } else {
+      All.find { dt => dt.name == name }
+    }
   }
 
 }
@@ -285,37 +291,37 @@ object Field {
 
   def assertValidDefault(datatype: Datatype, value: String) {
     datatype match {
-      case Datatype.Boolean => {
+      case Datatype.BooleanType => {
         if (!BooleanValues.contains(value)) {
           sys.error(s"Invalid value[${value}] for boolean. Must be one of: ${BooleanValues.mkString(" ")}")
         }
       }
 
-      case Datatype.Integer => {
+      case Datatype.IntegerType => {
         value.toInt
       }
 
-      case Datatype.Long => {
+      case Datatype.LongType => {
         value.toLong
       }
 
-      case Datatype.Decimal => {
+      case Datatype.DecimalType => {
         BigDecimal(value)
       }
 
-      case Datatype.UnitDatatype => {
+      case Datatype.UnitType => {
         value == ""
       }
 
-      case Datatype.Uuid => {
+      case Datatype.UuidType => {
         UUID.fromString(value)
       }
 
-      case Datatype.DateTimeIso8601 => {
+      case Datatype.DateTimeIso8601Type => {
         ISODateTimeFormat.basicDateTime.parseDateTime(value)
       }
 
-      case Datatype.String => ()
+      case Datatype.StringType => ()
 
     }
   }
