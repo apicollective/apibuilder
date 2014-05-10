@@ -40,7 +40,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
     response.datatype should be("item")
     response.multiple should be(true)
 
-    val getsByGuid = operations.filter(op => op.method == "GET" && op.path == "/:guid")
+    val getsByGuid = operations.filter(op => op.method == "GET" && op.path == "/items/:guid")
     getsByGuid.size should be(1)
     getsByGuid.head.parameters.map(_.name).mkString(" ") should be("guid")
     getsByGuid.head.responses.map(_.code) should be(Seq(200))
