@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ Datatype, Field, ServiceDescription, Model, ModelParameterType, Operation, Parameter, PrimitiveParameterType, Text }
+import core.{ Datatype, Field, ServiceDescription, Model, ModelParameterType, Operation, Parameter, ParameterLocation, PrimitiveParameterType, Text }
 
 import scala.collection.mutable.ListBuffer
 
@@ -102,9 +102,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append("      end")
 
     operations.foreach { op =>
-      val namedParams = GeneratorUtil.namedParametersInPath(op.path)
-      val pathParams = op.parameters.filter { p => namedParams.contains(p.name) }
-      val otherParams = op.parameters.filter { p => !namedParams.contains(p.name) }
+      val pathParams = op.parameters.filter { p => p.location == ParameterLocation.Path }
+      val otherParams = op.parameters.filter { p => p.location != ParameterLocation.Path }
 
       val rubyPath = op.path.split("/").map { name =>
         if (name.startsWith(":")) {
