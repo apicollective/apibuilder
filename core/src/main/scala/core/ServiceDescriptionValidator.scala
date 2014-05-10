@@ -49,7 +49,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateModels ++ validateFields ++ validateDatatypes ++ validateReferences ++ validateOperations
+          validateModels ++ validateFields ++ validateDatatypes ++ validateReferences ++ validateOperations ++ validateParameters
         } else {
           requiredFieldErrors
         }
@@ -137,6 +137,21 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted.mkString(" ")
+
+  private def validateParameters(): Seq[String] = {
+    val missingNames = internalServiceDescription.get.operations.flatMap { op =>
+      op.parameters.filter { p => p.name.isEmpty }.map { p =>
+        s"${op.method.get} ${op.path}: All parameters must have a name"
+      }
+    }
+
+    val missingTypes = internalServiceDescription.get.operations.flatMap { op =>
+      op.parameters.filter { p => !p.name.isEmpty && p.paramtype.isEmpty }.map { p =>
+        s"${op.method.get} ${op.path}: Parameter[${p.name.get}] is missing a type. Must be one of: ${ValidDatatypes} or the name of a model"
+      }
+    }
+    missingNames ++ missingTypes
+  }
 
   private def validateDatatypes(): Seq[String] = {
     val modelErrors = internalServiceDescription.get.models.flatMap { model =>

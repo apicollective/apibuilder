@@ -191,11 +191,15 @@ object Parameter {
   }
 
   def apply(models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
-    val paramtype = Datatype.findByName(internal.paramtype.get) match {
+    val typeName = internal.paramtype.getOrElse {
+      sys.error("Missing parameter type for: " + internal)
+    }
+
+    val paramtype = Datatype.findByName(typeName) match {
       case None => {
         assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
-        ModelParameterType(models.find(_.name == internal.paramtype.get).getOrElse {
-          sys.error(s"Param type[${internal.paramtype.get}] is invalid. Must be a valid primitive datatype or the name of a known model")
+        ModelParameterType(models.find(_.name == typeName).getOrElse {
+          sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
         })
       }
 

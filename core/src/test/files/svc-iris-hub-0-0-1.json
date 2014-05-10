@@ -355,6 +355,64 @@
                 "method": "DELETE",
                 "path": "/:guid"
             }
+        ],
+
+        "planned_shipments": [
+            {
+                "path": "/planned-shipments",
+                "method": "GET",
+                "description": "Returns the upcoming planned shipments for a given agreement, filtered by a certain number of days. For example, you can request all planned shipments in the next 30 days - you will then see the actual upcoming dates, if any, that an open shipment request will be cloesd. Results are always paginated.",
+                "parameters": [
+                    { "name": "agreement_guid", "type": "uuid" },
+                    { "name": "number_days", "type": "integer", "default": 7 },
+                    { "name": "limit", "type": "integer", "default": 50 },
+                    { "name": "offset", "type": "integer", "default": 0 }
+                ],
+                "responses": {
+                    "200": { "type": "[planned_shipment]" }
+                }
+            }
+        ],
+
+        "purchases": [
+            {
+                "method": "GET",
+                "description": "Search all purchases. Results are always paginated.",
+                "parameters": [
+                    { "name": "vendor_purchase_number", "type": "string", "required": false },
+                    { "name": "agreement_guid", "type": "uuid", "required": false },
+                    { "name": "item_guid", "type": "uuid", "required": false },
+                    { "name": "limit", "type": "integer", "default": 50 },
+                    { "name": "offset", "type": "integer", "default": 0 }
+                ],
+                "responses": {
+                    "200": { "type": "[purchase]" }
+                }
+            },
+
+            {
+                "method": "GET",
+                "path": "/:guid",
+                "description": "Returns the purchase with this guid.",
+                "responses": {
+                    "200": { "type": "purchase" }
+                }
+            },
+
+            {
+                "method": "POST",
+                "parameters": [
+                    { "name": "vendor_purchase_number", "type": "string" },
+                    { "name": "agreement", "type": "agreement" },
+                    { "name": "item", "type": "item" },
+                    { "name": "address", "type": "address" },
+                    { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." }
+                ],
+                "responses": {
+                    "201": { "type": "purchase" },
+                    "409": { "type": "error_message" }
+                }
+            }
         ]
 
     }

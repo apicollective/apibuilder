@@ -1,71 +1,9 @@
 
         "planned_shipments": {
             "path": "/planned-shipments",
-            "operations": [
-                {
-                    "method": "GET",
-                    "description": "Returns the upcoming planned shipments for a given agreement, filtered by a certain number of days. For example, you can request all planned shipments in the next 30 days - you will then see the actual upcoming dates, if any, that an open shipment request will be cloesd. Results are always paginated.",
-                    "parameters": [
-                        { "name": "agreement_guid", "type": "string" },
-                        { "name": "number_days", "type": "integer", "default": 7 },
-                        { "name": "limit", "type": "integer", "default": 50 },
-                        { "name": "offset", "type": "integer", "default": 0 }
-                    ],
-                    "responses": {
-                        "200": { "type": "[planned_shipment]" }
-                    }
-                }
-            ]
         },
 
         "purchases": {
-            "operations": [
-                {
-                    "method": "GET",
-                    "description": "Search all purchases. Results are always paginated.",
-                    "parameters": [
-                        { "name": "guid", "type": "uuid", "required": false },
-                        { "name": "vendor_purchase_number", "type": "string", "required": false },
-                        { "name": "agreement_guid", "type": "uuid", "required": false, "references": "agreements.guid" },
-                        { "name": "item_guid", "type": "uuid", "required": false, "references": "items.guid" },
-                        { "name": "limit", "type": "integer", "default": 50 },
-                        { "name": "offset", "type": "integer", "default": 0 }
-                    ],
-                    "responses": {
-                        "200": { "type": "[purchase]" }
-                    }
-                },
-                {
-                    "method": "GET",
-                    "path": "/:guid",
-                    "description": "Returns the purchase with this guid.",
-                    "responses": {
-                        "200": { "type": "purchase" }
-                    }
-                },
-                {
-                    "method": "POST",
-                    "parameters": [
-                        { "name": "vendor_purchase_number", "type": "string" },
-                        { "name": "agreement_guid", "type": "string" },
-                        { "name": "item_guid", "type": "string" },
-                        { "name": "address_name", "type": "string", "required": false },
-                        { "name": "address_line1", "type": "string" },
-                        { "name": "address_line2", "type": "string", "required": false },
-                        { "name": "address_line3", "type": "string", "required": false },
-                        { "name": "address_city", "type": "string", "required": false },
-                        { "name": "address_state", "type": "string", "required": false },
-                        { "name": "address_postal_code", "type": "string" },
-                        { "name": "address_country", "type": "string", "description": "3 character iso3166_code for the country. Must be in upper case." },
-                        { "name": "address_phone", "type": "string", "required": false },
-                        { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." },
-                        { "name": "currency", "type": "string", "description": "3-character upper case iso4217 code for this currency. Validated against the currency in the agreement.", "example": "USD or EUR" }
-                    ],
-                    "responses": {
-                        "201": { "type": "purchase" }
-                    }
-                }
-            ]
         },
 
         "shipment_requests": {
