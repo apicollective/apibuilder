@@ -161,18 +161,18 @@ object Datatype {
   case object Long extends Datatype("long")
   case object String extends Datatype("string")
 
-  case object Uuid extends Datatype(name = "uuid",
-                                    example = Some("5ecf6502-e532-4738-aad5-7ac9701251dd"),
-                                    description = Some("String representation of a universally unique identifier (UUID)"))
-
   case object DateTimeIso8601 extends Datatype(name = "date-time-iso8601",
                                                example = Some("2014-04-29T11:56:52Z"),
                                                description = Some("Date time format in ISO 8601"))
 
-  case object Unit extends Datatype("unit")
+  case object Uuid extends Datatype(name = "uuid",
+                                    example = Some("5ecf6502-e532-4738-aad5-7ac9701251dd"),
+                                    description = Some("String representation of a universally unique identifier (UUID)"))
+
+  case object UnitDatatype extends Datatype("unit")
   // TODO: case object Object extends Datatype("objects")
 
-  val All = Seq(Boolean, Decimal, Integer, Long, String, Uuid, DateTimeIso8601, Unit)
+  val All: Seq[Datatype] = Seq(Boolean, Decimal, Integer, Long, String, Uuid, DateTimeIso8601, UnitDatatype)
 
   def findByName(name: String): Option[Datatype] = {
     All.find { dt => dt.name == name }
@@ -303,7 +303,7 @@ object Field {
         BigDecimal(value)
       }
 
-      case Datatype.Unit => {
+      case Datatype.UnitDatatype => {
         value == ""
       }
 

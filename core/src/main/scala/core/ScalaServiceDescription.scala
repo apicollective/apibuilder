@@ -152,7 +152,7 @@ object ScalaDataType {
       case Datatype.Long => "Long"
       case Datatype.Boolean => "Boolean"
       case Datatype.Decimal => "BigDecimal"
-      case Datatype.Unit => "Unit"
+      case Datatype.UnitDatatype => "Unit"
       case Datatype.Uuid => "UUID"
       case Datatype.DateTimeIso8601 => "DateTime"
     }

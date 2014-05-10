@@ -182,7 +182,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       // TODO: match on all response codes
       op.responses.headOption.map { response =>
         response.datatype match {
-          case Datatype.Unit.name => {
+          case Datatype.UnitDatatype.name => {
             responseBuilder.append("\n        nil")
           }
 
@@ -286,7 +286,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case Datatype.Decimal => "BigDecimal"
       case Datatype.Uuid => "String"
       case Datatype.DateTimeIso8601 => "DateTime"
-      case Datatype.Unit => "nil"
+      case Datatype.UnitDatatype => "nil"
       case _ => {
         sys.error(s"Cannot map data type[${datatype}] to ruby class")
       }

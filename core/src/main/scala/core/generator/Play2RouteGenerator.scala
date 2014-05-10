@@ -78,7 +78,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
             case Datatype.Decimal => "BigDecimal"
             case Datatype.Uuid => "UUID"
             case Datatype.DateTimeIso8601 => "DateTime"
-            case Datatype.Unit => "Unit"
+            case Datatype.UnitDatatype => "Unit"
           }
 
           if (param.required) {
