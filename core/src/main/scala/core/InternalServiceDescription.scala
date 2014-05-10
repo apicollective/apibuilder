@@ -73,7 +73,7 @@ case class InternalOperation(resourceName: String,
                              responses: Seq[InternalResponse])
 
 case class InternalField(name: Option[String] = None,
-                         datatype: Option[String] = None,
+                         datatype: Option[InternalParsedDatatype] = None,
                          description: Option[String] = None,
                          required: Boolean = true,
                          multiple: Boolean = false,
@@ -85,7 +85,7 @@ case class InternalField(name: Option[String] = None,
 
 
 case class InternalResponse(code: String,
-                            datatype: Option[String] = None,
+                            datatype: Option[InternalParsedDatatype] = None,
                             fields: Option[Set[String]] = None)
 
 object InternalModel {
@@ -115,7 +115,7 @@ object InternalModel {
 
 object InternalOperation {
 
-  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.Unit.name))
+  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(InternalParsedDatatype(Datatype.Unit.name, false)))
 
   def apply(resourceName: String, json: JsObject): InternalOperation = {
     val opPath = (json \ "path").asOpt[String]
@@ -157,7 +157,7 @@ object InternalOperation {
 object InternalResponse {
 
   def apply(code: String, json: JsObject): InternalResponse = {
-    val datatype = (json \ "type").asOpt[String]
+    val datatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
     val fields = (json \ "fields").asOpt[Set[String]]
     InternalResponse(code = code, datatype = datatype, fields = fields)
   }
@@ -167,7 +167,7 @@ object InternalField {
 
   def apply(json: JsObject): InternalField = {
     InternalField(name = (json \ "name").asOpt[String],
-                  datatype = (json \ "type").asOpt[String],
+                  datatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) ),
                   description = (json \ "description").asOpt[String],
                   references = (json \ "references").asOpt[String].map { InternalReference(_) },
                   required = (json \ "required").asOpt[Boolean].getOrElse(true),
@@ -195,6 +195,22 @@ private[core] object InternalReference {
 
     } else {
       InternalReference(value, Some(parts.head), Some(parts.last))
+    }
+  }
+}
+
+private[core] case class InternalParsedDatatype(name: String, multiple: Boolean)
+
+private[core] object InternalParsedDatatype {
+
+  def apply(value: String): InternalParsedDatatype = {
+    // TODO: Why do we have to drop the first element?
+    val letters = value.split("").drop(1)
+
+    if (letters.head == "[" && letters.last == "]") {
+      InternalParsedDatatype(value.slice(1, letters.length - 1), true)
+    } else {
+      InternalParsedDatatype(value, false)
     }
   }
 

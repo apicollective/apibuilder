@@ -113,15 +113,11 @@ case class WrappedDatatype(datatype: Datatype, multiple: Boolean)
 
 object WrappedDatatype {
 
-  private val ArrayRx = """^\[(.+)\]$""".r
-
-  def apply(value: String): WrappedDatatype = {
-    // TODO: Parse ir.datatype properly
-    //val multiple = ArrayRx.matches(ir.datatype)
-    val datatype = Datatype.findByName(value).getOrElse {
+  def apply(value: InternalParsedDatatype): WrappedDatatype = {
+    val datatype = Datatype.findByName(value.name).getOrElse {
       sys.error(s"Invalid datatype[${value}]")
     }
-    WrappedDatatype(datatype = datatype, multiple = false)
+    WrappedDatatype(datatype = datatype, multiple = value.multiple)
   }
 
 }
@@ -178,9 +174,9 @@ object Field {
 
   def apply(models: Seq[Model], internal: InternalField, modelPlural: Option[String], fields: Seq[Field]): Field = {
     val datatype = internal.datatype match {
-      case Some(t: String) => {
-        Datatype.findByName(t).getOrElse {
-          sys.error(s"Invalid datatype[${t}]")
+      case Some(t: InternalParsedDatatype) => {
+        Datatype.findByName(t.name).getOrElse {
+          sys.error(s"Invalid datatype[${t.name}]")
         }
       }
 
@@ -188,10 +184,6 @@ object Field {
         val ref = internal.references.getOrElse {
           sys.error("No datatype nor reference for field: " + internal)
         }
-
-        println("modelPlural: " + modelPlural)
-        println("internal.name: " + internal.name)
-        println("ref: " + ref.label)
 
         val field = if (modelPlural == ref.modelPlural) {
           fields.find { _.name == ref.fieldName.get }.getOrElse {
