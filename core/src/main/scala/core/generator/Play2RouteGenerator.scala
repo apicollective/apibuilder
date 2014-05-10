@@ -43,34 +43,16 @@ case class Play2RouteGenerator(service: ServiceDescription) {
   private[this] case class Route(op: Operation) {
 
     lazy val verb = op.method
-    lazy val url = if (service.basePath.isEmpty && op.path.isEmpty) {
-      "/"
-    } else {
-      service.basePath.getOrElse("") + op.path.getOrElse("")
-    }
-    lazy val method = {
-      s"$controllerName.$methodName"
-    }
+    lazy val url = service.basePath.getOrElse("") + op.path
+    lazy val method = s"$controllerName.$methodName"
     lazy val parameters = parametersWithTypes(op.parameters)
     lazy val pathParameters = parametersWithTypes(op.parameters.filter { param => namedParametersInPath.contains(param.name) })
 
-    private lazy val namedParametersInPath = GeneratorUtil.namedParametersInPath(op.path.getOrElse(""))
+    private lazy val namedParametersInPath = GeneratorUtil.namedParametersInPath(op.path)
 
-    private lazy val methodName = {
-      op.path match {
-        case None => {
-          op.method.toLowerCase
-        }
+    private lazy val methodName = op.method.toLowerCase + Text.initCap(op.path.split("/"))
 
-        case Some(path: String) => {
-          op.method.toLowerCase + Text.initCap(path.split("/"))
-        }
-      }
-    }
-
-    private lazy val controllerName: String = {
-      s"controllers.${Text.underscoreToInitCap(op.model.name)}"
-    }
+    private lazy val controllerName: String = "controllers." + Text.underscoreToInitCap(op.model.name)
 
     private def parametersWithTypes(params: Seq[Field]): Seq[String] = {
       params.map { param =>
@@ -88,10 +70,9 @@ case class Play2RouteGenerator(service: ServiceDescription) {
         case Datatype.Integer => "Int"
         case Datatype.Boolean => "Boolean"
         case Datatype.Decimal => "BigDecimal"
+        case Datatype.Uuid => "UUID"
+        case Datatype.DateTimeIso8601 => "DateTime"
         case Datatype.Unit => "Unit"
-        case _ => {
-          sys.error(s"Cannot map data type[${param.datatype}] to scala type")
-        }
       }
 
       if (param.required) {

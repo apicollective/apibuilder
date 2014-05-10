@@ -144,8 +144,7 @@ $defs
     import operation._
 
     def pathArg: String = {
-      val tmp = path.map("^/:".r.replaceAllIn(_, ""))
-        .getOrElse("")
+      val tmp = "^/:".r.replaceAllIn(path, "")
       if (tmp.isEmpty) {
         "\"\""
       } else {

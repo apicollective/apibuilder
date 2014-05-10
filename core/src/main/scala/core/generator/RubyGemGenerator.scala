@@ -102,13 +102,11 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append("      end")
 
     operations.foreach { op =>
-      val path = op.path.getOrElse(resourcePath)
-
-      val namedParams = GeneratorUtil.namedParametersInPath(path)
+      val namedParams = GeneratorUtil.namedParametersInPath(op.path)
       val pathParams = op.parameters.filter { p => namedParams.contains(p.name) }
       val otherParams = op.parameters.filter { p => !namedParams.contains(p.name) }
 
-      val rubyPath = path.split("/").map { name =>
+      val rubyPath = op.path.split("/").map { name =>
         if (name.startsWith(":")) {
           "#{" + name.slice(1, name.length) + "}"
         } else {
@@ -116,7 +114,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
         }
       }.mkString("/")
 
-      val methodName = op.method.toLowerCase + op.path.getOrElse("").split("/").map { name =>
+      val methodName = op.method.toLowerCase + op.path.split("/").map { name =>
         if (name.startsWith(":")) {
           name.slice(1, name.length)
         } else {

@@ -66,7 +66,7 @@ case class InternalModel(name: String,
 
 case class InternalOperation(resourceName: String,
                              method: Option[String],
-                             path: Option[String],
+                             path: String,
                              description: Option[String],
                              namedParameters: Seq[String],
                              parameters: Seq[InternalField],
@@ -119,8 +119,8 @@ object InternalOperation {
   private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.Unit.name))
 
   def apply(resourceName: String, json: JsObject): InternalOperation = {
-    val opPath = (json \ "path").asOpt[String]
-    val namedParameters = Util.namedParametersInPath(opPath.getOrElse(""))
+    val opPath = (json \ "path").asOpt[String].getOrElse(s"/${resourceName}")
+    val namedParameters = Util.namedParametersInPath(opPath)
     val parameters = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {

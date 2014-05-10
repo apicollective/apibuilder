@@ -36,7 +36,7 @@ case class Model(name: String,
 
 case class Operation(model: Model,
                      method: String,
-                     path: Option[String],
+                     path: String,
                      description: Option[String],
                      parameters: Seq[Field],
                      responses: Seq[Response])

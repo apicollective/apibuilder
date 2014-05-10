@@ -49,7 +49,7 @@ class ScalaOperation(operation: Operation) {
 
   val parameters = operation.parameters.map { new ScalaField(_) }.sorted
 
-  val name = method.toLowerCase + path.map(safeName).getOrElse("").capitalize
+  val name = method.toLowerCase + safeName(path).capitalize
 
   val argList = ScalaUtil.fieldsToArgList(parameters)
 
