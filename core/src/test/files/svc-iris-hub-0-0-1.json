@@ -21,7 +21,8 @@
 
             "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Uniquely identifies this vendor" },
-                { "name": "name", "type": "string", "description": "The name of this vendor - just used as a label for people to read." }
+                { "name": "name", "type": "string", "description": "The name of this vendor - just used as a label for people to read." },
+                { "name": "key", "type": "string", "description": "A unique, url friendly key for this vendor. keys are always stored in lower case." }
             ]
         },
 
