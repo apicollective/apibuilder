@@ -1,18 +1,10 @@
 [
   {
     "service": "api",
-    "domain": "api.origin.apidoc.me",
-    "run": {
-      "image": "giltarchitecture/apidoc-api",
-      "cmd": ["-Dhttp.port=80", "-Dconfig.resource=application.production.conf"]
-    }
+    "s3": "s3://gilt-architecture-metadata/ionblaster/apidoc/.ionblaster.json"
   },
   {
     "service": "www",
-    "domain": "www.origin.apidoc.me",
-    "run": {
-      "image": "giltarchitecture/apidoc-www",
-      "cmd": ["-Dhttp.port=80", "-Dconfig.resource=application.production.conf"]
-    }
+    "s3": "s3://gilt-architecture-metadata/ionblaster/apidoc/.ionblaster.json"
   }
 ]
