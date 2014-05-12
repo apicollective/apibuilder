@@ -1,0 +1,36 @@
+@(parameters: Iterable[core.Parameter])
+
+<table class="table table-hover table-condensed">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Required?</th>
+      <th>Multi valued?</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+   @parameters.map { param =>
+     <tr>
+       <td>@param.name</td>
+       <td>@{param.paramtype match {
+             case pt: core.PrimitiveParameterType => pt.datatype.name
+             case mt: core.ModelParameterType => mt.model.name
+           }}
+       </td>
+       <td>@if(param.required && param.default.isEmpty) { Yes } else { No }</td>
+       <td>@if(param.multiple) { Yes } else { No }</td>
+       <td>@param.default.getOrElse("-")</td>
+       <td>@param.description.getOrElse("")
+           <p>
+             @param.references.map { r => References: <a href="#">@r.label</a><br/> }
+             @param.minimum.map { v => Minimum: @v<br/> }
+             @param.maximum.map { v => Maximum: @v<br/> }
+           </p>
+       </td>
+     </tr>
+   }
+  </tbody>
+</table>
