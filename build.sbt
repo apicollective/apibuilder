@@ -10,10 +10,10 @@ lazy val core = project
       "com.typesafe.play" %% "play-json" % "2.2.3"
     ),
     // Temporary addition until api.json is moved.
-    unmanagedClasspath in Test += (baseDirectory in ThisBuild).value / "svc"
+    unmanagedClasspath in Test += (baseDirectory in ThisBuild).value / "api"
   )
 
-lazy val svc = project
+lazy val api = project
   .dependsOn(core)
   .aggregate(core)
   .settings(playScalaSettings: _*)
@@ -23,7 +23,7 @@ lazy val svc = project
     version := "1.0-SNAPSHOT"
   )
 
-lazy val web = project
+lazy val www = project
   .dependsOn(core)
   .aggregate(core)
   .settings(playScalaSettings: _*)
