@@ -4,4 +4,4 @@ MAINTAINER architecture@gilt.com
 
 ADD . /apidoc
 
-ENTRYPOINT ["/apidoc/bin/apidoc-web"]
+ENTRYPOINT ["/apidoc/bin/apidoc-www"]
