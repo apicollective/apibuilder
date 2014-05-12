@@ -1,0 +1,18 @@
+[
+  {
+    "service": "api",
+    "domain": "api.origin.apidoc.me",
+    "run": {
+      "image": "giltarchitecture/apidoc-api",
+      "cmd": ["-Dhttp.port=80", "-Dconfig.resource=application.production.conf"]
+    }
+  },
+  {
+    "service": "www",
+    "domain": "www.origin.apidoc.me",
+    "run": {
+      "image": "giltarchitecture/apidoc-www",
+      "cmd": ["-Dhttp.port=80", "-Dconfig.resource=application.production.conf"]
+    }
+  }
+]
