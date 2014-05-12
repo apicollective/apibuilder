@@ -1,3 +1,8 @@
+// Validate that all names use only characters and letters
+
+case class InternalReference(modelName: String)
+case class Reference(model: Model)
+
 {
     "base_url": "http://svc-iris-hub/svc-iris-hub/1.0",
 
@@ -8,7 +13,9 @@
     "models": {
 
         "user": {
+
             "description": "A user is a top level person interacting with Iris Hub.",
+
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this user." },
                 { "name": "email", "type": "string" },
@@ -26,13 +33,20 @@
             ]
         },
 
+        "mini_user": {
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this user." },
+                { "name": "email", "type": "string" }
+            }
+        }
+
         "vendor_tag": {
             "description": "A user can apply one or more tags to a vendor. Tags are private to the user. When creating a vendor, you can also specify a tag to create a vendor tag transactionally which is a useful tool for attaching your own identifier to all vendors.",
 
             "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Uniquely identifies this vendor tag." },
-                { "name": "user", "references": "users.guid", "description": "Tags are private to users" },
-                { "name": "vendor", "references": "vendors.guid" },
+                { "name": "user", "type": "user" },
+                { "name": "vendor", "type": "reference[vendor]" },
                 { "name": "tag", "type": "string", "description": "The actual tag you have applied to this vendor" }
             ]
         },
@@ -42,18 +56,24 @@
 
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "vendor", "references": "vendors.guid" },
+                { "name": "vendor", "type": "vendor" },
                 { "name": "number", "type": "string", "description": "This is the vendor's unique identifier for this item. The item number is case sensitive." },
                 { "name": "quantity", "type": "long", "description": "The number of units that this vendor currently has available for sale.", "required": false },
-                { "name": "data", "type": "string", "description": "JSON Document containing extended data about this item.", "required": false }
+                { "name": "prices", "type": "prices", "required": false },
             ]
+        },
+
+        "prices": {
+            { "name": "retail", "type": "money-iso4217", "required": false },
+            { "name": "sale", "type": "money-iso4217", "required": false },
+            { "name": "cost", "type": "money-iso4217", "required": false }
         },
 
         "term": {
             "description": "Represents the terms by which two vendors are transacting. Primary purpose is to capture things like 'NET30' so that both parties can correctly invoice and pay.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "vendor_guid", "type": "uuid", "references": "vendors.guid" },
+                { "name": "vendor", "type": "vendor" },
                 { "name": "code", "type": "string", "description": "An identifier that people at both vendors understand (e.g. NET30)." },
                 { "name": "description", "type": "string", "required": false, "description": "Description to help people understand the intent of the terms (e.g. Payment is due 30 days after receipt of invoice)" }
             ]
@@ -114,7 +134,7 @@
                 { "name": "agreement", "references": "agreements.guid" },
                 { "name": "item", "references": "items.guid" },
                 { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." },
-                { "name": "address", "references": "addresses.guid" }
+                { "name": "address", "type": "address" }
             ]
         },
 
@@ -124,7 +144,7 @@
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
                 { "name": "agreement", "references": "agreements.guid" },
                 { "name": "identifier", "type": "string", "description": "A human readable unique identifier for this shipment request. Format will be something like SR2014-123456 - SR: Shipment Request followed by the year followed by a number." },
-                { "name": "address", "references": "addresses.guid" }
+                { "name": "address", "type": "address" }
             ]
         },
 
@@ -147,60 +167,57 @@
                 { "name": "price", "type": "decimal" },
                 { "name": "vendor_receipt_number", "type": "string", "description": "Uniquely identifies this receipt in the vendor system. Main purpose is to guarantee idempotence" }
             ]
-        },
-
-        "error_message": {
-            "description": "A wrapper containing any error messages where appropriate. Will be commonly used with 4xx HTTP response codes primarily for PUT, POST, and PATCH operations.",
-            "fields": [
-                { "name": "code", "type": "string", "description": "Unique error code for this validation error" },
-                { "name": "messages", "type": "[string]", "description": "Description of what went wrong. Guaranteed to have at least one message, but there can be multiple messages if there are multiple validation errors", "minimum": 1 }
-            ]
         }
 
     },
 
-    "operations": {
+    "resources": {
 
-        "vendors": [
-            {
-                "method": "GET",
-                "description": "Search all vendors. Results are always paginated.",
-                "parameters": [
-                    { "name": "name", "type": "string", "required": false, "description": "Finds the vendor with this name. Exact match" },
-                    { "name": "key", "type": "string", "required": false, "description": "Finds the vendor with this key. Exact match" },
-                    { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
-                    { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-                ],
-                "responses": {
-                    "200": { "type": "[vendor]" }
+        "vendor": {
+
+            "path": "/vendors", // (defaults to plural of model name)
+
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all vendors. Results are always paginated.",
+                    "parameters": [
+                        { "name": "name", "type": "string", "required": false, "description": "Finds the vendor with this name. Exact match" },
+                        { "name": "key", "type": "string", "required": false, "description": "Finds the vendor with this key. Exact match" },
+                        { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[vendor]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "description": "Retrieve vendor with this guid.",
+                    "responses": {
+                        "200": { "type": "vendor" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "name", "type": "string" }
+                    ],
+                    "responses": {
+                        "201": { "type": "vendor" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/vendors/:guid"
                 }
-            },
-
-            {
-                "method": "GET",
-                "path": "/vendors/:guid",
-                "description": "Retrieve vendor with this guid.",
-                "responses": {
-                    "200": { "type": "vendor" }
-                }
-            },
-
-            {
-                "method": "POST",
-                "parameters": [
-                    { "name": "name", "type": "string" }
-                ],
-                "responses": {
-                    "201": { "type": "vendor" },
-                    "409": { "type": "error_message" }
-                }
-            },
-
-            {
-                "method": "DELETE",
-                "path": "/vendors/:guid"
-            }
-        ],
+            ]
+        },
 
         "items": [
             {
@@ -234,7 +251,7 @@
                 ],
                 "responses": {
                     "201": { "type": "item" },
-                    "409": { "type": "error_message" }
+                    "409": { "type": "[error]" }
                 }
             },
             {
@@ -247,7 +264,7 @@
                 ],
                 "responses": {
                     "200": { "type": "item" },
-                    "409": { "type": "error_message" }
+                    "409": { "type": "[error]" }
                 }
             },
             {
@@ -293,7 +310,7 @@
                 ],
                 "responses": {
                     "201": { "type": "term" },
-                    "409": { "type": "error_message" }
+                    "409": { "type": "[error]" }
                 }
             },
 
@@ -331,7 +348,7 @@
                 ],
                 "responses": {
                     "201": { "type": "agreement" },
-                    "409": { "type": "error_message" }
+                    "409": { "type": "[error]" }
                 }
             },
 
@@ -367,7 +384,7 @@
                 ],
                 "responses": {
                     "201": { "type": "shipment_schedule" },
-                    "409": { "type": "error_message" }
+                    "409": { "type": "[error]" }
                 }
             },
 
@@ -430,7 +447,7 @@
                 ],
                 "responses": {
                     "201": { "type": "purchase" },
-                    "409": { "type": "error_message" }
+                    "409": { "type": "[error]" }
                 }
             }
         ],
@@ -459,7 +476,7 @@
                 "description": "Closes an open shipment request ahead of schedule.",
                 "responses": {
                     "201": { "type": "shipment_request" },
-                    "409": { "type": "error_message" }
+                    "409": { "type": "[error]" }
                 }
             }
         ],
@@ -499,7 +516,7 @@
                 ],
                 "responses": {
                     "201": { "type": "receipt" },
-                    "409": { "type": "error_message" }
+                    "409": { "type": "[error]" }
                 }
             },
 

@@ -4,6 +4,50 @@ import scala.collection.immutable.StringOps
 
 object Text {
 
+  /**
+   * We require names to be alpha numeric and to start with a letter
+   */
+  def isValidName(name: String): Boolean = {
+    validateName(name).isEmpty
+  }
+
+  def validateName(name: String): Seq[String] = {
+    val alphaNumericError = if (isAlphaNumeric(name)) {
+                              Seq.empty
+                            } else {
+                              Seq("Name can only contain a-z, A-Z, 0-9 and _ characters")
+                            }
+
+    val startsWithLetterError = if (startsWithLetter(name)) {
+                                  Seq.empty
+                                } else if (name.size == 0) {
+                                  Seq("Name cannot be blank")
+                                } else {
+                                  Seq("Name must start with a letter")
+                                }
+
+    alphaNumericError ++ startsWithLetterError
+  }
+
+  private val AlphaNumericRx = "^[a-zA-Z0-9_]*$".r
+
+  def isAlphaNumeric(value: String): Boolean = {
+    value match {
+      case AlphaNumericRx() => true
+      case _ => false
+    }
+  }
+
+  private val StartsWithLetterRx = "^[a-zA-Z].*".r
+
+  def startsWithLetter(value: String): Boolean = {
+    val result = value match {
+      case StartsWithLetterRx() => true
+      case _ => false
+    }
+    result
+  }
+
   private val Ellipsis = "..."
 
   /**
@@ -33,7 +77,8 @@ object Text {
   }
 
   private val Plurals = Map("datum" -> "data",
-                            "person" -> "people")
+                            "person" -> "people",
+                            "species" -> "species")
   private val KnownPlurals = Plurals.values.toSet
 
   /**

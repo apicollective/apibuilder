@@ -237,18 +237,28 @@ private[core] object InternalReference {
   }
 }
 
-private[core] case class InternalParsedDatatype(name: String, multiple: Boolean)
+
+
+
+private[core] case class InternalParsedDatatype(name: String, multiple: Boolean, referencedModelName: Option[String])
 
 private[core] object InternalParsedDatatype {
 
-  def apply(value: String): InternalParsedDatatype = {
-    // TODO: Why do we have to drop the first element?
-    val letters = value.split("").drop(1)
+  private val ArrayRx = "^\\[(.+)\\]$".r
 
-    if (letters.head == "[" && letters.last == "]") {
-      InternalParsedDatatype(value.slice(1, letters.length - 1), true)
-    } else {
-      InternalParsedDatatype(value, false)
+  def apply(value: String): InternalParsedDatatype = {
+    value match {
+      case ArrayRx(word) => parseReference(word, true)
+      case _ => parseReference(value, false)
+    }
+  }
+
+  private val ReferencesRx = "^references\\((.+)\\)$".r
+
+  private def parseReference(value: String, multiple: Boolean): InternalParsedDatatype = {
+    value match {
+      case ArrayRx(modelName) => InternalParsedDatatype("reference", multiple, Some(modelName))
+      case _ => InternalParsedDatatype(value, multiple, None)
     }
   }
 

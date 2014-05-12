@@ -20,23 +20,28 @@ object ServiceDescription {
 
 case class ServiceDescription(internal: InternalServiceDescription) {
 
-  lazy val models = ModelResolver.build(internal.models)
-  lazy val operations = internal.operations.map { Operation(models, _) }
-  lazy val baseUrl = internal.baseUrl.getOrElse { sys.error("Missing base_url") }
-  lazy val name = internal.name.getOrElse { sys.error("Missing name") }
-  lazy val basePath = internal.basePath
-  lazy val description = internal.description
+  lazy val models: Seq[Model] = ModelResolver.build(internal.models)
+  lazy val operations: Seq[Operation] = internal.operations.map { Operation(models, _) }
+  lazy val baseUrl: Option[String] = internal.baseUrl
+  lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
+  lazy val description: Option[String] = internal.description
 
   def operationsForModel(model: Model): Seq[Operation] = {
     operations.filter(_.model.name == model.name)
   }
+
+  require(Text.isValidName(name))
 
 }
 
 case class Model(name: String,
                  plural: String,
                  description: Option[String],
-                 fields: Seq[Field])
+                 fields: Seq[Field]) {
+
+  require(Text.isValidName(name))
+
+}
 
 case class Operation(model: Model,
                      method: String,
@@ -136,6 +141,8 @@ object Response {
 
 }
 
+case class Error(code: String, message: String)
+
 sealed abstract class Datatype(val name: String, val example: Option[String] = None, val description: Option[String] = None) {
 
   /**
@@ -160,9 +167,15 @@ object Datatype {
   case object LongType extends Datatype("long")
   case object StringType extends Datatype("string")
 
+  case object ErrorType extends Datatype("error")
+
   case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
-                                               example = Some("2014-04-29T11:56:52Z"),
-                                               description = Some("Date time format in ISO 8601"))
+                                                   example = Some("2014-04-29T11:56:52Z"),
+                                                   description = Some("Date time format in ISO 8601"))
+
+  case object MoneyIso4217Type extends Datatype(name = "money-iso4217",
+                                                example = Some("USD 10.12"),
+                                                description = Some("ISO 4217 currency code followed by a space followed by the amount"))
 
   case object UuidType extends Datatype(name = "uuid",
                                         example = Some("5ecf6502-e532-4738-aad5-7ac9701251dd"),
@@ -170,9 +183,7 @@ object Datatype {
 
   case object UnitType extends Datatype("unit")
 
-  // TODO: case object ObjectType extends Datatype("objects")
-
-  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type)
+  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type, MoneyIso4217Type)
 
   def findByName(name: String): Option[Datatype] = {
     // TODO: This is weird. If we include UnitType in All - it ends up
@@ -319,6 +330,14 @@ object Field {
 
       case Datatype.DateTimeIso8601Type => {
         ISODateTimeFormat.basicDateTime.parseDateTime(value)
+      }
+
+      case Datatype.MoneyIso4217Type => {
+        sys.error("TODO: Validate money type[%s]".format(value))
+      }
+
+      case Datatype.ErrorType => {
+        sys.error("Not allowed to have a default for the error type")
       }
 
       case Datatype.StringType => ()

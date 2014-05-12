@@ -43,7 +43,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
   private[this] case class Route(op: Operation) {
 
     lazy val verb = op.method
-    lazy val url = service.basePath.getOrElse("") + op.path
+    lazy val url = op.path
     lazy val method = s"$controllerName.$methodName"
 
     lazy val parameters = parametersWithTypes(op.parameters)

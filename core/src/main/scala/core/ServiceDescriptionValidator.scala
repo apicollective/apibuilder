@@ -110,6 +110,15 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validateModels(): Seq[String] = {
+    val nameErrors = internalServiceDescription.get.models.flatMap { model =>
+      val errors = Text.validateName(model.name)
+      if (errors.isEmpty) {
+        None
+      } else {
+        Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" ")}")
+      }
+    }
+
     val fieldErrors = internalServiceDescription.get.models.filter { _.fields.isEmpty }.map { model =>
       s"Model[${model.name}] must have at least one field"
     }
@@ -118,7 +127,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
       s"Model[$modelName] appears more than once"
     }
 
-    fieldErrors ++ duplicates
+    nameErrors ++ fieldErrors ++ duplicates
   }
 
   private def validateFields(): Seq[String] = {

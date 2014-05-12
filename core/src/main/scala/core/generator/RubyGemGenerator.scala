@@ -38,7 +38,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
   private def generateClient(): String = {
     val sb = ListBuffer[String]()
-    val url = service.baseUrl + service.basePath.getOrElse("")
+    val url = service.baseUrl
 
     sb.append(s"""
   class Client
