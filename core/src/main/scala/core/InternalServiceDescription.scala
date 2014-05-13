@@ -237,14 +237,11 @@ private[core] object InternalReference {
   }
 }
 
-
-
-
 private[core] case class InternalParsedDatatype(name: String, multiple: Boolean, referencedModelName: Option[String])
 
 private[core] object InternalParsedDatatype {
 
-  private val ArrayRx = "^\\[(.+)\\]$".r
+  private val ArrayRx = "^\\[(.*)\\]$".r
 
   def apply(value: String): InternalParsedDatatype = {
     value match {

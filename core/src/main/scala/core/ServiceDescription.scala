@@ -30,8 +30,6 @@ case class ServiceDescription(internal: InternalServiceDescription) {
     operations.filter(_.model.name == model.name)
   }
 
-  require(Text.isValidName(name))
-
 }
 
 case class Model(name: String,
@@ -39,7 +37,7 @@ case class Model(name: String,
                  description: Option[String],
                  fields: Seq[Field]) {
 
-  require(Text.isValidName(name))
+  require(Text.isValidName(name), s"Model name[$name] is invalid - can only contain alphanumerics and underscores")
 
 }
 
