@@ -250,12 +250,17 @@ private[core] object InternalParsedDatatype {
     }
   }
 
-  private val ReferencesRx = "^references\\((.+)\\)$".r
+  private val ReferencesRx = "^reference\\[(.+)\\]$".r
 
   private def parseReference(value: String, multiple: Boolean): InternalParsedDatatype = {
     value match {
-      case ArrayRx(modelName) => InternalParsedDatatype("reference", multiple, Some(modelName))
-      case _ => InternalParsedDatatype(value, multiple, None)
+      case ReferencesRx(modelName) => {
+        InternalParsedDatatype("reference", multiple, Some(modelName))
+      }
+      case _ => {
+        println(" - not a refrence")
+        InternalParsedDatatype(value, multiple, None)
+      }
     }
   }
 

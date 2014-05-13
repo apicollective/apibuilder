@@ -5,7 +5,7 @@ import org.scalatest.Matchers
 
 class SvcApiDocJson extends FunSpec with Matchers {
 
-  private val Path = "svc/api.json"
+  private val Path = "api/api.json"
 
   it("parses models") {
     val service = TestHelper.parseFile(Path).serviceDescription.get

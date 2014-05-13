@@ -11,18 +11,21 @@ class InternalServiceDescriptionSpec extends FunSpec with Matchers {
       val dt = InternalParsedDatatype("string")
       dt.name should be("string")
       dt.multiple should be(false)
+      dt.referencedModelName should be(None)
     }
 
     it("Parses an array") {
       val dt = InternalParsedDatatype("[string]")
       dt.name should be("string")
       dt.multiple should be(true)
+      dt.referencedModelName should be(None)
     }
 
     it("handles malformed input") {
       val dt = InternalParsedDatatype("[")
       dt.name should be("[")
       dt.multiple should be(false)
+      dt.referencedModelName should be(None)
 
       val dt2 = InternalParsedDatatype("]")
       dt2.name should be("]")
@@ -34,6 +37,18 @@ class InternalServiceDescriptionSpec extends FunSpec with Matchers {
       val dt3 = InternalParsedDatatype("[]")
       dt3.name should be("")
       dt3.multiple should be(true)
+    }
+
+    it("parses a reference") {
+      val dt = InternalParsedDatatype("reference[user]")
+      dt.name should be("reference")
+      dt.multiple should be(false)
+      dt.referencedModelName should be(Some("user"))
+
+      val dt2 = InternalParsedDatatype("[reference[user]]")
+      dt2.name should be("reference")
+      dt2.multiple should be(true)
+      dt2.referencedModelName should be(Some("user"))
     }
 
   }

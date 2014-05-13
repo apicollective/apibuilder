@@ -1,8 +1,3 @@
-// Validate that all names use only characters and letters
-
-case class InternalReference(modelName: String)
-case class Reference(model: Model)
-
 {
     "base_url": "http://svc-iris-hub/svc-iris-hub/1.0",
 
@@ -33,19 +28,12 @@ case class Reference(model: Model)
             ]
         },
 
-        "mini_user": {
-            "fields": [
-                { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this user." },
-                { "name": "email", "type": "string" }
-            }
-        }
-
         "vendor_tag": {
             "description": "A user can apply one or more tags to a vendor. Tags are private to the user. When creating a vendor, you can also specify a tag to create a vendor tag transactionally which is a useful tool for attaching your own identifier to all vendors.",
 
             "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Uniquely identifies this vendor tag." },
-                { "name": "user", "type": "user" },
+                { "name": "user_guid", "type": "uuid", "description": "TODO: Change type to user" },
                 { "name": "vendor", "type": "reference[vendor]" },
                 { "name": "tag", "type": "string", "description": "The actual tag you have applied to this vendor" }
             ]
@@ -59,14 +47,16 @@ case class Reference(model: Model)
                 { "name": "vendor", "type": "vendor" },
                 { "name": "number", "type": "string", "description": "This is the vendor's unique identifier for this item. The item number is case sensitive." },
                 { "name": "quantity", "type": "long", "description": "The number of units that this vendor currently has available for sale.", "required": false },
-                { "name": "prices", "type": "prices", "required": false },
+                { "name": "prices", "type": "prices", "required": false }
             ]
         },
 
         "prices": {
-            { "name": "retail", "type": "money-iso4217", "required": false },
-            { "name": "sale", "type": "money-iso4217", "required": false },
-            { "name": "cost", "type": "money-iso4217", "required": false }
+            "fields": [
+                { "name": "retail", "type": "money-1so4217", "description": "The retail price for this item", "required": false },
+                { "name": "sale", "type": "money-1so4217", "description": "The retail price for this item", "required": false },
+                { "name": "cost", "type": "money-1so4217", "description": "The retail price for this item", "required": false }
+            ]
         },
 
         "term": {
@@ -175,7 +165,7 @@ case class Reference(model: Model)
 
         "vendor": {
 
-            "path": "/vendors", // (defaults to plural of model name)
+            "path": "/vendors",
 
             "operations": [
                 {
