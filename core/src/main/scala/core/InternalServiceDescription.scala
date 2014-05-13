@@ -76,12 +76,15 @@ case class InternalOperation(resourceName: String,
 
 }
 
+sealed trait InternalFieldType
+case class InternalNamedFieldType(name: String) extends InternalFieldType
+case class InternalReferenceFieldType(referencedModelName: String) extends InternalFieldType
+
 case class InternalField(name: Option[String] = None,
-                         datatype: Option[String] = None,
+                         fieldtype: Option[InternalFieldType] = None,
                          description: Option[String] = None,
                          required: Boolean = true,
                          multiple: Boolean = false,
-                         references: Option[InternalReference] = None,
                          default: Option[String] = None,
                          example: Option[String] = None,
                          minimum: Option[Long] = None,
@@ -184,14 +187,13 @@ object InternalResponse {
 object InternalField {
 
   def apply(json: JsObject): InternalField = {
-    val dt = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
+    val parsedDatatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
 
     InternalField(name = (json \ "name").asOpt[String],
-                  datatype = dt.map(_.name),
+                  fieldtype = parsedDatatype.map(_.toInternalFieldType),
                   description = (json \ "description").asOpt[String],
-                  references = (json \ "references").asOpt[String].map { InternalReference(_) },
                   required = (json \ "required").asOpt[Boolean].getOrElse(true),
-                  multiple = dt.map(_.multiple).getOrElse(false),
+                  multiple = parsedDatatype.map(_.multiple).getOrElse(false),
                   default = (json \ "default").asOpt[String],
                   minimum = (json \ "minimum").asOpt[Long],
                   maximum = (json \ "maximum").asOpt[Long],
@@ -218,26 +220,16 @@ object InternalParameter {
 
 }
 
-private[core] case class InternalReference(label: String, modelPlural: Option[String], fieldName: Option[String])
+private[core] case class InternalParsedDatatype(name: String, multiple: Boolean, referencedModelName: Option[String]) {
 
-private[core] object InternalReference {
-
-  def apply(value: String): InternalReference = {
-    val parts = value.split("\\.", 2)
-
-    if (parts.length == 0) {
-      InternalReference(value, None, None)
-
-    } else if (parts.length == 1) {
-      InternalReference(value, Some(parts.head), None)
-
-    } else {
-      InternalReference(value, Some(parts.head), Some(parts.last))
+  def toInternalFieldType: InternalFieldType = {
+    referencedModelName match {
+      case None => InternalNamedFieldType(name)
+      case Some(referencedName: String) => InternalReferenceFieldType(referencedName)
     }
   }
-}
 
-private[core] case class InternalParsedDatatype(name: String, multiple: Boolean, referencedModelName: Option[String])
+}
 
 private[core] object InternalParsedDatatype {
 

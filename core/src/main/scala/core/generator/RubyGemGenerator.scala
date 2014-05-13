@@ -1,7 +1,6 @@
 package core.generator
 
-import core.{ Datatype, Field, ServiceDescription, Model, ModelParameterType, Operation, Parameter, ParameterLocation, PrimitiveParameterType, Text }
-
+import core._
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -233,7 +232,18 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   private def parseArgument(field: Field): String = {
-    parsePrimitiveArgument(field.name, field.datatype, field.required, field.default)
+    field.fieldtype match {
+      case PrimitiveFieldType(datatype: Datatype) => {
+        parsePrimitiveArgument(field.name, datatype, field.required, field.default)
+      }
+      case ModelFieldType(model: Model) => {
+        sys.error("TODO")
+      }
+      case ReferenceFieldType(model: Model) => {
+        sys.error("TODO")
+      }
+    }
+
   }
 
   private def parseArgument(param: Parameter): String = {

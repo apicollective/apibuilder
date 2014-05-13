@@ -5,8 +5,8 @@ import org.scalatest.Matchers
 
 class ModelResolverSpec extends FunSpec with Matchers {
 
-  private val guidField = InternalField(name = Some("guid"), datatype = Some("uuid"))
-  private val userField = InternalField(name = Some("user"), references = Some(InternalReference("users.guid")))
+  private val guidField = InternalField(name = Some("guid"), fieldtype = Some(InternalParsedDatatype("uuid").toInternalFieldType))
+  private val userField = InternalField(name = Some("user"), fieldtype = Some(InternalParsedDatatype("user").toInternalFieldType))
 
   private val user = InternalModel(name = "user",
                                    plural = "users",
@@ -39,8 +39,8 @@ class ModelResolverSpec extends FunSpec with Matchers {
   }
 
   it("reference to own field") {
-    val keyField = InternalField(name = Some("key"), datatype = Some("string"))
-    val parentKeyField = InternalField(name = Some("parent_key"), references = Some(InternalReference("categories.key")))
+    val keyField = InternalField(name = Some("key"), fieldtype = Some(InternalParsedDatatype("string").toInternalFieldType))
+    val parentKeyField = InternalField(name = Some("parent"), fieldtype = Some(InternalParsedDatatype("category").toInternalFieldType))
 
     val category = InternalModel(name = "category",
                                  plural = "categories",
@@ -53,14 +53,14 @@ class ModelResolverSpec extends FunSpec with Matchers {
     val foo = InternalModel(name = "foo",
                             plural = "foos",
                             description = None,
-                            fields = Seq(InternalField(name = Some("guid"), datatype = Some("uuid")),
-                                         InternalField(name = Some("bar"), references = Some(InternalReference("bars.guid")))))
+                            fields = Seq(InternalField(name = Some("guid"), fieldtype = Some(InternalParsedDatatype("uuid").toInternalFieldType)),
+                                         InternalField(name = Some("bar"), fieldtype = Some(InternalParsedDatatype("bar").toInternalFieldType))))
 
     val bar = InternalModel(name = "bar",
                             plural = "bars",
                             description = None,
-                            fields = Seq(InternalField(name = Some("guid"), datatype = Some("uuid")),
-                                         InternalField(name = Some("foo"), references = Some(InternalReference("foos.guid")))))
+                            fields = Seq(InternalField(name = Some("guid"), fieldtype = Some(InternalParsedDatatype("uuid").toInternalFieldType)),
+                                         InternalField(name = Some("foo"), fieldtype = Some(InternalParsedDatatype("foo").toInternalFieldType))))
 
     // TODO: Scala test validation of exception
     try {

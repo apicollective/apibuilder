@@ -79,19 +79,31 @@ object Operation {
 }
 
 case class Field(name: String,
-                 datatype: Datatype,
+                 fieldtype: FieldType,
                  description: Option[String] = None,
                  required: Boolean = true,
                  multiple: Boolean = false,
-                 references: Option[Reference] = None,
                  default: Option[String] = None,
                  example: Option[String] = None,
                  minimum: Option[Long] = None,
                  maximum: Option[Long] = None)
 
+sealed trait FieldType
+case class PrimitiveFieldType(datatype: Datatype) extends FieldType
+case class ModelFieldType(model: Model) extends FieldType
+case class ReferenceFieldType(model: Model) extends FieldType
+
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
 case class ModelParameterType(model: Model) extends ParameterType
+
+object PrimitiveParameterType {
+
+  def apply(field: Field): PrimitiveParameterType = {
+    sys.error("TODO. Convert field to PrimitiveParameterType: " + field)
+  }
+
+}
 
 case class Parameter(name: String,
                      paramtype: ParameterType,
@@ -99,17 +111,11 @@ case class Parameter(name: String,
                      description: Option[String] = None,
                      required: Boolean = true,
                      multiple: Boolean = false,
-                     references: Option[Reference] = None,
                      default: Option[String] = None,
                      example: Option[String] = None,
                      minimum: Option[Long] = None,
                      maximum: Option[Long] = None)
 
-case class Reference(modelPlural: String, fieldName: String) {
-
-  lazy val label = s"$modelPlural.$fieldName"
-
-}
 
 case class Response(code: Int,
                     datatype: String,
@@ -209,7 +215,7 @@ object Parameter {
 
   def apply(field: Field, location: ParameterLocation): Parameter = {
     Parameter(name = field.name,
-              paramtype = PrimitiveParameterType(field.datatype),
+              paramtype = PrimitiveParameterType(field),
               location = location,
               description = field.description,
               required = true)
@@ -255,38 +261,42 @@ object Field {
   }
 
   def apply(models: Seq[Model], internal: InternalField, modelPlural: Option[String], fields: Seq[Field]): Field = {
-    val datatype = internal.datatype match {
-      case Some(name: String) => {
-        Datatype.findByName(name).getOrElse {
-          sys.error(s"Invalid datatype[${name}]")
+    val fieldtype = internal.fieldtype match {
+      case Some(nft: InternalNamedFieldType) => {
+        Datatype.findByName(nft.name) match {
+          case Some(dt: Datatype) => {
+            internal.default.map { v => assertValidDefault(dt, v) }
+            PrimitiveFieldType(dt)
+          }
+
+          case None => {
+            require(internal.default.isEmpty, s"Cannot have a default for a field of type[${nft.name}]")
+
+            val model = models.find { m => m.name == nft.name }.getOrElse {
+              sys.error(s"Invalid field type[${nft.name}]. Must be a valid primitive datatype or the name of a known model")
+            }
+            ModelFieldType(model)
+          }
         }
+      }
+
+      case Some(rft: InternalReferenceFieldType) => {
+        require(internal.default.isEmpty, s"Cannot have a default for a field of type[reference]")
+
+        val model = models.find { m => m.name == rft.referencedModelName }.getOrElse {
+          sys.error(s"Invalid model in reference field type[${rft.referencedModelName}]. Must be the name of a known model")
+        }
+        ReferenceFieldType(model)
       }
 
       case None => {
-        val ref = internal.references.getOrElse {
-          sys.error("No datatype nor reference for field: " + internal)
-        }
-
-        val field = if (modelPlural == ref.modelPlural) {
-          fields.find { _.name == ref.fieldName.get }.getOrElse {
-            sys.error(s"Reference[${ref.label}] does not exist")
-          }
-        } else {
-          Field.findByModelPluralAndFieldName(models, ref.modelPlural.get, ref.fieldName.get).getOrElse {
-            sys.error(s"Reference[${ref.label}] does not exist")
-          }
-        }
-
-        field.datatype
+        sys.error("missing field type")
       }
     }
 
-    internal.default.map { v => assertValidDefault(datatype, v) }
-
     Field(name = internal.name.get,
-          datatype = datatype,
+          fieldtype = fieldtype,
           description = internal.description,
-          references = internal.references.map { Reference(_) },
           required = internal.required,
           multiple = internal.multiple,
           default = internal.default,
@@ -345,10 +355,3 @@ object Field {
 
 }
 
-object Reference {
-
-  def apply(internal: InternalReference): Reference = {
-    Reference(internal.modelPlural.get, internal.fieldName.get)
-  }
-
-}

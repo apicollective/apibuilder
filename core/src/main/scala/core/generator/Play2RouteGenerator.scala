@@ -78,7 +78,9 @@ case class Play2RouteGenerator(service: ServiceDescription) {
             case Datatype.DecimalType => "BigDecimal"
             case Datatype.UuidType => "UUID"
             case Datatype.DateTimeIso8601Type => "DateTime"
+            case Datatype.MoneyIso4217Type => "String"
             case Datatype.UnitType => "Unit"
+            case Datatype.ErrorType => sys.error("Invalid parameter type")
           }
 
           if (param.required) {

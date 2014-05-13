@@ -13,8 +13,8 @@ class SvcApiDocJson extends FunSpec with Matchers {
 
     val user = service.models.find(_.name == "user").get
     user.fields.map(_.name).mkString(" ") should be("guid email name image_url")
-    user.fields.find(_.name == "guid").get.datatype.name should be("uuid")
-    user.fields.find(_.name == "email").get.datatype.name should be("string")
+    user.fields.find(_.name == "guid").get.fieldtype.asInstanceOf[PrimitiveFieldType].datatype.name should be("uuid")
+    user.fields.find(_.name == "email").get.fieldtype.asInstanceOf[PrimitiveFieldType].datatype.name should be("string")
   }
 
 

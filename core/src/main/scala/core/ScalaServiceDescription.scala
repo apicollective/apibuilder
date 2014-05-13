@@ -61,7 +61,13 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
 
   def originalName: String = field.name
 
-  def datatype: ScalaDataType = ScalaDataType(field.datatype)
+  def datatype: ScalaDataType = field.fieldtype match {
+
+    case t: PrimitiveFieldType => ScalaDataType(t.datatype)
+    case m: ModelFieldType => new ScalaDataType(underscoreToInitCap(m.model.name))
+    case r: ReferenceFieldType => new ScalaDataType(underscoreToInitCap(s"Reference[#{underscoreToInitCap(r.model.name)}]"))
+
+  }
 
   def description: String = field.description.map(ScalaUtil.textToComment).getOrElse("")
 

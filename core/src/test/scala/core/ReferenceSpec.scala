@@ -18,7 +18,7 @@ class ReferenceSpec extends FunSpec with Matchers {
         },
         "account": {
           "fields": [
-            { "name": "user", "references": "users.guid" }
+            { "name": "user", "type": "user" }
           ]
         }
       }
@@ -28,7 +28,14 @@ class ReferenceSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val account = validator.serviceDescription.get.models.find { _.name == "account" }.get
     account.fields.head.name should be("user")
-    account.fields.head.datatype.name should be("uuid")
+    account.fields.head.fieldtype match {
+      case ReferenceFieldType(model: Model) => {
+        model.name should be("user")
+      }
+      case _ => {
+        fail("expected uuid")
+      }
+    }
   }
 
 }

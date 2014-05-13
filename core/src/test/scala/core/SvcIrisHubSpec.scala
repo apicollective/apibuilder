@@ -25,7 +25,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
     val item = service.models.find(_.name == "item").get
     item.fields.map(_.name).mkString(" ") should be("guid vendor number quantity data")
-    item.fields.find(_.name == "number").get.datatype.name should be("string")
+    item.fields.find(_.name == "number").get.fieldtype.asInstanceOf[PrimitiveFieldType].datatype.name should be("string")
   }
 
   it("parses operations") {

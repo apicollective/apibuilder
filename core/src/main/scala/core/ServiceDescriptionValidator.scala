@@ -49,7 +49,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateModels ++ validateFields ++ validateDatatypes ++ validateReferences ++ validateOperations ++ validateParameters ++ validateResponses
+          validateModels ++ validateFields ++ validateParameterTypes ++ validateFieldTypes ++ validateOperations ++ validateParameters ++ validateResponses
         } else {
           requiredFieldErrors
         }
@@ -82,26 +82,27 @@ case class ServiceDescriptionValidator(apiJson: String) {
   /**
    * Validate references to ensure they refer to proper data
    */
-  private def validateReferences(): Seq[String] = {
+  private def validateFieldTypes(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
-      model.fields.flatMap { field =>
-        field.references.flatMap { ref =>
-          if (ref.modelPlural.isEmpty || ref.fieldName.isEmpty) {
-            Some("Model ${model.name} field ${field.name.get} reference[${ref.label}] must contain a model name and a field name (e.g. users.guid)")
+      model.fields.filter { f => !f.fieldtype.isEmpty && !f.name.isEmpty }.flatMap { field =>
+        field.fieldtype.get match {
 
-          } else {
-            internalServiceDescription.get.models.find { m => m.plural == ref.modelPlural.get } match {
-
-              case None => Some(s"${model.name}.${field.name.get} has invalid reference to ${ref.label}. Model[${ref.modelPlural.get}] does not exist")
-
-              case Some(refModel: InternalModel) => {
-                refModel.fields.find(m => m.name == ref.fieldName ) match {
-                  case None => Some(s"${model.name}.${field.name.get} has invalid reference to ${ref.label}. Model[${refModel.name}] does not have a field named[${ref.fieldName.get}]")
-
-                  case Some(f: InternalField) => None
+          case nft: InternalNamedFieldType => {
+            Datatype.findByName(nft.name) match {
+              case None => {
+                internalServiceDescription.get.models.find { _.name == nft.name } match {
+                  case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model nor datatype named[${nft.name}]")
+                  case Some(_) => None
                 }
               }
+              case Some(_) => None
+            }
+          }
 
+          case rft: InternalReferenceFieldType => {
+            internalServiceDescription.get.models.find { _.name == rft.referencedModelName } match {
+              case None => Some(s"${model.name}.${field.name.get} has invalid reference. Model[${rft.referencedModelName}] does not exist")
+              case Some(m: InternalModel) => None
             }
           }
         }
@@ -131,11 +132,17 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validateFields(): Seq[String] = {
-    internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter { f => f.datatype.isEmpty && f.references.isEmpty }.map { f =>
-        s"Model[${model.name}] field[${f.name}] must have either a datatype or references element"
+    val missingTypes = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter { _.fieldtype.isEmpty }.map { f =>
+        s"Model[${model.name}] field[${f.name.get}] must have a type"
       }
     }
+    val missingNames = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter { _.name.isEmpty }.map { f =>
+        s"Model[${model.name}] field[${f.name}] must have a name"
+      }
+    }
+    missingTypes ++ missingNames
   }
 
   private def validateResponses(): Seq[String] = {
@@ -198,17 +205,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
     missingNames ++ missingTypes
   }
 
-  private def validateDatatypes(): Seq[String] = {
-    val modelErrors = internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter( !_.datatype.isEmpty ).flatMap { field =>
-        Datatype.findByName(field.datatype.get) match {
-          case None => Some(s"Field ${model.name}.${field.name.get} has an invalid datatype[${field.datatype.get}]. Must be one of: ${ValidDatatypes}")
-          case Some(d: Datatype) => None
-        }
-      }
-    }
-
-    val parameterErrors = internalServiceDescription.get.operations.flatMap { op =>
+  private def validateParameterTypes(): Seq[String] = {
+    internalServiceDescription.get.operations.flatMap { op =>
       op.parameters.filter( !_.paramtype.isEmpty ).flatMap { param =>
 
         val typeName = param.paramtype.get
@@ -232,8 +230,6 @@ case class ServiceDescriptionValidator(apiJson: String) {
         }
       }
     }
-
-    modelErrors ++ parameterErrors
   }
 
   private def validateOperations(): Seq[String] = {

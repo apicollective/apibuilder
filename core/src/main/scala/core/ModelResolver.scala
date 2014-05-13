@@ -41,12 +41,20 @@ private[core] object ModelResolver {
   }
 
   private def referencesSatisfied(models: Seq[Model], im: InternalModel): Boolean = {
-    im.fields.flatMap(_.references).find { ref =>
-      if (ref.modelPlural.get == im.plural) {
-        false
-      } else {
-        Field.findByModelPluralAndFieldName(models, ref.modelPlural.get, ref.fieldName.get).isEmpty
+    im.fields.map { field =>
+      field.fieldtype match {
+        case None => true
+
+        case Some(InternalNamedFieldType(name: String)) => {
+          !Datatype.findByName(name).isEmpty || !models.find { _.name == name }.isEmpty
+        }
+
+        case Some(InternalReferenceFieldType(referencedModelName: String)) => {
+          !models.find { _.name == referencedModelName }.isEmpty
+        }
+
       }
+
     }.isEmpty
   }
 
