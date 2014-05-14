@@ -100,9 +100,21 @@ case class ModelParameterType(model: Model) extends ParameterType
 object PrimitiveParameterType {
 
   def apply(field: Field): PrimitiveParameterType = {
-    sys.error("TODO. Convert field to PrimitiveParameterType: " + field)
-  }
+    field.fieldtype match {
 
+      case pft: PrimitiveFieldType => {
+        PrimitiveParameterType(pft.datatype)
+      }
+
+      case mft: ModelFieldType => {
+        sys.error("Cannot convert model fieldtype[%s] to parameter type".format(field.fieldtype))
+      }
+
+      case rft: ReferenceFieldType => {
+        sys.error("Cannot convert reference fieldtype[%s] to parameter type".format(field.fieldtype))
+      }
+    }
+  }
 }
 
 case class Parameter(name: String,

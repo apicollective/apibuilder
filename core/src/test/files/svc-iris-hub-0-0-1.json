@@ -53,9 +53,9 @@
 
         "prices": {
             "fields": [
-                { "name": "retail", "type": "money-1so4217", "description": "The retail price for this item", "required": false },
-                { "name": "sale", "type": "money-1so4217", "description": "The retail price for this item", "required": false },
-                { "name": "cost", "type": "money-1so4217", "description": "The retail price for this item", "required": false }
+                { "name": "retail", "type": "money-iso4217", "description": "The retail price for this item", "required": false },
+                { "name": "sale", "type": "money-iso4217", "description": "The retail price for this item", "required": false },
+                { "name": "cost", "type": "money-iso4217", "description": "The retail price for this item", "required": false }
             ]
         },
 
