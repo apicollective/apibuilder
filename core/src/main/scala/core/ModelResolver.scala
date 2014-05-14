@@ -41,16 +41,16 @@ private[core] object ModelResolver {
   }
 
   private def referencesSatisfied(models: Seq[Model], im: InternalModel): Boolean = {
-    im.fields.map { field =>
+    im.fields.find { field =>
       field.fieldtype match {
-        case None => true
+        case None => false
 
         case Some(InternalNamedFieldType(name: String)) => {
-          !Datatype.findByName(name).isEmpty || !models.find { _.name == name }.isEmpty
+          Datatype.findByName(name).isEmpty && models.find { _.name == name }.isEmpty
         }
 
         case Some(InternalReferenceFieldType(referencedModelName: String)) => {
-          !models.find { _.name == referencedModelName }.isEmpty
+          models.find { _.name == referencedModelName }.isEmpty
         }
 
       }

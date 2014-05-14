@@ -341,7 +341,10 @@ object Field {
       }
 
       case Datatype.MoneyIso4217Type => {
-        sys.error("TODO: Validate money type[%s]".format(value))
+        val errors = MoneyIso4217.validate(value)
+        if (!errors.isEmpty) {
+          sys.error(errors.mkString(" "))
+        }
       }
 
       case Datatype.ErrorType => {

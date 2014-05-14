@@ -250,7 +250,6 @@ private[core] object InternalParsedDatatype {
         InternalParsedDatatype("reference", multiple, Some(modelName))
       }
       case _ => {
-        println(" - not a refrence")
         InternalParsedDatatype(value, multiple, None)
       }
     }

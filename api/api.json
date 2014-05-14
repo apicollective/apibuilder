@@ -28,8 +28,8 @@
             "description": "A membership represents a user in a specific role to an organization. Memberships cannot be created directly. Instead you first create a membership request, then that request is either accepted or declined.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this membership." },
-                { "name": "user", "references": "users.guid" },
-                { "name": "organization", "references": "organizations.guid" },
+                { "name": "user", "type": "user" },
+                { "name": "organization", "type": "organization" },
                 { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" }
             ]
         },
@@ -38,8 +38,8 @@
             "description": "A membership request represents a user requesting to join an organization with a specificed role (e.g. as a member or an admin). Membership requests can be reviewed by any current admin of the organization who can either accept or decline the request.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this membership request." },
-                { "name": "user", "references": "users.guid" },
-                { "name": "organization", "references": "organizations.guid" },
+                { "name": "user", "type": "user" },
+                { "name": "organization", "type": "organization" },
                 { "name": "role", "type": "string", "description": "The requested role for membership to this organization. Typically member or admin.", "example": "member" }
             ]
         },
@@ -47,7 +47,7 @@
         "membership_request_review": {
             "description": "A membership request review allows a user to either accept or decline a membership request.",
             "fields": [
-                { "name": "membership_request", "references": "membership_requests.guid" },
+                { "name": "membership_request", "type": "membership_request" },
                 { "name": "action", "type": "string", "description": "'accept' or 'decline'", "example": "accept" }
             ]
         },
