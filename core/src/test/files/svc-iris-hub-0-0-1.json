@@ -74,9 +74,9 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this agreement" },
                 { "name": "identifier", "type": "string", "description": "A human readable unique identifier for this agreement. Format will be something like IA2014-123456 - IA: Iris Agreement followed by the year followed by a number." },
-                { "name": "purchasing_vendor", "references": "vendors.guid", "description": "The vendor that will be purchasing items - i.e. the vendor that will be responsible for creating the Purchases in Iris Hub" },
-                { "name": "fulfilling_vendor", "references": "vendors.guid", "description": "The vendor that will be fulfilling items - i.e. the vendor that will be responsible for receiving a shipment request and actually shipping the goods." },
-                { "name": "term", "references": "terms.guid", "description": "The specific payment terms in place for this agreement" },
+                { "name": "purchasing_vendor", "type": "vendor", "description": "The vendor that will be purchasing items - i.e. the vendor that will be responsible for creating the Purchases in Iris Hub" },
+                { "name": "fulfilling_vendor", "type": "vendor", "description": "The vendor that will be fulfilling items - i.e. the vendor that will be responsible for receiving a shipment request and actually shipping the goods." },
+                { "name": "term", "type": "term", "description": "The specific payment terms in place for this agreement" },
                 { "name": "begin_datetime", "type": "date-time-iso8601", "description": "The date on which this agreement goes into effect." },
                 { "name": "end_datetime", "type": "date-time-iso8601", "required": false, "description": "The date on which this agreement ends. If not specified, this agreement is considered perpetual and it never ends." },
                 { "name": "currency", "type": "string", "description": "Determines the currency in which transactions pertaining to this agreement are made. The value is the 3-character upper case iso4217 code for this currency", "example": "USD or EUR" }
@@ -87,7 +87,7 @@
             "description": "A shipment schedule defines how frequently a vendor would like to ship. A common use case is to ship every week on monday. IRIS will then aggregate pending purchases into a single shipment request on Mondays for the vendor to ship in bulk.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "vendor", "references": "vendors.guid" },
+                { "name": "vendor", "type": "vendor" },
                 { "name": "frequency", "type": "string", "description": "supported values: immediate (e.g. for drop ship orders create shipment requests immediately following purchase), daily (create one shipment request / day), weekly (create one shipment request / week)." },
                 { "name": "begin_datetime", "type": "date-time-iso8601", "description": "Date on which to start schedule. For daily/weekly schedules, determines the day of the week on which to generate a shipment request" }
             ]
@@ -121,8 +121,8 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
                 { "name": "vendor_purchase_number", "type": "string", "description": "Unique identifier in vendor's system for this purchase. This token is used to ensure that a purchase is not duplicated in IRIS" },
-                { "name": "agreement", "references": "agreements.guid" },
-                { "name": "item", "references": "items.guid" },
+                { "name": "agreement", "type": "agreement" },
+                { "name": "item", "type": "item" },
                 { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." },
                 { "name": "address", "type": "address" }
             ]
@@ -132,7 +132,7 @@
             "description": "A shipment request refers to a collection of items that the fulfilling vendor should now ship to a single address, subject to the terms of a single agreement. Conceptually - a shipment request relates to one order that the vendor must now ship - containing at least 1 item in it.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "agreement", "references": "agreements.guid" },
+                { "name": "agreement", "type": "agreement" },
                 { "name": "identifier", "type": "string", "description": "A human readable unique identifier for this shipment request. Format will be something like SR2014-123456 - SR: Shipment Request followed by the year followed by a number." },
                 { "name": "address", "type": "address" }
             ]
@@ -141,8 +141,8 @@
         "shipment_request_item": {
             "description": "Represents the list of items inside one shipment request.",
             "fields": [
-                { "name": "shipment_request", "references": "shipment_requests.guid" },
-                { "name": "item", "references": "items.guid" },
+                { "name": "shipment_request", "type": "shipment_request" },
+                { "name": "item", "type": "item" },
                 { "name": "item_number", "type": "string", "description": "The fulfilling vendor's number" },
                 { "name": "quantity", "type": "long", "description": "The quantity requested for this item", "minimum": 1 }
             ]
@@ -152,8 +152,8 @@
             "description": "A receipt represents a single unit of merchandise that was received.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "agreement", "references": "agreements.guid" },
-                { "name": "item", "references": "items.guid" },
+                { "name": "agreement", "type": "agreement" },
+                { "name": "item", "type": "item" },
                 { "name": "price", "type": "decimal" },
                 { "name": "vendor_receipt_number", "type": "string", "description": "Uniquely identifies this receipt in the vendor system. Main purpose is to guarantee idempotence" }
             ]
