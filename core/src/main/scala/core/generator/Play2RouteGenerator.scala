@@ -47,11 +47,15 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     lazy val method = s"$controllerName.$methodName"
 
     lazy val parameters = parametersWithTypes(op.parameters)
-    lazy val pathParameters = parametersWithTypes(op.parameters.filter { param => param.location == ParameterLocation.Path })
+    lazy val pathParameters = parametersWithTypes(op.pathParameters)
 
-    private lazy val methodName = op.method.toLowerCase + Text.initCap(op.path.split("/"))
+    private lazy val methodName = if (op.pathParameters.isEmpty) {
+      op.method.toLowerCase
+    } else {
+      op.method.toLowerCase + "By" + op.pathParameters.map( p => Text.initCap(Text.safeName(p.name)) ).mkString("And")
+    }
 
-    private lazy val controllerName: String = "controllers." + Text.underscoreToInitCap(op.model.name)
+    private lazy val controllerName: String = "controllers." + Text.underscoreToInitCap(op.model.plural)
 
     private def parametersWithTypes(params: Seq[Parameter]): Seq[String] = {
       params.map { param =>
@@ -76,7 +80,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
             case Datatype.IntegerType => "Int"
             case Datatype.BooleanType => "Boolean"
             case Datatype.DecimalType => "BigDecimal"
-            case Datatype.UuidType => "UUID"
+            case Datatype.UuidType => "String"
             case Datatype.DateTimeIso8601Type => "DateTime"
             case Datatype.MoneyIso4217Type => "String"
             case Datatype.UnitType => "Unit"

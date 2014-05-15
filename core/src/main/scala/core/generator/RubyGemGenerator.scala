@@ -112,7 +112,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
       } else {
         op.method.toLowerCase + "_by_" + op.pathParameters.map( p => Text.safeName(p.name) ).mkString("_and_")
       }
-      println(methodName)
 
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
