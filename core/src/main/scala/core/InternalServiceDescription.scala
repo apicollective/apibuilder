@@ -217,7 +217,7 @@ object InternalField {
                   description = (json \ "description").asOpt[String],
                   required = (json \ "required").asOpt[Boolean].getOrElse(true),
                   multiple = parsedDatatype.map(_.multiple).getOrElse(false),
-                  default = (json \ "default").asOpt[String],
+                  default = JsonStringParser.asOptString(json, "default"),
                   minimum = (json \ "minimum").asOpt[Long],
                   maximum = (json \ "maximum").asOpt[Long],
                   example = (json \ "example").asOpt[String])
@@ -235,10 +235,24 @@ object InternalParameter {
                       description = (json \ "description").asOpt[String],
                       required = (json \ "required").asOpt[Boolean].getOrElse(true),
                       multiple = dt.map(_.multiple).getOrElse(false),
-                      default = (json \ "default").asOpt[String],
+                      default = JsonStringParser.asOptString(json, "default"),
                       minimum = (json \ "minimum").asOpt[Long],
                       maximum = (json \ "maximum").asOpt[Long],
                       example = (json \ "example").asOpt[String])
+  }
+
+}
+
+/**
+ * Parse numbers and string json values as strings
+ */
+private[core] object JsonStringParser {
+
+  def asOptString(json: JsValue, field: String): Option[String] = {
+    (json \ field) match {
+      case (_: JsUndefined) => None
+      case (v: JsValue) => Some(v.toString)
+    }
   }
 
 }
