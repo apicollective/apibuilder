@@ -40,25 +40,29 @@ class BrokenSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "operations": {
-        "vendors": [
-          {
-            "method": "POST",
-            "parameters": [
-              { "name": "guid", "type": "string" },
-              { "name": "tag", "type": "[string]", "required": false }
-            ],
-            "responses": {
-              "200": { "type": "vendor" }
+      "resources": [
+        {
+          "model": "vendor",
+          "operations": [
+            {
+              "method": "POST",
+              "parameters": [
+                { "name": "guid", "type": "string" },
+                { "name": "tag", "type": "[string]", "required": false }
+              ],
+              "responses": {
+                "200": { "type": "vendor" }
+              }
             }
-          }
-        ]
-      }
+          ]
+        }
+      ]
     }
     """
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString should be("")
-    val operation = validator.serviceDescription.get.operations.head
+
+    val operation = validator.serviceDescription.get.resources.head.operations.head
     operation.method should be("POST")
     operation.parameters.find { _.name == "guid" }.get.multiple should be(false)
 

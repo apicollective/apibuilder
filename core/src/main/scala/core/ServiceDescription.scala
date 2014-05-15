@@ -21,13 +21,13 @@ object ServiceDescription {
 case class ServiceDescription(internal: InternalServiceDescription) {
 
   lazy val models: Seq[Model] = ModelResolver.build(internal.models)
-  lazy val operations: Seq[Operation] = internal.operations.map { Operation(models, _) }
+  lazy val resources: Seq[Resource] = internal.resources.map { Resource(models, _) }
   lazy val baseUrl: Option[String] = internal.baseUrl
   lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
   lazy val description: Option[String] = internal.description
 
   def operationsForModel(model: Model): Seq[Operation] = {
-    operations.filter(_.model.name == model.name)
+    resources.find { _.model.name == model.name }.map(_.operations).getOrElse(Seq.empty)
   }
 
 }
@@ -41,6 +41,10 @@ case class Model(name: String,
 
 }
 
+case class Resource(model: Model,
+                    path: String,
+                    operations: Seq[Operation])
+
 case class Operation(model: Model,
                      method: String,
                      path: String,
@@ -52,13 +56,22 @@ case class Operation(model: Model,
 
 }
 
+object Resource {
+
+  def apply(models: Seq[Model], internal: InternalResource): Resource = {
+    val model = models.find { _.name == internal.modelName.get }.getOrElse {
+      sys.error(s"Could not find model for resource[${internal.modelName}]")
+    }
+    Resource(model = model,
+             path = internal.path,
+             operations = internal.operations.map(op => Operation(models, model, op)))
+  }
+
+}
+
 object Operation {
 
-  def apply(models: Seq[Model], internal: InternalOperation): Operation = {
-    val model = models.find { _.plural == internal.resourceName }.getOrElse {
-      sys.error("Could not find model for operation: " + internal)
-    }
-
+  def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val pathParameters = internal.namedParameters.map { paramName =>
       model.fields.find { _.name == paramName }.map( f => Parameter(f, ParameterLocation.Path) ).getOrElse {
         sys.error(s"Could not find operation path parameter with name[${paramName}] for model[${model.name}]")

@@ -12,7 +12,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
   private val GlobalPad = 5
 
   def generate(): Option[String] = {
-    val all = service.operations.map { Route(_) }
+    val all = service.resources.flatMap( _.operations.map { Route(_) } )
     if (all.size == 0) {
       None
     } else {

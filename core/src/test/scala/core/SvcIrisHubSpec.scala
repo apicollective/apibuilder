@@ -19,7 +19,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
   it("parses models") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
-    service.models.map(_.name).sorted.mkString(" ") should be("address agreement item planned_shipment prices purchase " +
+    service.models.map(_.name).sorted.mkString(" ") should be("address agreement error item planned_shipment prices purchase " +
                                                               "receipt shipment_request shipment_request_item shipment_schedule " +
                                                               "term user vendor vendor_tag")
 
@@ -30,9 +30,11 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
   it("parses operations") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
-    val operations = service.operations.filter(_.model.name == "item")
+    val itemResource = service.resources.find { _.model.name == "item" }.getOrElse {
+      sys.error("Could not find item resource")
+    }
 
-    val gets = operations.filter(op => op.method == "GET" && op.path == "/items")
+    val gets = itemResource.operations.filter(op => op.method == "GET" && op.path == "/items")
     gets.size should be(1)
     gets.head.parameters.map(_.name).mkString(" ") should be("vendor_guid agreement_guid number limit offset")
     val response = gets.head.responses.head
@@ -40,12 +42,12 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
     response.datatype should be("item")
     response.multiple should be(true)
 
-    val getsByGuid = operations.filter(op => op.method == "GET" && op.path == "/items/:guid")
+    val getsByGuid = itemResource.operations.filter(op => op.method == "GET" && op.path == "/items/:guid")
     getsByGuid.size should be(1)
     getsByGuid.head.parameters.map(_.name).mkString(" ") should be("guid")
     getsByGuid.head.responses.map(_.code) should be(Seq(200))
 
-    val deletes = operations.filter(op => op.method == "DELETE" )
+    val deletes = itemResource.operations.filter(op => op.method == "DELETE" )
     deletes.size should be(1)
     deletes.head.parameters.map(_.name).mkString(" ") should be("guid")
     deletes.head.responses.map(_.code) should be(Seq(204))
@@ -53,7 +55,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
   it("all POST operations return either a 201 or a 409") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
-    service.operations.filter(_.method == "POST").foreach { op =>
+    service.resources.flatMap(_.operations.filter(_.method == "POST")).foreach { op =>
       if (op.responses.map(_.code).sorted != Seq(201, 409)) {
         fail("POST operation should return a 201 or a 409: " + op)
       }

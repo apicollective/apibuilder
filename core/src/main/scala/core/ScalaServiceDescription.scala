@@ -23,7 +23,7 @@ class ScalaServiceDescription(serviceDescription: ServiceDescription) {
 
   val models = serviceDescription.models.map { new ScalaModel(_) }
 
-  val operations = serviceDescription.operations.map { new ScalaOperation(_) }
+  val operations = serviceDescription.resources.flatMap(_.operations.map { new ScalaOperation(_) })
 
 }
 

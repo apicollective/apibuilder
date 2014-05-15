@@ -112,19 +112,22 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "operations": {
-        "users": [
-          {
-            "method": "DELETE",
-            "path": "/:guid"
-          }
-        ]
-      }
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "DELETE",
+              "path": "/:guid"
+            }
+          ]
+        }
+      ]
     }
     """
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
-    val response = validator.serviceDescription.get.operations.head.responses.head
+    val response = validator.serviceDescription.get.resources.head.operations.head.responses.head
     response.code should be(204)
   }
 
@@ -140,20 +143,23 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "operations": {
-        "users": [
-          {
-            "method": "GET",
-            "path": "/:guid",
-            "parameters": [
-              { "name": "guid", "type": "string" }
-            ],
-            "responses": {
-              "200": { "type": "%s" }
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:guid",
+              "parameters": [
+                { "name": "guid", "type": "string" }
+              ],
+              "responses": {
+                "200": { "type": "%s" }
+              }
             }
-          }
-        ]
-      }
+          ]
+        }
+      ]
     }
     """
 
@@ -173,19 +179,22 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "operations": {
-        "users": [
-          {
-            "method": "DELETE",
-            "path": "/:guid"
-          }
-        ]
-      }
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "DELETE",
+              "path": "/:guid"
+            }
+          ]
+        }
+      ]
     }
     """
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
-    val op = validator.serviceDescription.get.operations.head
+    val op = validator.serviceDescription.get.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
     guid.paramtype should be(PrimitiveParameterType(Datatype.UuidType))

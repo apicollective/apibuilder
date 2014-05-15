@@ -157,15 +157,20 @@
                 { "name": "price", "type": "decimal" },
                 { "name": "vendor_receipt_number", "type": "string", "description": "Uniquely identifies this receipt in the vendor system. Main purpose is to guarantee idempotence" }
             ]
+        },
+
+        "error": {
+            "fields": [
+                { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
+                { "name": "message", "type": "string", "description": "Description of the error" }
+            ]
         }
 
     },
 
-    "resources": {
-
-        "vendor": {
-
-            "path": "/vendors",
+    "resources": [
+        {
+            "model": "vendor",
 
             "operations": [
                 {
@@ -204,317 +209,343 @@
 
                 {
                     "method": "DELETE",
-                    "path": "/vendors/:guid"
+                    "path": "/:guid"
                 }
             ]
         },
 
-        "items": [
-            {
-                "method": "GET",
-                "description": "Search all items. Results are always paginated.",
-                "parameters": [
-                    { "name": "vendor_guid", "type": "uuid", "required": false },
-                    { "name": "agreement_guid", "type": "uuid", "required": false, "description": "Fetches items for the fulfilling vendor according to the specific agreement guid." },
-                    { "name": "number", "type": "string", "required": false },
-                    { "name": "limit", "type": "integer", "default": 50 },
-                    { "name": "offset", "type": "integer", "default": 0 }
-                ],
-                "responses": {
-                    "200": { "type": "[item]", "fields": ["guid", "vendor", "number", "quantity"] }
-                }
-            },
-            {
-                "method": "GET",
-                "path": "/items/:guid",
-                "description": "Gets the detailed view of this item, including the full json document of all of the attributes.",
-                "responses": {
-                    "200": { "type": "item" }
-                }
-            },
-            {
-                "method": "POST",
-                "parameters": [
-                    { "name": "vendor", "type": "vendor" },
-                    { "name": "number", "type": "string" },
-                    { "name": "quantity", "type": "long", "required": false, "default": 0 }
-                ],
-                "responses": {
-                    "201": { "type": "item" },
-                    "409": { "type": "[error]" }
-                }
-            },
-            {
-                "method": "PUT",
-                "path": "/items/:guid",
-                "parameters": [
-                    { "name": "guid", "type": "uuid" },
-                    { "name": "number", "type": "string" },
-                    { "name": "quantity", "type": "long" }
-                ],
-                "responses": {
-                    "200": { "type": "item" },
-                    "409": { "type": "[error]" }
-                }
-            },
-            {
-                "method": "PATCH",
-                "description": "Allows an incremental update to an existing item.",
-                "path": "/items/:guid",
-                "parameters": [
-                    { "name": "guid", "type": "uuid" },
-                    { "name": "number", "type": "string" },
-                    { "name": "quantity", "type": "long" }
-                ],
-                "responses": {
-                    "200": { "type": "item" }
-                }
-            },
-            {
-                "method": "DELETE",
-                "path": "/items/:guid"
-            }
-        ],
+        {
+            "model": "item",
 
-        "terms": [
-            {
-                "method": "GET",
-                "description": "Search all terms. Results are always paginated.",
-                "parameters": [
-                    { "name": "vendor_guid", "type": "uuid", "required": false },
-                    { "name": "code", "type": "string", "required": false },
-                    { "name": "limit", "type": "integer", "default": 50 },
-                    { "name": "offset", "type": "integer", "default": 0 }
-                ],
-                "responses": {
-                    "200": { "type": "[term]" }
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all items. Results are always paginated.",
+                    "parameters": [
+                        { "name": "vendor_guid", "type": "uuid", "required": false },
+                        { "name": "agreement_guid", "type": "uuid", "required": false, "description": "Fetches items for the fulfilling vendor according to the specific agreement guid." },
+                        { "name": "number", "type": "string", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[item]", "fields": ["guid", "vendor", "number", "quantity"] }
+                    }
+                },
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "description": "Gets the detailed view of this item, including the full json document of all of the attributes.",
+                    "responses": {
+                        "200": { "type": "item" }
+                    }
+                },
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "vendor", "type": "vendor" },
+                        { "name": "number", "type": "string" },
+                        { "name": "quantity", "type": "long", "required": false, "default": 0 }
+                    ],
+                    "responses": {
+                        "201": { "type": "item" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+                {
+                    "method": "PUT",
+                    "path": "/:guid",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid" },
+                        { "name": "number", "type": "string" },
+                        { "name": "quantity", "type": "long" }
+                    ],
+                    "responses": {
+                        "200": { "type": "item" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+                {
+                    "method": "PATCH",
+                    "description": "Allows an incremental update to an existing item.",
+                    "path": "/:guid",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid" },
+                        { "name": "number", "type": "string" },
+                        { "name": "quantity", "type": "long" }
+                    ],
+                    "responses": {
+                        "200": { "type": "item" }
+                    }
+                },
+                {
+                    "method": "DELETE",
+                    "path": "/:guid"
                 }
-            },
+            ]
+        },
 
-            {
-                "method": "POST",
-                "parameters": [
-                    { "name": "vendor_guid", "type": "vendor" },
-                    { "name": "code", "type": "string" },
-                    { "name": "description", "type": "string", "required": false }
-                ],
-                "responses": {
-                    "201": { "type": "term" },
-                    "409": { "type": "[error]" }
+        {
+            "model": "term",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all terms. Results are always paginated.",
+                    "parameters": [
+                        { "name": "vendor_guid", "type": "uuid", "required": false },
+                        { "name": "code", "type": "string", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[term]" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "vendor_guid", "type": "vendor" },
+                        { "name": "code", "type": "string" },
+                        { "name": "description", "type": "string", "required": false }
+                    ],
+                    "responses": {
+                        "201": { "type": "term" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/:guid"
                 }
-            },
+            ]
+        },
 
-            {
-                "method": "DELETE",
-                "path": "/terms/:guid"
-            }
-        ],
+        {
+            "model": "agreement",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all agreements. Results are always paginated.",
+                    "parameters": [
+                        { "name": "identifier", "type": "string", "required": false },
+                        { "name": "purchasing_vendor_guid", "type": "uuid", "required": false },
+                        { "name": "fulfilling_vendor_guid", "type": "uuid", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[agreement]" }
+                    }
+                },
 
-        "agreements": [
-            {
-                "method": "GET",
-                "description": "Search all agreements. Results are always paginated.",
-                "parameters": [
-                    { "name": "identifier", "type": "string", "required": false },
-                    { "name": "purchasing_vendor_guid", "type": "uuid", "required": false },
-                    { "name": "fulfilling_vendor_guid", "type": "uuid", "required": false },
-                    { "name": "limit", "type": "integer", "default": 50 },
-                    { "name": "offset", "type": "integer", "default": 0 }
-                ],
-                "responses": {
-                    "200": { "type": "[agreement]" }
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "purchasing_vendor", "type": "vendor" },
+                        { "name": "fulfilling_vendor", "type": "vendor" },
+                        { "name": "term", "type": "term" },
+                        { "name": "begin_datetime", "type": "date-time-iso8601" },
+                        { "name": "end_datetime", "type": "date-time-iso8601", "required": false },
+                        { "name": "currency", "type": "string", "description": "3-character upper case iso4217 code for this currency", "example": "USD or EUR" }
+                    ],
+                    "responses": {
+                        "201": { "type": "agreement" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/:guid"
                 }
-            },
+            ]
+        },
 
-            {
-                "method": "POST",
-                "parameters": [
-                    { "name": "purchasing_vendor", "type": "vendor" },
-                    { "name": "fulfilling_vendor", "type": "vendor" },
-                    { "name": "term", "type": "term" },
-                    { "name": "begin_datetime", "type": "date-time-iso8601" },
-                    { "name": "end_datetime", "type": "date-time-iso8601", "required": false },
-                    { "name": "currency", "type": "string", "description": "3-character upper case iso4217 code for this currency", "example": "USD or EUR" }
-                ],
-                "responses": {
-                    "201": { "type": "agreement" },
-                    "409": { "type": "[error]" }
+        {
+            "model": "shipment_schedule",
+            "path": "/shipment-schedules",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all shipment requests. Results are always paginated.",
+                    "parameters": [
+                        { "name": "agreement_guid", "type": "uuid", "required": false },
+                        { "name": "vendor_guid", "type": "uuid", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200":  { "type": "[shipment_schedule]" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "vendor", "type": "vendor" },
+                        { "name": "frequency", "type": "string" },
+                        { "name": "begin_datetime", "type": "date-time-iso8601" }
+                    ],
+                    "responses": {
+                        "201": { "type": "shipment_schedule" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "path": "/:guid",
+                    "method": "DELETE"
                 }
-            },
+            ]
+        },
 
-            {
-                "method": "DELETE",
-                "path": "/agreements/:guid"
-            }
-        ],
-
-        "shipment_schedules": [
-            {
-                "path": "/shipment-schedules",
-                "method": "GET",
-                "description": "Search all shipment requests. Results are always paginated.",
-                "parameters": [
-                    { "name": "agreement_guid", "type": "uuid", "required": false },
-                    { "name": "vendor_guid", "type": "uuid", "required": false },
-                    { "name": "limit", "type": "integer", "default": 50 },
-                    { "name": "offset", "type": "integer", "default": 0 }
-                ],
-                "responses": {
-                    "200":  { "type": "[shipment_schedule]" }
+        {
+            "model": "planned_shipment",
+            "path": "/planned-shipments",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Returns the upcoming planned shipments for a given agreement, filtered by a certain number of days. For example, you can request all planned shipments in the next 30 days - you will then see the actual upcoming dates, if any, that an open shipment request will be cloesd. Results are always paginated.",
+                    "parameters": [
+                        { "name": "agreement_guid", "type": "uuid" },
+                        { "name": "number_days", "type": "integer", "default": 7 },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[planned_shipment]" }
+                    }
                 }
-            },
+            ]
+        },
 
-            {
-                "path": "/shipment-schedules",
-                "method": "POST",
-                "parameters": [
-                    { "name": "vendor", "type": "vendor" },
-                    { "name": "frequency", "type": "string" },
-                    { "name": "begin_datetime", "type": "date-time-iso8601" }
-                ],
-                "responses": {
-                    "201": { "type": "shipment_schedule" },
-                    "409": { "type": "[error]" }
+        {
+            "model": "purchase",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all purchases. Results are always paginated.",
+                    "parameters": [
+                        { "name": "vendor_purchase_number", "type": "string", "required": false },
+                        { "name": "agreement_guid", "type": "uuid", "required": false },
+                        { "name": "item_guid", "type": "uuid", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[purchase]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "description": "Returns the purchase with this guid.",
+                    "responses": {
+                        "200": { "type": "purchase" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "vendor_purchase_number", "type": "string" },
+                        { "name": "agreement", "type": "agreement" },
+                        { "name": "item", "type": "item" },
+                        { "name": "address", "type": "address" },
+                        { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." }
+                    ],
+                    "responses": {
+                        "201": { "type": "purchase" },
+                        "409": { "type": "[error]" }
+                    }
                 }
-            },
+            ]
+        },
 
-            {
-                "path": "/shipment-schedules/:guid",
-                "method": "DELETE"
-            }
-        ],
+        {
+            "model": "shipment_request",
+            "path": "/shipment-requests",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all shipment requests. Results are always paginated.",
+                    "parameters": [
+                        { "name": "fulfilling_vendor_guid", "type": "uuid", "required": false },
+                        { "name": "agreement_guid", "type": "uuid", "required": false },
+                        { "name": "identifier", "type": "string", "required": false },
+                        { "name": "is_open", "type": "boolean", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[shipment_request]" }
+                    }
+                },
 
-        "planned_shipments": [
-            {
-                "path": "/planned-shipments",
-                "method": "GET",
-                "description": "Returns the upcoming planned shipments for a given agreement, filtered by a certain number of days. For example, you can request all planned shipments in the next 30 days - you will then see the actual upcoming dates, if any, that an open shipment request will be cloesd. Results are always paginated.",
-                "parameters": [
-                    { "name": "agreement_guid", "type": "uuid" },
-                    { "name": "number_days", "type": "integer", "default": 7 },
-                    { "name": "limit", "type": "integer", "default": 50 },
-                    { "name": "offset", "type": "integer", "default": 0 }
-                ],
-                "responses": {
-                    "200": { "type": "[planned_shipment]" }
+                {
+                    "path": "/:guid",
+                    "method": "PUT",
+                    "description": "Closes an open shipment request ahead of schedule.",
+                    "responses": {
+                        "201": { "type": "shipment_request" },
+                        "409": { "type": "[error]" }
+                    }
                 }
-            }
-        ],
+            ]
+        },
 
-        "purchases": [
-            {
-                "method": "GET",
-                "description": "Search all purchases. Results are always paginated.",
-                "parameters": [
-                    { "name": "vendor_purchase_number", "type": "string", "required": false },
-                    { "name": "agreement_guid", "type": "uuid", "required": false },
-                    { "name": "item_guid", "type": "uuid", "required": false },
-                    { "name": "limit", "type": "integer", "default": 50 },
-                    { "name": "offset", "type": "integer", "default": 0 }
-                ],
-                "responses": {
-                    "200": { "type": "[purchase]" }
+        {
+            "model": "shipment_request_item",
+            "path": "/shipment-request-items",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Retrieve the items in a shipment request. Results are always paginated.",
+                    "parameters": [
+                        { "name": "shipment_request_guid", "type": "uuid" },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[shipment_request_item]" }
+                    }
                 }
-            },
+            ]
+        },
 
-            {
-                "method": "GET",
-                "path": "/purchases/:guid",
-                "description": "Returns the purchase with this guid.",
-                "responses": {
-                    "200": { "type": "purchase" }
+        {
+            "model": "receipt",
+            "operations": [
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "[receipt]" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "agreement", "type": "agreement" },
+                        { "name": "item", "type": "item" },
+                        { "name": "vendor_receipt_number", "type": "string" },
+                        { "name": "price", "type": "decimal" }
+                    ],
+                    "responses": {
+                        "201": { "type": "receipt" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/:guid"
                 }
-            },
-
-            {
-                "method": "POST",
-                "parameters": [
-                    { "name": "vendor_purchase_number", "type": "string" },
-                    { "name": "agreement", "type": "agreement" },
-                    { "name": "item", "type": "item" },
-                    { "name": "address", "type": "address" },
-                    { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." }
-                ],
-                "responses": {
-                    "201": { "type": "purchase" },
-                    "409": { "type": "[error]" }
-                }
-            }
-        ],
-
-        "shipment_requests": [
-            {
-                "path": "/shipment-requests",
-                "method": "GET",
-                "description": "Search all shipment requests. Results are always paginated.",
-                "parameters": [
-                    { "name": "fulfilling_vendor_guid", "type": "uuid", "required": false },
-                    { "name": "agreement_guid", "type": "uuid", "required": false },
-                    { "name": "identifier", "type": "string", "required": false },
-                    { "name": "is_open", "type": "boolean", "required": false },
-                    { "name": "limit", "type": "integer", "default": 50 },
-                    { "name": "offset", "type": "integer", "default": 0 }
-                ],
-                "responses": {
-                    "200": { "type": "[shipment_request]" }
-                }
-            },
-
-            {
-                "path": "/shipment-requests/:guid",
-                "method": "PUT",
-                "description": "Closes an open shipment request ahead of schedule.",
-                "responses": {
-                    "201": { "type": "shipment_request" },
-                    "409": { "type": "[error]" }
-                }
-            }
-        ],
-
-        "shipment_request_items": [
-            {
-                "path": "/shipment-request-items",
-                "method": "GET",
-                "description": "Retrieve the items in a shipment request. Results are always paginated.",
-                "parameters": [
-                    { "name": "shipment_request_guid", "type": "uuid" },
-                    { "name": "limit", "type": "integer", "default": 50 },
-                    { "name": "offset", "type": "integer", "default": 0 }
-                ],
-                "responses": {
-                    "200": { "type": "[shipment_request_item]" }
-                }
-            }
-        ],
-
-        "receipts": [
-            {
-                "method": "GET",
-                "path": "/receipts/:guid",
-                "responses": {
-                    "200": { "type": "[receipt]" }
-                }
-            },
-
-            {
-                "method": "POST",
-                "parameters": [
-                    { "name": "agreement", "type": "agreement" },
-                    { "name": "item", "type": "item" },
-                    { "name": "vendor_receipt_number", "type": "string" },
-                    { "name": "price", "type": "decimal" }
-                ],
-                "responses": {
-                    "201": { "type": "receipt" },
-                    "409": { "type": "[error]" }
-                }
-            },
-
-            {
-                "method": "DELETE",
-                "path": "/receipts/:guid"
-            }
-        ]
-
-    }
+            ]
+        }
+    ]
 }

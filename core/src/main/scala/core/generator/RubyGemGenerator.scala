@@ -18,8 +18,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   def generate(): String = {
-    val operationNames = service.operations.map { _.model.name }.distinct.sorted
-
     RubyHttpClient.require +
     "\n" +
     service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +
@@ -29,7 +27,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end" +
     "\n\n  module Clients\n" +
-    operationNames.map { name => generateClientForResource(name, service.operations.filter { _.model.name == name}) }.mkString("\n\n") +
+    service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  end\n\n" +
     RubyHttpClient.contents +
     "end"
@@ -87,11 +85,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.mkString("\n")
   }
 
-  def generateClientForResource(resourceName: String, operations: Seq[Operation]): String = {
-    require(!operations.isEmpty)
-
-    val resourcePath = s"/${resourceName}"
-    val className = Text.underscoreToInitCap(resourceName)
+  def generateClientForResource(resource: Resource): String = {
+    val className = Text.underscoreToInitCap(resource.model.name)
 
     val sb = ListBuffer[String]()
     sb.append(s"    class ${className}")
@@ -100,7 +95,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append(s"        @client = HttpClient::Preconditions.assert_class(client, ${moduleName}::Client)")
     sb.append("      end")
 
-    operations.foreach { op =>
+    resource.operations.foreach { op =>
       val pathParams = op.parameters.filter { p => p.location == ParameterLocation.Path }
       val otherParams = op.parameters.filter { p => p.location != ParameterLocation.Path }
 
