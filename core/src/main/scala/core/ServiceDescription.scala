@@ -27,7 +27,7 @@ case class ServiceDescription(internal: InternalServiceDescription) {
   lazy val description: Option[String] = internal.description
 
   def operationsForModel(model: Model): Seq[Operation] = {
-    resources.find { _.model.name == model.name }.map(_.operations).getOrElse(Seq.empty)
+    resources.flatMap(_.operations).filter { _.model.name == model.name }
   }
 
 }

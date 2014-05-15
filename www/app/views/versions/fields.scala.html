@@ -15,18 +15,30 @@
    @fields.map { field =>
      <tr>
        <td>@field.name</td>
-       <td>@field.datatype.name</td>
+       <td>@{field.fieldtype match {
+             case pt: core.PrimitiveFieldType => pt.datatype.name
+             case mt: core.ModelFieldType => mt.model.name
+             case rpt: core.ReferenceFieldType => s"Reference[${rpt.referencedModelName}]"
+           }}
+       </td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
        <td>@if(field.multiple) { Yes } else { No }</td>
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
            <p>
-             @field.references.map { r => References: <a href="#">@r.label</a><br/> }
-             @field.example.map { example =>
-               Example: @example<br/>
-             }
              @field.minimum.map { v => Minimum: @v<br/> }
              @field.maximum.map { v => Maximum: @v<br/> }
+
+             @field.example.map { example =>
+               Example: @example<br />
+             }
+
+             @{field.fieldtype match {
+               case pt: core.PrimitiveFieldType => pt.datatype.example.map(ex => s"Example: $ex").getOrElse("")
+               case mt: core.ModelFieldType => ""
+               case rpt: core.ReferenceFieldType => ""
+             }}
+
            </p>
        </td>
      </tr>

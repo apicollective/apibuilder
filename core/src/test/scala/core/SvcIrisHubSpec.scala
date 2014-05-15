@@ -62,4 +62,9 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
      }
   }
 
+  it("operationsForModel") {
+    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
+  }
+
+
 }

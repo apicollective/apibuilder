@@ -1,6 +1,6 @@
 @(service: core.ServiceDescription, operation: core.Operation)
 
-@operation.method @service.baseUrl@service.basePath@operation.path
+@operation.method @service.baseUrl@operation.path
 
 <h3>Parameters</h3>
 @if(operation.parameters.isEmpty) {
