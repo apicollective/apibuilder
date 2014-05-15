@@ -22,13 +22,34 @@ class SvcApiDocJson extends FunSpec with Matchers {
     service.resources.map(_.model.name).sorted.mkString(" ") should be("organization user")
   }
 
+  it("has defaults for all limit and offset parameters") {
+    val service = TestHelper.parseFile(Path).serviceDescription.get
+    service.resources.flatMap(_.operations.filter(_.method == "GET")).foreach { op =>
+
+      op.parameters.find { _.name == "limit" } match {
+        case None => {}
+        case Some(p: Parameter) => {
+          p.default should be(Some("50"))
+        }
+      }
+
+      op.parameters.find { _.name == "offset" } match {
+        case None => {}
+        case Some(p: Parameter) => {
+          p.default should be(Some("0"))
+        }
+      }
+
+    }
+  }
+
   it("all POST operations return either a 201 or a 409") {
     val service = TestHelper.parseFile(Path).serviceDescription.get
     service.resources.flatMap(_.operations.filter(_.method == "POST")).foreach { op =>
       if (op.responses.map(_.code).sorted != Seq(201, 409)) {
         fail("POST operation should return a 201 or a 409: " + op)
       }
-     }
+    }
   }
 
 }

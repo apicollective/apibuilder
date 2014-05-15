@@ -41,16 +41,16 @@ case class RubyGemGenerator(service: ServiceDescription) {
   class Client
 
     def initialize(url, opts={})
-      HttpClient::Preconditions.assert_class(url, String)
+      HttpClient::Preconditions.assert_class('url', url, String)
       @url = URI.parse(url)
-      @authorization = HttpClient::Preconditions.assert_class_or_nil(opts.delete(:authorization), HttpClient::Authorization)
+      @authorization = HttpClient::Preconditions.assert_class_or_nil('authorization', opts.delete(:authorization), HttpClient::Authorization)
       HttpClient::Preconditions.assert_empty_opts(opts)
       HttpClient::Preconditions.check_state(url.match(/http.+/i), "URL[%s] must start with http" % url)
     end
 
     def Client.authorize(url, opts={})
-      HttpClient::Preconditions.assert_class(url, String)
-      token = HttpClient::Preconditions.assert_class_or_nil(opts.delete(:token), String)
+      HttpClient::Preconditions.assert_class('url', url, String)
+      token = HttpClient::Preconditions.assert_class_or_nil('token', opts.delete(:token), String)
       HttpClient::Preconditions.assert_empty_opts(opts)
 
       if token
@@ -61,7 +61,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
     end
 
     def request(path=nil)
-      HttpClient::Preconditions.assert_class_or_nil(path, String)
+      HttpClient::Preconditions.assert_class_or_nil('path', path, String)
       request = HttpClient::Request.new(@url + path.to_s)
 
       if @authorization
@@ -92,7 +92,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.append(s"    class ${className}")
     sb.append("")
     sb.append("      def initialize(client)")
-    sb.append(s"        @client = HttpClient::Preconditions.assert_class(client, ${moduleName}::Client)")
+    sb.append(s"        @client = HttpClient::Preconditions.assert_class('client', client, ${moduleName}::Client)")
     sb.append("      end")
 
     resource.operations.foreach { op =>
@@ -107,13 +107,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
         }
       }.mkString("/")
 
-      val methodName = op.method.toLowerCase + op.path.split("/").map(Text.safeName(_)).map { name =>
-        if (name.startsWith(":")) {
-          name.slice(1, name.length)
-        } else {
-          name
-        }
-      }.mkString("_")
+      val methodName = if (op.pathParameters.isEmpty) {
+        op.method.toLowerCase
+      } else {
+        op.method.toLowerCase + "_by_" + op.pathParameters.map( p => Text.safeName(p.name) ).mkString("_and_")
+      }
+      println(methodName)
 
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
@@ -140,7 +139,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
           case m: ModelParameterType => Text.underscoreToInitCap(m.model.name)
         }
 
-        sb.append(s"        HttpClient::Preconditions.assert_class(${param.name}, ${klass})")
+        sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
       }
 
       if (hasQueryParams) {
@@ -165,7 +164,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       }
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        sb.append("        HttpClient::Preconditions.assert_class(hash, Hash)")
+        sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
         requestBuilder.append(".with_json(hash.to_json)")
       }
       requestBuilder.append(s".${op.method.toLowerCase}")
@@ -253,14 +252,14 @@ case class RubyGemGenerator(service: ServiceDescription) {
   private def parseReferenceArgument(name: String, referencedModelName: String, required: Boolean): String = {
     val value = s"opts.delete(:${name})"
     val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
-    s"HttpClient::Preconditions.${assertMethod}(${value}, Reference)"
+    s"HttpClient::Preconditions.${assertMethod}('${name}', ${value}, Reference)"
   }
 
   private def parseModelArgument(name: String, model: Model, required: Boolean): String = {
     val value = s"opts.delete(:${name})"
     val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
     val klass = Text.underscoreToInitCap(model.name)
-    s"HttpClient::Preconditions.${assertMethod}(${value}, ${klass})"
+    s"HttpClient::Preconditions.${assertMethod}('${name}', ${value}, ${klass})"
   }
 
   private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String]): String = {
@@ -291,7 +290,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       s"HttpClient::Types::MoneyIso8601Type.from_string($value, :required => ${required})"
 
     } else {
-      s"HttpClient::Preconditions.${assertMethod}($value, ${klass})"
+      s"HttpClient::Preconditions.${assertMethod}('${name}', $value, ${klass})"
     }
   }
 

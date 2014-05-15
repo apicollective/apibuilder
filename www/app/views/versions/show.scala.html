@@ -55,7 +55,7 @@
            @service.operationsForModel(model).zipWithIndex.map { case(op, index) =>
              <tr>
                <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(model.name)-@index').toggle()">@op.method</a></td>
-               <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(model.name)-@index').toggle()">@service.baseUrl@op.path</a></td>
+               <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(model.name)-@index').toggle()">@op.path</a></td>
                <td>@op.description.getOrElse("")</td>
              </tr>
              <tr id="operation-@core.UrlKey.generate(model.name)-@index" style="display:none">

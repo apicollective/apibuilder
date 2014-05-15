@@ -19,7 +19,7 @@ require 'bigdecimal'
     class Request
 
       def initialize(uri)
-        @uri = Preconditions.assert_class(uri, URI)
+        @uri = Preconditions.assert_class('uri', uri, URI)
         @params = nil
         @body = nil
         @auth = nil
@@ -28,8 +28,8 @@ require 'bigdecimal'
       end
 
       def with_header(name, value)
-        Preconditions.check_not_blank(name, "Header name is required")
-        Preconditions.check_not_blank(value, "Header value is required")
+        Preconditions.check_not_blank('name', name, "Header name is required")
+        Preconditions.check_not_blank('value', value, "Header value is required")
         Preconditions.check_state(!@headers.has_key?(name),
                                   "Duplicate header named[%s]" + name)
         @headers[name] = value
@@ -38,7 +38,7 @@ require 'bigdecimal'
       end
 
       def with_auth(auth)
-        Preconditions.assert_class(auth, HttpClient::Authorization)
+        Preconditions.assert_class('auth', auth, HttpClient::Authorization)
         Preconditions.check_state(@auth.nil?, "auth previously set")
 
         if auth.scheme.name == AuthScheme::BASIC.name
@@ -50,7 +50,7 @@ require 'bigdecimal'
       end
 
       def with_query(params)
-        Preconditions.assert_class(params, Hash)
+        Preconditions.assert_class('params', params, Hash)
         Preconditions.check_state(@params.nil?, "Already have query parameters")
         @params = params
         self
@@ -59,14 +59,14 @@ require 'bigdecimal'
       # Wrapper to set Content-Type header to application/json and set
       # the provided json document as the body
       def with_json(json)
-        Preconditions.check_not_blank(json)
+        Preconditions.check_not_blank('json', json)
         @headers['Content-Type'] ||= 'application/json'
         @body = json
         self
       end
 
       def with_body(body)
-        Preconditions.check_not_blank(body)
+        Preconditions.check_not_blank('body', body)
         @body = body
         self
       end
@@ -92,7 +92,7 @@ require 'bigdecimal'
       end
 
       def do_request(klass)
-        Preconditions.assert_class(klass, Class)
+        Preconditions.assert_class('klass', klass, Class)
 
         uri = @uri.to_s
         if q = to_query(@params)
@@ -180,16 +180,16 @@ require 'bigdecimal'
         nil
       end
 
-      def Preconditions.check_not_nil(reference, error_message=nil)
+      def Preconditions.check_not_nil(field_name, reference, error_message=nil)
         if reference.nil?
-          raise error_message || "argument cannot be nil"
+          raise error_message || "argument for %s cannot be nil" % field_name
         end
         reference
       end
 
-      def Preconditions.check_not_blank(reference, error_message=nil)
+      def Preconditions.check_not_blank(field_name, reference, error_message=nil)
         if reference.to_s.strip == ""
-          raise error_message || "argument cannot be blank"
+          raise error_message || "argument for %s cannot be blank" % field_name
         end
         reference
       end
@@ -205,18 +205,19 @@ require 'bigdecimal'
       # Asserts that value is not nill and is_?(klass). Returns
       # value. Common use is
       #
-      # amount = Preconditions.assert_class(amount, BigDecimal)
-      def Preconditions.assert_class(value, klass)
-        Preconditions.check_not_nil(klass, "Klass cannot be nil")
-        Preconditions.check_not_nil(value, "Value cannot be nil. Expected an instance of class %s" % klass.name)
+      # amount = Preconditions.assert_class('amount', amount, BigDecimal)
+      def Preconditions.assert_class(field_name, value, klass)
+        Preconditions.check_not_nil('field_name', field_name)
+        Preconditions.check_not_nil('klass', klass)
+        Preconditions.check_not_nil('value', value, "Value for %s cannot be nil. Expected an instance of class %s" % [field_name, klass.name])
         Preconditions.check_state(value.is_a?(klass),
-                                  "Value is of type[#{value.class}] - class[#{klass}] is required. value[#{value.inspect.to_s}]")
+                                  "Value for #{field_name} is of type[#{value.class}] - class[#{klass}] is required. value[#{value.inspect.to_s}]")
         value
       end
 
-      def Preconditions.assert_class_or_nil(value, klass)
+      def Preconditions.assert_class_or_nil(field_name, value, klass)
         if !value.nil?
-          Preconditions.assert_class(value, klass)
+          Preconditions.assert_class(field_name, value, klass)
         end
       end
 
@@ -227,7 +228,7 @@ require 'bigdecimal'
       attr_reader :name
 
       def initialize(name)
-        @name = HttpClient::Preconditions.check_not_blank(name)
+        @name = HttpClient::Preconditions.check_not_blank('name', name)
       end
 
       BASIC = AuthScheme.new("basic")
@@ -239,9 +240,9 @@ require 'bigdecimal'
       attr_reader :scheme, :username, :password
 
       def initialize(scheme, username, opts={})
-        @scheme = HttpClient::Preconditions.assert_class(scheme, AuthScheme)
-        @username = HttpClient::Preconditions.check_not_blank(username, "username is required")
-        @password = HttpClient::Preconditions.assert_class_or_nil(opts.delete(:password), String)
+        @scheme = HttpClient::Preconditions.assert_class('schema', scheme, AuthScheme)
+        @username = HttpClient::Preconditions.check_not_blank('username', username, "username is required")
+        @password = HttpClient::Preconditions.assert_class_or_nil('password', opts.delete(:password), String)
         HttpClient::Preconditions.assert_empty_opts(opts)
       end
 
@@ -258,10 +259,10 @@ require 'bigdecimal'
         attr_reader :currency, :amount
 
         def initialize(currency, amount)
-          @currency = HttpClient::Preconditions.assert_class(currency, String)
+          @currency = HttpClient::Preconditions.assert_class('currency', currency, String)
           HttpClient::Preconditions.check_state(@currency.length == 3, "Currency[%s] must be exactly 3 characters long" % @currency)
           HttpClient::Preconditions.check_state(@currency.upcase == @currency, "Currency[%s] must be in upper case" % @currency)
-          @amount = HttpClient::Preconditions.assert_class(amount, BigDecimal)
+          @amount = HttpClient::Preconditions.assert_class('amount', amount, BigDecimal)
         end
 
         def MoneyIso4217Type.from_string(value, opts={})
@@ -269,9 +270,9 @@ require 'bigdecimal'
           HttpClient::Preconditions.assert_empty_opts(opts)
 
           if required
-            HttpClient::Preconditions.assert_class(value, String)
+            HttpClient::Preconditions.assert_class('value', value, String)
           else
-            HttpClient::Preconditions.assert_class_or_nil(value, String)
+            HttpClient::Preconditions.assert_class_or_nil('value', value, String)
           end
 
           if value
@@ -289,7 +290,7 @@ require 'bigdecimal'
     module Helper
 
       def Helper.symbolize_keys(hash)
-        Preconditions.assert_class(hash, Hash)
+        Preconditions.assert_class('hash', hash, Hash)
         new_hash = {}
         hash.each do |k, v|
           new_hash[k.to_sym] = v
@@ -302,9 +303,9 @@ require 'bigdecimal'
         HttpClient::Preconditions.assert_empty_opts(opts)
 
         if required
-          Preconditions.assert_class(value, String)
+          Preconditions.assert_class('value', value, String)
         else
-          Preconditions.assert_class_or_nil(value, String)
+          Preconditions.assert_class_or_nil('value', value, String)
         end
 
         value ? BigDecimal.new(value) : nil
@@ -315,9 +316,9 @@ require 'bigdecimal'
         HttpClient::Preconditions.assert_empty_opts(opts)
 
         if required
-          Preconditions.assert_class(value, String)
+          Preconditions.assert_class('value', value, String)
         else
-          Preconditions.assert_class_or_nil(value, String)
+          Preconditions.assert_class_or_nil('value', value, String)
         end
 
         if value
@@ -333,9 +334,9 @@ require 'bigdecimal'
         HttpClient::Preconditions.assert_empty_opts(opts)
 
         if required
-          Preconditions.assert_class(value, String)
+          Preconditions.assert_class('value', value, String)
         else
-          Preconditions.assert_class_or_nil(value, String)
+          Preconditions.assert_class_or_nil('value', value, String)
         end
 
         value ? DateTime.parse(value) : nil
