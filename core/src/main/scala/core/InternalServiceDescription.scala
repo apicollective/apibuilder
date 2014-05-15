@@ -220,7 +220,7 @@ object InternalField {
                   default = JsonStringParser.asOptString(json, "default"),
                   minimum = (json \ "minimum").asOpt[Long],
                   maximum = (json \ "maximum").asOpt[Long],
-                  example = (json \ "example").asOpt[String])
+                  example = JsonStringParser.asOptString(json, "example"))
   }
 
 }
@@ -238,7 +238,7 @@ object InternalParameter {
                       default = JsonStringParser.asOptString(json, "default"),
                       minimum = (json \ "minimum").asOpt[Long],
                       maximum = (json \ "maximum").asOpt[Long],
-                      example = (json \ "example").asOpt[String])
+                      example = JsonStringParser.asOptString(json, "example"))
   }
 
 }
