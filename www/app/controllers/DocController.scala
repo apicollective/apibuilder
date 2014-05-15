@@ -33,4 +33,8 @@ object DocController extends Controller {
     Ok(views.html.doc.todo())
   }
 
+  def types = Action { implicit request =>
+    Ok(views.html.doc.types())
+  }
+
 }

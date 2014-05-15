@@ -172,7 +172,7 @@ object Response {
 
 case class Error(code: String, message: String)
 
-sealed abstract class Datatype(val name: String, val example: Option[String] = None, val description: Option[String] = None) {
+sealed abstract class Datatype(val name: String, val example: String, val description: String) {
 
   /**
    * Returns true if the string can be converted into an instance of this
@@ -190,27 +190,45 @@ sealed abstract class Datatype(val name: String, val example: Option[String] = N
 
 object Datatype {
 
-  case object BooleanType extends Datatype("boolean")
-  case object DecimalType extends Datatype("decimal")
-  case object IntegerType extends Datatype("integer")
-  case object LongType extends Datatype("long")
-  case object StringType extends Datatype("string")
+  case object BooleanType extends Datatype(name = "boolean",
+                                           example = "'true' or 'false'",
+                                           description = "Represents a boolean value")
 
-  case object ErrorType extends Datatype("error")
+  case object DecimalType extends Datatype(name = "decimal",
+                                           example = "10.12",
+                                           description = "Commonly used to represent things like currency amounts. Commonly maps to a BigDecimal")
+
+  case object IntegerType extends Datatype(name = "integer",
+                                           example = "10",
+                                           description = "32 bit whole number")
+
+  case object LongType extends Datatype(name = "long",
+                                        example = "10",
+                                        description = "64 bit whole number")
+
+  case object StringType extends Datatype(name = "string",
+                                          example = "This is a fox.",
+                                          description = "General purpose string")
+
+  case object ErrorType extends Datatype(name = "error",
+                                          example = "experimental",
+                                          description = "We are thinking about a general purpose, standard way to report errors. Experimental and likely to change or be removed")
 
   case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
-                                                   example = Some("2014-04-29T11:56:52Z"),
-                                                   description = Some("Date time format in ISO 8601"))
+                                                   example = "2014-04-29T11:56:52Z",
+                                                   description = "Date time format in ISO 8601")
 
   case object MoneyIso4217Type extends Datatype(name = "money-iso4217",
-                                                example = Some("USD 10.12"),
-                                                description = Some("ISO 4217 currency code followed by a space followed by the amount"))
+                                                example = "USD 10.12",
+                                                description = "ISO 4217 currency code followed by a space followed by the amount")
 
   case object UuidType extends Datatype(name = "uuid",
-                                        example = Some("5ecf6502-e532-4738-aad5-7ac9701251dd"),
-                                        description = Some("String representation of a universally unique identifier (UUID)"))
+                                        example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
+                                        description = "String representation of a universally unique identifier (UUID)")
 
-  case object UnitType extends Datatype("unit")
+  case object UnitType extends Datatype(name = "unit",
+                                        example = "N/A",
+                                        description = "Internal type used to represent things like an HTTP NoContent response. Maps to void in Java, Unit in Scala, nil in ruby, etc.")
 
   val All: Seq[Datatype] = Seq(BooleanType, DecimalType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type, MoneyIso4217Type)
 

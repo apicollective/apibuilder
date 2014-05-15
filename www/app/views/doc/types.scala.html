@@ -1,0 +1,18 @@
+@doc.main("api.json") {
+
+  <h2>Supported Datatypes</h2>
+
+  <p>
+    @core.Datatype.All.map(_.name).sorted.map { name =>
+      <a name='@name'></a>
+      <h3>@name</h3>
+      @core.Datatype.findByName(name).map { dt =>
+        <ul>
+          <li> @dt.description</li>
+          <li> Example: @dt.example</li>
+        </ul>
+      }
+    }
+  </p>
+
+}

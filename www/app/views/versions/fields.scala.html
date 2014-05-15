@@ -16,7 +16,7 @@
      <tr>
        <td>@field.name</td>
        <td>@{field.fieldtype match {
-             case pt: core.PrimitiveFieldType => pt.datatype.name
+             case pt: core.PrimitiveFieldType => Html(s"<a href='${routes.DocController.types}#${pt.datatype.name}'>${pt.datatype.name}</a>")
              case mt: core.ModelFieldType => mt.model.name
              case rpt: core.ReferenceFieldType => s"Reference[${rpt.referencedModelName}]"
            }}
@@ -32,13 +32,6 @@
              @field.example.map { example =>
                Example: @example<br />
              }
-
-             @{field.fieldtype match {
-               case pt: core.PrimitiveFieldType => pt.datatype.example.map(ex => s"Example: $ex").getOrElse("")
-               case mt: core.ModelFieldType => ""
-               case rpt: core.ReferenceFieldType => ""
-             }}
-
            </p>
        </td>
      </tr>

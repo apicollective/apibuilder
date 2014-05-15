@@ -11,6 +11,7 @@ GET     /logged_out                                               controllers.Lo
 GET     /doc                                                      controllers.DocController.redirect
 GET     /doc/                                                     controllers.DocController.index
 GET     /doc/apiJson                                              controllers.DocController.apiJson
+GET     /doc/types                                                controllers.DocController.types
 GET     /doc/codeGeneration                                       controllers.DocController.codeGeneration
 GET     /doc/examples                                             controllers.DocController.examples
 GET     /doc/history                                              controllers.DocController.history
