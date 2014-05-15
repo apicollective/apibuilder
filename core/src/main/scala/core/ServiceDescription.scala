@@ -104,7 +104,7 @@ case class Field(name: String,
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
 case class ModelFieldType(model: Model) extends FieldType
-case class ReferenceFieldType(model: Model) extends FieldType
+case class ReferenceFieldType(referencedModelName: String) extends FieldType
 
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
@@ -307,11 +307,7 @@ object Field {
 
       case Some(rft: InternalReferenceFieldType) => {
         require(internal.default.isEmpty, s"Cannot have a default for a field of type[reference]")
-
-        val model = models.find { m => m.name == rft.referencedModelName }.getOrElse {
-          sys.error(s"Invalid model in reference field type[${rft.referencedModelName}]. Must be the name of a known model")
-        }
-        ReferenceFieldType(model)
+        ReferenceFieldType(rft.referencedModelName)
       }
 
       case None => {

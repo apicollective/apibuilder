@@ -40,7 +40,7 @@ class ModelResolverSpec extends FunSpec with Matchers {
 
   it("reference to own field") {
     val keyField = InternalField(name = Some("key"), fieldtype = Some(InternalParsedDatatype("string").toInternalFieldType))
-    val parentKeyField = InternalField(name = Some("parent"), fieldtype = Some(InternalParsedDatatype("category").toInternalFieldType))
+    val parentKeyField = InternalField(name = Some("parent"), fieldtype = Some(InternalParsedDatatype("reference[category]").toInternalFieldType))
 
     val category = InternalModel(name = "category",
                                  plural = "categories",

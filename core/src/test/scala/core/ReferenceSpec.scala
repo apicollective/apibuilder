@@ -63,8 +63,8 @@ class ReferenceSpec extends FunSpec with Matchers {
     val account = validator.serviceDescription.get.models.find { _.name == "account" }.get
     account.fields.head.name should be("user")
     account.fields.head.fieldtype match {
-      case ReferenceFieldType(model: Model) => {
-        model.name should be("user")
+      case ReferenceFieldType(referencedModelName: String) => {
+        referencedModelName should be("user")
       }
       case f: Any => {
         fail("expected uuid: " + f)
