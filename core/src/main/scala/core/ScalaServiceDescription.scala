@@ -162,7 +162,6 @@ object ScalaDataType {
       case Datatype.UuidType => "UUID"
       case Datatype.DateTimeIso8601Type => "DateTime"
       case Datatype.MoneyIso4217Type => "Money"
-      case Datatype.ErrorType => "Error"
     }
     new ScalaDataType(name)
   }

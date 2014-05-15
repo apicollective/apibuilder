@@ -170,8 +170,6 @@ object Response {
 
 }
 
-case class Error(code: String, message: String)
-
 sealed abstract class Datatype(val name: String, val example: String, val description: String) {
 
   /**
@@ -209,10 +207,6 @@ object Datatype {
   case object StringType extends Datatype(name = "string",
                                           example = "This is a fox.",
                                           description = "General purpose string")
-
-  case object ErrorType extends Datatype(name = "error",
-                                          example = "experimental",
-                                          description = "We are thinking about a general purpose, standard way to report errors. Experimental and likely to change or be removed")
 
   case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
                                                    example = "2014-04-29T11:56:52Z",
@@ -384,10 +378,6 @@ object Field {
         if (!errors.isEmpty) {
           sys.error(errors.mkString(" "))
         }
-      }
-
-      case Datatype.ErrorType => {
-        sys.error("Not allowed to have a default for the error type")
       }
 
       case Datatype.StringType => ()
