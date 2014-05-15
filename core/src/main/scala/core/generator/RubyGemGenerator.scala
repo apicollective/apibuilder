@@ -232,10 +232,10 @@ case class RubyGemGenerator(service: ServiceDescription) {
         parsePrimitiveArgument(field.name, datatype, field.required, field.default)
       }
       case ModelFieldType(model: Model) => {
-        sys.error("TODO")
+        parseModelArgument(field.name, model, field.required)
       }
       case ReferenceFieldType(model: Model) => {
-        sys.error("TODO")
+        parseReferenceArgument(field.name, model, field.required)
       }
     }
 
@@ -247,9 +247,24 @@ case class RubyGemGenerator(service: ServiceDescription) {
         parsePrimitiveArgument(param.name, dt.datatype, param.required, param.default)
       }
       case mt: ModelParameterType => {
-        sys.error("TODO")
+        parseModelArgument(param.name, mt.model, param.required)
       }
     }
+  }
+
+  // TODO: Validate how we want references to work. Maybe validate
+  // that the reference has the right model
+  private def parseReferenceArgument(name: String, referencedModel: Model, required: Boolean): String = {
+    val value = s"opts.delete(:${name})"
+    val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
+    s"HttpClient::Preconditions.${assertMethod}(${value}, Reference)"
+  }
+
+  private def parseModelArgument(name: String, model: Model, required: Boolean): String = {
+    val value = s"opts.delete(:${name})"
+    val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
+    val klass = Text.underscoreToInitCap(model.name)
+    s"HttpClient::Preconditions.${assertMethod}(${value}, ${klass})"
   }
 
   private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String]): String = {
