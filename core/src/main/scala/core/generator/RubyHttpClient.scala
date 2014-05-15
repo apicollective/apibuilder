@@ -251,6 +251,41 @@ require 'bigdecimal'
 
     end
 
+    module Types
+
+      class MoneyIso4217Type
+
+        attr_reader :currency, :amount
+
+        def initialize(currency, amount)
+          @currency = HttpClient::Preconditions.assert_class(currency, String)
+          HttpClient::Preconditions.check_state(@currency.length == 3, "Currency[%s] must be exactly 3 characters long" % @currency)
+          HttpClient::Preconditions.check_state(@currency.upcase == @currency, "Currency[%s] must be in upper case" % @currency)
+          @amount = HttpClient::Preconditions.assert_class(amount, BigDecimal)
+        end
+
+        def MoneyIso4217Type.from_string(value, opts={})
+          required = opts.has_key?(:required) ? opts.delete(:required) : false
+          HttpClient::Preconditions.assert_empty_opts(opts)
+
+          if required
+            HttpClient::Preconditions.assert_class(value, String)
+          else
+            HttpClient::Preconditions.assert_class_or_nil(value, String)
+          end
+
+          if value
+            currency, amount = value.split(" ", 2)
+            MoneyIso4217Type.new(currency, amount)
+          else
+            nil
+          end
+        end
+
+      end
+
+    end
+
     module Helper
 
       def Helper.symbolize_keys(hash)

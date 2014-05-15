@@ -73,10 +73,10 @@ case class RubyGemGenerator(service: ServiceDescription) {
 """)
 
     sb.append(service.models.map { model =>
-      val className = modelClassName(model.name)
+      val className = Text.underscoreToInitCap(model.plural)
 
-      s"    def ${model.name}\n" +
-      s"      @${model.name} ||= ${moduleName}::Clients::${className}.new(self)\n" +
+      s"    def ${model.plural}\n" +
+      s"      @${model.plural} ||= ${moduleName}::Clients::${className}.new(self)\n" +
       "    end"
     }.mkString("\n\n"))
 
@@ -86,7 +86,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
   }
 
   def generateClientForResource(resource: Resource): String = {
-    val className = Text.underscoreToInitCap(resource.model.name)
+    val className = Text.underscoreToInitCap(resource.model.plural)
 
     val sb = ListBuffer[String]()
     sb.append(s"    class ${className}")
@@ -198,12 +198,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
     sb.mkString("\n")
   }
 
-  def modelClassName(name: String): String = {
-    Text.underscoreToInitCap(name)
-  }
-
   def generateModel(model: core.Model): String = {
-    val className = modelClassName(model.name)
+    val className = Text.underscoreToInitCap(model.name)
 
     val sb = ListBuffer[String]()
 
@@ -283,16 +279,19 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val klass = rubyClass(datatype)
 
     if (datatype == Datatype.DecimalType) {
-      s"HttpClient::Helper.to_big_decimal(${value}, :required => true)"
+      s"HttpClient::Helper.to_big_decimal($value, :required => ${required})"
 
     } else if (datatype == Datatype.UuidType) {
-      s"HttpClient::Helper.to_uuid(${value}, :required => true)"
+      s"HttpClient::Helper.to_uuid($value, :required => ${required})"
 
     } else if (datatype == Datatype.DateTimeIso8601Type) {
-      s"HttpClient::Helper.to_date_time_iso8601(${value}, :required => true)"
+      s"HttpClient::Helper.to_date_time_iso8601($value, :required => ${required})"
+
+    } else if (datatype == Datatype.MoneyIso4217Type) {
+      s"HttpClient::Types::MoneyIso8601Type.from_string($value, :required => ${required})"
 
     } else {
-      s"HttpClient::Preconditions.${assertMethod}(${value}, ${klass})"
+      s"HttpClient::Preconditions.${assertMethod}($value, ${klass})"
     }
   }
 
@@ -305,6 +304,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case Datatype.DecimalType => "BigDecimal"
       case Datatype.UuidType => "String"
       case Datatype.DateTimeIso8601Type => "DateTime"
+      case Datatype.MoneyIso4217Type => "HttpClient::Types::MoneyIso4217Type"
       case Datatype.UnitType => "nil"
       case _ => {
         sys.error(s"Cannot map data type[${datatype}] to ruby class")
