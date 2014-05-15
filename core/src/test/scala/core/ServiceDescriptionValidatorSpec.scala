@@ -47,57 +47,15 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "models": {
         "user": {
           "fields": [
-            { "name": "foo", "references": "foos.bar" }
+            { "name": "foo", "type": "foo" }
           ]
         }
       }
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("user.foo has invalid reference to foos.bar. Model[foos] does not exist")
+    validator.errors.mkString should be("user.foo has invalid type. There is no model nor datatype named[foo]")
     validator.isValid should be(false)
-  }
-
-  it("reference that points to a non-existent field") {
-    val json = """
-    {
-      "base_url": "http://localhost:9000",
-      "name": "Api Doc",
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "foo", "references": "users.bar" }
-          ]
-        }
-      }
-    }
-    """
-    val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("user.foo has invalid reference to users.bar. Model[user] does not have a field named[bar]")
-    validator.isValid should be(false)
-  }
-
-  it("parses reference to field") {
-    val json = """
-    {
-      "base_url": "http://localhost:9000",
-      "name": "Api Doc",
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "guid", "type": "uuid" }
-          ]
-        },
-        "account": {
-          "fields": [
-            { "name": "user", "references": "users.guid" }
-          ]
-        }
-      }
-    }
-    """
-    val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("")
   }
 
   it("defaults to a NoContent response") {
