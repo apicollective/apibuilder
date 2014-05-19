@@ -152,7 +152,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
         sb.append("        query = {")
         sb.append("          " + paramBuilder.mkString(",\n          "))
         sb.append("        }.delete_if { |k, v| v.nil? }")
-        sb.append(s"        HttpClient::Preconditions.assert_empty_opts(opts)")
       }
 
       val requestBuilder = new StringBuilder()
@@ -213,7 +212,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
       sb.append(s"        @${field.name} = ${parseArgument(field)}")
     }
 
-    sb.append("        HttpClient::Preconditions.assert_empty_opts(opts)")
     sb.append("      end\n")
     sb.append("    end")
 
