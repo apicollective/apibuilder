@@ -74,20 +74,19 @@ object Resource {
 object Operation {
 
   def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
-    val pathParameters = internal.namedParameters.map { paramName =>
-      model.fields.find { _.name == paramName }.map( f => Parameter(f, ParameterLocation.Path) ).getOrElse {
-        sys.error(s"Could not find operation path parameter with name[${paramName}] for model[${model.name}]")
-      }
-    }
-
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
+    val internalParams = internal.parameters.map { Parameter(models, _, location) }
+    val internalParamNames: Set[String] = internalParams.map(_.name).toSet
+
+    // Capture any path parameters that were not explicitly annotated
+    val pathParameters = internal.namedParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(_) }
 
     Operation(model = model,
               method = method,
               path = internal.path,
               description = internal.description,
-              parameters = pathParameters ++ internal.parameters.map { Parameter(models, _, location) },
+              parameters = pathParameters ++ internalParams,
               responses = internal.responses.map { Response(_) })
   }
 
@@ -252,11 +251,10 @@ object ParameterLocation {
 
 object Parameter {
 
-  def apply(field: Field, location: ParameterLocation): Parameter = {
-    Parameter(name = field.name,
-              paramtype = PrimitiveParameterType(field),
-              location = location,
-              description = field.description,
+  def fromPath(name: String): Parameter = {
+    Parameter(name = name,
+              paramtype = PrimitiveParameterType(Datatype.StringType),
+              location = ParameterLocation.Path,
               required = true)
   }
 
