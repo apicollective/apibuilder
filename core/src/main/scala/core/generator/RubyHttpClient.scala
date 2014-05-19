@@ -305,9 +305,9 @@ require 'bigdecimal'
         HttpClient::Preconditions.assert_empty_opts(opts)
 
         if required
-          Preconditions.assert_class(field_name, value, klass)
+          Preconditions.assert_class(field_name, value, Hash)
         else
-          Preconditions.assert_class_or_nil(field_name, value, klass)
+          Preconditions.assert_class_or_nil(field_name, value, Hash)
         end
 
         value ? klass.send(:new, value) : nil
