@@ -299,8 +299,8 @@ require 'bigdecimal'
       end
 
       def Helper.to_model_instance(field_name, klass, value, opts={})
-        HttpClient::Preconditions.assert_class(field_name, String)
-        HttpClient::Preconditions.assert_class(klass, Class)
+        HttpClient::Preconditions.assert_class('field_name', field_name, String)
+        HttpClient::Preconditions.assert_class('klass', klass, Class)
         required = opts.has_key?(:required) ? opts.delete(:required) : false
         HttpClient::Preconditions.assert_empty_opts(opts)
 
