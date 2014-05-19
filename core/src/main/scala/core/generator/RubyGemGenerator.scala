@@ -256,9 +256,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
   private def parseModelArgument(name: String, model: Model, required: Boolean): String = {
     val value = s"opts.delete(:${name})"
-    val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
     val klass = Text.underscoreToInitCap(model.name)
-    s"HttpClient::Preconditions.${assertMethod}('${name}', ${value}, ${klass})"
+    s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => ${required})"
   }
 
   private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String]): String = {
@@ -286,7 +285,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       s"HttpClient::Helper.to_date_time_iso8601($value, :required => ${required})"
 
     } else if (datatype == Datatype.MoneyIso4217Type) {
-      s"HttpClient::Types::MoneyIso8601Type.from_string($value, :required => ${required})"
+      s"HttpClient::Types::MoneyIso4217Type.from_string($value, :required => ${required})"
 
     } else {
       s"HttpClient::Preconditions.${assertMethod}('${name}', $value, ${klass})"
