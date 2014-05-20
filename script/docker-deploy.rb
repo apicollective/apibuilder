@@ -18,12 +18,6 @@ def parse_args(*args)
   hash
 end
 
-def stack_name(env_name, project_name, subproject_name, tag)
-  version = tag.gsub(/\./, '-')
-  now = Time.now.strftime('%Y%m%d%H%M%S')
-  [project_name, subproject_name, version, env_name, now].join("-")
-end
-
 def docker_image_tag(project_name, subproject_name, tag)
   "%s/%s-%s:%s" % [env('DOCKER_INDEX_USERNAME'), project_name, subproject_name, tag]
 end
