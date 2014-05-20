@@ -221,6 +221,10 @@ require 'bigdecimal'
         end
       end
 
+      def Preconditions.assert_collection_of_class(field_name, values, klass)
+        values.each { |v| Preconditions.assert_class(field_name, v, klass) }
+      end
+
     end
 
     class AuthScheme
@@ -266,20 +270,9 @@ require 'bigdecimal'
         end
 
         def MoneyIso4217Type.from_string(value, opts={})
-          required = opts.has_key?(:required) ? opts.delete(:required) : false
-          HttpClient::Preconditions.assert_empty_opts(opts)
-
-          if required
-            HttpClient::Preconditions.assert_class('value', value, String)
-          else
-            HttpClient::Preconditions.assert_class_or_nil('value', value, String)
-          end
-
-          if value
+          Helper.parse_args(value, opts) do |v|
             currency, amount = value.split(" ", 2)
-            MoneyIso4217Type.new(currency, amount)
-          else
-            nil
+            MoneyIso4217Type.new(currency, BigDecimal.new(amount))
           end
         end
 
@@ -298,63 +291,78 @@ require 'bigdecimal'
         new_hash
       end
 
-      def Helper.to_model_instance(field_name, klass, value, opts={})
+      def Helper.to_klass(field_name, value, klass, opts={})
         HttpClient::Preconditions.assert_class('field_name', field_name, String)
         HttpClient::Preconditions.assert_class('klass', klass, Class)
         required = opts.has_key?(:required) ? opts.delete(:required) : false
+        multiple = opts.has_key?(:multiple) ? opts.delete(:multiple) : false
         HttpClient::Preconditions.assert_empty_opts(opts)
 
-        if required
-          Preconditions.assert_class(field_name, value, Hash)
-        else
-          Preconditions.assert_class_or_nil(field_name, value, Hash)
-        end
+        if multiple
+          HttpClient::Preconditions.assert_collection_of_class(field_name, value, klass)
+          if required
+            HttpClient::Preconditions.check_state(!value.empty?, "%s is required" % field_name)
+          end
+          value
 
-        value ? klass.send(:new, value) : nil
+        elsif required
+          HttpClient::Preconditions.assert_class(field_name, value, klass)
+
+        else
+          HttpClient::Preconditions.assert_class_or_nil(field_name, value, klass)
+        end
+      end
+
+      def Helper.to_model_instance(field_name, klass, value, opts={})
+        Helper.parse_args(value, opts) { |v| klass.send(:new, v) }
       end
 
       def Helper.to_big_decimal(value, opts={})
-        required = opts.has_key?(:required) ? opts.delete(:required) : false
-        HttpClient::Preconditions.assert_empty_opts(opts)
-
-        if required
-          Preconditions.assert_class('value', value, String)
-        else
-          Preconditions.assert_class_or_nil('value', value, String)
-        end
-
-        value ? BigDecimal.new(value) : nil
+        Helper.parse_args(value, opts) { |v| BigDecimal.new(v) }
       end
 
       def Helper.to_uuid(value, opts={})
-        required = opts.has_key?(:required) ? opts.delete(:required) : false
-        HttpClient::Preconditions.assert_empty_opts(opts)
-
-        if required
-          Preconditions.assert_class('value', value, String)
-        else
-          Preconditions.assert_class_or_nil('value', value, String)
+        Helper.parse_args(value, opts) do |v|
+          Preconditions.check_state(v.match(/^\w\w\w\w\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\w\w\w\w\w\w\w\w$/),
+                                    "Invalid guid[%s]" % v)
+          v
         end
-
-        if value
-          Preconditions.check_state(value.match(/^\w\w\w\w\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\w\w\w\w\w\w\w\w$/),
-                                    "Invalid guid[%s]" % value)
-        end
-
-        value
       end
 
       def Helper.to_date_time_is8601(value, opts={})
+        Helper.parse_args(value, opts) { |v| DateTime.parse(v) }
+      end
+
+      def Helper.parse_args(value, opts={}, &block)
         required = opts.has_key?(:required) ? opts.delete(:required) : false
+        multiple = opts.has_key?(:multiple) ? opts.delete(:multiple) : false
         HttpClient::Preconditions.assert_empty_opts(opts)
+        field_name = 'field' # TODO: Pass through better field name
 
-        if required
-          Preconditions.assert_class('value', value, String)
+        if multiple
+          values = value || []
+
+          if required
+            HttpClient::Preconditions.check_state(!values.empty?, "%s is required" % field_name)
+          end
+
+          if block_given?
+            values.map { |v| block.call(v) }
+          else
+            values
+          end
+
         else
-          Preconditions.assert_class_or_nil('value', value, String)
-        end
+          if required && value.nil?
+            raise "%s is required" % field_name
+          end
 
-        value ? DateTime.parse(value) : nil
+          if value && block_given?
+            block.call(value)
+          else
+            value
+          end
+        end
       end
 
     end

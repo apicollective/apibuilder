@@ -221,10 +221,10 @@ case class RubyGemGenerator(service: ServiceDescription) {
   private def parseArgument(field: Field): String = {
     field.fieldtype match {
       case PrimitiveFieldType(datatype: Datatype) => {
-        parsePrimitiveArgument(field.name, datatype, field.required, field.default)
+        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.multiple)
       }
       case ModelFieldType(model: Model) => {
-        parseModelArgument(field.name, model, field.required)
+        parseModelArgument(field.name, model, field.required, field.multiple)
       }
       case ReferenceFieldType(referencedModelName: String) => {
         parseReferenceArgument(field.name, referencedModelName, field.required)
@@ -236,10 +236,10 @@ case class RubyGemGenerator(service: ServiceDescription) {
   private def parseArgument(param: Parameter): String = {
     param.paramtype match {
       case dt: PrimitiveParameterType => {
-        parsePrimitiveArgument(param.name, dt.datatype, param.required, param.default)
+        parsePrimitiveArgument(param.name, dt.datatype, param.required, param.default, param.multiple)
       }
       case mt: ModelParameterType => {
-        parseModelArgument(param.name, mt.model, param.required)
+        parseModelArgument(param.name, mt.model, param.required, param.multiple)
       }
     }
   }
@@ -252,13 +252,13 @@ case class RubyGemGenerator(service: ServiceDescription) {
     s"HttpClient::Preconditions.${assertMethod}('${name}', ${value}, Reference)"
   }
 
-  private def parseModelArgument(name: String, model: Model, required: Boolean): String = {
+  private def parseModelArgument(name: String, model: Model, required: Boolean, multiple: Boolean): String = {
     val value = s"opts.delete(:${name})"
     val klass = Text.underscoreToInitCap(model.name)
-    s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => ${required})"
+    s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => $required, :multiple => $multiple)"
   }
 
-  private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String]): String = {
+  private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String], multiple: Boolean): String = {
     val value = if (default.isEmpty) {
       s"opts.delete(:${name})"
     } else if (datatype == Datatype.StringType) {
@@ -274,20 +274,21 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val klass = rubyClass(datatype)
 
     if (datatype == Datatype.DecimalType) {
-      s"HttpClient::Helper.to_big_decimal($value, :required => ${required})"
+      s"HttpClient::Helper.to_big_decimal($value, :required => ${required}, :multiple => ${multiple})"
 
     } else if (datatype == Datatype.UuidType) {
-      s"HttpClient::Helper.to_uuid($value, :required => ${required})"
+      s"HttpClient::Helper.to_uuid($value, :required => ${required}, :multiple => ${multiple})"
 
     } else if (datatype == Datatype.DateTimeIso8601Type) {
-      s"HttpClient::Helper.to_date_time_iso8601($value, :required => ${required})"
+      s"HttpClient::Helper.to_date_time_iso8601($value, :required => ${required}, :multiple => ${multiple})"
 
     } else if (datatype == Datatype.MoneyIso4217Type) {
-      s"HttpClient::Types::MoneyIso4217Type.from_string($value, :required => ${required})"
+      s"HttpClient::Types::MoneyIso4217Type.from_string($value, :required => ${required}, :multiple => ${multiple})"
 
     } else {
-      s"HttpClient::Preconditions.${assertMethod}('${name}', $value, ${klass})"
+      s"HttpClient::Helper.to_klass('$name', $value, ${klass}, :required => ${required}, :multiple => ${multiple})"
     }
+
   }
 
   private def rubyClass(datatype: Datatype): String = {
