@@ -79,6 +79,8 @@ class TextSpec extends FunSpec with Matchers {
     it("pluralizes standard words") {
       Text.pluralize("user") should be("users")
       Text.pluralize("address") should be("addresses")
+      Text.pluralize("prices") should be("prices")
+      Text.pluralize("metadata") should be("metadata")
       Text.pluralize("family") should be("families")
 
       Text.pluralize("datum") should be("data")

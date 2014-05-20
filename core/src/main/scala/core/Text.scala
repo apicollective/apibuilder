@@ -95,6 +95,9 @@ object Text {
     } else if (value.endsWith("ss")) {
       value + "es"
 
+    } else if (value.endsWith("es") || value.endsWith("data")) {
+      value
+
     } else if (value.endsWith("y")) {
       val letters = value.split("")
       letters.slice(0, letters.size - 1).mkString("") + "ies"
