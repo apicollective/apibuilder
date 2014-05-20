@@ -318,7 +318,7 @@ require 'bigdecimal'
       end
 
       def Helper.to_big_decimal(value, opts={})
-        Helper.parse_args(value, opts) { |v| BigDecimal.new(v) }
+        Helper.parse_args(value, opts) { |v| BigDecimal.new(v.to_s) }
       end
 
       def Helper.to_uuid(value, opts={})
@@ -329,7 +329,7 @@ require 'bigdecimal'
         end
       end
 
-      def Helper.to_date_time_is8601(value, opts={})
+      def Helper.to_date_time_iso8601(value, opts={})
         Helper.parse_args(value, opts) { |v| DateTime.parse(v) }
       end
 
