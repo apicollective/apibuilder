@@ -285,6 +285,9 @@ case class RubyGemGenerator(service: ServiceDescription) {
     } else if (datatype == Datatype.MoneyIso4217Type) {
       s"HttpClient::Helper.to_money_iso4217($value, :required => ${required}, :multiple => ${multiple})"
 
+    } else if (datatype == Datatype.BooleanType) {
+      s"HttpClient::Helper.to_boolean($value, :required => ${required}, :multiple => ${multiple})"
+
     } else {
       s"HttpClient::Helper.to_klass('$name', $value, ${klass}, :required => ${required}, :multiple => ${multiple})"
     }

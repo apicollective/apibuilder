@@ -329,6 +329,21 @@ require 'bigdecimal'
         Helper.parse_args(value, opts) { |v| Types::MoneyIso4217Type.new(v) }
       end
 
+      TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass']
+      FALSE_STRINGS = ['f', 'false', 'n', 'no', 'off', '0', 'falseclass']
+      def Helper.to_boolean(value, opts={})
+        Helper.parse_args(value, opts) do |v|
+          string = value.to_s.strip.downcase
+          if TRUE_STRINGS.include?(string)
+            true
+          elsif FALSE_STRINGS.include?(string)
+            false
+          else
+            nil
+          end
+        end
+      end
+
       def Helper.parse_args(value, opts={}, &block)
         required = opts.has_key?(:required) ? opts.delete(:required) : false
         multiple = opts.has_key?(:multiple) ? opts.delete(:multiple) : false
