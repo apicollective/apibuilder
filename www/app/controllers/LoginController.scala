@@ -24,7 +24,7 @@ object LoginController extends Controller {
 
   def index = Action.async { implicit request =>
     for {
-      user <- masterClient.users.findByEmail("admin@apidoc.com")
+      user <- masterClient.users.findByEmail("admin@apidoc.me")
     } yield {
       Redirect("/").withSession { "user_guid" -> user.get.guid }
     }
