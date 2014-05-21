@@ -283,7 +283,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       s"HttpClient::Helper.to_date_time_iso8601($value, :required => ${required}, :multiple => ${multiple})"
 
     } else if (datatype == Datatype.MoneyIso4217Type) {
-      s"HttpClient::Types::MoneyIso4217Type.from_string($value, :required => ${required}, :multiple => ${multiple})"
+      s"HttpClient::Helper.to_money_iso4217($value, :required => ${required}, :multiple => ${multiple})"
 
     } else {
       s"HttpClient::Helper.to_klass('$name', $value, ${klass}, :required => ${required}, :multiple => ${multiple})"

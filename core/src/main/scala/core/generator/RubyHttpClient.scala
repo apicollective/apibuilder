@@ -262,18 +262,10 @@ require 'bigdecimal'
 
         attr_reader :currency, :amount
 
-        def initialize(currency, amount)
-          @currency = HttpClient::Preconditions.assert_class('currency', currency, String)
-          HttpClient::Preconditions.check_state(@currency.length == 3, "Currency[%s] must be exactly 3 characters long" % @currency)
-          HttpClient::Preconditions.check_state(@currency.upcase == @currency, "Currency[%s] must be in upper case" % @currency)
-          @amount = HttpClient::Preconditions.assert_class('amount', amount, BigDecimal)
-        end
-
-        def MoneyIso4217Type.from_string(value, opts={})
-          Helper.parse_args(value, opts) do |v|
-            currency, amount = value.split(" ", 2)
-            MoneyIso4217Type.new(currency, BigDecimal.new(amount))
-          end
+        def initialize(incoming={})
+          opts = HttpClient::Helper.symbolize_keys(incoming)
+          @amount = HttpClient::Helper.to_big_decimal(opts.delete(:amount), :required => true, :multiple => false)
+          @currency = HttpClient::Helper.to_klass('currency', opts.delete(:currency), String, :required => true, :multiple => false)
         end
 
       end
@@ -331,6 +323,10 @@ require 'bigdecimal'
 
       def Helper.to_date_time_iso8601(value, opts={})
         Helper.parse_args(value, opts) { |v| DateTime.parse(v) }
+      end
+
+      def Helper.to_money_iso4217(value, opts={})
+        Helper.parse_args(value, opts) { |v| Types::MoneyIso4217Type.new(v) }
       end
 
       def Helper.parse_args(value, opts={}, &block)
