@@ -241,9 +241,9 @@ s"""
         val inner = model.fields.map { field =>
           val typeName = field.datatype.name
           if (field.isOption) {
-            s"""(__ \\ "${field.name}").writeNullable[${typeName}]"""
+            s"""(__ \\ "${field.originalName}").writeNullable[${typeName}]"""
           } else {
-            s"""(__ \\ "${field.name}").write[${typeName}]"""
+            s"""(__ \\ "${field.originalName}").write[${typeName}]"""
           }
         }.mkString("\n     and ")
 s"""
