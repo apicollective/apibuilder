@@ -13,14 +13,14 @@
 
     Over time, we've seen interest in exploring ways of taking the
     schema design provided through api.json and linking it further
-    into the development process. A lot of pragmatic ways to do this
-    is to use code generation in various forms. We are generally
-    very cautious about code generation and an in each area we explore
-    the opportunities and tradeoffs for code generation. In some case,
-    we have found the code generation to be particularly useful in
-    terms of ensuring that the services we create actually conform
-    to the specification or in consuming services that are described
-    by api.json.
+    into the development process. One pragmatic way to do this is to
+    use code generation in various forms. We are generally very
+    cautious about code generation and in each area we explore the
+    opportunities and tradeoffs for code generation. In some cases, we
+    have found the code generation to be particularly useful in terms
+    of ensuring that the services we create actually conform to the
+    specification or in consuming services that are described by
+    api.json.
 
   </p>
 
@@ -35,11 +35,13 @@
       development. Also a huge benefit for learning how to use
       services.</li>
 
-      <li> Quality: Can we help ensure services meet their specifications?</li>
+      <li> Quality: Can we help ensure services meet their
+      specifications? Can we improve end point testing by generating
+      tests based on the specification?</li>
 
-      <li> Reduction of dependencies: If we code generate, can we leverage
-      the native libraries already present in your application rather than
-      introducing new dependencies?</li>
+      <li> Reduction of dependencies: If we code generate, can we
+      leverage the native libraries already present in a framework
+      rather than introduce new dependencies?</li>
 
     </ol>
 
@@ -57,21 +59,21 @@
     <tbody>
 
        <tr>
-         <td>In progress</td>
-         <td>Play Framework 2.2 Scala</td>
-         <td>We are exploring generating the play routes file directly from api.json. The primary benefit here is that the routes file is standalone in Play. By code generating the routes file, the compiler will tell you if you are missing any operations defined by api.json. While this does not provide full testing (e.g. does not validate the responses), we have found it very pragmatic to write api.json first, then generate the routes and then can rely on the compiler to inform us when we have implements all operations.</td>
-       </tr>
-
-       <tr>
-         <td>Proposal</td>
-         <td>Play Client Library</td>
-         <td>Play Framework 2.2 offers a very rich <a href="http://www.playframework.com/documentation/2.2.x/ScalaWS">WS API</a>. We are exploring the ability to code generate a client library that will integrate natively with the Play WS API to make it simpler to consume api.json web services.</td>
-       </tr>
-
-       <tr>
-         <td>Proposal</td>
+         <td>Alpha</td>
          <td>Ruby Client Library</td>
-         <td>We are also exploring code generation of a pure ruby library to consume api.json web services. The idea is to be able to download a complete client that then can be immediately published as a gem. At Gilt, we have an initial solid example of a client library to an api.json service published as a gem - we are working on automating this process.</td>
+         <td>A pure ruby library to consume api.json web services. From apidoc, you can download a single file that provides a complete client to a service. The ruby client has minimal dependencies and does not require any additional gems.</td>
+       </tr>
+
+       <tr>
+         <td>Alpha</td>
+         <td>Play Framework 2.x Routes Files</td>
+         <td>Apidoc can generate a routes file for the play 2.x framework. One workflow here is to write the service description in apidoc, upload, copy the routes file, then implement the controllers in play. By code generating the routes file, the compiler tells you if you are missing any operations defined by api.json. While this does not provide full testing (e.g. does not validate the responses), we have found it very pragmatic to ensure services match specifications.</td>
+       </tr>
+
+       <tr>
+         <td>In progress</td>
+         <td>Play Framework 2.x Scala Client</td>
+         <td>Play Framework 2.x offers a very rich <a href="http://www.playframework.com/documentation/2.2.x/ScalaWS">WS API</a>. We are exploring the ability to code generate a client library that will integrate natively with the Play WS API to make it simpler to consume api.json web services.</td>
        </tr>
 
        <tr>
@@ -80,8 +82,13 @@
          <td>We have a prototype to convert api.json to swagger-json. This enables access to all of the great tooling already built on swagger. We specifically made sure the conversion was straight forward as we built api.json and hope to soon have the time to productize the swagger-json generation.</td>
        </tr>
 
+       <tr>
+         <td>Proposal</td>
+         <td>Javascript</td>
+         <td>A few teams have expressed interest in a javascript client to api.json, though we are not yet aware of any work in progress.</td>
+       </tr>
+
     </tbody>
   </table>
 
 }
-
