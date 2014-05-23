@@ -185,7 +185,7 @@ object InternalOperation {
       }
     }
 
-    InternalOperation(method = (json \ "method").asOpt[String],
+    InternalOperation(method = (json \ "method").asOpt[String].map(_.toUpperCase),
                       path = path,
                       description = (json \ "description").asOpt[String],
                       responses = responses,

@@ -201,7 +201,7 @@ object Datatype {
 
   case object DecimalType extends Datatype(name = "decimal",
                                            example = "10.12",
-                                           description = "Commonly used to represent things like currency amounts. Commonly maps to a BigDecimal")
+                                           description = "Commonly used to represent things like currency values. Maps to a BigDecimal in most languages.")
 
   case object IntegerType extends Datatype(name = "integer",
                                            example = "10",
@@ -220,8 +220,8 @@ object Datatype {
                                                    description = "Date time format in ISO 8601")
 
   case object MoneyIso4217Type extends Datatype(name = "money-iso4217",
-                                                example = "USD 10.12",
-                                                description = "ISO 4217 currency code followed by a space followed by the amount")
+                                                example = """{ "currency": "USD", "value": "12.50" }""",
+                                                description = "ISO 4217 currency code and value")
 
   case object UuidType extends Datatype(name = "uuid",
                                         example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
