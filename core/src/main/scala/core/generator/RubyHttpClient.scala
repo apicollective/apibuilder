@@ -5,6 +5,7 @@ object RubyHttpClient {
   val require = """
 require 'cgi'
 require 'net/http'
+require 'net/https'
 require 'uri'
 require 'base64'
 
