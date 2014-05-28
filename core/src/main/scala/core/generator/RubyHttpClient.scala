@@ -236,7 +236,7 @@ require 'bigdecimal'
         @name = HttpClient::Preconditions.check_not_blank('name', name)
       end
 
-      BASIC = AuthScheme.new("basic")
+      BASIC = AuthScheme.new("basic") unless defined?(BASIC)
 
     end
 
@@ -330,8 +330,9 @@ require 'bigdecimal'
         Helper.parse_args(value, opts) { |v| Types::MoneyIso4217Type.new(v) }
       end
 
-      TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass']
-      FALSE_STRINGS = ['f', 'false', 'n', 'no', 'off', '0', 'falseclass']
+      TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRING)
+      FALSE_STRINGS = ['f', 'false', 'n', 'no', 'off', '0', 'falseclass'] unless defined?(FALSE_STRING)
+
       def Helper.to_boolean(value, opts={})
         Helper.parse_args(value, opts) do |v|
           string = value.to_s.strip.downcase
