@@ -33,10 +33,6 @@ the JSON files are stored in src/main/api.
 
 API doc supports generating a Play 2 routes file as well as a Play 2 client.
 
-### TODO
-
-- Better return types in generated clients
-
 Installing Docker on mac
 ========================
 
