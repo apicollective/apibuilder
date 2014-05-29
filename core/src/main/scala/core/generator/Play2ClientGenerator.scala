@@ -86,7 +86,7 @@ package $packageName {
       processResponse(play.api.libs.ApidocWSHelper.patch(logRequest("PATCH", requestHolder(path)), data))
     }
 
-    private def DELETE[T](path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
+    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
       processResponse(logRequest("DELETE", requestHolder(path)).delete())
     }
 
