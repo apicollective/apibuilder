@@ -32,7 +32,7 @@ require 'bigdecimal'
         Preconditions.check_not_blank('name', name, "Header name is required")
         Preconditions.check_not_blank('value', value, "Header value is required")
         Preconditions.check_state(!@headers.has_key?(name),
-                                  "Duplicate header named[%s]" + name)
+                                  "Duplicate header named[%s]" % name)
         @headers[name] = value
         @header_keys_lower_case << name.downcase
         self
