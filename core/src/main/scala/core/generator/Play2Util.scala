@@ -59,6 +59,8 @@ ${queryStringEntries}"""
     val pairs = op.parameters
       .filter(_.location == ParameterLocation.Path)
       .map { p =>
+        require(!p.multiple, "Path parameters cannot be lists.")
+        require(!p.isOption, "Path parameters cannot be optional.")
         p.originalName -> s"(${QueryStringHelper.urlEncode(p.datatype)})(${p.name})"
       }
     val tmp: String = pairs.foldLeft(op.path) {
@@ -95,9 +97,19 @@ ${fields.indent}
 
     def readFun(field: ScalaField): String = {
       val dataTypeImpl = readFun(field.datatype)
-      val impl = field match {
-        case _ if field.isOption => {
-          readFun(s"""json match {
+      val impl = if (field.multiple) {
+        readFun(s"""json match {
+  case _ @ (play.api.libs.json.JsNull | _ :play.api.libs.json.JsUndefined) =>
+    Nil
+  case play.api.libs.json.JsArray(values) => values.toList.map { x =>
+    (
+${dataTypeImpl.indent(6)}
+    )(x)
+  }
+  case x => sys.error(s"cannot parse list from $${x.getClass}")
+}""")
+      } else if (field.isOption) {
+        readFun(s"""json match {
   case _ @ (play.api.libs.json.JsNull | _ :play.api.libs.json.JsUndefined) =>
     None
   case x => Some {
@@ -106,8 +118,8 @@ ${dataTypeImpl.indent(6)}
     )(x)
   }
 }""")
-        }
-        case _ => dataTypeImpl
+      } else {
+        dataTypeImpl
       }
   s"""${field.name} = ($impl)(json \\ "${field.originalName}")"""
     }
@@ -147,32 +159,26 @@ ${fields.indent}
 
     def writeFun(param: ScalaParameter): String = {
       val dataTypeImpl = writeFun(param.datatype)
-      val impl = param match {
-        case _ if param.isOption => {
-          s"""${param.name}.map { value =>
-  ($dataTypeImpl)(value)
+      val impl = if (param.multiple || param.isOption) {
+        s"""${param.name}.map { value =>
+  (
+${dataTypeImpl.indent(4)}
+  )(value)
 }"""
-        }
-
-        case _ => {
-          s"""($dataTypeImpl)(${param.name})"""
-        }
+      } else {
+        s"""($dataTypeImpl)(${param.name})"""
       }
       s""" "${param.originalName}" -> $impl""".trim
     }
 
     def writeFun(field: ScalaField): String = {
       val dataTypeImpl = writeFun(field.datatype)
-      val impl = field match {
-        case _ if field.isOption => {
-          s"""value.${field.name}.map { value =>
+      val impl = if (field.multiple || field.isOption) {
+        s"""value.${field.name}.map { value =>
   ($dataTypeImpl)(value)
 }"""
-        }
-
-        case _ => {
-          s"""($dataTypeImpl)(value.${field.name})"""
-        }
+      } else {
+        s"""($dataTypeImpl)(value.${field.name})"""
       }
       s""" "${field.originalName}" -> $impl""".trim
     }
@@ -201,7 +207,7 @@ play.api.libs.json.JsString(ts)
 
   private object QueryStringHelper {
     def queryString(p: ScalaParameter): String = {
-      (if (p.isOption) {
+      (if (p.isOption || p.multiple) {
         p.name
       } else {
         s"Seq(${p.name})"

@@ -101,11 +101,31 @@ class ScalaField(field: Field) {
 
   def isOption: Boolean = !field.required || field.default.nonEmpty
 
-  def typeName: String = if (isOption) s"Option[${datatype.name}]" else datatype.name
+  def multiple: Boolean = field.multiple
+
+  def typeName: String = {
+    if (multiple) {
+      s"List[${datatype.name}]"
+    } else if (isOption) {
+      s"Option[${datatype.name}]"
+    } else {
+      datatype.name
+    }
+  }
 
   def definition: String = {
     val decl = s"$description$name: $typeName"
-    if (isOption) decl + " = None" else decl
+    if (multiple) {
+      if (isOption) {
+        decl + " = Nil"
+      } else {
+        decl
+      }
+    } else if (isOption) {
+      decl + " = None"
+    } else {
+      decl
+    }
   }
 }
 
@@ -127,11 +147,31 @@ class ScalaParameter(param: Parameter) {
 
   def isOption: Boolean = !param.required || param.default.nonEmpty
 
-  def typeName: String = if (isOption) s"Option[${datatype.name}]" else datatype.name
+  def multiple: Boolean = param.multiple
+
+  def typeName: String = {
+    if (multiple) {
+      s"List[${datatype.name}]"
+    } else if (isOption) {
+      s"Option[${datatype.name}]"
+    } else {
+      datatype.name
+    }
+  }
 
   def definition: String = {
     val decl = s"$description$name: $typeName"
-    if (isOption) decl + " = None" else decl
+    if (multiple) {
+      if (isOption) {
+        decl + " = Nil"
+      } else {
+        decl
+      }
+    } else if (isOption) {
+      decl + " = None"
+    } else {
+      decl
+    }
   }
 
   def location = param.location
