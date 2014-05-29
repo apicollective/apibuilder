@@ -25,7 +25,7 @@ require 'bigdecimal'
         @body = nil
         @auth = nil
         @headers = {}
-        @headers_keys_lower_case = []
+        @header_keys_lower_case = []
       end
 
       def with_header(name, value)
@@ -34,7 +34,7 @@ require 'bigdecimal'
         Preconditions.check_state(!@headers.has_key?(name),
                                   "Duplicate header named[%s]" + name)
         @headers[name] = value
-        @headers_keys_lower_case << name.downcase
+        @header_keys_lower_case << name.downcase
         self
       end
 
@@ -116,7 +116,7 @@ require 'bigdecimal'
 
         if @auth
           curl << "-u \"%s:%s\"" % [@auth.username, @auth.password]
-          Preconditions.check_state(!@headers_keys_lower_case.include?("authorization"),
+          Preconditions.check_state(!@header_keys_lower_case.include?("authorization"),
                                     "Cannot specify both an Authorization header and an explicit username")
           user_pass = "%s:%s" % [@auth.username, @auth.password]
           encoded = Base64.encode64(user_pass).to_s.split("\n").map(&:strip).join
