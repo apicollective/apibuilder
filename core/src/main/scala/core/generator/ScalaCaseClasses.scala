@@ -11,7 +11,7 @@ object ScalaCaseClasses {
   }
 
   def apply(ssd: ScalaServiceDescription): String = ssd.models.map { model =>
-s"""${model.description}case class ${model.name}(${model.argList})
+s"""${model.scaladoc}case class ${model.name}(${model.argList})
 """
   }.mkString("\n")
 }

@@ -33,7 +33,13 @@ class ScalaModel(model: Model) {
 
   val plural = underscoreToInitCap(model.plural)
 
-  val description = model.description.map(ScalaUtil.textToComment).getOrElse("")
+  def scaladoc: String = {
+    val base: String = model.description.getOrElse("")
+    val fielddoc: List[String] = fields.toList.map { field =>
+      s"@param ${field.name} ${field.description}"
+    }
+    ScalaUtil.textToComment((base :: fielddoc).mkString("\n"))
+  }
 
   val fields = model.fields.map { new ScalaField(_) }
 
@@ -55,8 +61,12 @@ class ScalaOperation(operation: Operation) {
 
   val path: String = operation.path
 
-  val description: String = {
-    operation.description.map(ScalaUtil.textToComment).getOrElse("")
+  def scaladoc: String = {
+    val base: String = operation.description.getOrElse("")
+    val fielddoc: List[String] = parameters.toList.map { param =>
+      s"@param ${param.name} ${param.description}"
+    }
+    ScalaUtil.textToComment((base :: fielddoc).mkString("\n"))
   }
 
   val parameters = operation.parameters.map { new ScalaParameter(_) }
@@ -104,7 +114,7 @@ class ScalaField(field: Field) {
 
   }
 
-  def description: String = field.description.map(ScalaUtil.textToComment).getOrElse("")
+  def description: String = field.description.getOrElse("")
 
   def isOption: Boolean = !field.required || field.default.nonEmpty
 
@@ -121,7 +131,7 @@ class ScalaField(field: Field) {
   }
 
   def definition: String = {
-    val decl = s"$description$name: $typeName"
+    val decl = s"$name: $typeName"
     if (multiple) {
       if (isOption) {
         decl + " = Nil"
@@ -150,7 +160,7 @@ class ScalaParameter(param: Parameter) {
 
   }
 
-  def description: String = param.description.map(ScalaUtil.textToComment).getOrElse("")
+  def description: String = param.description.getOrElse("")
 
   def isOption: Boolean = !param.required || param.default.nonEmpty
 
@@ -167,7 +177,7 @@ class ScalaParameter(param: Parameter) {
   }
 
   def definition: String = {
-    val decl = s"$description$name: $typeName"
+    val decl = s"$name: $typeName"
     if (multiple) {
       if (isOption) {
         decl + " = Nil"
