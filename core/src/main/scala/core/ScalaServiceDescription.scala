@@ -62,11 +62,18 @@ class ScalaOperation(operation: Operation) {
   val parameters = operation.parameters.map { new ScalaParameter(_) }
 
   val name: String = {
-    val sanitizedPath: String = {
-      val snakeCase = path.replaceAll("^/[^/]*", "").replaceAll("/:", "_")
-      safeName(underscoreToInitCap(snakeCase))
+    val pathParams = parameters.filter { p =>
+      p.location == ParameterLocation.Path
     }
-    method.toLowerCase + sanitizedPath
+    val names = pathParams.map { p =>
+      p.name.capitalize
+    }
+    val base = method.toLowerCase
+    if (names.isEmpty) {
+      base
+    } else {
+      base + "By" + names.mkString("And")
+    }
   }
 
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
