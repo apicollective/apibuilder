@@ -221,7 +221,7 @@ ${urlEncode(p.datatype).indent(4)}
         case x @ ScalaDecimalType => "x.toString"
         case x @ ScalaUuidType => "x.toString"
         case x @ ScalaDateTimeIso8601Type => {
-          "org.joda.time.format.ISODateTimeFormat.basicDateTime.print(x)"
+          "org.joda.time.format.ISODateTimeFormat.dateTime.print(x)"
         }
         case x @ ScalaMoneyIso4217Type => ???
         case x => throw new UnsupportedOperationException("unsupported conversion of type ${d.name} to query string")
