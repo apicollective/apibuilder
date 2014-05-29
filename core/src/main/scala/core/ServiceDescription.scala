@@ -37,7 +37,7 @@ case class Model(name: String,
                  description: Option[String],
                  fields: Seq[Field]) {
 
-  require(Text.isValidName(name), s"Model name[$name] is invalid - can only contain alphanumerics and underscores")
+  require(Text.isValidName(name), s"Model name[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
 
 }
 

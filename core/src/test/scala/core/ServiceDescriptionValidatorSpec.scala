@@ -23,6 +23,17 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     validator.errors.mkString should be("Missing: base_url, name")
   }
 
+  it("service name must be a valid name") {
+    val json = """
+    {
+      "name": "5@4",
+      "base_url": "http://localhost:9000"
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString should be("Name[5@4] must start with a letter")
+  }
+
   it("model that is missing fields") {
     val json = """
     {

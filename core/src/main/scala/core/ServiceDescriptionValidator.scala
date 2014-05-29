@@ -49,7 +49,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateModels ++ validateFields ++ validateParameterTypes ++ validateFieldTypes ++ validateResources ++ validateParameters ++ validateResponses
+          validateName ++ validateModels ++ validateFields ++ validateParameterTypes ++ validateFieldTypes ++ validateResources ++ validateParameters ++ validateResponses
         } else {
           requiredFieldErrors
         }
@@ -61,6 +61,14 @@ case class ServiceDescriptionValidator(apiJson: String) {
     errors.isEmpty
   }
 
+
+  private def validateName(): Seq[String] = {
+    if (Text.startsWithLetter(serviceDescription.get.name)) {
+      Seq.empty
+    } else {
+      Seq(s"Name[${serviceDescription.get.name}] must start with a letter")
+    }
+  }
 
   /**
    * Validate basic structure, returning a list of error messages
