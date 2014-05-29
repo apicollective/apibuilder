@@ -11,7 +11,23 @@ object ScalaCaseClasses {
   }
 
   def apply(ssd: ScalaServiceDescription): String = ssd.models.map { model =>
-s"""${model.scaladoc}case class ${model.name}(${model.argList})
-"""
+    val traitDef: String = {
+      val fields: String = model.fields.map { f =>
+        val descr = ScalaUtil.textToComment(f.description)
+        s"${descr}def ${f.name}: ${f.typeName}"
+      }.mkString("\n\n")
+      val descr: String = ScalaUtil.textToComment(model.description)
+      s"""${descr}trait ${model.name} {
+${fields.indent}
+}"""
+    }
+    val classDef: String = {
+      s"""${model.scaladoc}case class ${model.name}Impl(${model.argList}) extends ${model.name}"""
+    }
+s"""$traitDef
+
+package ${model.name.toLowerCase} {
+${classDef.indent}
+}"""
   }.mkString("\n")
 }

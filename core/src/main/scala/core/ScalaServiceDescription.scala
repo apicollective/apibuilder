@@ -6,8 +6,12 @@ object ScalaUtil {
 
   // TODO: Use GeneratorUtil.formatComment here
   def textToComment(text: String) = {
-    val lines = text.split("\n")
-    lines.mkString("/**\n * ", "\n * ", "\n */\n")
+    if (text.isEmpty) {
+      text
+    } else {
+      val lines = text.split("\n")
+      lines.mkString("/**\n * ", "\n * ", "\n */\n")
+    }
   }
 
   def fieldsToArgList(fields: Seq[String]) = {
@@ -33,8 +37,10 @@ class ScalaModel(model: Model) {
 
   val plural = underscoreToInitCap(model.plural)
 
+  val description = model.description.getOrElse("")
+
   def scaladoc: String = {
-    val base: String = model.description.getOrElse("")
+    val base: String = description
     val fielddoc: List[String] = fields.toList.map { field =>
       s"@param ${field.name} ${field.description}"
     }

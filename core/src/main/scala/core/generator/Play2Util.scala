@@ -90,7 +90,7 @@ ${body.indent}
 
     def readFun(m: ScalaModel): String = {
       val fields: String = m.fields.map(readFun).mkString(",\n\n")
-      readFun(s"""new ${m.name}(
+      readFun(s"""new ${m.name.toLowerCase}.${m.name}Impl(
 ${fields.indent}
 )""")
     }
