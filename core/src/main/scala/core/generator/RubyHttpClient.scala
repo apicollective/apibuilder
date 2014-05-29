@@ -60,10 +60,8 @@ require 'bigdecimal'
       # Wrapper to set Content-Type header to application/json and set
       # the provided json document as the body
       def with_json(json)
-        Preconditions.check_not_blank('json', json)
         @headers['Content-Type'] ||= 'application/json'
-        @body = json
-        self
+        with_body(json)
       end
 
       def with_body(body)
@@ -331,8 +329,8 @@ require 'bigdecimal'
         Helper.parse_args(value, opts) { |v| Types::MoneyIso4217Type.new(v) }
       end
 
-      TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRING)
-      FALSE_STRINGS = ['f', 'false', 'n', 'no', 'off', '0', 'falseclass'] unless defined?(FALSE_STRING)
+      TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRINGS)
+      FALSE_STRINGS = ['f', 'false', 'n', 'no', 'off', '0', 'falseclass'] unless defined?(FALSE_STRINGS)
 
       def Helper.to_boolean(value, opts={})
         Helper.parse_args(value, opts) do |v|
