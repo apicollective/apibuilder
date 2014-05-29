@@ -131,7 +131,8 @@ require 'bigdecimal'
         curl << "'%s'" % uri
         #DEBUGGING: puts curl.join(" ")
 
-        response = JSON.parse(http_request(request))
+        raw_response = http_request(request)
+        response = raw_response.to_s == "" ? nil : JSON.parse(raw_response)
 
         if block_given?
           yield response
