@@ -5,7 +5,7 @@ import core.Util
 private[generator] object GeneratorUtil {
 
   def isJsonDocumentMethod(verb: String): Boolean = {
-    verb != "GET"
+    verb != "GET" && verb != "DELETE"
   }
 
   // TODO: Remove wrapper
