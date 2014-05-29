@@ -19,12 +19,12 @@ ${Play2Models(ssd)}"""
 
   private def client(ssd: ScalaServiceDescription): String = {
     def packageName = ssd.name.toLowerCase
-s"""package play.api.libs {
+s"""package play.api.libs.apidoc.$packageName {
   // TODO remove when we no longer support 2.2.x
   // dirty trick to make it easy to use PATCH:
   //   - WSRequestHolder.prepare is package private to play...
   //   - WSRequestHolder.execute is package private to libs...
-  object ApidocWSHelper {
+  object WSHelper {
     def patch(
       req: play.api.libs.ws.WS.WSRequestHolder,
       data: play.api.libs.json.JsValue
@@ -83,7 +83,7 @@ package $packageName {
     }
 
     private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
-      processResponse(play.api.libs.ApidocWSHelper.patch(logRequest("PATCH", requestHolder(path)), data))
+      processResponse(play.api.libs.apidoc.$packageName.WSHelper.patch(logRequest("PATCH", requestHolder(path)), data))
     }
 
     private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
