@@ -23,7 +23,7 @@ class ScalaServiceDescription(serviceDescription: ServiceDescription) {
 
   val models = serviceDescription.models.map { new ScalaModel(_) }
 
-  val operations = serviceDescription.resources.flatMap(_.operations.map { new ScalaOperation(_) })
+  val resources = serviceDescription.resources.map { new ScalaResource(_) }
 
 }
 
@@ -31,31 +31,59 @@ class ScalaModel(model: Model) {
 
   val name = underscoreToInitCap(model.name)
 
+  val plural = underscoreToInitCap(model.plural)
+
   val description = model.description.map(ScalaUtil.textToComment).getOrElse("")
 
   val fields = model.fields.map { new ScalaField(_) }
 
-  val argList = ScalaUtil.fieldsToArgList(fields.map(_.src))
+  val argList = ScalaUtil.fieldsToArgList(fields.map(_.definition))
 
+}
+
+class ScalaResource(resource: Resource) {
+  val model = new ScalaModel(resource.model)
+
+  val path = resource.path
+
+  val operations = resource.operations.map { new ScalaOperation(_) }
 }
 
 class ScalaOperation(operation: Operation) {
 
-  val method = operation.method
+  val method: String = operation.method
 
-  val path = operation.path
+  val path: String = operation.path
 
-  val description = operation.description.map(ScalaUtil.textToComment).getOrElse("")
+  val description: String = {
+    operation.description.map(ScalaUtil.textToComment).getOrElse("")
+  }
 
-  val parameters = operation.parameters.map { new ScalaParameter(_) }.sorted
+  val parameters = operation.parameters.map { new ScalaParameter(_) }
 
-  val name = method.toLowerCase + safeName(path).capitalize
+  val name: String = {
+    val sanitizedPath: String = {
+      val snakeCase = path.replaceAll("^/[^/]*", "").replaceAll("/:", "_")
+      safeName(underscoreToInitCap(snakeCase))
+    }
+    method.toLowerCase + sanitizedPath
+  }
 
-  val argList = ScalaUtil.fieldsToArgList(parameters.map(_.src))
+  val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 
+  val responses = operation.responses.map { new ScalaResponse(_) }
 }
 
-class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
+class ScalaResponse(response: Response) {
+  def code = response.code
+
+  def datatype = underscoreToInitCap(response.datatype)
+
+  def multiple = response.multiple
+}
+
+// TODO support multiple
+class ScalaField(field: Field) {
 
   def name: String = snakeToCamelCase(field.name)
 
@@ -75,31 +103,14 @@ class ScalaField(field: Field) extends Source with Ordered[ScalaField] {
 
   def typeName: String = if (isOption) s"Option[${datatype.name}]" else datatype.name
 
-  // TODO: RENAME
-  override def src: String = {
+  def definition: String = {
     val decl = s"$description$name: $typeName"
     if (isOption) decl + " = None" else decl
   }
-
-  // we just want to make sure that fields with defaults
-  // always come after those without, so that argument lists will
-  // be valid. otherwise, preserve existing order
-  override def compare(that: ScalaField): Int = {
-    if (isOption) {
-      if (that.isOption) {
-        0
-      } else {
-        1
-      }
-    } else if (that.isOption) {
-      -1
-    } else {
-      0
-    }
-  }
 }
 
-class ScalaParameter(param: Parameter) extends Source with Ordered[ScalaParameter] {
+// TODO support multiple
+class ScalaParameter(param: Parameter) {
 
   def name: String = snakeToCamelCase(param.name)
 
@@ -118,52 +129,38 @@ class ScalaParameter(param: Parameter) extends Source with Ordered[ScalaParamete
 
   def typeName: String = if (isOption) s"Option[${datatype.name}]" else datatype.name
 
-  // TODO: RENAME
-  override def src: String = {
+  def definition: String = {
     val decl = s"$description$name: $typeName"
     if (isOption) decl + " = None" else decl
   }
 
-  // we just want to make sure that params with defaults
-  // always come after those without, so that argument lists will
-  // be valid. otherwise, preserve existing order
-  override def compare(that: ScalaParameter): Int = {
-    if (isOption) {
-      if (that.isOption) {
-        0
-      } else {
-        1
-      }
-    } else if (that.isOption) {
-      -1
-    } else {
-      0
-    }
-  }
+  def location = param.location
 }
 
-class ScalaDataType(val name: String) extends Source {
-
-  // TODO: Remove this and just access datatype directly
-  override val src: String = name
-
-}
+class ScalaDataType(val name: String)
 
 object ScalaDataType {
 
-  def apply(datatype: Datatype): ScalaDataType = {
-    val name = datatype match {
-      case Datatype.StringType => "String"
-      case Datatype.IntegerType => "Int"
-      case Datatype.LongType => "Long"
-      case Datatype.BooleanType => "Boolean"
-      case Datatype.DecimalType => "BigDecimal"
-      case Datatype.UnitType => "Unit"
-      case Datatype.UuidType => "UUID"
-      case Datatype.DateTimeIso8601Type => "DateTime"
-      case Datatype.MoneyIso4217Type => "Money"
-    }
-    new ScalaDataType(name)
+  case object ScalaStringType extends ScalaDataType("java.lang.String")
+  case object ScalaIntegerType extends ScalaDataType("scala.Int")
+  case object ScalaLongType extends ScalaDataType("scala.Long")
+  case object ScalaBooleanType extends ScalaDataType("scala.Boolean")
+  case object ScalaDecimalType extends ScalaDataType("scala.BigDecimal")
+  case object ScalaUnitType extends ScalaDataType("scala.Unit")
+  case object ScalaUuidType extends ScalaDataType("java.util.UUID")
+  case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
+  case object ScalaMoneyIso4217Type extends ScalaDataType("Money")
+
+  def apply(datatype: Datatype): ScalaDataType = datatype match {
+    case Datatype.StringType => ScalaStringType
+    case Datatype.IntegerType => ScalaIntegerType
+    case Datatype.LongType => ScalaLongType
+    case Datatype.BooleanType => ScalaBooleanType
+    case Datatype.DecimalType => ScalaDecimalType
+    case Datatype.UnitType => ScalaUnitType
+    case Datatype.UuidType => ScalaUuidType
+    case Datatype.DateTimeIso8601Type => ScalaDateTimeIso8601Type
+    case Datatype.MoneyIso4217Type => ScalaMoneyIso4217Type
   }
 
 }

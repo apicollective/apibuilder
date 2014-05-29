@@ -5,14 +5,12 @@ import java.io.PrintWriter
 
 import scala.sys.process._
 
-import core._
-
 import org.scalatest.FlatSpec
 
-class Play2ClientGeneratorSpec extends FlatSpec {
-  "Play2ClientGenerator" should "generate scala" in {
+class Play2ModelsSpec extends FlatSpec {
+  "Play2Models" should "generate scala" in {
     val json = scala.io.Source.fromFile("/web/svc-iris-hub/api.json").getLines.mkString("\n")
-    val src = Play2ClientGenerator(json)
+    val src = Play2Models(json)
     val dir = new File("/web/iris-hub-client/src/main/scala/irishub")
     dir.mkdirs
     val pw = new PrintWriter(new File(dir, "Client.scala"))
