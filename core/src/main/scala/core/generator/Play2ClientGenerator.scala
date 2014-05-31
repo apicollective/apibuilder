@@ -39,31 +39,31 @@ s"""package play.api.libs.apidoc.$packageName {
 }
 
 package $packageName {
-  object Client {
+  class Client(apiUrl: String, apiToken: Option[String] = None) {
     import $packageName.models._
-
-    private val apiToken = sys.props.getOrElse(
-      "$packageName.api.token",
-      sys.error("API token must be provided")
-    )
-
-    private val apiUrl = sys.props.getOrElse(
-      "$packageName.api.url",
-      sys.error("API URL must be provided")
-    )
 
     private val logger = play.api.Logger("$packageName.client")
 
+    logger.info(s"Initializing $packageName.client for url $$apiUrl")
+
     private def requestHolder(resource: String) = {
       val url = apiUrl + resource
-      play.api.libs.ws.WS.url(url).withAuth(apiToken, "", com.ning.http.client.Realm.AuthScheme.BASIC)
+      val holder = play.api.libs.ws.WS.url(url)
+      apiToken.map { token =>
+        holder.withAuth(token, "", com.ning.http.client.Realm.AuthScheme.BASIC)
+      }.getOrElse {
+        holder
+      }
     }
 
     private def logRequest(method: String, req: play.api.libs.ws.WS.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WS.WSRequestHolder = {
       // auth should always be present, but just in case it isn't,
       // we'll supply a default
-      val (apiToken, _, _) = req.auth.getOrElse(("", "",  com.ning.http.client.Realm.AuthScheme.BASIC))
-      logger.info(s"curl -X $$method -u '[REDACTED]:' $${req.url}")
+      apiToken.map { _ =>
+        logger.info(s"curl -X $$method -u '[REDACTED]:' $${req.url}")
+      }.getOrElse {
+        logger.info(s"curl -X $$method $${req.url}")
+      }
       req
     }
 
