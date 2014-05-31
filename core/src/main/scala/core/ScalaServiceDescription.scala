@@ -240,4 +240,17 @@ object ScalaDataType {
     case Datatype.MoneyIso4217Type => ScalaMoneyIso4217Type
   }
 
+  def asString(d: ScalaDataType): String = d match {
+    case x @ ScalaStringType => "x"
+    case x @ ScalaIntegerType => "x.toString"
+    case x @ ScalaLongType => "x.toString"
+    case x @ ScalaBooleanType => "x.toString"
+    case x @ ScalaDecimalType => "x.toString"
+    case x @ ScalaUuidType => "x.toString"
+    case x @ ScalaDateTimeIso8601Type => {
+      "org.joda.time.format.ISODateTimeFormat.dateTime.print(x)"
+    }
+    case x @ ScalaMoneyIso4217Type => ???
+    case x => throw new UnsupportedOperationException(s"unsupported conversion of type ${d.name} to query string")
+  }
 }

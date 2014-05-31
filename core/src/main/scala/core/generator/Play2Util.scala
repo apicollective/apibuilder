@@ -57,7 +57,7 @@ ${queryStringEntries}"""
       .map { p =>
         require(!p.multiple, "Path parameters cannot be lists.")
         require(!p.isOption, "Path parameters cannot be optional.")
-        p.originalName -> s"(${QueryStringHelper.urlEncode(p.datatype)})(${p.name})"
+        p.originalName -> s"(${PathParamHelper.urlEncode(p.datatype)})(${p.name})"
       }
     val tmp: String = pairs.foldLeft(op.path) {
       case (path, (name, value)) =>
@@ -199,6 +199,15 @@ ${innerFun.indent}
     }
   }
 
+  private object PathParamHelper {
+    def urlEncode(d: ScalaDataType): String = {
+      s"""{x: ${d.name} =>
+  val s = ${ScalaDataType.asString(d)}
+  java.net.URLEncoder.encode(s, "UTF-8")
+}"""
+    }
+  }
+
 
   private object QueryStringHelper {
     def queryString(p: ScalaParameter): String = {
@@ -209,27 +218,14 @@ ${innerFun.indent}
       }
       s"""$lhs.map { x =>
   "${p.originalName}" -> (
-${urlEncode(dt).indent(4)}
+${queryString(dt).indent(4)}
   )(x)
 }"""
     }
 
-    def urlEncode(d: ScalaDataType): String = {
-      val toString = d match {
-        case x @ ScalaStringType => "x"
-        case x @ ScalaIntegerType => "x.toString"
-        case x @ ScalaLongType => "x.toString"
-        case x @ ScalaBooleanType => "x.toString"
-        case x @ ScalaDecimalType => "x.toString"
-        case x @ ScalaUuidType => "x.toString"
-        case x @ ScalaDateTimeIso8601Type => {
-          "org.joda.time.format.ISODateTimeFormat.dateTime.print(x)"
-        }
-        case x @ ScalaMoneyIso4217Type => ???
-        case x => throw new UnsupportedOperationException(s"unsupported conversion of type ${d.name} to query string")
-      }
+    def queryString(d: ScalaDataType): String = {
       s"""{ x: ${d.name} =>
-  java.net.URLEncoder.encode($toString, "UTF-8")
+  ${ScalaDataType.asString(d)}
 }"""
     }
   }
