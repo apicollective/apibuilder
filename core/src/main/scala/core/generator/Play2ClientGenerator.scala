@@ -20,11 +20,15 @@ ${Play2Models(ssd)}"""
   private def client(ssd: ScalaServiceDescription): String = {
     def packageName = ssd.name.toLowerCase
 s"""package play.api.libs.apidoc.$packageName {
-  // TODO remove when we no longer support 2.2.x
-  // dirty trick to make it easy to use PATCH:
-  //   - WSRequestHolder.prepare is package private to play...
-  //   - WSRequestHolder.execute is package private to libs...
+  /**
+   * A helper that provides access to some needed, but private
+   * functionality of the play WS client library.
+   */
   object WSHelper {
+    /**
+     * Allows users to perform patch requests using a WSRequestHolder.
+     * Necessary in play 2.2.x, but needed for 2.3 +.
+     */
     def patch(
       req: play.api.libs.ws.WS.WSRequestHolder,
       data: play.api.libs.json.JsValue
@@ -142,8 +146,6 @@ PATCH($path, payload)"""
           val tpe = response.datatype
           if (tpe == "Unit") {
             s"case r if r.status == ${response.code} => r.status -> ()"
-          } else if (response.multiple) {
-            s"case r if r.status == ${response.code} => r.status -> r.json.as[List[$tpe]]"
           } else {
             s"case r if r.status == ${response.code} => r.status -> r.json.as[$tpe]"
           }

@@ -37,7 +37,7 @@ class ScalaModel(model: Model) {
 
   val plural = underscoreToInitCap(model.plural)
 
-  val description = model.description.getOrElse("")
+  val description = model.description.getOrElse(name)
 
   def scaladoc: String = {
     val base: String = description
@@ -72,10 +72,20 @@ class ScalaOperation(operation: Operation) {
     val fielddoc: List[String] = parameters.toList.map { param =>
       s"@param ${param.name} ${param.description}"
     }
-    ScalaUtil.textToComment((base :: fielddoc).mkString("\n"))
+    val returndoc: List[String] = responses match {
+      case head :: rest => {
+        val headdoc = head.returndoc
+        val restdoc = rest.map("|" + _.returndoc).map(_.indent(7))
+        s"@return $headdoc" :: restdoc
+      }
+      case Nil => Nil
+    }
+    ScalaUtil.textToComment((base :: (fielddoc ++ returndoc)).mkString("\n"))
   }
 
-  val parameters = operation.parameters.map { new ScalaParameter(_) }
+  val parameters: List[ScalaParameter] = {
+    operation.parameters.toList.map { new ScalaParameter(_) }
+  }
 
   val name: String = {
     val pathParams = parameters.filter { p =>
@@ -94,15 +104,24 @@ class ScalaOperation(operation: Operation) {
 
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 
-  val responses = operation.responses.map { new ScalaResponse(_) }
+  val responses: List[ScalaResponse] = {
+    operation.responses.toList.map { new ScalaResponse(_) }
+  }
 }
 
 class ScalaResponse(response: Response) {
   def code = response.code
 
-  def datatype = underscoreToInitCap(response.datatype)
+  def datatype = {
+    val scalaName: String = underscoreToInitCap(response.datatype)
+    if (response.multiple) {
+      s"List[${scalaName}]"
+    } else {
+      scalaName
+    }
+  }
 
-  def multiple = response.multiple
+  def returndoc: String = s"($code, $datatype)"
 }
 
 class ScalaField(field: Field) {
@@ -124,7 +143,7 @@ class ScalaField(field: Field) {
     else base
   }
 
-  def description: String = field.description.getOrElse("")
+  def description: String = field.description.getOrElse(name)
 
   def isOption: Boolean = !field.required || field.default.nonEmpty
 
@@ -165,7 +184,7 @@ class ScalaParameter(param: Parameter) {
     else base
   }
 
-  def description: String = param.description.getOrElse("")
+  def description: String = param.description.getOrElse(name)
 
   def isOption: Boolean = !param.required || param.default.nonEmpty
 
