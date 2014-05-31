@@ -75,7 +75,7 @@ class ScalaOperation(operation: Operation) {
     val returndoc: List[String] = responses match {
       case head :: rest => {
         val headdoc = head.returndoc
-        val restdoc = rest.map("|" + _.returndoc).map(_.indent(7))
+        val restdoc = rest.map("| " + _.returndoc).map(_.indent(7))
         s"@return $headdoc" :: restdoc
       }
       case Nil => Nil
