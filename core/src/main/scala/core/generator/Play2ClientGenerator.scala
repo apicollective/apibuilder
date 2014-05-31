@@ -62,7 +62,7 @@ package $packageName {
           s"$$name=$$value"
         }
       }.mkString("&")
-      val url = s"$${req.url}?q"
+      val url = s"$${req.url}?$$q"
       apiToken.map { _ =>
         logger.info(s"curl -X $$method -u '[REDACTED]:' $$url")
       }.getOrElse {
