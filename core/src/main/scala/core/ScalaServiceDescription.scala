@@ -87,12 +87,15 @@ class ScalaOperation(operation: Operation) {
     operation.parameters.toList.map { new ScalaParameter(_) }
   }
 
+  lazy val pathParameters = parameters.filter { _.location == ParameterLocation.Path }
+
+  lazy val queryParameters = parameters.filter { _.location == ParameterLocation.Query }
+
+  lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
+
   val name: String = {
-    val pathParams = parameters.filter { p =>
-      p.location == ParameterLocation.Path
-    }
-    val names = pathParams.map { p =>
-      p.name.capitalize
+    val names = pathParameters.map { p =>
+      Text.initCap(Text.safeName(p.name))
     }
     val base = method.toLowerCase
     if (names.isEmpty) {

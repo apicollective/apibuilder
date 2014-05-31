@@ -43,8 +43,7 @@ ${impl.indent(4)}
   }
 
   def queryParams(op: ScalaOperation): String = {
-    val queryParams = op.parameters.filter(_.location == ParameterLocation.Query)
-    val queryStringEntries: String = queryParams.map { p =>
+    val queryStringEntries: String = op.queryParameters.map { p =>
       s"queryBuilder ++= ${QueryStringHelper.queryString(p)}"
     }.mkString("\n")
     s"""val queryBuilder = List.newBuilder[(String, String)]
@@ -52,8 +51,7 @@ ${queryStringEntries}"""
   }
 
   def pathParams(op: ScalaOperation): String = {
-    val pairs = op.parameters
-      .filter(_.location == ParameterLocation.Path)
+    val pairs = op.pathParameters
       .map { p =>
         require(!p.multiple, "Path parameters cannot be lists.")
         require(!p.isOption, "Path parameters cannot be optional.")
@@ -69,8 +67,7 @@ ${queryStringEntries}"""
   }
 
   def formParams(op: ScalaOperation): String = {
-    val params = op.parameters
-      .filter(_.location == ParameterLocation.Form)
+    val params = op.formParameters
       .map(JsonWritesHelper.writeFun).mkString(",\n\n")
     s"""val payload = play.api.libs.json.Json.obj(
 ${params.indent}
