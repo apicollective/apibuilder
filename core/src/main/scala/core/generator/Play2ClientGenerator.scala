@@ -78,7 +78,7 @@ package $packageName {
         } catch {
           case e: Exception => response.body
         }
-        logger.debug(body)
+        logger.debug(s"$${response.status} -> $$body")
         response
       }
     }
@@ -156,7 +156,12 @@ PATCH($path, payload)"""
           if (tpe == "Unit") {
             s"case r if r.status == ${response.code} => r.status -> ()"
           } else {
-            s"case r if r.status == ${response.code} => r.status -> r.json.as[$tpe]"
+            s"""case r if r.status == ${response.code} => {
+  try r.status -> r.json.as[$tpe]
+  catch {
+    case e: Exception => throw new RuntimeException(s"unable to parse '$tpe' from $${r.json}", e)
+  }
+}"""
           }
         }.mkString("\n\n")
       }
