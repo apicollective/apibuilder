@@ -115,7 +115,7 @@ class ScalaResponse(response: Response) {
   def datatype = {
     val scalaName: String = underscoreToInitCap(response.datatype)
     if (response.multiple) {
-      s"List[${scalaName}]"
+      s"scala.collection.immutable.List[${scalaName}]"
     } else {
       scalaName
     }
