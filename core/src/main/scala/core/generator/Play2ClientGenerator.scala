@@ -57,12 +57,16 @@ package $packageName {
     }
 
     private def logRequest(method: String, req: play.api.libs.ws.WS.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WS.WSRequestHolder = {
-      // auth should always be present, but just in case it isn't,
-      // we'll supply a default
+      val q = req.queryString.flatMap { case (name, values) =>
+        values.map(name -> _).map { case (name, value) =>
+          s"$$name=$$value"
+        }
+      }.mkString("&")
+      val url = s"$${req.url}?q"
       apiToken.map { _ =>
-        logger.info(s"curl -X $$method -u '[REDACTED]:' $${req.url}")
+        logger.info(s"curl -X $$method -u '[REDACTED]:' $$url")
       }.getOrElse {
-        logger.info(s"curl -X $$method $${req.url}")
+        logger.info(s"curl -X $$method $$url")
       }
       req
     }
