@@ -105,19 +105,23 @@ class ScalaResponse(response: Response) {
   def multiple = response.multiple
 }
 
-// TODO support multiple
 class ScalaField(field: Field) {
 
   def name: String = snakeToCamelCase(field.name)
 
   def originalName: String = field.name
 
-  def datatype: ScalaDataType = field.fieldtype match {
-
-    case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-    case m: ModelFieldType => new ScalaDataType(underscoreToInitCap(m.model.name))
-    case r: ReferenceFieldType => new ScalaDataType(underscoreToInitCap(s"Reference[#{underscoreToInitCap(r.model.name)}]"))
-
+  def datatype: ScalaDataType = {
+    import ScalaDataType._
+    val base: ScalaDataType = field.fieldtype match {
+      case t: PrimitiveFieldType => ScalaDataType(t.datatype)
+      case m: ModelFieldType => new ScalaModelType(new ScalaModel(m.model))
+      // TODO support references in scala
+      case r: ReferenceFieldType => ???
+    }
+    if (multiple) new ScalaListType(base)
+    else if (isOption) new ScalaOptionType(base)
+    else base
   }
 
   def description: String = field.description.getOrElse("")
@@ -126,15 +130,7 @@ class ScalaField(field: Field) {
 
   def multiple: Boolean = field.multiple
 
-  def typeName: String = {
-    if (multiple) {
-      s"List[${datatype.name}]"
-    } else if (isOption) {
-      s"Option[${datatype.name}]"
-    } else {
-      datatype.name
-    }
-  }
+  def typeName: String = datatype.name
 
   def definition: String = {
     val decl = s"$name: $typeName"
@@ -152,18 +148,21 @@ class ScalaField(field: Field) {
   }
 }
 
-// TODO support multiple
 class ScalaParameter(param: Parameter) {
 
   def name: String = snakeToCamelCase(param.name)
 
   def originalName: String = param.name
 
-  def datatype: ScalaDataType = param.paramtype match {
-
-    case t: PrimitiveParameterType => ScalaDataType(t.datatype)
-    case m: ModelParameterType => new ScalaDataType(underscoreToInitCap(m.model.name))
-
+  def datatype: ScalaDataType = {
+    import ScalaDataType._
+    val base: ScalaDataType = param.paramtype match {
+      case t: PrimitiveParameterType => ScalaDataType(t.datatype)
+      case m: ModelParameterType => new ScalaModelType(new ScalaModel(m.model))
+    }
+    if (multiple) new ScalaListType(base)
+    else if (isOption) new ScalaOptionType(base)
+    else base
   }
 
   def description: String = param.description.getOrElse("")
@@ -172,15 +171,7 @@ class ScalaParameter(param: Parameter) {
 
   def multiple: Boolean = param.multiple
 
-  def typeName: String = {
-    if (multiple) {
-      s"List[${datatype.name}]"
-    } else if (isOption) {
-      s"Option[${datatype.name}]"
-    } else {
-      datatype.name
-    }
-  }
+  def typeName: String = datatype.name
 
   def definition: String = {
     val decl = s"$name: $typeName"
@@ -200,7 +191,7 @@ class ScalaParameter(param: Parameter) {
   def location = param.location
 }
 
-class ScalaDataType(val name: String)
+sealed abstract class ScalaDataType(val name: String)
 
 object ScalaDataType {
 
@@ -213,6 +204,10 @@ object ScalaDataType {
   case object ScalaUuidType extends ScalaDataType("java.util.UUID")
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
   case object ScalaMoneyIso4217Type extends ScalaDataType("Money")
+
+  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.List[${inner.name}]")
+  case class ScalaModelType(model: ScalaModel) extends ScalaDataType(model.name)
+  case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {
     case Datatype.StringType => ScalaStringType
