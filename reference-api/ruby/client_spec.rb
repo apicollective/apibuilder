@@ -7,7 +7,9 @@ include Clients
 
 describe ReferenceApi do
 
-  client = Client.new("http://localhost:9000")
+  port = (ENV['PORT'] || raise("port is required")).to_i
+  client = Client.new("http://localhost:#{port}")
+  puts "PORT -> #{port}"
 
   describe Organizations do
     it "should work" do
