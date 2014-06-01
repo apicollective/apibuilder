@@ -15,4 +15,3 @@ dist
 /.settings
 app/Play2Client.scala
 test/ScalaCheck.scala
-ruby/lib/client.rb

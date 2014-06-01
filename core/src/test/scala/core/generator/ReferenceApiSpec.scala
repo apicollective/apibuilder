@@ -8,9 +8,10 @@ import scala.sys.process._
 import core._
 
 import org.scalatest.FlatSpec
+import org.scalatest.ShouldMatchers
 
-class ReferenceApiSpec extends FlatSpec {
-  "Play2ClientGenerator" should "generate scala" in {
+class ReferenceApiSpec extends FlatSpec with ShouldMatchers {
+  "ReferenceApi" should "generate working code" in {
     val referenceApi = new File("reference-api")
     val json = io.Source.fromFile(new File(referenceApi, "api.json"))
       .getLines.mkString("\n")
@@ -31,26 +32,26 @@ class ReferenceApiSpec extends FlatSpec {
     genCode(ScalaCheckGenerators(json), "test/ScalaCheck.scala")
     genCode(
       RubyGemGenerator(ServiceDescription(json)).generate,
-      "ruby/lib/client.rb"
+      "ruby/client.rb"
     )
 
-    assert(
-      Process(
-        Seq("sbt", "test"),
-        cwd = referenceApi
-      ).!  == 0,
-      "scala tests failed"
-    )
+    Process(
+      Seq("sbt", "test"),
+      cwd = referenceApi
+    ).! should be(0)
 
-    assert(
-      Process(
-        // TODO this just checks syntax.
-        // need to work out how to actually
-        // test the ruby client
-        Seq("ruby", "ruby/lib/client.rb"),
-        cwd = referenceApi
-      ).! == 0,
-      "ruby tests failed"
-    )
+    val ruby = new File(referenceApi, "ruby")
+    val bundle = Process("rbenv which bundle", cwd = ruby).!!.trim
+    println(s"bundle executable is: $bundle")
+
+    Process(
+      Seq(bundle, "install", "--binstubs=bin", "--path=gems"),
+      cwd = ruby
+    ).! should be(0)
+
+    Process(
+      Seq("bin/rspec", "client_spec.rb"),
+      cwd = ruby
+    ).! should be(0)
   }
 }
