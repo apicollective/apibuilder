@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+tag = `sem-info tag next`.strip
+
+if tag.to_s == ""
+  raise "Missing tag"
+end
+
+puts tag
+
+def run(cmd)
+  puts cmd
+  system(cmd)
+end
+
+run("git tag -a -m %s %s" % [tag, tag])
+run("git push --tags origin")
+
+%w(api www).each do |project|
+  run("/web/metadata-architecture/exec script/build-docker-image apidoc #{project} #{tag}")
+  run("ionblaster new #{project} #{tag}")
+  run("script/transition-traffic #{project}")
+end
