@@ -274,19 +274,19 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val klass = rubyClass(datatype)
 
     if (datatype == Datatype.DecimalType) {
-      s"HttpClient::Helper.to_big_decimal($value, :required => ${required}, :multiple => ${multiple})"
+      s"HttpClient::Helper.to_big_decimal('$name', $value, :required => ${required}, :multiple => ${multiple})"
 
     } else if (datatype == Datatype.UuidType) {
-      s"HttpClient::Helper.to_uuid($value, :required => ${required}, :multiple => ${multiple})"
+      s"HttpClient::Helper.to_uuid('$name', $value, :required => ${required}, :multiple => ${multiple})"
 
     } else if (datatype == Datatype.DateTimeIso8601Type) {
-      s"HttpClient::Helper.to_date_time_iso8601($value, :required => ${required}, :multiple => ${multiple})"
+      s"HttpClient::Helper.to_date_time_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
 
     } else if (datatype == Datatype.MoneyIso4217Type) {
-      s"HttpClient::Helper.to_money_iso4217($value, :required => ${required}, :multiple => ${multiple})"
+      s"HttpClient::Helper.to_money_iso4217('$name', $value, :required => ${required}, :multiple => ${multiple})"
 
     } else if (datatype == Datatype.BooleanType) {
-      s"HttpClient::Helper.to_boolean($value, :required => ${required}, :multiple => ${multiple})"
+      s"HttpClient::Helper.to_boolean('$name', $value, :required => ${required}, :multiple => ${multiple})"
 
     } else {
       s"HttpClient::Helper.to_klass('$name', $value, ${klass}, :required => ${required}, :multiple => ${multiple})"

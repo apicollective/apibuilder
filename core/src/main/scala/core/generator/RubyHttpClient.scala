@@ -306,34 +306,34 @@ require 'bigdecimal'
       end
 
       def Helper.to_model_instance(field_name, klass, value, opts={})
-        Helper.parse_args(value, opts) { |v| klass.send(:new, v) }
+        Helper.parse_args(field_name, value, opts) { |v| klass.send(:new, v) }
       end
 
-      def Helper.to_big_decimal(value, opts={})
-        Helper.parse_args(value, opts) { |v| BigDecimal.new(v.to_s) }
+      def Helper.to_big_decimal(field_name, value, opts={})
+        Helper.parse_args(field_name, value, opts) { |v| BigDecimal.new(v.to_s) }
       end
 
-      def Helper.to_uuid(value, opts={})
-        Helper.parse_args(value, opts) do |v|
+      def Helper.to_uuid(field_name, value, opts={})
+        Helper.parse_args(field_name, value, opts) do |v|
           Preconditions.check_state(v.match(/^\w\w\w\w\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\w\w\w\w\w\w\w\w$/),
                                     "Invalid guid[%s]" % v)
           v
         end
       end
 
-      def Helper.to_date_time_iso8601(value, opts={})
-        Helper.parse_args(value, opts) { |v| DateTime.parse(v) }
+      def Helper.to_date_time_iso8601(field_name, value, opts={})
+        Helper.parse_args(field_name, value, opts) { |v| DateTime.parse(v) }
       end
 
-      def Helper.to_money_iso4217(value, opts={})
-        Helper.parse_args(value, opts) { |v| Types::MoneyIso4217Type.new(v) }
+      def Helper.to_money_iso4217(field_name, value, opts={})
+        Helper.parse_args(field_name, value, opts) { |v| Types::MoneyIso4217Type.new(v) }
       end
 
       TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRINGS)
       FALSE_STRINGS = ['f', 'false', 'n', 'no', 'off', '0', 'falseclass'] unless defined?(FALSE_STRINGS)
 
-      def Helper.to_boolean(value, opts={})
-        Helper.parse_args(value, opts) do |v|
+      def Helper.to_boolean(field_name, value, opts={})
+        Helper.parse_args(field_name, value, opts) do |v|
           string = value.to_s.strip.downcase
           if TRUE_STRINGS.include?(string)
             true
@@ -345,11 +345,10 @@ require 'bigdecimal'
         end
       end
 
-      def Helper.parse_args(value, opts={}, &block)
+      def Helper.parse_args(field_name, value, opts={}, &block)
         required = opts.has_key?(:required) ? opts.delete(:required) : false
         multiple = opts.has_key?(:multiple) ? opts.delete(:multiple) : false
         HttpClient::Preconditions.assert_empty_opts(opts)
-        field_name = 'field' # TODO: Pass through better field name
 
         if multiple
           values = value || []
