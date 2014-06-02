@@ -93,6 +93,11 @@ Putting traffic on your new version
 
     /web/metadata-architecture/exec script/ionblaster set-load-balancers -lb <HOST> api.iris.gilt.com
 
+Automated deploy
+================
+
+    script/release-and-deploy
+
 Metadata about your app EC2 Configuration
 =========================================
 
