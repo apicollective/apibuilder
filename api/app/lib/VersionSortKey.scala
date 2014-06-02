@@ -8,17 +8,14 @@ case class Version(version: String) extends Ordered[Version] {
 
   lazy val sortKey = {
     version.split(Dash).map { s =>
-      println("s: " + s)
       val pieces = s.split(Dot)
       if (pieces.forall(s => isDigit(s))) {
-        "0:%s".format(pieces.map( _.toInt + Padding ).mkString(":"))
+        "5:%s".format(pieces.map( _.toInt + Padding ).mkString(":"))
       } else {
-        "5:%s".format(s.toLowerCase)
+        "0:%s".format(s.toLowerCase)
       }
     }.mkString("|")
   }
-
-  println("%s => %s".format(version, sortKey))
 
   def compare(that: Version) = {
     sortKey.compare(that.sortKey)
