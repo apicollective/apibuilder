@@ -1,0 +1,8 @@
+POST     /organizations             controllers.Organizations.post()
+GET      /organizations             controllers.Organizations.get(guid: Option[String], name: Option[String])
+GET      /organizations/:guid       controllers.Organizations.getByGuid(guid: String)
+POST     /users                     controllers.Users.post()
+GET      /users                     controllers.Users.get(guid: Option[String], email: Option[String], active: Boolean ?= true)
+POST     /members                   controllers.Members.post()
+GET      /members                   controllers.Members.get(guid: Option[String], organization_guid: Option[String], user_guid: Option[String], role: Option[String])
+GET      /:organization/members     controllers.Members.getByOrganization(organization: String)

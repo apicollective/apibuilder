@@ -8,9 +8,7 @@ lazy val core = project
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % "2.2.3"
-    ),
-    // Temporary addition until api.json is moved.
-    unmanagedClasspath in Test += (baseDirectory in ThisBuild).value / "api"
+    )
   )
 
 lazy val api = project
