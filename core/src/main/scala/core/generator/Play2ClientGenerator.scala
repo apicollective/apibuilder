@@ -157,9 +157,9 @@ PATCH($path, payload)"""
             s"case r if r.status == ${response.code} => r.status -> ()"
           } else {
             s"""case r if r.status == ${response.code} => {
-  try r.status -> r.json.as[$tpe]
-  catch {
-    case e: Exception => throw new RuntimeException(s"unable to parse '$tpe' from $${r.json}", e)
+  scala.util.Try(r.status -> r.json.as[$tpe]).getOrElse {
+    val prettyJson = play.api.libs.json.Json.prettyPrint(r.json)
+    sys.error(s"unable to parse '$tpe' from $$prettyJson")
   }
 }"""
           }
