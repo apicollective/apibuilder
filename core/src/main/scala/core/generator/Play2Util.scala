@@ -18,6 +18,8 @@ object Play2Util extends Play2Util {
     val name = x.name
     def read(field: ScalaField): String = field.datatype match {
       case x: ScalaDataType.ScalaListType => {
+        // if the key is absent, we return an empty
+        // list
         s"""readNullable[${x.name}].map { x =>
   x.getOrElse(Nil)
 }"""
