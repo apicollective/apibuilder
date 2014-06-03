@@ -12,14 +12,13 @@ object Play2ClientGenerator {
   }
 
   def apply(ssd: ScalaServiceDescription): String = {
-s"""${client(ssd)}
+s"""${Play2Models(ssd)}
 
-${Play2Models(ssd)}"""
+${client(ssd)}"""
   }
 
   private def client(ssd: ScalaServiceDescription): String = {
-    def packageName = ssd.name.toLowerCase
-s"""package play.api.libs.apidoc.$packageName {
+s"""package play.api.libs.apidoc.${ssd.packageName} {
   /**
    * A helper that provides access to some needed, but private
    * functionality of the play WS client library.
@@ -38,13 +37,14 @@ s"""package play.api.libs.apidoc.$packageName {
   }
 }
 
-package $packageName {
+package ${ssd.packageName} {
   class Client(apiUrl: String, apiToken: Option[String] = None) {
-    import $packageName.models._
+    import ${ssd.packageName}.models._
+    import ${ssd.packageName}.models.json._
 
-    private val logger = play.api.Logger("$packageName.client")
+    private val logger = play.api.Logger("${ssd.packageName}.client")
 
-    logger.info(s"Initializing $packageName.client for url $$apiUrl")
+    logger.info(s"Initializing ${ssd.packageName}.client for url $$apiUrl")
 
     private def requestHolder(resource: String) = {
       val url = apiUrl + resource
@@ -96,7 +96,7 @@ package $packageName {
     }
 
     private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
-      processResponse(play.api.libs.apidoc.$packageName.WSHelper.patch(logRequest("PATCH", requestHolder(path)), data))
+      processResponse(play.api.libs.apidoc.${ssd.packageName}.WSHelper.patch(logRequest("PATCH", requestHolder(path)), data))
     }
 
     private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
@@ -156,19 +156,13 @@ PATCH($path, payload)"""
           if (tpe == "Unit") {
             s"case r if r.status == ${response.code} => r.status -> ()"
           } else {
-            s"""case r if r.status == ${response.code} => {
-  scala.util.Try(r.status -> r.json.as[$tpe]).getOrElse {
-    val prettyJson = play.api.libs.json.Json.prettyPrint(r.json)
-    sys.error(s"unable to parse '$tpe' from $$prettyJson")
-  }
-}"""
+            s"case r if r.status == ${response.code} => r.status -> r.json.as[$tpe]"
           }
-        }.mkString("\n\n")
+        }.mkString("\n")
       }
       s"""${op.scaladoc}def ${op.name}(${op.argList})(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Any] = {
 ${methodCall.indent}.map {
 ${matchResponse.indent(4)}
-
     case r => r
   }
 }"""

@@ -29,6 +29,7 @@ class ScalaServiceDescription(serviceDescription: ServiceDescription) {
 
   val resources = serviceDescription.resources.map { new ScalaResource(_) }
 
+  val packageName = name.toLowerCase
 }
 
 class ScalaModel(model: Model) {

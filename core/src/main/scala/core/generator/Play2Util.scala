@@ -16,30 +16,66 @@ object Play2Util extends Play2Util {
 
   def jsonReads(x: ScalaModel): String = {
     val name = x.name
-    val impl = JsonReadsHelper.readFun(new ScalaModelType(x))
-s"""new play.api.libs.json.Reads[$name] {
-  val impl =
-${impl.indent(4)}
-
-  def reads(json: play.api.libs.json.JsValue) = {
-    scala.util.Try {
-      play.api.libs.json.JsSuccess(impl(json))
-    }.recover {
-      case e: Exception => play.api.libs.json.JsError(e.getMessage)
-    }.get
+    def read(field: ScalaField): String = field.datatype match {
+      case x: ScalaDataType.ScalaListType => {
+        s"""readNullable[${x.name}].map { x =>
+  x.getOrElse(Nil)
+}"""
+      }
+      case ScalaDataType.ScalaOptionType(inner) => {
+        s"readNullable[${inner.name}]"
+      }
+      case x => {
+        s"read[${x.name}]"
+      }
+    }
+    x.fields match {
+      case field::Nil => {
+        s"""{
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+  (__ \\ "${field.originalName}").${read(field)}.map { x =>
+    new ${name.toLowerCase}.${name}Impl(${field.name} = x)
   }
 }"""
+      }
+      case fields => {
+        val builder: String = x.fields.map { field =>
+          s"""(__ \\ "${field.originalName}").${read(field)}"""
+        }.mkString("(", " and\n ", ")")
+
+        s"""{
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+${builder.indent}(${name.toLowerCase}.${name}Impl.apply _)
+}"""
+      }
+    }
   }
 
   def jsonWrites(x: ScalaModel): String = {
     val name = x.name
-    val impl = JsonWritesHelper.writeFun(new ScalaModelType(x))
-s"""new play.api.libs.json.Writes[$name] {
-  val impl =
-${impl.indent(4)}
 
-  def writes(value: $name) = impl(value)
+    x.fields match {
+      case field::Nil => {
+        s"""new play.api.libs.json.Writes[$name] {
+  def writes(x: ${name}) = play.api.libs.json.Json.obj(
+    "${field.originalName}" -> play.api.libs.json.Json.toJson(x.${field.name})
+  )
 }"""
+      }
+      case fields => {
+        val builder: String = x.fields.map { field =>
+          s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
+        }.mkString("(", " and\n ", ")")
+
+        s"""{
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+${builder.indent}(unlift(${name}.unapply))
+}"""
+      }
+    }
   }
 
   def queryParams(op: ScalaOperation): String = {
@@ -67,132 +103,12 @@ ${queryStringEntries}"""
   }
 
   def formParams(op: ScalaOperation): String = {
-    val params = op.formParameters
-      .map(JsonWritesHelper.writeFun).mkString(",\n\n")
+    val params = op.formParameters.map { param =>
+      s""" "${param.originalName}" -> play.api.libs.json.Json.toJson(${param.name})""".trim
+    }.mkString(",\n")
     s"""val payload = play.api.libs.json.Json.obj(
 ${params.indent}
 )"""
-  }
-
-  private object JsonReadsHelper {
-    def readFun(body: String): String = {
-  s"""{ json: play.api.libs.json.JsValue =>
-${body.indent}
-}"""
-    }
-
-    def readFun(field: ScalaField): String = {
-      val impl = readFun(field.datatype)
-      val call = s"""($impl)(fieldJson)"""
-      s"""${field.name} = {
-  val fieldJson = (json \\ "${field.originalName}")
-  scala.util.Try {
-${call.indent(4)}
-  }.getOrElse {
-    val prettyJson = play.api.libs.json.Json.prettyPrint(fieldJson)
-    sys.error(s"unable to parse '${field.originalName}' from $$prettyJson")
-  }
-}"""
-    }
-
-    def readFun(d: ScalaDataType): String = d match {
-      case x @ ScalaStringType => readFun(s"json.as[${x.name}]")
-      case x @ ScalaIntegerType => readFun(s"json.as[${x.name}]")
-      case x @ ScalaLongType => readFun(s"json.as[${x.name}]")
-      case x @ ScalaBooleanType => readFun(s"json.as[${x.name}]")
-      case x @ ScalaDecimalType => readFun(s"json.as[${x.name}]")
-      case x @ ScalaUnitType => throw new UnsupportedOperationException("unsupported attempt to read Unit from json")
-      case x @ ScalaUuidType => {
-        readFun("java.util.UUID.fromString(json.as[java.lang.String])")
-      }
-      case x @ ScalaDateTimeIso8601Type => {
-        readFun("org.joda.time.format.ISODateTimeFormat.dateTimeParser.parseDateTime(json.as[String])")
-      }
-      case x @ ScalaMoneyIso4217Type => ???
-      case x: ScalaListType => {
-        val innerFun = readFun(x.inner)
-        readFun(s"""json match {
-  case _ @ (play.api.libs.json.JsNull | _: play.api.libs.json.JsUndefined) => Nil
-  case play.api.libs.json.JsArray(values) => values.toList.map {
-${innerFun.indent(4)}
-  }
-  case x => sys.error(s"Unable to parse list from $${x.getClass}")
-}""")
-      }
-      case x: ScalaModelType => {
-        val m = x.model
-        val fields: String = m.fields.map(readFun).mkString(",\n\n")
-        readFun(s"""new ${m.name.toLowerCase}.${m.name}Impl(
-${fields.indent}
-)""")
-      }
-      case x: ScalaOptionType => {
-        val innerFun = readFun(x.inner)
-        readFun(s"""json match {
-  case _ @ (play.api.libs.json.JsNull | _: play.api.libs.json.JsUndefined) => None
-  case x => Some {
-    (
-${innerFun.indent(6)}
-    )(x)
-  }
-}""")
-      }
-    }
-  }
-
-  private object JsonWritesHelper {
-    def writeFun(body: String)(implicit  d: ScalaDataType): String = {
-      s"""{ value: ${d.name} =>
-${body.indent}
-}"""
-    }
-
-    def writeFun(param: ScalaParameter): String = {
-      val impl = writeFun(param.datatype)
-      s""" "${param.originalName}" -> ($impl)(${param.name})""".trim
-    }
-
-    def writeFun(field: ScalaField): String = {
-      val impl = writeFun(field.datatype)
-      s""" "${field.originalName}" -> ($impl)(value.${field.name})""".trim
-    }
-
-    def writeFun(implicit d: ScalaDataType): String = d match {
-      case x @ ScalaStringType => "play.api.libs.json.JsString.apply"
-      case x @ ScalaIntegerType => "play.api.libs.json.JsNumber(_)"
-      case x @ ScalaLongType => "play.api.libs.json.JsNumber(_)"
-      case x @ ScalaBooleanType => "play.api.libs.json.JsBoolean(_)"
-      case x @ ScalaDecimalType => "play.api.libs.json.JsNumber.apply"
-      case x @ ScalaUnitType => throw new UnsupportedOperationException("unsupported attempt to write Unit to json")
-      case x @ ScalaUuidType => {
-        writeFun("play.api.libs.json.JsString(value.toString)")
-      }
-      case x @ ScalaDateTimeIso8601Type => {
-        writeFun("""
-val ts = org.joda.time.format.ISODateTimeFormat.dateTime.print(value)
-play.api.libs.json.JsString(ts)
-""")
-      }
-      case x @ ScalaMoneyIso4217Type => ???
-      case x: ScalaListType => {
-        val innerFun = writeFun(x.inner)
-        writeFun(s"""value.map(
-${innerFun.indent}
-)""")
-      }
-      case x: ScalaModelType => {
-        val fields: String = x.model.fields.map(writeFun).mkString(",\n\n")
-        writeFun(s"""play.api.libs.json.Json.obj(
-${fields.indent}
-)""")
-      }
-      case x: ScalaOptionType => {
-        val innerFun = writeFun(x.inner)
-        writeFun(s"""value.map(
-${innerFun.indent}
-)""")
-      }
-    }
   }
 
   private object PathParamHelper {
