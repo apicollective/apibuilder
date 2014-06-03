@@ -159,9 +159,36 @@ require 'bigdecimal'
         when Net::HTTPSuccess
           response.body
         else
-          response.error!
+          body = response.body rescue nil
+          raise HttpClient::ServerError.new(response.code.to_i, response.message, :body => body)
         end
       end
+    end
+
+    class ServerError < StandardError
+
+      attr_reader :code, :details, :body
+
+      def initialize(code, details, incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @code = HttpClient::Preconditions.assert_class('code', code, Integer)
+        @details = HttpClient::Preconditions.assert_class('details', details, String)
+        @body = HttpClient::Preconditions.assert_class_or_nil('body', opts.delete(:body), String)
+        HttpClient::Preconditions.assert_empty_opts(opts)
+      end
+
+      def message
+        m = "%s %s" % [@code, @details]
+        if @body
+          m << ": %s" % @body
+        end
+        m
+      end
+
+      def body_json
+        JSON.parse(@body)
+      end
+
     end
 
     module Preconditions
