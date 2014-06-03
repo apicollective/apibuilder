@@ -93,7 +93,9 @@ class ScalaOperation(operation: Operation) {
 
   lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
 
-  val name: String = {
+  val name: String = "`" + operation.name.map {
+    snakeToCamelCase
+  } .getOrElse {
     val names = pathParameters.map { p =>
       Text.initCap(Text.safeName(p.name))
     }
@@ -103,7 +105,7 @@ class ScalaOperation(operation: Operation) {
     } else {
       base + "By" + names.mkString("And")
     }
-  }
+  } + "`"
 
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 

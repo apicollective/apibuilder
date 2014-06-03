@@ -64,6 +64,7 @@ case class InternalResource(modelName: Option[String],
                             operations: Seq[InternalOperation])
 
 case class InternalOperation(method: Option[String],
+                             name: Option[String],
                              path: String,
                              description: Option[String],
                              namedParameters: Seq[String],
@@ -161,6 +162,7 @@ object InternalOperation {
 
   def apply(resourcePath: String, json: JsObject): InternalOperation = {
     val path = resourcePath + (json \ "path").asOpt[String].getOrElse("")
+    val name = (json \ "name").asOpt[String]
     val namedParameters = Util.namedParametersInPath(path)
     val parameters = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
@@ -186,6 +188,7 @@ object InternalOperation {
     }
 
     InternalOperation(method = (json \ "method").asOpt[String].map(_.toUpperCase),
+                      name = name,
                       path = path,
                       description = (json \ "description").asOpt[String],
                       responses = responses,

@@ -49,10 +49,14 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     lazy val parameters = parametersWithTypes(op.parameters)
     lazy val pathParameters = parametersWithTypes(op.pathParameters)
 
-    private lazy val methodName = if (op.pathParameters.isEmpty) {
-      op.method.toLowerCase
-    } else {
-      op.method.toLowerCase + "By" + op.pathParameters.map( p => Text.initCap(Text.safeName(p.name)) ).mkString("And")
+    private lazy val methodName = op.name.map {
+      Text.snakeToCamelCase
+    }.getOrElse {
+      if (op.pathParameters.isEmpty) {
+        op.method.toLowerCase
+      } else {
+        op.method.toLowerCase + "By" + op.pathParameters.map( p => Text.initCap(Text.safeName(p.name)) ).mkString("And")
+      }
     }
 
     private lazy val controllerName: String = "controllers." + Text.underscoreToInitCap(op.model.plural)
