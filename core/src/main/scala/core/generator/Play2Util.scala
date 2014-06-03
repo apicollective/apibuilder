@@ -86,13 +86,11 @@ ${body.indent}
       val call = s"""($impl)(fieldJson)"""
       s"""${field.name} = {
   val fieldJson = (json \\ "${field.originalName}")
-  try {
+  scala.util.Try {
 ${call.indent(4)}
-  } catch {
-    case e: Exception => {
-      val prettyJson = play.api.libs.json.Json.prettyPrint(fieldJson)
-      sys.error(s"unable to parse '${field.originalName}' from $$prettyJson because of: $${e.getMessage}")
-    }
+  }.getOrElse {
+    val prettyJson = play.api.libs.json.Json.prettyPrint(fieldJson)
+    sys.error(s"unable to parse '${field.originalName}' from $$prettyJson")
   }
 }"""
     }
