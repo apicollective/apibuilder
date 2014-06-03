@@ -90,7 +90,8 @@ ${body.indent}
 ${call.indent(4)}
   } catch {
     case e: Exception => {
-      throw new RuntimeException(s"unable to parse '${field.originalName}' from $$fieldJson", e)
+      val prettyJson = play.api.libs.json.Json.prettyPrint(fieldJson)
+      sys.error(s"unable to parse '${field.originalName}' from $$prettyJson because of: $${e.getMessage}")
     }
   }
 }"""
