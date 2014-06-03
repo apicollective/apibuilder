@@ -22,11 +22,11 @@ s"""new play.api.libs.json.Reads[$name] {
 ${impl.indent(4)}
 
   def reads(json: play.api.libs.json.JsValue) = {
-    try {
+    scala.util.Try {
       play.api.libs.json.JsSuccess(impl(json))
-    } catch {
+    }.recover {
       case e: Exception => play.api.libs.json.JsError(e.getMessage)
-    }
+    }.get
   }
 }"""
   }
