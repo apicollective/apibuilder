@@ -129,7 +129,7 @@ class ScalaResponse(response: Response) {
 
 class ScalaField(field: Field) {
 
-  def name: String = snakeToCamelCase(field.name)
+  def name: String = "`" + snakeToCamelCase(field.name) + "`"
 
   def originalName: String = field.name
 
@@ -172,7 +172,7 @@ class ScalaField(field: Field) {
 
 class ScalaParameter(param: Parameter) {
 
-  def name: String = snakeToCamelCase(param.name)
+  def name: String = "`" + snakeToCamelCase(param.name) + "`"
 
   def originalName: String = param.name
 
