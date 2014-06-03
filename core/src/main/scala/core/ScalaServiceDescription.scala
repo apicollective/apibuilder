@@ -160,11 +160,7 @@ class ScalaField(field: Field) {
   def definition: String = {
     val decl = s"$name: $typeName"
     if (multiple) {
-      if (isOption) {
-        decl + " = Nil"
-      } else {
-        decl
-      }
+      decl + " = Nil"
     } else if (isOption) {
       decl + " = None"
     } else {
@@ -201,11 +197,7 @@ class ScalaParameter(param: Parameter) {
   def definition: String = {
     val decl = s"$name: $typeName"
     if (multiple) {
-      if (isOption) {
-        decl + " = Nil"
-      } else {
-        decl
-      }
+      decl + " = Nil"
     } else if (isOption) {
       decl + " = None"
     } else {
