@@ -73,10 +73,10 @@ package $packageName {
 
     private def processResponse(f: scala.concurrent.Future[play.api.libs.ws.Response])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
       f.map { response =>
-        lazy val body: String = try {
+        lazy val body: String = scala.util.Try {
           play.api.libs.json.Json.prettyPrint(response.json)
-        } catch {
-          case e: Exception => response.body
+        } getOrElse {
+          response.body
         }
         logger.debug(s"$${response.status} -> $$body")
         response
