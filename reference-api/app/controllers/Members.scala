@@ -28,4 +28,16 @@ object Members extends Controller {
   def post() = Action(parse.json) { implicit request =>
     Created(Json.toJson(request.body.as[Member]))
   }
+
+  def getByOrganization(organization: String) = Action {
+    Ok {
+      Json.toJson {
+        new member.MemberImpl(
+          guid = UUID.randomUUID,
+          organization = null,
+          user = null,
+          role = "role")
+      }
+    }
+  }
 }

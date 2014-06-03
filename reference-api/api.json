@@ -114,6 +114,19 @@
           }
         }
       ]
+    },
+    {
+        "model": "member",
+        "path": "",
+        "operations": [
+            {
+                "method": "GET",
+                "path": "/:organization/members",
+                "responses": {
+                    "200": { "type": "[member]" }
+                }
+            }
+        ]
     }
   ]
 }
