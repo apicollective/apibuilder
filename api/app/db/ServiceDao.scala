@@ -97,11 +97,11 @@ object ServiceDao {
       Some(s"order by lower(services.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq(
-      guid.map { v => 'guid -> toParameterValue(v) },
-      Some('organization_key -> toParameterValue(orgKey)),
-      name.map { v => 'name -> toParameterValue(v) },
-      key.map { v => 'key -> toParameterValue(v) }
+    val bind = Seq[Option[NamedParameter]](
+      guid.map('guid -> _),
+      Some('organization_key -> orgKey),
+      name.map('name -> _),
+      key.map('key ->_)
     ).flatten
 
     DB.withConnection { implicit c =>

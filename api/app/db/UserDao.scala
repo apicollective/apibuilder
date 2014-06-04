@@ -122,10 +122,10 @@ object UserDao {
       Some("limit 1")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq(
-      guid.map { v => 'guid -> toParameterValue(v) },
-      email.map { v => 'email -> toParameterValue(v) },
-      token.map { v => 'token -> toParameterValue(v) }
+    val bind = Seq[Option[NamedParameter]](
+      guid.map('guid -> _),
+      email.map('email -> _),
+      token.map('token ->_)
     ).flatten
 
     DB.withConnection { implicit c =>

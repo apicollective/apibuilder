@@ -142,12 +142,12 @@ object MembershipRequest {
       Some(s"order by membership_requests.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq(
-      guid.map { v => 'guid -> toParameterValue(v) },
-      organizationGuid.map { v => 'organization_guid -> toParameterValue(v) },
-      organizationKey.map { v => 'organization_key -> toParameterValue(v) },
-      userGuid.map { v => 'user_guid -> toParameterValue(v) },
-      role.map { v => 'role -> toParameterValue(v) }
+    val bind = Seq[Option[NamedParameter]](
+      guid.map('guid -> _),
+      organizationGuid.map('organization_guid -> _),
+      organizationKey.map('organization_key -> _),
+      userGuid.map('user_guid -> _),
+      role.map('role ->_)
     ).flatten
 
     DB.withConnection { implicit c =>

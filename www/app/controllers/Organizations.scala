@@ -32,7 +32,7 @@ object Organizations extends Controller {
           val haveRequests = if (isAdmin.isEmpty) {
             false
           } else {
-            val pendingRequests = Await.result(request.client.membershipRequests.findAll(organizationKey = Some(orgKey), limit = 1), 1500 millis)
+            val pendingRequests = Await.result(request.client.membershipRequests.findAll(organizationKey = Some(orgKey), limit = 1), 1500.millis)
             !pendingRequests.isEmpty
           }
 
@@ -60,7 +60,7 @@ object Organizations extends Controller {
         case Some(org: Organization) => {
           // TODO: Make sure user is an admin
           // TODO: Why is requests still a Future here?
-          val fetchedRequests = Await.result(requests, 1500 millis)
+          val fetchedRequests = Await.result(requests, 1500.millis)
           Ok(views.html.organizations.membershipRequests(MainTemplate(title = org.name,
                                                                       org = Some(org),
                                                                       user = Some(request.user)),
@@ -71,13 +71,13 @@ object Organizations extends Controller {
   }
 
   def requestMembership(orgKey: String) = Authenticated { implicit request =>
-    val org = Await.result(request.client.organizations.findByKey(orgKey), 1500 millis)
+    val org = Await.result(request.client.organizations.findByKey(orgKey), 1500.millis)
     org match {
 
       case None => Redirect("/").flashing("warning" -> "Organization not found")
 
       case Some(o: Organization) => {
-        Await.result(request.client.membershipRequests.create(o.guid, request.user.guid, Role.Member.key), 1500 millis)
+        Await.result(request.client.membershipRequests.create(o.guid, request.user.guid, Role.Member.key), 1500.millis)
         Redirect("/").flashing(
           "success" -> s"We have submitted your membership request to join ${o.name}"
         )
@@ -97,9 +97,9 @@ object Organizations extends Controller {
       },
 
       valid => {
-        Await.result(request.client.organizations.findByName(valid.name), 1500 millis) match {
+        Await.result(request.client.organizations.findByName(valid.name), 1500.millis) match {
           case None => {
-            val org = Await.result(request.client.organizations.create(request.user, valid.name), 1500 millis)
+            val org = Await.result(request.client.organizations.create(request.user, valid.name), 1500.millis)
             Redirect(routes.Organizations.show(org.key))
           }
 

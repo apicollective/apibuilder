@@ -3,7 +3,6 @@ package client
 import play.api.libs.json._
 import play.api.libs.ws._
 import scala.concurrent.Future
-import com.ning.http.client.Realm.AuthScheme
 import play.api.Play.current
 
 object ApidocClient {
@@ -40,7 +39,7 @@ object Apidoc {
 
     def wsUrl(url: String) = {
       println("curl -u \"" + token + ":\" " + baseUrl + url)
-      WS.url(baseUrl + url).withAuth(token, Password, AuthScheme.BASIC)
+      WS.url(baseUrl + url).withAuth(token, Password, WSAuthScheme.BASIC)
     }
 
     lazy val organizations = OrganizationsResource(this)

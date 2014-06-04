@@ -110,13 +110,13 @@ object Membership {
       Some(s"order by lower(users.name), lower(users.email) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq(
-      user.map { u => 'authorized_user_guid -> toParameterValue(u.guid) },
-      guid.map { v => 'guid -> toParameterValue(v) },
-      organization_guid.map { v => 'organization_guid -> toParameterValue(v) },
-      organization_key.map { v => 'organization_key -> toParameterValue(v) },
-      user_guid.map { v => 'user_guid -> toParameterValue(v) },
-      role.map { v => 'role -> toParameterValue(v) }
+    val bind = Seq[Option[NamedParameter]](
+      user.map(_.guid).map('authorized_user_guid -> _),
+      guid.map('guid -> _ ),
+      organization_guid.map('organization_guid -> _ ),
+      organization_key.map('organization_key -> _ ),
+      user_guid.map('user_guid -> _),
+      role.map('role -> _)
     ).flatten
 
     DB.withConnection { implicit c =>

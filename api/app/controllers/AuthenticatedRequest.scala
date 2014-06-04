@@ -10,7 +10,7 @@ class AuthenticatedRequest[A](val user: User, request: Request[A]) extends Wrapp
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
-  def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]) = {
+  def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
     BasicAuthorization.get(request.headers.get("Authorization")) match {
 
