@@ -71,7 +71,7 @@ object Members extends Controller {
         },
 
         valid => {
-          Await.result(request.client.users.findByEmail(valid.email), 1500 millis) match {
+          Await.result(request.client.users.findByEmail(valid.email), 1500.millis) match {
 
             case None => {
               val filledForm = addMemberForm.fill(valid)
@@ -79,8 +79,8 @@ object Members extends Controller {
             }
 
             case Some(user: User) => {
-              val membershipRequest = Await.result(request.client.membershipRequests.create(org.guid, user.guid, valid.role), 1500 millis)
-              val review = Await.result(request.client.membershipRequestReviews.post(membershipRequest.guid, Review.Accept.key), 1500 millis)
+              val membershipRequest = Await.result(request.client.membershipRequests.create(org.guid, user.guid, valid.role), 1500.millis)
+              val review = Await.result(request.client.membershipRequestReviews.post(membershipRequest.guid, Review.Accept.key), 1500.millis)
               Redirect(routes.Members.show(org.key)).flashing("success" -> s"${valid.role} added")
             }
           }

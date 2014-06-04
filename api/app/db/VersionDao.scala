@@ -107,10 +107,10 @@ object VersionDao {
       Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq(
-      guid.map { v => 'guid -> toParameterValue(v) },
-      Some('service_guid -> toParameterValue(service_guid)),
-      version.map { v => 'version -> toParameterValue(v) }
+    val bind = Seq[Option[NamedParameter]](
+      guid.map('guid -> _),
+      Some('service_guid -> service_guid),
+      version.map('version ->_)
     ).flatten
 
     DB.withConnection { implicit c =>

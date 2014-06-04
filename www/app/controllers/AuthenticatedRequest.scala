@@ -16,10 +16,10 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   private lazy val masterClient = ApidocClient.instance("f3973f60-be9f-11e3-b1b6-0800200c9a66")
 
-  def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[SimpleResult]) = {
+  def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
     request.session.get("user_guid").map { userGuid =>
-      val user = Await.result(masterClient.users.findByGuid(userGuid), 5000 millis)
+      val user = Await.result(masterClient.users.findByGuid(userGuid), 5000.millis)
       user match {
 
         case None => {

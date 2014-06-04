@@ -52,9 +52,7 @@ object OrganizationLog {
       Some(s"order by created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq(
-      Some('organization_guid -> toParameterValue(organization_guid))
-    ).flatten
+    val bind = Seq[NamedParameter]('organization_guid -> organization_guid)
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>

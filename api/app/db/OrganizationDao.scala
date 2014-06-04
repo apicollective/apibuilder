@@ -73,11 +73,11 @@ object OrganizationDao {
       Some(s"order by lower(name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq(
-      guid.map { v => 'guid -> toParameterValue(v) },
-      userGuid.map { v => 'user_guid -> toParameterValue(v) },
-      key.map { v => 'key -> toParameterValue(v) },
-      name.map { v => 'name -> toParameterValue(v) }
+    val bind = Seq[Option[NamedParameter]](
+      guid.map('guid -> _),
+      userGuid.map('user_guid -> _),
+      key.map('key -> _),
+      name.map('name ->_)
     ).flatten
 
     DB.withConnection { implicit c =>
