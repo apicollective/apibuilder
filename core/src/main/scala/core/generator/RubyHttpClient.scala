@@ -106,9 +106,9 @@ require 'bigdecimal'
         end
 
         if @body
-          path = "/tmp/rest_client.tmp"
-          File.open(path, "w") { |os| os << @body.to_s }
-          curl << "-d@%s" % path
+          # DEBUG path = "/tmp/rest_client.tmp"
+          # DEBUG File.open(path, "w") { |os| os << @body.to_s }
+          # DEBUG curl << "-d@%s" % path
           request.body = @body
         end
 
@@ -127,7 +127,7 @@ require 'bigdecimal'
         end
 
         curl << "'%s'" % uri
-        #DEBUGGING: puts curl.join(" ")
+        # DEBUG puts curl.join(" ")
 
         raw_response = http_request(request)
         response = raw_response.to_s == "" ? nil : JSON.parse(raw_response)
