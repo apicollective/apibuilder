@@ -254,6 +254,7 @@ private[core] object JsonStringParser {
   def asOptString(json: JsValue, field: String): Option[String] = {
     (json \ field) match {
       case (_: JsUndefined) => None
+      case (v: JsString) => Some(v.value)
       case (v: JsValue) => Some(v.toString)
     }
   }
