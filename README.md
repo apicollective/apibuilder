@@ -80,25 +80,10 @@ in situ for a nice development experience.
 Releasing code
 ==============
 
-    git tag -a -m 0.0.13 0.0.13
-    git push --tags origin
-    DOCKER_HOST=tcp://localhost:4244 /web/metadata-architecture/exec script/build-docker-image apidoc web 0.0.13
-    /web/metadata-architecture/exec script/deploy api.iris.gilt.com apidoc web 0.0.13
-
-    DOCKER_HOST=tcp://localhost:4244 /web/metadata-architecture/exec script/build-docker-image apidoc svc 0.0.13
-    /web/metadata-architecture/exec script/deploy api.iris.gilt.com apidoc svc 0.0.13
-
-Putting traffic on your new version
-===================================
-
-    /web/metadata-architecture/exec script/ionblaster set-load-balancers -lb <HOST> api.iris.gilt.com
-
-Automated deploy
-================
-
-    script/release-and-deploy
+    /web/metadata-architecture/exec /web/svc-iris-hub/script/release-and-deploy api [optional tag]
+    /web/metadata-architecture/exec /web/svc-iris-hub/script/release-and-deploy www [optional tag]
 
 Metadata about your app EC2 Configuration
 =========================================
 
-    /web/metadata-architecture/exec script/ionblaster stacks
+    ionblaster stacks
