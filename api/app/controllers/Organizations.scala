@@ -38,4 +38,11 @@ object Organizations extends Controller {
     }
   }
 
+  def deleteByGuid(guid: String) = Authenticated { request =>
+    OrganizationDao.findByGuid(guid).map { organization =>
+      OrganizationDao.softDelete(request.user, organization)
+    }
+    NoContent
+  }
+
 }

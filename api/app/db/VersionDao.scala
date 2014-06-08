@@ -62,13 +62,8 @@ object VersionDao {
     v
   }
 
-
   def softDelete(deletedBy: User, version: Version) {
-    DB.withConnection { implicit c =>
-      SQL("""
-          update versions set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where guid = {guid}::uuid and deleted_at is null
-          """).on('deleted_by_guid -> deletedBy.guid, 'guid -> version.guid).execute()
-    }
+    SoftDelete.delete("versions", deletedBy, version.guid)
   }
 
   def replace(user: User, version: Version, service: Service, newJson: String): DetailedVersion = {

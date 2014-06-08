@@ -150,6 +150,11 @@
                         "201": { "type": "organization" },
                         "409": { "type": "[error]" }
                     }
+                },
+
+                {
+                    "method": "DELETE",
+                    "description": "Deletes an organization and all of its associated services."
                 }
             ]
         }

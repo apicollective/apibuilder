@@ -54,6 +54,10 @@ object OrganizationDao {
     org
   }
 
+  def softDelete(deletedBy: User, org: Organization) {
+    SoftDelete.delete("organizations", deletedBy, org.guid)
+  }
+
   def findByGuid(guid: String): Option[Organization] = {
     findAll(guid = Some(guid)).headOption
   }

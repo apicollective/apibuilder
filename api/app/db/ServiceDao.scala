@@ -65,13 +65,8 @@ object ServiceDao {
   }
 
   def softDelete(deletedBy: User, service: Service) {
-    DB.withConnection { implicit c =>
-      SQL("""
-          update services set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where guid = {guid}::uuid and deleted_at is null
-          """).on('deleted_by_guid -> deletedBy.guid, 'guid -> service.guid).execute()
-    }
+    SoftDelete.delete("services", deletedBy, service.guid)
   }
-
 
   def findByOrganizationAndName(org: Organization, name: String): Option[Service] = {
     val key = UrlKey.generate(name)
