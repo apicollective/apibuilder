@@ -50,7 +50,6 @@ case class Resource(model: Model,
                     operations: Seq[Operation])
 
 case class Operation(model: Model,
-                     name: Option[String],
                      method: String,
                      path: String,
                      description: Option[String],
@@ -80,13 +79,6 @@ object Operation {
 
   def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
-    val name = {
-      val r = """^([a-zA-Z]\w*)$""".r
-      internal.name.collect {
-        case r(groups) => groups
-        case n => sys.error(s"Invalid name '$n': must match $r")
-      }
-    }
     val location = if (method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
       if (internal.namedParameters.contains(p.name.get)) {
@@ -101,7 +93,6 @@ object Operation {
     val pathParameters = internal.namedParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(_) }
 
     Operation(model = model,
-              name = name,
               method = method,
               path = internal.path,
               description = internal.description,

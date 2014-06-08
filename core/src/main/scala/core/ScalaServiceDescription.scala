@@ -94,9 +94,7 @@ class ScalaOperation(operation: Operation) {
 
   lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
 
-  val name: String = "`" + operation.name.map {
-    snakeToCamelCase
-  } .getOrElse {
+  val name: String = "`" + {
     val names = pathParameters.map { p =>
       Text.initCap(Text.safeName(p.name))
     }

@@ -107,7 +107,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
         }
       }.mkString("/")
 
-      val methodName = op.name.getOrElse {
+      val methodName = {
         if (op.pathParameters.isEmpty) {
           op.method.toLowerCase
         } else {

@@ -51,9 +51,7 @@ private[generator] case class Play2Route(op: Operation) {
   private lazy val parameters = parametersWithTypes(op.parameters)
   private lazy val pathParameters = parametersWithTypes(op.pathParameters)
 
-  private lazy val methodName = op.name.map {
-    Text.snakeToCamelCase
-  }.getOrElse {
+  private lazy val methodName = {
     if (op.pathParameters.isEmpty) {
       op.method.toLowerCase
     } else {
