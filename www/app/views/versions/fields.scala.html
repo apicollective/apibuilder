@@ -16,7 +16,7 @@
      <tr>
        <td>@field.name</td>
        <td>@{field.fieldtype match {
-             case pt: core.PrimitiveFieldType => Html(s"<a href='${routes.DocController.types}#${pt.datatype.name}'>${pt.datatype.name}</a>")
+             case pt: core.PrimitiveFieldType => datatype(pt.datatype)
              case mt: core.ModelFieldType => mt.model.name
              case rpt: core.ReferenceFieldType => s"Reference[${rpt.referencedModelName}]"
            }}

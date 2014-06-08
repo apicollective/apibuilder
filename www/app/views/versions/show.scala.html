@@ -67,15 +67,38 @@
               </tr>
             </thead>
             <tbody>
-             @resource.operations.zipWithIndex.map { case(op, index) =>
+             @resource.operations.zipWithIndex.map { case(operation, index) =>
                <tr>
-                 <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.model.name)-@index').toggle()">@op.method</a></td>
-                 <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.model.name)-@index').toggle()">@op.path</a></td>
-                 <td>@op.description.getOrElse("")</td>
+                 <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.method</a></td>
+                 <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.path</a></td>
+                 <td>@operation.description.getOrElse("")</td>
                </tr>
-               <tr id="operation-@core.UrlKey.generate(resource.model.name)-@index" style="display:none">
+               <tr id="operation-@core.UrlKey.generate(resource.model.name)-@index" style="display:noneTest">
                  <td></td>
-                 <td colspan="2">@operation(service, op)</td>
+                 <td colspan="2">
+                   @operation.method @service.baseUrl@operation.path
+
+                   <h3>Parameters</h3>
+                   @if(operation.parameters.isEmpty) {
+                     <em>No parameters</em>
+                   } else {
+                     @parameters(operation.parameters)
+                   }
+
+                   <h3>Response</h3>
+                   @operation.responses.map { response =>
+
+                     <p>
+                       HTTP @response.code:
+                       @if(response.multiple) {
+                         [@parameterType(tpl.org.get, tpl.service.get, tpl.version.get, service, response.datatype)]
+                       } else {
+                         @parameterType(tpl.org.get, tpl.service.get, tpl.version.get, service, response.datatype)
+                       }
+                     </p>
+                   }
+                 </td>
+
                </tr>
              }
             </tbody>

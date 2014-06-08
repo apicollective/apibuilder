@@ -1,0 +1,5 @@
+@(org: client.Apidoc.Organization, service: client.Apidoc.Service, version: String, sd: core.ServiceDescription, modelName: String)
+
+@sd.models.find { _.name == modelName }.map { model =>
+  <a href="@routes.Versions.show(org.key, service.key, version)#model-@core.UrlKey.generate(model.name)">@model.name</a>
+}
