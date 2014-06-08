@@ -26,8 +26,12 @@ case class ServiceDescription(internal: InternalServiceDescription) {
   lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
   lazy val description: Option[String] = internal.description
 
-  def operationsForModel(model: Model): Seq[Operation] = {
-    resources.flatMap(_.operations).filter { _.model.name == model.name }
+  /**
+   * Returns a lits of Models that are not mapped to a Resource
+   */
+  def modelsWithoutResources(): Seq[Model] = {
+    val modelNames = resources.map(_.model.name).toSet
+    models.filter { m => !modelNames.contains(m.name) }
   }
 
 }

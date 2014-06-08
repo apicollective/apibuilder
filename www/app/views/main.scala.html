@@ -46,16 +46,26 @@
           @metadata.org.map { org =>
             <ul class="nav nav-sidebar">
               <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
+              @metadata.service.map { service =>
+                <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@service.name</a></li>
+              }
             </ul>
           }
 
-          @metadata.service.map { service =>
-            <ul class="nav nav-sidebar">
-              <li@if(metadata.model.isEmpty) { class="active" }><a href="@routes.Versions.show(metadata.org.get.key, service.key, "latest")">@service.name</a></li>
-              @metadata.serviceDescription.map { sd =>
-                @sd.models.map { model =>
-                  <li@if(metadata.model == Some(model)) { class="active" }><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
+          @metadata.serviceDescription.map { sd =>
+            <b>Resources</b>
+            @sd.resources.map { resources =>
+              <ul class="nav nav-sidebar">
+                @sd.resources.map { resource =>
+                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.name</a></li>
                 }
+              </ul>
+            }
+
+            <b>Models</b>
+            <ul class="nav nav-sidebar">
+              @sd.modelsWithoutResources.map { model =>
+                <li@if(metadata.model == Some(model)) { class="active" }><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
               }
             </ul>
           }
