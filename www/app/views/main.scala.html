@@ -48,6 +48,7 @@
               <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
               @metadata.service.map { service =>
                 <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@service.name</a></li>
+                <li><a href="@routes.Versions.apiJson(orgKey = org.key, serviceKey = service.key, version = metadata.version.get)">api.json</a></li>
               }
             </ul>
           }
@@ -67,6 +68,13 @@
               @sd.modelsWithoutResources.map { model =>
                 <li@if(metadata.model == Some(model)) { class="active" }><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
               }
+            </ul>
+
+            <b>Codgen</b>
+            <ul class="nav nav-sidebar">
+              <li><a href="@codegen.routes.Play2.getClient(org = metadata.org.get.key, service = metadata.service.get.key, version = metadata.version.get)">Play 2 Client</a>
+              <li><a href="@codegen.routes.Play2.getRoutes(org = metadata.org.get.key, service = metadata.service.get.key, version = metadata.version.get)">Play 2 Routes</a>
+              <li><a href="@codegen.routes.RubyGenerator.gem(org = metadata.org.get.key, service = metadata.service.get.key, version = metadata.version.get, filename = "%s-%s-%s.rb".format(metadata.org.get.key, metadata.service.get.key, metadata.version.get))">Ruby Client</a></li>
             </ul>
           }
         </div>
