@@ -13,6 +13,13 @@ object Users extends Controller {
     Ok(Json.toJson(users))
   }
 
+  def getByGuid(guid: String) = Authenticated { request =>
+    UserDao.findByGuid(guid) match {
+      case None => NotFound
+      case Some(user: User) => Ok(Json.toJson(user))
+    }
+  }
+
   def post() = Authenticated(parse.json) { request =>
     (request.body \ "email").asOpt[String] match {
       case None => {
@@ -38,10 +45,7 @@ object Users extends Controller {
 
   def put(guid: String) = Authenticated(parse.json) { request =>
     UserDao.findByGuid(guid) match {
-      case None => {
-        BadRequest("user not found")
-      }
-
+      case None => NotFound
       case Some(user: User) => {
         val newUser = user.copy(email = (request.body \ "name").asOpt[String].getOrElse(user.email),
                                 name = (request.body \ "name").asOpt[String],
