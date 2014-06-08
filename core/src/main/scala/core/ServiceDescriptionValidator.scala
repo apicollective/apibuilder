@@ -267,7 +267,16 @@ case class ServiceDescriptionValidator(apiJson: String) {
       s"Resource[${res.modelName.getOrElse("")}] must have at least one operation"
     }
 
-    modelNameErrors ++ missingOperations
+    val duplicateModels = internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { r =>
+      val numberResources = internalServiceDescription.get.resources.filter { _.modelName == r.modelName }.size
+      if (numberResources <= 1) {
+        None
+      } else {
+        Some(s"Model[${r.modelName.get}] cannot be mapped to more than one resource")
+      }
+    }.distinct
+
+    modelNameErrors ++ missingOperations ++ duplicateModels
   }
 
 }
