@@ -43,7 +43,7 @@ object Users extends Controller {
     }
   }
 
-  def put(guid: String) = Authenticated(parse.json) { request =>
+  def putByGuid(guid: String) = Authenticated(parse.json) { request =>
     UserDao.findByGuid(guid) match {
       case None => NotFound
       case Some(user: User) => {

@@ -44,14 +44,6 @@
             ]
         },
 
-        "membership_request_review": {
-            "description": "A membership request review allows a user to either accept or decline a membership request.",
-            "fields": [
-                { "name": "membership_request", "type": "membership_request" },
-                { "name": "action", "type": "string", "description": "'accept' or 'decline'", "example": "accept" }
-            ]
-        },
-
         "service": {
             "description": "A service has a name and multiple versions of an API (Interface).",
             "fields": [
@@ -144,10 +136,11 @@
                     "method": "GET",
                     "description": "Search all organizations. Results are always paginated.",
                     "parameters": [
+                        { "name": "guid", "type": "uuid", "required": false },
                         { "name": "user_guid", "type": "uuid", "required": false },
                         { "name": "key", "type": "string", "description": "Find organizations with this key. Case in-sensitive. Exact match", "required": false },
                         { "name": "name", "type": "string", "description": "Find organizations with this name. Case in-sensitive. Exact match", "required": false },
-                        { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
@@ -169,8 +162,87 @@
 
                 {
                     "method": "DELETE",
+                    "path": "/:guid",
                     "description": "Deletes an organization and all of its associated services."
                 }
+            ]
+        },
+
+        {
+            "model": "membership",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all memberships. Results are always paginated.",
+                    "parameters": [
+                        { "name": "organization_guid", "type": "uuid", "required": false },
+                        { "name": "organization_key", "type": "uuid", "required": false },
+                        { "name": "user_guid", "type": "uuid", "required": false },
+                        { "name": "role", "type": "string", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[membership]" }
+                    }
+                }
+            ]
+        },
+
+        {
+            "model": "membership_request",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all membership requests. Results are always paginated.",
+                    "parameters": [
+                        { "name": "organization_guid", "type": "uuid", "required": false },
+                        { "name": "organization_key", "type": "uuid", "required": false },
+                        { "name": "user_guid", "type": "uuid", "required": false },
+                        { "name": "role", "type": "string", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[membership_request]" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "description": "Create a membership request",
+                    "parameters": [
+                        { "name": "organization_guid", "type": "uuid" },
+                        { "name": "user_guid", "type": "uuid" },
+                        { "name": "role", "type": "string" }
+                    ],
+                    "responses": {
+                        "201": { "type": "membership_request" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "path": "/:guid/accept",
+                    "description": "Accepts this membership request. User will become a member of the specified organization.",
+                    "responses": {
+                        "204": { "type": "unit" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "path": "/:guid/decline",
+                    "description": "Declines this membership request. User will NOT become a member of the specified organization.",
+                    "responses": {
+                        "204": { "type": "unit" },
+                        "409": { "type": "[error]" }
+                    }
+
+                }
+
             ]
         }
 

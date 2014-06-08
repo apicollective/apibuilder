@@ -1,6 +1,6 @@
 package controllers
 
-import core.Role
+import core.{ Review, Role }
 import lib.Validation
 import db.{ MembershipRequest, Organization, OrganizationDao, User, UserDao }
 import play.api.mvc._
@@ -44,6 +44,26 @@ object MembershipRequests extends Controller {
             Created(Json.toJson(mr))
           }
         }
+      }
+    }
+  }
+
+  def postByGuidAccept(guid: String) = Authenticated { request =>
+    MembershipRequest.findAll(guid = Some(guid), limit = 1).headOption match {
+      case None => NotFound
+      case Some(request: MembershipRequest) => {
+        request.accept(request.user)
+        NoContent
+      }
+    }
+  }
+
+  def postByGuidDecline(guid: String) = Authenticated { request =>
+    MembershipRequest.findAll(guid = Some(guid), limit = 1).headOption match {
+      case None => NotFound
+      case Some(request: MembershipRequest) => {
+        request.decline(request.user)
+        NoContent
       }
     }
   }
