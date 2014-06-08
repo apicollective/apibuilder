@@ -39,7 +39,7 @@
                  <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.path</a></td>
                  <td>@operation.description.getOrElse("")</td>
                </tr>
-               <tr id="operation-@core.UrlKey.generate(resource.model.name)-@index" style="display:noneTest">
+               <tr id="operation-@core.UrlKey.generate(resource.model.name)-@index" style="display:none">
                  <td></td>
                  <td colspan="2">
                    @operation.method @service.baseUrl@operation.path
