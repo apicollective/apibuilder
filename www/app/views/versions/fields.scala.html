@@ -1,4 +1,4 @@
-@(fields: Iterable[core.Field])
+@(org: client.Apidoc.Organization, service: client.Apidoc.Service, version: String, sd: core.ServiceDescription, fields: Iterable[core.Field])
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -17,8 +17,8 @@
        <td>@field.name</td>
        <td>@{field.fieldtype match {
              case pt: core.PrimitiveFieldType => datatype(pt.datatype)
-             case mt: core.ModelFieldType => mt.model.name
-             case rpt: core.ReferenceFieldType => s"Reference[${rpt.referencedModelName}]"
+             case mt: core.ModelFieldType => modelType(org, service, version, mt.model)
+             case rpt: core.ReferenceFieldType => "Reference[%s]".format(modelTypeByName(org, service, version, sd, rpt.referencedModelName))
            }}
        </td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>

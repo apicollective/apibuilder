@@ -2,5 +2,5 @@
 
 @{core.Datatype.findByName(paramTypeName) match {
   case Some(dt: core.Datatype) => datatype(dt)
-  case None => modelType(org, service, version, sd, paramTypeName)
+  case None => modelTypeByName(org, service, version, sd, paramTypeName)
 }}

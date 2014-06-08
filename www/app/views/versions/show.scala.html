@@ -19,7 +19,7 @@
         @resource.model.description.getOrElse("")
 
         <h4>Fields</h4>
-        @fields(resource.model.fields)
+        @fields(tpl.org.get, tpl.service.get, tpl.version.get, service, resource.model.fields)
 
         <h4>Operations</h4>
         @if(resource.operations.isEmpty) {
@@ -84,7 +84,7 @@
         @model.description.getOrElse("")
 
         <h4>Fields</h4>
-        @fields(model.fields)
+        @fields(tpl.org.get, tpl.service.get, tpl.version.get, service, model.fields)
       </div>
     }
   </div>
