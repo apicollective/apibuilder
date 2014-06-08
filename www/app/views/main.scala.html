@@ -55,13 +55,11 @@
 
           @metadata.serviceDescription.map { sd =>
             <b>Resources</b>
-            @sd.resources.map { resources =>
-              <ul class="nav nav-sidebar">
-                @sd.resources.map { resource =>
-                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.name</a></li>
-                }
-              </ul>
-            }
+            <ul class="nav nav-sidebar">
+              @sd.resources.map { resource =>
+                <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.name</a></li>
+              }
+            </ul>
 
             <b>Models</b>
             <ul class="nav nav-sidebar">
