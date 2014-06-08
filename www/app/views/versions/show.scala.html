@@ -2,8 +2,6 @@
 
 @main(tpl) {
 
-  @service.description.getOrElse("")
-
   <div class="pull-right">
     <a href="@routes.Versions.create(orgKey = tpl.org.get.key, version = Some(tpl.version.get))">Upload new version</a>
     <br/>
@@ -17,45 +15,21 @@
   </div>
 
   <div class="pull-left">
+    @service.description.getOrElse("")
+
     <h2>Resources</h2>
-    <table class="table table-hover table-condensed">
-      <tbody>
-        @service.resources.map { resource =>
-         <tr>
-           <td><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.name</a></td>
-           <td>@resource.path</td>
-           <td>@core.Text.truncate(resource.model.description.getOrElse(""))</td>
-         </tr>
-       }
-      </tbody>
-    </table>
-
-
-    <h2>Models</h2>
-    <table class="table table-hover table-condensed">
-      <tbody>
-        @service.models.map { model =>
-         <tr>
-           <td><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></td>
-           <td>@core.Text.truncate(model.description.getOrElse(""))</td>
-         </tr>
-       }
-      </tbody>
-    </table>
-
-
     @service.resources.map { resource =>
       <div id="model-@core.UrlKey.generate(resource.model.name)"></div>
       <a name="model-@core.UrlKey.generate(resource.model.name)"></a>
       <div class="version_resource">
-        <h2>@resource.model.name</h2>
+        <h3>@resource.model.name</h3>
 
         @resource.model.description.getOrElse("")
 
-        <h3>Fields</h3>
+        <h4>Fields</h4>
         @fields(resource.model.fields)
 
-        <h3>Operations</h3>
+        <h4>Operations</h4>
         @if(resource.operations.isEmpty) {
           <em>No operations</em>
         } else {
@@ -78,14 +52,14 @@
                  <td colspan="2">
                    @operation.method @service.baseUrl@operation.path
 
-                   <h3>Parameters</h3>
+                   <h4>Parameters</h4>
                    @if(operation.parameters.isEmpty) {
                      <em>No parameters</em>
                    } else {
                      @parameters(operation.parameters)
                    }
 
-                   <h3>Response</h3>
+                   <h4>Response</h4>
                    @operation.responses.map { response =>
 
                      <p>
@@ -108,15 +82,16 @@
       </div>
     }
 
+    <h2>Models</h2>
     @service.modelsWithoutResources.map { model =>
       <div id="model-@core.UrlKey.generate(model.name)"></div>
       <a name="model-@core.UrlKey.generate(model.name)"></a>
       <div class="version_model">
-        <h2>@model.name</h2>
+        <h3>@model.name</h3>
 
         @model.description.getOrElse("")
 
-        <h3>Fields</h3>
+        <h4>Fields</h4>
         @fields(model.fields)
       </div>
     }
