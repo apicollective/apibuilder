@@ -51,13 +51,7 @@ private[generator] case class Play2Route(op: Operation) {
   private lazy val parameters = parametersWithTypes(op.parameters)
   private lazy val pathParameters = parametersWithTypes(op.pathParameters)
 
-  private lazy val methodName = {
-    if (op.pathParameters.isEmpty) {
-      op.method.toLowerCase
-    } else {
-      op.method.toLowerCase + "By" + op.pathParameters.map( p => Text.initCap(Text.safeName(p.name)) ).mkString("And")
-    }
-  }
+  private lazy val methodName = GeneratorUtil.urlToMethodName(op.model.plural, op.method, url)
 
   private lazy val controllerName: String = "controllers." + Text.underscoreToInitCap(op.model.plural)
 
