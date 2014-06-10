@@ -1,6 +1,13 @@
 {
   "name": "Reference Api",
   "models": {
+    "error": {
+      "fields": [
+        { "name": "code", "type": "string" },
+        { "name": "message", "type": "string" }
+      ]
+    },
+
     "organization": {
       "fields": [
         { "name": "guid", "type": "uuid" },
@@ -37,7 +44,8 @@
             { "name": "name", "type": "string" }
           ],
           "responses": {
-            "201": { "type": "organization" }
+            "201": { "type": "organization" },
+            "409": { "type": "[error]" }
           }
         },
         {
@@ -70,7 +78,8 @@
             { "name": "active", "type": "boolean" }
           ],
           "responses": {
-            "201": { "type": "user" }
+            "201": { "type": "user" },
+            "409": { "type": "[error]" }
           }
         },
         {
@@ -98,7 +107,8 @@
             { "name": "role", "type": "string" }
           ],
           "responses": {
-            "201": { "type": "member" }
+            "201": { "type": "member" },
+            "409": { "type": "[error]" }
           }
         },
         {
