@@ -1,11 +1,29 @@
 package core.generator
 
+import core.{ Resource, Operation }
+
 import core.TestHelper
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
   lazy val service = TestHelper.parseFile(s"api/api.json").serviceDescription.get
+
+  def getResource(name: String): Resource = {
+    service.resources.find { _.model.name == name }.getOrElse {
+      sys.error(s"Could not find $name resource")
+    }
+  }
+
+  def getMethod(resourceName: String, method: String, path: String): Operation = {
+    val resource = getResource(resourceName)
+    resource.operations.filter { op => op.method == method && op.path == path }.headOption.getOrElse {
+      val errorMsg = s"Operations found for $resourceName\n" + resource.operations.map { op =>
+        "%s %s".format(op.method, op.path)
+      }.mkString("\n")
+      sys.error(s"Failed to find method[$method] with path[$path] for resource[${resourceName}]\n$errorMsg")
+    }
+  }
 
   describe("users resource") {
     lazy val userResource = service.resources.find { _.model.name == "user" }.getOrElse {
@@ -61,6 +79,15 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       r.url should be("/membership_requests/:guid/accept")
       r.method should be("controllers.MembershipRequests.postAcceptByGuid")
       r.params.mkString(", ") should be("guid: String")
+    }
+  }
+
+  describe("service resource") {
+    it("GET /:orgKey") {
+      val op = getMethod("service", "GET", "/:orgKey")
+
+      val r = Play2Route(op)
+      r.method should be("controllers.Services.getByOrgKey")
     }
   }
 

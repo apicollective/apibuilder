@@ -19,7 +19,7 @@ class SvcApiDocJson extends FunSpec with Matchers {
 
   it("parses resources") {
     val service = TestHelper.parseFile(Path).serviceDescription.get
-    service.resources.map(_.model.name).sorted.mkString(" ") should be("membership membership_request organization user")
+    service.resources.map(_.model.name).sorted.mkString(" ") should be("membership membership_request organization service user")
   }
 
   it("has defaults for all limit and offset parameters") {

@@ -128,7 +128,7 @@ object Text {
   }
 
   def initCap(word: String): String = {
-    new StringOps(Text.safeName(word).toLowerCase).capitalize
+    new StringOps(Text.safeName(word)).capitalize
   }
 
   def initCap(parts: Seq[String]): String = {
