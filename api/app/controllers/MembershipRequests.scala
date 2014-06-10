@@ -48,7 +48,7 @@ object MembershipRequests extends Controller {
     }
   }
 
-  def postByGuidAccept(guid: String) = Authenticated { request =>
+  def postAcceptByGuid(guid: String) = Authenticated { request =>
     MembershipRequest.findAll(guid = Some(guid), limit = 1).headOption match {
       case None => NotFound
       case Some(request: MembershipRequest) => {
@@ -58,7 +58,7 @@ object MembershipRequests extends Controller {
     }
   }
 
-  def postByGuidDecline(guid: String) = Authenticated { request =>
+  def postDeclineByGuid(guid: String) = Authenticated { request =>
     MembershipRequest.findAll(guid = Some(guid), limit = 1).headOption match {
       case None => NotFound
       case Some(request: MembershipRequest) => {

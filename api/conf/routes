@@ -10,8 +10,8 @@ DELETE     /organizations/:guid                   controllers.Organizations.dele
 GET        /memberships                           controllers.Memberships.get(organization_guid: Option[String], organization_key: Option[String], user_guid: Option[String], role: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 GET        /membership_requests                   controllers.MembershipRequests.get(organization_guid: Option[String], organization_key: Option[String], user_guid: Option[String], role: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 POST       /membership_requests                   controllers.MembershipRequests.post()
-POST       /membership_requests/:guid/accept      controllers.MembershipRequests.postByGuidAccept(guid: String)
-POST       /membership_requests/:guid/decline     controllers.MembershipRequests.postByGuidDecline(guid: String)
+POST       /membership_requests/:guid/accept      controllers.MembershipRequests.postAcceptByGuid(guid: String)
+POST       /membership_requests/:guid/decline     controllers.MembershipRequests.postDeclineByGuid(guid: String)
 
 GET        /:org                           controllers.Services.get(org: String, name: Option[String], key: Option[String], limit: Int ?= 50, offset: Int ?= 0)
 DELETE     /:org/:service                  controllers.Services.deleteService(org: String, service: String)
