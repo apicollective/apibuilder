@@ -19,18 +19,6 @@ object Versions extends Controller {
     Ok(Json.toJson(versions))
   }
 
-  def getServiceLatest(orgKey: String, serviceKey: String) = Authenticated { request =>
-    getVersion(request.user, orgKey, serviceKey, "latest") match {
-      case None => NotFound
-      case Some(v: Version) => {
-        val detailedVersion = VersionDao.getDetails(v).getOrElse {
-          sys.error(s"Error fetching details for version[${v}]")
-        }
-        Ok(Json.toJson(detailedVersion))
-      }
-    }
-  }
-
   def getByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String) = Authenticated { request =>
     getVersion(request.user, orgKey, serviceKey, version) match {
       case None => NotFound
