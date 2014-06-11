@@ -47,14 +47,6 @@ class ScalaModel(model: Model) {
 
   val description: Option[String] = model.description
 
-  def scaladoc: String = {
-    val base: String = description.getOrElse("")
-    val fielddoc: List[String] = fields.toList.map { field =>
-      s"@param ${field.name} ${field.description}"
-    }
-    ScalaUtil.textToComment((base :: fielddoc).mkString("\n"))
-  }
-
   val fields = model.fields.map { new ScalaField(_) }
 
   val argList = ScalaUtil.fieldsToArgList(fields.map(_.definition))
@@ -77,21 +69,7 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   val path: String = operation.path
 
-  def scaladoc: String = {
-    val base: String = operation.description.getOrElse("")
-    val fielddoc: List[String] = parameters.toList.map { param =>
-      s"@param ${param.name} ${param.description}"
-    }
-    val returndoc: List[String] = responses match {
-      case head :: rest => {
-        val headdoc = head.returndoc
-        val restdoc = rest.map("| " + _.returndoc).map(_.indent(7))
-        s"@return $headdoc" :: restdoc
-      }
-      case Nil => Nil
-    }
-    ScalaUtil.textToComment((base :: (fielddoc ++ returndoc)).mkString("\n"))
-  }
+  val description: Option[String] = operation.description
 
   val parameters: List[ScalaParameter] = {
     operation.parameters.toList.map { new ScalaParameter(_) }

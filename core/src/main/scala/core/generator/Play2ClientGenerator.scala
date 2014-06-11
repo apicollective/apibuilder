@@ -160,7 +160,8 @@ PATCH($path, payload)"""
           }
         }.mkString("\n")
       }
-      s"""${op.scaladoc}\ndef ${op.name}(${op.argList})(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Any] = {
+      val comments = op.description.map(desc => ScalaUtil.textToComment(desc) + "\n").getOrElse("")
+      s"""${comments}def ${op.name}(${op.argList})(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Any] = {
 ${methodCall.indent}.map {
 ${matchResponse.indent(4)}
     case r => r

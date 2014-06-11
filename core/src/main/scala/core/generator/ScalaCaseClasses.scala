@@ -22,7 +22,7 @@ ${fields.indent}
 }"""
     }
     val classDef: String = {
-      s"""${model.scaladoc}\ncase class ${model.name}Impl(${model.argList}) extends ${model.name}"""
+      s"""case class ${model.name}Impl(${model.argList}) extends ${model.name}"""
     }
 s"""$traitDef
 
