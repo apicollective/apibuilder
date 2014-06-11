@@ -32,7 +32,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
     it("GET w/ default path, parameters") {
       val op = userResource.operations.filter { op => op.method == "GET" && op.path == "/users" }.head
-      val r = Play2Route(op)
+      val r = Play2Route(op, userResource)
       r.verb should be("GET")
       r.url should be("/users")
       r.method should be("controllers.Users.get")
@@ -41,7 +41,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
     it("GET w/ path, guid path param, no additional parameters") {
       val op = userResource.operations.filter { op => op.method == "GET" && op.path == "/users/:guid" }.head
-      val r = Play2Route(op)
+      val r = Play2Route(op, userResource)
       r.verb should be("GET")
       r.url should be("/users/:guid")
       r.method should be("controllers.Users.getByGuid")
@@ -50,7 +50,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
     it("POST w/ default path, no parameters") {
       val op = userResource.operations.filter { op => op.method == "POST" && op.path == "/users" }.head
-      val r = Play2Route(op)
+      val r = Play2Route(op, userResource)
       r.verb should be("POST")
       r.url should be("/users")
       r.method should be("controllers.Users.post")
@@ -59,7 +59,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
     it("PUT w/ guid in path, no parameters") {
       val op = userResource.operations.filter { op => op.method == "PUT" && op.path == "/users/:guid" }.head
-      val r = Play2Route(op)
+      val r = Play2Route(op, userResource)
       r.verb should be("PUT")
       r.url should be("/users/:guid")
       r.method should be("controllers.Users.putByGuid")
@@ -74,7 +74,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
     it("POST /membership_requests/:guid/accept") {
       val op = membershipRequestResource.operations.filter { op => op.method == "POST" && op.path == "/membership_requests/:guid/accept" }.head
-      val r = Play2Route(op)
+      val r = Play2Route(op, membershipRequestResource)
       r.verb should be("POST")
       r.url should be("/membership_requests/:guid/accept")
       r.method should be("controllers.MembershipRequests.postAcceptByGuid")
@@ -84,9 +84,13 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
   describe("service resource") {
     it("GET /:orgKey") {
+      val membershipRequestResource = service.resources.find { _.model.name == "membership_request" }.getOrElse {
+        sys.error("Could not find membership_request resource")
+      }
+
       val op = getMethod("service", "GET", "/:orgKey")
 
-      val r = Play2Route(op)
+      val r = Play2Route(op, membershipRequestResource)
       r.method should be("controllers.Services.getByOrgKey")
     }
   }

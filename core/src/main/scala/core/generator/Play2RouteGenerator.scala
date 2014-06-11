@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ Datatype, Field, Operation, Model, ModelParameterType, Parameter, ParameterLocation, PrimitiveParameterType, ServiceDescription, Text }
+import core._
 import io.Source
 
 
@@ -13,7 +13,11 @@ case class Play2RouteGenerator(service: ServiceDescription) {
   private val GlobalPad = 5
 
   def generate(): Option[String] = {
-    val all = service.resources.flatMap( _.operations.map { Play2Route(_) } )
+    val all = service.resources.flatMap { resource =>
+      resource.operations.map { op =>
+        Play2Route(op, resource)
+      }
+    }
     if (all.size == 0) {
       None
     } else {
@@ -36,7 +40,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
   }
 }
 
-private[generator] case class Play2Route(op: Operation) {
+private[generator] case class Play2Route(op: Operation, resource: Resource) {
 
   lazy val verb = op.method
   lazy val url = op.path
@@ -51,7 +55,7 @@ private[generator] case class Play2Route(op: Operation) {
   private lazy val parameters = parametersWithTypes(op.parameters)
   private lazy val pathParameters = parametersWithTypes(op.pathParameters)
 
-  private lazy val methodName = GeneratorUtil.urlToMethodName(op.model.plural, op.method, url)
+  private lazy val methodName = GeneratorUtil.urlToMethodName(resource.path, op.method, url)
 
   private lazy val controllerName: String = "controllers." + Text.underscoreToInitCap(op.model.plural)
 

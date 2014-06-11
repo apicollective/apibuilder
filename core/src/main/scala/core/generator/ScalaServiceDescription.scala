@@ -60,10 +60,12 @@ class ScalaResource(resource: Resource) {
 
   val path = resource.path
 
-  val operations = resource.operations.map { new ScalaOperation(model, _) }
+  val operations = resource.operations.map {
+    new ScalaOperation(model, _, this)
+  }
 }
 
-class ScalaOperation(model: ScalaModel, operation: Operation) {
+class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaResource) {
 
   val method: String = operation.method
 
@@ -95,7 +97,7 @@ class ScalaOperation(model: ScalaModel, operation: Operation) {
 
   lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
 
-  val name: String = GeneratorUtil.urlToMethodName(model.plural, operation.method, operation.path)
+  val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
 
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 

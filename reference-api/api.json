@@ -127,11 +127,10 @@
     },
     {
         "model": "member",
-        "path": "",
         "operations": [
             {
                 "method": "GET",
-                "path": "/:organization/members",
+                "path": "/:organization",
                 "responses": {
                     "200": { "type": "[member]" }
                 }
