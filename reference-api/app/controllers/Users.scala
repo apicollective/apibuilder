@@ -68,4 +68,6 @@ object Users extends Controller {
       }
     }
   }
+
+  def postNoop() = Action { Ok("") }
 }

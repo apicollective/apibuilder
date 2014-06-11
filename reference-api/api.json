@@ -136,6 +136,18 @@
                 }
             }
         ]
+    },
+    {
+        "model": "user",
+        "operations": [
+            {
+                "method": "POST",
+                "path": "/noop",
+                "responses": {
+                    "200": { "type": "unit" }
+                }
+            }
+        ]
     }
   ]
 }

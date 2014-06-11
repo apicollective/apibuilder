@@ -6,3 +6,4 @@ GET      /users                     controllers.Users.get(guid: Option[String], 
 POST     /members                   controllers.Members.post()
 GET      /members                   controllers.Members.get(guid: Option[String], organization_guid: Option[String], user_guid: Option[String], role: Option[String])
 GET      /members/:organization     controllers.Members.getByOrganization(organization: String)
+POST     /users/noop                controllers.Users.postNoop()
