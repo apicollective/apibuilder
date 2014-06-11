@@ -8,9 +8,9 @@ import play.api.libs.json.Json
 
 object Versions extends Controller {
 
-  def getService(org: String, service: String, limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val versions = findOrganizationByUserAndKey(request.user, org).flatMap { org =>
-      ServiceDao.findByOrganizationAndKey(org, service).map { service =>
+  def getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 25, offset: Int = 0) = Authenticated { request =>
+    val versions = findOrganizationByUserAndKey(request.user, orgKey).flatMap { org =>
+      ServiceDao.findByOrganizationAndKey(org, serviceKey).map { service =>
         VersionDao.findAll(service_guid = service.guid,
                            limit = limit,
                            offset = offset)
@@ -19,8 +19,8 @@ object Versions extends Controller {
     Ok(Json.toJson(versions))
   }
 
-  def getServiceLatest(org: String, service: String) = Authenticated { request =>
-    getVersion(request.user, org, service, "latest") match {
+  def getServiceLatest(orgKey: String, serviceKey: String) = Authenticated { request =>
+    getVersion(request.user, orgKey, serviceKey, "latest") match {
       case None => NotFound
       case Some(v: Version) => {
         val detailedVersion = VersionDao.getDetails(v).getOrElse {
@@ -31,8 +31,8 @@ object Versions extends Controller {
     }
   }
 
-  def getServiceVersion(org: String, service: String, version: String) = Authenticated { request =>
-    getVersion(request.user, org, service, version) match {
+  def getByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String) = Authenticated { request =>
+    getVersion(request.user, orgKey, serviceKey, version) match {
       case None => NotFound
       case Some(v: Version) => {
         val detailedVersion = VersionDao.getDetails(v).getOrElse {
@@ -73,17 +73,17 @@ object Versions extends Controller {
     }
   }
 
-  def deleteServiceVersion(org: String, service: String, version: String) = Authenticated { request =>
-    getVersion(request.user, org, service, version).map { version =>
+  def deleteServiceVersion(orgKey: String, serviceKey: String, version: String) = Authenticated { request =>
+    getVersion(request.user, orgKey, serviceKey, version).map { version =>
       VersionDao.softDelete(request.user, version)
     }
     NoContent
   }
 
 
-  private def getVersion(user: User, org: String, service: String, version: String): Option[Version] = {
-    findOrganizationByUserAndKey(user, org).flatMap { org =>
-      ServiceDao.findByOrganizationAndKey(org, service).flatMap { service =>
+  private def getVersion(user: User, orgKey: String, serviceKey: String, version: String): Option[Version] = {
+    findOrganizationByUserAndKey(user, orgKey).flatMap { org =>
+      ServiceDao.findByOrganizationAndKey(org, serviceKey).flatMap { service =>
         if (version == "latest") {
           VersionDao.findAll(service_guid = service.guid, limit = 1).headOption
         } else {
@@ -93,9 +93,9 @@ object Versions extends Controller {
     }
   }
 
-  private def findOrganizationByUserAndKey(user: User, org: String): Option[Organization] = {
+  private def findOrganizationByUserAndKey(user: User, orgKey: String): Option[Organization] = {
     // TODO: User authorization
-    OrganizationDao.findAll(key = Some(org), limit = 1).headOption
+    OrganizationDao.findAll(key = Some(orgKey), limit = 1).headOption
   }
 
 }

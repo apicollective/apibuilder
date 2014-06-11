@@ -255,7 +255,7 @@
                     "method": "GET",
                     "description": "Search all services. Results are always paginated.",
                     "parameters": [
-                        { "name": "org", "type": "string", "description": "The organization key for which to search services" },
+                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search services" },
                         { "name": "name", "type": "string", "required": false, "description": "The name of a service. Case in-sensitive. Exact match", "required": false },
                         { "name": "key", "type": "string", "required": false, "description": "The key of a service. Case in-sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "maximum": 100 },
@@ -264,7 +264,60 @@
                     "responses": {
                         "200": { "type": "[service]" }
                     }
+                },
+
+                {
+                    "method": "DELETE",
+                    "description": "Deletes a specific service and its associated versions.",
+                    "path": "/:serviceKey"
                 }
+
+            ]
+        },
+
+        {
+            "model": "version",
+            "path": "/:orgKey/:serviceKey",
+
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all versions of this service. Results are always paginated.",
+                    "parameters": [
+                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" },
+                        { "name": "serviceKey", "type": "string", "description": "The service key for which to search versions" },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[version]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Retrieve a specific version of a service.",
+                    "path": "/:version",
+                    "responses": {
+                        "200": { "type": "version" }
+                    }
+                },
+
+                {
+                    "method": "PUT",
+                    "description": "Create or update the service with the specified version.",
+                    "path": "/:version",
+                    "responses": {
+                        "200": { "type": "version" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+                    "description": "Deletes a specific version.",
+                    "path": "/:version"
+                }
+
             ]
         }
 

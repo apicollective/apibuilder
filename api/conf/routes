@@ -12,12 +12,12 @@ GET        /membership_requests                   controllers.MembershipRequests
 POST       /membership_requests                   controllers.MembershipRequests.post()
 POST       /membership_requests/:guid/accept      controllers.MembershipRequests.postAcceptByGuid(guid: String)
 POST       /membership_requests/:guid/decline     controllers.MembershipRequests.postDeclineByGuid(guid: String)
+GET        /:orgKey                               controllers.Services.getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
+DELETE     /:orgKey/:serviceKey                   controllers.Services.deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String)
+GET        /:orgKey/:serviceKey                   controllers.Versions.getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int ?= 25, offset: Int ?= 0)
+GET        /:orgKey/:serviceKey/:version          controllers.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String)
 
-GET        /:org                           controllers.Services.get(org: String, name: Option[String], key: Option[String], limit: Int ?= 50, offset: Int ?= 0)
-DELETE     /:org/:service                  controllers.Services.deleteService(org: String, service: String)
-GET        /:org/:service                  controllers.Versions.getService(org: String, service: String, limit: Int ?= 50, offset: Int ?= 0)
 GET        /:org/:service/latest           controllers.Versions.getServiceLatest(org: String, service: String)
-GET        /:org/:service/:version         controllers.Versions.getServiceVersion(org: String, service: String, version: String)
 PUT        /:org/:service/:version         controllers.Versions.putServiceVersion(org: String, service: String, version: String)
 DELETE     /:org/:service/:version         controllers.Versions.deleteServiceVersion(org: String, service: String, version: String)
 
