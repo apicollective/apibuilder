@@ -15,9 +15,6 @@ class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
     GeneratorUtil.formatComment("test") should be("# test")
     GeneratorUtil.formatComment("test this") should be("# test this")
 
-    //val source = "Search all users. Results are always paginated. You must specify at least 1 parameter - either a guid, email or token."
-    //val target = "Search all users. Results are always paginated. You must specify at least 1\nparameter - either a guid, email or token."
-
     val source = "Search all users. Results are always paginated. You must specify at least 1 parameter"
     val target = """
 # Search all users. Results are always paginated. You must specify at least 1
@@ -26,5 +23,15 @@ class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
     GeneratorUtil.formatComment(source) should be(target)
   }
 
+  it("urlToMethodName") {
+    GeneratorUtil.urlToMethodName("Memberships", "GET", "/memberships") should be("get")
+    GeneratorUtil.urlToMethodName("Memberships", "POST", "/memberships") should be("post")
+    GeneratorUtil.urlToMethodName("Memberships", "GET", "/memberships/:guid") should be("getByGuid")
+    GeneratorUtil.urlToMethodName("Memberships", "POST", "/memberships/:guid/accept") should be("postAcceptByGuid")
+
+    GeneratorUtil.urlToMethodName("MembershipRequests", "GET", "/membership_requests") should be("get")
+    GeneratorUtil.urlToMethodName("MembershipRequests", "POST", "/membership_requests") should be("post")
+    GeneratorUtil.urlToMethodName("MembershipRequests", "GET", "/membership_requests/:guid") should be("getByGuid")
+  }
 
 }

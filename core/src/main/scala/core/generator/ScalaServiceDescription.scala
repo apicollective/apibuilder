@@ -1,5 +1,6 @@
-package core
+package core.generator
 
+import core._
 import Text._
 
 object ScalaUtil {
@@ -59,10 +60,10 @@ class ScalaResource(resource: Resource) {
 
   val path = resource.path
 
-  val operations = resource.operations.map { new ScalaOperation(_) }
+  val operations = resource.operations.map { new ScalaOperation(model, _) }
 }
 
-class ScalaOperation(operation: Operation) {
+class ScalaOperation(model: ScalaModel, operation: Operation) {
 
   val method: String = operation.method
 
@@ -94,17 +95,9 @@ class ScalaOperation(operation: Operation) {
 
   lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
 
-  val name: String = "`" + {
-    val names = pathParameters.map { p =>
-      Text.initCap(Text.safeName(p.name))
-    }
-    val base = method.toLowerCase
-    if (names.isEmpty) {
-      base
-    } else {
-      base + "By" + names.mkString("And")
-    }
-  } + "`"
+  val name: String = GeneratorUtil.urlToMethodName(model.plural, operation.method, operation.path)
+
+  println("model[%s] path[%s] name[%s]".format(model.plural, operation.path, name))
 
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 

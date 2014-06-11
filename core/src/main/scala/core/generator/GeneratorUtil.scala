@@ -8,7 +8,10 @@ private[generator] object GeneratorUtil {
    * Turns a URL path to a camelcased method name.
    */
   def urlToMethodName(pluralModelName: String, httpMethod: String, url: String): String = {
-    val pieces = url.split("/").filter { !_.isEmpty }.filter { _ != pluralModelName }
+    val modelUrlPath = Text.camelCaseToUnderscore(pluralModelName).toLowerCase
+    println(s"modelUrlPath[$modelUrlPath] pluralModelName[$pluralModelName]")
+
+    val pieces = url.split("/").filter { !_.isEmpty }.filter { _.toLowerCase != modelUrlPath }
 
     val named = pieces.filter { _.startsWith(":") }.map { name => Text.initCap(Text.safeName(name.slice(1, name.length))) }
     val notNamed = pieces.filter { !_.startsWith(":") }.map( name => Text.initCap(Text.safeName(name)) )
