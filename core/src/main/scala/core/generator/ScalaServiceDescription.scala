@@ -5,26 +5,32 @@ import Text._
 
 object ScalaUtil {
 
-  // TODO: Use GeneratorUtil.formatComment here
+  private val Keywords = Seq("type", "val").toSet
+
   def textToComment(text: String) = {
-    if (text.isEmpty) {
-      text
+    if (text.trim.isEmpty) {
+      ""
     } else {
-      val lines = text.split("\n")
-      lines.mkString("/**\n * ", "\n * ", "\n */\n")
+      "/**\n * " + GeneratorUtil.splitIntoLines(text).mkString("\n * ") + "\n */"
     }
   }
 
   def fieldsToArgList(fields: Seq[String]) = {
     fields.map(_.indent).mkString("\n", ",\n", "\n")
   }
+
+  def quoteNameIfKeyword(name: String): String = {
+    if (Keywords.contains(name)) {
+      "`" + name + "`"
+    } else {
+      name
+    }
+  }
 }
 
 class ScalaServiceDescription(serviceDescription: ServiceDescription) {
 
   val name = safeName(serviceDescription.name)
-
-  val description = serviceDescription.description.map(ScalaUtil.textToComment(_)).getOrElse("")
 
   val models = serviceDescription.models.map { new ScalaModel(_) }
 
@@ -123,7 +129,7 @@ class ScalaResponse(response: Response) {
 
 class ScalaField(field: Field) {
 
-  def name: String = "`" + snakeToCamelCase(field.name) + "`"
+  def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(field.name))
 
   def originalName: String = field.name
 
@@ -162,7 +168,7 @@ class ScalaField(field: Field) {
 
 class ScalaParameter(param: Parameter) {
 
-  def name: String = "`" + snakeToCamelCase(param.name) + "`"
+  def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(param.name))
 
   def originalName: String = param.name
 

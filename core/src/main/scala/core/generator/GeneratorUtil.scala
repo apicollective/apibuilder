@@ -35,32 +35,38 @@ private[generator] object GeneratorUtil {
   }
 
   /**
+   * Splits a string into lines with a given max length
+   * leading indentation.
+   */
+  def splitIntoLines(comment: String, maxLength: Int = 80): Seq[String] = {
+    val sb = new scala.collection.mutable.ListBuffer[String]()
+    var currentWord = new StringBuilder()
+    comment.split(" ").map(_.trim).foreach { word =>
+      if (word.length + currentWord.length >= maxLength) {
+        if (!currentWord.isEmpty) {
+          sb.append(currentWord.toString)
+        }
+        currentWord = new StringBuilder()
+      } else if (!currentWord.isEmpty) {
+        currentWord.append(" ")
+      }
+      currentWord.append(word)
+    }
+    if (!currentWord.isEmpty) {
+      sb.append(currentWord.toString)
+    }
+    sb.toList
+  }
+
+  /**
    * Format into a multi-line comment w/ a set number of spaces for
    * leading indentation
    */
   def formatComment(comment: String, numberSpaces: Int = 0): String = {
-    val maxLineLength = 80 - 2 - numberSpaces
-    val sb = new StringBuilder()
-    var currentWord = new StringBuilder()
-    comment.split(" ").foreach { word =>
-      if (word.length + currentWord.length >= maxLineLength) {
-        if (!currentWord.isEmpty) {
-          if (!sb.isEmpty) {
-            sb.append("\n")
-          }
-          sb.append((" " * numberSpaces)).append("#").append(currentWord.toString)
-        }
-        currentWord = new StringBuilder()
-      }
-      currentWord.append(" ").append(word)
-    }
-    if (!currentWord.isEmpty) {
-      if (!sb.isEmpty) {
-        sb.append("\n")
-      }
-      sb.append((" " * numberSpaces)).append("#").append(currentWord.toString)
-    }
-    sb.toString
+    val spacer = " " * numberSpaces
+    splitIntoLines(comment, 80 - 2 - numberSpaces).map { line =>
+      s"$spacer# $line"
+    }.mkString("\n")
   }
 
 }
