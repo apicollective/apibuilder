@@ -73,7 +73,7 @@ object Versions extends Controller {
     }
   }
 
-  def deleteServiceVersion(orgKey: String, serviceKey: String, version: String) = Authenticated { request =>
+  def deleteByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String) = Authenticated { request =>
     getVersion(request.user, orgKey, serviceKey, version).map { version =>
       VersionDao.softDelete(request.user, version)
     }
