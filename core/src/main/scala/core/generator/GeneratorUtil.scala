@@ -32,9 +32,6 @@ private[generator] object GeneratorUtil {
     verb != "GET" && verb != "DELETE"
   }
 
-  // TODO: Remove wrapper
-  def namedParametersInPath(path: String) = Util.namedParametersInPath(path)
-
   /**
    * Format into a multi-line comment w/ a set number of spaces for
    * leading indentation

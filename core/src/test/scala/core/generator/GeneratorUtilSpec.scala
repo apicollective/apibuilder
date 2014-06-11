@@ -11,13 +11,6 @@ class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
     GeneratorUtil.isJsonDocumentMethod("PATCH") should be(true)
   }
 
-  it("namedParametersInPath") {
-    GeneratorUtil.namedParametersInPath("/users") should be(Seq.empty)
-    GeneratorUtil.namedParametersInPath("/users/:guid") should be(Seq("guid"))
-    GeneratorUtil.namedParametersInPath("/:org/docs/:version") should be(Seq("org", "version"))
-    GeneratorUtil.namedParametersInPath("/:org/:service/:version") should be(Seq("org", "service", "version"))
-  }
-
   it("formatComment") {
     GeneratorUtil.formatComment("test") should be("# test")
     GeneratorUtil.formatComment("test this") should be("# test this")
