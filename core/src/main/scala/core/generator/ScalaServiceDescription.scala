@@ -41,14 +41,14 @@ class ScalaServiceDescription(serviceDescription: ServiceDescription) {
 
 class ScalaModel(model: Model) {
 
-  val name = underscoreToInitCap(model.name)
+  val name: String = underscoreToInitCap(model.name)
 
-  val plural = underscoreToInitCap(model.plural)
+  val plural: String = underscoreToInitCap(model.plural)
 
-  val description = model.description.getOrElse(name)
+  val description: Option[String] = model.description
 
   def scaladoc: String = {
-    val base: String = description
+    val base: String = description.getOrElse("")
     val fielddoc: List[String] = fields.toList.map { field =>
       s"@param ${field.name} ${field.description}"
     }
@@ -146,7 +146,7 @@ class ScalaField(field: Field) {
     else base
   }
 
-  def description: String = field.description.getOrElse(name)
+  def description: Option[String] = field.description
 
   def isOption: Boolean = !field.required || field.default.nonEmpty
 

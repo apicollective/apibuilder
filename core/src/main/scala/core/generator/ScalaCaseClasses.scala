@@ -13,10 +13,10 @@ object ScalaCaseClasses {
   def apply(ssd: ScalaServiceDescription): String = ssd.models.map { model =>
     val traitDef: String = {
       val fields: String = model.fields.map { f =>
-        val descr = ScalaUtil.textToComment(f.description)
-        s"${descr}\ndef ${f.name}: ${f.typeName}"
+      val descr: String = f.description.map(desc => ScalaUtil.textToComment(desc) + "\n").getOrElse("")
+        s"${descr}def ${f.name}: ${f.typeName}"
       }.mkString("\n\n")
-      val descr: String = ScalaUtil.textToComment(model.description)
+      val descr: String = model.description.map(desc => ScalaUtil.textToComment(desc) + "\n").getOrElse("")
       s"""${descr}trait ${model.name} {
 ${fields.indent}
 }"""
