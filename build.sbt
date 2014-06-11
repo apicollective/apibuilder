@@ -1,6 +1,10 @@
 name := "apidoc"
 
-scalaVersion in ThisBuild := "2.11.1"
+// for now we need to build on 2.10.4 instead of 2.11.1
+// because sbt 0.13.5 is compiled on 2.10.4, and the
+// sbt plugin can only be compiled by that version,
+// due to incompatibilities around macros
+scalaVersion in ThisBuild := "2.10.4"
 
 lazy val core = project
   .in(file("core"))
@@ -34,18 +38,17 @@ lazy val www = project
     version := "1.0-SNAPSHOT"
   )
 
-// commenting out for now while we get 2.3 working
-//lazy val sbtGenerator = project
-//  .in(file("sbt-apigen"))
-//  .dependsOn(core)
-//  .aggregate(core)
-//  .settings(commonSettings: _*)
-//  .settings(
-//    version := "1.0-SNAPSHOT",
-//    name := "sbt-apigen",
-//    sbtPlugin := true,
-//    description := """SBT plugin to generate Scala client code"""
-//  )
+lazy val sbtGenerator = project
+  .in(file("sbt-apigen"))
+  .dependsOn(core)
+  .aggregate(core)
+  .settings(commonSettings: _*)
+  .settings(
+    version := "1.0-SNAPSHOT",
+    name := "sbt-apigen",
+    sbtPlugin := true,
+    description := """SBT plugin to generate Scala client code"""
+  )
 
 lazy val commonPlaySettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
@@ -59,7 +62,6 @@ lazy val commonPlaySettings: Seq[Setting[_]] = Seq(
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-xml" % "1.0.1",
     "org.scalatest" %% "scalatest" % "2.1.7" % "test"
   ),
   scalacOptions += "-feature"
