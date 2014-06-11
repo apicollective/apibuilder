@@ -43,7 +43,7 @@ object Versions extends Controller {
     }
   }
 
-  def putServiceVersion(orgKey: String, serviceKey: String, version: String) = Authenticated(parse.json) { request =>
+  def putByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String) = Authenticated(parse.json) { request =>
     findOrganizationByUserAndKey(request.user, orgKey) match {
       case None => {
         BadRequest(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))

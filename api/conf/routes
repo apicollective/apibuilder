@@ -18,6 +18,6 @@ GET        /:orgKey/:serviceKey                   controllers.Versions.getByOrgK
 GET        /:orgKey/:serviceKey/:version          controllers.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String)
 
 GET        /:org/:service/latest           controllers.Versions.getServiceLatest(org: String, service: String)
-PUT        /:org/:service/:version         controllers.Versions.putServiceVersion(org: String, service: String, version: String)
+PUT        /:orgKey/:serviceKey/:version          controllers.Versions.putByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String)
 DELETE     /:org/:service/:version         controllers.Versions.deleteServiceVersion(org: String, service: String, version: String)
 
