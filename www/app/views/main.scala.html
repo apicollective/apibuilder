@@ -54,19 +54,23 @@
           }
 
           @metadata.serviceDescription.map { sd =>
-            <b>Resources</b>
-            <ul class="nav nav-sidebar">
-              @sd.resources.map { resource =>
-                <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.name</a></li>
-              }
-            </ul>
+            @if(!sd.resources.isEmpty) {
+              <b>Resources</b>
+              <ul class="nav nav-sidebar">
+                @sd.resources.map { resource =>
+                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.name</a></li>
+                }
+              </ul>
+            }
 
-            <b>Models</b>
-            <ul class="nav nav-sidebar">
-              @sd.modelsWithoutResources.map { model =>
-                <li@if(metadata.model == Some(model)) { class="active" }><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
-              }
-            </ul>
+            @if(!sd.models.isEmpty) {
+              <b>Models</b>
+              <ul class="nav nav-sidebar">
+                @sd.modelsWithoutResources.map { model =>
+                  <li@if(metadata.model == Some(model)) { class="active" }><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
+                }
+              </ul>
+            }
 
             <b>Codgen</b>
             <ul class="nav nav-sidebar">
