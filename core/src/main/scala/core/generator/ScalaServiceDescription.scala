@@ -97,8 +97,6 @@ class ScalaOperation(model: ScalaModel, operation: Operation) {
 
   val name: String = GeneratorUtil.urlToMethodName(model.plural, operation.method, operation.path)
 
-  println("model[%s] path[%s] name[%s]".format(model.plural, operation.path, name))
-
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 
   val responses: List[ScalaResponse] = {
