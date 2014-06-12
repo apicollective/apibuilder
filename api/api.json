@@ -286,6 +286,20 @@
         },
 
         {
+            "model": "code",
+            "operations": [
+                {
+                    "method": "PUT",
+                    "description": "Generate code for a specific version of a service. An idempotent operation that may or may not mutate state on server.",
+                    "path": "/:version/:target",
+                    "responses": {
+                        "200": { "type": "code" }
+                    }
+                }
+            ]
+        },
+
+        {
             "model": "version",
             "path": "/:orgKey/:serviceKey",
 
@@ -328,20 +342,6 @@
                     "path": "/:version"
                 }
 
-            ]
-        },
-
-        {
-            "model": "code",
-            "operations": [
-                {
-                    "method": "PUT",
-                    "description": "Generate code for a specific version of a service. An idempotent operation that may or may not mutate state on server.",
-                    "path": "/:version/:target",
-                    "responses": {
-                        "200": { "type": "code" }
-                    }
-                }
             ]
         }
 
