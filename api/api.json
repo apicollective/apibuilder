@@ -63,6 +63,16 @@
             ]
         },
 
+        "code": {
+            "description": "Generated source code.",
+            "plural": "code",
+            "fields": [
+                { "name": "version", "type": "version" },
+                { "name": "target", "type": "string", "description": "The target platform.", "example": "play2.2-client", "example": "ruby-client", "example": "scala-case-classes", "example": "play2.2-json" },
+                { "name": "source", "type": "string", "description": "The actual source code." }
+            ]
+        },
+
         "error": {
             "fields": [
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
@@ -318,6 +328,20 @@
                     "path": "/:version"
                 }
 
+            ]
+        },
+
+        {
+            "model": "code",
+            "operations": [
+                {
+                    "method": "PUT",
+                    "description": "Generate code for a specific version of a service. An idempotent operation that may or may not mutate state on server.",
+                    "path": "/:version_guid/:target",
+                    "responses": {
+                        "200": { "type": "code" }
+                    }
+                }
             ]
         }
 
