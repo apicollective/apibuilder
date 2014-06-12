@@ -396,6 +396,8 @@ object Field {
 
       case Datatype.StringType => ()
 
+      case Datatype.DoubleType => value.toDouble
+
     }
   }
 
