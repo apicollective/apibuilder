@@ -68,7 +68,7 @@
             "plural": "code",
             "fields": [
                 { "name": "version", "type": "version" },
-                { "name": "target", "type": "string", "description": "The target platform.", "example": "play2.2-client", "example": "ruby-client", "example": "scala-case-classes", "example": "play2.2-json" },
+                { "name": "target", "type": "string", "description": "The target platform.", "example": "play2.2-client, ruby-client, scala-models, play2.2-json" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -337,7 +337,7 @@
                 {
                     "method": "PUT",
                     "description": "Generate code for a specific version of a service. An idempotent operation that may or may not mutate state on server.",
-                    "path": "/:version_guid/:target",
+                    "path": "/:version/:target",
                     "responses": {
                         "200": { "type": "code" }
                     }

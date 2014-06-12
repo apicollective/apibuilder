@@ -11,7 +11,7 @@ object Versions extends Controller {
   def getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 25, offset: Int = 0) = Authenticated { request =>
     val versions = findOrganizationByUserAndKey(request.user, orgKey).flatMap { org =>
       ServiceDao.findByOrganizationAndKey(org, serviceKey).map { service =>
-        VersionDao.findAll(service_guid = service.guid,
+        VersionDao.findAll(service_guid = Some(service.guid),
                            limit = limit,
                            offset = offset)
       }
@@ -73,7 +73,7 @@ object Versions extends Controller {
     findOrganizationByUserAndKey(user, orgKey).flatMap { org =>
       ServiceDao.findByOrganizationAndKey(org, serviceKey).flatMap { service =>
         if (version == "latest") {
-          VersionDao.findAll(service_guid = service.guid, limit = 1).headOption
+          VersionDao.findAll(service_guid = Some(service.guid), limit = 1).headOption
         } else {
           VersionDao.findByServiceAndVersion(service, version)
         }

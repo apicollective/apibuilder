@@ -3,6 +3,12 @@ package core.generator
 import core._
 import scala.collection.mutable.ListBuffer
 
+object RubyGemGenerator {
+  def apply(json: String) = {
+    new RubyGemGenerator(ServiceDescription(json)).generate
+  }
+}
+
 /**
  * Generates a Play routes file based on the service description
  * from api.json

@@ -74,7 +74,7 @@ object VersionDao {
   }
 
   def findByServiceAndVersion(service: Service, version: String): Option[Version] = {
-    VersionDao.findAll(service_guid = service.guid,
+    VersionDao.findAll(service_guid = Some(service.guid),
                        version = Some(version),
                        limit = 1).headOption
   }
@@ -89,7 +89,7 @@ object VersionDao {
     }
   }
 
-  def findAll(service_guid: String,
+  def findAll(service_guid: Option[String] = None,
               guid: Option[String] = None,
               version: Option[String] = None,
               limit: Int = 50,
@@ -97,14 +97,14 @@ object VersionDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and versions.guid = {guid}::uuid" },
-      Some("and versions.service_guid = {service_guid}::uuid"),
+      service_guid.map { _ => "and versions.service_guid = {service_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },
       Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),
-      Some('service_guid -> service_guid),
+      service_guid.map('service_guid -> _),
       version.map('version ->_)
     ).flatten
 
