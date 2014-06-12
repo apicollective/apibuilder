@@ -195,6 +195,7 @@ object ScalaDataType {
 
   case object ScalaStringType extends ScalaDataType("java.lang.String")
   case object ScalaIntegerType extends ScalaDataType("scala.Int")
+  case object ScalaDoubleType extends ScalaDataType("scala.Double")
   case object ScalaLongType extends ScalaDataType("scala.Long")
   case object ScalaBooleanType extends ScalaDataType("scala.Boolean")
   case object ScalaDecimalType extends ScalaDataType("scala.BigDecimal")
@@ -210,6 +211,7 @@ object ScalaDataType {
   def apply(datatype: Datatype): ScalaDataType = datatype match {
     case Datatype.StringType => ScalaStringType
     case Datatype.IntegerType => ScalaIntegerType
+    case Datatype.DoubleType => ScalaDoubleType
     case Datatype.LongType => ScalaLongType
     case Datatype.BooleanType => ScalaBooleanType
     case Datatype.DecimalType => ScalaDecimalType
@@ -222,6 +224,7 @@ object ScalaDataType {
   def asString(d: ScalaDataType): String = d match {
     case x @ ScalaStringType => "x"
     case x @ ScalaIntegerType => "x.toString"
+    case x @ ScalaDoubleType => "x.toString"
     case x @ ScalaLongType => "x.toString"
     case x @ ScalaBooleanType => "x.toString"
     case x @ ScalaDecimalType => "x.toString"

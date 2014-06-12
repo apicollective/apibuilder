@@ -296,6 +296,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
     datatype match {
       case Datatype.StringType => "String"
       case Datatype.LongType => "Integer"
+      case Datatype.DoubleType => "Float"
       case Datatype.IntegerType => "Integer"
       case Datatype.BooleanType => "String"
       case Datatype.DecimalType => "BigDecimal"

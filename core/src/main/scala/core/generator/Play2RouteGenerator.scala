@@ -78,6 +78,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
       case dt: PrimitiveParameterType => {
         val scalaType = dt.datatype match {
           case Datatype.StringType => "String"
+          case Datatype.DoubleType => "Double"
           case Datatype.LongType => "Long"
           case Datatype.IntegerType => "Int"
           case Datatype.BooleanType => "Boolean"

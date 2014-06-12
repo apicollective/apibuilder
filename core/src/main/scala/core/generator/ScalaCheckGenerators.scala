@@ -31,6 +31,7 @@ ${defs.indent(4)}
     d match {
       case x @ ScalaStringType => "org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr)"
       case x @ ScalaIntegerType => "org.scalacheck.Arbitrary.arbInt"
+      case x @ ScalaDoubleType => "org.scalacheck.Arbitrary.arbDouble"
       case x @ ScalaLongType => "org.scalacheck.Arbitrary.arbLong"
       case x @ ScalaBooleanType => "org.scalacheck.Arbitrary.arbBool"
       case x @ ScalaDecimalType => "org.scalacheck.Arbitrary.arbBigDecimal"

@@ -209,15 +209,19 @@ object Datatype {
 
   case object IntegerType extends Datatype(name = "integer",
                                            example = "10",
-                                           description = "32 bit whole number")
+                                           description = "32-bit signed integer")
+
+  case object DoubleType extends Datatype(name = "double",
+                                          example = "10.12",
+                                          description = "double precision (64-bit) IEEE 754 floating-point number")
 
   case object LongType extends Datatype(name = "long",
                                         example = "10",
-                                        description = "64 bit whole number")
+                                        description = "64-bit signed integer")
 
   case object StringType extends Datatype(name = "string",
                                           example = "This is a fox.",
-                                          description = "General purpose string")
+                                          description = "unicode character sequence")
 
   case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
                                                    example = "2014-04-29T11:56:52Z",
@@ -235,7 +239,7 @@ object Datatype {
                                         example = "N/A",
                                         description = "Internal type used to represent things like an HTTP NoContent response. Maps to void in Java, Unit in Scala, nil in ruby, etc.")
 
-  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type, MoneyIso4217Type)
+  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type, MoneyIso4217Type)
 
   def findByName(name: String): Option[Datatype] = {
     // TODO: This is weird. If we include UnitType in All - it ends up
