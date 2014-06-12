@@ -4,6 +4,11 @@ playScalaSettings
 
 description := "A reference api for testing code generation."
 
+scalacOptions ++= Seq(
+  "-feature",
+  "-deprecation"
+)
+
 libraryDependencies ++= Seq(
   jdbc, anorm,
   "com.h2database" % "h2" % "1.4.178",

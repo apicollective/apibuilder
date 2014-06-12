@@ -150,7 +150,16 @@ case class ServiceDescriptionValidator(apiJson: String) {
         s"Model[${model.name}] field[${f.name}] must have a name"
       }
     }
-    missingTypes ++ missingNames
+    val badNames = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.flatMap { f =>
+        f.name.map { n => n -> Text.validateName(n) }
+      }.filter(_._2.nonEmpty).flatMap { case (name, errors) =>
+          errors.map { e =>
+            s"Model[${model.name}] field[${name}]: $e"
+          }
+      }
+    }
+    missingTypes ++ missingNames ++ badNames
   }
 
   private def validateResponses(): Seq[String] = {

@@ -25,6 +25,13 @@ class ReferenceApiSpec extends FlatSpec with ShouldMatchers {
   }
 
   "ReferenceApi" should "generate working code" in {
+    val validator = ServiceDescriptionValidator(json)
+    if (!validator.isValid) {
+      println("====== Begin Reference API validation errors:")
+      validator.errors.foreach(println)
+      println("====== End Reference API validation errors:")
+      sys.error("refrence api.json is invalid!")
+    }
     genCode(
       Play2RouteGenerator(ServiceDescription(json)).generate.get,
       "conf/routes"
