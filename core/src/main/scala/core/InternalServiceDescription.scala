@@ -101,8 +101,17 @@ case class InternalParameter(name: Option[String] = None,
 
 case class InternalResponse(code: String,
                             datatype: Option[String] = None,
-                            multiple: Boolean = false,
-                            fields: Option[Set[String]] = None)
+                            multiple: Boolean = false) {
+
+  lazy val datatypeLabel: Option[String] = datatype.map { dt =>
+    if (multiple) {
+      s"[$dt]"
+    } else {
+      dt
+    }
+  }
+
+}
 
 object InternalModel {
 
@@ -199,11 +208,9 @@ object InternalResponse {
 
   def apply(code: String, json: JsObject): InternalResponse = {
     val parsedDatatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
-    val fields = (json \ "fields").asOpt[Set[String]]
     InternalResponse(code = code,
                      datatype = parsedDatatype.map(_.name),
-                     multiple = parsedDatatype.map(_.multiple).getOrElse(false),
-                     fields = fields)
+                     multiple = parsedDatatype.map(_.multiple).getOrElse(false))
   }
 }
 

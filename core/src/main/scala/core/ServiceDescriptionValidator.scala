@@ -197,7 +197,22 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
-    invalidCodes ++ missingTypes
+    val mixed2xxResponseTypes = if (invalidCodes.isEmpty) {
+      internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
+        resource.operations.flatMap { op =>
+          val types = op.responses.filter { r => !r.datatypeLabel.isEmpty && r.code.toInt >= 200 && r.code.toInt < 300 }.map(_.datatypeLabel.get).distinct
+          if (types.size <= 1) {
+            None
+          } else {
+            Some(s"Resource[${resource.modelName.get}] cannot have varying response types for 2xx response codes: ${types.sorted.mkString(", ")}")
+          }
+        }
+      }
+    } else {
+      Seq.empty
+    }
+
+    invalidCodes ++ missingTypes ++ mixed2xxResponseTypes
   }
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted.mkString(" ")
