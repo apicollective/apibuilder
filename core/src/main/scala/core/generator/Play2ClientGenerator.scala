@@ -103,6 +103,21 @@ package ${ssd.packageName} {
       processResponse(logRequest("DELETE", requestHolder(path)).delete())
     }
 
+    trait Response[T] {
+      val entity: T
+      val status: Int
+    }
+
+    object Response {
+      def unapply[T](r: Response[T]) = Some((r.entity, r.status))
+    }
+
+    case class ResponseImpl[T](entity: T, status: Int) extends Response[T]
+
+    case class FailedResponse[T](entity: T, status: Int)
+      extends Exception(s"request failed with status[$$status]: $${entity}")
+      with Response[T]
+
 ${modelClients(ssd).indent(4)}
   }
 }"""
@@ -153,18 +168,22 @@ PATCH($path, payload)"""
       val matchResponse: String = {
         op.responses.map { response =>
           val tpe = response.datatype
-          if (tpe == "Unit") {
-            s"case r if r.status == ${response.code} => r.status -> ()"
+          val code = response.code
+          val entity = if (tpe == "Unit") "()" else s"r.json.as[$tpe]"
+          val action = if (response.isSuccess) {
+            "new ResponseImpl"
           } else {
-            s"case r if r.status == ${response.code} => r.status -> r.json.as[$tpe]"
+            s"throw new FailedResponse"
           }
+          s"case r if r.status == $code => $action($entity, $code)"
         }.mkString("\n")
       }
       val comments = op.description.map(desc => ScalaUtil.textToComment(desc) + "\n").getOrElse("")
-      s"""${comments}def ${op.name}(${op.argList})(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Any] = {
+      val returnType = s"scala.concurrent.Future[Response[${op.resultType}]]"
+      s"""${comments}def ${op.name}(${op.argList})(implicit ec: scala.concurrent.ExecutionContext): $returnType = {
 ${methodCall.indent}.map {
 ${matchResponse.indent(4)}
-    case r => r
+    case r => throw new FailedResponse(r.body, r.status)
   }
 }"""
     }.mkString("\n\n")

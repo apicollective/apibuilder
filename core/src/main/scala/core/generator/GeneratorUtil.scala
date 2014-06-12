@@ -26,7 +26,6 @@ private[generator] object GeneratorUtil {
 
     } else {
       httpMethod.toLowerCase + notNamed.mkString("And") + "By" + named.mkString("And")
-
     }
   }
 

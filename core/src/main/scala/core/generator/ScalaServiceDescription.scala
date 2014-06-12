@@ -88,10 +88,16 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
   val responses: List[ScalaResponse] = {
     operation.responses.toList.map { new ScalaResponse(_) }
   }
+
+  lazy val resultType = responses.collectFirst {
+    case r if r.isSuccess => r.datatype
+  }.getOrElse("Unit")
 }
 
 class ScalaResponse(response: Response) {
   def code = response.code
+
+  def isSuccess = code >= 200 && code < 300
 
   def datatype = {
     val scalaName: String = underscoreToInitCap(response.datatype)

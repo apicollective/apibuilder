@@ -31,6 +31,8 @@ import ch.qos.logback.classic.Level
  */
 @RunWith(classOf[JUnitRunner])
 class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
+  // This implicit let's you unwrap the Future as is done everywhere in this file
+  // I will admit, that I discoverred this by accident, but it's still awesome.
   implicit def result[T](future: Future[T]) = Await.result(future, Duration.Inf)
 
   @inline // cutdown on boilerplate with optional query params
@@ -59,50 +61,29 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
 
         import client._
 
-        result {
-          Organizations.post(
-            guid = organization.guid,
-            name = organization.name
-          )
-        } match {
-          case (201, o: Organization) => o must equalTo(organization)
+        Organizations.post(
+          guid = organization.guid,
+          name = organization.name
+        ).entity must equalTo(organization)
+
+        Organizations.getByGuid(guid = organization.guid.toString)
+          .entity must equalTo(organization)
+
+        Organizations.getByGuid(guid = UUID.randomUUID.toString).recover[Any] {
+          case r: FailedResponse[String] => r.status must equalTo(404)
         }
 
-        result {
-          Organizations.getByGuid(guid = organization.guid.toString)
-        } match {
-          case (200, o: Organization) => o must equalTo(organization)
-        }
+        Organizations.get(guid = organization.guid)
+          .entity.head must equalTo(organization)
 
-        result {
-          Organizations.getByGuid(guid = UUID.randomUUID.toString)
-        } match {
-          case r: play.api.libs.ws.Response => r.status must equalTo(404)
-        }
+        Organizations.get(name = organization.name)
+          .entity.head must equalTo(organization)
 
-        result {
-          Organizations.get(guid = organization.guid)
-        } match {
-          case (200, os: List[Organization]) => os.head must equalTo(organization)
-        }
+        Organizations.get(guid = UUID.randomUUID)
+          .entity must beEmpty
 
-        result {
-          Organizations.get(name = organization.name)
-        } match {
-          case (200, os: List[Organization]) => os.head must equalTo(organization)
-        }
-
-        result {
-          Organizations.get(guid = UUID.randomUUID)
-        } match {
-          case (200, os: List[Organization]) => os must beEmpty
-        }
-
-        result {
-          Organizations.get(name = "blah")
-        } match {
-          case (200, os: List[Organization]) => os must beEmpty
-        }
+        Organizations.get(name = "blah")
+          .entity must beEmpty
       }
     }
 
@@ -110,85 +91,90 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
       withClient { implicit client =>
         import client._
 
-        result {
-          Users.post(
-            guid = user.guid,
-            email = user.email,
+        Users.post(
+          guid = user.guid,
+          email = user.email,
+          active = user.active
+        ).entity must equalTo(user)
+
+        Users.get(
+          guid = user.guid,
+          active = user.active
+        ).entity must equalTo(List(user))
+
+        Users.get(
+          guid = user.guid,
+          active = !user.active
+        ).entity must equalTo(Nil)
+
+        Users.get(
+          email = user.email,
+          active = user.active
+        ).entity must equalTo(List(user))
+
+        Users.get(
+          email = user.email,
+          active = !user.active
+        ).entity must equalTo(Nil)
+
+        {
+          val us = Users.get(
             active = user.active
-          )
-        } match {
-          case (201, u) => u must equalTo(user)
-        }
-
-        result {
-          Users.get(
-            guid = user.guid,
-            active = user.active
-          )
-        } match {
-          case (200, us: List[User]) => us must equalTo(List(user))
-        }
-
-        result {
-          Users.get(
-            guid = user.guid,
-            active = !user.active
-          )
-        } match {
-          case (200, us: List[User]) => us must equalTo(Nil)
-        }
-
-        result {
-          Users.get(
-            email = user.email,
-            active = user.active
-          )
-        } match {
-          case (200, us: List[User]) => us must equalTo(List(user))
-        }
-
-        result {
-          Users.get(
-            email = user.email,
-            active = !user.active
-          )
-        } match {
-          case (200, us: List[User]) => us must equalTo(Nil)
-        }
-
-        result {
-          Users.get(
-            active = user.active
-          )
-        } match {
-          case (200, us: List[User]) => {
-            us.foreach { u =>
-              u.active must equalTo(user.active)
-            }
-            us must contain(user)
+          ).entity
+          us.foreach { u =>
+            u.active must equalTo(user.active)
           }
+          us must contain(user)
         }
 
-        result {
-          Users.get(
+        {
+          val us = Users.get(
             active = !user.active
-          )
-        } match {
-          case (200, us: List[User]) => {
-            us.foreach { u =>
-              u.active must not equalTo(user.active)
-            }
-            us must not contain(user)
+          ).entity
+          us.foreach { u =>
+            u.active must not equalTo(user.active)
           }
+          us must not contain(user)
         }
       }
     }
 
-    "should support the member api" in prop { (
-      organization: models.organization.OrganizationImpl,
-      user: models.user.UserImpl,
-      member: models.member.MemberImpl
-    ) => pending
+    "should support the member api" in prop { (member: models.member.MemberImpl) =>
+      withClient { implicit client =>
+
+        import client._
+
+        Organizations.post(
+          guid = member.organization.guid,
+          name = member.organization.name
+        ).entity must equalTo(member.organization)
+
+        Users.post(
+          guid = member.user.guid,
+          email = member.user.email,
+          active = member.user.active
+        ).entity must equalTo(member.user)
+
+        Members.post(
+          guid = member.guid,
+          organization = member.organization.guid,
+          user = member.user.guid,
+          role = member.role
+        ).entity must equalTo(member)
+
+        Members.get(guid = member.guid).entity must equalTo(List(member))
+
+        Members.get(organizationGuid = member.organization.guid)
+          .entity must equalTo(List(member))
+
+        Members.get(userGuid = member.user.guid)
+          .entity must equalTo(List(member))
+
+        Members.get(role = member.role).entity must equalTo(List(member))
+
+        Members.getByOrganization(member.organization.guid.toString)
+          .entity must equalTo(List(member))
+      }
     }
   }
 }

@@ -108,11 +108,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       }.mkString("/")
 
       val methodName = {
-        if (op.pathParameters.isEmpty) {
-          op.method.toLowerCase
-        } else {
-          op.method.toLowerCase + "_by_" + op.pathParameters.map( p => Text.safeName(p.name) ).mkString("_and_")
-        }
+        Text.camelCaseToUnderscore(GeneratorUtil.urlToMethodName(resource.path, op.method, op.path)).toLowerCase
       }
 
       val paramStrings = ListBuffer[String]()

@@ -47,7 +47,13 @@ describe ReferenceApi do
   describe Members do
     it "should work" do
       member = make_member
-      client.members.post(member.to_h)
+      client.organizations.post(member.organization.to_h).should_not be_nil
+      client.users.post(member.user.to_h).should_not be_nil
+      puts client.members.post(
+        :guid => member.guid,
+        :organization => member.organization.guid,
+        :user => member.user.guid,
+        :role => member.role).to_h
     end
   end
 end

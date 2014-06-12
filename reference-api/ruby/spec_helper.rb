@@ -41,14 +41,15 @@ class Object
   # generated client methods and model constructors
   # are expecting lot's of input to just be hashes...
   def to_h
-    case self
-    when String, Integer, TrueClass, FalseClass
-      self
-    else
-      instance_variables.inject({}) { |h,v|
-        h[v[1..-1].to_sym] = instance_variable_get(v).to_h
-        h
-      }
-    end
+    instance_variables.inject({}) { |h,var|
+      val = instance_variable_get(var)
+      case val
+      when String, Integer, TrueClass, FalseClass
+      else
+        val = val.to_h
+      end
+      h[var[1..-1].to_sym] = val
+      h
+    }
   end
 end

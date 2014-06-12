@@ -15,11 +15,11 @@ import anorm.SqlParser._
 import db.Implicits._
 
 object Organizations extends Controller {
-  private val rowParser = new RowParser[Organization] {
+  val rowParser = new RowParser[Organization] {
     def apply(row: Row): SqlResult[Organization] = Success {
       new organization.OrganizationImpl(
-        guid = row[UUID]("guid"),
-        name = row[String]("name")
+        guid = row[UUID]("organizations.guid"),
+        name = row[String]("organizations.name")
       )
     }
   }

@@ -137,8 +137,8 @@
                     "method": "POST",
                     "parameters": [
                         { "name": "guid", "type": "uuid" },
-                        { "name": "organization", "type": "organization" },
-                        { "name": "user", "type": "user" },
+                        { "name": "organization", "type": "uuid" },
+                        { "name": "user", "type": "uuid" },
                         { "name": "role", "type": "string" }
                     ],
                     "responses": {

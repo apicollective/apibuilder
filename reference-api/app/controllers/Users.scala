@@ -15,12 +15,12 @@ import anorm.SqlParser._
 import db.Implicits._
 
 object Users extends Controller {
-  private val rowParser = new RowParser[User] {
+  val rowParser = new RowParser[User] {
     def apply(row: Row): SqlResult[User] = Success {
       new user.UserImpl(
-        guid = row[UUID]("guid"),
-        email = row[String]("email"),
-        active = row[Boolean]("active")
+        guid = row[UUID]("users.guid"),
+        email = row[String]("users.email"),
+        active = row[Boolean]("users.active")
       )
     }
   }

@@ -14,13 +14,19 @@ object Global extends GlobalSettings {
         name varchar not null unique
       )
       """).execute()
-    }
-    DB.withConnection { implicit c =>
       SQL("""
       create table users (
         guid uuid primary key,
         email varchar not null unique,
         active boolean not null
+      )
+      """).execute()
+      SQL("""
+      create table members (
+        guid uuid primary key,
+        organization uuid not null references organizations,
+        user uuid not null references users,
+        role varchar not null
       )
       """).execute()
     }
