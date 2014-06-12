@@ -25,10 +25,20 @@ ${fields.indent}
       s"""case class ${model.name}Impl(${model.argList}) extends ${model.name}"""
     }
     val objectDef: String = {
+      val applyArgs = model.fields.map { field =>
+        s"${field.name}: ${field.typeName}"
+      }.mkString(", ")
+      val apply = model.fields.map { field =>
+        field.name
+      }.mkString(s"new ${model.name}Impl(", ",", ")")
       val unapply: String = model.fields.map { field =>
         s"x.${field.name}"
       }.mkString("Some(", ", ", ")")
-s"""object ${model.name} {
+      s"""object ${model.name} {
+  def apply($applyArgs): ${model.name}Impl = {
+${apply.indent(4)}
+  }
+
   def unapply(x: ${model.name}) = {
 ${unapply.indent(4)}
   }
