@@ -18,26 +18,7 @@ ${client(ssd)}"""
   }
 
   private def client(ssd: ScalaServiceDescription): String = {
-s"""package play.api.libs.apidoc.${ssd.packageName} {
-  /**
-   * A helper that provides access to some needed, but private
-   * functionality of the play WS client library.
-   */
-  object WSHelper {
-    /**
-     * Allows users to perform patch requests using a WSRequestHolder.
-     * Necessary in play 2.2.x, but needed for 2.3 +.
-     */
-    def patch(
-      req: play.api.libs.ws.WS.WSRequestHolder,
-      data: play.api.libs.json.JsValue
-    ): scala.concurrent.Future[play.api.libs.ws.Response] = {
-      req.prepare("PATCH", data).execute
-    }
-  }
-}
-
-package ${ssd.packageName} {
+s"""package ${ssd.packageName} {
   class Client(apiUrl: String, apiToken: Option[String] = None) {
     import ${ssd.packageName}.models._
     import ${ssd.packageName}.models.json._
@@ -46,17 +27,19 @@ package ${ssd.packageName} {
 
     logger.info(s"Initializing ${ssd.packageName}.client for url $$apiUrl")
 
-    private def requestHolder(resource: String) = {
-      val url = apiUrl + resource
+    private def requestHolder(path: String) = {
+      import play.api.Play.current
+
+      val url = apiUrl + path
       val holder = play.api.libs.ws.WS.url(url)
       apiToken.map { token =>
-        holder.withAuth(token, "", com.ning.http.client.Realm.AuthScheme.BASIC)
+        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }.getOrElse {
         holder
       }
     }
 
-    private def logRequest(method: String, req: play.api.libs.ws.WS.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WS.WSRequestHolder = {
+    private def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
       val q = req.queryString.flatMap { case (name, values) =>
         values.map(name -> _).map { case (name, value) =>
           s"$$name=$$value"
@@ -71,7 +54,7 @@ package ${ssd.packageName} {
       req
     }
 
-    private def processResponse(f: scala.concurrent.Future[play.api.libs.ws.Response])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
+    private def processResponse(f: scala.concurrent.Future[play.api.libs.ws.WSResponse])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       f.map { response =>
         lazy val body: String = scala.util.Try {
           play.api.libs.json.Json.prettyPrint(response.json)
@@ -83,23 +66,23 @@ package ${ssd.packageName} {
       }
     }
 
-    private def POST(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
+    private def POST(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       processResponse(logRequest("POST", requestHolder(path)).post(data))
     }
 
-    private def GET(path: String, q: Seq[(String, String)])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
+    private def GET(path: String, q: Seq[(String, String)])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       processResponse(logRequest("GET", requestHolder(path).withQueryString(q:_*)).get())
     }
 
-    private def PUT(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
+    private def PUT(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       processResponse(logRequest("PUT", requestHolder(path)).put(data))
     }
 
-    private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
-      processResponse(play.api.libs.apidoc.${ssd.packageName}.WSHelper.patch(logRequest("PATCH", requestHolder(path)), data))
+    private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      processResponse(logRequest("PATCH", requestHolder(path)).patch(data))
     }
 
-    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.Response] = {
+    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       processResponse(logRequest("DELETE", requestHolder(path)).delete())
     }
 
