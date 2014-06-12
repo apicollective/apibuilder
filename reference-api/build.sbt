@@ -1,6 +1,6 @@
-name := "reference-api"
+lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-playScalaSettings
+name := "reference-api"
 
 description := "A reference api for testing code generation."
 
@@ -11,6 +11,7 @@ scalacOptions ++= Seq(
 
 libraryDependencies ++= Seq(
   jdbc, anorm,
+  ws,
   "com.h2database" % "h2" % "1.4.178",
   // the version that ships with play 2.2.3 has a buggy dependency on scalacheck
   "org.specs2" %% "specs2" % "2.3.12"
