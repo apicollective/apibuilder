@@ -55,7 +55,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
 
   "Application" should {
 
-    "support the organization api" in prop { (organization: models.organization.OrganizationImpl) =>
+    "support the organization api" in prop { (organization: models.OrganizationImpl) =>
 
       withClient { implicit client =>
 
@@ -87,7 +87,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
       }
     }
 
-    "should support the user api" in prop { (user: models.user.UserImpl) =>
+    "should support the user api" in prop { (user: models.UserImpl) =>
       withClient { implicit client =>
         import client._
 
@@ -139,7 +139,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
       }
     }
 
-    "should support the member api" in prop { (member: models.member.MemberImpl) =>
+    "should support the member api" in prop { (member: models.MemberImpl) =>
       withClient { implicit client =>
 
         import client._
