@@ -49,7 +49,7 @@ object Play2Util extends Play2Util {
         s"""{
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
-${builder.indent}(${name.toLowerCase}.${name}Impl.apply _)
+${builder.indent}(${name}Impl.apply _)
 }"""
       }
     }
