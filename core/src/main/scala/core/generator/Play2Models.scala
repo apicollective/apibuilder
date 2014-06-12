@@ -15,7 +15,7 @@ object Play2Models {
     val companions: String = ssd.models.map { model =>
       val unapply: String = model.fields.map { field =>
         s"x.${field.name}"
-      }.mkString("Some(", ",", ")")
+      }.mkString("Some(", ", ", ")")
 s"""object ${model.name} {
   def unapply(x: ${model.name}) = {
 ${unapply.indent(4)}

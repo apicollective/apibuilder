@@ -215,7 +215,7 @@ object ScalaDataType {
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.List[${inner.name}]")
   case class ScalaModelType(model: ScalaModel) extends ScalaDataType(model.name)
-  case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
+  case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {
     case Datatype.StringType => ScalaStringType

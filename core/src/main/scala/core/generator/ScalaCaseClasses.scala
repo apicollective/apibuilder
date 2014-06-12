@@ -26,8 +26,7 @@ ${fields.indent}
     }
 s"""$traitDef
 
-package ${model.name.toLowerCase} {
-${classDef.indent}
-}"""
+${classDef}
+"""
   }.mkString("\n")
 }
