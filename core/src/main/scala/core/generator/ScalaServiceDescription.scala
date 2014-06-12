@@ -5,7 +5,16 @@ import Text._
 
 object ScalaUtil {
 
-  private val Keywords = Seq("type", "val").toSet
+  private val Keywords = Seq("case", "catch", "class", "def", "do",
+                             "else", "extends", "false", "final",
+                             "finally", "for", "forSome", "if",
+                             "implicit", "import", "lazy", "match",
+                             "new", "null", "object", "override",
+                             "package", "private", "protected",
+                             "return", "sealed", "super", "this",
+                             "throw", "trait", "try", "true",
+                             "type", "val", "var", "while",
+                             "with", "yeild").toSet
 
   def textToComment(text: String) = {
     if (text.trim.isEmpty) {
