@@ -24,9 +24,21 @@ ${fields.indent}
     val classDef: String = {
       s"""case class ${model.name}Impl(${model.argList}) extends ${model.name}"""
     }
-s"""$traitDef
-
-${classDef}
+    val objectDef: String = {
+      val unapply: String = model.fields.map { field =>
+        s"x.${field.name}"
+      }.mkString("Some(", ", ", ")")
+s"""object ${model.name} {
+  def unapply(x: ${model.name}) = {
+${unapply.indent(4)}
+  }
+}
 """
-  }.mkString("\n")
+    }
+s"""${traitDef.indent}
+
+${classDef.indent}
+
+${objectDef.indent}"""
+  }.mkString(s"package ${ssd.packageName}.models {\n", "\n", "\n}")
 }

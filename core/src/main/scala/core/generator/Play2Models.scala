@@ -12,25 +12,17 @@ object Play2Models {
 
   def apply(ssd: ScalaServiceDescription): String = {
     val caseClasses = ScalaCaseClasses(ssd)
-    val companions: String = ssd.models.map { model =>
-      val unapply: String = model.fields.map { field =>
-        s"x.${field.name}"
-      }.mkString("Some(", ", ", ")")
-s"""object ${model.name} {
-  def unapply(x: ${model.name}) = {
-${unapply.indent(4)}
-  }
+    val modelJson: String = ssd.models.map { model =>
+s"""implicit val reads${model.name}: play.api.libs.json.Reads[${model.name}] =
+${Play2Util.jsonReads(model).indent(2)}
 
-  implicit val reads: play.api.libs.json.Reads[${model.name}] =
-${Play2Util.jsonReads(model).indent(4)}
+implicit val writes${model.name}: play.api.libs.json.Writes[${model.name}] =
+${Play2Util.jsonWrites(model).indent(2)}"""
+    }.mkString("\n\n")
 
-  implicit val writes: play.api.libs.json.Writes[${model.name}] =
-${Play2Util.jsonWrites(model).indent(4)}
-}
-"""
-    }.mkString("\n")
+s"""$caseClasses
 
-s"""package ${ssd.packageName}.models {
+package ${ssd.packageName}.models {
   package object json {
     import play.api.libs.json._
     import play.api.libs.functional.syntax._
@@ -53,13 +45,9 @@ s"""package ${ssd.packageName}.models {
         JsString(str)
       }
     }
+
+${modelJson.indent(4)}
   }
-
-  import json._
-
-${caseClasses.indent}
-
-${companions.indent}
 }"""
   }
 }

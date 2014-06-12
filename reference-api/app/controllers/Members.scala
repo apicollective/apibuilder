@@ -9,6 +9,7 @@ import play.api.mvc._
 import play.api.libs.json._
 
 import referenceapi.models._
+import referenceapi.models.json._
 
 import anorm._
 import anorm.SqlParser._
