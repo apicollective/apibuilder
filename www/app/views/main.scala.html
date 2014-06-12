@@ -74,9 +74,9 @@
 
             <b>Codgen</b>
             <ul class="nav nav-sidebar">
-              <li><a href="@codegen.routes.Play2.getClient(org = metadata.org.get.key, service = metadata.service.get.key, version = metadata.version.get)">Play 2 Client</a>
-              <li><a href="@codegen.routes.Play2.getRoutes(org = metadata.org.get.key, service = metadata.service.get.key, version = metadata.version.get)">Play 2 Routes</a>
-              <li><a href="@codegen.routes.RubyGenerator.gem(org = metadata.org.get.key, service = metadata.service.get.key, version = metadata.version.get, filename = "%s-%s-%s.rb".format(metadata.org.get.key, metadata.service.get.key, metadata.version.get))">Ruby Client</a></li>
+              @models.Code.targets.map { target =>
+                <li><a href="@routes.Code.generate(organization = metadata.org.get.key, service = metadata.service.get.key, version = metadata.version.get, target)">@models.Code.humanTarget(target)</a>
+              }
             </ul>
           }
         </div>

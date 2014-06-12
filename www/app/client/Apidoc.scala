@@ -49,6 +49,7 @@ object Apidoc {
     lazy val services = ServicesResource(this)
     lazy val users = UsersResource(this)
     lazy val versions = VersionsResource(this)
+    lazy val code = CodeResource(this)
 
   }
 
@@ -282,6 +283,15 @@ object Apidoc {
       client.wsUrl(s"/${orgKey}/${serviceKey}/${version}").withHeaders("Content-type" -> "application/json").put(file)
     }
 
+  }
+
+  case class CodeResource(client: Apidoc.Client) {
+    def putByVersionguidAndTarget(versionGuid: String, target: String) = {
+      client.wsUrl(s"/code/$versionGuid/$target").put("").map { r =>
+        println(r.body)
+        r.json.as[models.Code]
+      }
+    }
   }
 
 }
