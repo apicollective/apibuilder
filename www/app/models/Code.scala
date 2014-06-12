@@ -10,9 +10,10 @@ object Code {
   val targets = {
     List(
       "ruby-client",
+      "play-2.2-routes",
       "play-2.2-client",
       "play-2.2-json",
-      "play-2.2-routes",
+      "scalacheck-generators",
       "scala-models"
     )
   }

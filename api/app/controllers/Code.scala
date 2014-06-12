@@ -36,6 +36,7 @@ object Code extends Controller {
       case "play-2.2-routes" => Play2RouteGenerator.apply
       case "play-2.2-client" => Play2ClientGenerator.apply
       case "play-2.2-json" => Play2Models.apply
+      case "scalacheck-generators" => ScalaCheckGenerators.apply
       case "scala-models" => ScalaCaseClasses.apply
     }
 
