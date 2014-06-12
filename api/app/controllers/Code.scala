@@ -33,6 +33,7 @@ object Code extends Controller {
   private def generator(target: String): Option[DetailedVersion => models.Code] = Try {
     val source: String => String = target match {
       case "ruby-client" => RubyGemGenerator.apply
+      case "play-2.2-routes" => Play2RouteGenerator.apply
       case "play-2.2-client" => Play2ClientGenerator.apply
       case "play-2.2-json" => Play2Models.apply
       case "scala-models" => ScalaCaseClasses.apply

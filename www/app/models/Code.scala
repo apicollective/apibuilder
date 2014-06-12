@@ -12,6 +12,7 @@ object Code {
       "ruby-client",
       "play-2.2-client",
       "play-2.2-json",
+      "play-2.2-routes",
       "scala-models"
     )
   }

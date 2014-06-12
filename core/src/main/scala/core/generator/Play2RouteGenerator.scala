@@ -3,6 +3,12 @@ package core.generator
 import core._
 import io.Source
 
+object Play2RouteGenerator {
+  def apply(json: String) = {
+    new Play2RouteGenerator(ServiceDescription(json)).generate.getOrElse("")
+  }
+}
+
 
 /**
  * Generates a Play routes file based on the service description
@@ -23,8 +29,9 @@ case class Play2RouteGenerator(service: ServiceDescription) {
     } else {
       val maxVerbLength = all.map(_.verb.length).sorted.last
       val maxUrlLength = all.map(_.url.length).sorted.last
+      val (paramStart, pathStart) = all.partition(_.url.startsWith("/:"))
 
-      Some(all.map { r =>
+      Some((pathStart ++ paramStart).map { r =>
         Seq(
           r.verb,
           " " * (maxVerbLength - r.verb.length + GlobalPad),
