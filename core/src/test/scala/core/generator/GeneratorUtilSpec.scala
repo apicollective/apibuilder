@@ -36,6 +36,8 @@ class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
     GeneratorUtil.urlToMethodName("/membership-requests", "GET", "/membership-requests") should be("get")
     GeneratorUtil.urlToMethodName("/membership-requests", "POST", "/membership-requests") should be("post")
     GeneratorUtil.urlToMethodName("/membership-requests", "GET", "/membership-requests/:guid") should be("getByGuid")
+
+    GeneratorUtil.urlToMethodName("/:key", "GET", "/:key") should be("getByKey")
   }
 
 }
