@@ -1,7 +1,5 @@
 package controllers
 
-import scala.util.{Try, Success, Failure}
-
 import play.api.mvc._
 import play.api.libs.json._
 
@@ -13,8 +11,8 @@ import db.VersionDao
 object Code extends Controller {
   def getByVersionAndTarget(versionGuid: String, target: String) = Action { request =>
     generator(target) match {
-      case Failure(_) => NotFound(s"No generator exists for target[$target]")
-      case Success(f) => {
+      case None => NotFound(s"No generator exists for target[$target]")
+      case Some(f) => {
         versionDetails(versionGuid) match {
           case None => NotFound(s"No service exists for version[$versionGuid]")
           case Some(details) => {
@@ -30,8 +28,8 @@ object Code extends Controller {
     VersionDao.findAll(guid = Some(guid)).headOption.flatMap(VersionDao.getDetails)
   }
 
-  private def generator(target: String): Try[DetailedVersion => models.Code] = {
-    Target.generator(target).map { source =>
+  private def generator(target: String): Option[DetailedVersion => models.Code] = {
+    Target.generator.lift(target).map { source =>
       { version: DetailedVersion =>
         new models.Code(version, target, source(version.json))
       }
