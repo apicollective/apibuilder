@@ -7,8 +7,12 @@ import play.api.Play.current
 
 object ApidocClient {
 
-  private val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
+  val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
     sys.error("apidoc.url is required")
+  }
+
+  def token(guid: String): String = Tokens.get(guid).getOrElse {
+    sys.error(s"No token for user guid[$guid]")
   }
 
   private val Tokens = Map(
@@ -18,11 +22,7 @@ object ApidocClient {
   )
 
   def instance(userGuid: String): Apidoc.Client = {
-    val token = Tokens.get(userGuid).getOrElse {
-      sys.error(s"No token for user guid[$userGuid]")
-    }
-
-    Apidoc.Client(baseUrl = apiUrl, token = token)
+    Apidoc.Client(baseUrl = apiUrl, token = token(userGuid))
   }
 
 }
@@ -49,7 +49,6 @@ object Apidoc {
     lazy val services = ServicesResource(this)
     lazy val users = UsersResource(this)
     lazy val versions = VersionsResource(this)
-    lazy val code = CodeResource(this)
 
   }
 
@@ -283,15 +282,6 @@ object Apidoc {
       client.wsUrl(s"/${orgKey}/${serviceKey}/${version}").withHeaders("Content-type" -> "application/json").put(file)
     }
 
-  }
-
-  case class CodeResource(client: Apidoc.Client) {
-    def putByVersionguidAndTarget(versionGuid: String, target: String) = {
-      client.wsUrl(s"/code/$versionGuid/$target").get.map { r =>
-        println(r.body)
-        r.json.as[models.Code]
-      }
-    }
   }
 
 }

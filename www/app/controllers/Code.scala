@@ -16,9 +16,9 @@ object Code extends Controller {
         service, version).flatMap {
           case None => Future.successful(NotFound("Service not found"))
           case Some(version) => {
-            request.client.code.putByVersionguidAndTarget(version.guid,
-              target).map { code =>
-                Ok(code.source)
+            request.generatedClient.Code.getByVersionAndTarget(version.guid,
+              target).map { response =>
+                Ok(response.entity.source)
               }
           }
         }

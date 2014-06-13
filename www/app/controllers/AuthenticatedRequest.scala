@@ -10,6 +10,11 @@ class AuthenticatedRequest[A](val user: Apidoc.User, request: Request[A]) extend
 
   lazy val client = ApidocClient.instance(user.guid)
 
+  lazy val generatedClient = new apidoc.Client(
+    ApidocClient.apiUrl,
+    Some(ApidocClient.token(user.guid))
+  )
+
 }
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
