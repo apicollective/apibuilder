@@ -37,7 +37,7 @@ object Users extends Controller {
         'guid -> guid.map(UUID.fromString),
         'email -> email,
         'active -> active
-      ).as(rowParser *)
+      ).as(rowParser.*)
     }
     Ok(Json.toJson(us))
   }

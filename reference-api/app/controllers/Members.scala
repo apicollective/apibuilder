@@ -47,7 +47,7 @@ object Members extends Controller {
         'organization -> organizationGuid,
         'user -> userGuid,
         'role -> role
-      ).as(rowParser*)
+      ).as(rowParser.*)
     }
     Ok(Json.toJson(members))
   }
