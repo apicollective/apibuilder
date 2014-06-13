@@ -13,5 +13,3 @@ dist
 /.project
 /RUNNING_PID
 /.settings
-app/Play2Client.scala
-test/ScalaCheck.scala
