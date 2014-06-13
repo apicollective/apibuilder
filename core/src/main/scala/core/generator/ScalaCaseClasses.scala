@@ -53,6 +53,7 @@ ${apply.indent(4)}
 ${unapply.indent(4)}
   }
 
+  import scala.language.implicitConversions
   implicit def toImpl(x: ${model.name}): ${model.name}Impl = x match {
     case impl: ${model.name}Impl => impl
     case _ => $toImpl
