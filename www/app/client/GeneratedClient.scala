@@ -1,30 +1,4 @@
 package apidoc.models {
-  package object json {
-    import play.api.libs.json._
-    import play.api.libs.functional.syntax._
-
-    implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
-
-    implicit val jsonWritesUUID = new Writes[java.util.UUID] {
-      def writes(x: java.util.UUID) = JsString(x.toString)
-    }
-
-    implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
-      import org.joda.time.format.ISODateTimeFormat.dateTimeParser
-      dateTimeParser.parseDateTime(str)
-    }
-
-    implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
-      def writes(x: org.joda.time.DateTime) = {
-        import org.joda.time.format.ISODateTimeFormat.dateTime
-        val str = dateTime.print(x)
-        JsString(str)
-      }
-    }
-  }
-
-  import json._
-
   /**
    * A user is a top level person interacting with the api doc server.
    */
@@ -43,14 +17,29 @@ package apidoc.models {
      */
     def imageUrl: Option[String]
   }
-  
+
   case class UserImpl(
     guid: java.util.UUID,
     email: String,
     name: String,
     imageUrl: Option[String] = None
   ) extends User
+
+  object User {
+    def apply(guid: java.util.UUID, email: String, name: String, imageUrl: Option[String]): UserImpl = {
+      new UserImpl(guid,email,name,imageUrl)
+    }
   
+    def unapply(x: User) = {
+      Some(x.guid, x.email, x.name, x.imageUrl)
+    }
+  
+    import scala.language.implicitConversions
+    implicit def toImpl(x: User): UserImpl = x match {
+      case impl: UserImpl => impl
+      case _ => new UserImpl(x.guid,x.email,x.name,x.imageUrl)
+    }
+  }
   /**
    * An organization is used to group a set of services together.
    */
@@ -71,13 +60,28 @@ package apidoc.models {
      */
     def name: String
   }
-  
+
   case class OrganizationImpl(
     guid: java.util.UUID,
     key: String,
     name: String
   ) extends Organization
+
+  object Organization {
+    def apply(guid: java.util.UUID, key: String, name: String): OrganizationImpl = {
+      new OrganizationImpl(guid,key,name)
+    }
   
+    def unapply(x: Organization) = {
+      Some(x.guid, x.key, x.name)
+    }
+  
+    import scala.language.implicitConversions
+    implicit def toImpl(x: Organization): OrganizationImpl = x match {
+      case impl: OrganizationImpl => impl
+      case _ => new OrganizationImpl(x.guid,x.key,x.name)
+    }
+  }
   /**
    * A membership represents a user in a specific role to an organization.
    * Memberships cannot be created directly. Instead you first create a membership
@@ -98,14 +102,29 @@ package apidoc.models {
      */
     def role: String
   }
-  
+
   case class MembershipImpl(
     guid: java.util.UUID,
     user: User,
     organization: Organization,
     role: String
   ) extends Membership
+
+  object Membership {
+    def apply(guid: java.util.UUID, user: User, organization: Organization, role: String): MembershipImpl = {
+      new MembershipImpl(guid,user,organization,role)
+    }
   
+    def unapply(x: Membership) = {
+      Some(x.guid, x.user, x.organization, x.role)
+    }
+  
+    import scala.language.implicitConversions
+    implicit def toImpl(x: Membership): MembershipImpl = x match {
+      case impl: MembershipImpl => impl
+      case _ => new MembershipImpl(x.guid,x.user,x.organization,x.role)
+    }
+  }
   /**
    * A membership request represents a user requesting to join an organization with a
    * specificed role (e.g. as a member or an admin). Membership requests can be
@@ -128,14 +147,29 @@ package apidoc.models {
      */
     def role: String
   }
-  
+
   case class MembershipRequestImpl(
     guid: java.util.UUID,
     user: User,
     organization: Organization,
     role: String
   ) extends MembershipRequest
+
+  object MembershipRequest {
+    def apply(guid: java.util.UUID, user: User, organization: Organization, role: String): MembershipRequestImpl = {
+      new MembershipRequestImpl(guid,user,organization,role)
+    }
   
+    def unapply(x: MembershipRequest) = {
+      Some(x.guid, x.user, x.organization, x.role)
+    }
+  
+    import scala.language.implicitConversions
+    implicit def toImpl(x: MembershipRequest): MembershipRequestImpl = x match {
+      case impl: MembershipRequestImpl => impl
+      case _ => new MembershipRequestImpl(x.guid,x.user,x.organization,x.role)
+    }
+  }
   /**
    * A service has a name and multiple versions of an API (Interface).
    */
@@ -158,14 +192,29 @@ package apidoc.models {
     
     def description: Option[String]
   }
-  
+
   case class ServiceImpl(
     guid: java.util.UUID,
     name: String,
     key: String,
     description: Option[String] = None
   ) extends Service
+
+  object Service {
+    def apply(guid: java.util.UUID, name: String, key: String, description: Option[String]): ServiceImpl = {
+      new ServiceImpl(guid,name,key,description)
+    }
   
+    def unapply(x: Service) = {
+      Some(x.guid, x.name, x.key, x.description)
+    }
+  
+    import scala.language.implicitConversions
+    implicit def toImpl(x: Service): ServiceImpl = x match {
+      case impl: ServiceImpl => impl
+      case _ => new ServiceImpl(x.guid,x.name,x.key,x.description)
+    }
+  }
   /**
    * Represents a unique version of the service.
    */
@@ -187,13 +236,66 @@ package apidoc.models {
      */
     def json: String
   }
-  
+
   case class VersionImpl(
     guid: java.util.UUID,
     version: String,
     json: String
   ) extends Version
+
+  object Version {
+    def apply(guid: java.util.UUID, version: String, json: String): VersionImpl = {
+      new VersionImpl(guid,version,json)
+    }
   
+    def unapply(x: Version) = {
+      Some(x.guid, x.version, x.json)
+    }
+  
+    import scala.language.implicitConversions
+    implicit def toImpl(x: Version): VersionImpl = x match {
+      case impl: VersionImpl => impl
+      case _ => new VersionImpl(x.guid,x.version,x.json)
+    }
+  }
+  /**
+   * Generated source code.
+   */
+  trait Code {
+    def version: Version
+    
+    /**
+     * The target platform.
+     */
+    def target: String
+    
+    /**
+     * The actual source code.
+     */
+    def source: String
+  }
+
+  case class CodeImpl(
+    version: Version,
+    target: String,
+    source: String
+  ) extends Code
+
+  object Code {
+    def apply(version: Version, target: String, source: String): CodeImpl = {
+      new CodeImpl(version,target,source)
+    }
+  
+    def unapply(x: Code) = {
+      Some(x.version, x.target, x.source)
+    }
+  
+    import scala.language.implicitConversions
+    implicit def toImpl(x: Code): CodeImpl = x match {
+      case impl: CodeImpl => impl
+      case _ => new CodeImpl(x.version,x.target,x.source)
+    }
+  }
   trait Error {
     /**
      * Machine readable code for this specific error message
@@ -205,18 +307,54 @@ package apidoc.models {
      */
     def message: String
   }
-  
+
   case class ErrorImpl(
     code: String,
     message: String
   ) extends Error
 
-  object User {
-    def unapply(x: User) = {
-      Some(x.guid, x.email, x.name, x.imageUrl)
+  object Error {
+    def apply(code: String, message: String): ErrorImpl = {
+      new ErrorImpl(code,message)
     }
   
-    implicit val reads: play.api.libs.json.Reads[User] =
+    def unapply(x: Error) = {
+      Some(x.code, x.message)
+    }
+  
+    import scala.language.implicitConversions
+    implicit def toImpl(x: Error): ErrorImpl = x match {
+      case impl: ErrorImpl => impl
+      case _ => new ErrorImpl(x.code,x.message)
+    }
+  }
+}
+
+package apidoc.models {
+  package object json {
+    import play.api.libs.json._
+    import play.api.libs.functional.syntax._
+
+    implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
+
+    implicit val jsonWritesUUID = new Writes[java.util.UUID] {
+      def writes(x: java.util.UUID) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
+      import org.joda.time.format.ISODateTimeFormat.dateTimeParser
+      dateTimeParser.parseDateTime(str)
+    }
+
+    implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
+      def writes(x: org.joda.time.DateTime) = {
+        import org.joda.time.format.ISODateTimeFormat.dateTime
+        val str = dateTime.print(x)
+        JsString(str)
+      }
+    }
+
+    implicit val readsUser: play.api.libs.json.Reads[User] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -225,8 +363,8 @@ package apidoc.models {
          (__ \ "name").read[String] and
          (__ \ "image_url").readNullable[String])(UserImpl.apply _)
       }
-  
-    implicit val writes: play.api.libs.json.Writes[User] =
+    
+    implicit val writesUser: play.api.libs.json.Writes[User] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -235,14 +373,8 @@ package apidoc.models {
          (__ \ "name").write[String] and
          (__ \ "image_url").write[Option[String]])(unlift(User.unapply))
       }
-  }
-  
-  object Organization {
-    def unapply(x: Organization) = {
-      Some(x.guid, x.key, x.name)
-    }
-  
-    implicit val reads: play.api.libs.json.Reads[Organization] =
+    
+    implicit val readsOrganization: play.api.libs.json.Reads[Organization] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -250,8 +382,8 @@ package apidoc.models {
          (__ \ "key").read[String] and
          (__ \ "name").read[String])(OrganizationImpl.apply _)
       }
-  
-    implicit val writes: play.api.libs.json.Writes[Organization] =
+    
+    implicit val writesOrganization: play.api.libs.json.Writes[Organization] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -259,14 +391,8 @@ package apidoc.models {
          (__ \ "key").write[String] and
          (__ \ "name").write[String])(unlift(Organization.unapply))
       }
-  }
-  
-  object Membership {
-    def unapply(x: Membership) = {
-      Some(x.guid, x.user, x.organization, x.role)
-    }
-  
-    implicit val reads: play.api.libs.json.Reads[Membership] =
+    
+    implicit val readsMembership: play.api.libs.json.Reads[Membership] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -275,8 +401,8 @@ package apidoc.models {
          (__ \ "organization").read[Organization] and
          (__ \ "role").read[String])(MembershipImpl.apply _)
       }
-  
-    implicit val writes: play.api.libs.json.Writes[Membership] =
+    
+    implicit val writesMembership: play.api.libs.json.Writes[Membership] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -285,14 +411,8 @@ package apidoc.models {
          (__ \ "organization").write[Organization] and
          (__ \ "role").write[String])(unlift(Membership.unapply))
       }
-  }
-  
-  object MembershipRequest {
-    def unapply(x: MembershipRequest) = {
-      Some(x.guid, x.user, x.organization, x.role)
-    }
-  
-    implicit val reads: play.api.libs.json.Reads[MembershipRequest] =
+    
+    implicit val readsMembershipRequest: play.api.libs.json.Reads[MembershipRequest] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -301,8 +421,8 @@ package apidoc.models {
          (__ \ "organization").read[Organization] and
          (__ \ "role").read[String])(MembershipRequestImpl.apply _)
       }
-  
-    implicit val writes: play.api.libs.json.Writes[MembershipRequest] =
+    
+    implicit val writesMembershipRequest: play.api.libs.json.Writes[MembershipRequest] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -311,14 +431,8 @@ package apidoc.models {
          (__ \ "organization").write[Organization] and
          (__ \ "role").write[String])(unlift(MembershipRequest.unapply))
       }
-  }
-  
-  object Service {
-    def unapply(x: Service) = {
-      Some(x.guid, x.name, x.key, x.description)
-    }
-  
-    implicit val reads: play.api.libs.json.Reads[Service] =
+    
+    implicit val readsService: play.api.libs.json.Reads[Service] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -327,8 +441,8 @@ package apidoc.models {
          (__ \ "key").read[String] and
          (__ \ "description").readNullable[String])(ServiceImpl.apply _)
       }
-  
-    implicit val writes: play.api.libs.json.Writes[Service] =
+    
+    implicit val writesService: play.api.libs.json.Writes[Service] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -337,14 +451,8 @@ package apidoc.models {
          (__ \ "key").write[String] and
          (__ \ "description").write[Option[String]])(unlift(Service.unapply))
       }
-  }
-  
-  object Version {
-    def unapply(x: Version) = {
-      Some(x.guid, x.version, x.json)
-    }
-  
-    implicit val reads: play.api.libs.json.Reads[Version] =
+    
+    implicit val readsVersion: play.api.libs.json.Reads[Version] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -352,8 +460,8 @@ package apidoc.models {
          (__ \ "version").read[String] and
          (__ \ "json").read[String])(VersionImpl.apply _)
       }
-  
-    implicit val writes: play.api.libs.json.Writes[Version] =
+    
+    implicit val writesVersion: play.api.libs.json.Writes[Version] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -361,22 +469,34 @@ package apidoc.models {
          (__ \ "version").write[String] and
          (__ \ "json").write[String])(unlift(Version.unapply))
       }
-  }
-  
-  object Error {
-    def unapply(x: Error) = {
-      Some(x.code, x.message)
-    }
-  
-    implicit val reads: play.api.libs.json.Reads[Error] =
+    
+    implicit val readsCode: play.api.libs.json.Reads[Code] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "version").read[Version] and
+         (__ \ "target").read[String] and
+         (__ \ "source").read[String])(CodeImpl.apply _)
+      }
+    
+    implicit val writesCode: play.api.libs.json.Writes[Code] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "version").write[Version] and
+         (__ \ "target").write[String] and
+         (__ \ "source").write[String])(unlift(Code.unapply))
+      }
+    
+    implicit val readsError: play.api.libs.json.Reads[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
         ((__ \ "code").read[String] and
          (__ \ "message").read[String])(ErrorImpl.apply _)
       }
-  
-    implicit val writes: play.api.libs.json.Writes[Error] =
+    
+    implicit val writesError: play.api.libs.json.Writes[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -469,6 +589,31 @@ package apidoc {
       extends Exception(s"request failed with status[$status]: ${entity}")
       with Response[T]
 
+    object Code {
+      /**
+       * Generate code for a specific version of a service. An idempotent operation that
+       * may or may not mutate state on server.
+       */
+      def getByVersionAndTarget(
+        version: String,
+        target: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Code]] = {
+        val queryBuilder = List.newBuilder[(String, String)]
+        
+        
+        GET(s"/code/${({x: String =>
+          val s = x
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(version)}/${({x: String =>
+          val s = x
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(target)}", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Code], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+    }
+    
     object MembershipRequests {
       /**
        * Search all membership requests. Results are always paginated.
