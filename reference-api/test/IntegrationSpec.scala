@@ -70,7 +70,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
           .entity must equalTo(organization)
 
         Organizations.getByGuid(guid = UUID.randomUUID.toString).recover[Any] {
-          case r: FailedResponse[String] => r.status must equalTo(404)
+          case r: FailedResponse[_] => r.status must equalTo(404)
         }
 
         Organizations.get(guid = organization.guid)
