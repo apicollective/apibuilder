@@ -206,7 +206,6 @@ class ScalaParameter(param: Parameter) {
 
   def location = param.location
 
-  println("%s => %s".format(param.name, definition))
 }
 
 sealed abstract class ScalaDataType(val name: String)
