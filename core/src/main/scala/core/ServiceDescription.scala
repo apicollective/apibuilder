@@ -102,11 +102,15 @@ object Operation {
     // Capture any path parameters that were not explicitly annotated
     val pathParameters = internal.namedParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(_) }
 
+    val query: Seq[Parameter] = internal.query.map { p =>
+      Parameter(models, p, ParameterLocation.Query)
+    }
+
     Operation(model = model,
               method = method,
               path = internal.path,
               description = internal.description,
-              parameters = pathParameters ++ internalParams,
+              parameters = pathParameters ++ internalParams ++ query,
               responses = internal.responses.map { Response(_) })
   }
 
