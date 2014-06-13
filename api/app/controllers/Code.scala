@@ -11,7 +11,7 @@ import db.DetailedVersion
 import db.VersionDao
 
 object Code extends Controller {
-  def putByVersionguidAndTarget(versionGuid: String, target: String) = Action { request =>
+  def getByVersionAndTarget(versionGuid: String, target: String) = Action { request =>
     generator(target) match {
       case Failure(_) => NotFound(s"No generator exists for target[$target]")
       case Success(f) => {
