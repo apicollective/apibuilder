@@ -663,8 +663,8 @@ package apidoc {
         organizationKey: Option[java.util.UUID] = None,
         userGuid: Option[java.util.UUID] = None,
         role: Option[String] = None,
-        limit: Option[Int] = None,
-        offset: Option[Int] = None
+        limit: Int = 25,
+        offset: Int = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.List[MembershipRequest]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= organizationGuid.map { x =>
@@ -695,14 +695,14 @@ package apidoc {
             }
           )(x)
         }
-        queryBuilder ++= limit.map { x =>
+        queryBuilder ++= Seq(limit).map { x =>
           "limit" -> (
             { x: Int =>
               x.toString
             }
           )(x)
         }
-        queryBuilder ++= offset.map { x =>
+        queryBuilder ++= Seq(offset).map { x =>
           "offset" -> (
             { x: Int =>
               x.toString
@@ -789,8 +789,8 @@ package apidoc {
         organizationKey: Option[java.util.UUID] = None,
         userGuid: Option[java.util.UUID] = None,
         role: Option[String] = None,
-        limit: Option[Int] = None,
-        offset: Option[Int] = None
+        limit: Int = 25,
+        offset: Int = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.List[Membership]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= organizationGuid.map { x =>
@@ -821,14 +821,14 @@ package apidoc {
             }
           )(x)
         }
-        queryBuilder ++= limit.map { x =>
+        queryBuilder ++= Seq(limit).map { x =>
           "limit" -> (
             { x: Int =>
               x.toString
             }
           )(x)
         }
-        queryBuilder ++= offset.map { x =>
+        queryBuilder ++= Seq(offset).map { x =>
           "offset" -> (
             { x: Int =>
               x.toString
@@ -852,8 +852,8 @@ package apidoc {
         userGuid: Option[java.util.UUID] = None,
         key: Option[String] = None,
         name: Option[String] = None,
-        limit: Option[Int] = None,
-        offset: Option[Int] = None
+        limit: Int = 25,
+        offset: Int = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.List[Organization]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= guid.map { x =>
@@ -884,14 +884,14 @@ package apidoc {
             }
           )(x)
         }
-        queryBuilder ++= limit.map { x =>
+        queryBuilder ++= Seq(limit).map { x =>
           "limit" -> (
             { x: Int =>
               x.toString
             }
           )(x)
         }
-        queryBuilder ++= offset.map { x =>
+        queryBuilder ++= Seq(offset).map { x =>
           "offset" -> (
             { x: Int =>
               x.toString
@@ -946,8 +946,8 @@ package apidoc {
         orgKey: String,
         name: Option[String] = None,
         key: Option[String] = None,
-        limit: Option[Int] = None,
-        offset: Option[Int] = None
+        limit: Int = 25,
+        offset: Int = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.List[Service]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= name.map { x =>
@@ -964,14 +964,14 @@ package apidoc {
             }
           )(x)
         }
-        queryBuilder ++= limit.map { x =>
+        queryBuilder ++= Seq(limit).map { x =>
           "limit" -> (
             { x: Int =>
               x.toString
             }
           )(x)
         }
-        queryBuilder ++= offset.map { x =>
+        queryBuilder ++= Seq(offset).map { x =>
           "offset" -> (
             { x: Int =>
               x.toString
@@ -1119,18 +1119,18 @@ package apidoc {
       def getByOrgKeyAndServiceKey(
         orgKey: String,
         serviceKey: String,
-        limit: Option[Int] = None,
-        offset: Option[Int] = None
+        limit: Int = 25,
+        offset: Int = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.List[Version]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
-        queryBuilder ++= limit.map { x =>
+        queryBuilder ++= Seq(limit).map { x =>
           "limit" -> (
             { x: Int =>
               x.toString
             }
           )(x)
         }
-        queryBuilder ++= offset.map { x =>
+        queryBuilder ++= Seq(offset).map { x =>
           "offset" -> (
             { x: Int =>
               x.toString

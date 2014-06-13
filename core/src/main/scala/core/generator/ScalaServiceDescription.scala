@@ -134,14 +134,16 @@ class ScalaField(field: Field) {
       // TODO support references in scala
       case r: ReferenceFieldType => ???
     }
-    if (multiple) new ScalaListType(base)
-    else if (isOption) new ScalaOptionType(base)
-    else base
+    if (multiple) {
+      new ScalaListType(base)
+    } else if (!field.required && !field.default.nonEmpty) {
+      new ScalaOptionType(base)
+    } else {
+      base
+    }
   }
 
   def description: Option[String] = field.description
-
-  def isOption: Boolean = !field.required || field.default.nonEmpty
 
   def multiple: Boolean = field.multiple
 
@@ -151,7 +153,9 @@ class ScalaField(field: Field) {
     val decl = s"$name: $typeName"
     if (multiple) {
       decl + " = Nil"
-    } else if (isOption) {
+    } else if (field.default.nonEmpty) {
+      decl + s" = ${field.default}"
+    } else if (!field.required) {
       decl + " = None"
     } else {
       decl
@@ -171,14 +175,17 @@ class ScalaParameter(param: Parameter) {
       case t: PrimitiveParameterType => ScalaDataType(t.datatype)
       case m: ModelParameterType => new ScalaModelType(new ScalaModel(m.model))
     }
-    if (multiple) new ScalaListType(base)
-    else if (isOption) new ScalaOptionType(base)
-    else base
+
+    if (multiple) {
+      new ScalaListType(base)
+    } else if (!param.required && !param.default.nonEmpty) {
+      new ScalaOptionType(base)
+    } else {
+      base
+    }
   }
 
   def description: String = param.description.getOrElse(name)
-
-  def isOption: Boolean = !param.required || param.default.nonEmpty
 
   def multiple: Boolean = param.multiple
 
@@ -188,7 +195,9 @@ class ScalaParameter(param: Parameter) {
     val decl = s"$name: $typeName"
     if (multiple) {
       decl + " = Nil"
-    } else if (isOption) {
+    } else if (param.default.nonEmpty) {
+      decl + s" = ${param.default.get}"
+    } else if (!param.required) {
       decl + " = None"
     } else {
       decl
@@ -196,6 +205,8 @@ class ScalaParameter(param: Parameter) {
   }
 
   def location = param.location
+
+  println("%s => %s".format(param.name, definition))
 }
 
 sealed abstract class ScalaDataType(val name: String)
