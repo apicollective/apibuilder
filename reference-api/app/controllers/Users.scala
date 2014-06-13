@@ -18,7 +18,7 @@ import db.Implicits._
 object Users extends Controller {
   val rowParser = new RowParser[User] {
     def apply(row: Row): SqlResult[User] = Success {
-      new UserImpl(
+      new User(
         guid = row[UUID]("users.guid"),
         email = row[String]("users.email"),
         active = row[Boolean]("users.active")
