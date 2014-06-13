@@ -289,7 +289,7 @@
             "model": "code",
             "operations": [
                 {
-                    "method": "PUT",
+                    "method": "GET",
                     "description": "Generate code for a specific version of a service. An idempotent operation that may or may not mutate state on server.",
                     "path": "/:version/:target",
                     "responses": {

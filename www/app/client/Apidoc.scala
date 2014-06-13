@@ -287,7 +287,7 @@ object Apidoc {
 
   case class CodeResource(client: Apidoc.Client) {
     def putByVersionguidAndTarget(versionGuid: String, target: String) = {
-      client.wsUrl(s"/code/$versionGuid/$target").put("").map { r =>
+      client.wsUrl(s"/code/$versionGuid/$target").get.map { r =>
         println(r.body)
         r.json.as[models.Code]
       }
