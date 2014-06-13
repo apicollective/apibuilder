@@ -49,11 +49,11 @@ describe ReferenceApi do
       member = make_member
       client.organizations.post(member.organization.to_h).should_not be_nil
       client.users.post(member.user.to_h).should_not be_nil
-      puts client.members.post(
+      client.members.post(
         :guid => member.guid,
         :organization => member.organization.guid,
         :user => member.user.guid,
-        :role => member.role).to_h
+        :role => member.role).should_not be_nil
     end
   end
 end
