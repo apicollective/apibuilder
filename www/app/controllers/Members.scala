@@ -18,16 +18,16 @@ object Members extends Controller {
 
   def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
-      org <- request.client.organizations.findByKey(orgKey)
+      org <- request.apidocClient.Organizations.get(key = Some(orgKey))
       members <- request.client.memberships.findAll(organizationKey = Some(orgKey),
                                                     limit = Pagination.DefaultLimit+1,
                                                     offset = page * Pagination.DefaultLimit)
     } yield {
-      org match {
+      org.entity.headOption match {
 
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
-        case Some(o: Organization) => {
+        case Some(o: apidoc.models.Organization) => {
           // TODO: Check if this user is an admin in order to allow
           // the add member link
 
@@ -42,9 +42,9 @@ object Members extends Controller {
 
   def add(orgKey: String) = Authenticated.async { implicit request =>
     for {
-      orgOption <- request.client.organizations.findByKey(orgKey)
+      orgOption <- request.apidocClient.Organizations.get(key = Some(orgKey))
     } yield {
-      val org = orgOption.getOrElse { sys.error("invalid org") }
+      val org = orgOption.entity.headOption.getOrElse { sys.error("invalid org") }
       val filledForm = addMemberForm.fill(AddMemberData(role = Role.Member.key, email = ""))
 
       Ok(views.html.members.add(MainTemplate(title = s"#{org.name}: Add member",
@@ -56,9 +56,9 @@ object Members extends Controller {
 
   def addPost(orgKey: String) = Authenticated.async { implicit request =>
     for {
-      orgOption <- request.client.organizations.findByKey(orgKey)
+      orgOption <- request.apidocClient.Organizations.get(key = Some(orgKey))
     } yield {
-      val org = orgOption.getOrElse { sys.error("invalid org") }
+      val org = orgOption.entity.headOption.getOrElse { sys.error("invalid org") }
 
       val tpl = MainTemplate(title = "#{org.name}: Add member",
                              org = Some(org),
@@ -79,7 +79,7 @@ object Members extends Controller {
             }
 
             case Some(user: User) => {
-              val membershipRequest = Await.result(request.client.membershipRequests.create(org.guid, user.guid, valid.role), 1500.millis)
+              val membershipRequest = Await.result(request.client.membershipRequests.create(org.guid.toString, user.guid, valid.role), 1500.millis)
               val review = Await.result(request.client.membershipRequestReviews.post(membershipRequest.guid, Review.Accept.key), 1500.millis)
               Redirect(routes.Members.show(org.key)).flashing("success" -> s"${valid.role} added")
             }

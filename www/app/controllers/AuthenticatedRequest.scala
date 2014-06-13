@@ -5,15 +5,23 @@ import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
+import play.api.Play.current
 
 class AuthenticatedRequest[A](val user: Apidoc.User, request: Request[A]) extends WrappedRequest[A](request) {
 
   lazy val client = ApidocClient.instance(user.guid)
 
-  lazy val generatedClient = new apidoc.Client(
-    ApidocClient.apiUrl,
-    Some(ApidocClient.token(user.guid))
-  )
+  private val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
+    sys.error("apidoc.url is required")
+  }
+
+  private val apiToken = current.configuration.getString("apidoc.token").getOrElse {
+    sys.error("apidoc.token is required")
+  }
+
+  // TODO: Rename to api
+  lazy val apidocClient = new apidoc.Client(apiUrl, Some(apiToken))
+  lazy val generatedClient = apidocClient
 
 }
 
