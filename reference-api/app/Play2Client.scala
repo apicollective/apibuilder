@@ -22,40 +22,25 @@ package referenceapi.models {
     f20: String,
     f21: String
   )
-
-  object Big {
-  }
   case class Error(
     code: String,
     message: String
   )
-
-  object Error {
-  }
   case class Organization(
     guid: java.util.UUID,
     name: String
   )
-
-  object Organization {
-  }
   case class User(
     guid: java.util.UUID,
     email: String,
     active: Boolean
   )
-
-  object User {
-  }
   case class Member(
     guid: java.util.UUID,
     organization: Organization,
     user: User,
     role: String
   )
-
-  object Member {
-  }
 }
 
 package referenceapi.models {

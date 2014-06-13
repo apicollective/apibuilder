@@ -14,18 +14,6 @@ object ScalaCaseClasses {
     val classDef: String = {
       s"""case class ${model.name}(${model.argList})"""
     }
-    val objectDef: String = {
-      val applyArgs = model.fields.map { field =>
-        s"${field.name}: ${field.typeName}"
-      }.mkString(", ")
-
-
-      s"""object ${model.name} {
-}
-"""
-    }
-s"""${classDef.indent}
-
-${objectDef.indent}"""
+    classDef.indent
   }.mkString(s"package ${ssd.packageName}.models {\n", "\n", "\n}")
 }
