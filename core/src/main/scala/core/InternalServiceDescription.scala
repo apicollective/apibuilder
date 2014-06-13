@@ -68,6 +68,7 @@ case class InternalOperation(method: Option[String],
                              description: Option[String],
                              namedParameters: Seq[String],
                              query: Seq[InternalParameter],
+                             body: Option[InternalBody],
                              parameters: Seq[InternalParameter],
                              responses: Seq[InternalResponse]) {
 
@@ -110,6 +111,29 @@ case class InternalResponse(code: String,
     } else {
       dt
     }
+  }
+
+}
+
+case class InternalBody(datatype: Option[String],
+                        multiple: Boolean = false) {
+
+  lazy val datatypeLabel: Option[String] = datatype.map { dt =>
+    if (multiple) {
+      s"[$dt]"
+    } else {
+      dt
+    }
+  }
+
+}
+
+object InternalBody {
+
+  def apply(json: JsObject): InternalBody = {
+    val parsedDatatype = (json \ "type").asOpt[String].map(InternalParsedDatatype(_) )
+    new InternalBody(datatype = parsedDatatype.map(_.name),
+                     multiple = parsedDatatype.map(_.multiple).getOrElse(false))
   }
 
 }
@@ -186,6 +210,9 @@ object InternalOperation {
       }
     }
 
+    val body: Option[InternalBody] = (json \ "body").asOpt[JsObject]
+      .map(InternalBody(_))
+
     val responses: Seq[InternalResponse] = {
       (json \ "responses").asOpt[JsObject] match {
         case None => {
@@ -208,6 +235,7 @@ object InternalOperation {
                       responses = responses,
                       namedParameters = namedParameters,
                       query = query,
+                      body = body,
                       parameters = parameters)
   }
 

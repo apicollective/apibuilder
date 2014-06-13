@@ -127,6 +127,16 @@ package referenceapi.test.models {
       }
     }
     
+    implicit def arbUserForm: org.scalacheck.Arbitrary[UserForm] = org.scalacheck.Arbitrary {
+      for {
+        email <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
+      } yield {
+        new UserForm(
+          email = email
+        )
+      }
+    }
+    
     implicit def arbUserList: org.scalacheck.Arbitrary[UserList] = org.scalacheck.Arbitrary {
       for {
         users <- org.scalacheck.Arbitrary(org.scalacheck.Gen.listOf(org.scalacheck.Arbitrary {

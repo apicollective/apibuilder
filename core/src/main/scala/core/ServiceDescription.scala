@@ -63,7 +63,9 @@ case class Operation(model: Model,
                      method: String,
                      path: String,
                      description: Option[String],
+                     query: Seq[Parameter],
                      parameters: Seq[Parameter],
+                     body: Option[Body],
                      responses: Seq[Response]) {
 
   lazy val label = "%s %s".format(method, path)
@@ -106,11 +108,22 @@ object Operation {
       Parameter(models, p, ParameterLocation.Query)
     }
 
+    if (method == "GET") {
+      require(internal.body.isEmpty, "GET should not have a body.")
+    }
+    val body: Option[Body] = internal.body.map { b =>
+      Body(models, model, b)
+    }.orElse {
+      Some(new Body(model = model, multiple = false, isDefault = true))
+    }
+
     Operation(model = model,
               method = method,
               path = internal.path,
               description = internal.description,
+              query = query,
               parameters = pathParameters ++ internalParams ++ query,
+              body = body,
               responses = internal.responses.map { Response(_) })
   }
 
@@ -417,3 +430,17 @@ object Field {
 
 }
 
+case class Body(model: Model, multiple: Boolean, isDefault: Boolean)
+
+object Body {
+  def apply(models: Seq[Model], resourceModel: Model, internal: InternalBody): Body = {
+    val multiple = internal.multiple
+    def fail = sys.error(s"body must name a type")
+    val model = internal.datatype.fold(fail) { dt =>
+      models.find(_.name == dt).getOrElse {
+        sys.error(s"Named model[$dt] not found")
+      }
+    }
+    new Body(model, multiple, false)
+  }
+}

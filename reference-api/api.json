@@ -58,6 +58,12 @@
             ]
         },
 
+        "user_form": {
+            "fields": [
+                { "name": "email", "type": "string" }
+            ]
+        },
+
         "member": {
             "fields": [
                 { "name": "guid", "type": "uuid" },
@@ -74,18 +80,14 @@
             "operations": [
                 {
                     "method": "POST",
-                    "parameters": [
-                        { "name": "guid", "type": "uuid" },
-                        { "name": "name", "type": "string" }
-                        ],
-                        "responses": {
-                            "201": { "type": "organization" },
-                            "409": { "type": "[error]" }
-                        }
+                    "responses": {
+                        "201": { "type": "organization" },
+                        "409": { "type": "[error]" }
+                    }
                 },
                 {
                     "method": "GET",
-                    "parameters": [
+                    "query": [
                         { "name": "guid", "type": "uuid", "required": false },
                         { "name": "name", "type": "string", "required": false }
                     ],
@@ -107,11 +109,7 @@
             "operations": [
                 {
                     "method": "POST",
-                    "parameters": [
-                        { "name": "guid", "type": "uuid" },
-                        { "name": "email", "type": "string" },
-                        { "name": "active", "type": "boolean" }
-                    ],
+                    "body": "user_form",
                     "responses": {
                         "201": { "type": "user" },
                         "409": { "type": "[error]" }
@@ -119,7 +117,7 @@
                 },
                 {
                     "method": "GET",
-                    "parameters": [
+                    "query": [
                         { "name": "guid", "type": "uuid", "required": false },
                         { "name": "email", "type": "string", "required": false },
                         { "name": "active", "type": "boolean", "default": true }
@@ -142,12 +140,6 @@
             "operations": [
                 {
                     "method": "POST",
-                    "parameters": [
-                        { "name": "guid", "type": "uuid" },
-                        { "name": "organization", "type": "uuid" },
-                        { "name": "user", "type": "uuid" },
-                        { "name": "role", "type": "string" }
-                    ],
                     "responses": {
                         "201": { "type": "member" },
                         "409": { "type": "[error]" }
@@ -155,7 +147,7 @@
                 },
                 {
                     "method": "GET",
-                    "parameters": [
+                    "query": [
                         { "name": "guid", "type": "uuid", "required": false },
                         { "name": "organization_guid", "type": "uuid", "required": false },
                         { "name": "user_guid", "type": "uuid", "required": false },
