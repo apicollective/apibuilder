@@ -12,7 +12,7 @@ GET        /membership_requests                   controllers.MembershipRequests
 POST       /membership_requests                   controllers.MembershipRequests.post()
 POST       /membership_requests/:guid/accept      controllers.MembershipRequests.postAcceptByGuid(guid: String)
 POST       /membership_requests/:guid/decline     controllers.MembershipRequests.postDeclineByGuid(guid: String)
-PUT        /code/:version_guid/:target            controllers.Code.putByVersionguidAndTarget(version_guid: String, target: String)
+GET        /code/:version/:target                 controllers.Code.getByVersionAndTarget(version: String, target: String)
 GET        /:orgKey                               controllers.Services.getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 DELETE     /:orgKey/:serviceKey                   controllers.Services.deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String)
 GET        /:orgKey/:serviceKey                   controllers.Versions.getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int ?= 25, offset: Int ?= 0)
