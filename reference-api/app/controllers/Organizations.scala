@@ -18,7 +18,7 @@ import db.Implicits._
 object Organizations extends Controller {
   val rowParser = new RowParser[Organization] {
     def apply(row: Row): SqlResult[Organization] = Success {
-      new organization.OrganizationImpl(
+      new OrganizationImpl(
         guid = row[UUID]("organizations.guid"),
         name = row[String]("organizations.name")
       )
