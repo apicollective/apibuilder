@@ -50,7 +50,7 @@ object Target {
     "javascript"
   )
 
-  val implemented = values.filter(generator.isDefinedAt)
+  val implemented: Seq[String] = values.filter(generator.isDefinedAt)
 
   def humanize(target: String) = {
     target.split('-').map(_.capitalize).mkString(" ")
