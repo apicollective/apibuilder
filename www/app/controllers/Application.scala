@@ -14,8 +14,8 @@ object Application extends Controller {
   def index(orgsPage: Int = 0, membershipRequestsPage: Int = 0) = Authenticated.async { implicit request =>
     for {
       orgs <- request.apidocClient.Organizations.get(userGuid = Some(UUID.fromString(request.user.guid)),
-                                                     limit = Pagination.DefaultLimit+1,
-                                                     offset = orgsPage * Pagination.DefaultLimit)
+                                                     limit = Some(Pagination.DefaultLimit+1),
+                                                     offset = Some(orgsPage * Pagination.DefaultLimit))
       membershipRequests <- request.client.membershipRequests.findAll(userGuid = Some(request.user.guid),
                                                                       limit = Pagination.DefaultLimit+1,
                                                                       offset = membershipRequestsPage * Pagination.DefaultLimit)
