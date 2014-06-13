@@ -23,7 +23,7 @@ object Members extends Controller {
         organization <- Organizations.rowParser(row)
         user <- Users.rowParser(row)
       } yield {
-        new MemberImpl(
+        new Member(
           guid = row[UUID]("members.guid"),
           organization = organization,
           user = user,

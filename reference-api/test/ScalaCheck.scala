@@ -1,7 +1,7 @@
 package referenceapi.test.models {
   object Arbitrary {
     import referenceapi.models._
-    implicit def arbBig: org.scalacheck.Arbitrary[BigImpl] = org.scalacheck.Arbitrary {
+    implicit def arbBig: org.scalacheck.Arbitrary[Big] = org.scalacheck.Arbitrary {
       for {
         f1 <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
         f2 <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
@@ -25,7 +25,7 @@ package referenceapi.test.models {
         f20 <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
         f21 <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
       } yield {
-        new BigImpl(
+        new Big(
           f1 = f1,
           f2 = f2,
           f3 = f3,
@@ -51,37 +51,37 @@ package referenceapi.test.models {
       }
     }
     
-    implicit def arbError: org.scalacheck.Arbitrary[ErrorImpl] = org.scalacheck.Arbitrary {
+    implicit def arbError: org.scalacheck.Arbitrary[Error] = org.scalacheck.Arbitrary {
       for {
         code <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
         message <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
       } yield {
-        new ErrorImpl(
+        new Error(
           code = code,
           message = message
         )
       }
     }
     
-    implicit def arbOrganization: org.scalacheck.Arbitrary[OrganizationImpl] = org.scalacheck.Arbitrary {
+    implicit def arbOrganization: org.scalacheck.Arbitrary[Organization] = org.scalacheck.Arbitrary {
       for {
         guid <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
         name <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
       } yield {
-        new OrganizationImpl(
+        new Organization(
           guid = guid,
           name = name
         )
       }
     }
     
-    implicit def arbUser: org.scalacheck.Arbitrary[UserImpl] = org.scalacheck.Arbitrary {
+    implicit def arbUser: org.scalacheck.Arbitrary[User] = org.scalacheck.Arbitrary {
       for {
         guid <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
         email <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
         active <- org.scalacheck.Arbitrary.arbBool.arbitrary
       } yield {
-        new UserImpl(
+        new User(
           guid = guid,
           email = email,
           active = active
@@ -89,7 +89,7 @@ package referenceapi.test.models {
       }
     }
     
-    implicit def arbMember: org.scalacheck.Arbitrary[MemberImpl] = org.scalacheck.Arbitrary {
+    implicit def arbMember: org.scalacheck.Arbitrary[Member] = org.scalacheck.Arbitrary {
       for {
         guid <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
         organization <- org.scalacheck.Arbitrary {
@@ -97,7 +97,7 @@ package referenceapi.test.models {
             guid <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
             name <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
           } yield {
-            new OrganizationImpl(
+            new Organization(
               guid = guid,
               name = name
             )
@@ -109,7 +109,7 @@ package referenceapi.test.models {
             email <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
             active <- org.scalacheck.Arbitrary.arbBool.arbitrary
           } yield {
-            new UserImpl(
+            new User(
               guid = guid,
               email = email,
               active = active
@@ -118,7 +118,7 @@ package referenceapi.test.models {
         }.arbitrary
         role <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
       } yield {
-        new MemberImpl(
+        new Member(
           guid = guid,
           organization = organization,
           user = user,

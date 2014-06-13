@@ -13,7 +13,7 @@ object ScalaCheckGenerators {
   def apply(ssd: ScalaServiceDescription): String = {
     val defs = ssd.models.map { model =>
       val impl = arb(new ScalaDataType.ScalaModelType(model))
-      s"implicit def arb${model.name}: org.scalacheck.Arbitrary[${model.name}Impl] = $impl"
+      s"implicit def arb${model.name}: org.scalacheck.Arbitrary[${model.name}] = $impl"
     }.mkString("\n\n")
     val packageName = ssd.name.toLowerCase
     s"""package $packageName.test.models {
@@ -49,12 +49,11 @@ Arbitrary(Arbitrary.arbDate.arbitrary.map(d => new ${x.name}(d.getTime)))"""
       case x: ScalaModelType => {
         val genFields: String = x.model.fields.map(gen).mkString("\n")
         val initFields = x.model.fields.map(f => s"${f.name} = ${f.name}").mkString(",\n")
-        val className = x.model.name + "Impl"
         s"""org.scalacheck.Arbitrary {
   for {
 ${genFields.indent(4)}
   } yield {
-    new ${className}(
+    new ${x.model.name}(
 ${initFields.indent(6)}
     )
   }

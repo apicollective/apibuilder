@@ -1,52 +1,5 @@
 package referenceapi.models {
-  /**
-   * A model with a lot of fields.
-   */
-  trait Big {
-    def f1: String
-    
-    def f2: String
-    
-    def f3: String
-    
-    def f4: String
-    
-    def f5: String
-    
-    def f6: String
-    
-    def f7: String
-    
-    def f8: String
-    
-    def f9: String
-    
-    def f10: String
-    
-    def f11: String
-    
-    def f12: String
-    
-    def f13: String
-    
-    def f14: String
-    
-    def f15: String
-    
-    def f16: String
-    
-    def f17: String
-    
-    def f18: String
-    
-    def f19: String
-    
-    def f20: String
-    
-    def f21: String
-  }
-
-  case class BigImpl(
+  case class Big(
     f1: String,
     f2: String,
     f3: String,
@@ -68,139 +21,26 @@ package referenceapi.models {
     f19: String,
     f20: String,
     f21: String
-  ) extends Big
-
-  object Big {
-    def apply(f1: String, f2: String, f3: String, f4: String, f5: String, f6: String, f7: String, f8: String, f9: String, f10: String, f11: String, f12: String, f13: String, f14: String, f15: String, f16: String, f17: String, f18: String, f19: String, f20: String, f21: String): BigImpl = {
-      new BigImpl(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21)
-    }
-  
-    def unapply(x: Big) = {
-      Some(x.f1, x.f2, x.f3, x.f4, x.f5, x.f6, x.f7, x.f8, x.f9, x.f10, x.f11, x.f12, x.f13, x.f14, x.f15, x.f16, x.f17, x.f18, x.f19, x.f20, x.f21)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Big): BigImpl = x match {
-      case impl: BigImpl => impl
-      case _ => new BigImpl(x.f1,x.f2,x.f3,x.f4,x.f5,x.f6,x.f7,x.f8,x.f9,x.f10,x.f11,x.f12,x.f13,x.f14,x.f15,x.f16,x.f17,x.f18,x.f19,x.f20,x.f21)
-    }
-  }
-  /**
-   * Models an API error.
-   */
-  trait Error {
-    def code: String
-    
-    def message: String
-  }
-
-  case class ErrorImpl(
+  )
+  case class Error(
     code: String,
     message: String
-  ) extends Error
-
-  object Error {
-    def apply(code: String, message: String): ErrorImpl = {
-      new ErrorImpl(code,message)
-    }
-  
-    def unapply(x: Error) = {
-      Some(x.code, x.message)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Error): ErrorImpl = x match {
-      case impl: ErrorImpl => impl
-      case _ => new ErrorImpl(x.code,x.message)
-    }
-  }
-  trait Organization {
-    def guid: java.util.UUID
-    
-    def name: String
-  }
-
-  case class OrganizationImpl(
+  )
+  case class Organization(
     guid: java.util.UUID,
     name: String
-  ) extends Organization
-
-  object Organization {
-    def apply(guid: java.util.UUID, name: String): OrganizationImpl = {
-      new OrganizationImpl(guid,name)
-    }
-  
-    def unapply(x: Organization) = {
-      Some(x.guid, x.name)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Organization): OrganizationImpl = x match {
-      case impl: OrganizationImpl => impl
-      case _ => new OrganizationImpl(x.guid,x.name)
-    }
-  }
-  trait User {
-    def guid: java.util.UUID
-    
-    def email: String
-    
-    def active: Boolean
-  }
-
-  case class UserImpl(
+  )
+  case class User(
     guid: java.util.UUID,
     email: String,
     active: Boolean
-  ) extends User
-
-  object User {
-    def apply(guid: java.util.UUID, email: String, active: Boolean): UserImpl = {
-      new UserImpl(guid,email,active)
-    }
-  
-    def unapply(x: User) = {
-      Some(x.guid, x.email, x.active)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: User): UserImpl = x match {
-      case impl: UserImpl => impl
-      case _ => new UserImpl(x.guid,x.email,x.active)
-    }
-  }
-  trait Member {
-    def guid: java.util.UUID
-    
-    def organization: Organization
-    
-    def user: User
-    
-    def role: String
-  }
-
-  case class MemberImpl(
+  )
+  case class Member(
     guid: java.util.UUID,
     organization: Organization,
     user: User,
     role: String
-  ) extends Member
-
-  object Member {
-    def apply(guid: java.util.UUID, organization: Organization, user: User, role: String): MemberImpl = {
-      new MemberImpl(guid,organization,user,role)
-    }
-  
-    def unapply(x: Member) = {
-      Some(x.guid, x.organization, x.user, x.role)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Member): MemberImpl = x match {
-      case impl: MemberImpl => impl
-      case _ => new MemberImpl(x.guid,x.organization,x.user,x.role)
-    }
-  }
+  )
 }
 
 package referenceapi.models {
@@ -251,7 +91,7 @@ package referenceapi.models {
          (__ \ "f18").read[String] and
          (__ \ "f19").read[String] and
          (__ \ "f20").read[String] and
-         (__ \ "f21").read[String])(BigImpl.apply _)
+         (__ \ "f21").read[String])(Big.apply _)
       }
     
     implicit val writesBig: play.api.libs.json.Writes[Big] =
@@ -286,7 +126,7 @@ package referenceapi.models {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
         ((__ \ "code").read[String] and
-         (__ \ "message").read[String])(ErrorImpl.apply _)
+         (__ \ "message").read[String])(Error.apply _)
       }
     
     implicit val writesError: play.api.libs.json.Writes[Error] =
@@ -302,7 +142,7 @@ package referenceapi.models {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
         ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "name").read[String])(OrganizationImpl.apply _)
+         (__ \ "name").read[String])(Organization.apply _)
       }
     
     implicit val writesOrganization: play.api.libs.json.Writes[Organization] =
@@ -319,7 +159,7 @@ package referenceapi.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "email").read[String] and
-         (__ \ "active").read[Boolean])(UserImpl.apply _)
+         (__ \ "active").read[Boolean])(User.apply _)
       }
     
     implicit val writesUser: play.api.libs.json.Writes[User] =
@@ -338,7 +178,7 @@ package referenceapi.models {
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "organization").read[Organization] and
          (__ \ "user").read[User] and
-         (__ \ "role").read[String])(MemberImpl.apply _)
+         (__ \ "role").read[String])(Member.apply _)
       }
     
     implicit val writesMember: play.api.libs.json.Writes[Member] =
