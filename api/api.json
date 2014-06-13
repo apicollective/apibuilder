@@ -290,7 +290,7 @@
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Generate code for a specific version of a service. An idempotent operation that may or may not mutate state on server.",
+                    "description": "Generate code for a specific version of a service.",
                     "path": "/:version/:target",
                     "responses": {
                         "200": { "type": "code" }
