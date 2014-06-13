@@ -10,6 +10,8 @@ lazy val core = project
   .in(file("core"))
   .settings(commonSettings: _*)
   .settings(
+    // play-json needs this to resolve correctly when not using Gilt's internal mirrors
+    resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % "2.3.0"
@@ -55,7 +57,7 @@ lazy val commonPlaySettings: Seq[Setting[_]] = Seq(
     jdbc,
     anorm,
     ws,
-    "postgresql" % "postgresql" % "9.3-1101.jdbc4"
+    "org.postgresql" % "postgresql" % "9.3-1101-jdbc4"
   )
 )
 
