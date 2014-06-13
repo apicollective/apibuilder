@@ -111,7 +111,7 @@ class ScalaResponse(response: Response) {
   def datatype = {
     val scalaName: String = underscoreToInitCap(response.datatype)
     if (response.multiple) {
-      s"scala.collection.immutable.List[${scalaName}]"
+      s"scala.collection.immutable.Seq[${scalaName}]"
     } else {
       scalaName
     }
@@ -136,7 +136,7 @@ class ScalaField(field: Field) {
     }
     if (multiple) {
       new ScalaListType(base)
-    } else if (!field.required && !field.default.nonEmpty) {
+    } else if (isOption) {
       new ScalaOptionType(base)
     } else {
       base
@@ -149,14 +149,20 @@ class ScalaField(field: Field) {
 
   def typeName: String = datatype.name
 
+  /**
+   * If there is a default, ensure it is only set server side otherwise
+   * changing the default would have no impact on deployed clients
+   */
+  def isOption: Boolean = !field.required || field.default.nonEmpty
+
   def definition: String = {
     val decl = s"$name: $typeName"
-    if (multiple) {
-      decl + " = Nil"
-    } else if (field.default.nonEmpty) {
-      decl + s" = ${field.default}"
-    } else if (!field.required) {
-      decl + " = None"
+    if (isOption) {
+      if (multiple) {
+        decl + " = Nil"
+      } else {
+        decl + " = None"
+      }
     } else {
       decl
     }
@@ -178,7 +184,7 @@ class ScalaParameter(param: Parameter) {
 
     if (multiple) {
       new ScalaListType(base)
-    } else if (!param.required && !param.default.nonEmpty) {
+    } else if (isOption) {
       new ScalaOptionType(base)
     } else {
       base
@@ -191,14 +197,20 @@ class ScalaParameter(param: Parameter) {
 
   def typeName: String = datatype.name
 
+  /**
+   * If there is a default, ensure it is only set server side otherwise
+   * changing the default would have no impact on deployed clients
+   */
+  def isOption: Boolean = !param.required || param.default.nonEmpty
+
   def definition: String = {
     val decl = s"$name: $typeName"
-    if (multiple) {
-      decl + " = Nil"
-    } else if (param.default.nonEmpty) {
-      decl + s" = ${param.default.get}"
-    } else if (!param.required) {
-      decl + " = None"
+    if (isOption) {
+      if (multiple) {
+        decl + " = Nil"
+      } else {
+        decl + " = None"
+      }
     } else {
       decl
     }
@@ -223,9 +235,9 @@ object ScalaDataType {
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
   case object ScalaMoneyIso4217Type extends ScalaDataType("Money")
 
-  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.List[${inner.name}]")
+  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.Seq[${inner.name}]")
   case class ScalaModelType(model: ScalaModel) extends ScalaDataType(model.name)
-  case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"Option[${inner.name}]")
+  case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {
     case Datatype.StringType => ScalaStringType

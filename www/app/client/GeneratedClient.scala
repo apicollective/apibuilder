@@ -34,10 +34,7 @@ package apidoc.models {
       Some(x.guid, x.email, x.name, x.imageUrl)
     }
   
-<<<<<<< HEAD
     import scala.language.implicitConversions
-=======
->>>>>>> Switch to generated client for www => api
     implicit def toImpl(x: User): UserImpl = x match {
       case impl: UserImpl => impl
       case _ => new UserImpl(x.guid,x.email,x.name,x.imageUrl)
@@ -79,10 +76,7 @@ package apidoc.models {
       Some(x.guid, x.key, x.name)
     }
   
-<<<<<<< HEAD
     import scala.language.implicitConversions
-=======
->>>>>>> Switch to generated client for www => api
     implicit def toImpl(x: Organization): OrganizationImpl = x match {
       case impl: OrganizationImpl => impl
       case _ => new OrganizationImpl(x.guid,x.key,x.name)
@@ -125,10 +119,7 @@ package apidoc.models {
       Some(x.guid, x.user, x.organization, x.role)
     }
   
-<<<<<<< HEAD
     import scala.language.implicitConversions
-=======
->>>>>>> Switch to generated client for www => api
     implicit def toImpl(x: Membership): MembershipImpl = x match {
       case impl: MembershipImpl => impl
       case _ => new MembershipImpl(x.guid,x.user,x.organization,x.role)
@@ -173,10 +164,7 @@ package apidoc.models {
       Some(x.guid, x.user, x.organization, x.role)
     }
   
-<<<<<<< HEAD
     import scala.language.implicitConversions
-=======
->>>>>>> Switch to generated client for www => api
     implicit def toImpl(x: MembershipRequest): MembershipRequestImpl = x match {
       case impl: MembershipRequestImpl => impl
       case _ => new MembershipRequestImpl(x.guid,x.user,x.organization,x.role)
@@ -221,10 +209,7 @@ package apidoc.models {
       Some(x.guid, x.name, x.key, x.description)
     }
   
-<<<<<<< HEAD
     import scala.language.implicitConversions
-=======
->>>>>>> Switch to generated client for www => api
     implicit def toImpl(x: Service): ServiceImpl = x match {
       case impl: ServiceImpl => impl
       case _ => new ServiceImpl(x.guid,x.name,x.key,x.description)
@@ -267,10 +252,7 @@ package apidoc.models {
       Some(x.guid, x.version, x.json)
     }
   
-<<<<<<< HEAD
     import scala.language.implicitConversions
-=======
->>>>>>> Switch to generated client for www => api
     implicit def toImpl(x: Version): VersionImpl = x match {
       case impl: VersionImpl => impl
       case _ => new VersionImpl(x.guid,x.version,x.json)
@@ -308,10 +290,7 @@ package apidoc.models {
       Some(x.version, x.target, x.source)
     }
   
-<<<<<<< HEAD
     import scala.language.implicitConversions
-=======
->>>>>>> Switch to generated client for www => api
     implicit def toImpl(x: Code): CodeImpl = x match {
       case impl: CodeImpl => impl
       case _ => new CodeImpl(x.version,x.target,x.source)
@@ -343,10 +322,7 @@ package apidoc.models {
       Some(x.code, x.message)
     }
   
-<<<<<<< HEAD
     import scala.language.implicitConversions
-=======
->>>>>>> Switch to generated client for www => api
     implicit def toImpl(x: Error): ErrorImpl = x match {
       case impl: ErrorImpl => impl
       case _ => new ErrorImpl(x.code,x.message)
@@ -618,7 +594,6 @@ package apidoc {
        * Generate code for a specific version of a service. An idempotent operation that
        * may or may not mutate state on server.
        */
-<<<<<<< HEAD
       def getByVersionAndTarget(
         version: String,
         target: String
@@ -627,27 +602,12 @@ package apidoc {
         
         
         GET(s"/code/${({x: String =>
-=======
-      def putByVersionAndTarget(
-        version: String,
-        target: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Code]] = {
-        val payload = play.api.libs.json.Json.obj(
-          
-        )
-        
-        PUT(s"/code/${({x: String =>
->>>>>>> Switch to generated client for www => api
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
         })(version)}/${({x: String =>
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
-<<<<<<< HEAD
         })(target)}", queryBuilder.result).map {
-=======
-        })(target)}", payload).map {
->>>>>>> Switch to generated client for www => api
           case r if r.status == 200 => new ResponseImpl(r.json.as[Code], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
