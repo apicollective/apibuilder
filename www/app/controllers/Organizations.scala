@@ -18,17 +18,17 @@ object Organizations extends Controller {
 
   def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
-      org <- request.client.organizations.findByKey(orgKey)
+      org <- request.apidocClient.Organizations.get(key = Some(orgKey))
       services <- request.client.services.findAllByOrganizationKey(orgKey,
                                                                    limit = Pagination.DefaultLimit+1,
                                                                    offset = page * Pagination.DefaultLimit)
       isAdmin <- request.client.memberships.findAll(organizationKey = Some(orgKey), userGuid = Some(request.user.guid), role = Some(Role.Admin.key), limit = 1)
     } yield {
-      org match {
+      org.entity.headOption match {
 
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
-        case Some(org: Organization) => {
+        case Some(org: apidoc.models.Organization) => {
           val haveRequests = if (isAdmin.isEmpty) {
             false
           } else {
@@ -48,16 +48,16 @@ object Organizations extends Controller {
 
   def membershipRequests(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
-      org <- request.client.organizations.findByKey(orgKey)
+      org <- request.apidocClient.Organizations.get(key = Some(orgKey))
       requests = request.client.membershipRequests.findAll(organizationKey = Some(orgKey),
                                                            limit = Pagination.DefaultLimit+1,
                                                            offset = page * Pagination.DefaultLimit)
     } yield {
-      org match {
+      org.entity.headOption match {
 
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
-        case Some(org: Organization) => {
+        case Some(org: apidoc.models.Organization) => {
           // TODO: Make sure user is an admin
           // TODO: Why is requests still a Future here?
           val fetchedRequests = Await.result(requests, 1500.millis)
@@ -71,13 +71,13 @@ object Organizations extends Controller {
   }
 
   def requestMembership(orgKey: String) = Authenticated { implicit request =>
-    val org = Await.result(request.client.organizations.findByKey(orgKey), 1500.millis)
-    org match {
+    val org = Await.result(request.apidocClient.Organizations.get(key = Some(orgKey)), 1500.millis)
+    org.entity.headOption match {
 
       case None => Redirect("/").flashing("warning" -> "Organization not found")
 
-      case Some(o: Organization) => {
-        Await.result(request.client.membershipRequests.create(o.guid, request.user.guid, Role.Member.key), 1500.millis)
+      case Some(o: apidoc.models.Organization) => {
+        Await.result(request.client.membershipRequests.create(o.guid.toString, request.user.guid, Role.Member.key), 1500.millis)
         Redirect("/").flashing(
           "success" -> s"We have submitted your membership request to join ${o.name}"
         )
@@ -97,13 +97,13 @@ object Organizations extends Controller {
       },
 
       valid => {
-        Await.result(request.client.organizations.findByName(valid.name), 1500.millis) match {
+        Await.result(request.apidocClient.Organizations.get(name = Some(valid.name)), 1500.millis).entity.headOption match {
           case None => {
-            val org = Await.result(request.client.organizations.create(request.user, valid.name), 1500.millis)
+            val org = Await.result(request.apidocClient.Organizations.post(valid.name), 1500.millis).entity
             Redirect(routes.Organizations.show(org.key))
           }
 
-          case Some(org: Organization) => {
+          case Some(org: apidoc.models.Organization) => {
             val tpl = MainTemplate(user = Some(request.user), title = s"Organization ${org.name} already exists")
             Ok(views.html.organizations.orgExists(tpl, org))
           }

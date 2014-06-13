@@ -92,7 +92,6 @@ ${queryStringEntries}"""
     val pairs = op.pathParameters
       .map { p =>
         require(!p.multiple, "Path parameters cannot be lists.")
-        require(!p.isOption, "Path parameters cannot be optional.")
         p.originalName -> s"(${PathParamHelper.urlEncode(p.datatype)})(${p.name})"
       }
     val tmp: String = pairs.foldLeft(op.path) {

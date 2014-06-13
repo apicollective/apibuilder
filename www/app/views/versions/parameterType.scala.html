@@ -1,4 +1,4 @@
-@(org: client.Apidoc.Organization, service: client.Apidoc.Service, version: String, sd: core.ServiceDescription, paramTypeName: String)
+@(org: apidoc.models.Organization, service: client.Apidoc.Service, version: String, sd: core.ServiceDescription, paramTypeName: String)
 
 @{core.Datatype.findByName(paramTypeName) match {
   case Some(dt: core.Datatype) => datatype(dt)

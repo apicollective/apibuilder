@@ -19,7 +19,7 @@ object Versions extends Controller {
 
   def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
     for {
-      org <- request.client.organizations.findByKey(orgKey)
+      org <- request.apidocClient.Organizations.get(key = Some(orgKey))
       service <- request.client.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
       versions <- request.client.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, limit = 10)
       version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
@@ -34,7 +34,7 @@ object Versions extends Controller {
           val sd = ServiceDescription(v.json.get)
           val tpl = MainTemplate(service.get.name + " " + v.version,
                                  user = Some(request.user),
-                                 org = Some(org.get),
+                                 org = Some(org.entity.head),
                                  service = Some(service.get),
                                  version = Some(v.version),
                                  allServiceVersions = versions.map(_.version),
@@ -65,11 +65,11 @@ object Versions extends Controller {
 
   def create(orgKey: String, version: Option[String]) = Authenticated.async { implicit request =>
     for {
-      org <- request.client.organizations.findByKey(orgKey)
+      org <- request.apidocClient.Organizations.get(key = Some(orgKey))
     } yield {
-      org match {
+      org.entity.headOption match {
         case None => Redirect("/").flashing("warning" -> "Org not found")
-        case Some(o: Organization) => {
+        case Some(o: apidoc.models.Organization) => {
           val tpl = MainTemplate(title = s"${o.name}: Add Service",
                                  user = Some(request.user),
                                  org = Some(o))
@@ -82,15 +82,15 @@ object Versions extends Controller {
 
   def createPost(orgKey: String) = Authenticated.async(parse.multipartFormData) { implicit request =>
     for {
-      orgOption <- request.client.organizations.findByKey(orgKey)
+      orgOption <- request.apidocClient.Organizations.get(key = Some(orgKey))
     } yield {
-      orgOption match {
+      orgOption.entity.headOption match {
 
         case None => {
           Redirect("/").flashing("warning" -> "Org not found")
         }
 
-        case Some(org: Organization) => {
+        case Some(org: apidoc.models.Organization) => {
           val tpl = MainTemplate(title = s"${org.name}: Add Service",
                                  user = Some(request.user),
                                  org = Some(org))

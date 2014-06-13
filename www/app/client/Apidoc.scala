@@ -42,7 +42,6 @@ object Apidoc {
       WS.url(baseUrl + url).withAuth(token, Password, WSAuthScheme.BASIC)
     }
 
-    lazy val organizations = OrganizationsResource(this)
     lazy val memberships = MembershipsResource(this)
     lazy val membershipRequests = MembershipRequestsResource(this)
     lazy val membershipRequestReviews = MembershipRequestReviewsResource(this)
@@ -135,36 +134,6 @@ object Apidoc {
     def findByEmail(email: String): Future[Option[User]] = {
       client.wsUrl("/users").withQueryString("email" -> email).get().map { response =>
         response.json.as[JsArray].value.map { v => v.as[User] }.headOption
-      }
-    }
-
-  }
-
-  case class OrganizationsResource(client: Client) {
-
-    def findByKey(key: String): Future[Option[Organization]] = {
-      client.wsUrl("/organizations").withQueryString("key" -> key).get().map { response =>
-        response.json.as[JsArray].value.map { v => v.as[Organization] }.headOption
-      }
-    }
-
-    def findByName(name: String): Future[Option[Organization]] = {
-      client.wsUrl("/organizations").withQueryString("name" -> name).get().map { response =>
-        response.json.as[JsArray].value.map { v => v.as[Organization] }.headOption
-      }
-    }
-
-    def findAll(userGuid: String, limit: Int = 50, offset: Int = 0): Future[Seq[Organization]] = {
-      client.wsUrl("/organizations").withQueryString("user_guid" -> userGuid, "limit" -> limit.toString, "offset" -> offset.toString).get().map { response =>
-        response.json.as[JsArray].value.map { v => v.as[Organization] }
-      }
-    }
-
-    def create(user: User, name: String): Future[Organization] = {
-      val json = Json.obj("name" -> name)
-
-      client.wsUrl("/organizations").post(json).map { response =>
-        response.json.as[Organization]
       }
     }
 
