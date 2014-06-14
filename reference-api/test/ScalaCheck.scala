@@ -89,6 +89,28 @@ package referenceapi.test.models {
       }
     }
     
+    implicit def arbUserList: org.scalacheck.Arbitrary[UserList] = org.scalacheck.Arbitrary {
+      for {
+        list <- org.scalacheck.Arbitrary(org.scalacheck.Gen.listOf(org.scalacheck.Arbitrary {
+          for {
+            guid <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
+            email <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
+            active <- org.scalacheck.Arbitrary.arbBool.arbitrary
+          } yield {
+            new User(
+              guid = guid,
+              email = email,
+              active = active
+            )
+          }
+        }.arbitrary)).arbitrary
+      } yield {
+        new UserList(
+          list = list
+        )
+      }
+    }
+    
     implicit def arbMember: org.scalacheck.Arbitrary[Member] = org.scalacheck.Arbitrary {
       for {
         guid <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary

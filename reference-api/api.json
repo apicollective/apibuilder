@@ -2,6 +2,12 @@
     "base_url": "http://localhost:9000",
     "name": "Reference Api",
     "models": {
+        "user_list": {
+            "fields": [
+                { "name": "users", "type": "[user]" }
+            ]
+        },
+
         "big": {
             "description": "A model with a lot of fields.",
             "fields": [
@@ -28,6 +34,7 @@
                 { "name": "f21", "type": "string" }
             ]
         },
+
         "error": {
             "description": "Models an API error.",
             "fields": [

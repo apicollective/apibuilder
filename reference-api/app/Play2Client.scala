@@ -35,6 +35,9 @@ package referenceapi.models {
     email: String,
     active: Boolean
   )
+  case class UserList(
+    list: scala.collection.Seq[User]
+  )
   case class Member(
     guid: java.util.UUID,
     organization: Organization,
@@ -169,6 +172,24 @@ package referenceapi.models {
         ((__ \ "guid").write[java.util.UUID] and
          (__ \ "email").write[String] and
          (__ \ "active").write[Boolean])(unlift(User.unapply))
+      }
+    
+    implicit val readsUserList: play.api.libs.json.Reads[UserList] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        (__ \ "list").readNullable[scala.collection.Seq[User]].map { x =>
+        x.getOrElse(Nil)
+      }.map { x =>
+          new UserList(list = x)
+        }
+      }
+    
+    implicit val writesUserList: play.api.libs.json.Writes[UserList] =
+      new play.api.libs.json.Writes[UserList] {
+        def writes(x: UserList) = play.api.libs.json.Json.obj(
+          "list" -> play.api.libs.json.Json.toJson(x.list)
+        )
       }
     
     implicit val readsMember: play.api.libs.json.Reads[Member] =
