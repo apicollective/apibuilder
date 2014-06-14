@@ -32,6 +32,11 @@ package referenceapi.models {
     user: User,
     role: String
   )
+  case class MemberForm(
+    organization: java.util.UUID,
+    user: java.util.UUID,
+    role: String
+  )
   case class Organization(
     guid: java.util.UUID,
     name: String
@@ -46,11 +51,6 @@ package referenceapi.models {
   )
   case class UserList(
     users: scala.collection.Seq[User]
-  )
-  case class MemberForm(
-    organization: java.util.UUID,
-    user: java.util.UUID,
-    role: String
   )
 }
 
@@ -168,6 +168,24 @@ package referenceapi.models {
          (__ \ "role").write[String])(unlift(Member.unapply))
       }
     
+    implicit def readsMemberForm: play.api.libs.json.Reads[MemberForm] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "organization").read[java.util.UUID] and
+         (__ \ "user").read[java.util.UUID] and
+         (__ \ "role").read[String])(MemberForm.apply _)
+      }
+    
+    implicit def writesMemberForm: play.api.libs.json.Writes[MemberForm] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "organization").write[java.util.UUID] and
+         (__ \ "user").write[java.util.UUID] and
+         (__ \ "role").write[String])(unlift(MemberForm.unapply))
+      }
+    
     implicit def readsOrganization: play.api.libs.json.Reads[Organization] =
       {
         import play.api.libs.json._
@@ -234,24 +252,6 @@ package referenceapi.models {
         def writes(x: UserList) = play.api.libs.json.Json.obj(
           "users" -> play.api.libs.json.Json.toJson(x.users)
         )
-      }
-    
-    implicit val readsMemberForm: play.api.libs.json.Reads[MemberForm] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "organization").read[java.util.UUID] and
-         (__ \ "user").read[java.util.UUID] and
-         (__ \ "role").read[String])(MemberForm.apply _)
-      }
-    
-    implicit val writesMemberForm: play.api.libs.json.Writes[MemberForm] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "organization").write[java.util.UUID] and
-         (__ \ "user").write[java.util.UUID] and
-         (__ \ "role").write[String])(unlift(MemberForm.unapply))
       }
   }
 }
@@ -337,8 +337,8 @@ package referenceapi {
       
       def get(
         guid: scala.Option[java.util.UUID] = None,
-        organizationGuid: scala.Option[java.util.UUID] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
+        organization: scala.Option[java.util.UUID] = None,
+        user: scala.Option[java.util.UUID] = None,
         role: scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Member]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
@@ -349,15 +349,15 @@ package referenceapi {
             }
           )(x)
         }
-        queryBuilder ++= organizationGuid.map { x =>
-          "organization_guid" -> (
+        queryBuilder ++= organization.map { x =>
+          "organization" -> (
             { x: java.util.UUID =>
               x.toString
             }
           )(x)
         }
-        queryBuilder ++= userGuid.map { x =>
-          "user_guid" -> (
+        queryBuilder ++= user.map { x =>
+          "user" -> (
             { x: java.util.UUID =>
               x.toString
             }

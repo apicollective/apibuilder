@@ -84,6 +84,13 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
       }
     }
 
+    "should default to creating active users" in prop { (userForm: UserForm) =>
+      withClient { implicit client =>
+        import client._
+        Users.post(_body = userForm).entity.active must beTrue
+      }
+    }
+
     "should create active users" in prop { (userForm: UserForm) =>
       withClient { implicit client =>
         import client._
@@ -168,10 +175,10 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
 
         Members.get(guid = member.guid).entity must equalTo(List(member))
 
-        Members.get(organizationGuid = member.organization.guid)
+        Members.get(organization = member.organization.guid)
           .entity must equalTo(List(member))
 
-        Members.get(userGuid = member.user.guid)
+        Members.get(user = member.user.guid)
           .entity must equalTo(List(member))
 
         Members.get(role = member.role).entity must equalTo(List(member))

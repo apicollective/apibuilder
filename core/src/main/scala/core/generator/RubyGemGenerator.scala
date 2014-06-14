@@ -120,14 +120,11 @@ case class RubyGemGenerator(service: ServiceDescription) {
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
 
-      val hasQueryParams = (!GeneratorUtil.isJsonDocumentMethod(op.method) && !otherParams.isEmpty)
-      if (hasQueryParams) {
-        paramStrings.append("incoming={}")
+      if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
+        paramStrings.append("body")
       }
 
-      if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        paramStrings.append("hash")
-      }
+      paramStrings.append("incoming={}")
 
       sb.append("")
       op.description.map { desc =>
@@ -145,29 +142,32 @@ case class RubyGemGenerator(service: ServiceDescription) {
         sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
       }
 
-      if (hasQueryParams) {
-        val paramBuilder = ListBuffer[String]()
+      val paramBuilder = ListBuffer[String]()
 
-        otherParams.foreach { param =>
-          paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
-        }
-
-        sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
-        sb.append("        query = {")
-        sb.append("          " + paramBuilder.mkString(",\n          "))
-        sb.append("        }.delete_if { |k, v| v.nil? }")
+      otherParams.foreach { param =>
+        paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
       }
+
+      sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
+      sb.append("        query = {")
+      sb.append("          " + paramBuilder.mkString(",\n          "))
+      sb.append("        }.delete_if { |k, v| v.nil? }")
 
       val requestBuilder = new StringBuilder()
       requestBuilder.append("@client.request(\"" + rubyPath + "\")")
 
-      if (hasQueryParams) {
-        requestBuilder.append(".with_query(query)")
-      }
+      requestBuilder.append(".with_query(query)")
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
-        sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
-        requestBuilder.append(".with_json(hash.to_json)")
+        val body = op.body.get
+        val modelName = Text.underscoreToInitCap(body.model.name)
+        val fullModelName = s"$moduleName::Models::$modelName"
+        if (body.multiple) {
+          sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('body', body, $fullModelName)")
+        } else {
+          sb.append(s"        HttpClient::Preconditions.assert_class('body', body, $fullModelName)")
+        }
+        requestBuilder.append(".with_json(body.to_json)")
       }
       requestBuilder.append(s".${op.method.toLowerCase}")
 
@@ -217,6 +217,42 @@ case class RubyGemGenerator(service: ServiceDescription) {
     }
 
     sb.append("      end\n")
+
+    model.fields.foreach { f =>
+      f.fieldtype match {
+        case PrimitiveFieldType(Datatype.BooleanType) => {
+          sb.append(s"""
+      def ${f.name}?
+        ${f.name}
+      end
+""")
+        }
+        case _ =>
+      }
+    }
+
+    sb.append("""
+      def ==(obj)
+""" + model.fields.map { f =>
+  val name = f.name
+s"""           $name == obj.$name"""
+}.mkString(" &&\n") + """
+      end
+""")
+
+    sb.append("""
+      def to_json
+        {""" + model.fields.map { f =>
+          if (f.isPrimitive) {
+s"""          "${f.name}" => ${f.name}"""
+          } else {
+s"""          "${f.name}" => ${f.name}.to_json"""
+          }
+        }.mkString("\n", ",\n", "") + """
+        }.to_json
+      end
+""")
+
     sb.append("    end")
 
     sb.mkString("\n")

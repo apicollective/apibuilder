@@ -135,7 +135,13 @@ case class Field(name: String,
                  default: Option[String] = None,
                  example: Option[String] = None,
                  minimum: Option[Long] = None,
-                 maximum: Option[Long] = None)
+                 maximum: Option[Long] = None) {
+
+  def isPrimitive = fieldtype match {
+    case PrimitiveFieldType(_) => true
+    case _ => false
+  }
+}
 
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType

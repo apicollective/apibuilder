@@ -161,8 +161,8 @@
                     "method": "GET",
                     "query": [
                         { "name": "guid", "type": "uuid", "required": false },
-                        { "name": "organization_guid", "type": "uuid", "required": false },
-                        { "name": "user_guid", "type": "uuid", "required": false },
+                        { "name": "organization", "type": "uuid", "required": false },
+                        { "name": "user", "type": "uuid", "required": false },
                         { "name": "role", "type": "string", "required": false }
                     ],
                     "responses": {

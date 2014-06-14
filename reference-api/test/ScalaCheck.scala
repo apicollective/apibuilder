@@ -101,6 +101,20 @@ package referenceapi.test.models {
       }
     }
     
+    implicit def arbMemberForm: org.scalacheck.Arbitrary[MemberForm] = org.scalacheck.Arbitrary {
+      for {
+        organization <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
+        user <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
+        role <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
+      } yield {
+        new MemberForm(
+          organization = organization,
+          user = user,
+          role = role
+        )
+      }
+    }
+    
     implicit def arbOrganization: org.scalacheck.Arbitrary[Organization] = org.scalacheck.Arbitrary {
       for {
         guid <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
@@ -155,20 +169,6 @@ package referenceapi.test.models {
       } yield {
         new UserList(
           users = users
-        )
-      }
-    }
-    
-    implicit def arbMemberForm: org.scalacheck.Arbitrary[MemberForm] = org.scalacheck.Arbitrary {
-      for {
-        organization <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
-        user <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
-        role <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
-      } yield {
-        new MemberForm(
-          organization = organization,
-          user = user,
-          role = role
         )
       }
     }
