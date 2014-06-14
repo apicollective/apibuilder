@@ -55,20 +55,13 @@ object Members extends Controller {
   def post() = Action(parse.json) { implicit request =>
     val json = request.body
     import play.api.libs.functional.syntax._
-    val reads: Reads[(java.util.UUID,java.util.UUID,String)] = {
-      ((__ \ "organization").read[UUID] and
-        (__ \ "user").read[UUID] and
-        (__ \ "role").read[String]) { (oGuid, uGuid, role) =>
-          (oGuid, uGuid, role)
-        }
-      }
-    json.validate(reads) match {
+    json.validate[MemberForm] match {
       case JsError(_) => BadRequest {
         Json.obj(
           "code" -> "invalid_json",
           "msg" -> s"unable to parse Member from $json")
       }
-      case JsSuccess((oGuid, uGuid, role), _) => {
+      case JsSuccess(form, _) => {
         val member = DB.withConnection { implicit c =>
           val guid = UUID.randomUUID
           SQL("""
@@ -76,9 +69,9 @@ object Members extends Controller {
           values ({guid}, {organization}, {user}, {role})
           """).on(
             'guid -> guid,
-            'organization -> oGuid,
-            'user -> uGuid,
-            'role -> role
+            'organization -> form.organization,
+            'user -> form.user,
+            'role -> form.role
           ).execute()
           SQL("""
           select * from members
