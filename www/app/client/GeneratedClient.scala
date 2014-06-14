@@ -1,333 +1,52 @@
 package apidoc.models {
-  /**
-   * A user is a top level person interacting with the api doc server.
-   */
-  trait User {
-    /**
-     * Internal unique identifier for this user.
-     */
-    def guid: java.util.UUID
-    
-    def email: String
-    
-    def name: String
-    
-    /**
-     * Image avatar for this user
-     */
-    def imageUrl: scala.Option[String]
-  }
-
-  case class UserImpl(
+  case class User(
     guid: java.util.UUID,
     email: String,
     name: String,
     imageUrl: scala.Option[String] = None
-  ) extends User
-
-  object User {
-    def apply(guid: java.util.UUID, email: String, name: String, imageUrl: scala.Option[String]): UserImpl = {
-      new UserImpl(guid,email,name,imageUrl)
-    }
-  
-    def unapply(x: User) = {
-      Some(x.guid, x.email, x.name, x.imageUrl)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: User): UserImpl = x match {
-      case impl: UserImpl => impl
-      case _ => new UserImpl(x.guid,x.email,x.name,x.imageUrl)
-    }
-  }
-  /**
-   * An organization is used to group a set of services together.
-   */
-  trait Organization {
-    /**
-     * Internal unique identifier for this organization.
-     */
-    def guid: java.util.UUID
-    
-    /**
-     * Used as a unique key in the URL path. Key is automatically derived from the
-     * organization name.
-     */
-    def key: String
-    
-    /**
-     * The name of this organization.
-     */
-    def name: String
-  }
-
-  case class OrganizationImpl(
+  )
+  case class Organization(
     guid: java.util.UUID,
     key: String,
     name: String
-  ) extends Organization
-
-  object Organization {
-    def apply(guid: java.util.UUID, key: String, name: String): OrganizationImpl = {
-      new OrganizationImpl(guid,key,name)
-    }
-  
-    def unapply(x: Organization) = {
-      Some(x.guid, x.key, x.name)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Organization): OrganizationImpl = x match {
-      case impl: OrganizationImpl => impl
-      case _ => new OrganizationImpl(x.guid,x.key,x.name)
-    }
-  }
-  /**
-   * A membership represents a user in a specific role to an organization.
-   * Memberships cannot be created directly. Instead you first create a membership
-   * request, then that request is either accepted or declined.
-   */
-  trait Membership {
-    /**
-     * Internal unique identifier for this membership.
-     */
-    def guid: java.util.UUID
-    
-    def user: User
-    
-    def organization: Organization
-    
-    /**
-     * The role this user plays for this organization. Typically member or admin.
-     */
-    def role: String
-  }
-
-  case class MembershipImpl(
+  )
+  case class Membership(
     guid: java.util.UUID,
     user: User,
     organization: Organization,
     role: String
-  ) extends Membership
-
-  object Membership {
-    def apply(guid: java.util.UUID, user: User, organization: Organization, role: String): MembershipImpl = {
-      new MembershipImpl(guid,user,organization,role)
-    }
-  
-    def unapply(x: Membership) = {
-      Some(x.guid, x.user, x.organization, x.role)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Membership): MembershipImpl = x match {
-      case impl: MembershipImpl => impl
-      case _ => new MembershipImpl(x.guid,x.user,x.organization,x.role)
-    }
-  }
-  /**
-   * A membership request represents a user requesting to join an organization with a
-   * specificed role (e.g. as a member or an admin). Membership requests can be
-   * reviewed by any current admin of the organization who can either accept or
-   * decline the request.
-   */
-  trait MembershipRequest {
-    /**
-     * Internal unique identifier for this membership request.
-     */
-    def guid: java.util.UUID
-    
-    def user: User
-    
-    def organization: Organization
-    
-    /**
-     * The requested role for membership to this organization. Typically member or
-     * admin.
-     */
-    def role: String
-  }
-
-  case class MembershipRequestImpl(
+  )
+  case class MembershipRequest(
     guid: java.util.UUID,
     user: User,
     organization: Organization,
     role: String
-  ) extends MembershipRequest
-
-  object MembershipRequest {
-    def apply(guid: java.util.UUID, user: User, organization: Organization, role: String): MembershipRequestImpl = {
-      new MembershipRequestImpl(guid,user,organization,role)
-    }
-  
-    def unapply(x: MembershipRequest) = {
-      Some(x.guid, x.user, x.organization, x.role)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: MembershipRequest): MembershipRequestImpl = x match {
-      case impl: MembershipRequestImpl => impl
-      case _ => new MembershipRequestImpl(x.guid,x.user,x.organization,x.role)
-    }
-  }
-  /**
-   * A service has a name and multiple versions of an API (Interface).
-   */
-  trait Service {
-    /**
-     * Internal unique identifier for this service.
-     */
-    def guid: java.util.UUID
-    
-    /**
-     * The unique name for this service.
-     */
-    def name: String
-    
-    /**
-     * Used as a unique key in the URL path. Key is automatically derived from the
-     * service name.
-     */
-    def key: String
-    
-    def description: scala.Option[String]
-  }
-
-  case class ServiceImpl(
+  )
+  case class Service(
     guid: java.util.UUID,
     name: String,
     key: String,
     description: scala.Option[String] = None
-  ) extends Service
-
-  object Service {
-    def apply(guid: java.util.UUID, name: String, key: String, description: scala.Option[String]): ServiceImpl = {
-      new ServiceImpl(guid,name,key,description)
-    }
-  
-    def unapply(x: Service) = {
-      Some(x.guid, x.name, x.key, x.description)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Service): ServiceImpl = x match {
-      case impl: ServiceImpl => impl
-      case _ => new ServiceImpl(x.guid,x.name,x.key,x.description)
-    }
-  }
-  /**
-   * Represents a unique version of the service.
-   */
-  trait Version {
-    /**
-     * Internal unique identifier for this version.
-     */
-    def guid: java.util.UUID
-    
-    /**
-     * The tag for this version. Can be anything, but if semver style version number is
-     * used, we automatically correctly sort by version number to find latest.
-     * Otherwise latest version is considered to be the most recently created.
-     */
-    def version: String
-    
-    /**
-     * JSON description of the service.
-     */
-    def json: String
-  }
-
-  case class VersionImpl(
+  )
+  case class Version(
     guid: java.util.UUID,
     version: String,
     json: String
-  ) extends Version
-
-  object Version {
-    def apply(guid: java.util.UUID, version: String, json: String): VersionImpl = {
-      new VersionImpl(guid,version,json)
-    }
-  
-    def unapply(x: Version) = {
-      Some(x.guid, x.version, x.json)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Version): VersionImpl = x match {
-      case impl: VersionImpl => impl
-      case _ => new VersionImpl(x.guid,x.version,x.json)
-    }
-  }
-  /**
-   * Generated source code.
-   */
-  trait Code {
-    def version: Version
-    
-    /**
-     * The target platform.
-     */
-    def target: String
-    
-    /**
-     * The actual source code.
-     */
-    def source: String
-  }
-
-  case class CodeImpl(
+  )
+  case class Code(
     version: Version,
     target: String,
     source: String
-  ) extends Code
-
-  object Code {
-    def apply(version: Version, target: String, source: String): CodeImpl = {
-      new CodeImpl(version,target,source)
-    }
-  
-    def unapply(x: Code) = {
-      Some(x.version, x.target, x.source)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Code): CodeImpl = x match {
-      case impl: CodeImpl => impl
-      case _ => new CodeImpl(x.version,x.target,x.source)
-    }
-  }
-  trait Error {
-    /**
-     * Machine readable code for this specific error message
-     */
-    def code: String
-    
-    /**
-     * Description of the error
-     */
-    def message: String
-  }
-
-  case class ErrorImpl(
+  )
+  case class CodeError(
+    code: String,
+    message: String,
+    validTargets: scala.collection.immutable.Seq[String] = Nil
+  )
+  case class Error(
     code: String,
     message: String
-  ) extends Error
-
-  object Error {
-    def apply(code: String, message: String): ErrorImpl = {
-      new ErrorImpl(code,message)
-    }
-  
-    def unapply(x: Error) = {
-      Some(x.code, x.message)
-    }
-  
-    import scala.language.implicitConversions
-    implicit def toImpl(x: Error): ErrorImpl = x match {
-      case impl: ErrorImpl => impl
-      case _ => new ErrorImpl(x.code,x.message)
-    }
-  }
+  )
 }
 
 package apidoc.models {
@@ -361,7 +80,7 @@ package apidoc.models {
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "email").read[String] and
          (__ \ "name").read[String] and
-         (__ \ "image_url").readNullable[String])(UserImpl.apply _)
+         (__ \ "image_url").readNullable[String])(User.apply _)
       }
     
     implicit val writesUser: play.api.libs.json.Writes[User] =
@@ -380,7 +99,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "key").read[String] and
-         (__ \ "name").read[String])(OrganizationImpl.apply _)
+         (__ \ "name").read[String])(Organization.apply _)
       }
     
     implicit val writesOrganization: play.api.libs.json.Writes[Organization] =
@@ -399,7 +118,7 @@ package apidoc.models {
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "user").read[User] and
          (__ \ "organization").read[Organization] and
-         (__ \ "role").read[String])(MembershipImpl.apply _)
+         (__ \ "role").read[String])(Membership.apply _)
       }
     
     implicit val writesMembership: play.api.libs.json.Writes[Membership] =
@@ -419,7 +138,7 @@ package apidoc.models {
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "user").read[User] and
          (__ \ "organization").read[Organization] and
-         (__ \ "role").read[String])(MembershipRequestImpl.apply _)
+         (__ \ "role").read[String])(MembershipRequest.apply _)
       }
     
     implicit val writesMembershipRequest: play.api.libs.json.Writes[MembershipRequest] =
@@ -439,7 +158,7 @@ package apidoc.models {
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "name").read[String] and
          (__ \ "key").read[String] and
-         (__ \ "description").readNullable[String])(ServiceImpl.apply _)
+         (__ \ "description").readNullable[String])(Service.apply _)
       }
     
     implicit val writesService: play.api.libs.json.Writes[Service] =
@@ -458,7 +177,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "version").read[String] and
-         (__ \ "json").read[String])(VersionImpl.apply _)
+         (__ \ "json").read[String])(Version.apply _)
       }
     
     implicit val writesVersion: play.api.libs.json.Writes[Version] =
@@ -476,7 +195,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "version").read[Version] and
          (__ \ "target").read[String] and
-         (__ \ "source").read[String])(CodeImpl.apply _)
+         (__ \ "source").read[String])(Code.apply _)
       }
     
     implicit val writesCode: play.api.libs.json.Writes[Code] =
@@ -488,12 +207,32 @@ package apidoc.models {
          (__ \ "source").write[String])(unlift(Code.unapply))
       }
     
+    implicit val readsCodeError: play.api.libs.json.Reads[CodeError] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "code").read[String] and
+         (__ \ "message").read[String] and
+         (__ \ "valid_targets").readNullable[scala.collection.immutable.Seq[String]].map { x =>
+          x.getOrElse(Nil)
+        })(CodeError.apply _)
+      }
+    
+    implicit val writesCodeError: play.api.libs.json.Writes[CodeError] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "code").write[String] and
+         (__ \ "message").write[String] and
+         (__ \ "valid_targets").write[scala.collection.immutable.Seq[String]])(unlift(CodeError.unapply))
+      }
+    
     implicit val readsError: play.api.libs.json.Reads[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
         ((__ \ "code").read[String] and
-         (__ \ "message").read[String])(ErrorImpl.apply _)
+         (__ \ "message").read[String])(Error.apply _)
       }
     
     implicit val writesError: play.api.libs.json.Writes[Error] =
@@ -608,6 +347,7 @@ package apidoc {
           java.net.URLEncoder.encode(s, "UTF-8")
         })(target)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Code], 200)
+          case r if r.status == 404 => throw new FailedResponse(r.json.as[CodeError], 404)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

@@ -11,10 +11,20 @@ import db.VersionDao
 object Code extends Controller {
   def getByVersionAndTarget(versionGuid: String, target: String) = Action { request =>
     generator(target) match {
-      case None => NotFound(s"No generator exists for target[$target]")
+      case None => NotFound(
+        Json.obj(
+          "code" -> "invalid_target",
+          "message" -> s"'$target' is not a valid target.",
+          "data" -> Json.obj(
+            "valid_targets "-> JsArray(
+              Target.implemented.map(JsString(_))))))
+
       case Some(f) => {
         versionDetails(versionGuid) match {
-          case None => NotFound(s"No service exists for version[$versionGuid]")
+          case None => NotFound(
+            Json.obj(
+              "code" -> "invalid_version",
+              "message" -> s"No service exists for version[$versionGuid]"))
           case Some(details) => {
             val code: models.Code = f(details)
             Ok(Json.toJson(code))
