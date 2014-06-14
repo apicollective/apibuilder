@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  requests: lib.PaginatedCollection[client.Apidoc.MembershipRequest])(implicit flash: Flash)
+  requests: lib.PaginatedCollection[apidoc.models.MembershipRequest])(implicit flash: Flash)
 
 @main(tpl) {
 
@@ -12,12 +12,12 @@
         @requests.items.map { request =>
          <tr>
            <td>
-               @helper.form(action = routes.MembershipRequestReviews.accept(tpl.org.get.key, request.guid)) {
+               @helper.form(action = routes.MembershipRequestReviews.accept(tpl.org.get.key, request.guid.toString)) {
                  <button class="btn btn-primary" type="submit">Accept</button>
                }
            </td>
            <td>
-               @helper.form(action = routes.MembershipRequestReviews.decline(tpl.org.get.key, request.guid)) {
+               @helper.form(action = routes.MembershipRequestReviews.decline(tpl.org.get.key, request.guid.toString)) {
                  <button class="btn btn-primary" type="submit">Decline</button>
                }
            </td>
