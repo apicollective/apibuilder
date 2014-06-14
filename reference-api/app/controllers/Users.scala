@@ -91,27 +91,29 @@ object Users extends Controller {
 
   def patchByGuid(guid: String) = Action(parse.json) { request =>
     val json = request.body
-    json.validate[User.Patch] match {
-      case JsSuccess(patch, _) => {
+    json.validate[Seq[User.Patch]] match {
+      case JsSuccess(patches, _) => {
         val patched = DB.withTransaction { implicit c =>
           val user = SQL("""
-            select * from users where guid = {guid}
-            """).on('guid -> guid).as(rowParser.single)
+          select * from users where guid = {guid}
+          """).on('guid -> guid).as(rowParser.single)
 
-          val tmp = patch(user)
-
-          SQL("""
-          update users
-          set email = {email},
-              active = {active}
-          where guid = {guid}
-          """).on(
-            'guid -> guid,
-            'email -> tmp.email,
-            'active -> tmp.active
-          ).execute()
-          tmp
+          patches.foldLeft(user) { case (user, patch) =>
+            val tmp = patch.copy(guid = None)(user)
+            SQL("""
+            update users
+            set email = {email},
+                active = {active}
+            where guid = {guid}
+            """).on(
+              'guid -> guid,
+              'email -> tmp.email,
+              'active -> tmp.active
+            ).execute()
+            tmp
+          }
         }
+
         Ok(Json.toJson(patched))
       }
       case JsError(_) => {

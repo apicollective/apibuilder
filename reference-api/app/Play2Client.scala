@@ -979,7 +979,7 @@ package referenceapi {
       
       def patchByGuid(
         guid: java.util.UUID,
-        _body: User.Patch
+        _body: scala.collection.Seq[User.Patch]
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
         val payload = play.api.libs.json.Json.toJson(_body)
         val queryBuilder = List.newBuilder[(String, String)]

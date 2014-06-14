@@ -105,7 +105,7 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
         }
         case ScalaModelBodyType(model) => {
           val name = if (method == "PATCH") {
-            model.name + ".Patch"
+            s"scala.collection.Seq[${model.name}.Patch]"
           } else {
             model.name
           }

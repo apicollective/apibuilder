@@ -120,16 +120,15 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
       }
     }
 
-    "should patch by guid" in prop { (userForm: UserForm, patch: User.Patch) =>
+    "should patch by guid" in prop { (userForm: UserForm, patches: Seq[User.Patch]) =>
       withClient { implicit client =>
         import client._
 
         val user = Users.post(_body = userForm).entity
-        val patched = {
-          Users.patchByGuid(user.guid, patch.copy(guid = user.guid))
-            .entity
-        }
-        patch.copy(guid = None)(user) must equalTo(patched)
+        val patched = Users.patchByGuid(user.guid, patches).entity
+        patches.foldLeft(user) { case (user, patch) =>
+          patch.copy(guid = None)(user)
+        } must equalTo(patched)
         Users.get(
           guid = user.guid,
           active = patched.active).entity.head must equalTo(patched)
