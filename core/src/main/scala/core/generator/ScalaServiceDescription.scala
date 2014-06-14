@@ -111,7 +111,7 @@ class ScalaResponse(response: Response) {
   def datatype = {
     val scalaName: String = underscoreToInitCap(response.datatype)
     if (response.multiple) {
-      s"scala.collection.immutable.Seq[${scalaName}]"
+      s"scala.collection.Seq[${scalaName}]"
     } else {
       scalaName
     }
@@ -235,7 +235,7 @@ object ScalaDataType {
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
   case object ScalaMoneyIso4217Type extends ScalaDataType("Money")
 
-  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.Seq[${inner.name}]")
+  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaModelType(model: ScalaModel) extends ScalaDataType(model.name)
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
