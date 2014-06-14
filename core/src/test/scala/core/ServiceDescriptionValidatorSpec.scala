@@ -169,4 +169,241 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     guid.paramtype should be(PrimitiveParameterType(Datatype.StringType)) // TODO: Should we look up the field and infer UUID type?
   }
 
+  it("fails for GET operations with bodies") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "uuid" }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:guid",
+              "body": "user"
+            }
+          ]
+        }
+      ]
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("Operation[user#GET /users/:guid: cannot define a body with method GET")
+  }
+
+  it("fails for DELETE operations with bodies") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "uuid" }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "DELETE",
+              "path": "/:guid",
+              "body": "user"
+            }
+          ]
+        }
+      ]
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("Operation[user#DELETE /users/:guid: cannot define a body with method DELETE")
+  }
+
+  it("succeeds for PATCH operations without bodies") {
+    ServiceDescriptionValidator(s"""
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "uuid" }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "PATCH",
+              "path": "/:guid"
+            }
+          ]
+        }
+      ]
+    }
+    """).errors.mkString("") should be("")
+  }
+
+  it("fails for PATCH operations with bodies") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "uuid" }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "PATCH",
+              "path": "/:guid",
+              "body": "user"
+            }
+          ]
+        }
+      ]
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("Operation[user#PATCH /users/:guid: cannot define a body with method PATCH. Only the default is allowed.")
+  }
+
+  it("succeeds for POST operations with legal bodies") {
+    Seq("user", "unit", "file").foreach { bodyType =>
+      ServiceDescriptionValidator(s"""
+      {
+        "base_url": "http://localhost:9000",
+        "name": "Api Doc",
+        "models": {
+          "user": {
+            "fields": [
+              { "name": "guid", "type": "uuid" }
+            ]
+          }
+        },
+        "resources": [
+          {
+            "model": "user",
+            "operations": [
+              {
+                "method": "POST",
+                "path": "/:guid",
+                "body": "$bodyType"
+              }
+            ]
+          }
+        ]
+      }
+      """).errors.mkString("") should be("")
+    }
+  }
+
+  it("fails for POST operations with illegal bodies") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "uuid" }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "POST",
+              "path": "/:guid",
+              "body": "foo"
+            }
+          ]
+        }
+      ]
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("Operation[user#POST /users/:guid: has illegal body type: foo")
+  }
+
+  it("succeeds for PUT operations with legal bodies") {
+    Seq("user", "unit", "file").foreach { bodyType =>
+      ServiceDescriptionValidator(s"""
+      {
+        "base_url": "http://localhost:9000",
+        "name": "Api Doc",
+        "models": {
+          "user": {
+            "fields": [
+              { "name": "guid", "type": "uuid" }
+            ]
+          }
+        },
+        "resources": [
+          {
+            "model": "user",
+            "operations": [
+              {
+                "method": "PUT",
+                "path": "/:guid",
+                "body": "$bodyType"
+              }
+            ]
+          }
+        ]
+      }
+      """).errors.mkString("") should be("")
+    }
+  }
+
+  it("fails for PUT operations with illegal bodies") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "uuid" }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "model": "user",
+          "operations": [
+            {
+              "method": "PUT",
+              "path": "/:guid",
+              "body": "bar"
+            }
+          ]
+        }
+      ]
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("Operation[user#PUT /users/:guid: has illegal body type: bar")
+  }
+
 }
