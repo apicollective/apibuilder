@@ -41,7 +41,7 @@ package apidoc.models {
   case class CodeError(
     code: String,
     message: String,
-    validTargets: scala.collection.immutable.Seq[String] = Nil
+    validTargets: scala.collection.Seq[String] = Nil
   )
   case class Error(
     code: String,
@@ -213,7 +213,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "code").read[String] and
          (__ \ "message").read[String] and
-         (__ \ "valid_targets").readNullable[scala.collection.immutable.Seq[String]].map { x =>
+         (__ \ "valid_targets").readNullable[scala.collection.Seq[String]].map { x =>
           x.getOrElse(Nil)
         })(CodeError.apply _)
       }
@@ -224,7 +224,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "code").write[String] and
          (__ \ "message").write[String] and
-         (__ \ "valid_targets").write[scala.collection.immutable.Seq[String]])(unlift(CodeError.unapply))
+         (__ \ "valid_targets").write[scala.collection.Seq[String]])(unlift(CodeError.unapply))
       }
     
     implicit val readsError: play.api.libs.json.Reads[Error] =
@@ -364,7 +364,7 @@ package apidoc {
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[MembershipRequest]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[MembershipRequest]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= organizationGuid.map { x =>
           "organization_guid" -> (
@@ -410,7 +410,7 @@ package apidoc {
         }
         
         GET(s"/membership_requests", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[MembershipRequest]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[MembershipRequest]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -431,7 +431,7 @@ package apidoc {
         
         POST(s"/membership_requests", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[MembershipRequest], 201)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -452,7 +452,7 @@ package apidoc {
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}/accept", payload).map {
           case r if r.status == 204 => new ResponseImpl((), 204)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -473,7 +473,7 @@ package apidoc {
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}/decline", payload).map {
           case r if r.status == 204 => new ResponseImpl((), 204)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -490,7 +490,7 @@ package apidoc {
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[Membership]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Membership]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= organizationGuid.map { x =>
           "organization_guid" -> (
@@ -536,7 +536,7 @@ package apidoc {
         }
         
         GET(s"/memberships", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[Membership]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Membership]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -553,7 +553,7 @@ package apidoc {
         name: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[Organization]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Organization]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= guid.map { x =>
           "guid" -> (
@@ -599,7 +599,7 @@ package apidoc {
         }
         
         GET(s"/organizations", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[Organization]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Organization]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -616,7 +616,7 @@ package apidoc {
         
         POST(s"/organizations", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[Organization], 201)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -647,7 +647,7 @@ package apidoc {
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[Service]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Service]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= name.map { x =>
           "name" -> (
@@ -682,7 +682,7 @@ package apidoc {
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
         })(orgKey)}", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[Service]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Service]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -716,7 +716,7 @@ package apidoc {
         guid: scala.Option[java.util.UUID] = None,
         email: scala.Option[String] = None,
         token: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[User]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[User]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= guid.map { x =>
           "guid" -> (
@@ -741,7 +741,7 @@ package apidoc {
         }
         
         GET(s"/users", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[User]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[User]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -780,7 +780,7 @@ package apidoc {
         
         POST(s"/users", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[User], 201)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -805,7 +805,7 @@ package apidoc {
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[User], 201)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -820,7 +820,7 @@ package apidoc {
         serviceKey: String,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[Version]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Version]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= limit.map { x =>
           "limit" -> (
@@ -844,7 +844,7 @@ package apidoc {
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
         })(serviceKey)}", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[Version]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Version]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
