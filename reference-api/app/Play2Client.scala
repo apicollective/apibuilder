@@ -22,36 +22,264 @@ package referenceapi.models {
     f20: String,
     f21: String
   )
+
+  object Big {
+    case class Patch(
+      f1: scala.Option[String] = None,
+      f2: scala.Option[String] = None,
+      f3: scala.Option[String] = None,
+      f4: scala.Option[String] = None,
+      f5: scala.Option[String] = None,
+      f6: scala.Option[String] = None,
+      f7: scala.Option[String] = None,
+      f8: scala.Option[String] = None,
+      f9: scala.Option[String] = None,
+      f10: scala.Option[String] = None,
+      f11: scala.Option[String] = None,
+      f12: scala.Option[String] = None,
+      f13: scala.Option[String] = None,
+      f14: scala.Option[String] = None,
+      f15: scala.Option[String] = None,
+      f16: scala.Option[String] = None,
+      f17: scala.Option[String] = None,
+      f18: scala.Option[String] = None,
+      f19: scala.Option[String] = None,
+      f20: scala.Option[String] = None,
+      f21: scala.Option[String] = None
+    ) {
+    
+      def f1(value: String): Patch = copy(f1 = Option(value))
+      
+      def f2(value: String): Patch = copy(f2 = Option(value))
+      
+      def f3(value: String): Patch = copy(f3 = Option(value))
+      
+      def f4(value: String): Patch = copy(f4 = Option(value))
+      
+      def f5(value: String): Patch = copy(f5 = Option(value))
+      
+      def f6(value: String): Patch = copy(f6 = Option(value))
+      
+      def f7(value: String): Patch = copy(f7 = Option(value))
+      
+      def f8(value: String): Patch = copy(f8 = Option(value))
+      
+      def f9(value: String): Patch = copy(f9 = Option(value))
+      
+      def f10(value: String): Patch = copy(f10 = Option(value))
+      
+      def f11(value: String): Patch = copy(f11 = Option(value))
+      
+      def f12(value: String): Patch = copy(f12 = Option(value))
+      
+      def f13(value: String): Patch = copy(f13 = Option(value))
+      
+      def f14(value: String): Patch = copy(f14 = Option(value))
+      
+      def f15(value: String): Patch = copy(f15 = Option(value))
+      
+      def f16(value: String): Patch = copy(f16 = Option(value))
+      
+      def f17(value: String): Patch = copy(f17 = Option(value))
+      
+      def f18(value: String): Patch = copy(f18 = Option(value))
+      
+      def f19(value: String): Patch = copy(f19 = Option(value))
+      
+      def f20(value: String): Patch = copy(f20 = Option(value))
+      
+      def f21(value: String): Patch = copy(f21 = Option(value))
+    
+      def apply(x: Big): Big = x.copy(
+        f1 = f1.getOrElse(x.f1),
+        f2 = f2.getOrElse(x.f2),
+        f3 = f3.getOrElse(x.f3),
+        f4 = f4.getOrElse(x.f4),
+        f5 = f5.getOrElse(x.f5),
+        f6 = f6.getOrElse(x.f6),
+        f7 = f7.getOrElse(x.f7),
+        f8 = f8.getOrElse(x.f8),
+        f9 = f9.getOrElse(x.f9),
+        f10 = f10.getOrElse(x.f10),
+        f11 = f11.getOrElse(x.f11),
+        f12 = f12.getOrElse(x.f12),
+        f13 = f13.getOrElse(x.f13),
+        f14 = f14.getOrElse(x.f14),
+        f15 = f15.getOrElse(x.f15),
+        f16 = f16.getOrElse(x.f16),
+        f17 = f17.getOrElse(x.f17),
+        f18 = f18.getOrElse(x.f18),
+        f19 = f19.getOrElse(x.f19),
+        f20 = f20.getOrElse(x.f20),
+        f21 = f21.getOrElse(x.f21)
+      )
+    }
+  }
+
   case class Error(
     code: String,
     message: String
   )
+
+  object Error {
+    case class Patch(
+      code: scala.Option[String] = None,
+      message: scala.Option[String] = None
+    ) {
+    
+      def code(value: String): Patch = copy(code = Option(value))
+      
+      def message(value: String): Patch = copy(message = Option(value))
+    
+      def apply(x: Error): Error = x.copy(
+        code = code.getOrElse(x.code),
+        message = message.getOrElse(x.message)
+      )
+    }
+  }
+
   case class Member(
     guid: java.util.UUID,
     organization: Organization,
     user: User,
     role: String
   )
+
+  object Member {
+    case class Patch(
+      guid: scala.Option[java.util.UUID] = None,
+      organization: scala.Option[Organization] = None,
+      user: scala.Option[User] = None,
+      role: scala.Option[String] = None
+    ) {
+    
+      def guid(value: java.util.UUID): Patch = copy(guid = Option(value))
+      
+      def organization(value: Organization): Patch = copy(organization = Option(value))
+      
+      def user(value: User): Patch = copy(user = Option(value))
+      
+      def role(value: String): Patch = copy(role = Option(value))
+    
+      def apply(x: Member): Member = x.copy(
+        guid = guid.getOrElse(x.guid),
+        organization = organization.getOrElse(x.organization),
+        user = user.getOrElse(x.user),
+        role = role.getOrElse(x.role)
+      )
+    }
+  }
+
   case class MemberForm(
     organization: java.util.UUID,
     user: java.util.UUID,
     role: String
   )
+
+  object MemberForm {
+    case class Patch(
+      organization: scala.Option[java.util.UUID] = None,
+      user: scala.Option[java.util.UUID] = None,
+      role: scala.Option[String] = None
+    ) {
+    
+      def organization(value: java.util.UUID): Patch = copy(organization = Option(value))
+      
+      def user(value: java.util.UUID): Patch = copy(user = Option(value))
+      
+      def role(value: String): Patch = copy(role = Option(value))
+    
+      def apply(x: MemberForm): MemberForm = x.copy(
+        organization = organization.getOrElse(x.organization),
+        user = user.getOrElse(x.user),
+        role = role.getOrElse(x.role)
+      )
+    }
+  }
+
   case class Organization(
     guid: java.util.UUID,
     name: String
   )
+
+  object Organization {
+    case class Patch(
+      guid: scala.Option[java.util.UUID] = None,
+      name: scala.Option[String] = None
+    ) {
+    
+      def guid(value: java.util.UUID): Patch = copy(guid = Option(value))
+      
+      def name(value: String): Patch = copy(name = Option(value))
+    
+      def apply(x: Organization): Organization = x.copy(
+        guid = guid.getOrElse(x.guid),
+        name = name.getOrElse(x.name)
+      )
+    }
+  }
+
   case class User(
     guid: java.util.UUID,
     email: String,
     active: Boolean
   )
+
+  object User {
+    case class Patch(
+      guid: scala.Option[java.util.UUID] = None,
+      email: scala.Option[String] = None,
+      active: scala.Option[Boolean] = None
+    ) {
+    
+      def guid(value: java.util.UUID): Patch = copy(guid = Option(value))
+      
+      def email(value: String): Patch = copy(email = Option(value))
+      
+      def active(value: Boolean): Patch = copy(active = Option(value))
+    
+      def apply(x: User): User = x.copy(
+        guid = guid.getOrElse(x.guid),
+        email = email.getOrElse(x.email),
+        active = active.getOrElse(x.active)
+      )
+    }
+  }
+
   case class UserForm(
     email: String
   )
+
+  object UserForm {
+    case class Patch(
+      email: scala.Option[String] = None
+    ) {
+    
+      def email(value: String): Patch = copy(email = Option(value))
+    
+      def apply(x: UserForm): UserForm = x.copy(
+        email = email.getOrElse(x.email)
+      )
+    }
+  }
+
   case class UserList(
     users: scala.collection.Seq[User]
   )
+
+  object UserList {
+    case class Patch(
+      users: scala.Option[scala.collection.Seq[User]] = None
+    ) {
+    
+      def users(value: scala.collection.Seq[User]): Patch = copy(users = Option(value))
+    
+      def apply(x: UserList): UserList = x.copy(
+        users = users.getOrElse(x.users)
+      )
+    }
+  }
+
 }
 
 package referenceapi.models {
