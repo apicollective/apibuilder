@@ -141,6 +141,7 @@ $patchWrites
 """
   }
 
+  // TODO refactor so this doesn't use a List Builder and anonymous functions
   def queryParams(op: ScalaOperation): String = {
     val queryStringEntries: String = op.queryParameters.map { p =>
       s"queryBuilder ++= ${QueryStringHelper.queryString(p)}"

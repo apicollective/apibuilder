@@ -3,6 +3,8 @@ package core.generator
 import core._
 import Text._
 
+// TODO refactor generators so they aren't all inline
+
 object ScalaCheckGenerators {
   def apply(json: String): String = {
     val sd = ServiceDescription(json)
