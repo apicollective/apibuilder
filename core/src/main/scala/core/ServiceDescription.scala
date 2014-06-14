@@ -63,7 +63,6 @@ case class Operation(model: Model,
                      method: String,
                      path: String,
                      description: Option[String],
-                     query: Seq[Parameter],
                      parameters: Seq[Parameter],
                      body: Option[Body],
                      responses: Seq[Response]) {
@@ -121,7 +120,6 @@ object Operation {
               method = method,
               path = internal.path,
               description = internal.description,
-              query = query,
               parameters = pathParameters ++ internalParams ++ query,
               body = body,
               responses = internal.responses.map { Response(_) })
@@ -436,10 +434,9 @@ object Body {
   def apply(models: Seq[Model], resourceModel: Model, internal: InternalBody): Body = {
     val multiple = internal.multiple
     def fail = sys.error(s"body must name a type")
-    val model = internal.datatype.fold(fail) { dt =>
-      models.find(_.name == dt).getOrElse {
-        sys.error(s"Named model[$dt] not found")
-      }
+    val dt = internal.datatype
+    val model = models.find(_.name == dt).getOrElse {
+      sys.error(s"Named model[$dt] not found")
     }
     new Body(model, multiple, false)
   }

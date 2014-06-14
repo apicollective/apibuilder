@@ -71,6 +71,14 @@
                 { "name": "user", "type": "user" },
                 { "name": "role", "type": "string" }
             ]
+        },
+
+        "member_form": {
+            "fields": [
+                { "name": "organization", "type": "uuid" },
+                { "name": "user", "type": "uuid" },
+                { "name": "role", "type": "string" }
+            ]
         }
     },
 
@@ -109,6 +117,9 @@
             "operations": [
                 {
                     "method": "POST",
+                    "query": [
+                        { "name": "active", "type": "boolean", "default": true }
+                    ],
                     "body": "user_form",
                     "responses": {
                         "201": { "type": "user" },
@@ -140,6 +151,7 @@
             "operations": [
                 {
                     "method": "POST",
+                    "body": "member_form",
                     "responses": {
                         "201": { "type": "member" },
                         "409": { "type": "[error]" }

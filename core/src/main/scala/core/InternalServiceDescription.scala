@@ -115,25 +115,23 @@ case class InternalResponse(code: String,
 
 }
 
-case class InternalBody(datatype: Option[String],
+case class InternalBody(datatype: String,
                         multiple: Boolean = false) {
 
-  lazy val datatypeLabel: Option[String] = datatype.map { dt =>
-    if (multiple) {
-      s"[$dt]"
-    } else {
-      dt
-    }
+  lazy val datatypeLabel: String = if (multiple) {
+    s"[$datatype]"
+  } else {
+    datatype
   }
 
 }
 
 object InternalBody {
 
-  def apply(json: JsObject): InternalBody = {
-    val parsedDatatype = (json \ "type").asOpt[String].map(InternalParsedDatatype(_) )
-    new InternalBody(datatype = parsedDatatype.map(_.name),
-                     multiple = parsedDatatype.map(_.multiple).getOrElse(false))
+  def apply(json: JsString): InternalBody = {
+    val parsedDatatype = InternalParsedDatatype(json.value)
+    new InternalBody(datatype = parsedDatatype.name,
+                     multiple = parsedDatatype.multiple)
   }
 
 }
@@ -210,8 +208,7 @@ object InternalOperation {
       }
     }
 
-    val body: Option[InternalBody] = (json \ "body").asOpt[JsObject]
-      .map(InternalBody(_))
+    val body: Option[InternalBody] = (json \ "body").asOpt[JsString].map(InternalBody(_))
 
     val responses: Seq[InternalResponse] = {
       (json \ "responses").asOpt[JsObject] match {

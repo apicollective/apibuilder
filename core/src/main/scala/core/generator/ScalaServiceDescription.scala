@@ -90,17 +90,26 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
 
-  val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
+  lazy val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
 
-  val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+  lazy val body: Option[ScalaBody] = operation.body.map(new ScalaBody(_))
 
-  val responses: List[ScalaResponse] = {
+  lazy val argList: String = {
+    val base = parameters.map(_.definition)
+    ScalaUtil.fieldsToArgList(if (method != "GET") base :+ s"_body: ${body.get.model.name}" else base)
+  }
+
+  lazy val responses: List[ScalaResponse] = {
     operation.responses.toList.map { new ScalaResponse(_) }
   }
 
   lazy val resultType = responses.collectFirst {
     case r if r.isSuccess => r.datatype
   }.getOrElse("Unit")
+}
+
+class ScalaBody(body: Body) {
+  lazy val model = new ScalaModel(body.model)
 }
 
 class ScalaResponse(response: Response) {

@@ -42,19 +42,23 @@ object Users extends Controller {
     Ok(Json.toJson(us))
   }
 
-  def post() = Action(parse.json) { implicit request =>
+  def post(active: Boolean) = Action(parse.json) { implicit request =>
     val json = request.body
-    json.validate[User] match {
-      case JsSuccess(u, _) => {
-        DB.withConnection { implicit c =>
+    json.validate[UserForm] match {
+      case JsSuccess(uf, _) => {
+        val guid = UUID.randomUUID
+        val u: User = DB.withConnection { implicit c =>
           SQL("""
           insert into users(guid, email, active)
           values({guid}, {email}, {active})
           """).on(
-            'guid -> u.guid,
-            'email -> u.email,
-            'active -> u.active
+            'guid -> guid,
+            'email -> uf.email,
+            'active -> active
           ).execute()
+          SQL("""
+          select * from users where guid = {guid}
+          """).on('guid -> guid).as(rowParser.single)
         }
         Created(Json.toJson(u))
       }
@@ -63,7 +67,7 @@ object Users extends Controller {
         BadRequest {
           Json.obj(
             "code" -> "invalid_json",
-            "msg" -> s"unable to parse User from $json"
+            "msg" -> s"unable to parse UserForm from $json"
           )
         }
       }

@@ -66,26 +66,6 @@ s"""package ${ssd.packageName} {
       }
     }
 
-    private def POST(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("POST", requestHolder(path)).post(data))
-    }
-
-    private def GET(path: String, q: Seq[(String, String)])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("GET", requestHolder(path).withQueryString(q:_*)).get())
-    }
-
-    private def PUT(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("PUT", requestHolder(path)).put(data))
-    }
-
-    private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("PATCH", requestHolder(path)).patch(data))
-    }
-
-    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("DELETE", requestHolder(path)).delete())
-    }
-
     trait Response[T] {
       val entity: T
       val status: Int
@@ -118,33 +98,43 @@ ${clientMethods(resources).indent}
   private def clientMethods(resources: Seq[ScalaResource]): String = {
     resources.flatMap(_.operations).map { op =>
       val path: String = Play2Util.pathParams(op)
-      def payload = Play2Util.formParams(op)
+      def payload = "val payload = play.api.libs.json.Json.toJson(_body)"
       val methodCall: String = op.method match {
         case "GET" => {
           s"""${Play2Util.queryParams(op)}
-
-GET($path, queryBuilder.result)"""
+val query = queryBuilder.result
+processResponse(logRequest("GET", requestHolder($path)
+  .withQueryString(query:_*)).get())"""
         }
 
         case "POST" => {
           s"""$payload
-
-POST($path, payload)"""
+${Play2Util.queryParams(op)}
+val query = queryBuilder.result
+processResponse(logRequest("POST", requestHolder($path))
+  .withQueryString(query:_*).post(payload))"""
         }
 
         case "PUT" => {
           s"""$payload
-
-PUT($path, payload)"""
+${Play2Util.queryParams(op)}
+val query = queryBuilder.result
+processResponse(logRequest("PUT", requestHolder($path))
+  .withQueryString(query:_*).put(payload))"""
         }
 
         case "PATCH" => {
           s"""$payload
-
-PATCH($path, payload)"""
+${Play2Util.queryParams(op)}
+val query = queryBuilder.result
+processResponse(logRequest("PATCH", requestHolder($path))
+  .withQueryString(query:_*).patch(payload))"""
         }
 
-        case "DELETE" => s"DELETE($path)"
+        case "DELETE" => s"""${Play2Util.queryParams(op)}
+val query = queryBuilder.result
+processResponse(logRequest("DELETE", requestHolder($path))
+  .withQueryString(query:_*).delete())"""
 
         case _ => throw new UnsupportedOperationException(s"Attempt to use operation with unsupported type: ${op.method}")
       }

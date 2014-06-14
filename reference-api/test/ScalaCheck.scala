@@ -158,5 +158,19 @@ package referenceapi.test.models {
         )
       }
     }
+    
+    implicit def arbMemberForm: org.scalacheck.Arbitrary[MemberForm] = org.scalacheck.Arbitrary {
+      for {
+        organization <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
+        user <- org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => java.util.UUID.randomUUID }).arbitrary
+        role <- org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr).arbitrary
+      } yield {
+        new MemberForm(
+          organization = organization,
+          user = user,
+          role = role
+        )
+      }
+    }
   }
 }

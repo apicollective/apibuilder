@@ -47,6 +47,11 @@ package referenceapi.models {
   case class UserList(
     users: scala.collection.Seq[User]
   )
+  case class MemberForm(
+    organization: java.util.UUID,
+    user: java.util.UUID,
+    role: String
+  )
 }
 
 package referenceapi.models {
@@ -230,6 +235,24 @@ package referenceapi.models {
           "users" -> play.api.libs.json.Json.toJson(x.users)
         )
       }
+    
+    implicit val readsMemberForm: play.api.libs.json.Reads[MemberForm] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "organization").read[java.util.UUID] and
+         (__ \ "user").read[java.util.UUID] and
+         (__ \ "role").read[String])(MemberForm.apply _)
+      }
+    
+    implicit val writesMemberForm: play.api.libs.json.Writes[MemberForm] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "organization").write[java.util.UUID] and
+         (__ \ "user").write[java.util.UUID] and
+         (__ \ "role").write[String])(unlift(MemberForm.unapply))
+      }
   }
 }
 
@@ -281,26 +304,6 @@ package referenceapi {
       }
     }
 
-    private def POST(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("POST", requestHolder(path)).post(data))
-    }
-
-    private def GET(path: String, q: Seq[(String, String)])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("GET", requestHolder(path).withQueryString(q:_*)).get())
-    }
-
-    private def PUT(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("PUT", requestHolder(path)).put(data))
-    }
-
-    private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("PATCH", requestHolder(path)).patch(data))
-    }
-
-    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      processResponse(logRequest("DELETE", requestHolder(path)).delete())
-    }
-
     trait Response[T] {
       val entity: T
       val status: Int
@@ -318,13 +321,14 @@ package referenceapi {
 
     object Members {
       def post(
-      
+        _body: MemberForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Member]] = {
-        val payload = play.api.libs.json.Json.obj(
-          
-        )
+        val payload = play.api.libs.json.Json.toJson(_body)
+        val queryBuilder = List.newBuilder[(String, String)]
         
-        POST(s"/members", payload).map {
+        val query = queryBuilder.result
+        processResponse(logRequest("POST", requestHolder(s"/members"))
+          .withQueryString(query:_*).post(payload)).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[Member], 201)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
@@ -366,8 +370,9 @@ package referenceapi {
             }
           )(x)
         }
-        
-        GET(s"/members", queryBuilder.result).map {
+        val query = queryBuilder.result
+        processResponse(logRequest("GET", requestHolder(s"/members")
+          .withQueryString(query:_*)).get()).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Member]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -378,11 +383,12 @@ package referenceapi {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Member]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
-        
-        GET(s"/members/${({x: String =>
+        val query = queryBuilder.result
+        processResponse(logRequest("GET", requestHolder(s"/members/${({x: String =>
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
-        })(organization)}", queryBuilder.result).map {
+        })(organization)}")
+          .withQueryString(query:_*)).get()).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Member]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -391,13 +397,14 @@ package referenceapi {
     
     object Organizations {
       def post(
-      
+        _body: Organization
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Organization]] = {
-        val payload = play.api.libs.json.Json.obj(
-          
-        )
+        val payload = play.api.libs.json.Json.toJson(_body)
+        val queryBuilder = List.newBuilder[(String, String)]
         
-        POST(s"/organizations", payload).map {
+        val query = queryBuilder.result
+        processResponse(logRequest("POST", requestHolder(s"/organizations"))
+          .withQueryString(query:_*).post(payload)).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[Organization], 201)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
@@ -423,8 +430,9 @@ package referenceapi {
             }
           )(x)
         }
-        
-        GET(s"/organizations", queryBuilder.result).map {
+        val query = queryBuilder.result
+        processResponse(logRequest("GET", requestHolder(s"/organizations")
+          .withQueryString(query:_*)).get()).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Organization]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -435,11 +443,12 @@ package referenceapi {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Organization]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
-        
-        GET(s"/organizations/${({x: String =>
+        val query = queryBuilder.result
+        processResponse(logRequest("GET", requestHolder(s"/organizations/${({x: String =>
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
-        })(guid)}", queryBuilder.result).map {
+        })(guid)}")
+          .withQueryString(query:_*)).get()).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Organization], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -448,13 +457,21 @@ package referenceapi {
     
     object Users {
       def post(
-      
+        active: scala.Option[Boolean] = None,
+        _body: UserForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
-        val payload = play.api.libs.json.Json.obj(
-          
-        )
-        
-        POST(s"/users", payload).map {
+        val payload = play.api.libs.json.Json.toJson(_body)
+        val queryBuilder = List.newBuilder[(String, String)]
+        queryBuilder ++= active.map { x =>
+          "active" -> (
+            { x: Boolean =>
+              x.toString
+            }
+          )(x)
+        }
+        val query = queryBuilder.result
+        processResponse(logRequest("POST", requestHolder(s"/users"))
+          .withQueryString(query:_*).post(payload)).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[User], 201)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
@@ -488,21 +505,23 @@ package referenceapi {
             }
           )(x)
         }
-        
-        GET(s"/users", queryBuilder.result).map {
+        val query = queryBuilder.result
+        processResponse(logRequest("GET", requestHolder(s"/users")
+          .withQueryString(query:_*)).get()).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[User]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
       
       def postNoop(
-      
+        _body: User
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
-        val payload = play.api.libs.json.Json.obj(
-          
-        )
+        val payload = play.api.libs.json.Json.toJson(_body)
+        val queryBuilder = List.newBuilder[(String, String)]
         
-        POST(s"/users/noop", payload).map {
+        val query = queryBuilder.result
+        processResponse(logRequest("POST", requestHolder(s"/users/noop"))
+          .withQueryString(query:_*).post(payload)).map {
           case r if r.status == 200 => new ResponseImpl((), 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
