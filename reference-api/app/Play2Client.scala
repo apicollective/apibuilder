@@ -292,7 +292,7 @@ package referenceapi {
         
         POST(s"/members", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[Member], 201)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -302,7 +302,7 @@ package referenceapi {
         organizationGuid: scala.Option[java.util.UUID] = None,
         userGuid: scala.Option[java.util.UUID] = None,
         role: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[Member]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Member]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= guid.map { x =>
           "guid" -> (
@@ -334,14 +334,14 @@ package referenceapi {
         }
         
         GET(s"/members", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[Member]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Member]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
       
       def getByOrganization(
         organization: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[Member]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Member]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
@@ -349,7 +349,7 @@ package referenceapi {
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
         })(organization)}", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[Member]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Member]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -367,7 +367,7 @@ package referenceapi {
         
         POST(s"/organizations", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[Organization], 201)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -375,7 +375,7 @@ package referenceapi {
       def get(
         guid: scala.Option[java.util.UUID] = None,
         name: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[Organization]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Organization]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= guid.map { x =>
           "guid" -> (
@@ -393,7 +393,7 @@ package referenceapi {
         }
         
         GET(s"/organizations", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[Organization]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Organization]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -428,7 +428,7 @@ package referenceapi {
         
         POST(s"/users", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[User], 201)
-          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.immutable.Seq[Error]], 409)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -437,7 +437,7 @@ package referenceapi {
         guid: scala.Option[java.util.UUID] = None,
         email: scala.Option[String] = None,
         active: scala.Option[Boolean] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.immutable.Seq[User]]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[User]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         queryBuilder ++= guid.map { x =>
           "guid" -> (
@@ -462,7 +462,7 @@ package referenceapi {
         }
         
         GET(s"/users", queryBuilder.result).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.immutable.Seq[User]], 200)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[User]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
