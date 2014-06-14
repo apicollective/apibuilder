@@ -7,7 +7,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-case class Membership(guid: String, org: Organization, user: User, role: String)
+case class Membership(guid: String, organization: Organization, user: User, role: String)
 
 object Membership {
 
@@ -122,9 +122,9 @@ object Membership {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Membership(guid = row[String]("guid"),
-                   org = Organization(guid = row[String]("organization_guid"),
-                                      name = row[String]("organization_name"),
-                                      key = row[String]("organization_key")),
+                   organization = Organization(guid = row[String]("organization_guid"),
+                                               name = row[String]("organization_name"),
+                                               key = row[String]("organization_key")),
                    user = User(guid = row[String]("user_guid"),
                                email = row[String]("user_email"),
                                name = row[Option[String]]("user_name"),

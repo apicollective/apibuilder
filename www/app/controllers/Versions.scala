@@ -2,8 +2,8 @@ package controllers
 
 import models.MainTemplate
 import core.{ ServiceDescription, ServiceDescriptionValidator, UrlKey }
-import client.Apidoc
-import client.Apidoc.{ Organization, Service, User, Version }
+import apidoc.models.Organization
+import client.Apidoc.Version
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.Json
@@ -19,8 +19,8 @@ object Versions extends Controller {
 
   def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
     for {
-      org <- request.apidocClient.Organizations.get(key = Some(orgKey))
-      service <- request.client.services.findByOrganizationKeyAndKey(orgKey, serviceKey)
+      org <- request.api.Organizations.get(key = Some(orgKey))
+      serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
       versions <- request.client.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, limit = 10)
       version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
@@ -31,11 +31,14 @@ object Versions extends Controller {
         }
 
         case Some(v: Version) => {
+          val service = serviceResponse.entity.headOption.getOrElse {
+            sys.error(s"Could not find service for orgKey[$orgKey] and key[$serviceKey]")
+          }
           val sd = ServiceDescription(v.json.get)
-          val tpl = MainTemplate(service.get.name + " " + v.version,
+          val tpl = MainTemplate(service.name + " " + v.version,
                                  user = Some(request.user),
                                  org = Some(org.entity.head),
-                                 service = Some(service.get),
+                                 service = Some(service),
                                  version = Some(v.version),
                                  allServiceVersions = versions.map(_.version),
                                  serviceDescription = Some(sd))
@@ -65,11 +68,11 @@ object Versions extends Controller {
 
   def create(orgKey: String, version: Option[String]) = Authenticated.async { implicit request =>
     for {
-      org <- request.apidocClient.Organizations.get(key = Some(orgKey))
+      org <- request.api.Organizations.get(key = Some(orgKey))
     } yield {
       org.entity.headOption match {
         case None => Redirect("/").flashing("warning" -> "Org not found")
-        case Some(o: apidoc.models.Organization) => {
+        case Some(o: Organization) => {
           val tpl = MainTemplate(title = s"${o.name}: Add Service",
                                  user = Some(request.user),
                                  org = Some(o))
@@ -82,7 +85,7 @@ object Versions extends Controller {
 
   def createPost(orgKey: String) = Authenticated.async(parse.multipartFormData) { implicit request =>
     for {
-      orgOption <- request.apidocClient.Organizations.get(key = Some(orgKey))
+      orgOption <- request.api.Organizations.get(key = Some(orgKey))
     } yield {
       orgOption.entity.headOption match {
 
@@ -90,7 +93,7 @@ object Versions extends Controller {
           Redirect("/").flashing("warning" -> "Org not found")
         }
 
-        case Some(org: apidoc.models.Organization) => {
+        case Some(org: Organization) => {
           val tpl = MainTemplate(title = s"${org.name}: Add Service",
                                  user = Some(request.user),
                                  org = Some(org))

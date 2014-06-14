@@ -13,14 +13,14 @@ class MembershipRequestSpec extends FlatSpec {
 
   it should "create member" in {
     val request = MembershipRequest.upsert(Util.createdBy, Util.gilt, member, Role.Member)
-    assertEquals(request.org, Util.gilt)
+    assertEquals(request.organization, Util.gilt)
     assertEquals(request.user, member)
     assertEquals(request.role, Role.Member.key)
   }
 
   it should "create admin" in {
     val request = MembershipRequest.upsert(Util.createdBy, Util.gilt, member, Role.Admin)
-    assertEquals(request.org, Util.gilt)
+    assertEquals(request.organization, Util.gilt)
     assertEquals(request.user, member)
     assertEquals(request.role, Role.Admin.key)
   }

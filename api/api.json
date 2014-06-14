@@ -10,7 +10,7 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this user." },
                 { "name": "email", "type": "string" },
-                { "name": "name", "type": "string" },
+                { "name": "name", "type": "string", "required": false },
                 { "name": "image_url", "type": "string", "required": false, "description": "Image avatar for this user" }
             ]
         },
@@ -185,8 +185,8 @@
                     "method": "GET",
                     "description": "Search all memberships. Results are always paginated.",
                     "parameters": [
-                        { "name": "organization_guid", "type": "uuid", "required": false },
-                        { "name": "organization_key", "type": "uuid", "required": false },
+                        { "name": "org_guid", "type": "uuid", "required": false },
+                        { "name": "org_key", "type": "string", "required": false },
                         { "name": "user_guid", "type": "uuid", "required": false },
                         { "name": "role", "type": "string", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
@@ -206,8 +206,8 @@
                     "method": "GET",
                     "description": "Search all membership requests. Results are always paginated.",
                     "parameters": [
-                        { "name": "organization_guid", "type": "uuid", "required": false },
-                        { "name": "organization_key", "type": "uuid", "required": false },
+                        { "name": "org_guid", "type": "uuid", "required": false },
+                        { "name": "org_key", "type": "string", "required": false },
                         { "name": "user_guid", "type": "uuid", "required": false },
                         { "name": "role", "type": "string", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
@@ -222,7 +222,7 @@
                     "method": "POST",
                     "description": "Create a membership request",
                     "parameters": [
-                        { "name": "organization_guid", "type": "uuid" },
+                        { "name": "org_guid", "type": "uuid" },
                         { "name": "user_guid", "type": "uuid" },
                         { "name": "role", "type": "string" }
                     ],

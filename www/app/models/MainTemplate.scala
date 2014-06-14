@@ -1,8 +1,7 @@
 package models
 
 import core.{ Model, Resource, ServiceDescription }
-import client.Apidoc.{ Service, User }
-import apidoc.models.{ Organization }
+import apidoc.models.{ Organization, Service, User }
 
 case class MainTemplate(title: String,
                         org: Option[Organization] = None,

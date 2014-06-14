@@ -11,7 +11,7 @@ import java.util.UUID
 
 case class MembershipRequest(guid: String,
                              created_at: String, // TODO Timestamp type
-                             org: Organization,
+                             organization: Organization,
                              user: User,
                              role: String) {
 
@@ -28,9 +28,9 @@ case class MembershipRequest(guid: String,
 
     val message = s"Accepted membership request for ${user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
-      OrganizationLog.create(createdBy, org, message)
+      OrganizationLog.create(createdBy, organization, message)
       MembershipRequest.softDelete(createdBy, this)
-      Membership.upsert(createdBy, org, user, r)
+      Membership.upsert(createdBy, organization, user, r)
     }
   }
 
@@ -46,14 +46,14 @@ case class MembershipRequest(guid: String,
 
     val message = s"Declined membership request for ${user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
-      OrganizationLog.create(createdBy, org, message)
+      OrganizationLog.create(createdBy, organization, message)
       MembershipRequest.softDelete(createdBy, this)
     }
   }
 
   private def assertUserCanReview(user: User) {
-    require(Membership.isUserAdmin(user, org),
-            s"User[${user.guid}] is not an administrator of org[${org.guid}]")
+    require(Membership.isUserAdmin(user, organization),
+            s"User[${user.guid}] is not an administrator of org[${organization.guid}]")
   }
 
 }
@@ -154,9 +154,9 @@ object MembershipRequest {
       SQL(sql).on(bind: _*)().toList.map { row =>
         MembershipRequest(guid = row[String]("guid"),
                           created_at = row[String]("created_at"),
-                          org = Organization(guid = row[String]("organization_guid"),
-                                             name = row[String]("organization_name"),
-                                             key = row[String]("organization_key")),
+                          organization = Organization(guid = row[String]("organization_guid"),
+                                                      name = row[String]("organization_name"),
+                                                      key = row[String]("organization_key")),
                           user = User(guid = row[String]("user_guid"),
                                       email = row[String]("user_email"),
                                       name = row[Option[String]]("user_name"),
