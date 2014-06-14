@@ -8,7 +8,6 @@ trait Play2Util {
   def jsonWrites(x: ScalaModel): String
   def queryParams(operation: ScalaOperation): String
   def pathParams(operation: ScalaOperation): String
-  def formParams(operation: ScalaOperation): String
 }
 
 object Play2Util extends Play2Util {
@@ -101,15 +100,6 @@ ${queryStringEntries}"""
         path.patch(from, s"/$${$value}", spec.length)
     }
     s""" s"$tmp" """.trim
-  }
-
-  def formParams(op: ScalaOperation): String = {
-    val params = op.formParameters.map { param =>
-      s""" "${param.originalName}" -> play.api.libs.json.Json.toJson(${param.name})""".trim
-    }.mkString(",\n")
-    s"""val payload = play.api.libs.json.Json.obj(
-${params.indent}
-)"""
   }
 
   private object PathParamHelper {

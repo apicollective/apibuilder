@@ -90,14 +90,13 @@ object Operation {
 
   def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
-    val location = if (method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
       if (internal.namedParameters.contains(p.name.get)) {
         Parameter(models, p, ParameterLocation.Path)
       } else {
-        Parameter(models, p, location)
+        Parameter(models, p, ParameterLocation.Query)
       }
-     }
+    }
     val internalParamNames: Set[String] = internalParams.map(_.name).toSet
 
     // Capture any path parameters that were not explicitly annotated
@@ -290,7 +289,6 @@ object ParameterLocation {
 
   case object Path extends ParameterLocation("path")
   case object Query extends ParameterLocation("query")
-  case object Form extends ParameterLocation("form")
 
 }
 

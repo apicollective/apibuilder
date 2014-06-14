@@ -88,8 +88,6 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   lazy val queryParameters = parameters.filter { _.location == ParameterLocation.Query }
 
-  lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
-
   lazy val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
 
   lazy val body: Option[ScalaBody] = operation.body.map(new ScalaBody(_))
