@@ -95,7 +95,7 @@
                 },
                 {
                     "method": "GET",
-                    "query": [
+                    "parameters": [
                         { "name": "guid", "type": "uuid", "required": false },
                         { "name": "name", "type": "string", "required": false }
                     ],
@@ -117,7 +117,7 @@
             "operations": [
                 {
                     "method": "POST",
-                    "query": [
+                    "parameters": [
                         { "name": "active", "type": "boolean", "default": true }
                     ],
                     "body": "user_form",
@@ -128,7 +128,7 @@
                 },
                 {
                     "method": "GET",
-                    "query": [
+                    "parameters": [
                         { "name": "guid", "type": "uuid", "required": false },
                         { "name": "email", "type": "string", "required": false },
                         { "name": "active", "type": "boolean", "default": true }
@@ -165,7 +165,7 @@
                 },
                 {
                     "method": "GET",
-                    "query": [
+                    "parameters": [
                         { "name": "guid", "type": "uuid", "required": false },
                         { "name": "organization", "type": "uuid", "required": false },
                         { "name": "user", "type": "uuid", "required": false },

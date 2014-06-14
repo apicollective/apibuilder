@@ -67,7 +67,6 @@ case class InternalOperation(method: Option[String],
                              path: String,
                              description: Option[String],
                              namedParameters: Seq[String],
-                             query: Seq[InternalParameter],
                              body: Option[InternalBody],
                              parameters: Seq[InternalParameter],
                              responses: Seq[InternalResponse]) {
@@ -201,12 +200,6 @@ object InternalOperation {
         a.value.map { data => InternalParameter(data.as[JsObject]) }
       }
     }
-    val query: Seq[InternalParameter] = (json \ "query").asOpt[JsArray] match {
-      case None => Seq.empty
-      case Some(a: JsArray) => {
-        a.value.map { data => InternalParameter(data.as[JsObject]) }
-      }
-    }
 
     val body: Option[InternalBody] = (json \ "body").asOpt[JsString].map(InternalBody(_))
 
@@ -231,7 +224,6 @@ object InternalOperation {
                       description = (json \ "description").asOpt[String],
                       responses = responses,
                       namedParameters = namedParameters,
-                      query = query,
                       body = body,
                       parameters = parameters)
   }
