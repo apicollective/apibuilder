@@ -33,6 +33,13 @@
             ]
         },
 
+        "organization_form": {
+          "description": "A model for creating an organization.",
+          "fields": [
+            { "name": "name", "type": "string", "description": "The name of the organization." }
+          ]
+        },
+
         "membership": {
             "description": "A membership represents a user in a specific role to an organization. Memberships cannot be created directly. Instead you first create a membership request, then that request is either accepted or declined.",
             "fields": [
@@ -40,6 +47,14 @@
                 { "name": "user", "type": "user" },
                 { "name": "organization", "type": "organization" },
                 { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" }
+            ]
+        },
+
+        "membership_request_form": {
+            "fields": [
+                { "name": "org_guid", "type": "uuid" },
+                { "name": "user_guid", "type": "uuid" },
+                { "name": "role", "type": "string" }
             ]
         },
 
@@ -161,9 +176,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new organization.",
-                    "parameters": [
-                        { "name": "name", "type": "string" }
-                    ],
+                    "body": "organization_form",
                     "responses": {
                         "201": { "type": "organization" },
                         "409": { "type": "[error]" }
@@ -221,11 +234,7 @@
                 {
                     "method": "POST",
                     "description": "Create a membership request",
-                    "parameters": [
-                        { "name": "org_guid", "type": "uuid" },
-                        { "name": "user_guid", "type": "uuid" },
-                        { "name": "role", "type": "string" }
-                    ],
+                    "body": "membership_request_form",
                     "responses": {
                         "201": { "type": "membership_request" },
                         "409": { "type": "[error]" }
