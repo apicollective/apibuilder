@@ -120,7 +120,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
 
-      if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
+      if (GeneratorUtil.bodyAllowed(op.method)) {
         paramStrings.append("body")
       }
 
@@ -158,7 +158,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
       requestBuilder.append(".with_query(query)")
 
-      if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
+      if (GeneratorUtil.bodyAllowed(op.method)) {
         val body = op.body.get
         body.bodyType match {
           case ModelBodyType(model) => {
