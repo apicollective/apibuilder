@@ -88,4 +88,39 @@ object Users extends Controller {
     }
     NoContent
   }
+
+  def patchByGuid(guid: String) = Action(parse.json) { request =>
+    val json = request.body
+    json.validate[User.Patch] match {
+      case JsSuccess(patch, _) => {
+        val patched = DB.withTransaction { implicit c =>
+          val user = SQL("""
+            select * from users where guid = {guid}
+            """).on('guid -> guid).as(rowParser.single)
+
+          val tmp = patch(user)
+
+          SQL("""
+          update users
+          set email = {email},
+              active = {active}
+          where guid = {guid}
+          """).on(
+            'guid -> guid,
+            'email -> tmp.email,
+            'active -> tmp.active
+          ).execute()
+          tmp
+        }
+        Ok(Json.toJson(patched))
+      }
+      case JsError(_) => {
+        BadRequest {
+          Json.obj(
+            "code" -> "invalid_json",
+            "msg" -> s"unable to parse User.Patch from $json")
+        }
+      }
+    }
+  }
 }

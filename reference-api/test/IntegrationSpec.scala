@@ -120,6 +120,22 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
       }
     }
 
+    "should patch by guid" in prop { (userForm: UserForm, patch: User.Patch) =>
+      withClient { implicit client =>
+        import client._
+
+        val user = Users.post(_body = userForm).entity
+        val patched = {
+          Users.patchByGuid(user.guid, patch.copy(guid = user.guid))
+            .entity
+        }
+        patch.copy(guid = None)(user) must equalTo(patched)
+        Users.get(
+          guid = user.guid,
+          active = patched.active).entity.head must equalTo(patched)
+      }
+    }
+
     "should support the user api" in prop { (userForm: UserForm) =>
       withClient { implicit client =>
         import client._

@@ -35,6 +35,12 @@
             ]
         },
 
+        "small": {
+          "fields": [
+            { "name": "f1", "type": "string" }
+          ]
+        },
+
         "error": {
             "description": "Models an API error.",
             "fields": [
@@ -149,6 +155,16 @@
                     "parameters": [
                       { "name": "guid", "type": "uuid" }
                     ]
+                },
+                {
+                  "method": "PATCH",
+                  "path": "/:guid",
+                  "parameters": [
+                    { "name": "guid", "type": "uuid" }
+                  ],
+                  "responses": {
+                    "200": { "type": "user" }
+                  }
                 }
             ]
         },

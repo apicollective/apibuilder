@@ -104,8 +104,13 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
           else s"_body: java.io.File"
         }
         case ScalaModelBodyType(model) => {
-          if (body.get.multiple) s"_body: scala.collection.immutable.Seq[${model.name}]"
-          else s"_body: ${model.name}"
+          val name = if (method == "PATCH") {
+            model.name + ".Patch"
+          } else {
+            model.name
+          }
+          if (body.get.multiple) s"_body: scala.collection.immutable.Seq[$name]"
+          else s"_body: $name"
         }
       }
       base :+ bodyParam

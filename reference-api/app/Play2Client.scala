@@ -219,6 +219,23 @@ package referenceapi.models {
     }
   }
 
+  case class Small(
+    f1: String
+  )
+
+  object Small {
+    case class Patch(
+      f1: scala.Option[String] = None
+    ) {
+    
+      def f1(value: String): Patch = copy(f1 = Option(value))
+    
+      def apply(x: Small): Small = x.copy(
+        f1 = f1.getOrElse(x.f1)
+      )
+    }
+  }
+
   case class User(
     guid: java.util.UUID,
     email: String,
@@ -287,18 +304,18 @@ package referenceapi.models {
     import play.api.libs.json._
     import play.api.libs.functional.syntax._
 
-    implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
+    implicit val readsUUID = __.read[String].map(java.util.UUID.fromString)
 
-    implicit val jsonWritesUUID = new Writes[java.util.UUID] {
+    implicit val writesUUID = new Writes[java.util.UUID] {
       def writes(x: java.util.UUID) = JsString(x.toString)
     }
 
-    implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
+    implicit val readsJodaDateTime = __.read[String].map { str =>
       import org.joda.time.format.ISODateTimeFormat.dateTimeParser
       dateTimeParser.parseDateTime(str)
     }
 
-    implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
+    implicit val writesJodaDateTime = new Writes[org.joda.time.DateTime] {
       def writes(x: org.joda.time.DateTime) = {
         import org.joda.time.format.ISODateTimeFormat.dateTime
         val str = dateTime.print(x)
@@ -306,181 +323,368 @@ package referenceapi.models {
       }
     }
 
-    implicit def readsBig: play.api.libs.json.Reads[Big] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "f1").read[String] and
-         (__ \ "f2").read[String] and
-         (__ \ "f3").read[String] and
-         (__ \ "f4").read[String] and
-         (__ \ "f5").read[String] and
-         (__ \ "f6").read[String] and
-         (__ \ "f7").read[String] and
-         (__ \ "f8").read[String] and
-         (__ \ "f9").read[String] and
-         (__ \ "f10").read[String] and
-         (__ \ "f11").read[String] and
-         (__ \ "f12").read[String] and
-         (__ \ "f13").read[String] and
-         (__ \ "f14").read[String] and
-         (__ \ "f15").read[String] and
-         (__ \ "f16").read[String] and
-         (__ \ "f17").read[String] and
-         (__ \ "f18").read[String] and
-         (__ \ "f19").read[String] and
-         (__ \ "f20").read[String] and
-         (__ \ "f21").read[String])(Big.apply _)
-      }
+    implicit val readsBig = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "f1").read[String] and
+       (__ \ "f2").read[String] and
+       (__ \ "f3").read[String] and
+       (__ \ "f4").read[String] and
+       (__ \ "f5").read[String] and
+       (__ \ "f6").read[String] and
+       (__ \ "f7").read[String] and
+       (__ \ "f8").read[String] and
+       (__ \ "f9").read[String] and
+       (__ \ "f10").read[String] and
+       (__ \ "f11").read[String] and
+       (__ \ "f12").read[String] and
+       (__ \ "f13").read[String] and
+       (__ \ "f14").read[String] and
+       (__ \ "f15").read[String] and
+       (__ \ "f16").read[String] and
+       (__ \ "f17").read[String] and
+       (__ \ "f18").read[String] and
+       (__ \ "f19").read[String] and
+       (__ \ "f20").read[String] and
+       (__ \ "f21").read[String])(Big.apply _)
+    }
     
-    implicit def writesBig: play.api.libs.json.Writes[Big] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "f1").write[String] and
-         (__ \ "f2").write[String] and
-         (__ \ "f3").write[String] and
-         (__ \ "f4").write[String] and
-         (__ \ "f5").write[String] and
-         (__ \ "f6").write[String] and
-         (__ \ "f7").write[String] and
-         (__ \ "f8").write[String] and
-         (__ \ "f9").write[String] and
-         (__ \ "f10").write[String] and
-         (__ \ "f11").write[String] and
-         (__ \ "f12").write[String] and
-         (__ \ "f13").write[String] and
-         (__ \ "f14").write[String] and
-         (__ \ "f15").write[String] and
-         (__ \ "f16").write[String] and
-         (__ \ "f17").write[String] and
-         (__ \ "f18").write[String] and
-         (__ \ "f19").write[String] and
-         (__ \ "f20").write[String] and
-         (__ \ "f21").write[String])(unlift(Big.unapply))
-      }
+    implicit val readsBig_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "f1").readNullable[String] and
+       (__ \ "f2").readNullable[String] and
+       (__ \ "f3").readNullable[String] and
+       (__ \ "f4").readNullable[String] and
+       (__ \ "f5").readNullable[String] and
+       (__ \ "f6").readNullable[String] and
+       (__ \ "f7").readNullable[String] and
+       (__ \ "f8").readNullable[String] and
+       (__ \ "f9").readNullable[String] and
+       (__ \ "f10").readNullable[String] and
+       (__ \ "f11").readNullable[String] and
+       (__ \ "f12").readNullable[String] and
+       (__ \ "f13").readNullable[String] and
+       (__ \ "f14").readNullable[String] and
+       (__ \ "f15").readNullable[String] and
+       (__ \ "f16").readNullable[String] and
+       (__ \ "f17").readNullable[String] and
+       (__ \ "f18").readNullable[String] and
+       (__ \ "f19").readNullable[String] and
+       (__ \ "f20").readNullable[String] and
+       (__ \ "f21").readNullable[String])(Big.Patch.apply _)
+    }
     
-    implicit def readsError: play.api.libs.json.Reads[Error] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "code").read[String] and
-         (__ \ "message").read[String])(Error.apply _)
-      }
     
-    implicit def writesError: play.api.libs.json.Writes[Error] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "code").write[String] and
-         (__ \ "message").write[String])(unlift(Error.unapply))
-      }
+    implicit val writesBig = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "f1").write[String] and
+       (__ \ "f2").write[String] and
+       (__ \ "f3").write[String] and
+       (__ \ "f4").write[String] and
+       (__ \ "f5").write[String] and
+       (__ \ "f6").write[String] and
+       (__ \ "f7").write[String] and
+       (__ \ "f8").write[String] and
+       (__ \ "f9").write[String] and
+       (__ \ "f10").write[String] and
+       (__ \ "f11").write[String] and
+       (__ \ "f12").write[String] and
+       (__ \ "f13").write[String] and
+       (__ \ "f14").write[String] and
+       (__ \ "f15").write[String] and
+       (__ \ "f16").write[String] and
+       (__ \ "f17").write[String] and
+       (__ \ "f18").write[String] and
+       (__ \ "f19").write[String] and
+       (__ \ "f20").write[String] and
+       (__ \ "f21").write[String])(unlift(Big.unapply))
+    }
     
-    implicit def readsMember: play.api.libs.json.Reads[Member] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "organization").read[Organization] and
-         (__ \ "user").read[User] and
-         (__ \ "role").read[String])(Member.apply _)
-      }
+    implicit val writesBig_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "f1").writeNullable[String] and
+       (__ \ "f2").writeNullable[String] and
+       (__ \ "f3").writeNullable[String] and
+       (__ \ "f4").writeNullable[String] and
+       (__ \ "f5").writeNullable[String] and
+       (__ \ "f6").writeNullable[String] and
+       (__ \ "f7").writeNullable[String] and
+       (__ \ "f8").writeNullable[String] and
+       (__ \ "f9").writeNullable[String] and
+       (__ \ "f10").writeNullable[String] and
+       (__ \ "f11").writeNullable[String] and
+       (__ \ "f12").writeNullable[String] and
+       (__ \ "f13").writeNullable[String] and
+       (__ \ "f14").writeNullable[String] and
+       (__ \ "f15").writeNullable[String] and
+       (__ \ "f16").writeNullable[String] and
+       (__ \ "f17").writeNullable[String] and
+       (__ \ "f18").writeNullable[String] and
+       (__ \ "f19").writeNullable[String] and
+       (__ \ "f20").writeNullable[String] and
+       (__ \ "f21").writeNullable[String])(unlift(Big.Patch.unapply))
+    }
     
-    implicit def writesMember: play.api.libs.json.Writes[Member] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "organization").write[Organization] and
-         (__ \ "user").write[User] and
-         (__ \ "role").write[String])(unlift(Member.unapply))
-      }
     
-    implicit def readsMemberForm: play.api.libs.json.Reads[MemberForm] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "organization").read[java.util.UUID] and
-         (__ \ "user").read[java.util.UUID] and
-         (__ \ "role").read[String])(MemberForm.apply _)
-      }
+    implicit val readsError = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "code").read[String] and
+       (__ \ "message").read[String])(Error.apply _)
+    }
     
-    implicit def writesMemberForm: play.api.libs.json.Writes[MemberForm] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "organization").write[java.util.UUID] and
-         (__ \ "user").write[java.util.UUID] and
-         (__ \ "role").write[String])(unlift(MemberForm.unapply))
-      }
+    implicit val readsError_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "code").readNullable[String] and
+       (__ \ "message").readNullable[String])(Error.Patch.apply _)
+    }
     
-    implicit def readsOrganization: play.api.libs.json.Reads[Organization] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "name").read[String])(Organization.apply _)
-      }
     
-    implicit def writesOrganization: play.api.libs.json.Writes[Organization] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "name").write[String])(unlift(Organization.unapply))
-      }
+    implicit val writesError = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "code").write[String] and
+       (__ \ "message").write[String])(unlift(Error.unapply))
+    }
     
-    implicit def readsUser: play.api.libs.json.Reads[User] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "email").read[String] and
-         (__ \ "active").read[Boolean])(User.apply _)
-      }
+    implicit val writesError_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "code").writeNullable[String] and
+       (__ \ "message").writeNullable[String])(unlift(Error.Patch.unapply))
+    }
     
-    implicit def writesUser: play.api.libs.json.Writes[User] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "email").write[String] and
-         (__ \ "active").write[Boolean])(unlift(User.unapply))
-      }
     
-    implicit def readsUserForm: play.api.libs.json.Reads[UserForm] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        (__ \ "email").read[String].map { x =>
-          new UserForm(email = x)
-        }
-      }
+    implicit val readsMember = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").read[java.util.UUID] and
+       (__ \ "organization").read[Organization] and
+       (__ \ "user").read[User] and
+       (__ \ "role").read[String])(Member.apply _)
+    }
     
-    implicit def writesUserForm: play.api.libs.json.Writes[UserForm] =
-      new play.api.libs.json.Writes[UserForm] {
-        def writes(x: UserForm) = play.api.libs.json.Json.obj(
-          "email" -> play.api.libs.json.Json.toJson(x.email)
-        )
-      }
+    implicit val readsMember_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").readNullable[java.util.UUID] and
+       (__ \ "organization").readNullable[Organization] and
+       (__ \ "user").readNullable[User] and
+       (__ \ "role").readNullable[String])(Member.Patch.apply _)
+    }
     
-    implicit def readsUserList: play.api.libs.json.Reads[UserList] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        (__ \ "users").readNullable[scala.collection.Seq[User]].map { x =>
-        x.getOrElse(Nil)
-      }.map { x =>
-          new UserList(users = x)
-        }
-      }
     
-    implicit def writesUserList: play.api.libs.json.Writes[UserList] =
-      new play.api.libs.json.Writes[UserList] {
-        def writes(x: UserList) = play.api.libs.json.Json.obj(
-          "users" -> play.api.libs.json.Json.toJson(x.users)
-        )
+    implicit val writesMember = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").write[java.util.UUID] and
+       (__ \ "organization").write[Organization] and
+       (__ \ "user").write[User] and
+       (__ \ "role").write[String])(unlift(Member.unapply))
+    }
+    
+    implicit val writesMember_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").writeNullable[java.util.UUID] and
+       (__ \ "organization").writeNullable[Organization] and
+       (__ \ "user").writeNullable[User] and
+       (__ \ "role").writeNullable[String])(unlift(Member.Patch.unapply))
+    }
+    
+    
+    implicit val readsMemberForm = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "organization").read[java.util.UUID] and
+       (__ \ "user").read[java.util.UUID] and
+       (__ \ "role").read[String])(MemberForm.apply _)
+    }
+    
+    implicit val readsMemberForm_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "organization").readNullable[java.util.UUID] and
+       (__ \ "user").readNullable[java.util.UUID] and
+       (__ \ "role").readNullable[String])(MemberForm.Patch.apply _)
+    }
+    
+    
+    implicit val writesMemberForm = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "organization").write[java.util.UUID] and
+       (__ \ "user").write[java.util.UUID] and
+       (__ \ "role").write[String])(unlift(MemberForm.unapply))
+    }
+    
+    implicit val writesMemberForm_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "organization").writeNullable[java.util.UUID] and
+       (__ \ "user").writeNullable[java.util.UUID] and
+       (__ \ "role").writeNullable[String])(unlift(MemberForm.Patch.unapply))
+    }
+    
+    
+    implicit val readsOrganization = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").read[java.util.UUID] and
+       (__ \ "name").read[String])(Organization.apply _)
+    }
+    
+    implicit val readsOrganization_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").readNullable[java.util.UUID] and
+       (__ \ "name").readNullable[String])(Organization.Patch.apply _)
+    }
+    
+    
+    implicit val writesOrganization = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").write[java.util.UUID] and
+       (__ \ "name").write[String])(unlift(Organization.unapply))
+    }
+    
+    implicit val writesOrganization_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").writeNullable[java.util.UUID] and
+       (__ \ "name").writeNullable[String])(unlift(Organization.Patch.unapply))
+    }
+    
+    
+    implicit val readsSmall = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "f1").read[String].map { x =>
+        new Small(f1 = x)
       }
+    }
+    
+    implicit val readsSmall_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "f1").readNullable[String].map { x =>
+        new Small.Patch(f1 = x)
+      }
+    }
+    
+    
+    implicit val writesSmall = new play.api.libs.json.Writes[Small] {
+      def writes(x: Small) = play.api.libs.json.Json.obj(
+        "f1" -> play.api.libs.json.Json.toJson(x.f1)
+      )
+    }
+    
+    implicit val writesSmall_Patch = new play.api.libs.json.Writes[Small.Patch] {
+      def writes(x: Small.Patch) = play.api.libs.json.Json.obj(
+        "f1" -> play.api.libs.json.Json.toJson(x.f1)
+      )
+    }
+    
+    
+    implicit val readsUser = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").read[java.util.UUID] and
+       (__ \ "email").read[String] and
+       (__ \ "active").read[Boolean])(User.apply _)
+    }
+    
+    implicit val readsUser_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").readNullable[java.util.UUID] and
+       (__ \ "email").readNullable[String] and
+       (__ \ "active").readNullable[Boolean])(User.Patch.apply _)
+    }
+    
+    
+    implicit val writesUser = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").write[java.util.UUID] and
+       (__ \ "email").write[String] and
+       (__ \ "active").write[Boolean])(unlift(User.unapply))
+    }
+    
+    implicit val writesUser_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      ((__ \ "guid").writeNullable[java.util.UUID] and
+       (__ \ "email").writeNullable[String] and
+       (__ \ "active").writeNullable[Boolean])(unlift(User.Patch.unapply))
+    }
+    
+    
+    implicit val readsUserForm = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "email").read[String].map { x =>
+        new UserForm(email = x)
+      }
+    }
+    
+    implicit val readsUserForm_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "email").readNullable[String].map { x =>
+        new UserForm.Patch(email = x)
+      }
+    }
+    
+    
+    implicit val writesUserForm = new play.api.libs.json.Writes[UserForm] {
+      def writes(x: UserForm) = play.api.libs.json.Json.obj(
+        "email" -> play.api.libs.json.Json.toJson(x.email)
+      )
+    }
+    
+    implicit val writesUserForm_Patch = new play.api.libs.json.Writes[UserForm.Patch] {
+      def writes(x: UserForm.Patch) = play.api.libs.json.Json.obj(
+        "email" -> play.api.libs.json.Json.toJson(x.email)
+      )
+    }
+    
+    
+    implicit val readsUserList = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "users").readNullable[scala.collection.Seq[User]].map { x =>
+      x.getOrElse(Nil)
+    }.map { x =>
+        new UserList(users = x)
+      }
+    }
+    
+    implicit val readsUserList_Patch = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "users").readNullable[scala.collection.Seq[User]].map { x =>
+        new UserList.Patch(users = x)
+      }
+    }
+    
+    
+    implicit val writesUserList = new play.api.libs.json.Writes[UserList] {
+      def writes(x: UserList) = play.api.libs.json.Json.obj(
+        "users" -> play.api.libs.json.Json.toJson(x.users)
+      )
+    }
+    
+    implicit val writesUserList_Patch = new play.api.libs.json.Writes[UserList.Patch] {
+      def writes(x: UserList.Patch) = play.api.libs.json.Json.obj(
+        "users" -> play.api.libs.json.Json.toJson(x.users)
+      )
+    }
   }
 }
 
@@ -769,6 +973,24 @@ package referenceapi {
         })(guid)}/profile"))
           .withQueryString(query:_*).post(payload)).map {
           case r if r.status == 204 => new ResponseImpl((), 204)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      def patchByGuid(
+        guid: java.util.UUID,
+        _body: User.Patch
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
+        val payload = play.api.libs.json.Json.toJson(_body)
+        val queryBuilder = List.newBuilder[(String, String)]
+        
+        val query = queryBuilder.result
+        processResponse(logRequest("PATCH", requestHolder(s"/users/${({x: java.util.UUID =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(guid)}"))
+          .withQueryString(query:_*).patch(payload)).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[User], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

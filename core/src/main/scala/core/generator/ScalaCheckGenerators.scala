@@ -11,9 +11,23 @@ object ScalaCheckGenerators {
   }
 
   def apply(ssd: ScalaServiceDescription): String = {
-    val defs = ssd.models.map { model =>
+    val defs = ssd.models.flatMap { model =>
       val impl = arb(new ScalaDataType.ScalaModelType(model))
-      s"implicit def arb${model.name}: org.scalacheck.Arbitrary[${model.name}] = $impl"
+      val classArb = s"implicit def arb${model.name}: org.scalacheck.Arbitrary[${model.name}] = $impl"
+      val patchArb: String = {
+        val genFields: String = model.fields.map(genOpt).mkString("\n")
+        val initFields = model.fields.map(f => s"${f.name} = ${f.name}").mkString(",\n")
+        s"""implicit def arb${model.name}_Patch = org.scalacheck.Arbitrary {
+  for {
+${genFields.indent(4)}
+  } yield {
+    new ${model.name}.Patch(
+${initFields.indent(4)}
+    )
+  }
+}"""
+      }
+      Seq(classArb, patchArb)
     }.mkString("\n\n")
     val packageName = ssd.name.toLowerCase
     s"""package $packageName.test.models {
@@ -25,6 +39,10 @@ ${defs.indent(4)}
   }
 
   def gen(f: ScalaField): String = s"${f.name} <- ${arb(f.datatype)}.arbitrary"
+
+  def genOpt(f: ScalaField): String = {
+    s"${f.name} <- ${arb(ScalaDataType.ScalaOptionType(f.datatype))}.arbitrary"
+  }
 
   def arb(d: ScalaDataType): String = {
     import ScalaDataType._
