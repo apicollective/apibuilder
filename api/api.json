@@ -15,6 +15,15 @@
             ]
         },
 
+        "user_form": {
+          "description": "A model for creating and updating a user.",
+          "fields": [
+            { "name": "email", "type": "string" },
+            { "name": "name", "type": "string", "required": "false" },
+            { "name": "image_url", "type": "string", "required": false, "description": "Image avatar for this user" }
+          ]
+        },
+
         "organization": {
             "description": "An organization is used to group a set of services together.",
             "fields": [
@@ -110,11 +119,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new user.",
-                    "parameters": [
-                        { "name": "email", "type": "string" },
-                        { "name": "name", "type": "string", "required": false },
-                        { "name": "image_url", "type": "string", "required": false }
-                    ],
+                    "body": "user_form",
                     "responses": {
                         "201": { "type": "user" },
                         "409": { "type": "[error]" }
@@ -125,11 +130,7 @@
                     "method": "PUT",
                     "path": "/:guid",
                     "description": "Updates information about the user with the specified guid.",
-                    "parameters": [
-                        { "name": "email", "type": "string" },
-                        { "name": "name", "type": "string", "required": false },
-                        { "name": "image_url", "type": "string", "required": false }
-                    ],
+                    "body": "user_form",
                     "responses": {
                         "201": { "type": "user" },
                         "409": { "type": "[error]" }
