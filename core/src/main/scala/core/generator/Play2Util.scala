@@ -37,7 +37,7 @@ object Play2Util extends Play2Util {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
   (__ \\ "${field.originalName}").${read(field)}.map { x =>
-    new ${name.toLowerCase}.${name}(${field.name} = x)
+    new ${name}(${field.name} = x)
   }
 }"""
       }
