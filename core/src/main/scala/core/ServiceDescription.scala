@@ -112,7 +112,7 @@ object Operation {
     val body: Option[Body] = internal.body.map { b =>
       Body(models, model, b)
     }.orElse {
-      Some(new Body(model = model, multiple = false, isDefault = true))
+      Some(new Body(bodyType = new ModelBodyType(model), multiple = false, isDefault = true))
     }
 
     Operation(model = model,
@@ -432,16 +432,28 @@ object Field {
 
 }
 
-case class Body(model: Model, multiple: Boolean, isDefault: Boolean)
+case class Body(bodyType: BodyType, multiple: Boolean, isDefault: Boolean)
 
 object Body {
   def apply(models: Seq[Model], resourceModel: Model, internal: InternalBody): Body = {
     val multiple = internal.multiple
     def fail = sys.error(s"body must name a type")
     val dt = internal.datatype
-    val model = models.find(_.name == dt).getOrElse {
-      sys.error(s"Named model[$dt] not found")
+    val bodyType = if (dt == "unit") {
+      UnitBodyType
+    } else if (dt == "file") {
+      FileBodyType
+    } else {
+      val model = models.find(_.name == dt).getOrElse {
+        sys.error(s"Named model[$dt] not found")
+      }
+      new ModelBodyType(model)
     }
-    new Body(model, multiple, false)
+    new Body(bodyType, multiple, false)
   }
 }
+
+sealed trait BodyType
+case class ModelBodyType(model: Model) extends BodyType
+case object FileBodyType extends BodyType
+case object UnitBodyType extends BodyType

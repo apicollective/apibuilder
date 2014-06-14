@@ -75,4 +75,17 @@ object Users extends Controller {
   }
 
   def postNoop() = Action { Ok("") }
+
+  def postProfileByGuid(guid: String) = Action(parse.temporaryFile) { request =>
+    val data = io.Source.fromFile(request.body.file).mkString
+    DB.withConnection { implicit c =>
+      SQL("""
+      update users set profile = {profile} where guid = {guid}
+      """).on(
+        'guid -> guid,
+        'profile -> data
+      ).execute()
+    }
+    NoContent
+  }
 }

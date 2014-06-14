@@ -64,6 +64,10 @@ require 'bigdecimal'
         with_body(json)
       end
 
+      def with_file(file)
+        with_body(file.read)
+      end
+
       def with_body(body)
         Preconditions.check_not_blank('body', body)
         @body = body

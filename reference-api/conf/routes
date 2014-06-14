@@ -7,3 +7,4 @@ GET      /organizations/:guid       controllers.Organizations.getByGuid(guid: St
 POST     /users                     controllers.Users.post(active: Boolean ?= true)
 GET      /users                     controllers.Users.get(guid: Option[String], email: Option[String], active: Boolean ?= true)
 POST     /users/noop                controllers.Users.postNoop()
+POST     /users/:guid/profile       controllers.Users.postProfileByGuid(guid: String)

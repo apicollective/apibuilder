@@ -98,7 +98,13 @@ ${clientMethods(resources).indent}
   private def clientMethods(resources: Seq[ScalaResource]): String = {
     resources.flatMap(_.operations).map { op =>
       val path: String = Play2Util.pathParams(op)
-      def payload = "val payload = play.api.libs.json.Json.toJson(_body)"
+      def payload = op.body.get.bodyType match { // only called for non-GET
+        case ScalaModelBodyType(_) => {
+          "val payload = play.api.libs.json.Json.toJson(_body)"
+        }
+        case ScalaFileBodyType => "val payload = _body"
+        case ScalaUnitBodyType => "val payload = \"\""
+      }
       val methodCall: String = op.method match {
         case "GET" => {
           s"""${Play2Util.queryParams(op)}

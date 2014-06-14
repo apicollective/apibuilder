@@ -514,15 +514,33 @@ package referenceapi {
       }
       
       def postNoop(
-        _body: User
+        _body: scala.Unit = ()
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
-        val payload = play.api.libs.json.Json.toJson(_body)
+        val payload = ""
         val queryBuilder = List.newBuilder[(String, String)]
         
         val query = queryBuilder.result
         processResponse(logRequest("POST", requestHolder(s"/users/noop"))
           .withQueryString(query:_*).post(payload)).map {
-          case r if r.status == 200 => new ResponseImpl((), 200)
+          case r if r.status == 204 => new ResponseImpl((), 204)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      def postProfileByGuid(
+        guid: java.util.UUID,
+        _body: java.io.File
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
+        val payload = _body
+        val queryBuilder = List.newBuilder[(String, String)]
+        
+        val query = queryBuilder.result
+        processResponse(logRequest("POST", requestHolder(s"/users/${({x: java.util.UUID =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(guid)}/profile"))
+          .withQueryString(query:_*).post(payload)).map {
+          case r if r.status == 204 => new ResponseImpl((), 204)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }

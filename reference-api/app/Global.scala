@@ -18,7 +18,8 @@ object Global extends GlobalSettings {
       create table users (
         guid uuid primary key,
         email varchar not null unique,
-        active boolean not null
+        active boolean not null,
+        profile varchar
       )
       """).execute()
       SQL("""

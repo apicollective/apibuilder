@@ -160,14 +160,23 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
       if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
         val body = op.body.get
-        val modelName = Text.underscoreToInitCap(body.model.name)
-        val fullModelName = s"$moduleName::Models::$modelName"
-        if (body.multiple) {
-          sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('body', body, $fullModelName)")
-        } else {
-          sb.append(s"        HttpClient::Preconditions.assert_class('body', body, $fullModelName)")
+        body.bodyType match {
+          case ModelBodyType(model) => {
+            val modelName = Text.underscoreToInitCap(model.name)
+            val fullModelName = s"$moduleName::Models::$modelName"
+            if (body.multiple) {
+              sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('body', body, $fullModelName)")
+            } else {
+              sb.append(s"        HttpClient::Preconditions.assert_class('body', body, $fullModelName)")
+            }
+            requestBuilder.append(".with_json(body.to_json)")
+          }
+          case UnitBodyType => // NOOP for body
+          case FileBodyType => {
+            sb.append(s"        HttpClient::Preconditions.assert_class('body', body, File)")
+            requestBuilder.append(".with_file(body)")
+          }
         }
-        requestBuilder.append(".with_json(body.to_json)")
       }
       requestBuilder.append(s".${op.method.toLowerCase}")
 

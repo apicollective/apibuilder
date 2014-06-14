@@ -105,6 +105,21 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
       }
     }
 
+    "should post profiles" in prop { (userForm: UserForm) =>
+      withClient { implicit client =>
+        import client._
+
+        val user = Users.post(_body = userForm).entity
+        import java.nio.file.Files
+        import java.io.FileOutputStream
+        val file = Files.createTempFile(user.guid.toString, ".profile").toFile
+        val out = new FileOutputStream(file)
+        out.write("Pices".getBytes)
+        out.close
+        Users.postProfileByGuid(user.guid, file).entity must equalTo(())
+      }
+    }
+
     "should support the user api" in prop { (userForm: UserForm) =>
       withClient { implicit client =>
         import client._

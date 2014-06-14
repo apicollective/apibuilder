@@ -1,4 +1,5 @@
 require 'spec_helper.rb'
+require 'tempfile'
 
 include ReferenceApi
 include Clients
@@ -39,6 +40,15 @@ describe ReferenceApi do
     it "should create inactive users" do
       user_form = make_user_form
       client.users.post(user_form, :active => false).should_not be_active
+    end
+
+    it "should post profiles" do
+      user_form = make_user_form
+      user = client.users.post(user_form)
+      file = Tempfile.new(user.guid + "-profile")
+      file.puts "Sagitarius"
+      file.close
+      client.users.post_profile_by_guid(user.guid, File.new(file.path))
     end
 
     it "should work" do

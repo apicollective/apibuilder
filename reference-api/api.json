@@ -140,9 +140,15 @@
                 {
                     "method": "POST",
                     "path": "/noop",
-                    "responses": {
-                        "200": { "type": "unit" }
-                    }
+                    "body": "unit"
+                },
+                {
+                    "method": "POST",
+                    "path": "/:guid/profile",
+                    "body": "file",
+                    "parameters": [
+                      { "name": "guid", "type": "uuid" }
+                    ]
                 }
             ]
         },
