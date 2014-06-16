@@ -6,10 +6,18 @@ import org.scalatest.Matchers
 class SvcApiDocJson extends FunSpec with Matchers {
 
   private val Path = "api/api.json"
+  private lazy val service = TestHelper.parseFile(Path).serviceDescription.get
+
+  it("alphabetizes models") {
+    service.models.map(_.name) should be(service.models.map(_.name).sorted)
+  }
+
+  it("alphabetizes resources") {
+    service.resources.map(_.model.plural) should be(service.resources.map(_.model.plural).sorted)
+  }
 
   it("parses models") {
-    val service = TestHelper.parseFile(Path).serviceDescription.get
-    service.models.map(_.name).sorted.mkString(" ") should be("code code_error error membership membership_request organization service user version")
+    service.models.map(_.name).mkString(" ") should be("code code_error error membership membership_request organization service user version")
 
     val user = service.models.find(_.name == "user").get
     user.fields.map(_.name).mkString(" ") should be("guid email name image_url")
@@ -18,12 +26,10 @@ class SvcApiDocJson extends FunSpec with Matchers {
   }
 
   it("parses resources") {
-    val service = TestHelper.parseFile(Path).serviceDescription.get
     service.resources.map(_.model.name).sorted.mkString(" ") should be("code membership membership_request organization service user version")
   }
 
   it("has defaults for all limit and offset parameters") {
-    val service = TestHelper.parseFile(Path).serviceDescription.get
     service.resources.flatMap(_.operations.filter(_.method == "GET")).foreach { op =>
 
       op.parameters.find { _.name == "limit" } match {
@@ -45,7 +51,6 @@ class SvcApiDocJson extends FunSpec with Matchers {
 
   it("all POST operations return either a 201, 204 or a 409") {
     val validCodes = Seq(201, 204, 409)
-    val service = TestHelper.parseFile(Path).serviceDescription.get
     service.resources.flatMap(_.operations.filter(_.method == "POST")).foreach { op =>
       val invalid = op.responses.find { response => !validCodes.contains(response.code)}
       invalid.foreach { response =>
