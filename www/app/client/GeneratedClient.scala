@@ -3,11 +3,6 @@ package apidoc.models {
     target: String,
     source: String
   )
-  case class CodeError(
-    code: String,
-    message: String,
-    validTargets: scala.collection.Seq[String] = Nil
-  )
   case class Error(
     code: String,
     message: String
@@ -86,26 +81,6 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "target").write[String] and
          (__ \ "source").write[String])(unlift(Code.unapply))
-      }
-    
-    implicit val readsCodeError: play.api.libs.json.Reads[CodeError] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "code").read[String] and
-         (__ \ "message").read[String] and
-         (__ \ "valid_targets").readNullable[scala.collection.Seq[String]].map { x =>
-          x.getOrElse(Nil)
-        })(CodeError.apply _)
-      }
-    
-    implicit val writesCodeError: play.api.libs.json.Writes[CodeError] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "code").write[String] and
-         (__ \ "message").write[String] and
-         (__ \ "valid_targets").write[scala.collection.Seq[String]])(unlift(CodeError.unapply))
       }
     
     implicit val readsError: play.api.libs.json.Reads[Error] =
@@ -329,22 +304,22 @@ package apidoc {
       /**
        * Generate code for a specific version of a service.
        */
-      def getByVersionAndTarget(
-        version: String,
-        target: String
+      def getByVersionGuidAndTargetName(
+        versionGuid: java.util.UUID,
+        targetName: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Code]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
-        GET(s"/code/${({x: String =>
+        GET(s"/code/${({x: java.util.UUID =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(versionGuid)}/${({x: String =>
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
-        })(version)}/${({x: String =>
-          val s = x
-          java.net.URLEncoder.encode(s, "UTF-8")
-        })(target)}", queryBuilder.result).map {
+        })(targetName)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Code], 200)
-          case r if r.status == 404 => throw new FailedResponse(r.json.as[CodeError], 404)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -924,4 +899,3 @@ package apidoc {
     }
   }
 }
-

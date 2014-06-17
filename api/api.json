@@ -67,8 +67,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "version", "type": "version" },
-                { "name": "target", "type": "string", "description": "The target platform.", "example": "play-2.2-client, ruby-client, scala-models, play-2.2-json" },
+                { "name": "target", "type": "string", "description": "The target platform.", "example": "play-2.3-client, ruby-client, scala-models, play-2.3-json" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
