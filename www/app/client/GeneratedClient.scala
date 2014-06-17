@@ -2,7 +2,7 @@ package apidoc.models {
   case class User(
     guid: java.util.UUID,
     email: String,
-    name: String,
+    name: scala.Option[String] = None,
     imageUrl: scala.Option[String] = None
   )
   case class Organization(
@@ -79,7 +79,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "email").read[String] and
-         (__ \ "name").read[String] and
+         (__ \ "name").readNullable[String] and
          (__ \ "image_url").readNullable[String])(User.apply _)
       }
     
@@ -89,7 +89,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").write[java.util.UUID] and
          (__ \ "email").write[String] and
-         (__ \ "name").write[String] and
+         (__ \ "name").write[scala.Option[String]] and
          (__ \ "image_url").write[scala.Option[String]])(unlift(User.unapply))
       }
     
@@ -359,7 +359,7 @@ package apidoc {
        */
       def get(
         organizationGuid: scala.Option[java.util.UUID] = None,
-        organizationKey: scala.Option[java.util.UUID] = None,
+        organizationKey: scala.Option[String] = None,
         userGuid: scala.Option[java.util.UUID] = None,
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
@@ -375,8 +375,8 @@ package apidoc {
         }
         queryBuilder ++= organizationKey.map { x =>
           "organization_key" -> (
-            { x: java.util.UUID =>
-              x.toString
+            { x: String =>
+              x
             }
           )(x)
         }
@@ -484,25 +484,25 @@ package apidoc {
        * Search all memberships. Results are always paginated.
        */
       def get(
-        organizationGuid: scala.Option[java.util.UUID] = None,
-        organizationKey: scala.Option[java.util.UUID] = None,
+        orgGuid: scala.Option[java.util.UUID] = None,
+        orgKey: scala.Option[String] = None,
         userGuid: scala.Option[java.util.UUID] = None,
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Membership]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
-        queryBuilder ++= organizationGuid.map { x =>
-          "organization_guid" -> (
+        queryBuilder ++= orgGuid.map { x =>
+          "org_guid" -> (
             { x: java.util.UUID =>
               x.toString
             }
           )(x)
         }
-        queryBuilder ++= organizationKey.map { x =>
-          "organization_key" -> (
-            { x: java.util.UUID =>
-              x.toString
+        queryBuilder ++= orgKey.map { x =>
+          "org_key" -> (
+            { x: String =>
+              x
             }
           )(x)
         }

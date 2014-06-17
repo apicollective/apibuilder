@@ -1,6 +1,6 @@
-@(user: client.Apidoc.User,
+@(user: apidoc.models.User,
   organizations: lib.PaginatedCollection[apidoc.models.Organization],
-  membershipRequests: lib.PaginatedCollection[client.Apidoc.MembershipRequest])(implicit flash: Flash)
+  membershipRequests: lib.PaginatedCollection[apidoc.models.MembershipRequest])(implicit flash: Flash)
 
 @main(models.MainTemplate(user = Some(user), title = "Organizations")) {
 
@@ -35,7 +35,7 @@
       <tbody>
         @membershipRequests.items.map { mr =>
          <tr>
-           <td>@mr.org.name - requested at @mr.created_at</td>
+           <td>@mr.organization.name</td>
          </tr>
        }
       </tbody>

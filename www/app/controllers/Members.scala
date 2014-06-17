@@ -2,9 +2,8 @@ package controllers
 
 import core.{ Review, Role }
 import lib.{ Pagination, PaginatedCollection }
+import apidoc.models.{ Organization, User }
 import models.MainTemplate
-import client.Apidoc
-import client.Apidoc.{ Organization, User }
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -18,23 +17,23 @@ object Members extends Controller {
 
   def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
-      org <- request.apidocClient.Organizations.get(key = Some(orgKey))
-      members <- request.client.memberships.findAll(organizationKey = Some(orgKey),
-                                                    limit = Pagination.DefaultLimit+1,
-                                                    offset = page * Pagination.DefaultLimit)
+      org <- request.api.Organizations.get(key = Some(orgKey))
+      members <- request.api.Memberships.get(orgKey = Some(orgKey),
+                                             limit = Some(Pagination.DefaultLimit+1),
+                                             offset = Some(page * Pagination.DefaultLimit))
     } yield {
       org.entity.headOption match {
 
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
-        case Some(o: apidoc.models.Organization) => {
+        case Some(o: Organization) => {
           // TODO: Check if this user is an admin in order to allow
           // the add member link
 
           Ok(views.html.members.show(MainTemplate(title = o.name,
                                                   org = Some(o),
                                                   user = Some(request.user)),
-                                     members = PaginatedCollection(page, members)))
+                                     members = PaginatedCollection(page, members.entity)))
         }
       }
     }
@@ -42,7 +41,7 @@ object Members extends Controller {
 
   def add(orgKey: String) = Authenticated.async { implicit request =>
     for {
-      orgOption <- request.apidocClient.Organizations.get(key = Some(orgKey))
+      orgOption <- request.api.Organizations.get(key = Some(orgKey))
     } yield {
       val org = orgOption.entity.headOption.getOrElse { sys.error("invalid org") }
       val filledForm = addMemberForm.fill(AddMemberData(role = Role.Member.key, email = ""))
@@ -56,7 +55,7 @@ object Members extends Controller {
 
   def addPost(orgKey: String) = Authenticated.async { implicit request =>
     for {
-      orgOption <- request.apidocClient.Organizations.get(key = Some(orgKey))
+      orgOption <- request.api.Organizations.get(key = Some(orgKey))
     } yield {
       val org = orgOption.entity.headOption.getOrElse { sys.error("invalid org") }
 
@@ -71,7 +70,7 @@ object Members extends Controller {
         },
 
         valid => {
-          Await.result(request.client.users.findByEmail(valid.email), 1500.millis) match {
+          Await.result(request.api.Users.get(email = Some(valid.email)), 1500.millis).entity.headOption match {
 
             case None => {
               val filledForm = addMemberForm.fill(valid)
@@ -79,8 +78,8 @@ object Members extends Controller {
             }
 
             case Some(user: User) => {
-              val membershipRequest = Await.result(request.client.membershipRequests.create(org.guid.toString, user.guid, valid.role), 1500.millis)
-              val review = Await.result(request.client.membershipRequestReviews.post(membershipRequest.guid, Review.Accept.key), 1500.millis)
+              val membershipRequest = Await.result(request.api.MembershipRequests.post(org.guid, user.guid, valid.role), 1500.millis).entity
+              val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid.toString), 1500.millis)
               Redirect(routes.Members.show(org.key)).flashing("success" -> s"${valid.role} added")
             }
           }

@@ -1,7 +1,5 @@
 package controllers
 
-import client.ApidocClient
-
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -13,10 +11,9 @@ import scala.concurrent.duration._
 
 object LoginController extends Controller {
 
-  private lazy val masterClient = ApidocClient.instance("f3973f60-be9f-11e3-b1b6-0800200c9a66")
-
   import scala.concurrent.ExecutionContext.Implicits.global
-  import scala.concurrent.Future
+
+  private val Email = "admin@apidoc.me"
 
   def redirect = Action {
     Redirect(routes.LoginController.index())
@@ -24,9 +21,12 @@ object LoginController extends Controller {
 
   def index = Action.async { implicit request =>
     for {
-      user <- masterClient.users.findByEmail("admin@apidoc.me")
+      userResponse <- Authenticated.api.Users.get(email = Some(Email))
     } yield {
-      Redirect("/").withSession { "user_guid" -> user.get.guid }
+      val user = userResponse.entity.headOption.getOrElse {
+        sys.error(s"Could not find user with email[$Email]")
+      }
+      Redirect("/").withSession { "user_guid" -> user.guid.toString }
     }
 
   }
@@ -71,13 +71,12 @@ object LoginController extends Controller {
         }
 
         case Some(email: String) => {
-          val fullname = info.attributes.get("fullname")
-          val imageUrl = info.attributes.get("image_url")
-
-          val user = Await.result(masterClient.users.findByEmail(email), 1500.millis).getOrElse {
-            Await.result(masterClient.users.create(email, fullname, imageUrl), 1500.millis)
+          val user = Await.result(Authenticated.api.Users.get(email = Some(email)), 1500.millis).entity.headOption.getOrElse {
+            Await.result(Authenticated.api.Users.post(email = email,
+                                                      name = info.attributes.get("fullname"),
+                                                      imageUrl = info.attributes.get("image_url")), 1500.millis).entity
           }
-          Redirect("/").withSession { "user_guid" -> user.guid }
+          Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }
       }
     })

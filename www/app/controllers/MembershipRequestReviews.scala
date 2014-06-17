@@ -1,6 +1,5 @@
 package controllers
 
-import core.Review
 import play.api._
 import play.api.mvc._
 
@@ -10,7 +9,7 @@ object MembershipRequestReviews extends Controller {
 
   def accept(orgKey: String, membershipRequestGuid: String) = Authenticated.async { implicit request =>
     for {
-      review <- request.client.membershipRequestReviews.post(membershipRequestGuid, Review.Accept.key)
+      review <- request.api.MembershipRequests.postAcceptByGuid(membershipRequestGuid)
     } yield {
       Redirect(routes.Organizations.membershipRequests(orgKey)).flashing("success" -> "Request accepted")
     }
@@ -18,7 +17,7 @@ object MembershipRequestReviews extends Controller {
 
   def decline(orgKey: String, membershipRequestGuid: String) = Authenticated.async { implicit request =>
     for {
-      review <- request.client.membershipRequestReviews.post(membershipRequestGuid, Review.Decline.key)
+      review <- request.api.MembershipRequests.postDeclineByGuid(membershipRequestGuid)
     } yield {
       Redirect(routes.Organizations.membershipRequests(orgKey)).flashing("success" -> "Request declined")
     }
