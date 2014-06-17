@@ -2,8 +2,7 @@ package controllers
 
 import models.MainTemplate
 import core.{ ServiceDescription, ServiceDescriptionValidator, UrlKey }
-import apidoc.models.Organization
-import client.Apidoc.Version
+import apidoc.models.{ Organization, Version }
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.Json
@@ -21,26 +20,24 @@ object Versions extends Controller {
     for {
       org <- request.api.Organizations.get(key = Some(orgKey))
       serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
-      versions <- request.client.versions.findAllByOrganizationKeyAndServiceKey(orgKey, serviceKey, limit = 10)
-      version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+      versionsResponse <- request.api.Versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
+      versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
-      version match {
+      // TODO: How to handle 404 nicely?
+      println("versionResponse.entity: " + versionResponse.entity)
+      versionResponse.entity match {
 
-        case None => {
-          Redirect(controllers.routes.Organizations.show(orgKey)).flashing("warning" -> s"Service version ${versionName} not found")
-        }
-
-        case Some(v: Version) => {
+        case v: Version => {
           val service = serviceResponse.entity.headOption.getOrElse {
             sys.error(s"Could not find service for orgKey[$orgKey] and key[$serviceKey]")
           }
-          val sd = ServiceDescription(v.json.get)
+          val sd = ServiceDescription(v.json)
           val tpl = MainTemplate(service.name + " " + v.version,
                                  user = Some(request.user),
                                  org = Some(org.entity.head),
                                  service = Some(service),
                                  version = Some(v.version),
-                                 allServiceVersions = versions.map(_.version),
+                                 allServiceVersions = versionsResponse.entity.map(_.version),
                                  serviceDescription = Some(sd))
           Ok(views.html.versions.show(tpl, sd))
         }
@@ -50,18 +47,11 @@ object Versions extends Controller {
 
   def apiJson(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
     for {
-      version <- request.client.versions.findByOrganizationKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+      versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
-      version match {
-
-        case None => {
-          Redirect(controllers.routes.Organizations.show(orgKey)).flashing("warning" -> s"Service version ${versionName} not found")
-        }
-
-        case Some(v: Version) => {
-          Ok(v.json.get).withHeaders("Content-Type" -> "application/json")
-        }
-      }
+      // TODO: Handle 404
+      val v = versionResponse.entity
+      Ok(v.json).withHeaders("Content-Type" -> "application/json")
     }
   }
 

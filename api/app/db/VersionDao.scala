@@ -7,19 +7,11 @@ import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-case class Version(guid: String, version: String)
+case class Version(guid: String, version: String, json: String)
 
 object Version {
 
   implicit val versionWrites = Json.writes[Version]
-
-}
-
-case class DetailedVersion(guid: String, version: String, json: String)
-
-object DetailedVersion {
-
-  implicit val versionWrites = Json.writes[DetailedVersion]
 
 }
 
@@ -29,21 +21,15 @@ object VersionDao {
   implicit val versionWrites = Json.writes[Version]
 
   private val BaseQuery = """
-    select guid::varchar, version
+    select guid::varchar, version, json::varchar
      from versions
     where deleted_at is null
   """
 
-  private val DetailedBaseQuery = """
-    select guid::varchar, version, json::varchar
-      from versions
-     where guid = {guid}::uuid
-  """
-
-  def create(user: User, service: Service, version: String, json: String): DetailedVersion = {
-    val v = DetailedVersion(guid = UUID.randomUUID.toString,
-                            version = version,
-                            json = json)
+  def create(user: User, service: Service, version: String, json: String): Version = {
+    val v = Version(guid = UUID.randomUUID.toString,
+                    version = version,
+                    json = json)
 
     DB.withConnection { implicit c =>
       SQL("""
@@ -66,7 +52,7 @@ object VersionDao {
     SoftDelete.delete("versions", deletedBy, version.guid)
   }
 
-  def replace(user: User, version: Version, service: Service, newJson: String): DetailedVersion = {
+  def replace(user: User, version: Version, service: Service, newJson: String): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user, version)
       VersionDao.create(user, service, version.version, newJson)
@@ -77,16 +63,6 @@ object VersionDao {
     VersionDao.findAll(service_guid = Some(service.guid),
                        version = Some(version),
                        limit = 1).headOption
-  }
-
-  def getDetails(version: Version): Option[DetailedVersion] = {
-    DB.withConnection { implicit c =>
-      SQL(DetailedBaseQuery).on('guid -> version.guid)().toList.map { row =>
-        DetailedVersion(guid = row[String]("guid"),
-                        version = row[String]("version"),
-                        json = row[String]("json"))
-        }.toSeq.headOption
-    }
   }
 
   def findAll(service_guid: Option[String] = None,
@@ -111,7 +87,8 @@ object VersionDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Version(guid = row[String]("guid"),
-                version = row[String]("version"))
+                version = row[String]("version"),
+                json = row[String]("json"))
         }.toSeq
     }
   }

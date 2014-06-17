@@ -8,8 +8,7 @@ import play.api.libs.json._
 import core.generator._
 import apidoc.models
 import apidoc.models.json._
-import db.DetailedVersion
-import db.VersionDao
+import db.{ Version, VersionDao }
 
 object Code extends Controller {
   def getByVersionAndTarget(versionGuid: String, target: String) = Action { request =>
@@ -38,17 +37,17 @@ object Code extends Controller {
     }
   }
 
-  private def versionDetails(guid: String): Option[DetailedVersion] = {
-    VersionDao.findAll(guid = Some(guid)).headOption.flatMap(VersionDao.getDetails)
+  private def versionDetails(guid: String): Option[Version] = {
+    VersionDao.findAll(guid = Some(guid)).headOption
   }
 
-  private def generator(target: String): Option[DetailedVersion => models.Code] = {
+  private def generator(target: String): Option[Version => models.Code] = {
     Target.generator.lift(target).map { source =>
-      { dv: DetailedVersion =>
+      { v: Version =>
         val version = new models.Version(
-          guid = UUID.fromString(dv.guid),
-          version = dv.version,
-          json = dv.json
+          guid = UUID.fromString(v.guid),
+          version = v.version,
+          json = v.json
         )
         new models.Code(version, target, source(version.json))
       }
