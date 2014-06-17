@@ -61,10 +61,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
 
         import client._
 
-        Organizations.post(
-          guid = organization.guid,
-          name = organization.name
-        ).entity must equalTo(organization)
+        Organizations.post(organization).entity must equalTo(organization)
 
         Organizations.getByGuid(guid = organization.guid.toString)
           .entity must equalTo(organization)
@@ -87,87 +84,131 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
       }
     }
 
-    "should support the user api" in prop { (user: models.User) =>
+    "should default to creating active users" in prop { (userForm: UserForm) =>
+      withClient { implicit client =>
+        import client._
+        Users.post(_body = userForm).entity.active must beTrue
+      }
+    }
+
+    "should create active users" in prop { (userForm: UserForm) =>
+      withClient { implicit client =>
+        import client._
+        Users.post(active = true, _body = userForm).entity.active must beTrue
+      }
+    }
+
+    "should create inactive users" in prop { (userForm: UserForm) =>
+      withClient { implicit client =>
+        import client._
+        Users.post(active = false, _body = userForm).entity.active must beFalse
+      }
+    }
+
+    "should post profiles" in prop { (userForm: UserForm) =>
       withClient { implicit client =>
         import client._
 
-        Users.post(
+        val user = Users.post(_body = userForm).entity
+        import java.nio.file.Files
+        import java.io.FileOutputStream
+        val file = Files.createTempFile(user.guid.toString, ".profile").toFile
+        val out = new FileOutputStream(file)
+        out.write("Pices".getBytes)
+        out.close
+        Users.postProfileByGuid(user.guid, file).entity must equalTo(())
+      }
+    }
+
+    "should patch by guid" in prop { (userForm: UserForm, patches: Seq[User.Patch]) =>
+      withClient { implicit client =>
+        import client._
+
+        val user = Users.post(_body = userForm).entity
+        val patched = Users.patchByGuid(user.guid, patches).entity
+        patches.foldLeft(user) { case (user, patch) =>
+          patch.copy(guid = None)(user)
+        } must equalTo(patched)
+        Users.get(
           guid = user.guid,
-          email = user.email,
-          active = user.active
-        ).entity must equalTo(user)
+          active = patched.active).entity.head must equalTo(patched)
+      }
+    }
+
+    "should support the user api" in prop { (userForm: UserForm) =>
+      withClient { implicit client =>
+        import client._
+
+        val user = Users.post(
+          active = true,
+          _body = userForm).entity
+        user.email must equalTo(userForm.email)
+        user.active must beTrue
 
         Users.get(
           guid = user.guid,
-          active = user.active
+          active = true
         ).entity must equalTo(List(user))
 
         Users.get(
           guid = user.guid,
-          active = !user.active
+          active = false
         ).entity must equalTo(Nil)
 
         Users.get(
           email = user.email,
-          active = user.active
+          active = true
         ).entity must equalTo(List(user))
 
         Users.get(
           email = user.email,
-          active = !user.active
+          active = false
         ).entity must equalTo(Nil)
 
         {
           val us = Users.get(
-            active = user.active
+            active = true
           ).entity
           us.foreach { u =>
-            u.active must equalTo(user.active)
+            u.active must beTrue
           }
           us must contain(user)
         }
 
         {
           val us = Users.get(
-            active = !user.active
+            active = false
           ).entity
           us.foreach { u =>
-            u.active must not equalTo(user.active)
+            u.active must beFalse
           }
           us must not contain(user)
         }
       }
     }
 
-    "should support the member api" in prop { (member: models.Member) =>
+    "should support the member api" in prop { (userForm: UserForm, organization: Organization, role: String) =>
       withClient { implicit client =>
 
         import client._
 
-        Organizations.post(
-          guid = member.organization.guid,
-          name = member.organization.name
-        ).entity must equalTo(member.organization)
-
-        Users.post(
-          guid = member.user.guid,
-          email = member.user.email,
-          active = member.user.active
-        ).entity must equalTo(member.user)
-
-        Members.post(
-          guid = member.guid,
-          organization = member.organization.guid,
-          user = member.user.guid,
-          role = member.role
-        ).entity must equalTo(member)
+        Organizations.post(organization).entity
+        val user = Users.post(_body = userForm).entity
+        val memberForm = new MemberForm(
+          organization = organization.guid,
+          user = user.guid,
+          role = role)
+        val member = Members.post(memberForm).entity
+        member.organization must equalTo(organization)
+        member.user.email must equalTo(userForm.email)
+        member.role must equalTo(role)
 
         Members.get(guid = member.guid).entity must equalTo(List(member))
 
-        Members.get(organizationGuid = member.organization.guid)
+        Members.get(organization = member.organization.guid)
           .entity must equalTo(List(member))
 
-        Members.get(userGuid = member.user.guid)
+        Members.get(user = member.user.guid)
           .entity must equalTo(List(member))
 
         Members.get(role = member.role).entity must equalTo(List(member))

@@ -28,6 +28,11 @@ def make_user
   )
 end
 
+def make_user_form
+  Models::UserForm.new(
+    :email => Faker::Internet.email)
+end
+
 def make_member
   Models::Member.new(
     :guid => make_uuid,

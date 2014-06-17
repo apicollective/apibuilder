@@ -67,6 +67,7 @@ case class InternalOperation(method: Option[String],
                              path: String,
                              description: Option[String],
                              namedParameters: Seq[String],
+                             body: Option[InternalBody],
                              parameters: Seq[InternalParameter],
                              responses: Seq[InternalResponse]) {
 
@@ -109,6 +110,27 @@ case class InternalResponse(code: String,
     } else {
       dt
     }
+  }
+
+}
+
+case class InternalBody(datatype: String,
+                        multiple: Boolean = false) {
+
+  lazy val datatypeLabel: String = if (multiple) {
+    s"[$datatype]"
+  } else {
+    datatype
+  }
+
+}
+
+object InternalBody {
+
+  def apply(json: JsString): InternalBody = {
+    val parsedDatatype = InternalParsedDatatype(json.value)
+    new InternalBody(datatype = parsedDatatype.name,
+                     multiple = parsedDatatype.multiple)
   }
 
 }
@@ -169,14 +191,17 @@ object InternalOperation {
   private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.UnitType.name))
 
   def apply(resourcePath: String, json: JsObject): InternalOperation = {
-    val path = resourcePath + (json \ "path").asOpt[String].getOrElse("")
-    val namedParameters = Util.namedParametersInPath(path)
-    val parameters = (json \ "parameters").asOpt[JsArray] match {
+    val method: Option[String] = (json \ "method").asOpt[String].map(_.toUpperCase)
+    val path: String = resourcePath + (json \ "path").asOpt[String].getOrElse("")
+    val namedParameters: Seq[String] = Util.namedParametersInPath(path)
+    val parameters: Seq[InternalParameter] = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {
         a.value.map { data => InternalParameter(data.as[JsObject]) }
       }
     }
+
+    val body: Option[InternalBody] = (json \ "body").asOpt[JsString].map(InternalBody(_))
 
     val responses: Seq[InternalResponse] = {
       (json \ "responses").asOpt[JsObject] match {
@@ -194,11 +219,12 @@ object InternalOperation {
       }
     }
 
-    InternalOperation(method = (json \ "method").asOpt[String].map(_.toUpperCase),
+    InternalOperation(method = method,
                       path = path,
                       description = (json \ "description").asOpt[String],
                       responses = responses,
                       namedParameters = namedParameters,
+                      body = body,
                       parameters = parameters)
   }
 

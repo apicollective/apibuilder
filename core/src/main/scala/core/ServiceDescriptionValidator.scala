@@ -49,7 +49,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateName ++ validateModels ++ validateFields ++ validateParameterTypes ++ validateFieldTypes ++ validateResources ++ validateParameters ++ validateResponses
+          validateName ++ validateModels ++ validateFields ++ validateParameterTypes ++ validateFieldTypes ++ validateResources ++ validateParameters ++ validateResponses ++ validateBodies
         } else {
           requiredFieldErrors
         }
@@ -301,6 +301,34 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }.distinct
 
     modelNameErrors ++ missingOperations ++ duplicateModels
+  }
+
+  private def validateBodies: Seq[String] = {
+    val modelNames = internalServiceDescription.get.models.map { _.name }.toSet
+    internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.flatMap {  operation =>
+        operation.body.flatMap { body =>
+          val modelName = resource.modelName.getOrElse("")
+          val bodyType = body.datatype
+          val method = operation.method.getOrElse("")
+          if (method == "GET" || method == "DELETE") {
+            Some {
+              s"Operation[$modelName#$method ${operation.path}: cannot define a body with method $method"
+            }
+          } else if (method == "PATCH") {
+            Some {
+              s"Operation[$modelName#$method ${operation.path}: cannot define a body with method $method. Only the default is allowed."
+            }
+          } else if (bodyType != "unit" && bodyType != "file" && !modelNames(bodyType)) {
+            Some {
+              s"Operation[$modelName#$method ${operation.path}: has illegal body type: $bodyType"
+            }
+          } else {
+            None
+          }
+        }
+      }
+    }
   }
 
 }

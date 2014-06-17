@@ -8,7 +8,6 @@ trait Play2Util {
   def jsonWrites(x: ScalaModel): String
   def queryParams(operation: ScalaOperation): String
   def pathParams(operation: ScalaOperation): String
-  def formParams(operation: ScalaOperation): String
 }
 
 object Play2Util extends Play2Util {
@@ -16,70 +15,146 @@ object Play2Util extends Play2Util {
 
   def jsonReads(x: ScalaModel): String = {
     val name = x.name
-    def read(field: ScalaField): String = field.datatype match {
-      case x: ScalaDataType.ScalaListType => {
-        // if the key is absent, we return an empty
-        // list
-        s"""readNullable[${x.name}].map { x =>
+    val classReads: String = {
+      def read(field: ScalaField): String = field.datatype match {
+        case x: ScalaDataType.ScalaListType => {
+          // if the key is absent, we return an empty
+          // list
+          s"""readNullable[${x.name}].map { x =>
   x.getOrElse(Nil)
 }"""
+        }
+        case x: ScalaDataType.ScalaModelType => {
+          s"lazyRead(reads${x.name})"
+        }
+        case ScalaDataType.ScalaOptionType(x: ScalaDataType.ScalaModelType) => {
+          s"lazyReadNullable(reads${x.name})"
+        }
+        case ScalaDataType.ScalaOptionType(inner) => {
+          s"readNullable[${inner.name}]"
+        }
+        case x => {
+          s"read[${x.name}]"
+        }
       }
-      case ScalaDataType.ScalaOptionType(inner) => {
-        s"readNullable[${inner.name}]"
-      }
-      case x => {
-        s"read[${x.name}]"
-      }
-    }
-    x.fields match {
-      case field::Nil => {
-        s"""{
+      x.fields match {
+        case field::Nil => {
+          s"""implicit def reads$name: play.api.libs.json.Reads[$name] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
   (__ \\ "${field.originalName}").${read(field)}.map { x =>
     new ${name}(${field.name} = x)
   }
 }"""
-      }
-      case fields => {
-        val builder: String = x.fields.map { field =>
-          s"""(__ \\ "${field.originalName}").${read(field)}"""
-        }.mkString("(", " and\n ", ")")
+        }
+        case fields => {
+          val builder: String = x.fields.map { field =>
+            s"""(__ \\ "${field.originalName}").${read(field)}"""
+          }.mkString("(", " and\n ", ")")
 
-        s"""{
+          s"""implicit def reads$name: play.api.libs.json.Reads[$name] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
 ${builder.indent}(${name}.apply _)
 }"""
+        }
       }
     }
+    val patchReads: String = {
+      def read(field: ScalaField): String = field.datatype match {
+        case d: ScalaModelType => s"lazyReadNullable(reads${d.name})"
+        case d => s"readNullable[${d.name}]"
+      }
+      x.fields match {
+        case field::Nil => {
+          s"""implicit def reads${name}_Patch: play.api.libs.json.Reads[$name.Patch] = {
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+  (__ \\ "${field.originalName}").${read(field)}.map { x =>
+    new ${name}.Patch(${field.name} = x)
+  }
+}"""
+        }
+        case fields => {
+          val builder: String = x.fields.map { field =>
+            s"""(__ \\ "${field.originalName}").${read(field)}"""
+          }.mkString("(", " and\n ", ")")
+
+          s"""implicit def reads${name}_Patch: play.api.libs.json.Reads[$name.Patch] = {
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+${builder.indent}(${name}.Patch.apply _)
+}"""
+        }
+      }
+    }
+
+    s"""$classReads
+
+$patchReads
+"""
   }
 
   def jsonWrites(x: ScalaModel): String = {
     val name = x.name
-
-    x.fields match {
-      case field::Nil => {
-        s"""new play.api.libs.json.Writes[$name] {
+    val classWrites: String = {
+      x.fields match {
+        case field::Nil => {
+          s"""implicit def writes$name = new play.api.libs.json.Writes[$name] {
   def writes(x: ${name}) = play.api.libs.json.Json.obj(
     "${field.originalName}" -> play.api.libs.json.Json.toJson(x.${field.name})
   )
 }"""
-      }
-      case fields => {
-        val builder: String = x.fields.map { field =>
-          s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
-        }.mkString("(", " and\n ", ")")
+        }
+        case fields => {
+          val builder: String = x.fields.map { field =>
+            field.datatype match {
+              case d: ScalaModelType => s"""(__ \\ "${field.originalName}").lazyWrite(writes${d.name})"""
+              case d => s"""(__ \\ "${field.originalName}").write[${d.name}]"""
+            }
+          }.mkString("(", " and\n ", ")")
 
-        s"""{
+          s"""implicit def writes$name: play.api.libs.json.Writes[$name] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
 ${builder.indent}(unlift(${name}.unapply))
 }"""
+        }
       }
     }
+
+    val patchWrites = {
+      x.fields match {
+        case field::Nil => {
+          s"""implicit def writes${name}_Patch: play.api.libs.json.Writes[$name.Patch] = new play.api.libs.json.Writes[$name.Patch] {
+  def writes(x: ${name}.Patch) = play.api.libs.json.Json.obj(
+    "${field.originalName}" -> play.api.libs.json.Json.toJson(x.${field.name})
+  )
+}"""
+        }
+        case fields => {
+          val builder: String = x.fields.map { field =>
+            field.datatype match {
+              case d: ScalaModelType => s"""(__ \\ "${field.originalName}").lazyWriteNullable(writes${d.name})"""
+              case d => s"""(__ \\ "${field.originalName}").writeNullable[${d.name}]"""
+            }
+          }.mkString("(", " and\n ", ")")
+
+          s"""implicit def writes${name}_Patch: play.api.libs.json.Writes[$name.Patch] = {
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+${builder.indent}(unlift(${name}.Patch.unapply))
+}"""
+        }
+      }
+    }
+    s"""$classWrites
+
+$patchWrites
+"""
   }
 
+  // TODO refactor so this doesn't use a List Builder and anonymous functions
   def queryParams(op: ScalaOperation): String = {
     val queryStringEntries: String = op.queryParameters.map { p =>
       s"queryBuilder ++= ${QueryStringHelper.queryString(p)}"
@@ -101,15 +176,6 @@ ${queryStringEntries}"""
         path.patch(from, s"/$${$value}", spec.length)
     }
     s""" s"$tmp" """.trim
-  }
-
-  def formParams(op: ScalaOperation): String = {
-    val params = op.formParameters.map { param =>
-      s""" "${param.originalName}" -> play.api.libs.json.Json.toJson(${param.name})""".trim
-    }.mkString(",\n")
-    s"""val payload = play.api.libs.json.Json.obj(
-${params.indent}
-)"""
   }
 
   private object PathParamHelper {

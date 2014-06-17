@@ -4,11 +4,12 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
 
-  it("isJsonDocumentMethod") {
-    GeneratorUtil.isJsonDocumentMethod("GET") should be(false)
-    GeneratorUtil.isJsonDocumentMethod("POST") should be(true)
-    GeneratorUtil.isJsonDocumentMethod("PUT") should be(true)
-    GeneratorUtil.isJsonDocumentMethod("PATCH") should be(true)
+  it("bodyAllowed") {
+    GeneratorUtil.bodyAllowed("GET") should be(false)
+    GeneratorUtil.bodyAllowed("DELETE") should be(false)
+    GeneratorUtil.bodyAllowed("POST") should be(true)
+    GeneratorUtil.bodyAllowed("PUT") should be(true)
+    GeneratorUtil.bodyAllowed("PATCH") should be(true)
   }
 
   it("formatComment") {

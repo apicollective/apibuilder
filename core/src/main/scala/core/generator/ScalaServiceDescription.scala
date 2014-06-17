@@ -88,13 +88,39 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   lazy val queryParameters = parameters.filter { _.location == ParameterLocation.Query }
 
-  lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
+  lazy val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
 
-  val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
+  lazy val body: Option[ScalaBody] = operation.body.map(new ScalaBody(_))
 
-  val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+  lazy val argList: String = {
+    val base = parameters.map(_.definition)
+    val params = if (method != "GET") {
+      val bodyParam = body.get.bodyType match {
+        case ScalaUnitBodyType => {
+          s"_body: scala.Unit = ()"
+        }
+        case ScalaFileBodyType => {
+          if (body.get.multiple) s"_body: scala.collection.immutable.Seq[java.io.File]"
+          else s"_body: java.io.File"
+        }
+        case ScalaModelBodyType(model) => {
+          val name = if (method == "PATCH") {
+            s"scala.collection.Seq[${model.name}.Patch]"
+          } else {
+            model.name
+          }
+          if (body.get.multiple) s"_body: scala.collection.immutable.Seq[$name]"
+          else s"_body: $name"
+        }
+      }
+      base :+ bodyParam
+    } else {
+      base
+    }
+    ScalaUtil.fieldsToArgList(params)
+  }
 
-  val responses: List[ScalaResponse] = {
+  lazy val responses: List[ScalaResponse] = {
     operation.responses.toList.map { new ScalaResponse(_) }
   }
 
@@ -102,6 +128,21 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
     case r if r.isSuccess => r.datatype
   }.getOrElse("Unit")
 }
+
+class ScalaBody(body: Body) {
+  val bodyType = body.bodyType match {
+    case ModelBodyType(model) => new ScalaModelBodyType(new ScalaModel(model))
+    case FileBodyType => ScalaFileBodyType
+    case UnitBodyType => ScalaUnitBodyType
+  }
+
+  val multiple = body.multiple
+}
+
+sealed trait ScalaBodyType
+case class ScalaModelBodyType(model: ScalaModel) extends ScalaBodyType
+case object ScalaFileBodyType extends ScalaBodyType
+case object ScalaUnitBodyType extends ScalaBodyType
 
 class ScalaResponse(response: Response) {
   def code = response.code
