@@ -160,7 +160,7 @@ object MembershipRequest {
                           user = User(guid = row[String]("user_guid"),
                                       email = row[String]("user_email"),
                                       name = row[Option[String]]("user_name"),
-                                      imageUrl = row[Option[String]]("user_image_url")),
+                                      image_url = row[Option[String]]("user_image_url")),
                           role = row[String]("role"))
       }.toSeq
     }

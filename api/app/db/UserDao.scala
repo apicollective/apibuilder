@@ -11,7 +11,7 @@ object User {
   implicit val userWrites = Json.writes[User]
 }
 
-case class User(guid: String, email: String, name: Option[String], imageUrl: Option[String])
+case class User(guid: String, email: String, name: Option[String] = Some("ADSF"), image_url: Option[String] = Some("ADSF"))
 
 object UserDao {
 
@@ -43,8 +43,8 @@ object UserDao {
     findByEmail(email) match {
 
       case Some(u: User) => {
-        if (u.name != name || u.imageUrl != imageUrl) {
-          val newUser = u.copy(name = name, imageUrl = imageUrl)
+        if (u.name != name || u.image_url != imageUrl) {
+          val newUser = u.copy(name = name, image_url = imageUrl)
           update(newUser)
           newUser
         } else {
@@ -63,7 +63,7 @@ object UserDao {
       SQL(UpdateQuery).on('guid -> user.guid,
                           'email -> user.email,
                           'name -> user.name,
-                          'imageUrl -> user.imageUrl,
+                          'image_url -> user.image_url,
                           'updated_by_guid -> Constants.DefaultUserGuid).execute()
     }
   }
@@ -133,7 +133,7 @@ object UserDao {
         User(guid = row[String]("guid"),
              email = row[String]("email"),
              name = row[Option[String]]("name"),
-             imageUrl = row[Option[String]]("image_url"))
+             image_url = row[Option[String]]("image_url"))
       }.toSeq
     }
   }

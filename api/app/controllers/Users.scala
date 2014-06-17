@@ -49,7 +49,7 @@ object Users extends Controller {
       case Some(user: User) => {
         val newUser = user.copy(email = (request.body \ "name").asOpt[String].getOrElse(user.email),
                                 name = (request.body \ "name").asOpt[String],
-                                imageUrl = (request.body \ "image_url").asOpt[String])
+                                image_url = (request.body \ "image_url").asOpt[String])
         UserDao.update(newUser)
         Ok(Json.toJson(newUser))
       }
