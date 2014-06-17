@@ -58,7 +58,7 @@
               <b>Resources</b>
               <ul class="nav nav-sidebar">
                 @sd.resources.map { resource =>
-                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.plural</a></li>
+                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.plural</a></li>
                 }
               </ul>
             }
