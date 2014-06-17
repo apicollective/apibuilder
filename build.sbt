@@ -26,7 +26,10 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(commonPlaySettings: _*)
   .settings(
-    version := "1.0-SNAPSHOT"
+    version := "1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      "org.mindrot"          %  "jbcrypt"                 % "0.3m"
+    )
   )
 
 lazy val www = project
