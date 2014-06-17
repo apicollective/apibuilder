@@ -19,7 +19,7 @@
           "description": "A model for creating and updating a user.",
           "fields": [
             { "name": "email", "type": "string" },
-            { "name": "name", "type": "string", "required": "false" },
+            { "name": "name", "type": "string", "required": false },
             { "name": "image_url", "type": "string", "required": false, "description": "Image avatar for this user" }
           ]
         },
