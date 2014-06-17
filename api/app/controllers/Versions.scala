@@ -23,10 +23,7 @@ object Versions extends Controller {
     getVersion(request.user, orgKey, serviceKey, version) match {
       case None => NotFound
       case Some(v: Version) => {
-        val detailedVersion = VersionDao.getDetails(v).getOrElse {
-          sys.error(s"Error fetching details for version[${v}]")
-        }
-        Ok(Json.toJson(detailedVersion))
+        Ok(Json.toJson(v))
       }
     }
   }

@@ -67,19 +67,9 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "version", "type": "version" },
-                { "name": "target", "type": "string", "description": "The target platform.", "example": "play-2.2-client, ruby-client, scala-models, play-2.2-json" },
+                { "name": "target", "type": "string", "description": "The target platform.", "example": "play-2.3-client, ruby-client, scala-models, play-2.3-json" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
-        },
-
-        "code_error": {
-          "description": "Returned by the code generation endpoints when there is an error.",
-          "fields": [
-            { "name": "code", "type": "string" },
-            { "name": "message", "type": "string", "description": "Description of the error" },
-            { "name": "valid_targets", "type": "[string]", "required": false }
-          ]
         },
 
         "error": {
@@ -300,10 +290,14 @@
                 {
                     "method": "GET",
                     "description": "Generate code for a specific version of a service.",
-                    "path": "/:version/:target",
+                    "path": "/:versionGuid/:targetName",
+                    "parameters": [
+                        { "name": "versionGuid", "type": "uuid" },
+			{ "name": "targetName", "type": "string", "description": "The target for the code generation", "example": "play-2.3-client" }
+		    ],
                     "responses": {
                         "200": { "type": "code" },
-                        "404": { "type": "code_error", "description": "If the target or version are invalid." }
+                        "409": { "type": "[error]", "description": "If the target or version are invalid." }
                     }
                 }
             ]
