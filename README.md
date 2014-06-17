@@ -1,7 +1,7 @@
 apidoc
 ======
 
-Designed to host API documentation for REST services. See svc/api.json for
+Designed to host API documentation for REST services. See api/api.json for
 description of the API.
 
 There are four SBT subprojects
@@ -13,12 +13,12 @@ Contains shared code to parse an api.json file into case classes,
 including validation on the document in a way that is friendly to
 users.
 
-svc
+api
 ===
-apidoc REST service itself. See svc/api.json contains the description
+apidoc REST service itself. See api/api.json contains the description
 of the API.
 
-web
+www
 ===
 Actual UI for apidoc.
 
@@ -65,14 +65,14 @@ The application consists of a service on port 9001, and a web app on port 9000.
 One way to do this is to run a screen session, and in one screen do:
 
   $ sbt
-  sbt> project svc
+  sbt> project api
   sbt> run 9001
 
 ...then in another screen, do:
 
   $ sbt
-  sbt> project web
-  sbt> run
+  sbt> project www
+  sbt> run 9002
 
 Now both should be running and able to talk to each other, and should recompile
 in situ for a nice development experience.
