@@ -20,8 +20,8 @@ object ServiceDescription {
 
 case class ServiceDescription(internal: InternalServiceDescription) {
 
-  lazy val models: Seq[Model] = ModelResolver.build(internal.models)
-  lazy val resources: Seq[Resource] = internal.resources.map { Resource(models, _) }
+  lazy val models: Seq[Model] = ModelResolver.build(internal.models).sorted
+  lazy val resources: Seq[Resource] = internal.resources.map { Resource(models, _) }.sorted
   lazy val baseUrl: Option[String] = internal.baseUrl
   lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
   lazy val description: Option[String] = internal.description
@@ -39,15 +39,25 @@ case class ServiceDescription(internal: InternalServiceDescription) {
 case class Model(name: String,
                  plural: String,
                  description: Option[String],
-                 fields: Seq[Field]) {
-
+                 fields: Seq[Field]) extends Ordered[Model] {
   require(Text.isValidName(name), s"Model name[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
+
+  def compare(that: Model): Int = {
+    name.toLowerCase.compare(that.name.toLowerCase)
+  }
 
 }
 
 case class Resource(model: Model,
                     path: String,
-                    operations: Seq[Operation])
+                    operations: Seq[Operation]) extends Ordered[Resource] {
+
+  def compare(that: Resource): Int = {
+    model.plural.toLowerCase.compare(that.model.plural.toLowerCase)
+  }
+
+}
+
 
 case class Operation(model: Model,
                      method: String,

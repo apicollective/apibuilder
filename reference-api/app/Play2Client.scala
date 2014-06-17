@@ -26,6 +26,12 @@ package referenceapi.models {
     code: String,
     message: String
   )
+  case class Member(
+    guid: java.util.UUID,
+    organization: Organization,
+    user: User,
+    role: String
+  )
   case class Organization(
     guid: java.util.UUID,
     name: String
@@ -36,13 +42,7 @@ package referenceapi.models {
     active: Boolean
   )
   case class UserList(
-    list: scala.collection.Seq[User]
-  )
-  case class Member(
-    guid: java.util.UUID,
-    organization: Organization,
-    user: User,
-    role: String
+    users: scala.collection.Seq[User]
   )
 }
 
@@ -140,6 +140,26 @@ package referenceapi.models {
          (__ \ "message").write[String])(unlift(Error.unapply))
       }
     
+    implicit val readsMember: play.api.libs.json.Reads[Member] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "guid").read[java.util.UUID] and
+         (__ \ "organization").read[Organization] and
+         (__ \ "user").read[User] and
+         (__ \ "role").read[String])(Member.apply _)
+      }
+    
+    implicit val writesMember: play.api.libs.json.Writes[Member] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        ((__ \ "guid").write[java.util.UUID] and
+         (__ \ "organization").write[Organization] and
+         (__ \ "user").write[User] and
+         (__ \ "role").write[String])(unlift(Member.unapply))
+      }
+    
     implicit val readsOrganization: play.api.libs.json.Reads[Organization] =
       {
         import play.api.libs.json._
@@ -178,38 +198,18 @@ package referenceapi.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        (__ \ "list").readNullable[scala.collection.Seq[User]].map { x =>
+        (__ \ "users").readNullable[scala.collection.Seq[User]].map { x =>
         x.getOrElse(Nil)
       }.map { x =>
-          new UserList(list = x)
+          new UserList(users = x)
         }
       }
     
     implicit val writesUserList: play.api.libs.json.Writes[UserList] =
       new play.api.libs.json.Writes[UserList] {
         def writes(x: UserList) = play.api.libs.json.Json.obj(
-          "list" -> play.api.libs.json.Json.toJson(x.list)
+          "users" -> play.api.libs.json.Json.toJson(x.users)
         )
-      }
-    
-    implicit val readsMember: play.api.libs.json.Reads[Member] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "organization").read[Organization] and
-         (__ \ "user").read[User] and
-         (__ \ "role").read[String])(Member.apply _)
-      }
-    
-    implicit val writesMember: play.api.libs.json.Writes[Member] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "organization").write[Organization] and
-         (__ \ "user").write[User] and
-         (__ \ "role").write[String])(unlift(Member.unapply))
       }
   }
 }
