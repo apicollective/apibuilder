@@ -1,6 +1,5 @@
 package apidoc.models {
   case class Code(
-    version: Version,
     target: String,
     source: String
   )
@@ -77,8 +76,7 @@ package apidoc.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "version").read[Version] and
-         (__ \ "target").read[String] and
+        ((__ \ "target").read[String] and
          (__ \ "source").read[String])(Code.apply _)
       }
     
@@ -86,8 +84,7 @@ package apidoc.models {
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "version").write[Version] and
-         (__ \ "target").write[String] and
+        ((__ \ "target").write[String] and
          (__ \ "source").write[String])(unlift(Code.unapply))
       }
     

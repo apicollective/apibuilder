@@ -7,20 +7,22 @@ import play.api.mvc._
 import play.api.libs.json._
 
 object Code extends Controller {
-  def generate(organization: String,
-               service: String,
-               version: String,
-               target: String) = Authenticated.async { request =>
-    request.client.versions
-      .findByOrganizationKeyAndServiceKeyAndVersion(organization,
-        service, version).flatMap {
-          case None => Future.successful(NotFound("Service not found"))
-          case Some(version) => {
-            request.api.Code.getByVersionAndTarget(version.guid,
-              target).map { response =>
-                Ok(response.entity.source)
-              }
-          }
-        }
+
+  def generate(organization: String, service: String, versionName: String, target: String) = Authenticated.async { request =>
+    println("organization: " + organization)
+    println("service: " + service)
+    println("versionName: " + versionName)
+    println("target: " + target)
+
+    for {
+      versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(organization, service, versionName)
+      codeResponse <- request.api.Code.getByVersionAndTarget(versionResponse.entity.guid.toString, target)
+    } yield {
+      println("versionResponse: " + versionResponse)
+      println("codeResponse: " + codeResponse)
+      // TODO: Handle 404
+      Ok(codeResponse.entity.source)
+    }
   }
+
 }

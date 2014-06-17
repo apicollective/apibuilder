@@ -1,35 +1,40 @@
 package controllers
 
 import java.util.UUID
+import lib.Validation
+import core.generator.Target
 
 import play.api.mvc._
 import play.api.libs.json._
 
-import core.generator._
-import apidoc.models
-import apidoc.models.json._
 import db.{ Version, VersionDao }
 
 object Code extends Controller {
+
+  case class Code(
+    target: String,
+    source: String
+  )
+
+  object Code {
+
+    implicit val codeWrites = Json.writes[Code]
+
+  }
+
   def getByVersionAndTarget(versionGuid: String, target: String) = Action { request =>
-    generator(target) match {
-      case None => NotFound(
-        Json.toJson(
-          new models.CodeError(
-            code = "invalid_target",
-            message = s"'$target' is not a valid target.",
-            validTargets = Target.implemented)))
+    VersionDao.findAll(guid = Some(versionGuid)).headOption match {
+      case None => NotFound
 
-      case Some(f) => {
-        versionDetails(versionGuid) match {
-          case None => NotFound(
-            Json.toJson(
-              new models.CodeError(
-                code = "invalid_version",
-                message = s"No service exists for version[$versionGuid]")))
+      case Some(v: Version) => {
+        generator(target) match {
+          case None => {
+            val error = Validation.error(s"Invalid target[$target]. Must be one of: ${Target.implemented.mkString(" ")}")
+            Conflict(Json.toJson(error))
+          }
 
-          case Some(details) => {
-            val code: models.Code = f(details)
+          case Some(generator) => {
+            val code = generator(v)
             Ok(Json.toJson(code))
           }
         }
@@ -37,19 +42,10 @@ object Code extends Controller {
     }
   }
 
-  private def versionDetails(guid: String): Option[Version] = {
-    VersionDao.findAll(guid = Some(guid)).headOption
-  }
-
-  private def generator(target: String): Option[Version => models.Code] = {
+  private def generator(target: String): Option[Version => Code] = {
     Target.generator.lift(target).map { source =>
       { v: Version =>
-        val version = new models.Version(
-          guid = UUID.fromString(v.guid),
-          version = v.version,
-          json = v.json
-        )
-        new models.Code(version, target, source(version.json))
+        new Code(target, source(v.json))
       }
     }
   }
