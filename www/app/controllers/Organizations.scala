@@ -34,7 +34,7 @@ object Organizations extends Controller {
           val haveRequests = if (isAdmin.entity.isEmpty) {
             false
           } else {
-            val pendingRequests = Await.result(request.api.MembershipRequests.get(organizationGuid = Some(org.guid), limit = Some(1)), 1500.millis)
+            val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(org.guid), limit = Some(1)), 1500.millis)
             !pendingRequests.entity.isEmpty
           }
 
@@ -51,7 +51,7 @@ object Organizations extends Controller {
   def membershipRequests(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
       org <- request.api.Organizations.get(key = Some(orgKey))
-      requests <- request.api.MembershipRequests.get(organizationKey = Some(orgKey),
+      requests <- request.api.MembershipRequests.get(orgKey = Some(orgKey),
                                                      limit = Some(Pagination.DefaultLimit+1),
                                                      offset = Some(page * Pagination.DefaultLimit))
     } yield {
