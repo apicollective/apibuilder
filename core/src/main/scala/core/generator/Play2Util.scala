@@ -24,6 +24,12 @@ object Play2Util extends Play2Util {
   x.getOrElse(Nil)
 }"""
         }
+        case x: ScalaDataType.ScalaModelType => {
+          s"lazyRead(reads${x.name})"
+        }
+        case ScalaDataType.ScalaOptionType(x: ScalaDataType.ScalaModelType) => {
+          s"lazyReadNullable(reads${x.name})"
+        }
         case ScalaDataType.ScalaOptionType(inner) => {
           s"readNullable[${inner.name}]"
         }
@@ -33,7 +39,7 @@ object Play2Util extends Play2Util {
       }
       x.fields match {
         case field::Nil => {
-          s"""implicit val reads$name = {
+          s"""implicit def reads$name: play.api.libs.json.Reads[$name] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
   (__ \\ "${field.originalName}").${read(field)}.map { x =>
@@ -46,7 +52,7 @@ object Play2Util extends Play2Util {
             s"""(__ \\ "${field.originalName}").${read(field)}"""
           }.mkString("(", " and\n ", ")")
 
-          s"""implicit val reads$name = {
+          s"""implicit def reads$name: play.api.libs.json.Reads[$name] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
 ${builder.indent}(${name}.apply _)
@@ -55,12 +61,13 @@ ${builder.indent}(${name}.apply _)
       }
     }
     val patchReads: String = {
-      def read(field: ScalaField): String = {
-        s"readNullable[${field.datatype.name}]"
+      def read(field: ScalaField): String = field.datatype match {
+        case d: ScalaModelType => s"lazyReadNullable(reads${d.name})"
+        case d => s"readNullable[${d.name}]"
       }
       x.fields match {
         case field::Nil => {
-          s"""implicit val reads${name}_Patch = {
+          s"""implicit def reads${name}_Patch: play.api.libs.json.Reads[$name.Patch] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
   (__ \\ "${field.originalName}").${read(field)}.map { x =>
@@ -73,7 +80,7 @@ ${builder.indent}(${name}.apply _)
             s"""(__ \\ "${field.originalName}").${read(field)}"""
           }.mkString("(", " and\n ", ")")
 
-          s"""implicit val reads${name}_Patch = {
+          s"""implicit def reads${name}_Patch: play.api.libs.json.Reads[$name.Patch] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
 ${builder.indent}(${name}.Patch.apply _)
@@ -93,7 +100,7 @@ $patchReads
     val classWrites: String = {
       x.fields match {
         case field::Nil => {
-          s"""implicit val writes$name = new play.api.libs.json.Writes[$name] {
+          s"""implicit def writes$name = new play.api.libs.json.Writes[$name] {
   def writes(x: ${name}) = play.api.libs.json.Json.obj(
     "${field.originalName}" -> play.api.libs.json.Json.toJson(x.${field.name})
   )
@@ -101,10 +108,13 @@ $patchReads
         }
         case fields => {
           val builder: String = x.fields.map { field =>
-            s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
+            field.datatype match {
+              case d: ScalaModelType => s"""(__ \\ "${field.originalName}").lazyWrite(writes${d.name})"""
+              case d => s"""(__ \\ "${field.originalName}").write[${d.name}]"""
+            }
           }.mkString("(", " and\n ", ")")
 
-          s"""implicit val writes$name = {
+          s"""implicit def writes$name: play.api.libs.json.Writes[$name] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
 ${builder.indent}(unlift(${name}.unapply))
@@ -116,7 +126,7 @@ ${builder.indent}(unlift(${name}.unapply))
     val patchWrites = {
       x.fields match {
         case field::Nil => {
-          s"""implicit val writes${name}_Patch = new play.api.libs.json.Writes[$name.Patch] {
+          s"""implicit def writes${name}_Patch: play.api.libs.json.Writes[$name.Patch] = new play.api.libs.json.Writes[$name.Patch] {
   def writes(x: ${name}.Patch) = play.api.libs.json.Json.obj(
     "${field.originalName}" -> play.api.libs.json.Json.toJson(x.${field.name})
   )
@@ -124,10 +134,13 @@ ${builder.indent}(unlift(${name}.unapply))
         }
         case fields => {
           val builder: String = x.fields.map { field =>
-            s"""(__ \\ "${field.originalName}").writeNullable[${field.datatype.name}]"""
+            field.datatype match {
+              case d: ScalaModelType => s"""(__ \\ "${field.originalName}").lazyWriteNullable(writes${d.name})"""
+              case d => s"""(__ \\ "${field.originalName}").writeNullable[${d.name}]"""
+            }
           }.mkString("(", " and\n ", ")")
 
-          s"""implicit val writes${name}_Patch = {
+          s"""implicit def writes${name}_Patch: play.api.libs.json.Writes[$name.Patch] = {
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
 ${builder.indent}(unlift(${name}.Patch.unapply))
