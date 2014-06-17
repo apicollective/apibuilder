@@ -13,10 +13,10 @@ object Play2Models {
   def apply(ssd: ScalaServiceDescription): String = {
     val caseClasses = ScalaCaseClasses(ssd)
     val modelJson: String = ssd.models.map { model =>
-s"""implicit val reads${model.name}: play.api.libs.json.Reads[${model.name}] =
+s"""implicit def reads${model.name}: play.api.libs.json.Reads[${model.name}] =
 ${Play2Util.jsonReads(model).indent(2)}
 
-implicit val writes${model.name}: play.api.libs.json.Writes[${model.name}] =
+implicit def writes${model.name}: play.api.libs.json.Writes[${model.name}] =
 ${Play2Util.jsonWrites(model).indent(2)}"""
     }.mkString("\n\n")
 

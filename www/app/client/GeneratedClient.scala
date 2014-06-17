@@ -67,7 +67,7 @@ package apidoc.models {
       }
     }
 
-    implicit val readsCode: play.api.libs.json.Reads[Code] =
+    implicit def readsCode: play.api.libs.json.Reads[Code] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -75,7 +75,7 @@ package apidoc.models {
          (__ \ "source").read[String])(Code.apply _)
       }
     
-    implicit val writesCode: play.api.libs.json.Writes[Code] =
+    implicit def writesCode: play.api.libs.json.Writes[Code] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -83,7 +83,7 @@ package apidoc.models {
          (__ \ "source").write[String])(unlift(Code.unapply))
       }
     
-    implicit val readsError: play.api.libs.json.Reads[Error] =
+    implicit def readsError: play.api.libs.json.Reads[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -91,7 +91,7 @@ package apidoc.models {
          (__ \ "message").read[String])(Error.apply _)
       }
     
-    implicit val writesError: play.api.libs.json.Writes[Error] =
+    implicit def writesError: play.api.libs.json.Writes[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -99,7 +99,7 @@ package apidoc.models {
          (__ \ "message").write[String])(unlift(Error.unapply))
       }
     
-    implicit val readsMembership: play.api.libs.json.Reads[Membership] =
+    implicit def readsMembership: play.api.libs.json.Reads[Membership] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -109,7 +109,7 @@ package apidoc.models {
          (__ \ "role").read[String])(Membership.apply _)
       }
     
-    implicit val writesMembership: play.api.libs.json.Writes[Membership] =
+    implicit def writesMembership: play.api.libs.json.Writes[Membership] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -119,7 +119,7 @@ package apidoc.models {
          (__ \ "role").write[String])(unlift(Membership.unapply))
       }
     
-    implicit val readsMembershipRequest: play.api.libs.json.Reads[MembershipRequest] =
+    implicit def readsMembershipRequest: play.api.libs.json.Reads[MembershipRequest] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -129,7 +129,7 @@ package apidoc.models {
          (__ \ "role").read[String])(MembershipRequest.apply _)
       }
     
-    implicit val writesMembershipRequest: play.api.libs.json.Writes[MembershipRequest] =
+    implicit def writesMembershipRequest: play.api.libs.json.Writes[MembershipRequest] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -139,7 +139,7 @@ package apidoc.models {
          (__ \ "role").write[String])(unlift(MembershipRequest.unapply))
       }
     
-    implicit val readsOrganization: play.api.libs.json.Reads[Organization] =
+    implicit def readsOrganization: play.api.libs.json.Reads[Organization] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -148,7 +148,7 @@ package apidoc.models {
          (__ \ "name").read[String])(Organization.apply _)
       }
     
-    implicit val writesOrganization: play.api.libs.json.Writes[Organization] =
+    implicit def writesOrganization: play.api.libs.json.Writes[Organization] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -157,7 +157,7 @@ package apidoc.models {
          (__ \ "name").write[String])(unlift(Organization.unapply))
       }
     
-    implicit val readsService: play.api.libs.json.Reads[Service] =
+    implicit def readsService: play.api.libs.json.Reads[Service] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -167,7 +167,7 @@ package apidoc.models {
          (__ \ "description").readNullable[String])(Service.apply _)
       }
     
-    implicit val writesService: play.api.libs.json.Writes[Service] =
+    implicit def writesService: play.api.libs.json.Writes[Service] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -177,7 +177,7 @@ package apidoc.models {
          (__ \ "description").write[scala.Option[String]])(unlift(Service.unapply))
       }
     
-    implicit val readsUser: play.api.libs.json.Reads[User] =
+    implicit def readsUser: play.api.libs.json.Reads[User] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -187,7 +187,7 @@ package apidoc.models {
          (__ \ "image_url").readNullable[String])(User.apply _)
       }
     
-    implicit val writesUser: play.api.libs.json.Writes[User] =
+    implicit def writesUser: play.api.libs.json.Writes[User] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -197,7 +197,7 @@ package apidoc.models {
          (__ \ "image_url").write[scala.Option[String]])(unlift(User.unapply))
       }
     
-    implicit val readsVersion: play.api.libs.json.Reads[Version] =
+    implicit def readsVersion: play.api.libs.json.Reads[Version] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -206,7 +206,7 @@ package apidoc.models {
          (__ \ "json").read[String])(Version.apply _)
       }
     
-    implicit val writesVersion: play.api.libs.json.Writes[Version] =
+    implicit def writesVersion: play.api.libs.json.Writes[Version] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
