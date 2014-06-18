@@ -13,7 +13,6 @@ object Code extends Controller {
       versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(organization, service, versionName)
       codeResponse <- request.api.Code.getByVersionGuidAndTargetName(versionResponse.entity.guid, target)
     } yield {
-      // TODO: Handle 404
       Ok(codeResponse.entity.source)
     }
   }
