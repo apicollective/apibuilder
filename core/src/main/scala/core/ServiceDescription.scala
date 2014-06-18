@@ -64,7 +64,6 @@ case class Operation(model: Model,
                      path: String,
                      description: Option[String],
                      parameters: Seq[Parameter],
-                     body: Option[Body],
                      responses: Seq[Response]) {
 
   lazy val label = "%s %s".format(method, path)
@@ -90,33 +89,24 @@ object Operation {
 
   def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
+    val location = if (method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
       if (internal.namedParameters.contains(p.name.get)) {
         Parameter(models, p, ParameterLocation.Path)
       } else {
-        Parameter(models, p, ParameterLocation.Query)
+        Parameter(models, p, location)
       }
-    }
+     }
     val internalParamNames: Set[String] = internalParams.map(_.name).toSet
 
     // Capture any path parameters that were not explicitly annotated
     val pathParameters = internal.namedParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(_) }
-
-    if (method == "GET") {
-      require(internal.body.isEmpty, "GET should not have a body.")
-    }
-    val body: Option[Body] = internal.body.map { b =>
-      Body(models, model, b)
-    }.orElse {
-      Some(new Body(bodyType = new ModelBodyType(model), multiple = false))
-    }
 
     Operation(model = model,
               method = method,
               path = internal.path,
               description = internal.description,
               parameters = pathParameters ++ internalParams,
-              body = body,
               responses = internal.responses.map { Response(_) })
   }
 
@@ -130,13 +120,7 @@ case class Field(name: String,
                  default: Option[String] = None,
                  example: Option[String] = None,
                  minimum: Option[Long] = None,
-                 maximum: Option[Long] = None) {
-
-  def isPrimitive = fieldtype match {
-    case PrimitiveFieldType(_) => true
-    case _ => false
-  }
-}
+                 maximum: Option[Long] = None)
 
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
@@ -285,6 +269,7 @@ object ParameterLocation {
 
   case object Path extends ParameterLocation("path")
   case object Query extends ParameterLocation("query")
+  case object Form extends ParameterLocation("form")
 
 }
 
@@ -428,28 +413,3 @@ object Field {
 
 }
 
-case class Body(bodyType: BodyType, multiple: Boolean)
-
-object Body {
-  def apply(models: Seq[Model], resourceModel: Model, internal: InternalBody): Body = {
-    val multiple = internal.multiple
-    def fail = sys.error(s"body must name a type")
-    val dt = internal.datatype
-    val bodyType = if (dt == "unit") {
-      UnitBodyType
-    } else if (dt == "file") {
-      FileBodyType
-    } else {
-      val model = models.find(_.name == dt).getOrElse {
-        sys.error(s"Named model[$dt] not found")
-      }
-      new ModelBodyType(model)
-    }
-    new Body(bodyType, multiple)
-  }
-}
-
-sealed trait BodyType
-case class ModelBodyType(model: Model) extends BodyType
-case object FileBodyType extends BodyType
-case object UnitBodyType extends BodyType

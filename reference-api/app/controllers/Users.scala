@@ -42,23 +42,19 @@ object Users extends Controller {
     Ok(Json.toJson(us))
   }
 
-  def post(active: Boolean) = Action(parse.json) { implicit request =>
+  def post() = Action(parse.json) { implicit request =>
     val json = request.body
-    json.validate[UserForm] match {
-      case JsSuccess(uf, _) => {
-        val guid = UUID.randomUUID
-        val u: User = DB.withConnection { implicit c =>
+    json.validate[User] match {
+      case JsSuccess(u, _) => {
+        DB.withConnection { implicit c =>
           SQL("""
           insert into users(guid, email, active)
           values({guid}, {email}, {active})
           """).on(
-            'guid -> guid,
-            'email -> uf.email,
-            'active -> active
+            'guid -> u.guid,
+            'email -> u.email,
+            'active -> u.active
           ).execute()
-          SQL("""
-          select * from users where guid = {guid}
-          """).on('guid -> guid).as(rowParser.single)
         }
         Created(Json.toJson(u))
       }
@@ -67,7 +63,7 @@ object Users extends Controller {
         BadRequest {
           Json.obj(
             "code" -> "invalid_json",
-            "msg" -> s"unable to parse UserForm from $json"
+            "msg" -> s"unable to parse User from $json"
           )
         }
       }
@@ -75,54 +71,4 @@ object Users extends Controller {
   }
 
   def postNoop() = Action { Ok("") }
-
-  def postProfileByGuid(guid: String) = Action(parse.temporaryFile) { request =>
-    val data = io.Source.fromFile(request.body.file).mkString
-    DB.withConnection { implicit c =>
-      SQL("""
-      update users set profile = {profile} where guid = {guid}
-      """).on(
-        'guid -> guid,
-        'profile -> data
-      ).execute()
-    }
-    NoContent
-  }
-
-  def patchByGuid(guid: String) = Action(parse.json) { request =>
-    val json = request.body
-    json.validate[Seq[User.Patch]] match {
-      case JsSuccess(patches, _) => {
-        val patched = DB.withTransaction { implicit c =>
-          val user = SQL("""
-          select * from users where guid = {guid}
-          """).on('guid -> guid).as(rowParser.single)
-
-          patches.foldLeft(user) { case (user, patch) =>
-            val tmp = patch.copy(guid = None)(user)
-            SQL("""
-            update users
-            set email = {email},
-                active = {active}
-            where guid = {guid}
-            """).on(
-              'guid -> guid,
-              'email -> tmp.email,
-              'active -> tmp.active
-            ).execute()
-            tmp
-          }
-        }
-
-        Ok(Json.toJson(patched))
-      }
-      case JsError(_) => {
-        BadRequest {
-          Json.obj(
-            "code" -> "invalid_json",
-            "msg" -> s"unable to parse User.Patch from $json")
-        }
-      }
-    }
-  }
 }

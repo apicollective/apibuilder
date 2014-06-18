@@ -53,7 +53,11 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
   lazy val url = op.path
   lazy val method = s"$controllerName.$methodName"
 
-  lazy val params = parameters
+  lazy val params = if (GeneratorUtil.isJsonDocumentMethod(verb)) {
+    pathParameters
+  } else {
+    parameters
+  }
 
   private lazy val parameters = parametersWithTypes(op.parameters)
   private lazy val pathParameters = parametersWithTypes(op.pathParameters)
@@ -68,7 +72,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
         Some(s"${param.name}: ${scalaDataType(param)}"),
         param.default.map( d => s"?= ${d}" )
       ).flatten.mkString(" ")
-    }
+              }
   }
 
   private def scalaDataType(param: Parameter): String = {
