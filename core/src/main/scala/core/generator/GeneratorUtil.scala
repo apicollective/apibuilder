@@ -31,7 +31,7 @@ private[generator] object GeneratorUtil {
     }
   }
 
-  def bodyAllowed(verb: String): Boolean = {
+  def isJsonDocumentMethod(verb: String): Boolean = {
     verb != "GET" && verb != "DELETE"
   }
 

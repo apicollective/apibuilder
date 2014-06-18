@@ -15,6 +15,7 @@
             ]
         },
 
+<<<<<<< HEAD
         "user_form": {
           "description": "A model for creating and updating a user.",
           "fields": [
@@ -24,6 +25,8 @@
           ]
         },
 
+=======
+>>>>>>> parent of 4062afe... Merge pull request #26 from gilt/issue-19
         "organization": {
             "description": "An organization is used to group a set of services together.",
             "fields": [
@@ -33,13 +36,6 @@
             ]
         },
 
-        "organization_form": {
-          "description": "A model for creating an organization.",
-          "fields": [
-            { "name": "name", "type": "string", "description": "The name of the organization." }
-          ]
-        },
-
         "membership": {
             "description": "A membership represents a user in a specific role to an organization. Memberships cannot be created directly. Instead you first create a membership request, then that request is either accepted or declined.",
             "fields": [
@@ -47,14 +43,6 @@
                 { "name": "user", "type": "user" },
                 { "name": "organization", "type": "organization" },
                 { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" }
-            ]
-        },
-
-        "membership_request_form": {
-            "fields": [
-                { "name": "org_guid", "type": "uuid" },
-                { "name": "user_guid", "type": "uuid" },
-                { "name": "role", "type": "string" }
             ]
         },
 
@@ -134,7 +122,11 @@
                 {
                     "method": "POST",
                     "description": "Create a new user.",
-                    "body": "user_form",
+                    "parameters": [
+                        { "name": "email", "type": "string" },
+                        { "name": "name", "type": "string", "required": false },
+                        { "name": "image_url", "type": "string", "required": false }
+                    ],
                     "responses": {
                         "201": { "type": "user" },
                         "409": { "type": "[error]" }
@@ -145,7 +137,11 @@
                     "method": "PUT",
                     "path": "/:guid",
                     "description": "Updates information about the user with the specified guid.",
-                    "body": "user_form",
+                    "parameters": [
+                        { "name": "email", "type": "string" },
+                        { "name": "name", "type": "string", "required": false },
+                        { "name": "image_url", "type": "string", "required": false }
+                    ],
                     "responses": {
                         "201": { "type": "user" },
                         "409": { "type": "[error]" }
@@ -176,7 +172,9 @@
                 {
                     "method": "POST",
                     "description": "Create a new organization.",
-                    "body": "organization_form",
+                    "parameters": [
+                        { "name": "name", "type": "string" }
+                    ],
                     "responses": {
                         "201": { "type": "organization" },
                         "409": { "type": "[error]" }
@@ -234,7 +232,11 @@
                 {
                     "method": "POST",
                     "description": "Create a membership request",
-                    "body": "membership_request_form",
+                    "parameters": [
+                        { "name": "org_guid", "type": "uuid" },
+                        { "name": "user_guid", "type": "uuid" },
+                        { "name": "role", "type": "string" }
+                    ],
                     "responses": {
                         "201": { "type": "membership_request" },
                         "409": { "type": "[error]" }
@@ -245,7 +247,6 @@
                     "method": "POST",
                     "path": "/:guid/accept",
                     "description": "Accepts this membership request. User will become a member of the specified organization.",
-                    "body": "unit",
                     "responses": {
                         "204": { "type": "unit" },
                         "409": { "type": "[error]" }
@@ -256,7 +257,6 @@
                     "method": "POST",
                     "path": "/:guid/decline",
                     "description": "Declines this membership request. User will NOT become a member of the specified organization.",
-                    "body": "unit",
                     "responses": {
                         "204": { "type": "unit" },
                         "409": { "type": "[error]" }
@@ -347,7 +347,6 @@
                     "method": "PUT",
                     "description": "Create or update the service with the specified version.",
                     "path": "/:version",
-                    "body": "file",
                     "responses": {
                         "200": { "type": "version" }
                     }

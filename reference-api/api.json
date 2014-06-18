@@ -35,12 +35,6 @@
             ]
         },
 
-        "small": {
-          "fields": [
-            { "name": "f1", "type": "string" }
-          ]
-        },
-
         "error": {
             "description": "Models an API error.",
             "fields": [
@@ -64,25 +58,11 @@
             ]
         },
 
-        "user_form": {
-            "fields": [
-                { "name": "email", "type": "string" }
-            ]
-        },
-
         "member": {
             "fields": [
                 { "name": "guid", "type": "uuid" },
                 { "name": "organization", "type": "organization" },
                 { "name": "user", "type": "user" },
-                { "name": "role", "type": "string" }
-            ]
-        },
-
-        "member_form": {
-            "fields": [
-                { "name": "organization", "type": "uuid" },
-                { "name": "user", "type": "uuid" },
                 { "name": "role", "type": "string" }
             ]
         }
@@ -94,10 +74,14 @@
             "operations": [
                 {
                     "method": "POST",
-                    "responses": {
-                        "201": { "type": "organization" },
-                        "409": { "type": "[error]" }
-                    }
+                    "parameters": [
+                        { "name": "guid", "type": "uuid" },
+                        { "name": "name", "type": "string" }
+                        ],
+                        "responses": {
+                            "201": { "type": "organization" },
+                            "409": { "type": "[error]" }
+                        }
                 },
                 {
                     "method": "GET",
@@ -124,9 +108,10 @@
                 {
                     "method": "POST",
                     "parameters": [
-                        { "name": "active", "type": "boolean", "default": true }
+                        { "name": "guid", "type": "uuid" },
+                        { "name": "email", "type": "string" },
+                        { "name": "active", "type": "boolean" }
                     ],
-                    "body": "user_form",
                     "responses": {
                         "201": { "type": "user" },
                         "409": { "type": "[error]" }
@@ -146,25 +131,9 @@
                 {
                     "method": "POST",
                     "path": "/noop",
-                    "body": "unit"
-                },
-                {
-                    "method": "POST",
-                    "path": "/:guid/profile",
-                    "body": "file",
-                    "parameters": [
-                      { "name": "guid", "type": "uuid" }
-                    ]
-                },
-                {
-                  "method": "PATCH",
-                  "path": "/:guid",
-                  "parameters": [
-                    { "name": "guid", "type": "uuid" }
-                  ],
-                  "responses": {
-                    "200": { "type": "user" }
-                  }
+                    "responses": {
+                        "200": { "type": "unit" }
+                    }
                 }
             ]
         },
@@ -173,7 +142,12 @@
             "operations": [
                 {
                     "method": "POST",
-                    "body": "member_form",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid" },
+                        { "name": "organization", "type": "uuid" },
+                        { "name": "user", "type": "uuid" },
+                        { "name": "role", "type": "string" }
+                    ],
                     "responses": {
                         "201": { "type": "member" },
                         "409": { "type": "[error]" }
@@ -183,8 +157,8 @@
                     "method": "GET",
                     "parameters": [
                         { "name": "guid", "type": "uuid", "required": false },
-                        { "name": "organization", "type": "uuid", "required": false },
-                        { "name": "user", "type": "uuid", "required": false },
+                        { "name": "organization_guid", "type": "uuid", "required": false },
+                        { "name": "user_guid", "type": "uuid", "required": false },
                         { "name": "role", "type": "string", "required": false }
                     ],
                     "responses": {
