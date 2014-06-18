@@ -15,18 +15,6 @@
             ]
         },
 
-<<<<<<< HEAD
-        "user_form": {
-          "description": "A model for creating and updating a user.",
-          "fields": [
-            { "name": "email", "type": "string" },
-            { "name": "name", "type": "string", "required": false },
-            { "name": "image_url", "type": "string", "required": false, "description": "Image avatar for this user" }
-          ]
-        },
-
-=======
->>>>>>> parent of 4062afe... Merge pull request #26 from gilt/issue-19
         "organization": {
             "description": "An organization is used to group a set of services together.",
             "fields": [
