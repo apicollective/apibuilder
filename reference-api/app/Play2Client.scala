@@ -70,7 +70,7 @@ package referenceapi.models {
       }
     }
 
-    implicit val readsBig: play.api.libs.json.Reads[Big] =
+    implicit def readsBig: play.api.libs.json.Reads[Big] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -97,7 +97,7 @@ package referenceapi.models {
          (__ \ "f21").read[String])(Big.apply _)
       }
     
-    implicit val writesBig: play.api.libs.json.Writes[Big] =
+    implicit def writesBig: play.api.libs.json.Writes[Big] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -124,7 +124,7 @@ package referenceapi.models {
          (__ \ "f21").write[String])(unlift(Big.unapply))
       }
     
-    implicit val readsError: play.api.libs.json.Reads[Error] =
+    implicit def readsError: play.api.libs.json.Reads[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -132,7 +132,7 @@ package referenceapi.models {
          (__ \ "message").read[String])(Error.apply _)
       }
     
-    implicit val writesError: play.api.libs.json.Writes[Error] =
+    implicit def writesError: play.api.libs.json.Writes[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -140,7 +140,7 @@ package referenceapi.models {
          (__ \ "message").write[String])(unlift(Error.unapply))
       }
     
-    implicit val readsMember: play.api.libs.json.Reads[Member] =
+    implicit def readsMember: play.api.libs.json.Reads[Member] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -150,7 +150,7 @@ package referenceapi.models {
          (__ \ "role").read[String])(Member.apply _)
       }
     
-    implicit val writesMember: play.api.libs.json.Writes[Member] =
+    implicit def writesMember: play.api.libs.json.Writes[Member] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -160,7 +160,7 @@ package referenceapi.models {
          (__ \ "role").write[String])(unlift(Member.unapply))
       }
     
-    implicit val readsOrganization: play.api.libs.json.Reads[Organization] =
+    implicit def readsOrganization: play.api.libs.json.Reads[Organization] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -168,7 +168,7 @@ package referenceapi.models {
          (__ \ "name").read[String])(Organization.apply _)
       }
     
-    implicit val writesOrganization: play.api.libs.json.Writes[Organization] =
+    implicit def writesOrganization: play.api.libs.json.Writes[Organization] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -176,7 +176,7 @@ package referenceapi.models {
          (__ \ "name").write[String])(unlift(Organization.unapply))
       }
     
-    implicit val readsUser: play.api.libs.json.Reads[User] =
+    implicit def readsUser: play.api.libs.json.Reads[User] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -185,7 +185,7 @@ package referenceapi.models {
          (__ \ "active").read[Boolean])(User.apply _)
       }
     
-    implicit val writesUser: play.api.libs.json.Writes[User] =
+    implicit def writesUser: play.api.libs.json.Writes[User] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -194,7 +194,7 @@ package referenceapi.models {
          (__ \ "active").write[Boolean])(unlift(User.unapply))
       }
     
-    implicit val readsUserList: play.api.libs.json.Reads[UserList] =
+    implicit def readsUserList: play.api.libs.json.Reads[UserList] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -205,7 +205,7 @@ package referenceapi.models {
         }
       }
     
-    implicit val writesUserList: play.api.libs.json.Writes[UserList] =
+    implicit def writesUserList: play.api.libs.json.Writes[UserList] =
       new play.api.libs.json.Writes[UserList] {
         def writes(x: UserList) = play.api.libs.json.Json.obj(
           "users" -> play.api.libs.json.Json.toJson(x.users)

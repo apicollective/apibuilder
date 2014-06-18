@@ -21,11 +21,9 @@ class RubyIntegrationSpec extends Specification {
   "Application" should {
     "support the ruby client" in new WithServer {
       val ruby = new File("ruby")
-      val bundle = Process("which bundle", cwd = ruby).!!.trim
-      println(s"bundle executable is: $bundle")
 
       Process(
-        Seq(bundle, "install", "--binstubs=bin", "--path=gems"),
+        Seq("bundle", "install", "--binstubs=bin", "--path=gems"),
         cwd = ruby
       ).success
 
