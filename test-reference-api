@@ -1,0 +1,17 @@
+# TODO remove this spec and have a simple tool
+# for generating the files in the reference API
+# Then to test:
+#   APIDOC=`dirname $0`
+#   on_exit {
+#     cd $APIDOC/reference-api
+#     kill `cat .APP_PID`
+#     rm .APP_PID
+#   }
+#   trap on_exit EXIT
+#   cd $APIDOC/reference-api
+#   sbt test # for the play parts
+#   sbt run -Dpidfile.path=.APP_PID &
+#   cd ruby
+#   bundle install
+#   ./bin/rspec client_spec.rb
+sbt "core/testOnly core.generator.ReferenceApiSpec"
