@@ -39,16 +39,30 @@ private[core] case class InternalServiceDescription(json: JsValue) {
   }
 
   lazy val resources: Seq[InternalResource] = {
-    (json \ "resources").asOpt[JsArray] match {
+    (json \ "resources").asOpt[JsValue] match {
       case None => Seq.empty
+      case Some(resources: JsObject) => {
+        resources.fields.map { v =>
+          v match {
+            case(modelName, value) => InternalResource(modelName, models, value.as[JsObject])
+          }
+        }
+      }
+
+      // Array is deprecated - map is preferred
       case Some(resources: JsArray) => {
         resources.value.flatMap { v =>
           v match {
-            case o: JsObject => Some(InternalResource(models, o))
+            case o: JsObject => {
+              val modelName = (json \ "name").asOpt[String].getOrElse("__unknown__")
+              Some(InternalResource(modelName, models, o))
+            }
             case _ => None
           }
         }
       }
+
+      case _ => Seq.empty
     }
   }
 
@@ -140,11 +154,9 @@ object InternalModel {
 
 object InternalResource {
 
-  def apply(models: Seq[InternalModel], value: JsObject): InternalResource = {
-    val modelName = (value \ "model").asOpt[String]
-
+  def apply(modelName: String, models: Seq[InternalModel], value: JsObject): InternalResource = {
     val path = (value \ "path").asOpt[String].getOrElse {
-      models.find(m => Some(m.name) == modelName) match {
+      models.find(m => m.name == modelName) match {
         case Some(model: InternalModel) => "/" + model.plural
         case None => "/"
       }
@@ -157,7 +169,7 @@ object InternalResource {
       }
     }
 
-    InternalResource(modelName = modelName,
+    InternalResource(modelName = Some(modelName),
                      path = path,
                      operations = operations)
   }
