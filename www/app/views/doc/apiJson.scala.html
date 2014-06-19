@@ -11,8 +11,7 @@
       "base_url": <em>string</em>,
       "models": <em>[model]</em>,
       "resources": <em>[resource]</em>,
-      "description": <em>string (optional)</em>,
-      "apidoc_version": <em>string (optional)</em>
+      "description": <em>string (optional)</em>
     }
     </pre>
 
@@ -20,10 +19,9 @@
     <ul>
       <li><em>name</em> specifies the human readable name of this service - used for display and as the basis for generating a unique key for URL</li>
       <li><em>baseUrl</em> specifies the base URL where this service is hosted. Must start with http.</li>
-      <li><em>model</em> a JSON array defining all of the models in this API. A model defines the schema of a particular type of object available in the API.</li>
+      <li><em>models</em> a JSON array defining all of the models in this API. A model defines the schema of a particular type of object available in the API.</li>
       <li><em>resources</em> a JSON array defining all of the resources in this API. A resource maps a model to the set of operations available. </li>
       <li><em>description</em> optional description for what this service provides.</li>
-      <li><em>apidoc_version</em> version of the apidoc specification that this document conforms to. If not specified, the latest version of the specification is assumed.</li>
     </ul>
 
   </p>
