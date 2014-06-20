@@ -27,28 +27,6 @@ sbt-apigen
 SBT plugin which can generate client APIs from an API description, where
 the JSON files are stored in src/main/api.
 
-# Code Generation
-
-## Scala
-
-API doc supports generating a Play 2 routes file as well as a Play 2 client.
-
-## Scala Client
-
-- In order to use the generated client code, place it in a .scala file at the
-  root package.
-
-- The client methods return Any and the expectation is that the caller will
-  use pattern matching to dispatch on what was actually returned by the server.
-
-- Currently path params are all generated as Strings, because there is not a
-  way to attach type information to them from the api.json file.
-
-Installing Docker on mac
-========================
-
-  http://docs.docker.io/installation/mac/
-
 Developing
 ==========
 
@@ -82,8 +60,3 @@ Releasing code
 
     /web/metadata-architecture/exec /web/svc-iris-hub/script/release-and-deploy api [optional tag]
     /web/metadata-architecture/exec /web/svc-iris-hub/script/release-and-deploy www [optional tag]
-
-Metadata about your app EC2 Configuration
-=========================================
-
-    ionblaster stacks
