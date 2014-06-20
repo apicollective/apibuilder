@@ -34,7 +34,7 @@
             "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Uniquely identifies this vendor tag." },
                 { "name": "user_guid", "type": "uuid", "description": "TODO: Change type to user" },
-                { "name": "vendor", "type": "reference[vendor]" },
+                { "name": "vendor", "type": "vendor" },
                 { "name": "tag", "type": "string", "description": "The actual tag you have applied to this vendor" }
             ]
         },

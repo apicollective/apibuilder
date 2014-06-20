@@ -106,13 +106,6 @@ case class ServiceDescriptionValidator(apiJson: String) {
               case Some(_) => None
             }
           }
-
-          case rft: InternalReferenceFieldType => {
-            internalServiceDescription.get.models.find { _.name == rft.referencedModelName } match {
-              case None => Some(s"${model.name}.${field.name.get} has invalid reference. Model[${rft.referencedModelName}] does not exist")
-              case Some(m: InternalModel) => None
-            }
-          }
         }
       }
     }

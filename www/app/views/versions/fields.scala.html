@@ -18,7 +18,6 @@
        <td>@{field.fieldtype match {
              case pt: core.PrimitiveFieldType => datatype(pt.datatype)
              case mt: core.ModelFieldType => modelType(org, service, version, mt.model)
-             case rpt: core.ReferenceFieldType => "Reference[%s]".format(modelTypeByName(org, service, version, sd, rpt.referencedModelName))
            }}
        </td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>

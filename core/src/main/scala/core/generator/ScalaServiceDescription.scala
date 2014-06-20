@@ -131,8 +131,6 @@ class ScalaField(field: Field) {
     val base: ScalaDataType = field.fieldtype match {
       case t: PrimitiveFieldType => ScalaDataType(t.datatype)
       case m: ModelFieldType => new ScalaModelType(new ScalaModel(m.model))
-      // TODO support references in scala
-      case r: ReferenceFieldType => ???
     }
     if (multiple) {
       new ScalaListType(base)

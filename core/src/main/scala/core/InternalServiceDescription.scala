@@ -91,7 +91,6 @@ case class InternalOperation(method: Option[String],
 
 sealed trait InternalFieldType
 case class InternalNamedFieldType(name: String) extends InternalFieldType
-case class InternalReferenceFieldType(referencedModelName: String) extends InternalFieldType
 
 case class InternalField(name: Option[String] = None,
                          fieldtype: Option[InternalFieldType] = None,
@@ -276,15 +275,8 @@ private[core] object JsonStringParser {
 
 }
 
-private[core] case class InternalParsedDatatype(name: String, multiple: Boolean, referencedModelName: Option[String]) {
-
-  def toInternalFieldType: InternalFieldType = {
-    referencedModelName match {
-      case None => InternalNamedFieldType(name)
-      case Some(referencedName: String) => InternalReferenceFieldType(referencedName)
-    }
-  }
-
+private[core] case class InternalParsedDatatype(name: String, multiple: Boolean) {
+  def toInternalFieldType: InternalFieldType = InternalNamedFieldType(name)
 }
 
 private[core] object InternalParsedDatatype {
@@ -293,21 +285,8 @@ private[core] object InternalParsedDatatype {
 
   def apply(value: String): InternalParsedDatatype = {
     value match {
-      case ArrayRx(word) => parseReference(word, true)
-      case _ => parseReference(value, false)
-    }
-  }
-
-  private val ReferencesRx = "^reference\\[(.+)\\]$".r
-
-  private def parseReference(value: String, multiple: Boolean): InternalParsedDatatype = {
-    value match {
-      case ReferencesRx(modelName) => {
-        InternalParsedDatatype("reference", multiple, Some(modelName))
-      }
-      case _ => {
-        InternalParsedDatatype(value, multiple, None)
-      }
+      case ArrayRx(word) => InternalParsedDatatype(word, true)
+      case _ => InternalParsedDatatype(value, false)
     }
   }
 
