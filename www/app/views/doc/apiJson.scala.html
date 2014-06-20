@@ -9,8 +9,8 @@
     {
       "name": <em>name</em>,
       "base_url": <em>string</em>,
-      "models": <em>[model]</em>,
-      "resources": <em>[resource]</em>,
+      "models": <em>{ modelName: model, ... }</em>,
+      "resources": <em>{ modelName: resource, ... }</em>,
       "description": <em>string (optional)</em>
     }
     </pre>
@@ -19,8 +19,8 @@
     <ul>
       <li><em>name</em> specifies the human readable name of this service - used for display and as the basis for generating a unique key for URL</li>
       <li><em>baseUrl</em> specifies the base URL where this service is hosted. Must start with http.</li>
-      <li><em>models</em> a JSON array defining all of the models in this API. A model defines the schema of a particular type of object available in the API.</li>
-      <li><em>resources</em> a JSON array defining all of the resources in this API. A resource maps a model to the set of operations available. </li>
+      <li><em>models</em> a JSON object defining all of the models in this API. The key of each object is the model name.</li>
+      <li><em>resources</em> a JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the models object. </li>
       <li><em>description</em> optional description for what this service provides.</li>
     </ul>
 
@@ -85,15 +85,16 @@
 
     <pre>
     {
-      "model": <em>name</em>,
-      "path": <em>string (optional)</em>,
-      "operations": <em>JSON Array of Operations</em>
+      "modelName" => {
+        "path": <em>string (optional)</em>,
+        "operations": <em>JSON Array of Operations</em>
+      }
     }
     </pre>
 
     where
     <ul>
-      <li><em>name</em> the name of a model that this resource represents</li>
+      <li><em>modelName</em> the name of the model that this resource represents</li>
       <li><em>path</em> optional path where this resource is located. If not provided, defaults to the model's plural name. Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that all operations for this path will require a parameter named 'guid' of type 'string'</li>
       <li><em>operations</em> one or more operations is required. See <a href="#operation">Operation</a>.</li>
     </ul>
@@ -169,7 +170,7 @@
     where
     <ul>
       <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
-      <li><em>type</em> the datatype of this response. The value must be the name of a model. To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> the datatype of this response. The value must be the name of a model. To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of users (assuming there is a model with name user), use "[user]".</li>
     </ul>
 
   </p>
