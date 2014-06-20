@@ -198,10 +198,8 @@ object InternalOperation {
         }
 
         case Some(responses: JsObject) => {
-          responses.fields.map { v =>
-            v match {
-              case(code, value) => InternalResponse(code, value.as[JsObject])
-            }
+          responses.fields.map {
+            case(code, value) => InternalResponse(code, value.as[JsObject])
           }
         }
       }
