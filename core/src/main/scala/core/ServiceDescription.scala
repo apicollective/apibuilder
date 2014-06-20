@@ -125,7 +125,6 @@ case class Field(name: String,
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
 case class ModelFieldType(model: Model) extends FieldType
-case class ReferenceFieldType(referencedModelName: String) extends FieldType
 
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
@@ -142,10 +141,6 @@ object PrimitiveParameterType {
 
       case mft: ModelFieldType => {
         sys.error("Cannot convert model fieldtype[%s] to parameter type".format(field.fieldtype))
-      }
-
-      case rft: ReferenceFieldType => {
-        sys.error("Cannot convert reference fieldtype[%s] to parameter type".format(field.fieldtype))
       }
     }
   }
@@ -335,11 +330,6 @@ object Field {
             ModelFieldType(model)
           }
         }
-      }
-
-      case Some(rft: InternalReferenceFieldType) => {
-        require(internal.default.isEmpty, s"Cannot have a default for a field of type[reference]")
-        ReferenceFieldType(rft.referencedModelName)
       }
 
       case None => {

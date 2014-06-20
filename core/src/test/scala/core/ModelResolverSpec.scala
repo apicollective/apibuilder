@@ -38,17 +38,6 @@ class ModelResolverSpec extends FunSpec with Matchers {
     ModelResolver.build(Seq(user, account)).map(_.name).sorted should be(Seq("account", "user"))
   }
 
-  it("reference to own field") {
-    val keyField = InternalField(name = Some("key"), fieldtype = Some(InternalParsedDatatype("string").toInternalFieldType))
-    val parentKeyField = InternalField(name = Some("parent"), fieldtype = Some(InternalParsedDatatype("reference[category]").toInternalFieldType))
-
-    val category = InternalModel(name = "category",
-                                 plural = "categories",
-                                 description = None,
-                                 fields = Seq(guidField, keyField, parentKeyField))
-    ModelResolver.build(Seq(category)).map(_.name) should be(Seq("category"))
-  }
-
   it("throws error on circular reference") {
     val foo = InternalModel(name = "foo",
                             plural = "foos",

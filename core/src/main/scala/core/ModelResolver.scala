@@ -48,17 +48,7 @@ private[core] object ModelResolver {
         case Some(InternalNamedFieldType(name: String)) => {
           Datatype.findByName(name).isEmpty && models.find { _.name == name }.isEmpty
         }
-
-        case Some(InternalReferenceFieldType(referencedModelName: String)) => {
-          if (referencedModelName == im.name) {
-            false
-          } else {
-            models.find { _.name == referencedModelName }.isEmpty
-          }
-        }
-
       }
-
     }.isEmpty
   }
 

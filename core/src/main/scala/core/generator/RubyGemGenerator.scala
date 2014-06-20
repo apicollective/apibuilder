@@ -230,9 +230,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case ModelFieldType(model: Model) => {
         parseModelArgument(field.name, model, field.required, field.multiple)
       }
-      case ReferenceFieldType(referencedModelName: String) => {
-        parseReferenceArgument(field.name, referencedModelName, field.required)
-      }
     }
 
   }
@@ -246,14 +243,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
         parseModelArgument(param.name, mt.model, param.required, param.multiple)
       }
     }
-  }
-
-  // TODO: Validate how we want references to work. Maybe validate
-  // that the reference has the right model
-  private def parseReferenceArgument(name: String, referencedModelName: String, required: Boolean): String = {
-    val value = s"opts.delete(:${name})"
-    val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
-    s"HttpClient::Preconditions.${assertMethod}('${name}', ${value}, Reference)"
   }
 
   private def parseModelArgument(name: String, model: Model, required: Boolean, multiple: Boolean): String = {
