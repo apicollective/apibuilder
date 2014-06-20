@@ -81,9 +81,8 @@
 
     },
 
-    "resources": [
-        {
-            "model": "user",
+    "resources": {
+	"user": {
             "operations": [
                 {
                     "method": "GET",
@@ -138,8 +137,7 @@
             ]
         },
 
-        {
-            "model": "organization",
+        "organization": {
             "operations": [
                 {
                     "method": "GET",
@@ -177,8 +175,7 @@
             ]
         },
 
-        {
-            "model": "membership",
+        "membership": {
             "operations": [
                 {
                     "method": "GET",
@@ -198,8 +195,7 @@
             ]
         },
 
-        {
-            "model": "membership_request",
+        "membership_request": {
             "operations": [
                 {
                     "method": "GET",
@@ -255,10 +251,8 @@
             ]
         },
 
-        {
-            "model": "service",
+        "service": {
             "path": "/:orgKey",
-
             "operations": [
                 {
                     "method": "GET",
@@ -284,8 +278,7 @@
             ]
         },
 
-        {
-            "model": "code",
+        "code": {
             "operations": [
                 {
                     "method": "GET",
@@ -303,8 +296,7 @@
             ]
         },
 
-        {
-            "model": "version",
+        "version": {
             "path": "/:orgKey/:serviceKey",
 
             "operations": [
@@ -349,6 +341,6 @@
             ]
         }
 
-    ]
+    }
 
 }

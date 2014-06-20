@@ -177,10 +177,8 @@
 
     },
 
-    "resources": [
-        {
-            "model": "vendor",
-
+    "resources": {
+	"vendor": {
             "operations": [
                 {
                     "method": "GET",
@@ -223,9 +221,7 @@
             ]
         },
 
-        {
-            "model": "item",
-
+        "item": {
             "operations": [
                 {
                     "method": "GET",
@@ -294,8 +290,7 @@
             ]
         },
 
-        {
-            "model": "term",
+	"term": {
             "operations": [
                 {
                     "method": "GET",
@@ -331,8 +326,7 @@
             ]
         },
 
-        {
-            "model": "agreement",
+        "agreement": {
             "operations": [
                 {
                     "method": "GET",
@@ -372,8 +366,7 @@
             ]
         },
 
-        {
-            "model": "shipment_schedule",
+        "shipment_schedule": {
             "path": "/shipment-schedules",
             "operations": [
                 {
@@ -410,8 +403,7 @@
             ]
         },
 
-        {
-            "model": "planned_shipment",
+        "planned_shipment": {
             "path": "/planned-shipments",
             "operations": [
                 {
@@ -430,8 +422,7 @@
             ]
         },
 
-        {
-            "model": "purchase",
+        "purchase": {
             "operations": [
                 {
                     "method": "GET",
@@ -474,8 +465,7 @@
             ]
         },
 
-        {
-            "model": "shipment_request",
+        "shipment_request": {
             "path": "/shipment-requests",
             "operations": [
                 {
@@ -506,8 +496,7 @@
             ]
         },
 
-        {
-            "model": "shipment_request_item",
+        "shipment_request_item": {
             "path": "/shipment-request-items",
             "operations": [
                 {
@@ -525,8 +514,7 @@
             ]
         },
 
-        {
-            "model": "receipt",
+        "receipt": {
             "operations": [
                 {
                     "method": "GET",
@@ -556,5 +544,5 @@
                 }
             ]
         }
-    ]
+    }
 }
