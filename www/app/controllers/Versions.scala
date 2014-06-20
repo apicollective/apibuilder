@@ -17,13 +17,12 @@ object Versions extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
-    for {
+    val future = for {
       org <- request.api.Organizations.get(key = Some(orgKey))
       serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
       versionsResponse <- request.api.Versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
       versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
-      // TODO: How to handle 404 nicely?
       println("versionResponse.entity: " + versionResponse.entity)
       versionResponse.entity match {
 
@@ -43,15 +42,32 @@ object Versions extends Controller {
         }
       }
     }
+
+    future.recover {
+      case request.api.FailedResponse(_, 404) => if ("latest" == versionName) {
+        Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
+      } else {
+        Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
+          .flashing("warning" -> s"Version not found: ${versionName}")
+      }
+    }
   }
 
   def apiJson(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
-    for {
+    val future = for {
       versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
-      // TODO: Handle 404
       val v = versionResponse.entity
       Ok(v.json).withHeaders("Content-Type" -> "application/json")
+    }
+
+    future.recover {
+      case request.api.FailedResponse(_, 404) => if ("latest" == versionName) {
+        Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
+      } else {
+        Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
+          .flashing("warning" -> s"Version not found: ${versionName}")
+      }
     }
   }
 
