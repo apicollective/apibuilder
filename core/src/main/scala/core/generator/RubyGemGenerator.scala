@@ -286,9 +286,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
     } else if (datatype == Datatype.DateTimeIso8601Type) {
       s"HttpClient::Helper.to_date_time_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
 
-    } else if (datatype == Datatype.MoneyIso4217Type) {
-      s"HttpClient::Helper.to_money_iso4217('$name', $value, :required => ${required}, :multiple => ${multiple})"
-
     } else if (datatype == Datatype.BooleanType) {
       s"HttpClient::Helper.to_boolean('$name', $value, :required => ${required}, :multiple => ${multiple})"
 
@@ -308,7 +305,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case Datatype.DecimalType => "BigDecimal"
       case Datatype.UuidType => "String"
       case Datatype.DateTimeIso8601Type => "DateTime"
-      case Datatype.MoneyIso4217Type => "HttpClient::Types::MoneyIso4217Type"
       case Datatype.UnitType => "nil"
       case _ => {
         sys.error(s"Cannot map data type[${datatype}] to ruby class")

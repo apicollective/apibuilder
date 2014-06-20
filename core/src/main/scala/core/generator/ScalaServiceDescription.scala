@@ -233,7 +233,6 @@ object ScalaDataType {
   case object ScalaUnitType extends ScalaDataType("Unit")
   case object ScalaUuidType extends ScalaDataType("java.util.UUID")
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
-  case object ScalaMoneyIso4217Type extends ScalaDataType("Money")
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaModelType(model: ScalaModel) extends ScalaDataType(model.name)
@@ -249,7 +248,6 @@ object ScalaDataType {
     case Datatype.UnitType => ScalaUnitType
     case Datatype.UuidType => ScalaUuidType
     case Datatype.DateTimeIso8601Type => ScalaDateTimeIso8601Type
-    case Datatype.MoneyIso4217Type => ScalaMoneyIso4217Type
   }
 
   def asString(d: ScalaDataType): String = d match {
@@ -263,7 +261,6 @@ object ScalaDataType {
     case x @ ScalaDateTimeIso8601Type => {
       "org.joda.time.format.ISODateTimeFormat.dateTime.print(x)"
     }
-    case x @ ScalaMoneyIso4217Type => ???
     case x => throw new UnsupportedOperationException(s"unsupported conversion of type ${d.name} to query string")
   }
 }

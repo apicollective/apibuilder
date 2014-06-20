@@ -283,22 +283,6 @@ require 'bigdecimal'
 
     end
 
-    module Types
-
-      class MoneyIso4217Type
-
-        attr_reader :currency, :amount
-
-        def initialize(incoming={})
-          opts = HttpClient::Helper.symbolize_keys(incoming)
-          @amount = HttpClient::Helper.to_big_decimal(opts.delete(:amount), :required => true, :multiple => false)
-          @currency = HttpClient::Helper.to_klass('currency', opts.delete(:currency), String, :required => true, :multiple => false)
-        end
-
-      end
-
-    end
-
     module Helper
 
       def Helper.symbolize_keys(hash)
@@ -350,10 +334,6 @@ require 'bigdecimal'
 
       def Helper.to_date_time_iso8601(field_name, value, opts={})
         Helper.parse_args(field_name, value, opts) { |v| DateTime.parse(v) }
-      end
-
-      def Helper.to_money_iso4217(field_name, value, opts={})
-        Helper.parse_args(field_name, value, opts) { |v| Types::MoneyIso4217Type.new(v) }
       end
 
       TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRINGS)
