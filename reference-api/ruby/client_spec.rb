@@ -14,7 +14,9 @@ describe ReferenceApi do
   describe Organizations do
     it "should work" do
       organization = make_organization
-      client.organizations.post(organization.to_h)
+      client.organizations.post(
+        :organization => organization.to_h
+      )
 
       begin
         o = client.organizations.get_by_guid(organization.guid)
@@ -47,7 +49,9 @@ describe ReferenceApi do
   describe Members do
     it "should work" do
       member = make_member
-      client.organizations.post(member.organization.to_h).should_not be_nil
+      client.organizations.post(
+        :organization => member.organization.to_h
+      ).should_not be_nil
       client.users.post(member.user.to_h).should_not be_nil
       client.members.post(
         :guid => member.guid,

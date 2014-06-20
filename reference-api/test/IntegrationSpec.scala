@@ -61,10 +61,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
 
         import client._
 
-        Organizations.post(
-          guid = organization.guid,
-          name = organization.name
-        ).entity must equalTo(organization)
+        Organizations.post(organization).entity must equalTo(organization)
 
         Organizations.getByGuid(guid = organization.guid.toString)
           .entity must equalTo(organization)
@@ -144,10 +141,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
 
         import client._
 
-        Organizations.post(
-          guid = member.organization.guid,
-          name = member.organization.name
-        ).entity must equalTo(member.organization)
+        Organizations.post(member.organization).entity must equalTo(member.organization)
 
         Users.post(
           guid = member.user.guid,

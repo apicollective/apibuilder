@@ -41,7 +41,7 @@ object Organizations extends Controller {
 
   def post() = Action(parse.json) { implicit request =>
     val json = request.body
-    json.validate[Organization] match {
+    (json \ "organization").validate[Organization] match {
       case JsSuccess(o, _) => {
         DB.withConnection { implicit c =>
           SQL("""

@@ -378,12 +378,10 @@ package referenceapi {
     
     object Organizations {
       def post(
-        guid: java.util.UUID,
-        name: String
+        organization: Organization
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Organization]] = {
         val payload = play.api.libs.json.Json.obj(
-          "guid" -> play.api.libs.json.Json.toJson(guid),
-          "name" -> play.api.libs.json.Json.toJson(name)
+          "organization" -> play.api.libs.json.Json.toJson(organization)
         )
         
         POST(s"/organizations", payload).map {

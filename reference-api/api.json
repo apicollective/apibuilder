@@ -75,13 +75,12 @@
                 {
                     "method": "POST",
                     "parameters": [
-                        { "name": "guid", "type": "uuid" },
-                        { "name": "name", "type": "string" }
-                        ],
-                        "responses": {
-                            "201": { "type": "organization" },
-                            "409": { "type": "[error]" }
-                        }
+                        { "name": "organization", "type": "organization" }
+                    ],
+                    "responses": {
+                        "201": { "type": "organization" },
+                        "409": { "type": "[error]" }
+                    }
                 },
                 {
                     "method": "GET",
