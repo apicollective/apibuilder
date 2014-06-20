@@ -92,7 +92,6 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
           case Datatype.DecimalType => "BigDecimal"
           case Datatype.UuidType => "String"
           case Datatype.DateTimeIso8601Type => "DateTime"
-          case Datatype.MoneyIso4217Type => "String"
           case Datatype.UnitType => "Unit"
         }
 

@@ -237,10 +237,6 @@ object Datatype {
                                                    example = "2014-04-29T11:56:52Z",
                                                    description = "Date time format in ISO 8601")
 
-  case object MoneyIso4217Type extends Datatype(name = "money-iso4217",
-                                                example = """{ "currency": "USD", "value": "12.50" }""",
-                                                description = "ISO 4217 currency code and value")
-
   case object UuidType extends Datatype(name = "uuid",
                                         example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
                                         description = "String representation of a universally unique identifier (UUID)")
@@ -249,7 +245,7 @@ object Datatype {
                                         example = "N/A",
                                         description = "Internal type used to represent things like an HTTP NoContent response. Maps to void in Java, Unit in Scala, nil in ruby, etc.")
 
-  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type, MoneyIso4217Type)
+  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type)
 
   def findByName(name: String): Option[Datatype] = {
     // TODO: This is weird. If we include UnitType in All - it ends up
@@ -395,13 +391,6 @@ object Field {
 
       case Datatype.DateTimeIso8601Type => {
         ISODateTimeFormat.basicDateTime.parseDateTime(value)
-      }
-
-      case Datatype.MoneyIso4217Type => {
-        val errors = MoneyIso4217.validate(value)
-        if (!errors.isEmpty) {
-          sys.error(errors.mkString(" "))
-        }
       }
 
       case Datatype.StringType => ()

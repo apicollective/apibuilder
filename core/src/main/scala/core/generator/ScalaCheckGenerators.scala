@@ -41,7 +41,6 @@ ${defs.indent(4)}
         s"""import org.scalacheck.Arbitrary
 Arbitrary(Arbitrary.arbDate.arbitrary.map(d => new ${x.name}(d.getTime)))"""
       }
-      case x @ ScalaMoneyIso4217Type => ???
       case ScalaListType(inner) => {
         s"org.scalacheck.Arbitrary(org.scalacheck.Gen.listOf(${arb(inner)}.arbitrary))"
       }

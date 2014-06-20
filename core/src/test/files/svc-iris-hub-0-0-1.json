@@ -52,10 +52,19 @@
         },
 
         "prices": {
+            "description": "Pricing is structured in the sense of specific types of pricing that can be provided - retail price, sale price, and cost (e.g. wholesale price)",
             "fields": [
-                { "name": "retail", "type": "money-iso4217", "description": "The retail price for this item", "required": false },
-                { "name": "sale", "type": "money-iso4217", "description": "The retail price for this item", "required": false },
-                { "name": "cost", "type": "money-iso4217", "description": "The retail price for this item", "required": false }
+                { "name": "retail", "type": "money", "description": "The retail price for this item", "required": false },
+                { "name": "sale", "type": "money", "description": "The recommended sale price for this item if different from retail. This is the price that should be offered to customers when purchasing this item. If not specified, the channel provider can determine the appropriate price.", "required": false },
+                { "name": "cost", "type": "money", "description": "The actual cost of this item. If a Vendor A purchases this item from Vendor B, this would be the price of that purchase.", "required": false }
+            ]
+        },
+
+        "money": {
+          "description": "Money is used to describe a value with currency.",
+            "fields": [
+                { "name": "value", "type": "decimal", "description": "The amount of the money", "required": true },
+                { "name": "currency", "type": "string", "description": "The <a href='https://en.wikipedia.org/wiki/ISO_4217#Active_codes'>ISO 4217 currency code</a>", "required": true }
             ]
         },
 
