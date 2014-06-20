@@ -25,14 +25,14 @@ object Organizations extends Controller {
     }
   }
 
-  def get(guid: Option[String], name: Option[String]) = Action {
+  def get(guid: Option[UUID], name: Option[String]) = Action {
     val os = DB.withConnection { implicit c =>
       SQL("""
       select * from organizations
       where ({guid} is null or guid = {guid})
       and ({name} is null or name = {name})
       """).on(
-        'guid -> guid.map(UUID.fromString),
+        'guid -> guid,
         'name -> name
       ).as(rowParser.*)
     }
@@ -66,11 +66,11 @@ object Organizations extends Controller {
     }
   }
 
-  def getByGuid(guid: String) = Action {
+  def getByGuid(guid: UUID) = Action {
     DB.withConnection { implicit c =>
       SQL("""
       select * from organizations where guid = {guid}
-      """).on('guid -> UUID.fromString(guid)).as(rowParser.singleOpt)
+      """).on('guid -> guid).as(rowParser.singleOpt)
     } match {
       case None => NotFound
       case Some(o) => Ok(Json.toJson(o))

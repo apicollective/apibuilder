@@ -32,7 +32,7 @@ object Members extends Controller {
     }
   }
 
-  def get(guid: Option[String], organizationGuid: Option[String], userGuid: Option[String], role: Option[String]) = Action {
+  def get(guid: Option[UUID], organizationGuid: Option[UUID], userGuid: Option[UUID], role: Option[String]) = Action {
     val members = DB.withConnection { implicit c =>
       SQL("""
       select * from members
@@ -93,7 +93,7 @@ object Members extends Controller {
     }
   }
 
-  def getByOrganization(organization: String) = Action {
+  def getByOrganization(organization: UUID) = Action {
     val members = DB.withConnection { implicit c =>
       SQL("""
       select * from members

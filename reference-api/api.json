@@ -95,6 +95,9 @@
                 {
                     "method": "GET",
                     "path": "/:guid",
+                    "parameters": [
+                      { "name": "guid", "type": "uuid" }
+                    ],
                     "responses": {
                         "200": { "type": "organization" }
                     }
@@ -167,6 +170,9 @@
                 {
                     "method": "GET",
                     "path": "/:organization",
+                    "parameters": [
+                      { "name": "organization", "type": "uuid" }
+                    ],
                     "responses": {
                         "200": { "type": "[member]" }
                     }

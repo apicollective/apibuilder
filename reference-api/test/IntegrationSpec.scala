@@ -63,10 +63,10 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
 
         Organizations.post(organization).entity must equalTo(organization)
 
-        Organizations.getByGuid(guid = organization.guid.toString)
+        Organizations.getByGuid(guid = organization.guid)
           .entity must equalTo(organization)
 
-        Organizations.getByGuid(guid = UUID.randomUUID.toString).recover[Any] {
+        Organizations.getByGuid(guid = UUID.randomUUID).recover[Any] {
           case r: FailedResponse[_] => r.status must equalTo(404)
         }
 
@@ -166,7 +166,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
 
         Members.get(role = member.role).entity must equalTo(List(member))
 
-        Members.getByOrganization(member.organization.guid.toString)
+        Members.getByOrganization(member.organization.guid)
           .entity must equalTo(List(member))
       }
     }

@@ -90,7 +90,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
           case Datatype.IntegerType => "Int"
           case Datatype.BooleanType => "Boolean"
           case Datatype.DecimalType => "BigDecimal"
-          case Datatype.UuidType => "String"
+          case Datatype.UuidType => "java.util.UUID"
           case Datatype.DateTimeIso8601Type => "DateTime"
           case Datatype.UnitType => "Unit"
         }

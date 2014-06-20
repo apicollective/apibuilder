@@ -36,7 +36,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       r.verb should be("GET")
       r.url should be("/users")
       r.method should be("controllers.Users.get")
-      r.params.mkString(", ") should be("guid: Option[String], email: Option[String], token: Option[String]")
+      r.params.mkString(", ") should be("guid: Option[java.util.UUID], email: Option[String], token: Option[String]")
     }
 
     it("GET w/ path, guid path param, no additional parameters") {

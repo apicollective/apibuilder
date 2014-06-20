@@ -26,7 +26,7 @@ object Users extends Controller {
     }
   }
 
-  def get(guid: Option[String], email: Option[String], active: Boolean) = Action {
+  def get(guid: Option[UUID], email: Option[String], active: Boolean) = Action {
     val us = DB.withConnection { implicit c =>
       SQL("""
       select * from users
@@ -34,7 +34,7 @@ object Users extends Controller {
       and ({email} is null or email = {email})
       and active = {active}
       """).on(
-        'guid -> guid.map(UUID.fromString),
+        'guid -> guid,
         'email -> email,
         'active -> active
       ).as(rowParser.*)

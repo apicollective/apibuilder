@@ -361,13 +361,13 @@ package referenceapi {
       }
       
       def getByOrganization(
-        organization: String
+        organization: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Member]]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
-        GET(s"/members/${({x: String =>
-          val s = x
+        GET(s"/members/${({x: java.util.UUID =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(organization)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Member]], 200)
@@ -418,13 +418,13 @@ package referenceapi {
       }
       
       def getByGuid(
-        guid: String
+        guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Organization]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
-        GET(s"/organizations/${({x: String =>
-          val s = x
+        GET(s"/organizations/${({x: java.util.UUID =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Organization], 200)
