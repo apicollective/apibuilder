@@ -22,3 +22,6 @@ ADD . /usr/share/apidoc
 WORKDIR /usr/share/apidoc
 
 RUN sbt stage
+
+RUN ln -s /usr/share/apidoc/api/target/universal/stage /usr/share/apidoc-api
+RUN ln -s /usr/share/apidoc/www/target/universal/stage /usr/share/apidoc-www
