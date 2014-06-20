@@ -1,17 +1,31 @@
-# TODO remove this spec and have a simple tool
-# for generating the files in the reference API
-# Then to test:
-#   APIDOC=`dirname $0`
-#   on_exit {
-#     cd $APIDOC/reference-api
-#     kill `cat .APP_PID`
-#     rm .APP_PID
-#   }
-#   trap on_exit EXIT
-#   cd $APIDOC/reference-api
-#   sbt test # for the play parts
-#   sbt run -Dpidfile.path=.APP_PID &
-#   cd ruby
-#   bundle install
-#   ./bin/rspec client_spec.rb
-sbt "core/testOnly core.generator.ReferenceApiSpec"
+#!/bin/bash -ex
+
+APIDOC=$(realpath $(dirname $0))
+# need to export for the EXIT trap
+export APP_PID=$APIDOC/reference-api/.APP_PID
+function on_exit {
+    kill $(cat $APP_PID)
+}
+type on_exit # print the source
+trap "on_exit" EXIT # clean up
+
+cd $APIDOC
+sbt "core/runMain core.generator.GenerateReferenceApi"
+
+PORT=$RANDOM
+while [ $(lsof -i tcp:$PORT) ] ;
+do
+    PORT=$RANDOM
+done
+export PORT
+
+cd reference-api
+sbt test stage # for the play parts
+
+# ruby specs need a running server
+target/universal/stage/bin/reference-api -Dhttp.port=$PORT -Dpidfile.path=$APP_PID &
+sleep 3 # sleep while it starts
+
+cd ruby
+bundle install
+./bin/rspec client_spec.rb
