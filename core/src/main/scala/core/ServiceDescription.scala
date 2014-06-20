@@ -100,7 +100,7 @@ object Operation {
     val internalParamNames: Set[String] = internalParams.map(_.name).toSet
 
     // Capture any path parameters that were not explicitly annotated
-    val pathParameters = internal.namedParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(_) }
+    val pathParameters = internal.namedParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(model, _) }
 
     Operation(model = model,
               method = method,
@@ -266,9 +266,19 @@ object ParameterLocation {
 
 object Parameter {
 
-  def fromPath(name: String): Parameter = {
+  def fromPath(model: Model, name: String): Parameter = {
+    val datatype = model.fields.find(_.name == name) match {
+      case None => Datatype.StringType
+      case Some(f: Field) => {
+        f.fieldtype match {
+          case ft: PrimitiveFieldType => ft.datatype
+          case _ => Datatype.StringType
+        }
+      }
+    }
+
     Parameter(name = name,
-              paramtype = PrimitiveParameterType(Datatype.StringType),
+              paramtype = PrimitiveParameterType(datatype),
               location = ParameterLocation.Path,
               required = true)
   }
