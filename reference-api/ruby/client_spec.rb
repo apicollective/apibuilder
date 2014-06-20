@@ -1,7 +1,5 @@
 require 'spec_helper.rb'
 
-# TODO finish the ruby Reference API spec
-
 include ReferenceApi
 include Clients
 
