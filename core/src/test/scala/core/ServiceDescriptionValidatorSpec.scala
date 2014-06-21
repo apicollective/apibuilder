@@ -166,7 +166,41 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
-    guid.paramtype should be(PrimitiveParameterType(Datatype.StringType)) // TODO: Should we look up the field and infer UUID type?
+    guid.paramtype should be(PrimitiveParameterType(Datatype.UuidType))
+  }
+
+  it("infers datatype for a path parameter from the associated model") {
+
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        }
+      },
+      "resources": {
+       "user": {
+          "operations": [
+            {
+              "method": "DELETE",
+              "path": "/:id"
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("")
+    val op = validator.serviceDescription.get.resources.head.operations.head
+    val idParam = op.parameters.head
+    idParam.name should be("id")
+    idParam.paramtype.asInstanceOf[PrimitiveParameterType].datatype.name should be("long")
   }
 
 }

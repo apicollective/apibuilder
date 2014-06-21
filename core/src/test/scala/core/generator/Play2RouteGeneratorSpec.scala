@@ -45,7 +45,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       r.verb should be("GET")
       r.url should be("/users/:guid")
       r.method should be("controllers.Users.getByGuid")
-      r.params.mkString(", ") should be("guid: String")
+      r.params.mkString(", ") should be("guid: java.util.UUID")
     }
 
     it("POST w/ default path, no parameters") {
@@ -63,7 +63,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       r.verb should be("PUT")
       r.url should be("/users/:guid")
       r.method should be("controllers.Users.putByGuid")
-      r.params.mkString(", ") should be("guid: String")
+      r.params.mkString(", ") should be("guid: java.util.UUID")
     }
   }
 
@@ -78,7 +78,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       r.verb should be("POST")
       r.url should be("/membership_requests/:guid/accept")
       r.method should be("controllers.MembershipRequests.postAcceptByGuid")
-      r.params.mkString(", ") should be("guid: String")
+      r.params.mkString(", ") should be("guid: java.util.UUID")
     }
   }
 
