@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.UUID
+
 import play.api._
 import play.api.mvc._
 
@@ -7,7 +9,7 @@ object MembershipRequestReviews extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def accept(orgKey: String, membershipRequestGuid: String) = Authenticated.async { implicit request =>
+  def accept(orgKey: String, membershipRequestGuid: UUID) = Authenticated.async { implicit request =>
     for {
       review <- request.api.MembershipRequests.postAcceptByGuid(membershipRequestGuid)
     } yield {
@@ -15,7 +17,7 @@ object MembershipRequestReviews extends Controller {
     }
   }
 
-  def decline(orgKey: String, membershipRequestGuid: String) = Authenticated.async { implicit request =>
+  def decline(orgKey: String, membershipRequestGuid: UUID) = Authenticated.async { implicit request =>
     for {
       review <- request.api.MembershipRequests.postDeclineByGuid(membershipRequestGuid)
     } yield {

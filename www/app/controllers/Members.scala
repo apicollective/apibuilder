@@ -79,7 +79,7 @@ object Members extends Controller {
 
             case Some(user: User) => {
               val membershipRequest = Await.result(request.api.MembershipRequests.post(org.guid, user.guid, valid.role), 1500.millis).entity
-              val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid.toString), 1500.millis)
+              val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
               Redirect(routes.Members.show(org.key)).flashing("success" -> s"${valid.role} added")
             }
           }

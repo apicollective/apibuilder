@@ -28,8 +28,8 @@ POST    /:orgKey/members/addPost                                  controllers.Me
 
 POST    /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 GET     /:orgKey/membershipRequests                               controllers.Organizations.membershipRequests(orgKey: String, page: Int ?= 0)
-POST    /:orgKey/membership_request_reviews/accept                controllers.MembershipRequestReviews.accept(orgKey: String, membership_request_guid: String)
-POST    /:orgKey/membership_request_reviews/decline               controllers.MembershipRequestReviews.decline(orgKey: String, membership_request_guid: String)
+POST    /:orgKey/membership_request_reviews/accept                controllers.MembershipRequestReviews.accept(orgKey: String, membership_request_guid: java.util.UUID)
+POST    /:orgKey/membership_request_reviews/decline               controllers.MembershipRequestReviews.decline(orgKey: String, membership_request_guid: java.util.UUID)
 
 GET     /:orgKey                                                  controllers.Organizations.show(orgKey: String, page: Int ?= 0)
 # GET     /:orgKey/register                                       controllers.Organizations.register(orgKey: String)

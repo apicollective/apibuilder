@@ -12,12 +12,12 @@
         @requests.items.map { request =>
          <tr>
            <td>
-               @helper.form(action = routes.MembershipRequestReviews.accept(tpl.org.get.key, request.guid.toString)) {
+               @helper.form(action = routes.MembershipRequestReviews.accept(tpl.org.get.key, request.guid)) {
                  <button class="btn btn-primary" type="submit">Accept</button>
                }
            </td>
            <td>
-               @helper.form(action = routes.MembershipRequestReviews.decline(tpl.org.get.key, request.guid.toString)) {
+               @helper.form(action = routes.MembershipRequestReviews.decline(tpl.org.get.key, request.guid)) {
                  <button class="btn btn-primary" type="submit">Decline</button>
                }
            </td>
