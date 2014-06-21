@@ -413,14 +413,14 @@ package apidoc {
        * organization.
        */
       def postAcceptByGuid(
-        guid: String
+        guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
         val payload = play.api.libs.json.Json.obj(
           
         )
         
-        POST(s"/membership_requests/${({x: String =>
-          val s = x
+        POST(s"/membership_requests/${({x: java.util.UUID =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}/accept", payload).map {
           case r if r.status == 204 => new ResponseImpl((), 204)
@@ -434,14 +434,14 @@ package apidoc {
        * organization.
        */
       def postDeclineByGuid(
-        guid: String
+        guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
         val payload = play.api.libs.json.Json.obj(
           
         )
         
-        POST(s"/membership_requests/${({x: String =>
-          val s = x
+        POST(s"/membership_requests/${({x: java.util.UUID =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}/decline", payload).map {
           case r if r.status == 204 => new ResponseImpl((), 204)
@@ -597,10 +597,10 @@ package apidoc {
        * Deletes an organization and all of its associated services.
        */
       def deleteByGuid(
-        guid: String
+        guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
-        DELETE(s"/organizations/${({x: String =>
-          val s = x
+        DELETE(s"/organizations/${({x: java.util.UUID =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}").map {
           case r if r.status == 204 => new ResponseImpl((), 204)
@@ -722,13 +722,13 @@ package apidoc {
        * Returns information about the user with this guid.
        */
       def getByGuid(
-        guid: String
+        guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
-        GET(s"/users/${({x: String =>
-          val s = x
+        GET(s"/users/${({x: java.util.UUID =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[User], 200)
@@ -761,7 +761,7 @@ package apidoc {
        * Updates information about the user with the specified guid.
        */
       def putByGuid(
-        guid: String,
+        guid: java.util.UUID,
         email: String,
         name: scala.Option[String] = None,
         imageUrl: scala.Option[String] = None
@@ -772,8 +772,8 @@ package apidoc {
           "image_url" -> play.api.libs.json.Json.toJson(imageUrl)
         )
         
-        PUT(s"/users/${({x: String =>
-          val s = x
+        PUT(s"/users/${({x: java.util.UUID =>
+          val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}", payload).map {
           case r if r.status == 201 => new ResponseImpl(r.json.as[User], 201)
