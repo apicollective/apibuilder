@@ -7,7 +7,7 @@ object Internal extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def healthcheck() = Action.async { request =>
+  def healthcheck() = Action.async { implicit request =>
     for {
       orgs <- Authenticated.api.Organizations.get(limit = Some(1))
     } yield {
