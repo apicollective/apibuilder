@@ -6,7 +6,7 @@ jdk:
 addons:
     postgresql: "9.3"
 install:
-  - createuser -U postgres -s -d -r web
+#  - createuser -U postgres -s -d -r web
   - createdb -h localhost -U web api
   - git clone git://github.com/gilt/schema-evolution-manager.git
   - cd schema-evolution-manager
