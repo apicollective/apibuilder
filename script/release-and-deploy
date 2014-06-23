@@ -1,0 +1,90 @@
+#!/usr/bin/env ruby
+
+# Example
+#   script/release-and-deploy [--tag x.y.x] api [www, ...]
+#
+#     tag: Optional tag to deploy. If not specified, we create a new tag
+#     api: List of services to deploy. Must have at least one service.
+#          Each service must be defined in .ionblaster.json
+#
+# Description
+#   - Breaks up the release and deploy process into multiple steps.
+#   - Each step is captured in a single shell script
+#   - Each shell script is prefixed with a number so that the scripts
+#     sort lexicographically
+#   - All scripts are written to a single directory
+#   - Once all scripts are written, we iterate through all scripts
+#     and run each script. If any script fails (via exit code)
+#     deploy stops.
+#   - A user can execute the scripts directly from the shell which is
+#     the primary motivation here - i.e. when something fails, just
+#     re-run the failed script from the shell to debug.
+#
+# Future work
+#   - Thinking about adding a resume option so that we keep a little bit
+#     of state for each script we ran and its result. This would allow
+#     a user to run the deploy, if it fails then debug, and then potentially
+#     resume. There are tricky edge cases to think about here so we first
+#     want to see if this general approach to deploy works.
+#
+
+require File.expand_path(File.dirname(__FILE__) + '/deployer.rb')
+
+version = `docker --version`.strip
+if version.match(/\s0/)
+  raise "You have docker version[%s] - Install docker version 1.0 or later" % version
+end
+
+if ENV['DOCKER_HOST'].to_s == ""
+  ip = `boot2docker ip`.strip
+  DOCKER_HOST = "tcp://#{ip}:2375"
+else
+  DOCKER_HOST = ENV['DOCKER_HOST']
+end
+
+# Service matches a name from .ionblaster.json
+
+if ARGV.first == "--tag"
+  ARGV.shift
+  tag = ARGV.shift.to_s.strip
+  new_tag = false
+else
+  new_tag = true
+  Deployer::Util.run("git fetch --tags origin")
+  tag = Deployer::Util.next_tag
+end
+
+services = ARGV.dup
+
+project_name = `pwd`.strip.split("/").last
+
+commands = Deployer::Commands.new(project_name, tag)
+
+if new_tag
+  commands.add("git tag -a -m %s %s" % [tag, tag],
+               :name => "create tag")
+  commands.add("git push --tags origin",
+               :name => "push tags")
+end
+
+commands.add("DOCKER_HOST=#{DOCKER_HOST} docker login --email=#{Deployer::Util.env('DOCKER_INDEX_EMAIL')} --username #{Deployer::Util.env('DOCKER_INDEX_USERNAME')} --password #{Deployer::Util.env('DOCKER_INDEX_PASSWORD')}",
+             :name => "docker login")
+
+docker_image_tag = "%s/%s:%s" % [Deployer::Util.env('DOCKER_INDEX_USERNAME'), project_name, tag]
+
+commands.add("DOCKER_HOST=#{DOCKER_HOST} docker build -t #{docker_image_tag} .",
+             :name => "docker build")
+commands.add("DOCKER_HOST=#{DOCKER_HOST} docker push #{docker_image_tag}",
+             :name => "docker push")
+
+services.each do |service|
+  commands.add("ionblaster new #{service} #{tag}",
+               :name => "%s ionblaster new stack" % service)
+  commands.add("ionblaster traffic #{service} #{tag} 100",
+               :name => "%s ionblaster traffic" % service)
+end
+
+puts "Deploy scripts created in %s" % commands.dir
+puts ""
+
+commands.run!

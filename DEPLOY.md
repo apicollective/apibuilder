@@ -16,26 +16,12 @@ Installing Docker on mac
 Deploying
 ==============
 
-    git tag -a -m 0.0.17 0.0.17
-    git push --tags origin
-
-    DOCKER_HOST=tcp://localhost:4244 /web/metadata-architecture/exec script/build-docker-image apidoc svc 0.0.17
-    /web/metadata-architecture/exec script/deploy api.origin.apidoc.me apidoc svc 0.0.17
-    /web/metadata-architecture/exec script/ionblaster set-load-balancers -lb <HOST> api.origin.apidoc.me
-
-    DOCKER_HOST=tcp://localhost:4244 /web/metadata-architecture/exec script/build-docker-image apidoc web 0.0.17
-    /web/metadata-architecture/exec script/deploy www.origin.apidoc.me apidoc web 0.0.17
-    /web/metadata-architecture/exec script/ionblaster set-load-balancers -lb <HOST> www.origin.apidoc.me
+    /web/metadata-architecture/exec ./script/release-and-deploy api www
 
 Metadata about your app EC2 Configuration
 =========================================
 
-    /web/metadata-architecture/exec script/ionblaster stacks
-
-Removing an old instance
-========================
-
-    /web/metadata-architecture/exec script/ionblaster delete-stack apidoc-svc-0-5-2-production-201412012928
+    /web/metadata-architecture/exec ionblaster list
 
 Releasing a schema change
 =========================
@@ -61,10 +47,3 @@ Debugging
  - sudo docker logs <container id>
 
  - Docker log location: /var/log/upstart/docker.log
-
-
-
-
-
-
-
