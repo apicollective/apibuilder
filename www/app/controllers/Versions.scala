@@ -14,6 +14,8 @@ import java.io.File
 
 object Versions extends Controller {
 
+  private val DefaultVersion = "0.0.1-dev"
+
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
@@ -82,7 +84,7 @@ object Versions extends Controller {
           val tpl = MainTemplate(title = s"${o.name}: Add Service",
                                  user = Some(request.user),
                                  org = Some(o))
-          val filledForm = uploadForm.fill(UploadData(version.getOrElse("")))
+          val filledForm = uploadForm.fill(UploadData(version.getOrElse(DefaultVersion)))
           Ok(views.html.versions.form(tpl, filledForm))
         }
       }
