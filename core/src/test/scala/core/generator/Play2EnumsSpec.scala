@@ -32,7 +32,8 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
 
   it("Valid enum for 1 field with enum") {
     val service = ServiceDescription(json.format("""
-{ "name": "age_group", "type": "string", "values": ["Twenties", "Thirties"] }
+{ "name": "age_group", "type": "string", "values": ["Twenties", "Thirties"] },
+{ "name": "party_theme", "type": "string", "values": ["Twenties", "Thirties"] }
 """))
 
     val enums = Play2Enums(service).get
@@ -40,11 +41,42 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
     enums.trim should be("""
 package apidoc.enums {
 
-  package user {
-    object AgeGroup extends Enumeration {
-      type AgeGroup = Value
-      val Twenties ,Thirties = Value
+  object User {
+
+    sealed trait AgeGroup
+
+    object AgeGroup {
+
+      case object Twenties extends AgeGroup
+      case object Thirties extends AgeGroup
+
+      val AllAgeGroups = Seq(Twenties, Thirties)
+      private[this]
+      val NameLookup = AllAgeGroups.map(x => x.toString -> x).toMap
+
+      def apply(value: String): Option[AgeGroup] = NameLookup.get(value)
+
     }
+
+  }
+
+  object User {
+
+    sealed trait PartyTheme
+
+    object PartyTheme {
+
+      case object Twenties extends PartyTheme
+      case object Thirties extends PartyTheme
+
+      val AllPartyThemes = Seq(Twenties, Thirties)
+      private[this]
+      val NameLookup = AllPartyThemes.map(x => x.toString -> x).toMap
+
+      def apply(value: String): Option[PartyTheme] = NameLookup.get(value)
+
+    }
+
   }
 
 }
