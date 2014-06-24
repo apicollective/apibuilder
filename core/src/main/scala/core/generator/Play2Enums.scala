@@ -3,32 +3,21 @@ package core.generator
 import core.{ Field, Model, ServiceDescription, Text }
 
 object Play2Enums {
-  def apply(sd: ServiceDescription): Option[String] = {
-    val enums = sd.models.flatMap { model =>
-      val fields = model.fields.filter { !_.values.isEmpty }
-      if (fields.isEmpty) {
-        None
-      } else {
-        fields.map { f => buildEnum(model, f) }
-      }
-    }
 
-    if (enums.isEmpty) {
+  def build(model: Model): Option[String] = {
+    val fields = model.fields.filter { !_.values.isEmpty }
+    if (fields.isEmpty) {
       None
     } else {
-      val packageName = ScalaUtil.packageName(sd.name)
-      println(enums.mkString("\n"))
-      Some(s"package $packageName.enums {\n\n" + enums.mkString("\n") + "\n}\n")
+      val className = Text.initCap(Text.snakeToCamelCase(model.name))
+      Some(s"  object $className {\n\n" +
+        fields.map { field =>
+          val traitName = Text.initCap(Text.snakeToCamelCase(field.name))
+            s"    sealed trait ${traitName}\n\n" +
+            buildEnumForField(traitName, field)
+        }.mkString("\n") +
+        "  }")
     }
-  }
-
-  private def buildEnum(model: Model, field: Field): String = {
-    val className = Text.initCap(Text.snakeToCamelCase(model.name))
-    val traitName = Text.initCap(Text.snakeToCamelCase(field.name))
-    s"  object $className {\n\n" +
-    s"    sealed trait ${traitName}\n\n" +
-    buildEnumForField(traitName, field) + "\n" +
-    "  }\n"
   }
 
   private def buildEnumForField(traitName: String, field: Field): String = {
@@ -41,4 +30,5 @@ object Play2Enums {
     s"      def apply(value: String): Option[$traitName] = NameLookup.get(value)\n\n" +
     s"    }\n"
   }
+
 }

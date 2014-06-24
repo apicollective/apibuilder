@@ -52,7 +52,7 @@ class ScalaServiceDescription(serviceDescription: ServiceDescription) {
   val packageName = ScalaUtil.packageName(serviceDescription.name)
 }
 
-class ScalaModel(model: Model) {
+class ScalaModel(val model: Model) {
 
   val name: String = underscoreToInitCap(model.name)
 

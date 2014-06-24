@@ -27,7 +27,8 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
 { "name": "age_group", "type": "string" }
 """))
 
-    Play2Enums(service) should be(None)
+    val userModel = service.models.head
+    Play2Enums.build(userModel) should be(None)
   }
 
   it("Valid enum for 1 field with enum") {
@@ -36,11 +37,10 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
 { "name": "party_theme", "type": "string", "values": ["Twenties", "Thirties"] }
 """))
 
-    val enums = Play2Enums(service).get
-
+    val userModel = service.models.head
+    val enums = Play2Enums.build(userModel).get
+    println(enums)
     enums.trim should be("""
-package apidoc.enums {
-
   object User {
 
     sealed trait AgeGroup
@@ -58,10 +58,6 @@ package apidoc.enums {
 
     }
 
-  }
-
-  object User {
-
     sealed trait PartyTheme
 
     object PartyTheme {
@@ -76,10 +72,7 @@ package apidoc.enums {
       def apply(value: String): Option[PartyTheme] = NameLookup.get(value)
 
     }
-
   }
-
-}
 """.trim)
   }
 

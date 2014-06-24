@@ -163,7 +163,16 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
-    missingTypes ++ missingNames ++ badNames ++ badValues
+    // Currently we only support enumeration values for string
+    // datatypes. This may change in future but was the simplest and
+    // most common use case to fully support.
+    val enumsForNonStringTypes = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter(!_.name.isEmpty).filter(!_.values.isEmpty).filter(_.fieldtype != Some(InternalNamedFieldType("string"))).map { f =>
+        s"Model[${model.name}] field[${f.name.get}]: values can only be specified for fields of type 'string'"
+      }
+    }
+
+    missingTypes ++ missingNames ++ badNames ++ badValues ++ enumsForNonStringTypes
   }
 
   private def validateResponses(): Seq[String] = {
