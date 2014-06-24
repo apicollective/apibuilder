@@ -33,8 +33,8 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
 
   it("Valid enum for 1 field with enum") {
     val service = ServiceDescription(json.format("""
-{ "name": "age_group", "type": "string", "values": ["Twenties", "Thirties"] },
-{ "name": "party_theme", "type": "string", "values": ["Twenties", "Thirties"] }
+{ "name": "age_group", "type": "string", "values": ["twenties", "thirties"] },
+{ "name": "party_theme", "type": "string", "values": ["twenties", "thirties"] }
 """))
 
     val userModel = service.models.head
@@ -47,8 +47,8 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
 
     object AgeGroup {
 
-      case object Twenties extends AgeGroup
-      case object Thirties extends AgeGroup
+      case object Twenties extends AgeGroup { override def toString = "twenties" }
+      case object Thirties extends AgeGroup { override def toString = "thirties" }
 
       val AllAgeGroups = Seq(Twenties, Thirties)
       private[this]
@@ -62,8 +62,8 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
 
     object PartyTheme {
 
-      case object Twenties extends PartyTheme
-      case object Thirties extends PartyTheme
+      case object Twenties extends PartyTheme { override def toString = "twenties" }
+      case object Thirties extends PartyTheme { override def toString = "thirties" }
 
       val AllPartyThemes = Seq(Twenties, Thirties)
       private[this]

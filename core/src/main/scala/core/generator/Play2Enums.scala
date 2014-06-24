@@ -23,8 +23,11 @@ object Play2Enums {
   private def buildEnumForField(traitName: String, field: Field): String = {
     val allName = "All" + Text.pluralize(traitName)
     s"    object $traitName {\n\n" +
-    field.values.map { value => s"      case object ${value} extends $traitName" }.mkString("\n") + "\n\n" +
-    s"      val $allName = Seq(" + field.values.mkString(", ") + ")\n" +
+    field.values.map { value => 
+      val enumName = Text.initCap(Text.snakeToCamelCase(value))
+      s"""      case object ${enumName} extends $traitName { override def toString = "$value" }"""
+    }.mkString("\n") + "\n\n" +
+    s"      val $allName = Seq(" + field.values.map { value => Text.initCap(Text.snakeToCamelCase(value)) }.mkString(", ") + ")\n" +
     s"      private[this]\n" +
     s"      val NameLookup = $allName.map(x => x.toString -> x).toMap\n\n" +
     s"      def apply(value: String): Option[$traitName] = NameLookup.get(value)\n\n" +
