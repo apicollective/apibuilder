@@ -19,6 +19,21 @@ ${client(ssd)}"""
 
   private def client(ssd: ScalaServiceDescription): String = {
 s"""package ${ssd.packageName} {
+  trait Response[T] {
+    val entity: T
+    val status: Int
+  }
+
+  object Response {
+    def unapply[T](r: Response[T]) = Some((r.entity, r.status))
+  }
+
+  case class ResponseImpl[T](entity: T, status: Int) extends Response[T]
+
+  case class FailedResponse[T](entity: T, status: Int)
+    extends Exception(s"request failed with status[$$status]: $${entity}")
+    with Response[T]
+
   class Client(apiUrl: String, apiToken: Option[String] = None) {
     import ${ssd.packageName}.models._
     import ${ssd.packageName}.models.json._
@@ -85,21 +100,6 @@ s"""package ${ssd.packageName} {
     private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       processResponse(logRequest("DELETE", requestHolder(path)).delete())
     }
-
-    trait Response[T] {
-      val entity: T
-      val status: Int
-    }
-
-    object Response {
-      def unapply[T](r: Response[T]) = Some((r.entity, r.status))
-    }
-
-    case class ResponseImpl[T](entity: T, status: Int) extends Response[T]
-
-    case class FailedResponse[T](entity: T, status: Int)
-      extends Exception(s"request failed with status[$$status]: $${entity}")
-      with Response[T]
 
 ${modelClients(ssd).indent(4)}
   }

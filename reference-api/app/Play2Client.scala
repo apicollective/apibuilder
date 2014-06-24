@@ -215,6 +215,21 @@ package referenceapi.models {
 }
 
 package referenceapi {
+  trait Response[T] {
+    val entity: T
+    val status: Int
+  }
+
+  object Response {
+    def unapply[T](r: Response[T]) = Some((r.entity, r.status))
+  }
+
+  case class ResponseImpl[T](entity: T, status: Int) extends Response[T]
+
+  case class FailedResponse[T](entity: T, status: Int)
+    extends Exception(s"request failed with status[$status]: ${entity}")
+    with Response[T]
+
   class Client(apiUrl: String, apiToken: Option[String] = None) {
     import referenceapi.models._
     import referenceapi.models.json._
@@ -281,21 +296,6 @@ package referenceapi {
     private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       processResponse(logRequest("DELETE", requestHolder(path)).delete())
     }
-
-    trait Response[T] {
-      val entity: T
-      val status: Int
-    }
-
-    object Response {
-      def unapply[T](r: Response[T]) = Some((r.entity, r.status))
-    }
-
-    case class ResponseImpl[T](entity: T, status: Int) extends Response[T]
-
-    case class FailedResponse[T](entity: T, status: Int)
-      extends Exception(s"request failed with status[$status]: ${entity}")
-      with Response[T]
 
     object Members {
       def post(

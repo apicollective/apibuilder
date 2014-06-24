@@ -20,7 +20,7 @@ import org.joda.time.DateTime
 
 import play.api.Logger
 
-import referenceapi.Client
+import referenceapi._
 import referenceapi.models
 import referenceapi.models._
 
