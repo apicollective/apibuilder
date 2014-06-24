@@ -25,6 +25,10 @@
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
            <p>
+             @if(!field.values.isEmpty) {
+               Acceptable values: @field.values.mkString(", ")
+             }
+
              @field.minimum.map { v => Minimum: @v<br/> }
              @field.maximum.map { v => Maximum: @v<br/> }
 
