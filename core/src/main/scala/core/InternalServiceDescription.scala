@@ -98,7 +98,7 @@ case class InternalField(name: Option[String] = None,
                          required: Boolean = true,
                          multiple: Boolean = false,
                          default: Option[String] = None,
-                         values: Set[String] = Set.empty,
+                         values: Seq[String] = Seq.empty,
                          example: Option[String] = None,
                          minimum: Option[Long] = None,
                          maximum: Option[Long] = None)
@@ -231,7 +231,7 @@ object InternalField {
     val parsedDatatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
 
     val values = (json \ "values").asOpt[JsArray] match {
-      case None => Set.empty
+      case None => Seq.empty
       case Some(a: JsArray) => {
         a.value.flatMap { value => JsonStringParser.asOptString(value) }
       }
@@ -243,7 +243,7 @@ object InternalField {
                   required = (json \ "required").asOpt[Boolean].getOrElse(true),
                   multiple = parsedDatatype.map(_.multiple).getOrElse(false),
                   default = JsonStringParser.asOptString(json, "default"),
-                  values = values.toSet,
+                  values = values,
                   minimum = (json \ "minimum").asOpt[Long],
                   maximum = (json \ "maximum").asOpt[Long],
                   example = JsonStringParser.asOptString(json, "example"))

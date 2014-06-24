@@ -152,7 +152,18 @@ case class ServiceDescriptionValidator(apiJson: String) {
           }
       }
     }
-    missingTypes ++ missingNames ++ badNames
+
+    val badValues = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter(!_.values.isEmpty).flatMap { f =>
+        f.values.map { n => n -> Text.validateName(n) }
+      }.filter(_._2.nonEmpty).flatMap { case (name, errors) =>
+          errors.map { e =>
+            s"Invalid value for Model[${model.name}] field[${name}]: $e"
+          }
+      }
+    }
+
+    missingTypes ++ missingNames ++ badNames ++ badValues
   }
 
   private def validateResponses(): Seq[String] = {

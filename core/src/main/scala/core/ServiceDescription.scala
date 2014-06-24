@@ -116,7 +116,7 @@ case class Field(name: String,
                  fieldtype: FieldType,
                  description: Option[String] = None,
                  required: Boolean = true,
-                 values: Set[String] = Set.empty,
+                 values: Seq[String] = Seq.empty,
                  multiple: Boolean = false,
                  default: Option[String] = None,
                  example: Option[String] = None,
@@ -346,6 +346,11 @@ object Field {
       case None => {
         sys.error("missing field type")
       }
+    }
+
+    internal.values.foreach { value =>
+      val errors = Text.validateName(value)
+      assert(errors.isEmpty, s"Field[${internal.name.get}] has an invalid value[${value}]: " + errors.mkString(" "))
     }
 
     Field(name = internal.name.get,

@@ -13,7 +13,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
       "models": {
         "user": {
           "fields": [
-            { "name": "age_group", "type": "string", "values": ["21-29", "30-39"] }
+            { "name": "age_group", "type": "string", "values": ["Twenties", "Thirties"] }
           ]
         }
       }
@@ -23,7 +23,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
-    ageGroup.values.toSeq.sorted should be(Seq("21-29", "30-39"))
+    ageGroup.values should be(Seq("Twenties", "Thirties"))
   }
 
 }
