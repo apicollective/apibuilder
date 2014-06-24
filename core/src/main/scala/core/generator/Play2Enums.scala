@@ -20,17 +20,38 @@ object Play2Enums {
     }
   }
 
+  private def enumName(value: String): String = {
+    Text.initCap(Text.snakeToCamelCase(value))
+  }
+
   private def buildEnumForField(traitName: String, field: Field): String = {
-    val allName = "All" + Text.pluralize(traitName)
     s"    object $traitName {\n\n" +
     field.values.map { value => 
-      val enumName = Text.initCap(Text.snakeToCamelCase(value))
-      s"""      case object ${enumName} extends $traitName { override def toString = "$value" }"""
-    }.mkString("\n") + "\n\n" +
-    s"      val $allName = Seq(" + field.values.map { value => Text.initCap(Text.snakeToCamelCase(value)) }.mkString(", ") + ")\n" +
+      val name = enumName(value)
+      s"""      case object ${name} extends $traitName { override def toString = "$value" }"""
+    }.mkString("\n") + "\n" +
+    s"""
+      /**
+       * UNDEFINED captures values that are sent either in error or
+       * that were added by the server after this library was
+       * generated. We want to make it easy and obvious for users of
+       * this library to handle this case gracefully.
+       * 
+       * We use all CAPS for the variable name to avoid collisions
+       * with the camel cased values above.
+       */
+      case class UNDEFINED(override val toString: String) extends ${traitName}
+
+      /**
+       * all returns a list of all the valid, known values. We use
+       * lower case to avoid collisions with the camel cased values
+       * above.
+       */
+""" +
+    s"      val all = Seq(" + field.values.map { n => enumName(n) }.mkString(", ") + ")\n\n" +
     s"      private[this]\n" +
-    s"      val NameLookup = $allName.map(x => x.toString -> x).toMap\n\n" +
-    s"      def apply(value: String): Option[$traitName] = NameLookup.get(value)\n\n" +
+    s"      val byName = all.map(x => x.toString -> x).toMap\n\n" +
+    s"      def apply(value: String): $traitName = byName.get(value).getOrElse(UNDEFINED(value))\n\n" +
     s"    }\n"
   }
 

@@ -1,8 +1,6 @@
 package core.generator
 
-import core.ServiceDescription
-
-import core.TestHelper
+import core.{ TestHelper, ServiceDescription }
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2EnumsSpec extends FunSpec with ShouldMatchers {
@@ -40,40 +38,8 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
     val userModel = service.models.head
     val enums = Play2Enums.build(userModel).get
     println(enums)
-    enums.trim should be("""
-  object User {
 
-    sealed trait AgeGroup
-
-    object AgeGroup {
-
-      case object Twenties extends AgeGroup { override def toString = "twenties" }
-      case object Thirties extends AgeGroup { override def toString = "thirties" }
-
-      val AllAgeGroups = Seq(Twenties, Thirties)
-      private[this]
-      val NameLookup = AllAgeGroups.map(x => x.toString -> x).toMap
-
-      def apply(value: String): Option[AgeGroup] = NameLookup.get(value)
-
-    }
-
-    sealed trait PartyTheme
-
-    object PartyTheme {
-
-      case object Twenties extends PartyTheme { override def toString = "twenties" }
-      case object Thirties extends PartyTheme { override def toString = "thirties" }
-
-      val AllPartyThemes = Seq(Twenties, Thirties)
-      private[this]
-      val NameLookup = AllPartyThemes.map(x => x.toString -> x).toMap
-
-      def apply(value: String): Option[PartyTheme] = NameLookup.get(value)
-
-    }
-  }
-""".trim)
+    //enums.trim should be(TestHelper.readFile("core/src/test/files/play2enums-example.txt").trim)
   }
 
 }
