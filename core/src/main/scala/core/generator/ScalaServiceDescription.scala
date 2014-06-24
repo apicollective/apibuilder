@@ -35,6 +35,10 @@ object ScalaUtil {
       name
     }
   }
+
+  def packageName(serviceName: String): String = {
+    Text.safeName(serviceName).toLowerCase
+  }
 }
 
 class ScalaServiceDescription(serviceDescription: ServiceDescription) {
@@ -45,7 +49,7 @@ class ScalaServiceDescription(serviceDescription: ServiceDescription) {
 
   val resources = serviceDescription.resources.map { new ScalaResource(_) }
 
-  val packageName = name.toLowerCase
+  val packageName = ScalaUtil.packageName(serviceDescription.name)
 }
 
 class ScalaModel(model: Model) {
