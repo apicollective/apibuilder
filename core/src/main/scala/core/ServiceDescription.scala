@@ -116,7 +116,6 @@ case class Field(name: String,
                  fieldtype: FieldType,
                  description: Option[String] = None,
                  required: Boolean = true,
-                 values: Seq[String] = Seq.empty,
                  multiple: Boolean = false,
                  default: Option[String] = None,
                  example: Option[String] = None,
@@ -126,6 +125,7 @@ case class Field(name: String,
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
 case class ModelFieldType(model: Model) extends FieldType
+case class EnumerationFieldType(values: Seq[String]) extends FieldType
 
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
@@ -348,18 +348,23 @@ object Field {
       }
     }
 
-    internal.values.foreach { value =>
-      val errors = Text.validateName(value)
-      assert(errors.isEmpty, s"Field[${internal.name.get}] has an invalid value[${value}]: " + errors.mkString(" "))
+    val finalFieldType = if (internal.values.isEmpty) {
+      fieldtype
+    } else {
+      assert(fieldtype == PrimitiveFieldType(Datatype.StringType), "Field type must be string for enumerations")
+      internal.values.foreach { value =>
+        val errors = Text.validateName(value)
+        assert(errors.isEmpty, s"Field[${internal.name.get}] has an invalid value[${value}]: " + errors.mkString(" "))
+      }
+      EnumerationFieldType(internal.values)
     }
 
     Field(name = internal.name.get,
-          fieldtype = fieldtype,
+          fieldtype = finalFieldType,
           description = internal.description,
           required = internal.required,
           multiple = internal.multiple,
           default = internal.default,
-          values = internal.values,
           minimum = internal.minimum.map(_.toLong),
           maximum = internal.maximum.map(_.toLong),
           example = internal.example)
