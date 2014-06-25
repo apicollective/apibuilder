@@ -230,6 +230,10 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case ModelFieldType(model: Model) => {
         parseModelArgument(field.name, model, field.required, field.multiple)
       }
+      case EnumerationFieldType(datatype: Datatype, values: Seq[String]) => {
+        // TODO: Do we want to handle enumeration field types in the ruby client?
+        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.multiple)
+      }
     }
 
   }

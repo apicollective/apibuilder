@@ -1,11 +1,12 @@
 package core.generator
 
-import core.{ Field, Model, ServiceDescription, Text }
+import core.{ EnumerationFieldType, Field, Model, ServiceDescription, Text }
 
 object Play2Enums {
 
   def build(model: Model): Option[String] = {
-    val fields = model.fields.filter { !_.values.isEmpty }
+    val fields = model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }
+
     if (fields.isEmpty) {
       None
     } else {
@@ -14,7 +15,7 @@ object Play2Enums {
         fields.map { field =>
           val traitName = Text.initCap(Text.snakeToCamelCase(field.name))
             s"    sealed trait ${traitName}\n\n" +
-            buildEnumForField(traitName, field)
+            buildEnumForField(traitName, field.fieldtype.asInstanceOf[EnumerationFieldType])
         }.mkString("\n") +
         "  }")
     }
@@ -24,9 +25,9 @@ object Play2Enums {
     Text.initCap(Text.snakeToCamelCase(value))
   }
 
-  private def buildEnumForField(traitName: String, field: Field): String = {
+  private def buildEnumForField(traitName: String, enumType: EnumerationFieldType): String = {
     s"    object $traitName {\n\n" +
-    field.values.map { value => 
+    enumType.values.map { value => 
       val name = enumName(value)
       s"""      case object ${name} extends $traitName { override def toString = "$value" }"""
     }.mkString("\n") + "\n" +
@@ -48,7 +49,7 @@ object Play2Enums {
        * above.
        */
 """ +
-    s"      val all = Seq(" + field.values.map { n => enumName(n) }.mkString(", ") + ")\n\n" +
+    s"      val all = Seq(" + enumType.values.map { n => enumName(n) }.mkString(", ") + ")\n\n" +
     s"      private[this]\n" +
     s"      val byName = all.map(x => x.toString -> x).toMap\n\n" +
     s"      def apply(value: String): $traitName = byName.get(value).getOrElse(UNDEFINED(value))\n\n" +

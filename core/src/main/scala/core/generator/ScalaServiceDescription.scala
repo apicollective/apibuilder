@@ -135,6 +135,7 @@ class ScalaField(field: Field) {
     val base: ScalaDataType = field.fieldtype match {
       case t: PrimitiveFieldType => ScalaDataType(t.datatype)
       case m: ModelFieldType => new ScalaModelType(new ScalaModel(m.model))
+      case e: EnumerationFieldType => new ScalaEnumerationType(field.name, ScalaDataType(e.datatype))
     }
     if (multiple) {
       new ScalaListType(base)
@@ -238,6 +239,7 @@ object ScalaDataType {
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaModelType(model: ScalaModel) extends ScalaDataType(model.name)
+  case class ScalaEnumerationType(name: String, inner: ScalaDataType) extends ScalaDataType(name)
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {
