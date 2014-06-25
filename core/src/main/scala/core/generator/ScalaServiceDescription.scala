@@ -239,7 +239,7 @@ object ScalaDataType {
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaModelType(model: ScalaModel) extends ScalaDataType(model.name)
-  case class ScalaEnumerationType(name: String, inner: ScalaDataType) extends ScalaDataType(name)
+  case class ScalaEnumerationType(fieldName: String, inner: ScalaDataType) extends ScalaDataType(fieldName)
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {

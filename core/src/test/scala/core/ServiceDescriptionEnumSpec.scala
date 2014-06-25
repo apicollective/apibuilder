@@ -23,7 +23,14 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
-    ageGroup.values should be(Seq("Twenties", "Thirties"))
+    ageGroup.fieldtype match {
+      case et: EnumerationFieldType => {
+        et.values should be(Seq("Twenties", "Thirties"))
+      }
+      case ft => {
+        fail(s"Invalid field type[${ft} for agegroup - should have been an enumeration")
+      }
+    }
   }
 
   it("validates that enum type must be string") {
