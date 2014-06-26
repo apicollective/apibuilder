@@ -54,12 +54,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
   private val moduleName = Text.safeName(service.name)
 
-  private val Underscores = """([\_+])""".r
-  private val moduleKey = {
-    val name = Text.camelCaseToUnderscore(moduleName).toLowerCase
-    Underscores.replaceAllIn(name, m => s"-")
-  }
-
   def generate(): String = {
     RubyHttpClient.require +
     "\n" +
