@@ -244,11 +244,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
     model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
     sb.append(s"    class $className\n")
 
-    sb.append(
-      model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }.map { field =>
-        RubyGemGenerator.generateEnumClass(model.name, field.name, field.fieldtype.asInstanceOf[EnumerationFieldType])
-      }.mkString("\n\n").indent(6) + "\n"
-    )
+    val enums = model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }.map { field =>
+      RubyGemGenerator.generateEnumClass(model.name, field.name, field.fieldtype.asInstanceOf[EnumerationFieldType])
+    }
+    if (!enums.isEmpty) {
+      sb.append(enums.mkString("\n\n").indent(6) + "\n")
+    }
 
     sb.append("      attr_reader " + model.fields.map( f => s":${f.name}" ).mkString(", "))
 
