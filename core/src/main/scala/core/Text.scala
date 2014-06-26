@@ -116,6 +116,10 @@ object Text {
     initCap(value.split("_"))
   }
 
+  def underscoreToAllCaps(value: String): String = {
+    value.split("_").map(_.toUpperCase).mkString("_")
+  }
+
   def dashToInitCap(value: String): String = {
     initCap(value.split("-"))
   }

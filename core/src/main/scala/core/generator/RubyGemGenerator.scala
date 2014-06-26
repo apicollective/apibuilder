@@ -4,9 +4,46 @@ import core._
 import scala.collection.mutable.ListBuffer
 
 object RubyGemGenerator {
+
   def apply(json: String) = {
     new RubyGemGenerator(ServiceDescription(json)).generate
   }
+
+  def generateEnumClass(modelName: String, fieldName: String, et: EnumerationFieldType): String = {
+    val className = Text.underscoreToInitCap(fieldName)
+    val lines = ListBuffer[String]()
+    lines.append(s"class $className")
+
+    lines.append("")
+    lines.append(et.values.map { value =>
+      val enumName = Text.underscoreToAllCaps(value)
+      s"""  $enumName = $className.new("$value")"""
+    }.mkString("\n"))
+
+    lines.append("")
+    lines.append("  attr_reader :value")
+
+    lines.append("")
+    lines.append("  def initialize(value)")
+    lines.append("    @value = HttpClient::Preconditions.assert_class('value', value, String)")
+    lines.append("  end")
+
+    lines.append("")
+    lines.append("  def all")
+    lines.append("    [" + et.values.map(v => Text.underscoreToAllCaps(v)).mkString(", ") + "]")
+    lines.append("  end")
+
+    lines.append("")
+    lines.append("  # Returns the instance of AgeGroup for this value, or nil if not found")
+    lines.append("  def from_string(value)")
+    lines.append("    all.find { |v| v.value == value }")
+    lines.append("  end")
+
+    lines.append("")
+    lines.append("end")
+    lines.mkString("\n")
+  }
+
 }
 
 /**
@@ -203,6 +240,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val className = Text.underscoreToInitCap(model.name)
 
     val sb = ListBuffer[String]()
+
+    sb.append(
+      model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }.map { field =>
+        RubyGemGenerator.generateEnumClass(model.name, field.name, field.fieldtype.asInstanceOf[EnumerationFieldType])
+      }.mkString("\n\n")
+    )
 
     model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
     sb.append(s"    class $className\n")

@@ -94,4 +94,16 @@ class TextSpec extends FunSpec with Matchers {
 
   }
 
+  it("underscoreToInitCap") {
+    Text.underscoreToInitCap("FooBar") should be("FooBar")
+    Text.underscoreToInitCap("fooBar") should be("FooBar")
+    Text.underscoreToInitCap("foo_bar") should be("FooBar")
+  }
+
+  it("underscoreToAllCap") {
+    Text.underscoreToAllCaps("FooBar") should be("FOOBAR")
+    Text.underscoreToAllCaps("fooBar") should be("FOOBAR")
+    Text.underscoreToAllCaps("foo_bar") should be("FOO_BAR")
+  }
+
 }
