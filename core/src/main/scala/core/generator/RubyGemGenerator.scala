@@ -308,7 +308,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
   private def parseEnumArgument(name: String, required: Boolean, multiple: Boolean): String = {
     val value = s"opts.delete(:${name})"
     val klass = Text.underscoreToInitCap(name)
-    s"HttpClient::Helper.to_klass('$name', $klass, $klass.apply($value), :required => $required, :multiple => $multiple)"
+    s"HttpClient::Helper.to_klass('$name', $klass.apply($value), $klass, :required => $required, :multiple => $multiple)"
   }
 
   private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String], multiple: Boolean): String = {
