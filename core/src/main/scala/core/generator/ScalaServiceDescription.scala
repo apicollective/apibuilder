@@ -60,7 +60,7 @@ class ScalaModel(val model: Model) {
 
   val description: Option[String] = model.description
 
-  val fields = model.fields.map { new ScalaField(_) }
+  val fields = model.fields.map { f => new ScalaField(this.name, f) }
 
   val argList = ScalaUtil.fieldsToArgList(fields.map(_.definition))
 
@@ -124,7 +124,7 @@ class ScalaResponse(response: Response) {
   def returndoc: String = s"($code, $datatype)"
 }
 
-class ScalaField(field: Field) {
+class ScalaField(modelName: String, field: Field) {
 
   def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(field.name))
 
@@ -135,7 +135,7 @@ class ScalaField(field: Field) {
     val base: ScalaDataType = field.fieldtype match {
       case t: PrimitiveFieldType => ScalaDataType(t.datatype)
       case m: ModelFieldType => new ScalaModelType(new ScalaModel(m.model))
-      case e: EnumerationFieldType => new ScalaEnumerationType(Text.initCap(Text.snakeToCamelCase(field.name)), ScalaDataType(e.datatype))
+      case e: EnumerationFieldType => new ScalaEnumerationType("%s.%s".format(modelName, Text.initCap(Text.snakeToCamelCase(field.name))), ScalaDataType(e.datatype))
     }
     if (multiple) {
       new ScalaListType(base)
