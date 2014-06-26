@@ -5,20 +5,50 @@ import core.{ EnumerationFieldType, Field, Model, ServiceDescription, Text }
 object Play2Enums {
 
   def build(model: Model): Option[String] = {
-    val fields = model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }
+    val fields = enumFields(model)
 
     if (fields.isEmpty) {
       None
     } else {
       val className = Text.initCap(Text.snakeToCamelCase(model.name))
-      Some(s"  object $className {\n\n" +
-        fields.map { field =>
-          val traitName = Text.initCap(Text.snakeToCamelCase(field.name))
+      Some(
+        s"  object $className {\n\n" +
+          fields.map { field =>
+            val traitName = Text.initCap(Text.snakeToCamelCase(field.name))
             s"    sealed trait ${traitName}\n\n" +
             buildEnumForField(traitName, field.fieldtype.asInstanceOf[EnumerationFieldType])
-        }.mkString("\n") +
-        "  }")
+          }.mkString("\n") +
+        "  }"
+      )
     }
+  }
+
+  /**
+    * If this model has any enumerations, returns the implicits for
+    * json serialization.
+    */
+  def buildJson(model: Model): Option[String] = {
+    val fields = enumFields(model)
+
+    if (fields.isEmpty) {
+      None
+    } else {
+      val className = Text.initCap(Text.snakeToCamelCase(model.name))
+      Some(
+        // TODO: datatype instead of string
+        fields.map { field =>
+          val traitName = Text.initCap(Text.snakeToCamelCase(field.name))
+          s"implicit val jsonReads$className$traitName = __.read[String].map($className.$traitName.apply)\n\n" +
+          s"implicit val jsonWrites$className$traitName = new Writes[$className.$traitName] {\n" +
+          s"  def writes(x: $className.$traitName) = JsString(x.toString)\n" +
+          "}"
+        }.mkString("\n\n")
+      )
+    }
+  }
+
+  private def enumFields(model: Model): Seq[Field] = {
+    model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }
   }
 
   private def enumName(value: String): String = {
@@ -52,7 +82,8 @@ object Play2Enums {
     s"      val all = Seq(" + enumType.values.map { n => enumName(n) }.mkString(", ") + ")\n\n" +
     s"      private[this]\n" +
     s"      val byName = all.map(x => x.toString -> x).toMap\n\n" +
-    s"      def apply(value: String): $traitName = byName.get(value).getOrElse(UNDEFINED(value))\n\n" +
+    s"      def apply(value: String): $traitName = fromString(value).getOrElse(UNDEFINED(value))\n\n" +
+    s"      def fromString(value: String): Option[$traitName] = byName.get(value)\n\n" +
     s"    }\n"
   }
 

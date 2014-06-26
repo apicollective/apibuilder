@@ -1,0 +1,11 @@
+implicit val jsonReadsUserAgeGroup = __.read[String].map(User.AgeGroup.apply)
+
+implicit val jsonWritesUserAgeGroup = new Writes[User.AgeGroup] {
+  def writes(x: User.AgeGroup) = JsString(x.toString)
+}
+
+implicit val jsonReadsUserPartyTheme = __.read[String].map(User.PartyTheme.apply)
+
+implicit val jsonWritesUserPartyTheme = new Writes[User.PartyTheme] {
+  def writes(x: User.PartyTheme) = JsString(x.toString)
+}

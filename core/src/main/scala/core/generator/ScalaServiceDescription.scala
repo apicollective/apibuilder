@@ -41,7 +41,7 @@ object ScalaUtil {
   }
 }
 
-class ScalaServiceDescription(serviceDescription: ServiceDescription) {
+class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
 
   val name = safeName(serviceDescription.name)
 
@@ -135,7 +135,7 @@ class ScalaField(field: Field) {
     val base: ScalaDataType = field.fieldtype match {
       case t: PrimitiveFieldType => ScalaDataType(t.datatype)
       case m: ModelFieldType => new ScalaModelType(new ScalaModel(m.model))
-      case e: EnumerationFieldType => new ScalaEnumerationType(field.name, ScalaDataType(e.datatype))
+      case e: EnumerationFieldType => new ScalaEnumerationType(Text.initCap(Text.snakeToCamelCase(field.name)), ScalaDataType(e.datatype))
     }
     if (multiple) {
       new ScalaListType(base)

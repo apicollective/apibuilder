@@ -12,6 +12,7 @@ object Play2Models {
 
   def apply(ssd: ScalaServiceDescription): String = {
     val caseClasses = ScalaCaseClasses(ssd)
+    val enumJson: String = ssd.serviceDescription.models.flatMap { model => Play2Enums.buildJson(model) }.mkString("\n\n")
     val modelJson: String = ssd.models.map { model =>
 s"""implicit def reads${model.name}: play.api.libs.json.Reads[${model.name}] =
 ${Play2Util.jsonReads(model).indent(2)}
@@ -45,6 +46,8 @@ package ${ssd.packageName}.models {
         JsString(str)
       }
     }
+
+${enumJson.indent(4)}
 
 ${modelJson.indent(4)}
   }

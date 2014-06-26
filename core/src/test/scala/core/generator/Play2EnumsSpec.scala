@@ -19,27 +19,39 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
     }
     """
 
+  describe("for a model without enums") {
 
-  it("Generates None if service does not have an enum") {
-    val service = ServiceDescription(json.format("""
-{ "name": "age_group", "type": "string" }
-"""))
+    val service = ServiceDescription(json.format("""{ "name": "age_group", "type": "string" }"""))
 
-    val userModel = service.models.head
-    Play2Enums.build(userModel) should be(None)
+    it("Generates no models") {
+      Play2Enums.build(service.models.head) should be(None)
+    }
+
+    it("Generates no json conversions") {
+      Play2Enums.buildJson(service.models.head) should be(None)
+    }
+
   }
 
-  it("Valid enum for 1 field with enum") {
+  describe("for a model with 2 enum fields") {
+
     val service = ServiceDescription(json.format("""
 { "name": "age_group", "type": "string", "values": ["twenties", "thirties"] },
 { "name": "party_theme", "type": "string", "values": ["twenties", "thirties"] }
 """))
 
-    val userModel = service.models.head
-    val enums = Play2Enums.build(userModel).get
-    println(enums)
+    it("generates valid models") {
+      val enums = Play2Enums.build(service.models.head).get
+      println(enums)
+      //enums.trim should be(TestHelper.readFile("core/src/test/files/play2enums-example.txt").trim)
+    }
 
-    //enums.trim should be(TestHelper.readFile("core/src/test/files/play2enums-example.txt").trim)
+    it("generates valid json conversions") {
+      val jsonConversions = Play2Enums.buildJson(service.models.head).get
+      println(jsonConversions)
+      jsonConversions.trim should be(TestHelper.readFile("core/src/test/files/play2enums-json-example.txt").trim)
+    }
   }
+
 
 }
