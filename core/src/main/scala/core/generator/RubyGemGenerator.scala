@@ -1,6 +1,7 @@
 package core.generator
 
 import core._
+import Text._
 import scala.collection.mutable.ListBuffer
 
 object RubyGemGenerator {
@@ -29,13 +30,18 @@ object RubyGemGenerator {
     lines.append("  end")
 
     lines.append("")
-    lines.append("  def all")
+    lines.append("  def AgeGroup.all")
     lines.append("    [" + et.values.map(v => Text.underscoreToAllCaps(v)).mkString(", ") + "]")
     lines.append("  end")
 
     lines.append("")
+    lines.append(s"  # Returns the instance of ${className} for this value, creating a new instance for an unknown value")
+    lines.append("  def $className.apply(value)")
+    lines.append(s"""    value.to_s.strip == "" ? nil : (from_string(value) || $className.new(value))""")
+    lines.append("  end")
+    lines.append("")
     lines.append("  # Returns the instance of AgeGroup for this value, or nil if not found")
-    lines.append("  def from_string(value)")
+    lines.append("  def $className.from_string(value)")
     lines.append("    all.find { |v| v.value == value }")
     lines.append("  end")
 
@@ -235,14 +241,15 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
     val sb = ListBuffer[String]()
 
+    model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
+    sb.append(s"    class $className\n")
+
     sb.append(
       model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }.map { field =>
         RubyGemGenerator.generateEnumClass(model.name, field.name, field.fieldtype.asInstanceOf[EnumerationFieldType])
-      }.mkString("\n\n")
+      }.mkString("\n\n").indent(6) + "\n"
     )
 
-    model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
-    sb.append(s"    class $className\n")
     sb.append("      attr_reader " + model.fields.map( f => s":${f.name}" ).mkString(", "))
 
     sb.append("")
@@ -268,8 +275,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
         parseModelArgument(field.name, model, field.required, field.multiple)
       }
       case EnumerationFieldType(datatype: Datatype, values: Seq[String]) => {
-        // TODO: Do we want to handle enumeration field types in the ruby client?
-        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.multiple)
+        parseEnumArgument(field.name, field.required, field.multiple)
       }
     }
 
@@ -290,6 +296,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val value = s"opts.delete(:${name})"
     val klass = Text.underscoreToInitCap(model.name)
     s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => $required, :multiple => $multiple)"
+  }
+
+  private def parseEnumArgument(name: String, required: Boolean, multiple: Boolean): String = {
+    val value = s"opts.delete(:${name})"
+    val klass = Text.underscoreToInitCap(name)
+    s"HttpClient::Helper.to_model_instance('$name', $klass, $klass.apply($value), :required => $required, :multiple => $multiple)"
   }
 
   private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String], multiple: Boolean): String = {
