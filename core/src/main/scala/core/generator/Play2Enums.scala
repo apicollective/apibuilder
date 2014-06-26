@@ -10,11 +10,11 @@ object Play2Enums {
     if (fields.isEmpty) {
       None
     } else {
-      val className = Text.initCap(Text.snakeToCamelCase(model.name))
+      val className = Text.underscoreToInitCap(model.name)
       Some(
         s"  object $className {\n\n" +
           fields.map { field =>
-            val traitName = Text.initCap(Text.snakeToCamelCase(field.name))
+            val traitName = Text.underscoreToInitCap(field.name)
             s"    sealed trait ${traitName}\n\n" +
             buildEnumForField(traitName, field.fieldtype.asInstanceOf[EnumerationFieldType])
           }.mkString("\n") +
@@ -33,11 +33,11 @@ object Play2Enums {
     if (fields.isEmpty) {
       None
     } else {
-      val className = Text.initCap(Text.snakeToCamelCase(model.name))
+      val className = Text.underscoreToInitCap(model.name)
       Some(
         // TODO: datatype instead of string
         fields.map { field =>
-          val traitName = Text.initCap(Text.snakeToCamelCase(field.name))
+          val traitName = Text.underscoreToInitCap(field.name)
           s"implicit val jsonReads$className$traitName = __.read[String].map($className.$traitName.apply)\n\n" +
           s"implicit val jsonWrites$className$traitName = new Writes[$className.$traitName] {\n" +
           s"  def writes(x: $className.$traitName) = JsString(x.toString)\n" +
@@ -52,7 +52,7 @@ object Play2Enums {
   }
 
   private def enumName(value: String): String = {
-    Text.initCap(Text.snakeToCamelCase(value))
+    Text.underscoreToInitCap(value)
   }
 
   private def buildEnumForField(traitName: String, enumType: EnumerationFieldType): String = {
