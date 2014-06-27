@@ -28,7 +28,9 @@
       private[this]
       val byName = all.map(x => x.toString -> x).toMap
 
-      def apply(value: String): AgeGroup = byName.get(value).getOrElse(UNDEFINED(value))
+      def apply(value: String): AgeGroup = fromString(value).getOrElse(UNDEFINED(value))
+
+      def fromString(value: String): Option[AgeGroup] = byName.get(value)
 
     }
 
@@ -60,7 +62,9 @@
       private[this]
       val byName = all.map(x => x.toString -> x).toMap
 
-      def apply(value: String): PartyTheme = byName.get(value).getOrElse(UNDEFINED(value))
+      def apply(value: String): PartyTheme = fromString(value).getOrElse(UNDEFINED(value))
+
+      def fromString(value: String): Option[PartyTheme] = byName.get(value)
 
     }
   }

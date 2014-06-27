@@ -67,7 +67,7 @@ object Play2Enums {
        * that were added by the server after this library was
        * generated. We want to make it easy and obvious for users of
        * this library to handle this case gracefully.
-       * 
+       *
        * We use all CAPS for the variable name to avoid collisions
        * with the camel cased values above.
        */
