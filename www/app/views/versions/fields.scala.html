@@ -18,6 +18,7 @@
        <td>@{field.fieldtype match {
              case pt: core.PrimitiveFieldType => datatype(pt.datatype)
              case mt: core.ModelFieldType => modelType(org, service, version, mt.model)
+             case et: core.EnumerationFieldType => enumeration(et)
            }}
        </td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
@@ -25,6 +26,11 @@
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
            <p>
+             @{field.fieldtype match {
+               case et: core.EnumerationFieldType => s"Acceptable values: ${et.values.mkString(", ")}"
+               case _ => ""
+             }}
+
              @field.minimum.map { v => Minimum: @v<br/> }
              @field.maximum.map { v => Maximum: @v<br/> }
 

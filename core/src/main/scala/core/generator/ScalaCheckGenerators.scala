@@ -45,6 +45,8 @@ Arbitrary(Arbitrary.arbDate.arbitrary.map(d => new ${x.name}(d.getTime)))"""
         s"org.scalacheck.Arbitrary(org.scalacheck.Gen.listOf(${arb(inner)}.arbitrary))"
       }
       case ScalaOptionType(inner) => s"org.scalacheck.Arbitrary.arbOption(${arb(inner)})"
+      // TODO: What's best way to test enumeration types?
+      case et: ScalaEnumerationType => "org.scalacheck.Arbitrary(org.scalacheck.Gen.alphaStr)"
       case x: ScalaModelType => {
         val genFields: String = x.model.fields.map(gen).mkString("\n")
         val initFields = x.model.fields.map(f => s"${f.name} = ${f.name}").mkString(",\n")

@@ -1,12 +1,57 @@
 package core.generator
 
 import core._
+import Text._
 import scala.collection.mutable.ListBuffer
 
 object RubyGemGenerator {
+
   def apply(json: String) = {
     new RubyGemGenerator(ServiceDescription(json)).generate
   }
+
+  def generateEnumClass(modelName: String, fieldName: String, et: EnumerationFieldType): String = {
+    val className = Text.underscoreToInitCap(fieldName)
+    val lines = ListBuffer[String]()
+    lines.append(s"class $className")
+
+    lines.append("")
+    lines.append(et.values.map { value =>
+      val enumName = value.toUpperCase
+      s"""  $enumName = $className.new("$value")"""
+    }.mkString("\n"))
+
+    lines.append("")
+    lines.append("  attr_reader :value")
+
+    lines.append("")
+    lines.append("  def initialize(value)")
+    lines.append("    @value = HttpClient::Preconditions.assert_class('value', value, String)")
+    lines.append("  end")
+
+    lines.append("")
+    lines.append("  def AgeGroup.all")
+    lines.append("    [" + et.values.map(_.toUpperCase).mkString(", ") + "]")
+    lines.append("  end")
+
+    lines.append("")
+    lines.append(s"  # Returns the instance of ${className} for this value, creating a new instance for an unknown value")
+    lines.append(s"  def $className.apply(value)")
+    lines.append(s"    HttpClient::Preconditions.assert_class_or_nil('value', value, String)")
+    lines.append(s"    value.nil? ? nil : (from_string(value) || AgeGroup.new(value))")
+    lines.append(s"  end")
+    lines.append("")
+    lines.append("  # Returns the instance of AgeGroup for this value, or nil if not found")
+    lines.append(s"  def $className.from_string(value)")
+    lines.append("    HttpClient::Preconditions.assert_class('value', value, String)")
+    lines.append("    all.find { |v| v.value == value }")
+    lines.append("  end")
+
+    lines.append("")
+    lines.append("end")
+    lines.mkString("\n")
+  }
+
 }
 
 /**
@@ -16,12 +61,6 @@ object RubyGemGenerator {
 case class RubyGemGenerator(service: ServiceDescription) {
 
   private val moduleName = Text.safeName(service.name)
-
-  private val Underscores = """([\_+])""".r
-  private val moduleKey = {
-    val name = Text.camelCaseToUnderscore(moduleName).toLowerCase
-    Underscores.replaceAllIn(name, m => s"-")
-  }
 
   def generate(): String = {
     RubyHttpClient.require +
@@ -206,6 +245,14 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
     model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
     sb.append(s"    class $className\n")
+
+    val enums = model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }.map { field =>
+      RubyGemGenerator.generateEnumClass(model.name, field.name, field.fieldtype.asInstanceOf[EnumerationFieldType])
+    }
+    if (!enums.isEmpty) {
+      sb.append(enums.mkString("\n\n").indent(6) + "\n")
+    }
+
     sb.append("      attr_reader " + model.fields.map( f => s":${f.name}" ).mkString(", "))
 
     sb.append("")
@@ -230,6 +277,9 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case ModelFieldType(model: Model) => {
         parseModelArgument(field.name, model, field.required, field.multiple)
       }
+      case EnumerationFieldType(datatype: Datatype, values: Seq[String]) => {
+        parseEnumArgument(field.name, field.required, field.multiple)
+      }
     }
 
   }
@@ -249,6 +299,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
     val value = s"opts.delete(:${name})"
     val klass = Text.underscoreToInitCap(model.name)
     s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => $required, :multiple => $multiple)"
+  }
+
+  private def parseEnumArgument(name: String, required: Boolean, multiple: Boolean): String = {
+    val value = s"opts.delete(:${name})"
+    val klass = Text.underscoreToInitCap(name)
+    s"HttpClient::Helper.to_klass('$name', $klass.apply($value), $klass, :required => $required, :multiple => $multiple)"
   }
 
   private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String], multiple: Boolean): String = {

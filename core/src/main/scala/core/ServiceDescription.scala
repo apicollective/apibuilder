@@ -125,6 +125,7 @@ case class Field(name: String,
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
 case class ModelFieldType(model: Model) extends FieldType
+case class EnumerationFieldType(datatype: Datatype, values: Seq[String]) extends FieldType
 
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
@@ -140,7 +141,17 @@ object PrimitiveParameterType {
       }
 
       case mft: ModelFieldType => {
+        // Too complex, at least for now, to think about supporting
+        // models in things like path parameters
         sys.error("Cannot convert model fieldtype[%s] to parameter type".format(field.fieldtype))
+      }
+
+      case mft: EnumerationFieldType => {
+        // This branch would only be used to support an enumeration
+        // value as a path parameter. It seems complex to convert the
+        // string value into an enumeration instance (e.g. play routes
+        // file won't support this natively)
+        sys.error("Cannot convert enumeration fieldtype[%s] to parameter type".format(field.fieldtype))
       }
     }
   }
@@ -348,7 +359,7 @@ object Field {
     }
 
     Field(name = internal.name.get,
-          fieldtype = fieldtype,
+          fieldtype = parseTypeAndValues(internal.name.get, fieldtype, internal.values),
           description = internal.description,
           required = internal.required,
           multiple = internal.multiple,
@@ -358,6 +369,22 @@ object Field {
           example = internal.example)
   }
 
+  /**
+    * If we have a values array, validate that array and convert field
+    * type into an enumeration.
+    */
+  private def parseTypeAndValues(fieldName: String, fieldtype: FieldType, values: Seq[String]): FieldType = {
+    if (values.isEmpty) {
+      fieldtype
+    } else {
+      assert(fieldtype == PrimitiveFieldType(Datatype.StringType), "Field type must be string for enumerations")
+      values.foreach { value =>
+        val errors = Text.validateName(value)
+        assert(errors.isEmpty, s"Field[${fieldName}] has an invalid value[${value}]: " + errors.mkString(" "))
+      }
+      EnumerationFieldType(Datatype.StringType, values)
+    }
+  }
 
   private val BooleanValues = Seq("true", "false")
 
