@@ -141,10 +141,16 @@ object PrimitiveParameterType {
       }
 
       case mft: ModelFieldType => {
+        // Too complex, at least for now, to think about supporting
+        // models in things like path parameters
         sys.error("Cannot convert model fieldtype[%s] to parameter type".format(field.fieldtype))
       }
 
       case mft: EnumerationFieldType => {
+        // This branch would only be used to support an enumeration
+        // value as a path parameter. It seems complex to convert the
+        // string value into an enumeration instance (e.g. play routes
+        // file won't support this natively)
         sys.error("Cannot convert enumeration fieldtype[%s] to parameter type".format(field.fieldtype))
       }
     }
