@@ -38,8 +38,8 @@ object Play2Enums {
         // TODO: datatype instead of string
         fields.map { field =>
           val traitName = Text.underscoreToInitCap(field.name)
-          s"implicit val jsonReads$className$traitName = __.read[String].map($className.$traitName.apply)\n\n" +
-          s"implicit val jsonWrites$className$traitName = new Writes[$className.$traitName] {\n" +
+          s"implicit val jsonReads${className}_$traitName = __.read[String].map($className.$traitName.apply)\n\n" +
+          s"implicit val jsonWrites${className}_$traitName = new Writes[$className.$traitName] {\n" +
           s"  def writes(x: $className.$traitName) = JsString(x.toString)\n" +
           "}"
         }.mkString("\n\n")
