@@ -93,6 +93,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
           case Datatype.UuidType => "java.util.UUID"
           case Datatype.DateTimeIso8601Type => "DateTime"
           case Datatype.UnitType => "Unit"
+          case Datatype.ObjectType => sys.error("JSON object not allowed as a parameter")
         }
 
         if (param.required) {
