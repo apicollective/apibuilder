@@ -100,10 +100,4 @@ class TextSpec extends FunSpec with Matchers {
     Text.underscoreToInitCap("foo_bar") should be("FooBar")
   }
 
-  it("underscoreToAllCap") {
-    Text.underscoreToAllCaps("FooBar") should be("FOOBAR")
-    Text.underscoreToAllCaps("fooBar") should be("FOOBAR")
-    Text.underscoreToAllCaps("foo_bar") should be("FOO_BAR")
-  }
-
 }

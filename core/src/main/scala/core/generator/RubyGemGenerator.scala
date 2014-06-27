@@ -17,7 +17,7 @@ object RubyGemGenerator {
 
     lines.append("")
     lines.append(et.values.map { value =>
-      val enumName = Text.underscoreToAllCaps(value)
+      val enumName = value.toUpperCase
       s"""  $enumName = $className.new("$value")"""
     }.mkString("\n"))
 
@@ -31,7 +31,7 @@ object RubyGemGenerator {
 
     lines.append("")
     lines.append("  def AgeGroup.all")
-    lines.append("    [" + et.values.map(v => Text.underscoreToAllCaps(v)).mkString(", ") + "]")
+    lines.append("    [" + et.values.map(_.toUpperCase).mkString(", ") + "]")
     lines.append("  end")
 
     lines.append("")
