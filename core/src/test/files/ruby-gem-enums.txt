@@ -15,12 +15,8 @@ class AgeGroup
 
   # Returns the instance of AgeGroup for this value, creating a new instance for an unknown value
   def AgeGroup.apply(value)
-    if value.instance_of?(AgeGroup)
-      value
-    else
-      HttpClient::Preconditions.assert_class_or_nil('value', value, String)
-      value.to_s.strip == "" ? nil : (from_string(value) || AgeGroup.new(value))
-    end
+    HttpClient::Preconditions.assert_class_or_nil('value', value, String)
+    value.nil? ? nil : (from_string(value) || AgeGroup.new(value))
   end
 
   # Returns the instance of AgeGroup for this value, or nil if not found
