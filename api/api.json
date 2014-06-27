@@ -1,6 +1,6 @@
 {
     "name": "Api Doc",
-    "description": "Host API documentation for REST services, and facilities design of resource first APIs.",
+    "description": "Host API documentation for REST services, facilitating the design of good resource first APIs.",
     "base_url": "http://localhost:9000",
 
     "models": {
