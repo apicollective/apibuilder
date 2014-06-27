@@ -76,7 +76,7 @@ object Resource {
 
   def apply(models: Seq[Model], internal: InternalResource): Resource = {
     val model = models.find { _.name == internal.modelName.get }.getOrElse {
-      sys.error(s"Could not find model for resource[${internal.modelName}]")
+      sys.error(s"Could not find model for resource[${internal.modelName.getOrElse("")}]")
     }
     Resource(model = model,
              path = internal.path,
