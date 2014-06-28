@@ -49,7 +49,31 @@ object Users extends Controller {
     }
   }
 
-  def putByGuid(guid: UUID) = TODO
+  def putByGuid(guid: UUID) = Authenticated(parse.json) { request =>
+    request.body.validate[UserForm] match {
+      case e: JsError => {
+        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+      }
+      case s: JsSuccess[UserForm] => {
+        val form = s.get
+        UserDao.findByGuid(guid.toString) match {
+
+          case None => NotFound
+
+          case Some(u: User) => {
+            val existingUser = UserDao.findByEmail(form.email)
+            if (existingUser.isEmpty || existingUser.get.guid == guid.toString) {
+              UserDao.update(request.user, u, form)
+              val updatedUser = UserDao.findByGuid(guid.toString).get
+              Ok(Json.toJson(updatedUser))
+            } else {
+              Conflict(Json.toJson(Validation.error("account with this email already exists")))
+            }
+          }
+        }
+      }
+    }
+  }
 
   def postAuthenticate() = Action(parse.json) { request =>
     request.body.validate[UserAuthenticationForm] match {

@@ -29,4 +29,15 @@ class UserDaoSpec extends FlatSpec {
     assertEquals(Some(user), UserDao.findByGuid(user.guid))
   }
 
+  it should "user can login after creation" in {
+    val form = UserForm(
+      email = UUID.randomUUID.toString + "@gilttest.com",
+      password = "testing"
+    )
+    val user = UserDao.create(form)
+    val guid = UUID.fromString(user.guid)
+    assertEquals(UserPasswordDao.isValid(guid, "testing"), true)
+    assertEquals(UserPasswordDao.isValid(guid, "password"), false)
+  }
+
 }
