@@ -4,17 +4,18 @@ import lib.Validation
 import db.{ User, UserDao }
 import play.api.mvc._
 import play.api.libs.json.Json
+import java.util.UUID
 
 object Users extends Controller {
 
-  def get(guid: Option[String], email: Option[String], token: Option[String]) = Authenticated { request =>
-    val users = UserDao.findAll(guid = guid,
+  def get(guid: Option[UUID], email: Option[String], token: Option[String]) = Authenticated { request =>
+    val users = UserDao.findAll(guid = guid.map(_.toString),
                                 email = email,
                                 token = token)
     Ok(Json.toJson(users))
   }
 
-  def getByGuid(guid: String) = Authenticated { request =>
+  def getByGuid(guid: UUID) = Authenticated { request =>
     UserDao.findByGuid(guid) match {
       case None => NotFound
       case Some(user: User) => Ok(Json.toJson(user))
@@ -44,7 +45,7 @@ object Users extends Controller {
     }
   }
 
-  def putByGuid(guid: String) = Authenticated(parse.json) { request =>
+  def putByGuid(guid: UUID) = Authenticated(parse.json) { request =>
     UserDao.findByGuid(guid) match {
       case None => NotFound
       case Some(user: User) => {

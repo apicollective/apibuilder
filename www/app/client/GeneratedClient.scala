@@ -7,6 +7,9 @@ package apidoc.models {
     code: String,
     message: String
   )
+  case class Healthcheck(
+    status: String
+  )
   case class Membership(
     guid: java.util.UUID,
     user: User,
@@ -102,6 +105,22 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "code").write[String] and
          (__ \ "message").write[String])(unlift(Error.unapply))
+      }
+    
+    implicit def readsHealthcheck: play.api.libs.json.Reads[Healthcheck] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        (__ \ "status").read[String].map { x =>
+          new Healthcheck(status = x)
+        }
+      }
+    
+    implicit def writesHealthcheck: play.api.libs.json.Writes[Healthcheck] =
+      new play.api.libs.json.Writes[Healthcheck] {
+        def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
+          "status" -> play.api.libs.json.Json.toJson(x.status)
+        )
       }
     
     implicit def readsMembership: play.api.libs.json.Reads[Membership] =
@@ -341,6 +360,20 @@ package apidoc {
         })(targetName)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Code], 200)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+    }
+    
+    object Healthchecks {
+      def get(
+      
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Healthcheck]]] = {
+        val queryBuilder = List.newBuilder[(String, String)]
+        
+        
+        GET(s"/_internal_/healthcheck", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Healthcheck]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
