@@ -116,7 +116,7 @@
 			{ "name": "password", "type": "string" }
 		    ],
                     "responses": {
-                        "200": { "type": "[user_authentication]" }
+                        "200": { "type": "user_authentication" }
                     }
 		}
 	    ]
