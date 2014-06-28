@@ -17,7 +17,7 @@ object Code extends Controller {
     }
 
     future.recover {
-      case request.api.FailedResponse(_, 404) => if ("latest" == versionName) {
+      case apidoc.FailedResponse(_, 404) => if ("latest" == versionName) {
         Redirect(routes.Organizations.show(organization))
           .flashing("warning" -> s"Service not found: $service")
       } else {

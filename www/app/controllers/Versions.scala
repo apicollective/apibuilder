@@ -46,7 +46,7 @@ object Versions extends Controller {
     }
 
     future.recover {
-      case request.api.FailedResponse(_, 404) => if ("latest" == versionName) {
+      case apidoc.FailedResponse(_, 404) => if ("latest" == versionName) {
         Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
       } else {
         Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
@@ -64,7 +64,7 @@ object Versions extends Controller {
     }
 
     future.recover {
-      case request.api.FailedResponse(_, 404) => if ("latest" == versionName) {
+      case apidoc.FailedResponse(_, 404) => if ("latest" == versionName) {
         Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
       } else {
         Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
