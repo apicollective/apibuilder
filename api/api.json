@@ -11,12 +11,6 @@
 	    ]
 	},
 
-	"user_authentication": {
-            "fields": [
-                { "name": "result", "type": "boolean", "description": "True if the user authenticated successfully. False otherwise." }
-            ]
-	},
-
         "user": {
             "description": "A user is a top level person interacting with the api doc server.",
             "fields": [
@@ -107,21 +101,6 @@
 	    ]
 	},
 
-	"user_authentication": {
-	    "operations": [
-		{
-		    "method": "POST",
-		    "parameters": [
-			{ "name": "email", "type": "string" },
-			{ "name": "password", "type": "string" }
-		    ],
-                    "responses": {
-                        "200": { "type": "user_authentication" }
-                    }
-		}
-	    ]
-	},
-
 	"user": {
             "operations": [
                 {
@@ -145,6 +124,20 @@
                         "200": { "type": "user" }
                     }
                 },
+
+		{
+		    "method": "POST",
+		    "path": "/authenticate",
+		    "description": "Used to authenticate a user with an email address and password. Successful authentication returns an instance of the user model. Failed authorizations of any kind are returned as a generic error with code user_authorization_failed.",
+		    "parameters": [
+			{ "name": "email", "type": "string" },
+			{ "name": "password", "type": "string" }
+		    ],
+                    "responses": {
+                        "200": { "type": "user" },
+                        "409": { "type": "[error]" }
+		    }
+		},
 
                 {
                     "method": "POST",

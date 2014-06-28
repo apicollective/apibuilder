@@ -5,7 +5,6 @@ GET     /                                                         controllers.Ap
 GET     /login                                                    controllers.LoginController.redirect
 GET     /login/                                                   controllers.LoginController.index
 POST    /login/                                                   controllers.LoginController.indexPost
-GET     /login/callback                                           controllers.LoginController.callback
 
 GET     /logout                                                   controllers.LogoutController.logout
 GET     /logged_out                                               controllers.LogoutController.logged_out
