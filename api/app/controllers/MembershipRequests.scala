@@ -5,13 +5,14 @@ import lib.Validation
 import db.{ MembershipRequest, Organization, OrganizationDao, User, UserDao }
 import play.api.mvc._
 import play.api.libs.json.Json
+import java.util.UUID
 
 object MembershipRequests extends Controller {
 
-  def get(organization_guid: Option[String], organization_key: Option[String], user_guid: Option[String], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val requests = MembershipRequest.findAll(organizationGuid = organization_guid,
+  def get(organization_guid: Option[UUID], organization_key: Option[String], user_guid: Option[UUID], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
+    val requests = MembershipRequest.findAll(organizationGuid = organization_guid.map(_.toString),
                                              organizationKey = organization_key,
-                                             userGuid = user_guid,
+                                             userGuid = user_guid.map(_.toString),
                                              role = role,
                                              limit = limit,
                                              offset = offset)
@@ -48,8 +49,8 @@ object MembershipRequests extends Controller {
     }
   }
 
-  def postAcceptByGuid(guid: String) = Authenticated { request =>
-    MembershipRequest.findAll(guid = Some(guid), limit = 1).headOption match {
+  def postAcceptByGuid(guid: UUID) = Authenticated { request =>
+    MembershipRequest.findAll(guid = Some(guid.toString), limit = 1).headOption match {
       case None => NotFound
       case Some(request: MembershipRequest) => {
         request.accept(request.user)
@@ -58,8 +59,8 @@ object MembershipRequests extends Controller {
     }
   }
 
-  def postDeclineByGuid(guid: String) = Authenticated { request =>
-    MembershipRequest.findAll(guid = Some(guid), limit = 1).headOption match {
+  def postDeclineByGuid(guid: UUID) = Authenticated { request =>
+    MembershipRequest.findAll(guid = Some(guid.toString), limit = 1).headOption match {
       case None => NotFound
       case Some(request: MembershipRequest) => {
         request.decline(request.user)

@@ -22,8 +22,8 @@ object Code extends Controller {
 
   }
 
-  def getByVersionAndTarget(versionGuid: String, target: String) = Action { request =>
-    VersionDao.findAll(guid = Some(versionGuid)).headOption match {
+  def getByVersionGuidAndTargetName(versionGuid: UUID, target: String) = Action { request =>
+    VersionDao.findAll(guid = Some(versionGuid.toString)).headOption match {
       case None => NotFound
 
       case Some(v: Version) => {

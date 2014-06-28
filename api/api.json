@@ -5,6 +5,12 @@
 
     "models": {
 
+	"healthcheck": {
+	    "fields": [
+                { "name": "status", "type": "string", "example": "healthy" }
+	    ]
+	},
+
 	"user_authentication": {
             "fields": [
                 { "name": "result", "type": "boolean", "description": "True if the user authenticated successfully. False otherwise." }
@@ -88,6 +94,18 @@
     },
 
     "resources": {
+
+	"healthcheck": {
+	    "path": "/_internal_/healthcheck",
+            "operations": [
+                {
+                    "method": "GET",
+                    "responses": {
+                        "200": { "type": "[healthcheck]" }
+                    }
+                }
+	    ]
+	},
 
 	"user_authentication": {
 	    "operations": [
