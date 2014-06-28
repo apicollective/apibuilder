@@ -1,5 +1,6 @@
 package controllers
 
+import lib.Validation
 import db.{ User, UserDao }
 import play.api.mvc._
 import play.api.libs.json.Json
@@ -23,7 +24,7 @@ object Users extends Controller {
   def post() = Authenticated(parse.json) { request =>
     (request.body \ "email").asOpt[String] match {
       case None => {
-        BadRequest("email is required")
+        Conflict(Json.toJson(Validation.error("email is required")))
       }
 
       case Some(email: String) => {
@@ -36,7 +37,7 @@ object Users extends Controller {
           }
 
           case Some(u: User) => {
-            BadRequest("user with this email already exists")
+            Conflict(Json.toJson(Validation.error("account with this email already exists")))
           }
         }
       }

@@ -36,6 +36,9 @@ package apidoc.models {
     name: scala.Option[String] = None,
     imageUrl: scala.Option[String] = None
   )
+  case class UserAuthentication(
+    result: Boolean
+  )
   case class Version(
     guid: java.util.UUID,
     version: String,
@@ -197,6 +200,22 @@ package apidoc.models {
          (__ \ "email").write[String] and
          (__ \ "name").write[scala.Option[String]] and
          (__ \ "image_url").write[scala.Option[String]])(unlift(User.unapply))
+      }
+    
+    implicit def readsUserAuthentication: play.api.libs.json.Reads[UserAuthentication] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        (__ \ "result").read[Boolean].map { x =>
+          new UserAuthentication(result = x)
+        }
+      }
+    
+    implicit def writesUserAuthentication: play.api.libs.json.Writes[UserAuthentication] =
+      new play.api.libs.json.Writes[UserAuthentication] {
+        def writes(x: UserAuthentication) = play.api.libs.json.Json.obj(
+          "result" -> play.api.libs.json.Json.toJson(x.result)
+        )
       }
     
     implicit def readsVersion: play.api.libs.json.Reads[Version] =
@@ -404,7 +423,7 @@ package apidoc {
         )
         
         POST(s"/membership_requests", payload).map {
-          case r if r.status == 201 => new ResponseImpl(r.json.as[MembershipRequest], 201)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[MembershipRequest], 200)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -589,7 +608,7 @@ package apidoc {
         )
         
         POST(s"/organizations", payload).map {
-          case r if r.status == 201 => new ResponseImpl(r.json.as[Organization], 201)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Organization], 200)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -681,6 +700,23 @@ package apidoc {
       }
     }
     
+    object UserAuthentications {
+      def post(
+        email: String,
+        password: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[UserAuthentication]]] = {
+        val payload = play.api.libs.json.Json.obj(
+          "email" -> play.api.libs.json.Json.toJson(email),
+          "password" -> play.api.libs.json.Json.toJson(password)
+        )
+        
+        POST(s"/user_authentications", payload).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[UserAuthentication]], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+    }
+    
     object Users {
       /**
        * Search for a specific user. You must specify at least 1 parameter - either a
@@ -753,7 +789,7 @@ package apidoc {
         )
         
         POST(s"/users", payload).map {
-          case r if r.status == 201 => new ResponseImpl(r.json.as[User], 201)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[User], 200)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }
@@ -778,7 +814,7 @@ package apidoc {
           val s = x.toString
           java.net.URLEncoder.encode(s, "UTF-8")
         })(guid)}", payload).map {
-          case r if r.status == 201 => new ResponseImpl(r.json.as[User], 201)
+          case r if r.status == 200 => new ResponseImpl(r.json.as[User], 200)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
           case r => throw new FailedResponse(r.body, r.status)
         }

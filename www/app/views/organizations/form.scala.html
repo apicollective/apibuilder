@@ -5,13 +5,13 @@
 @main(models.MainTemplate(title = "Add Organization")) {
   <div class="container">
 
-    <b>@errorMessage.getOrElse("")</b>
+    @errorMessage.map { msg =>
+      <p><span class="error">@msg</span></p>
+    }
 
     @helper.form(action = routes.Organizations.createPost) {
 
       <fieldset>
-          <legend>Service Information</legend>
-
           @helper.inputText(
               form("name"),
               '_label -> "Organization Name",

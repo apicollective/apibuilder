@@ -29,14 +29,14 @@ object MembershipRequests extends Controller {
     OrganizationDao.findByGuid(organizationGuid) match {
 
       case None => {
-        BadRequest(Json.toJson(Validation.error("Organization not found")))
+        Conflict(Json.toJson(Validation.error("Organization not found")))
       }
 
       case Some(org: Organization) => {
         UserDao.findByGuid(userGuid) match {
 
           case None => {
-            BadRequest(Json.toJson(Validation.error("User not found")))
+            Conflict(Json.toJson(Validation.error("User not found")))
           }
 
           case Some(user: User) => {

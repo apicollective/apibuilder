@@ -137,7 +137,7 @@
                         { "name": "image_url", "type": "string", "required": false }
                     ],
                     "responses": {
-                        "201": { "type": "user" },
+                        "200": { "type": "user" },
                         "409": { "type": "[error]" }
                     }
                 },
@@ -152,7 +152,7 @@
                         { "name": "image_url", "type": "string", "required": false }
                     ],
                     "responses": {
-                        "201": { "type": "user" },
+                        "200": { "type": "user" },
                         "409": { "type": "[error]" }
                     }
                 }
@@ -184,7 +184,7 @@
                         { "name": "name", "type": "string" }
                     ],
                     "responses": {
-                        "201": { "type": "organization" },
+                        "200": { "type": "organization" },
                         "409": { "type": "[error]" }
                     }
                 },
@@ -244,7 +244,7 @@
                         { "name": "role", "type": "string" }
                     ],
                     "responses": {
-                        "201": { "type": "membership_request" },
+                        "200": { "type": "membership_request" },
                         "409": { "type": "[error]" }
                     }
                 },

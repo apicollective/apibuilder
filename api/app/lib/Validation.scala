@@ -2,20 +2,24 @@ package lib
 
 import play.api.libs.json.Json
 
-case class Validation(name: String, messages: Seq[String])
+case class ValidationError(code: String, message: String)
+
+object ValidationError {
+
+  implicit val validationErrorWrites = Json.writes[ValidationError]
+
+}
 
 object Validation {
 
-  implicit val validationWrites = Json.writes[Validation]
+  private val ErrorCode = "validation_error"
 
-  private val Error = "error"
-
-  def error(message: String): Validation = {
-    Validation(Error, Seq(message))
+  def error(message: String): Seq[ValidationError] = {
+    errors(Seq(message))
   }
 
-  def errors(messages: Seq[String]): Validation = {
-    Validation(Error, messages)
+  def errors(messages: Seq[String]): Seq[ValidationError] = {
+    messages.map { msg => ValidationError(ErrorCode, msg) }
   }
 
 }

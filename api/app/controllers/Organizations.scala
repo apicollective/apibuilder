@@ -20,7 +20,7 @@ object Organizations extends Controller {
   def post() = Authenticated(parse.json) { request =>
     (request.body \ "name").asOpt[String] match {
       case None => {
-        BadRequest(Json.toJson(Validation.error("name is required")))
+        Conflict(Json.toJson(Validation.error("name is required")))
       }
 
       case Some(name: String) => {
@@ -31,7 +31,7 @@ object Organizations extends Controller {
           }
 
           case Some(org: Organization) => {
-            BadRequest(Json.toJson(Validation.error("Org with this name already exists")))
+            Conflict(Json.toJson(Validation.error("Org with this name already exists")))
           }
         }
       }
