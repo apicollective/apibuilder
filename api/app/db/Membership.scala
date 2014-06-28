@@ -127,8 +127,7 @@ object Membership {
                                                key = row[String]("organization_key")),
                    user = User(guid = row[String]("user_guid"),
                                email = row[String]("user_email"),
-                               name = row[Option[String]]("user_name"),
-                               image_url = row[Option[String]]("user_image_url")),
+                               name = row[Option[String]]("user_name")),
                    role = row[String]("role"))
       }.toSeq
     }

@@ -8,8 +8,8 @@ import java.util.UUID
 class MembershipRequestSpec extends FlatSpec {
   new play.core.StaticApplication(new java.io.File("."))
 
-  lazy val member = UserDao.upsert("gilt-member@gilt.com")
-  lazy val admin = UserDao.upsert("gilt-admin@gilt.com")
+  lazy val member = Util.upsertUser("gilt-member@gilt.com")
+  lazy val admin = Util.upsertUser("gilt-admin@gilt.com")
 
   it should "create member" in {
     val request = MembershipRequest.upsert(Util.createdBy, Util.gilt, member, Role.Member)
@@ -45,7 +45,7 @@ class MembershipRequestSpec extends FlatSpec {
   }
 
   it should "findAllForUser" in {
-    val newUser = UserDao.upsert(UUID.randomUUID().toString + "@gilttest.com")
+    val newUser = Util.upsertUser(UUID.randomUUID().toString + "@gilttest.com")
     val newOrg = OrganizationDao.createWithAdministrator(Util.createdBy, UUID.randomUUID().toString)
 
     val request1 = MembershipRequest.upsert(Util.createdBy, newOrg, newUser, Role.Admin)

@@ -5,7 +5,16 @@ import java.util.UUID
 object Util {
   new play.core.StaticApplication(new java.io.File("."))
 
-  lazy val createdBy = UserDao.upsert("admin@apidoc.me")
+  private val Email = "admin@apidoc.me"
+
+  def upsertUser(email: String): User = {
+    UserDao.findByEmail(Email).getOrElse {
+      UserDao.create(UserForm(email = Email, name = Some("Admin"), password = "test"))
+    }
+  }
+
+  lazy val createdBy = Util.upsertUser(Email)
+
   lazy val gilt = OrganizationDao.findAll(name = Some("gilt")).headOption.getOrElse {
     OrganizationDao.createWithAdministrator(createdBy, "Gilt")
   }

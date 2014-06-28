@@ -15,7 +15,7 @@ object LoginController extends Controller {
   }
 
   def index() = Action { implicit request =>
-    Ok(views.html.login.index(loginForm))
+    Ok(views.html.login.index(Tab.Login, loginForm, registerForm))
   }
 
   def indexPost = Action.async { implicit request =>
@@ -23,7 +23,7 @@ object LoginController extends Controller {
     form.fold (
 
       formWithErrors => Future {
-        Ok(views.html.login.index(formWithErrors))
+        Ok(views.html.login.index(Tab.Login, formWithErrors, registerForm))
       },
 
       validForm => {
@@ -32,7 +32,29 @@ object LoginController extends Controller {
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
-            Ok(views.html.login.index(form, Some(errors.map(_.message).mkString(", "))))
+            Ok(views.html.login.index(Tab.Login, form, registerForm, Some(errors.map(_.message).mkString(", "))))
+          }
+        }
+      }
+
+    )
+  }
+
+  def registerPost = Action.async { implicit request =>
+    val form = registerForm.bindFromRequest
+    form.fold (
+
+      formWithErrors => Future {
+        Ok(views.html.login.index(Tab.Register, loginForm, formWithErrors))
+      },
+
+      validForm => {
+        Authenticated.api.Users.post(name = validForm.name, email = validForm.email, password = validForm.password).map { r =>
+          val user = r.entity
+          Redirect("/").withSession { "user_guid" -> user.guid.toString }
+        }.recover {
+          case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
+            Ok(views.html.login.index(Tab.Register, loginForm, form, Some(errors.map(_.message).mkString(", "))))
           }
         }
       }
@@ -47,5 +69,27 @@ object LoginController extends Controller {
       "password" -> nonEmptyText
     )(LoginData.apply)(LoginData.unapply)
   )
+
+  case class RegisterData(name: Option[String], email: String, password: String, password_verify: String)
+  val registerForm = Form(
+    mapping(
+      "name" -> optional(text),
+      "email" -> nonEmptyText,
+      "password" -> nonEmptyText,
+      "password_verify" -> nonEmptyText
+    )(RegisterData.apply)(RegisterData.unapply) verifying("Password and password verify do not match", { f =>
+      println("%s => %s".format(f.password, f.password_verify))
+      f.password == f.password_verify
+    })
+  )
+
+  sealed trait Tab
+  object Tab {
+
+    case object Login extends Tab
+    case object Register extends Tab
+
+  }
+
 
 }
