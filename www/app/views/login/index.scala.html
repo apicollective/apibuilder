@@ -1,0 +1,38 @@
+@(form: Form[controllers.LoginController.LoginData],
+  errorMessage: Option[String] = None
+)(implicit flash: Flash)
+
+@main(models.MainTemplate(title = "Login")) {
+
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/login.css")">
+
+  <div class="container">
+
+    @errorMessage.map { msg =>
+      <p><span class="error">@msg</span></p>
+    }
+
+    @helper.form(action = routes.LoginController.indexPost) {
+
+      <fieldset>
+          @helper.inputText(
+              form("email"),
+              '_label -> "Email address",
+              '_error -> form.error("email")
+          )
+
+          @helper.inputPassword(
+              form("password"),
+              '_label -> "Password",
+              '_error -> form.error("password")
+          )
+
+      </fieldset>
+
+      <button class="btn btn-large btn-primary" type="submit">Login</button>
+
+    }
+
+  </div>
+
+}

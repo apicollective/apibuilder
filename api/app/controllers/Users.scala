@@ -1,12 +1,17 @@
 package controllers
 
 import lib.Validation
-import db.{ User, UserDao }
+import db.{ User, UserDao, UserPasswordDao }
 import play.api.mvc._
-import play.api.libs.json.Json
+import play.api.libs.json.{ Json, JsError, JsSuccess }
 import java.util.UUID
 
 object Users extends Controller {
+
+  case class UserAuthenticationForm(email: String, password: String)
+  object UserAuthenticationForm {
+    implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
+  }
 
   def get(guid: Option[UUID], email: Option[String], token: Option[String]) = Authenticated { request =>
     val users = UserDao.findAll(guid = guid.map(_.toString),
@@ -54,6 +59,31 @@ object Users extends Controller {
                                 image_url = (request.body \ "image_url").asOpt[String])
         UserDao.update(newUser)
         Ok(Json.toJson(newUser))
+      }
+    }
+  }
+
+  def postAuthenticate() = Action(parse.json) { request =>
+    request.body.validate[UserAuthenticationForm] match {
+      case e: JsError => {
+        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+      }
+      case s: JsSuccess[UserAuthenticationForm] => {
+        val form = s.get
+        UserDao.findByEmail(form.email) match {
+
+          case None => {
+            Conflict(Json.toJson(Validation.userAuthorizationFailed()))
+          }
+
+          case Some(u: User) => {
+            if (UserPasswordDao.isValid(UUID.fromString(u.guid), form.password)) {
+              Ok(Json.toJson(u))
+            } else {
+              Conflict(Json.toJson(Validation.userAuthorizationFailed()))
+            }
+          }
+        }
       }
     }
   }
