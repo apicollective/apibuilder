@@ -1,38 +1,100 @@
-@(form: Form[controllers.LoginController.LoginData],
+@(tab: controllers.LoginController.Tab,
+  loginForm: Form[controllers.LoginController.LoginData],
+  registerForm: Form[controllers.LoginController.RegisterData],
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(models.MainTemplate(title = "Login")) {
-
-  <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/login.css")">
+@main(models.MainTemplate(title = "Login or Register")) {
 
   <div class="container">
 
-    @errorMessage.map { msg =>
-      <p><span class="error">@msg</span></p>
-    }
+    <div class="row">
+      <div class="span12">
+        <div class="" id="loginModal">
+          <div class="modal-body">
+            <div class="well">
+              <ul class="nav nav-tabs">
+                <li@if(tab == controllers.LoginController.Tab.Login) { " class='active'" }><a href="#login" data-toggle="tab">Login</a></li>
+                <li@if(tab == controllers.LoginController.Tab.Register) { " class='active'" }><a href="#register" data-toggle="tab">Register</a></li>
+              </ul>
 
-    @helper.form(action = routes.LoginController.indexPost) {
+              <div class="tab-content">
 
-      <fieldset>
-          @helper.inputText(
-              form("email"),
-              '_label -> "Email address",
-              '_error -> form.error("email")
-          )
+                @errorMessage.map { msg =>
+                  <p><span class="error">@msg</span></p>
+                }
 
-          @helper.inputPassword(
-              form("password"),
-              '_label -> "Password",
-              '_error -> form.error("password")
-          )
+                <div id="login" class="tab-pane @if(tab == controllers.LoginController.Tab.Login) { active in } else { fade }">
 
-      </fieldset>
+                  @helper.form(action = routes.LoginController.indexPost) {
 
-      <button class="btn btn-large btn-primary" type="submit">Login</button>
+                    @loginForm.globalErrors.map(_.message).map { msg =>
+                      <p><span class="error">@msg</span></p>
+                    }
 
-    }
+                    <fieldset>
+                        @helper.inputText(
+                            loginForm("email"),
+                            '_label -> "Email address",
+                            '_error -> loginForm.error("email")
+                        )
 
+                        @helper.inputPassword(
+                            loginForm("password"),
+                            '_label -> "Password",
+                            '_error -> loginForm.error("password")
+                        )
+
+                    </fieldset>
+
+                    <button class="btn btn-large btn-primary" type="submit">Login</button>
+
+                  }
+
+                </div>
+                <div id="register" class="tab-pane @if(tab == controllers.LoginController.Tab.Register) { active in } else { fade }">
+                  @helper.form(action = routes.LoginController.registerPost) {
+
+                    @registerForm.globalErrors.map(_.message).map { msg =>
+                      <p><span class="error">@msg</span></p>
+                    }
+
+                    <fieldset>
+                        @helper.inputText(
+                            registerForm("email"),
+                            '_label -> "Email address",
+                            '_error -> registerForm.error("email")
+                        )
+
+                        @helper.inputText(
+                            registerForm("name"),
+                            '_label -> "Name",
+                            '_error -> registerForm.error("name")
+                        )
+
+                        @helper.inputPassword(
+                            registerForm("password"),
+                            '_label -> "Password",
+                            '_error -> registerForm.error("password")
+                        )
+
+                        @helper.inputPassword(
+                            registerForm("password_verify"),
+                            '_label -> "Verify Password",
+                            '_error -> registerForm.error("password_verify")
+                        )
+
+                    </fieldset>
+
+                    <button class="btn btn-large btn-primary" type="submit">Register</button>
+
+                  }
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
   </div>
 
 }

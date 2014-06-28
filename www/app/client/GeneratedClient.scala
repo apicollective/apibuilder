@@ -36,8 +36,7 @@ package apidoc.models {
   case class User(
     guid: java.util.UUID,
     email: String,
-    name: scala.Option[String] = None,
-    imageUrl: scala.Option[String] = None
+    name: scala.Option[String] = None
   )
   case class Version(
     guid: java.util.UUID,
@@ -204,8 +203,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "email").read[String] and
-         (__ \ "name").readNullable[String] and
-         (__ \ "image_url").readNullable[String])(User.apply _)
+         (__ \ "name").readNullable[String])(User.apply _)
       }
     
     implicit def writesUser: play.api.libs.json.Writes[User] =
@@ -214,8 +212,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").write[java.util.UUID] and
          (__ \ "email").write[String] and
-         (__ \ "name").write[scala.Option[String]] and
-         (__ \ "image_url").write[scala.Option[String]])(unlift(User.unapply))
+         (__ \ "name").write[scala.Option[String]])(unlift(User.unapply))
       }
     
     implicit def readsVersion: play.api.libs.json.Reads[Version] =
@@ -798,12 +795,12 @@ package apidoc {
       def post(
         email: String,
         name: scala.Option[String] = None,
-        imageUrl: scala.Option[String] = None
+        password: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
         val payload = play.api.libs.json.Json.obj(
           "email" -> play.api.libs.json.Json.toJson(email),
           "name" -> play.api.libs.json.Json.toJson(name),
-          "image_url" -> play.api.libs.json.Json.toJson(imageUrl)
+          "password" -> play.api.libs.json.Json.toJson(password)
         )
         
         POST(s"/users", payload).map {
