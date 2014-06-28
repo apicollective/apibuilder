@@ -1,7 +1,11 @@
-@(form: Form[controllers.Organizations.OrgData])(implicit flash: Flash)
+@(form: Form[controllers.Organizations.OrgData],
+  errorMessage: Option[String] = None
+)(implicit flash: Flash)
 
 @main(models.MainTemplate(title = "Add Organization")) {
   <div class="container">
+
+    <b>@errorMessage.getOrElse("")</b>
 
     @helper.form(action = routes.Organizations.createPost) {
 

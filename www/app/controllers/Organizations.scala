@@ -8,7 +8,7 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.Await
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 
 object Organizations extends Controller {
@@ -89,23 +89,21 @@ object Organizations extends Controller {
     Ok(views.html.organizations.form(orgForm))
   }
 
-  def createPost = Authenticated { implicit request =>
-    orgForm.bindFromRequest.fold (
+  def createPost = Authenticated.async { implicit request =>
+    val form = orgForm.bindFromRequest
+    form.fold (
 
-      errors => {
+      errors => Future {
         Ok(views.html.organizations.form(errors))
       },
 
       valid => {
-        Await.result(request.api.Organizations.get(name = Some(valid.name)), 1500.millis).entity.headOption match {
-          case None => {
-            val org = Await.result(request.api.Organizations.post(valid.name), 1500.millis).entity
-            Redirect(routes.Organizations.show(org.key))
-          }
-
-          case Some(org: Organization) => {
-            val tpl = MainTemplate(user = Some(request.user), title = s"Organization ${org.name} already exists")
-            Ok(views.html.organizations.orgExists(tpl, org))
+        request.api.Organizations.post(valid.name).map { r =>
+          Redirect(routes.Organizations.show(r.entity.key))
+        }.recover {
+          case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
+            val tpl = MainTemplate(user = Some(request.user), title = s"Create Organization")
+            Ok(views.html.organizations.form(form, Some(errors.map(_.message).mkString(", "))))
           }
         }
       }

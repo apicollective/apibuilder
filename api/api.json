@@ -5,6 +5,12 @@
 
     "models": {
 
+	"user_authentication": {
+            "fields": [
+                { "name": "result", "type": "boolean", "description": "True if the user authenticated successfully. False otherwise." }
+            ]
+	},
+
         "user": {
             "description": "A user is a top level person interacting with the api doc server.",
             "fields": [
@@ -82,6 +88,22 @@
     },
 
     "resources": {
+
+	"user_authentication": {
+	    "operations": [
+		{
+		    "method": "POST",
+		    "parameters": [
+			{ "name": "email", "type": "string" },
+			{ "name": "password", "type": "string" }
+		    ],
+                    "responses": {
+                        "200": { "type": "[user_authentication]" }
+                    }
+		}
+	    ]
+	},
+
 	"user": {
             "operations": [
                 {

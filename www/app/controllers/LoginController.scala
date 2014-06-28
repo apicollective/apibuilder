@@ -13,18 +13,17 @@ object LoginController extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private val Email = "admin@apidoc.me"
-
   def redirect = Action {
     Redirect(routes.LoginController.index())
   }
 
   def index = Action.async { implicit request =>
+    val email = "admin@apidoc.me"
     for {
-      userResponse <- Authenticated.api.Users.get(email = Some(Email))
+      userResponse <- Authenticated.api.Users.get(email = Some(email))
     } yield {
       val user = userResponse.entity.headOption.getOrElse {
-        sys.error(s"Could not find user with email[$Email]")
+        sys.error(s"Could not find user with email[$email]")
       }
       Redirect("/").withSession { "user_guid" -> user.guid.toString }
     }
