@@ -107,6 +107,12 @@ object UserPasswordDao {
   """
 
   def create(user: User, userGuid: UUID, cleartextPassword: String) {
+    DB.withTransaction { implicit c =>
+      doCreate(c, user, userGuid, cleartextPassword)
+    }
+  }
+
+  private[db] def doCreate(implicit c: java.sql.Connection, user: User, userGuid: UUID, cleartextPassword: String) {
     val guid = UUID.randomUUID
     val algorithm = PasswordAlgorithm.Latest
     val hashedPassword = algorithm.hash(cleartextPassword)

@@ -13,7 +13,7 @@ object User {
 
 case class User(guid: String, email: String, name: Option[String] = None)
 
-case class UserForm(email: String, name: Option[String], password: String)
+case class UserForm(email: String, password: String, name: Option[String] = None)
 
 object UserForm {
   implicit val userFormReads = Json.reads[UserForm]
@@ -41,28 +41,31 @@ object UserDao {
    where guid = {guid}
   """
 
-  def update(user: User) {
+  def update(updatingUser: User, user: User, form: UserForm) {
     DB.withConnection { implicit c =>
       SQL(UpdateQuery).on('guid -> user.guid,
-                          'email -> user.email,
-                          'name -> user.name,
-                          'updated_by_guid -> Constants.DefaultUserGuid).execute()
+                          'email -> form.email,
+                          'name -> form.name,
+                          'updated_by_guid -> updatingUser.guid).execute()
     }
   }
 
   def create(form: UserForm): User = {
     val guid = UUID.randomUUID
-    DB.withConnection { implicit c =>
+    DB.withTransaction { implicit c =>
       SQL(InsertQuery).on('guid -> guid,
                           'email -> form.email,
                           'name -> form.name,
-                          'password -> form.password,
                           'created_by_guid -> Constants.DefaultUserGuid,
                           'updated_by_guid -> Constants.DefaultUserGuid).execute()
-    }
 
-    findByGuid(guid).getOrElse {
-      sys.error("Failed to create user")
+      val user = findByGuid(guid).getOrElse {
+        sys.error("Failed to create user")
+      }
+
+      //UserPasswordDao.doCreate(c, user, guid, form.password)
+
+      user
     }
   }
 
