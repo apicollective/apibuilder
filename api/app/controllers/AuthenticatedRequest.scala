@@ -10,6 +10,8 @@ class AuthenticatedRequest[A](val user: User, request: Request[A]) extends Wrapp
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
+  private val UserGuidHeader = "X-User-Guid"
+
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
     BasicAuthorization.get(request.headers.get("Authorization")) match {
@@ -17,10 +19,27 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
       case Some(auth: BasicAuthorization.Token) => {
         UserDao.findByToken(auth.token) match {
 
-          case Some(u: User) => block(new AuthenticatedRequest(u, request))
+          case Some(u: User) => {
+            // We have a valid token. Now check for a user guid header
+            request.headers.get(UserGuidHeader) match {
+              case None => {
+                block(new AuthenticatedRequest(u, request))
+              }
+
+              case Some(guid: String) => {
+                UserDao.findByGuid(guid) match {
+                  case None => {
+                    Future.successful(Unauthorized(s"Invalid $UserGuidHeader[$guid]"))
+                  }
+                  case Some(userFromHeader: User) => {
+                    block(new AuthenticatedRequest(userFromHeader, request))
+                  }
+                }
+              }
+            }
+          }
 
           case None => Future.successful(Unauthorized("Invalid token"))
-
         }
       }
 
