@@ -1,16 +1,37 @@
 @(tpl: models.MainTemplate,
   org: apidoc.models.Organization,
+  admins: Seq[apidoc.models.Membership],
   hasMembershipRequest: Boolean
 )(implicit flash: Flash)
 
 @main(tpl) {
 
-  <p>You are not currently a member of @org.name</p>
-
   @if(hasMembershipRequest) {
-    <em>You currently have a membership request pending review</em>
+    <p><em>You currently have a membership request pending review to join @org.name.</em></p>
+
+    @if(admins.isEmpty) {
+      <em>
+
+        This organization does not have any administrative users - you may
+        consider creating a new organization as your request will not be
+        approved.
+
+      </em>
+    } else {
+      <p>
+        Your request is being reviewed by:
+
+        <ul>
+        @admins.map { admin =>
+          <li> <a href='mailto:@admin.user.email'>@admin.user.email</a></li>
+        }
+        </ul>
+      </p>
+    }
 
   } else {
+    <p>You are not currently a member of @org.name</p>
+
     @helper.form(action = routes.Organizations.postRequestMembership(org.key)) {
       <button class="btn btn-large btn-primary" type="submit">Request Membership</button>
     }
