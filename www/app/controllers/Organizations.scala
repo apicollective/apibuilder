@@ -15,9 +15,8 @@ object Organizations extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
+  def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
     for {
-      org <- request.api.Organizations.get(key = Some(orgKey))
       services <- request.api.Services.getByOrgKey(
         orgKey = orgKey,
         limit = Some(Pagination.DefaultLimit+1),
@@ -28,28 +27,22 @@ object Organizations extends Controller {
         userGuid = Some(request.user.guid)
       )
     } yield {
-      org.entity.headOption match {
+      val isMember = roles.entity.map(_.role).contains(Role.Member.key)
+      val isAdmin = roles.entity.map(_.role).contains(Role.Admin.key)
 
-        case None => Redirect("/").flashing("warning" -> "Organization not found")
-
-        case Some(org: Organization) => {
-          val isMember = roles.entity.map(_.role).contains(Role.Member.key)
-          val isAdmin = roles.entity.map(_.role).contains(Role.Admin.key)
-
-          val haveRequests = if (isAdmin) {
-            val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(org.guid), limit = Some(1)), 1500.millis)
-            !pendingRequests.entity.isEmpty
-          } else {
-            false
-          }
-
-          Ok(views.html.organizations.show(MainTemplate(title = org.name,
-                                                        org = Some(org),
-                                                        user = Some(request.user)),
-                                           services = PaginatedCollection(page, services.entity),
-                                           haveRequests = haveRequests))
-        }
+      val haveRequests = if (isAdmin) {
+        val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(request.org.guid), limit = Some(1)), 1500.millis)
+        !pendingRequests.entity.isEmpty
+      } else {
+        false
       }
+
+      Ok(views.html.organizations.show(MainTemplate(title = request.org.name,
+        org = Some(request.org),
+        user = Some(request.user)),
+        services = PaginatedCollection(page, services.entity),
+        haveRequests = haveRequests)
+      )
     }
   }
 
