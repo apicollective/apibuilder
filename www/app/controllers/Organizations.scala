@@ -46,40 +46,29 @@ object Organizations extends Controller {
     }
   }
 
-  def membershipRequests(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
+  def membershipRequests(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
     for {
-      org <- request.api.Organizations.get(key = Some(orgKey))
       requests <- request.api.MembershipRequests.get(orgKey = Some(orgKey),
                                                      limit = Some(Pagination.DefaultLimit+1),
                                                      offset = Some(page * Pagination.DefaultLimit))
     } yield {
-      org.entity.headOption match {
-
-        case None => Redirect("/").flashing("warning" -> "Organization not found")
-
-        case Some(org: Organization) => {
-          // TODO: Make sure user is an admin
-          Ok(views.html.organizations.membershipRequests(MainTemplate(title = org.name,
-                                                                      org = Some(org),
-                                                                      user = Some(request.user)),
-                                                         requests = PaginatedCollection(page, requests.entity)))
-        }
-      }
+      // TODO: Make sure user is an admin
+      Ok(views.html.organizations.membershipRequests(
+        MainTemplate(
+          title = request.org.name,
+          org = Some(request.org),
+          user = Some(request.user)
+        ),
+        requests = PaginatedCollection(page, requests.entity))
+      )
     }
   }
 
-  def requestMembership(orgKey: String) = Authenticated { implicit request =>
-    val org = Await.result(request.api.Organizations.get(key = Some(orgKey)), 1500.millis)
-    org.entity.headOption match {
-
-      case None => Redirect("/").flashing("warning" -> "Organization not found")
-
-      case Some(o: Organization) => {
-        Await.result(request.api.MembershipRequests.post(o.guid, request.user.guid, Role.Member.key), 1500.millis)
-        Redirect("/").flashing(
-          "success" -> s"We have submitted your membership request to join ${o.name}"
-        )
-      }
+  def requestMembership(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+    request.api.MembershipRequests.post(request.org.guid, request.user.guid, Role.Member.key).map { r =>
+      Redirect("/").flashing(
+        "success" -> s"We have submitted your membership request to join ${request.org.name}"
+      )
     }
   }
 
