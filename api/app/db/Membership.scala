@@ -28,8 +28,7 @@ object Membership {
            organizations.key as organization_key,
            users.guid::varchar as user_guid,
            users.email as user_email,
-           users.name as user_name,
-           users.image_url as user_image_url
+           users.name as user_name
       from memberships
       join organizations on organizations.guid = memberships.organization_guid
       join users on users.guid = memberships.user_guid

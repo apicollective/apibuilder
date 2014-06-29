@@ -59,13 +59,11 @@ object UserDao {
                           'created_by_guid -> Constants.DefaultUserGuid,
                           'updated_by_guid -> Constants.DefaultUserGuid).execute()
 
-      val user = findByGuid(guid).getOrElse {
-        sys.error("Failed to create user")
-      }
+      UserPasswordDao.doCreate(c, guid, guid, form.password)
+    }
 
-      //UserPasswordDao.doCreate(c, user, guid, form.password)
-
-      user
+    findByGuid(guid).getOrElse {
+      sys.error("Failed to create user")
     }
   }
 
