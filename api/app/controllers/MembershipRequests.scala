@@ -4,10 +4,23 @@ import core.{ Review, Role }
 import lib.Validation
 import db.{ MembershipRequest, Organization, OrganizationDao, User, UserDao }
 import play.api.mvc._
-import play.api.libs.json.Json
+import play.api.libs.json._
 import java.util.UUID
 
 object MembershipRequests extends Controller {
+
+  case class MembershipRequestForm(
+    org_guid: java.util.UUID,
+    user_guid: java.util.UUID,
+    role: String
+  )
+
+  object MembershipRequestForm {
+
+      implicit val membershipRequestFormReads = Json.reads[MembershipRequestForm]
+
+  }
+
 
   def get(organization_guid: Option[UUID], organization_key: Option[String], user_guid: Option[UUID], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
     val requests = MembershipRequest.findAll(organizationGuid = organization_guid.map(_.toString),
@@ -20,29 +33,37 @@ object MembershipRequests extends Controller {
   }
 
   def post() = Authenticated(parse.json) { request =>
-    val roleKey = (request.body \ "role").as[String]
-    val role = Role.fromString(roleKey).getOrElse {
-      sys.error(s"Invalid role[$roleKey]")
-    }
-    val organizationGuid = (request.body \ "organization_guid").as[String]
-    val userGuid = (request.body \ "user_guid").as[String]
-
-    OrganizationDao.findByGuid(organizationGuid) match {
-
-      case None => {
-        Conflict(Json.toJson(Validation.error("Organization not found")))
+    request.body.validate[MembershipRequestForm] match {
+      case e: JsError => {
+        Conflict(Json.toJson(Validation.error(e.toString)))
       }
-
-      case Some(org: Organization) => {
-        UserDao.findByGuid(userGuid) match {
-
+      case s: JsSuccess[MembershipRequestForm] => {
+        val form = s.get
+        OrganizationDao.findByGuid(form.org_guid) match {
           case None => {
-            Conflict(Json.toJson(Validation.error("User not found")))
+            Conflict(Json.toJson(Validation.error("Organization not found")))
           }
 
-          case Some(user: User) => {
-            val mr = MembershipRequest.upsert(request.user, org, user, role)
-            Created(Json.toJson(mr))
+          case Some(org: Organization) => {
+            UserDao.findByGuid(form.user_guid) match {
+
+              case None => {
+                Conflict(Json.toJson(Validation.error("User not found")))
+              }
+
+              case Some(user: User) => {
+                Role.fromString(form.role) match {
+                  case None => {
+                    Conflict(Json.toJson(Validation.error("Invalid role")))
+                  }
+
+                  case Some(role: Role) => {
+                    val mr = MembershipRequest.upsert(request.user, org, user, role)
+                    Ok(Json.toJson(mr))
+                  }
+                }
+              }
+            }
           }
         }
       }

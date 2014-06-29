@@ -1,0 +1,19 @@
+@(tpl: models.MainTemplate,
+  org: apidoc.models.Organization,
+  hasMembershipRequest: Boolean
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  <p>You are not currently a member of @org.name</p>
+
+  @if(hasMembershipRequest) {
+    <em>You currently have a membership request pending review</em>
+
+  } else {
+    @helper.form(action = routes.Organizations.postRequestMembership(org.key)) {
+      <button class="btn btn-large btn-primary" type="submit">Request Membership</button>
+    }
+  }
+
+}

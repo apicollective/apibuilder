@@ -1,6 +1,7 @@
 package controllers
 
-import apidoc.models.{ User, Organization }
+import apidoc.models.{ Membership, Organization, User }
+import core.Role
 import client.{ Apidoc, ApidocClient }
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
@@ -11,6 +12,7 @@ import java.util.UUID
 
 class AuthenticatedOrgRequest[A](
   val org: Organization,
+  val isAdmin: Boolean,
   user: User,
   request: Request[A]
 ) extends AuthenticatedRequest[A](user, request)
@@ -34,13 +36,22 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             sys.error(s"No org key for request path[${request.path}]")
           }
 
-          Await.result(Authenticated.api.Organizations.get(key = Some(orgKey)), 1000.millis).entity.headOption match {
+          val orgOption = Await.result(Authenticated.api.Organizations.get(key = Some(orgKey)), 1000.millis).entity.headOption
+          val memberships = Await.result(Authenticated.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(u.guid)), 1000.millis).entity
+          orgOption match {
             case None => {
               Future.successful(Redirect("/").flashing("warning" -> s"Organization $orgKey not found"))
             }
 
             case Some(org: Organization) => {
-              block(new AuthenticatedOrgRequest(org, u, request))
+              if (memberships.find(_.role == Role.Member.key).isEmpty) {
+                Future.successful(Redirect(routes.Organizations.requestMembership(orgKey)))
+
+              } else {
+                val isAdmin = !memberships.find(_.role == Role.Admin.key).isEmpty
+                val authRequest = new AuthenticatedOrgRequest(org, isAdmin, u, request)
+                block(authRequest)
+              }
             }
           }
         }

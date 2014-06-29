@@ -22,15 +22,8 @@ object Organizations extends Controller {
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
       )
-      roles <- request.api.Memberships.get(
-        orgKey = Some(orgKey),
-        userGuid = Some(request.user.guid)
-      )
     } yield {
-      val isMember = roles.entity.map(_.role).contains(Role.Member.key)
-      val isAdmin = roles.entity.map(_.role).contains(Role.Admin.key)
-
-      val haveRequests = if (isAdmin) {
+      val haveRequests = if (request.isAdmin) {
         val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(request.org.guid), limit = Some(1)), 1500.millis)
         !pendingRequests.entity.isEmpty
       } else {
@@ -64,11 +57,46 @@ object Organizations extends Controller {
     }
   }
 
-  def requestMembership(orgKey: String) = AuthenticatedOrg.async { implicit request =>
-    request.api.MembershipRequests.post(request.org.guid, request.user.guid, Role.Member.key).map { r =>
-      Redirect("/").flashing(
-        "success" -> s"We have submitted your membership request to join ${request.org.name}"
+  def requestMembership(orgKey: String) = Authenticated.async { implicit request =>
+    for {
+      orgResponse <- request.api.Organizations.get(key = Some(orgKey))
+      membershipRequestResponse <- request.api.MembershipRequests.get(
+        orgKey = Some(orgKey),
+        userGuid = Some(request.user.guid),
+        role = Some(Role.Member.key)
       )
+    } yield {
+      orgResponse.entity.headOption match {
+        case None => {
+          Redirect("/").flashing("warning" -> s"Organization $orgKey not found")
+        }
+        case Some(org: Organization) => {
+          val hasMembershipRequest = !membershipRequestResponse.entity.isEmpty
+          Ok(views.html.organizations.requestMembership(
+            MainTemplate(title = s"Join ${org.name}"),
+            org,
+            hasMembershipRequest
+          ))
+        }
+      }
+    }
+  }
+
+  def postRequestMembership(orgKey: String) = Authenticated.async { implicit request =>
+    for {
+      orgResponse <- request.api.Organizations.get(key = Some(orgKey))
+    } yield {
+      orgResponse.entity.headOption match {
+        case None => {
+          Redirect("/").flashing("warning" -> s"Organization $orgKey not found")
+        }
+        case Some(org: Organization) => {
+          Await.result(request.api.MembershipRequests.post(org.guid, request.user.guid, Role.Member.key), 1000.millis)
+          Redirect("/").flashing(
+            "success" -> s"We have submitted your membership request to join ${org.name}"
+          )
+        }
+      }
     }
   }
 
