@@ -25,7 +25,6 @@ object Versions extends Controller {
       versionsResponse <- request.api.Versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
       versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
-      println("versionResponse.entity: " + versionResponse.entity)
       versionResponse.entity match {
 
         case v: Version => {

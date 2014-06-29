@@ -78,7 +78,6 @@ object LoginController extends Controller {
       "password" -> nonEmptyText(minLength=5),
       "password_verify" -> nonEmptyText
     )(RegisterData.apply)(RegisterData.unapply) verifying("Password and password verify do not match", { f =>
-      println("%s => %s".format(f.password, f.password_verify))
       f.password == f.password_verify
     })
   )
