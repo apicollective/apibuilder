@@ -158,8 +158,7 @@
                     "description": "Updates information about the user with the specified guid.",
                     "parameters": [
                         { "name": "email", "type": "string" },
-                        { "name": "name", "type": "string", "required": false },
-                        { "name": "image_url", "type": "string", "required": false }
+                        { "name": "name", "type": "string", "required": false }
                     ],
                     "responses": {
                         "200": { "type": "user" },

@@ -17,10 +17,6 @@ class UserPasswordDaoSpec extends FlatSpec {
   }
 
   it should "findByUserGuid" in {
-    UserPasswordDao.softDeleteByUserGuid(user, userGuid)
-
-    assertEquals(None, UserPasswordDao.findByUserGuid(userGuid))
-
     UserPasswordDao.create(user, userGuid, "password")
 
     val up = UserPasswordDao.findByUserGuid(userGuid).get
