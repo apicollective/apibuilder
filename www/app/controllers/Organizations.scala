@@ -65,6 +65,10 @@ object Organizations extends Controller {
         userGuid = Some(request.user.guid),
         role = Some(Role.Member.key)
       )
+      adminsResponse <- request.api.Memberships.get(
+        orgKey = Some(orgKey),
+        role = Some(Role.Admin.key)
+      )
     } yield {
       orgResponse.entity.headOption match {
         case None => {
@@ -75,6 +79,7 @@ object Organizations extends Controller {
           Ok(views.html.organizations.requestMembership(
             MainTemplate(title = s"Join ${org.name}"),
             org,
+            adminsResponse.entity,
             hasMembershipRequest
           ))
         }
@@ -92,7 +97,7 @@ object Organizations extends Controller {
         }
         case Some(org: Organization) => {
           Await.result(request.api.MembershipRequests.post(org.guid, request.user.guid, Role.Member.key), 1000.millis)
-          Redirect("/").flashing(
+          Redirect(routes.Organizations.requestMembership(orgKey)).flashing(
             "success" -> s"We have submitted your membership request to join ${org.name}"
           )
         }
