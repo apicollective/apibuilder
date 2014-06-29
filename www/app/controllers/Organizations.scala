@@ -18,24 +18,29 @@ object Organizations extends Controller {
   def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
     for {
       org <- request.api.Organizations.get(key = Some(orgKey))
-      services <- request.api.Services.getByOrgKey(orgKey = orgKey,
-                                                   limit = Some(Pagination.DefaultLimit+1),
-                                                   offset = Some(page * Pagination.DefaultLimit))
-      isAdmin <- request.api.Memberships.get(orgKey = Some(orgKey),
-                                             userGuid = Some(request.user.guid),
-                                             role = Some(Role.Admin.key),
-                                             limit = Some(1))
+      services <- request.api.Services.getByOrgKey(
+        orgKey = orgKey,
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(page * Pagination.DefaultLimit)
+      )
+      roles <- request.api.Memberships.get(
+        orgKey = Some(orgKey),
+        userGuid = Some(request.user.guid)
+      )
     } yield {
       org.entity.headOption match {
 
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
         case Some(org: Organization) => {
-          val haveRequests = if (isAdmin.entity.isEmpty) {
-            false
-          } else {
+          val isMember = roles.entity.map(_.role).contains(Role.Member.key)
+          val isAdmin = roles.entity.map(_.role).contains(Role.Admin.key)
+
+          val haveRequests = if (isAdmin) {
             val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(org.guid), limit = Some(1)), 1500.millis)
             !pendingRequests.entity.isEmpty
+          } else {
+            false
           }
 
           Ok(views.html.organizations.show(MainTemplate(title = org.name,
