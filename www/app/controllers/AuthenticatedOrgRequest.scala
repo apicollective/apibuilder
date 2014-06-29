@@ -44,7 +44,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             }
 
             case Some(org: Organization) => {
-              if (memberships.find(_.role == Role.Member.key).isEmpty) {
+              if (memberships.isEmpty) {
                 Future.successful(Redirect(routes.Organizations.requestMembership(orgKey)))
 
               } else {

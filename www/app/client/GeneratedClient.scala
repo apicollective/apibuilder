@@ -259,19 +259,20 @@ package apidoc {
 
     logger.info(s"Initializing apidoc.client for url $apiUrl")
 
-    private def requestHolder(path: String) = {
+    def requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
       val url = apiUrl + path
       val holder = play.api.libs.ws.WS.url(url)
-      apiToken.map { token =>
-        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
-      }.getOrElse {
-        holder
+      apiToken match {
+        case None => holder
+        case Some(token: String) => {
+          holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
+        }
       }
     }
 
-    private def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+    def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
       val q = req.queryString.flatMap { case (name, values) =>
         values.map(name -> _).map { case (name, value) =>
           s"$name=$value"
@@ -286,7 +287,7 @@ package apidoc {
       req
     }
 
-    private def processResponse(f: scala.concurrent.Future[play.api.libs.ws.WSResponse])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    def processResponse(f: scala.concurrent.Future[play.api.libs.ws.WSResponse])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       f.map { response =>
         lazy val body: String = scala.util.Try {
           play.api.libs.json.Json.prettyPrint(response.json)
