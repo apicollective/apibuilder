@@ -1,7 +1,6 @@
 package controllers
 
 import apidoc.models.User
-import client.Apidoc
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
