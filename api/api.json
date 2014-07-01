@@ -358,6 +358,9 @@
                     "method": "PUT",
                     "description": "Create or update the service with the specified version.",
                     "path": "/:version",
+                    "parameters": [
+                        { "name": "json", "type": "string", "description": "The actual full contents of the json scheme" }
+		    ],
                     "responses": {
                         "200": { "type": "version" }
                     }

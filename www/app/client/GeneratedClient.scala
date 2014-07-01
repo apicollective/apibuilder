@@ -817,13 +817,11 @@ package apidoc {
       def putByGuid(
         guid: java.util.UUID,
         email: String,
-        name: scala.Option[String] = None,
-        imageUrl: scala.Option[String] = None
+        name: scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
         val payload = play.api.libs.json.Json.obj(
           "email" -> play.api.libs.json.Json.toJson(email),
-          "name" -> play.api.libs.json.Json.toJson(name),
-          "image_url" -> play.api.libs.json.Json.toJson(imageUrl)
+          "name" -> play.api.libs.json.Json.toJson(name)
         )
         
         PUT(s"/users/${({x: java.util.UUID =>
@@ -907,10 +905,11 @@ package apidoc {
       def putByOrgKeyAndServiceKeyAndVersion(
         orgKey: String,
         serviceKey: String,
-        version: String
+        version: String,
+        json: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Version]] = {
         val payload = play.api.libs.json.Json.obj(
-          
+          "json" -> play.api.libs.json.Json.toJson(json)
         )
         
         PUT(s"/${({x: String =>
