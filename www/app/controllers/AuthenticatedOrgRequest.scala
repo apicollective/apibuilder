@@ -2,7 +2,6 @@ package controllers
 
 import apidoc.models.{ Membership, Organization, User }
 import core.Role
-import client.{ Apidoc, ApidocClient }
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
