@@ -1,7 +1,7 @@
 package controllers
 
 import apidoc.models.User
-import client.{ Apidoc, ApidocClient }
+import client.Apidoc
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
@@ -10,8 +10,6 @@ import play.api.Play.current
 import java.util.UUID
 
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
-
-  lazy val client = ApidocClient.instance(user.guid.toString)
 
   private def configValue(name: String): String = {
     current.configuration.getString(name).getOrElse {

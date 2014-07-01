@@ -5,30 +5,6 @@ import play.api.libs.ws._
 import scala.concurrent.Future
 import play.api.Play.current
 
-object ApidocClient {
-
-  val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
-    sys.error("apidoc.url is required")
-  }
-
-  def token(guid: String): String = Tokens.get(guid).getOrElse {
-    sys.error(s"No token for user guid[$guid]")
-  }
-
-  private val Tokens = Map(
-    "f3973f60-be9f-11e3-b1b6-0800200c9a66" -> "ZdRD61ODVPspeV8Wf18EmNuKNxUfjfROyJXtNJXj9GMMwrAxqi8I4aUtNAT6",
-    "1c59f283-353d-4d91-bff2-0a0e2956fefe" -> "1c59f283-353d-4d91-bff2-0a0e2956fefe",
-    "c6a7ca2f-4f67-4079-8314-f5812d44946f" -> "c6a7ca2f-4f67-4079-8314-f5812d44946f"
-  )
-
-  def instance(userGuid: String): Apidoc.Client = {
-    Apidoc.Client(baseUrl = apiUrl, token = token(userGuid))
-  }
-
-}
-
-
-
 object Apidoc {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global

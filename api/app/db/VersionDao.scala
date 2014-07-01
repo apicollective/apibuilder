@@ -15,6 +15,14 @@ object Version {
 
 }
 
+case class VersionForm(json: String)
+
+object VersionForm {
+
+  implicit val versionFormReads = Json.reads[VersionForm]
+
+}
+
 object VersionDao {
 
   implicit val versionReads = Json.reads[Version]
