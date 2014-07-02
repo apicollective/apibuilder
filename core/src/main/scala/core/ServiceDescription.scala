@@ -325,18 +325,18 @@ object Field {
 
   def apply(models: Seq[Model], internal: InternalField, modelPlural: Option[String], fields: Seq[Field]): Field = {
     val fieldtype = internal.fieldtype match {
-      case Some(nft: InternalFieldType) => {
-        Datatype.findByName(nft.name) match {
+      case Some(name: String) => {
+        Datatype.findByName(name) match {
           case Some(dt: Datatype) => {
             internal.default.map { v => assertValidDefault(dt, v) }
             PrimitiveFieldType(dt)
           }
 
           case None => {
-            require(internal.default.isEmpty, s"Cannot have a default for a field of type[${nft.name}]")
+            require(internal.default.isEmpty, s"Cannot have a default for a field of type[$name]")
 
-            val model = models.find { m => m.name == nft.name }.getOrElse {
-              sys.error(s"Invalid field type[${nft.name}]. Must be a valid primitive datatype or the name of a known model")
+            val model = models.find { m => m.name == name }.getOrElse {
+              sys.error(s"Invalid field type[$name]. Must be a valid primitive datatype or the name of a known model")
             }
             ModelFieldType(model)
           }

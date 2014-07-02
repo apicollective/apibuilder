@@ -89,10 +89,8 @@ case class InternalOperation(method: Option[String],
 
 }
 
-case class InternalFieldType(name: String)
-
 case class InternalField(name: Option[String] = None,
-                         fieldtype: Option[InternalFieldType] = None,
+                         fieldtype: Option[String] = None,
                          description: Option[String] = None,
                          required: Boolean = true,
                          multiple: Boolean = false,
@@ -237,7 +235,7 @@ object InternalField {
     }
 
     InternalField(name = (json \ "name").asOpt[String],
-                  fieldtype = parsedDatatype.map(_.toInternalFieldType),
+                  fieldtype = parsedDatatype.map(_.name),
                   description = (json \ "description").asOpt[String],
                   required = (json \ "required").asOpt[Boolean].getOrElse(true),
                   multiple = parsedDatatype.map(_.multiple).getOrElse(false),
@@ -288,9 +286,7 @@ private[core] object JsonStringParser {
 
 }
 
-private[core] case class InternalParsedDatatype(name: String, multiple: Boolean) {
-  def toInternalFieldType: InternalFieldType = InternalFieldType(name)
-}
+private[core] case class InternalParsedDatatype(name: String, multiple: Boolean)
 
 private[core] object InternalParsedDatatype {
 

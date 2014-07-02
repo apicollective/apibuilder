@@ -5,8 +5,8 @@ import org.scalatest.Matchers
 
 class ModelResolverSpec extends FunSpec with Matchers {
 
-  private val guidField = InternalField(name = Some("guid"), fieldtype = Some(InternalParsedDatatype("uuid").toInternalFieldType))
-  private val userField = InternalField(name = Some("user"), fieldtype = Some(InternalParsedDatatype("user").toInternalFieldType))
+  private val guidField = InternalField(name = Some("guid"), fieldtype = Some("uuid"))
+  private val userField = InternalField(name = Some("user"), fieldtype = Some("user"))
 
   private val user = InternalModel(name = "user",
                                    plural = "users",
@@ -42,14 +42,14 @@ class ModelResolverSpec extends FunSpec with Matchers {
     val foo = InternalModel(name = "foo",
                             plural = "foos",
                             description = None,
-                            fields = Seq(InternalField(name = Some("guid"), fieldtype = Some(InternalParsedDatatype("uuid").toInternalFieldType)),
-                                         InternalField(name = Some("bar"), fieldtype = Some(InternalParsedDatatype("bar").toInternalFieldType))))
+                            fields = Seq(InternalField(name = Some("guid"), fieldtype = Some("uuid")),
+                                         InternalField(name = Some("bar"), fieldtype = Some("bar"))))
 
     val bar = InternalModel(name = "bar",
                             plural = "bars",
                             description = None,
-                            fields = Seq(InternalField(name = Some("guid"), fieldtype = Some(InternalParsedDatatype("uuid").toInternalFieldType)),
-                                         InternalField(name = Some("foo"), fieldtype = Some(InternalParsedDatatype("foo").toInternalFieldType))))
+                            fields = Seq(InternalField(name = Some("guid"), fieldtype = Some("uuid")),
+                                         InternalField(name = Some("foo"), fieldtype = Some("foo"))))
 
     // TODO: Scala test validation of exception
     try {
