@@ -89,8 +89,7 @@ case class InternalOperation(method: Option[String],
 
 }
 
-sealed trait InternalFieldType
-case class InternalNamedFieldType(name: String) extends InternalFieldType
+case class InternalFieldType(name: String)
 
 case class InternalField(name: Option[String] = None,
                          fieldtype: Option[InternalFieldType] = None,
@@ -290,7 +289,7 @@ private[core] object JsonStringParser {
 }
 
 private[core] case class InternalParsedDatatype(name: String, multiple: Boolean) {
-  def toInternalFieldType: InternalFieldType = InternalNamedFieldType(name)
+  def toInternalFieldType: InternalFieldType = InternalFieldType(name)
 }
 
 private[core] object InternalParsedDatatype {

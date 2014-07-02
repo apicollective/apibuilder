@@ -197,21 +197,7 @@ object Response {
 
 }
 
-sealed abstract class Datatype(val name: String, val example: String, val description: String) {
-
-  /**
-   * Returns true if the string can be converted into an instance of this
-   * datatype. False otherwise.
-   */
-  // TODO: def isValid(value: String): Boolean = validate(value).isEmpty
-
-  /**
-   * If the provided value is valid for this datatype - returns None.
-   * Otherwise, returns a validation message.
-   */
-    // TODO: def validate(value: String): Option[String]
-
-}
+sealed abstract class Datatype(val name: String, val example: String, val description: String)
 
 object Datatype {
 
@@ -239,6 +225,10 @@ object Datatype {
                                           example = "This is a fox.",
                                           description = "unicode character sequence")
 
+  case object MapType extends Datatype(name = "map",
+                                       example = """{ "foo": "bar" }""",
+                                       description = "A javascript object. The keys must be strings. In typed languages (e.g. Scala), equivalent to Map[String, Any]")
+
   case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
                                                    example = "2014-04-29T11:56:52Z",
                                                    description = "Date time format in ISO 8601")
@@ -251,7 +241,7 @@ object Datatype {
                                         example = "N/A",
                                         description = "Internal type used to represent things like an HTTP NoContent response. Maps to void in Java, Unit in Scala, nil in ruby, etc.")
 
-  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, UuidType, DateTimeIso8601Type)
+  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, MapType, UuidType, DateTimeIso8601Type)
 
   def findByName(name: String): Option[Datatype] = {
     // TODO: This is weird. If we include UnitType in All - it ends up
@@ -335,7 +325,7 @@ object Field {
 
   def apply(models: Seq[Model], internal: InternalField, modelPlural: Option[String], fields: Seq[Field]): Field = {
     val fieldtype = internal.fieldtype match {
-      case Some(nft: InternalNamedFieldType) => {
+      case Some(nft: InternalFieldType) => {
         Datatype.findByName(nft.name) match {
           case Some(dt: Datatype) => {
             internal.default.map { v => assertValidDefault(dt, v) }
@@ -388,11 +378,35 @@ object Field {
 
   private val BooleanValues = Seq("true", "false")
 
+  /**
+    * Returns true if the specified value is valid for the given
+    * datatype. False otherwise.
+    */
+  def isValid(datatype: Datatype, value: String): Boolean = {
+    try {
+      assertValidDefault(datatype: Datatype, value: String)
+      true
+    } catch {
+      case e: Throwable => {
+        false
+      }
+    }
+  }
+
   def assertValidDefault(datatype: Datatype, value: String) {
     datatype match {
       case Datatype.BooleanType => {
         if (!BooleanValues.contains(value)) {
-          sys.error(s"Invalid value[${value}] for boolean. Must be one of: ${BooleanValues.mkString(" ")}")
+          sys.error(s"Invalid default[${value}] for boolean. Must be one of: ${BooleanValues.mkString(" ")}")
+        }
+      }
+
+      case Datatype.MapType => {
+        Json.parse(value).asOpt[JsObject] match {
+          case None => {
+            sys.error(s"Invalid default[${value}] for type object. Must be a valid JSON Object")
+          }
+          case Some(o) => {}
         }
       }
 

@@ -350,6 +350,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case Datatype.DecimalType => "BigDecimal"
       case Datatype.UuidType => "String"
       case Datatype.DateTimeIso8601Type => "DateTime"
+      case Datatype.MapType => "Hash"
       case Datatype.UnitType => "nil"
       case _ => {
         sys.error(s"Cannot map data type[${datatype}] to ruby class")
