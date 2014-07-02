@@ -45,7 +45,7 @@ private[core] object ModelResolver {
       field.fieldtype match {
         case None => false
 
-        case Some(InternalNamedFieldType(name: String)) => {
+        case Some(InternalFieldType(name: String)) => {
           Datatype.findByName(name).isEmpty && models.find { _.name == name }.isEmpty
         }
       }

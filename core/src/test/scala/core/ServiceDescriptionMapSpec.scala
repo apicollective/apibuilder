@@ -35,13 +35,10 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
     tags.default shouldBe Some("{ }")
   }
 
- /*
- TODO
   it("validates invalid defaults") {
     val json = baseJson.format("""{ "name": "tags", "type": "map", "default": "bar" }""")
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("Invalid default")
+    validator.errors.mkString("") should be("Model[user] field[tags] Default[bar] is not valid for datatype[map]")
   }
- */
 
 }

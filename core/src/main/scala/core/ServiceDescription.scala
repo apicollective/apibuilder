@@ -325,7 +325,7 @@ object Field {
 
   def apply(models: Seq[Model], internal: InternalField, modelPlural: Option[String], fields: Seq[Field]): Field = {
     val fieldtype = internal.fieldtype match {
-      case Some(nft: InternalNamedFieldType) => {
+      case Some(nft: InternalFieldType) => {
         Datatype.findByName(nft.name) match {
           case Some(dt: Datatype) => {
             internal.default.map { v => assertValidDefault(dt, v) }
@@ -379,16 +379,16 @@ object Field {
   private val BooleanValues = Seq("true", "false")
 
   /**
-    * Validates the specified default for this field, returning an
-    * error message if invalid. None indicates the value is valid.
+    * Returns true if the specified value is valid for the given
+    * datatype. False otherwise.
     */
-  def validateDefault(datatype: Datatype, value: String): Option[String] = {
+  def isValid(datatype: Datatype, value: String): Boolean = {
     try {
       assertValidDefault(datatype: Datatype, value: String)
-      None
+      true
     } catch {
       case e: Throwable => {
-        Some(e.toString)
+        false
       }
     }
   }
