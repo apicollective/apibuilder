@@ -225,9 +225,9 @@ object Datatype {
                                           example = "This is a fox.",
                                           description = "unicode character sequence")
 
-  case object ObjectType extends Datatype(name = "object",
-                                          example = """{ "foo": "bar" }""",
-                                          description = "A javascript object.")
+  case object MapType extends Datatype(name = "map",
+                                       example = """{ "foo": "bar" }""",
+                                       description = "A javascript object. The keys must be strings. In typed languages (e.g. Scala), equivalent to Map[String, Any]")
 
   case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
                                                    example = "2014-04-29T11:56:52Z",
@@ -241,7 +241,7 @@ object Datatype {
                                         example = "N/A",
                                         description = "Internal type used to represent things like an HTTP NoContent response. Maps to void in Java, Unit in Scala, nil in ruby, etc.")
 
-  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, ObjectType, UuidType, DateTimeIso8601Type)
+  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, MapType, UuidType, DateTimeIso8601Type)
 
   def findByName(name: String): Option[Datatype] = {
     // TODO: This is weird. If we include UnitType in All - it ends up
@@ -401,7 +401,7 @@ object Field {
         }
       }
 
-      case Datatype.ObjectType => {
+      case Datatype.MapType => {
         Json.parse(value).asOpt[JsObject] match {
           case None => {
             sys.error(s"Invalid default[${value}] for type object. Must be a valid JSON Object")

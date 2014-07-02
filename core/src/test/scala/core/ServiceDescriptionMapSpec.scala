@@ -3,7 +3,7 @@ package core
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
-class ServiceDescriptionObjectSpec extends FunSpec with Matchers {
+class ServiceDescriptionMapSpec extends FunSpec with Matchers {
 
   private val baseJson = """
     {
@@ -19,8 +19,8 @@ class ServiceDescriptionObjectSpec extends FunSpec with Matchers {
     }
   """
 
-  it("accepts type: object") {
-    val json = baseJson.format("""{ "name": "tags", "type": "object" }""")
+  it("accepts type: map") {
+    val json = baseJson.format("""{ "name": "tags", "type": "map" }""")
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val tags = validator.serviceDescription.get.models.head.fields.head
@@ -28,7 +28,7 @@ class ServiceDescriptionObjectSpec extends FunSpec with Matchers {
   }
 
   it("accept defaults for maps") {
-    val json = baseJson.format("""{ "name": "tags", "type": "object", "default": "{ }" }""")
+    val json = baseJson.format("""{ "name": "tags", "type": "map", "default": "{ }" }""")
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val tags = validator.serviceDescription.get.models.head.fields.head
@@ -38,7 +38,7 @@ class ServiceDescriptionObjectSpec extends FunSpec with Matchers {
  /*
  TODO
   it("validates invalid defaults") {
-    val json = baseJson.format("""{ "name": "tags", "type": "object", "default": "bar" }""")
+    val json = baseJson.format("""{ "name": "tags", "type": "map", "default": "bar" }""")
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("Invalid default")
   }

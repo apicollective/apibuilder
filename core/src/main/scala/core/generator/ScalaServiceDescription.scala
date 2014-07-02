@@ -233,7 +233,7 @@ object ScalaDataType {
   case object ScalaLongType extends ScalaDataType("Long")
   case object ScalaBooleanType extends ScalaDataType("Boolean")
   case object ScalaDecimalType extends ScalaDataType("BigDecimal")
-  case object ScalaObjectType extends ScalaDataType("Map[String, String]")
+  case object ScalaMapType extends ScalaDataType("Map[String, Any]")
   case object ScalaUnitType extends ScalaDataType("Unit")
   case object ScalaUuidType extends ScalaDataType("java.util.UUID")
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
@@ -250,7 +250,7 @@ object ScalaDataType {
     case Datatype.LongType => ScalaLongType
     case Datatype.BooleanType => ScalaBooleanType
     case Datatype.DecimalType => ScalaDecimalType
-    case Datatype.ObjectType => ScalaObjectType
+    case Datatype.MapType => ScalaMapType
     case Datatype.UnitType => ScalaUnitType
     case Datatype.UuidType => ScalaUuidType
     case Datatype.DateTimeIso8601Type => ScalaDateTimeIso8601Type

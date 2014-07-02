@@ -35,7 +35,7 @@ ${defs.indent(4)}
       case x @ ScalaLongType => "org.scalacheck.Arbitrary.arbLong"
       case x @ ScalaBooleanType => "org.scalacheck.Arbitrary.arbBool"
       case x @ ScalaDecimalType => "org.scalacheck.Arbitrary.arbBigDecimal"
-      case x @ ScalaObjectType => "org.scalacheck.Arbitrary.arbImmutableMap[String, String]"
+      case x @ ScalaMapType => "org.scalacheck.Arbitrary.arbImmutableMap[String, Any]"
       case x @ ScalaUnitType => "org.scalacheck.Arbitrary.arbUnit"
       case x @ ScalaUuidType => s"org.scalacheck.Arbitrary(org.scalacheck.Gen.resultOf { _: Unit => ${x.name}.randomUUID })"
       case x @ ScalaDateTimeIso8601Type => {
