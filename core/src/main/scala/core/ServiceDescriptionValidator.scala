@@ -101,19 +101,15 @@ case class ServiceDescriptionValidator(apiJson: String) {
   private def validateFieldTypes(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
       model.fields.filter { f => !f.fieldtype.isEmpty && !f.name.isEmpty }.flatMap { field =>
-        field.fieldtype.get match {
-
-          case nft: InternalFieldType => {
-            Datatype.findByName(nft.name) match {
-              case None => {
-                internalServiceDescription.get.models.find { _.name == nft.name } match {
-                  case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model nor datatype named[${nft.name}]")
-                  case Some(_) => None
-                }
-              }
+        val name = field.fieldtype.get
+        Datatype.findByName(name) match {
+          case None => {
+            internalServiceDescription.get.models.find { _.name == name } match {
+              case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model nor datatype named[$name]")
               case Some(_) => None
             }
           }
+          case Some(_) => None
         }
       }
     }
@@ -125,11 +121,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
   private def validateFieldDefaults(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
       model.fields.filter { f => !f.fieldtype.isEmpty && !f.name.isEmpty && !f.default.isEmpty }.flatMap { field =>
-        Datatype.findByName(field.fieldtype.get.name).flatMap { dt =>
+        val name = field.fieldtype.get
+        Datatype.findByName(name).flatMap { dt =>
           if (Field.isValid(dt, field.default.get)) {
             None
           } else {
-            Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid for datatype[${field.fieldtype.get.name}]")
+            Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid for datatype[$name]")
           }
         }
       }
@@ -194,7 +191,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
       * most common use case to fully support.
       */
     val enumsForNonStringTypes = internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter(!_.name.isEmpty).filter(!_.values.isEmpty).filter(_.fieldtype != Some(InternalFieldType("string"))).map { f =>
+      model.fields.filter(!_.name.isEmpty).filter(!_.values.isEmpty).filter(_.fieldtype != Some("string")).map { f =>
         s"Model[${model.name}] field[${f.name.get}]: values can only be specified for fields of type 'string'"
       }
     }
