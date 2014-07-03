@@ -233,7 +233,7 @@ object ScalaDataType {
   case object ScalaLongType extends ScalaDataType("Long")
   case object ScalaBooleanType extends ScalaDataType("Boolean")
   case object ScalaDecimalType extends ScalaDataType("BigDecimal")
-  case object ScalaMapType extends ScalaDataType("Map[String, Any]")
+  case object ScalaMapType extends ScalaDataType("Map[String, String]")
   case object ScalaUnitType extends ScalaDataType("Unit")
   case object ScalaUuidType extends ScalaDataType("java.util.UUID")
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")

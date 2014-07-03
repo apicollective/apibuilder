@@ -227,7 +227,7 @@ object Datatype {
 
   case object MapType extends Datatype(name = "map",
                                        example = """{ "foo": "bar" }""",
-                                       description = "A javascript object. The keys must be strings. In typed languages (e.g. Scala), equivalent to Map[String, Any]")
+                                       description = "A javascript object. The keys must be strings per JSON object spec. Apidoc requires the values to also be strings - while debatable, this encourages use of real models in APIs vs. maps, keeping use of maps to simpler use cases. The choice of string for value as enables JSON serialization in all languages for all values of Maps - i.e. we can guarantee nice client interfaces. In typed languages (e.g. Scala), equivalent to Map[String, String]")
 
   case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
                                                    example = "2014-04-29T11:56:52Z",
