@@ -1,3 +1,7 @@
 @(et: core.EnumerationFieldType)
 
-<a href="@routes.DocController.types#@et.datatype.name">enum[@et.datatype.name]</a>
+@if(et.datatype.name == core.Datatype.StringType.name) {
+  <a href="@routes.DocController.types#@et.datatype.name">enum</a>
+} else {
+  <a href="@routes.DocController.types#@et.datatype.name">enum[@et.datatype.name]</a>
+}
