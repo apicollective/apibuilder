@@ -80,6 +80,7 @@ case class InternalResource(modelName: Option[String],
 
 case class InternalOperation(method: Option[String],
                              path: String,
+                             interface: Option[String],
                              description: Option[String],
                              namedParameters: Seq[String],
                              parameters: Seq[InternalParameter],
@@ -204,6 +205,7 @@ object InternalOperation {
 
     InternalOperation(method = (json \ "method").asOpt[String].map(_.toUpperCase),
                       path = path,
+                      interface = (json \ "interface").asOpt[String],
                       description = (json \ "description").asOpt[String],
                       responses = responses,
                       namedParameters = namedParameters,

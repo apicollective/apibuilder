@@ -94,7 +94,7 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
 
-  val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
+  val name: String = operation.interface.getOrElse(GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path))
 
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 
