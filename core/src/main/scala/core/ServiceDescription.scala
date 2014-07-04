@@ -62,6 +62,7 @@ case class Resource(model: Model,
 case class Operation(model: Model,
                      method: String,
                      path: String,
+                     interface: Option[String],
                      description: Option[String],
                      parameters: Seq[Parameter],
                      responses: Seq[Response]) {
@@ -105,6 +106,7 @@ object Operation {
     Operation(model = model,
               method = method,
               path = internal.path,
+              interface = internal.interface,
               description = internal.description,
               parameters = pathParameters ++ internalParams,
               responses = internal.responses.map { Response(_) })
