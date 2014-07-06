@@ -8,7 +8,7 @@ class UserPasswordDaoSpec extends FlatSpec {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private val user = UserDao.upsert("michael@mailinator.com")
+  private val user = Util.upsertUser("michael@mailinator.com")
   private val userGuid = UUID.fromString(user.guid)
 
   it should "have distinct keys for all algorithms" in {
@@ -17,10 +17,6 @@ class UserPasswordDaoSpec extends FlatSpec {
   }
 
   it should "findByUserGuid" in {
-    UserPasswordDao.softDeleteByUserGuid(user, userGuid)
-
-    assertEquals(None, UserPasswordDao.findByUserGuid(userGuid))
-
     UserPasswordDao.create(user, userGuid, "password")
 
     val up = UserPasswordDao.findByUserGuid(userGuid).get

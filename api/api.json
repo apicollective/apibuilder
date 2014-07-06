@@ -5,10 +5,10 @@
 
     "models": {
 
-	"user_authentication": {
-            "fields": [
-                { "name": "result", "type": "boolean", "description": "True if the user authenticated successfully. False otherwise." }
-            ]
+	"healthcheck": {
+	    "fields": [
+                { "name": "status", "type": "string", "example": "healthy" }
+	    ]
 	},
 
         "user": {
@@ -16,8 +16,7 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this user." },
                 { "name": "email", "type": "string" },
-                { "name": "name", "type": "string", "required": false },
-                { "name": "image_url", "type": "string", "required": false, "description": "Image avatar for this user" }
+                { "name": "name", "type": "string", "required": false }
             ]
         },
 
@@ -89,18 +88,15 @@
 
     "resources": {
 
-	"user_authentication": {
-	    "operations": [
-		{
-		    "method": "POST",
-		    "parameters": [
-			{ "name": "email", "type": "string" },
-			{ "name": "password", "type": "string" }
-		    ],
+	"healthcheck": {
+	    "path": "/_internal_/healthcheck",
+            "operations": [
+                {
+                    "method": "GET",
                     "responses": {
-                        "200": { "type": "[user_authentication]" }
+                        "200": { "type": "[healthcheck]" }
                     }
-		}
+                }
 	    ]
 	},
 
@@ -128,13 +124,27 @@
                     }
                 },
 
+		{
+		    "method": "POST",
+		    "path": "/authenticate",
+		    "description": "Used to authenticate a user with an email address and password. Successful authentication returns an instance of the user model. Failed authorizations of any kind are returned as a generic error with code user_authorization_failed.",
+		    "parameters": [
+			{ "name": "email", "type": "string" },
+			{ "name": "password", "type": "string" }
+		    ],
+                    "responses": {
+                        "200": { "type": "user" },
+                        "409": { "type": "[error]" }
+		    }
+		},
+
                 {
                     "method": "POST",
                     "description": "Create a new user.",
                     "parameters": [
                         { "name": "email", "type": "string" },
                         { "name": "name", "type": "string", "required": false },
-                        { "name": "image_url", "type": "string", "required": false }
+                        { "name": "password", "type": "string" }
                     ],
                     "responses": {
                         "200": { "type": "user" },
@@ -148,8 +158,7 @@
                     "description": "Updates information about the user with the specified guid.",
                     "parameters": [
                         { "name": "email", "type": "string" },
-                        { "name": "name", "type": "string", "required": false },
-                        { "name": "image_url", "type": "string", "required": false }
+                        { "name": "name", "type": "string", "required": false }
                     ],
                     "responses": {
                         "200": { "type": "user" },
@@ -349,6 +358,9 @@
                     "method": "PUT",
                     "description": "Create or update the service with the specified version.",
                     "path": "/:version",
+                    "parameters": [
+                        { "name": "json", "type": "string", "description": "The actual full contents of the json scheme" }
+		    ],
                     "responses": {
                         "200": { "type": "version" }
                     }

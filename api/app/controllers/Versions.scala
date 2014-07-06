@@ -2,9 +2,9 @@ package controllers
 
 import lib.Validation
 import core.{ ServiceDescription, ServiceDescriptionValidator }
-import db.{ Organization, OrganizationDao, ServiceDao, User, Version, VersionDao }
+import db.{ Organization, OrganizationDao, ServiceDao, User, Version, VersionDao, VersionForm }
 import play.api.mvc._
-import play.api.libs.json.Json
+import play.api.libs.json._
 
 object Versions extends Controller {
 
@@ -36,23 +36,32 @@ object Versions extends Controller {
 
       case Some(org: Organization) => {
 
-        val validator = ServiceDescriptionValidator(request.body.toString)
-
-        if (validator.isValid) {
-          val service = ServiceDao.findByOrganizationAndKey(org, serviceKey).getOrElse {
-            ServiceDao.create(request.user, org, validator.serviceDescription.get.name, Some(serviceKey))
+        request.body.validate[VersionForm] match {
+          case e: JsError => {
+            Conflict(Json.toJson(Validation.invalidJson(e)))
           }
+          case s: JsSuccess[VersionForm] => {
+            val form = s.get
+            println(form)
 
-          VersionDao.findByServiceAndVersion(service, version) match {
-            case None => VersionDao.create(request.user, service, version, request.body.toString)
-            case Some(existing: Version) => VersionDao.replace(request.user, existing, service, request.body.toString)
+            val validator = ServiceDescriptionValidator(form.json)
+
+            if (validator.isValid) {
+              val service = ServiceDao.findByOrganizationAndKey(org, serviceKey).getOrElse {
+                ServiceDao.create(request.user, org, validator.serviceDescription.get.name, Some(serviceKey))
+              }
+
+              val resultingVersion = VersionDao.findByServiceAndVersion(service, version) match {
+                case None => VersionDao.create(request.user, service, version, form.json)
+                case Some(existing: Version) => VersionDao.replace(request.user, existing, service, form.json)
+              }
+
+              Ok(Json.toJson(resultingVersion))
+
+            } else {
+              Conflict(Json.toJson(Validation.errors(validator.errors)))
+            }
           }
-
-          NoContent
-
-        } else {
-          Conflict(Json.toJson(Validation.errors(validator.errors)))
-
         }
       }
     }

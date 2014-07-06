@@ -72,8 +72,7 @@ object MembershipRequest {
            organizations.key as organization_key,
            users.guid::varchar as user_guid,
            users.email as user_email,
-           users.name as user_name,
-           users.image_url as user_image_url
+           users.name as user_name
       from membership_requests
       join organizations on organizations.guid = membership_requests.organization_guid
       join users on users.guid = membership_requests.user_guid
@@ -159,8 +158,7 @@ object MembershipRequest {
                                                       key = row[String]("organization_key")),
                           user = User(guid = row[String]("user_guid"),
                                       email = row[String]("user_email"),
-                                      name = row[Option[String]]("user_name"),
-                                      image_url = row[Option[String]]("user_image_url")),
+                                      name = row[Option[String]]("user_name")),
                           role = row[String]("role"))
       }.toSeq
     }

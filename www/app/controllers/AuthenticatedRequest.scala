@@ -1,6 +1,6 @@
 package controllers
 
-import client.{ Apidoc, ApidocClient }
+import apidoc.models.User
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
@@ -8,9 +8,7 @@ import scala.concurrent.duration._
 import play.api.Play.current
 import java.util.UUID
 
-class AuthenticatedRequest[A](val user: apidoc.models.User, request: Request[A]) extends WrappedRequest[A](request) {
-
-  lazy val client = ApidocClient.instance(user.guid.toString)
+class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
   private def configValue(name: String): String = {
     current.configuration.getString(name).getOrElse {
@@ -18,7 +16,11 @@ class AuthenticatedRequest[A](val user: apidoc.models.User, request: Request[A])
     }
   }
 
-  lazy val api = new apidoc.Client(configValue("apidoc.url"), Some(configValue("apidoc.token")))
+  lazy val api = new apidoc.Client(configValue("apidoc.url"), Some(configValue("apidoc.token"))) {
+    override def requestHolder(path: String) = {
+      super.requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
+    }
+  }
 }
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
@@ -45,7 +47,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
           Future.successful(Redirect("/login").withNewSession)
         }
 
-        case Some(u: apidoc.models.User) => {
+        case Some(u: User) => {
           block(new AuthenticatedRequest(u, request))
         }
 

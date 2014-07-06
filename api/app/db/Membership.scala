@@ -28,8 +28,7 @@ object Membership {
            organizations.key as organization_key,
            users.guid::varchar as user_guid,
            users.email as user_email,
-           users.name as user_name,
-           users.image_url as user_image_url
+           users.name as user_name
       from memberships
       join organizations on organizations.guid = memberships.organization_guid
       join users on users.guid = memberships.user_guid
@@ -86,8 +85,7 @@ object Membership {
     findAll(organization_guid = Some(organization.guid), user_guid = Some(user.guid), role = Some(role.key)).headOption
   }
 
-  def findAll(user: Option[User] = None,
-              guid: Option[String] = None,
+  def findAll(guid: Option[String] = None,
               organization_guid: Option[String] = None,
               organization_key: Option[String] = None,
               user_guid: Option[String] = None,
@@ -96,12 +94,6 @@ object Membership {
               offset: Int = 0): Seq[Membership] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      user.map { u => """
-                and organization_guid in (select organization_guid
-                                            from memberships
-                                           where deleted_at is null
-                                             and user_guid = {authorized_user_guid}::uuid)
-                """ },
       guid.map { v => "and memberships.guid = {guid}::uuid" },
       organization_guid.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
       organization_key.map { v => "and memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
@@ -111,7 +103,6 @@ object Membership {
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
-      user.map(_.guid).map('authorized_user_guid -> _),
       guid.map('guid -> _ ),
       organization_guid.map('organization_guid -> _ ),
       organization_key.map('organization_key -> _ ),
@@ -127,8 +118,7 @@ object Membership {
                                                key = row[String]("organization_key")),
                    user = User(guid = row[String]("user_guid"),
                                email = row[String]("user_email"),
-                               name = row[Option[String]]("user_name"),
-                               image_url = row[Option[String]]("user_image_url")),
+                               name = row[Option[String]]("user_name")),
                    role = row[String]("role"))
       }.toSeq
     }

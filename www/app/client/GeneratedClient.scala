@@ -7,6 +7,9 @@ package apidoc.models {
     code: String,
     message: String
   )
+  case class Healthcheck(
+    status: String
+  )
   case class Membership(
     guid: java.util.UUID,
     user: User,
@@ -33,11 +36,7 @@ package apidoc.models {
   case class User(
     guid: java.util.UUID,
     email: String,
-    name: scala.Option[String] = None,
-    imageUrl: scala.Option[String] = None
-  )
-  case class UserAuthentication(
-    result: Boolean
+    name: scala.Option[String] = None
   )
   case class Version(
     guid: java.util.UUID,
@@ -102,6 +101,22 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "code").write[String] and
          (__ \ "message").write[String])(unlift(Error.unapply))
+      }
+    
+    implicit def readsHealthcheck: play.api.libs.json.Reads[Healthcheck] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        (__ \ "status").read[String].map { x =>
+          new Healthcheck(status = x)
+        }
+      }
+    
+    implicit def writesHealthcheck: play.api.libs.json.Writes[Healthcheck] =
+      new play.api.libs.json.Writes[Healthcheck] {
+        def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
+          "status" -> play.api.libs.json.Json.toJson(x.status)
+        )
       }
     
     implicit def readsMembership: play.api.libs.json.Reads[Membership] =
@@ -188,8 +203,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "email").read[String] and
-         (__ \ "name").readNullable[String] and
-         (__ \ "image_url").readNullable[String])(User.apply _)
+         (__ \ "name").readNullable[String])(User.apply _)
       }
     
     implicit def writesUser: play.api.libs.json.Writes[User] =
@@ -198,24 +212,7 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").write[java.util.UUID] and
          (__ \ "email").write[String] and
-         (__ \ "name").write[scala.Option[String]] and
-         (__ \ "image_url").write[scala.Option[String]])(unlift(User.unapply))
-      }
-    
-    implicit def readsUserAuthentication: play.api.libs.json.Reads[UserAuthentication] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        (__ \ "result").read[Boolean].map { x =>
-          new UserAuthentication(result = x)
-        }
-      }
-    
-    implicit def writesUserAuthentication: play.api.libs.json.Writes[UserAuthentication] =
-      new play.api.libs.json.Writes[UserAuthentication] {
-        def writes(x: UserAuthentication) = play.api.libs.json.Json.obj(
-          "result" -> play.api.libs.json.Json.toJson(x.result)
-        )
+         (__ \ "name").write[scala.Option[String]])(unlift(User.unapply))
       }
     
     implicit def readsVersion: play.api.libs.json.Reads[Version] =
@@ -262,19 +259,20 @@ package apidoc {
 
     logger.info(s"Initializing apidoc.client for url $apiUrl")
 
-    private def requestHolder(path: String) = {
+    def requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
       val url = apiUrl + path
       val holder = play.api.libs.ws.WS.url(url)
-      apiToken.map { token =>
-        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
-      }.getOrElse {
-        holder
+      apiToken match {
+        case None => holder
+        case Some(token: String) => {
+          holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
+        }
       }
     }
 
-    private def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+    def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
       val q = req.queryString.flatMap { case (name, values) =>
         values.map(name -> _).map { case (name, value) =>
           s"$name=$value"
@@ -289,7 +287,7 @@ package apidoc {
       req
     }
 
-    private def processResponse(f: scala.concurrent.Future[play.api.libs.ws.WSResponse])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    def processResponse(f: scala.concurrent.Future[play.api.libs.ws.WSResponse])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       f.map { response =>
         lazy val body: String = scala.util.Try {
           play.api.libs.json.Json.prettyPrint(response.json)
@@ -341,6 +339,20 @@ package apidoc {
         })(targetName)}", queryBuilder.result).map {
           case r if r.status == 200 => new ResponseImpl(r.json.as[Code], 200)
           case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+    }
+    
+    object Healthchecks {
+      def get(
+      
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[Healthcheck]]] = {
+        val queryBuilder = List.newBuilder[(String, String)]
+        
+        
+        GET(s"/_internal_/healthcheck", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[Healthcheck]], 200)
           case r => throw new FailedResponse(r.body, r.status)
         }
       }
@@ -700,23 +712,6 @@ package apidoc {
       }
     }
     
-    object UserAuthentications {
-      def post(
-        email: String,
-        password: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[scala.collection.Seq[UserAuthentication]]] = {
-        val payload = play.api.libs.json.Json.obj(
-          "email" -> play.api.libs.json.Json.toJson(email),
-          "password" -> play.api.libs.json.Json.toJson(password)
-        )
-        
-        POST(s"/user_authentications", payload).map {
-          case r if r.status == 200 => new ResponseImpl(r.json.as[scala.collection.Seq[UserAuthentication]], 200)
-          case r => throw new FailedResponse(r.body, r.status)
-        }
-      }
-    }
-    
     object Users {
       /**
        * Search for a specific user. You must specify at least 1 parameter - either a
@@ -775,17 +770,38 @@ package apidoc {
       }
       
       /**
+       * Used to authenticate a user with an email address and password. Successful
+       * authentication returns an instance of the user model. Failed authorizations of
+       * any kind are returned as a generic error with code user_authorization_failed.
+       */
+      def postAuthenticate(
+        email: String,
+        password: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
+        val payload = play.api.libs.json.Json.obj(
+          "email" -> play.api.libs.json.Json.toJson(email),
+          "password" -> play.api.libs.json.Json.toJson(password)
+        )
+        
+        POST(s"/users/authenticate", payload).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[User], 200)
+          case r if r.status == 409 => throw new FailedResponse(r.json.as[scala.collection.Seq[Error]], 409)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
+      /**
        * Create a new user.
        */
       def post(
         email: String,
         name: scala.Option[String] = None,
-        imageUrl: scala.Option[String] = None
+        password: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
         val payload = play.api.libs.json.Json.obj(
           "email" -> play.api.libs.json.Json.toJson(email),
           "name" -> play.api.libs.json.Json.toJson(name),
-          "image_url" -> play.api.libs.json.Json.toJson(imageUrl)
+          "password" -> play.api.libs.json.Json.toJson(password)
         )
         
         POST(s"/users", payload).map {
@@ -801,13 +817,11 @@ package apidoc {
       def putByGuid(
         guid: java.util.UUID,
         email: String,
-        name: scala.Option[String] = None,
-        imageUrl: scala.Option[String] = None
+        name: scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[User]] = {
         val payload = play.api.libs.json.Json.obj(
           "email" -> play.api.libs.json.Json.toJson(email),
-          "name" -> play.api.libs.json.Json.toJson(name),
-          "image_url" -> play.api.libs.json.Json.toJson(imageUrl)
+          "name" -> play.api.libs.json.Json.toJson(name)
         )
         
         PUT(s"/users/${({x: java.util.UUID =>
@@ -891,10 +905,11 @@ package apidoc {
       def putByOrgKeyAndServiceKeyAndVersion(
         orgKey: String,
         serviceKey: String,
-        version: String
+        version: String,
+        json: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Version]] = {
         val payload = play.api.libs.json.Json.obj(
-          
+          "json" -> play.api.libs.json.Json.toJson(json)
         )
         
         PUT(s"/${({x: String =>

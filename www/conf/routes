@@ -5,7 +5,7 @@ GET     /                                                         controllers.Ap
 GET     /login                                                    controllers.LoginController.redirect
 GET     /login/                                                   controllers.LoginController.index
 POST    /login/                                                   controllers.LoginController.indexPost
-GET     /login/callback                                           controllers.LoginController.callback
+POST    /login/register                                           controllers.LoginController.registerPost
 
 GET     /logout                                                   controllers.LogoutController.logout
 GET     /logged_out                                               controllers.LogoutController.logged_out
@@ -26,7 +26,8 @@ GET     /:orgKey/members                                          controllers.Me
 GET     /:orgKey/members/add                                      controllers.Members.add(orgKey: String)
 POST    /:orgKey/members/addPost                                  controllers.Members.addPost(orgKey: String)
 
-POST    /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
+GET     /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
+POST    /:orgKey/memberships/request                              controllers.Organizations.postRequestMembership(orgKey: String)
 GET     /:orgKey/membershipRequests                               controllers.Organizations.membershipRequests(orgKey: String, page: Int ?= 0)
 POST    /:orgKey/membership_request_reviews/accept                controllers.MembershipRequestReviews.accept(orgKey: String, membership_request_guid: java.util.UUID)
 POST    /:orgKey/membership_request_reviews/decline               controllers.MembershipRequestReviews.decline(orgKey: String, membership_request_guid: java.util.UUID)

@@ -25,7 +25,6 @@ object Versions extends Controller {
       versionsResponse <- request.api.Versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
       versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
-      println("versionResponse.entity: " + versionResponse.entity)
       versionResponse.entity match {
 
         case v: Version => {
@@ -123,7 +122,7 @@ object Versions extends Controller {
                 val validator = ServiceDescriptionValidator(contents)
                 if (validator.isValid) {
                   val serviceKey = UrlKey.generate(validator.serviceDescription.get.name)
-                  val response = Await.result(request.client.versions.put(org.key, serviceKey, valid.version, path), 5000.millis)
+                  val response = Await.result(request.api.Versions.putByOrgKeyAndServiceKeyAndVersion(org.key, serviceKey, valid.version, contents), 5000.millis)
                   Redirect(routes.Versions.show(org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
                 } else {
                   Ok(views.html.versions.form(tpl, boundForm, validator.errors))

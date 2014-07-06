@@ -6,6 +6,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import java.sql.Connection
 import org.mindrot.jbcrypt.BCrypt
 import org.apache.commons.codec.binary.Base64
 
@@ -107,32 +108,34 @@ object UserPasswordDao {
   """
 
   def create(user: User, userGuid: UUID, cleartextPassword: String) {
+    DB.withTransaction { implicit c =>
+      softDeleteByUserGuid(c, user, userGuid)
+      doCreate(c, UUID.fromString(user.guid), userGuid, cleartextPassword)
+    }
+  }
+
+  private[db] def doCreate(
+    implicit c: java.sql.Connection,
+    creatingUserGuid: UUID,
+    userGuid: UUID,
+    cleartextPassword: String
+  ) {
     val guid = UUID.randomUUID
     val algorithm = PasswordAlgorithm.Latest
     val hashedPassword = algorithm.hash(cleartextPassword)
 
-    DB.withTransaction { implicit c =>
-      softDeleteByUserGuid(c, user, userGuid)
-
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'user_guid -> userGuid,
-        'algorithm_key -> algorithm.key,
-        'hash -> new String(Base64.encodeBase64(hashedPassword.hash.getBytes)),
-        'created_by_guid -> user.guid,
-        'updated_by_guid -> user.guid
-      ).execute()
-    }
+    SQL(InsertQuery).on(
+      'guid -> guid,
+      'user_guid -> userGuid,
+      'algorithm_key -> algorithm.key,
+      'hash -> new String(Base64.encodeBase64(hashedPassword.hash.getBytes)),
+      'created_by_guid -> creatingUserGuid,
+      'updated_by_guid -> creatingUserGuid
+    ).execute()
   }
 
-  def softDeleteByUserGuid(user: User, userGuid: UUID) {
-    DB.withConnection { implicit c =>
-      softDeleteByUserGuid(c, user, userGuid)
-    }
-  }
-
-  private def softDeleteByUserGuid(implicit connection: java.sql.Connection, deletedBy: User, userGuid: UUID) {
-    SQL(SoftDeleteByUserGuidQuery).on('deleted_by_guid -> deletedBy.guid, 'user_guid -> userGuid).execute()
+  private[this] def softDeleteByUserGuid(implicit c: Connection, user: User, userGuid: UUID) {
+    SQL(SoftDeleteByUserGuidQuery).on('deleted_by_guid -> user.guid, 'user_guid -> userGuid).execute()
   }
 
   def isValid(userGuid: UUID, cleartextPassword: String): Boolean = {

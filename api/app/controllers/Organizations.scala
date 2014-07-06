@@ -4,12 +4,13 @@ import lib.Validation
 import db.{ Organization, OrganizationDao }
 import play.api.mvc._
 import play.api.libs.json.Json
+import java.util.UUID
 
 object Organizations extends Controller {
 
-  def get(guid: Option[String], userGuid: Option[String], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val orgs = OrganizationDao.findAll(userGuid = userGuid,
-                                       guid = guid,
+  def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
+    val orgs = OrganizationDao.findAll(userGuid = userGuid.map(_.toString),
+                                       guid = guid.map(_.toString),
                                        key = key,
                                        name = name,
                                        limit = limit,
@@ -38,7 +39,7 @@ object Organizations extends Controller {
     }
   }
 
-  def deleteByGuid(guid: String) = Authenticated { request =>
+  def deleteByGuid(guid: UUID) = Authenticated { request =>
     OrganizationDao.findByGuid(guid).map { organization =>
       OrganizationDao.softDelete(request.user, organization)
     }

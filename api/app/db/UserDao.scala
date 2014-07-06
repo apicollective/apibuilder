@@ -11,72 +11,55 @@ object User {
   implicit val userWrites = Json.writes[User]
 }
 
-case class User(guid: String, email: String, name: Option[String] = Some("ADSF"), image_url: Option[String] = Some("ADSF"))
+case class User(guid: String, email: String, name: Option[String] = None)
+
+case class UserForm(email: String, password: String, name: Option[String] = None)
+
+object UserForm {
+  implicit val userFormReads = Json.reads[UserForm]
+}
 
 object UserDao {
 
   private val BaseQuery = """
-    select guid::varchar, email, name, image_url
+    select guid::varchar, email, name
       from users
      where deleted_at is null
   """
 
   private val InsertQuery = """
     insert into users
-    (guid, email, name, image_url, created_by_guid, updated_by_guid)
+    (guid, email, name, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {email}, {name}, {image_url}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
+    ({guid}::uuid, {email}, {name}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
   private val UpdateQuery = """
   update users
      set email = {email},
-         name = {name},
-         image_url = {image_url}
+         name = {name}
    where guid = {guid}
   """
 
-  def upsert(email: String,
-             name: Option[String] = None,
-             imageUrl: Option[String] = None): User = {
-
-    findByEmail(email) match {
-
-      case Some(u: User) => {
-        if (u.name != name || u.image_url != imageUrl) {
-          val newUser = u.copy(name = name, image_url = imageUrl)
-          update(newUser)
-          newUser
-        } else {
-          u
-        }
-      }
-
-      case None => {
-        create(email, name, imageUrl)
-      }
-    }
-  }
-
-  def update(user: User) {
+  def update(updatingUser: User, user: User, form: UserForm) {
     DB.withConnection { implicit c =>
       SQL(UpdateQuery).on('guid -> user.guid,
-                          'email -> user.email,
-                          'name -> user.name,
-                          'image_url -> user.image_url,
-                          'updated_by_guid -> Constants.DefaultUserGuid).execute()
+                          'email -> form.email,
+                          'name -> form.name,
+                          'updated_by_guid -> updatingUser.guid).execute()
     }
   }
 
-  private def create(email: String, name: Option[String], imageUrl: Option[String]): User = {
+  def create(form: UserForm): User = {
     val guid = UUID.randomUUID
-    DB.withConnection { implicit c =>
+    DB.withTransaction { implicit c =>
       SQL(InsertQuery).on('guid -> guid,
-                          'email -> email,
-                          'name -> name,
-                          'image_url -> imageUrl,
+                          'email -> form.email,
+                          'name -> form.name,
                           'created_by_guid -> Constants.DefaultUserGuid,
                           'updated_by_guid -> Constants.DefaultUserGuid).execute()
+
+      UserPasswordDao.doCreate(c, guid, guid, form.password)
     }
 
     findByGuid(guid).getOrElse {
@@ -132,8 +115,7 @@ object UserDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         User(guid = row[String]("guid"),
              email = row[String]("email"),
-             name = row[Option[String]]("name"),
-             image_url = row[Option[String]]("image_url"))
+             name = row[Option[String]]("name"))
       }.toSeq
     }
   }

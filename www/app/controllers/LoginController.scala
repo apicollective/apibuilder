@@ -4,10 +4,7 @@ import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import play.api.libs.openid.{ Errors, OpenID, OpenIDError }
-
-import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
+import scala.concurrent.Future
 
 object LoginController extends Controller {
 
@@ -17,77 +14,81 @@ object LoginController extends Controller {
     Redirect(routes.LoginController.index())
   }
 
-  def index = Action.async { implicit request =>
-    val email = "admin@apidoc.me"
-    for {
-      userResponse <- Authenticated.api.Users.get(email = Some(email))
-    } yield {
-      val user = userResponse.entity.headOption.getOrElse {
-        sys.error(s"Could not find user with email[$email]")
-      }
-      Redirect("/").withSession { "user_guid" -> user.guid.toString }
-    }
-
+  def index() = Action { implicit request =>
+    Ok(views.html.login.index(Tab.Login, loginForm, registerForm))
   }
 
-
   def indexPost = Action.async { implicit request =>
-    Form(single(
-      "openid" -> nonEmptyText
-    )).bindFromRequest.fold(
-      error => {
-        Logger.info("bad request " + error.toString)
-        Future.successful { BadRequest(error.toString) }
+    val form = loginForm.bindFromRequest
+    form.fold (
+
+      formWithErrors => Future {
+        Ok(views.html.login.index(Tab.Login, formWithErrors, registerForm))
       },
-      {
-        case (openid) => {
-          OpenID.redirectURL(openid,
-                             routes.LoginController.callback.absoluteURL(),
-                             Seq("fullname" -> "http://axschema.org/namePerson",
-                                 "email" -> "http://axschema.org/contact/email",
-                                 "image" -> "http://axschema.org/media/image/default"))
-          .map( url => Redirect(url) )
-          .recover {
-            case e: OpenIDError => {
-              Redirect(routes.LoginController.index).flashing(
-                "error" -> e.message
-              )
-            }
+
+      validForm => {
+        Authenticated.api.Users.postAuthenticate(email = validForm.email, password = validForm.password).map { r =>
+          val user = r.entity
+          Redirect("/").withSession { "user_guid" -> user.guid.toString }
+        }.recover {
+          case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
+            Ok(views.html.login.index(Tab.Login, form, registerForm, Some(errors.map(_.message).mkString(", "))))
           }
         }
       }
+
     )
   }
 
-  def callback = Action.async { implicit request =>
-    OpenID.verifiedId.map(info => {
+  def registerPost = Action.async { implicit request =>
+    val form = registerForm.bindFromRequest
+    form.fold (
 
-      info.attributes.get("email") match {
-        case None => {
-          Redirect(routes.LoginController.index).flashing(
-            "error" -> "Open ID account did not provide your email address. Please try again or use a different OpenID"
-          )
-        }
+      formWithErrors => Future {
+        Ok(views.html.login.index(Tab.Register, loginForm, formWithErrors))
+      },
 
-        case Some(email: String) => {
-          val user = Await.result(Authenticated.api.Users.get(email = Some(email)), 1500.millis).entity.headOption.getOrElse {
-            Await.result(Authenticated.api.Users.post(email = email,
-                                                      name = info.attributes.get("fullname"),
-                                                      imageUrl = info.attributes.get("image_url")), 1500.millis).entity
-          }
+      validForm => {
+        Authenticated.api.Users.post(name = validForm.name, email = validForm.email, password = validForm.password).map { r =>
+          val user = r.entity
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
+        }.recover {
+          case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
+            Ok(views.html.login.index(Tab.Register, loginForm, form, Some(errors.map(_.message).mkString(", "))))
+          }
         }
       }
-    })
 
-    .recover {
-      case e: Throwable => {
-        Logger.error("Error authenticating open id user", e)
-        Redirect(routes.LoginController.index).flashing(
-          "error" -> "Error authenticating. Please try again or provide a different OpenID URL"
-        )
-      }
-    }
+    )
+  }
+
+  case class LoginData(email: String, password: String)
+  val loginForm = Form(
+    mapping(
+      "email" -> nonEmptyText,
+      "password" -> nonEmptyText
+    )(LoginData.apply)(LoginData.unapply)
+  )
+
+  case class RegisterData(name: Option[String], email: String, password: String, password_verify: String)
+  val registerForm = Form(
+    mapping(
+      "name" -> optional(text),
+      "email" -> nonEmptyText,
+      "password" -> nonEmptyText(minLength=5),
+      "password_verify" -> nonEmptyText
+    )(RegisterData.apply)(RegisterData.unapply) verifying("Password and password verify do not match", { f =>
+      f.password == f.password_verify
+    })
+  )
+
+  sealed trait Tab
+  object Tab {
+
+    case object Login extends Tab
+    case object Register extends Tab
 
   }
+
+
 }
