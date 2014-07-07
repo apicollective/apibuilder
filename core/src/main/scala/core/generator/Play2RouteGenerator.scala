@@ -91,7 +91,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
           case Datatype.BooleanType => "Boolean"
           case Datatype.DecimalType => "BigDecimal"
           case Datatype.UuidType => "java.util.UUID"
-          case Datatype.DateTimeIso8601Type => "DateTime"
+          case Datatype.DateTimeIso8601Type => "org.joda.time.DateTime"
           case Datatype.UnitType => "Unit"
           case Datatype.MapType => sys.error("Map not allowed as a parameter")
         }
