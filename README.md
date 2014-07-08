@@ -58,5 +58,5 @@ in situ for a nice development experience.
 Releasing code
 ==============
 
-    /web/metadata-architecture/exec /web/svc-iris-hub/script/release-and-deploy api [optional tag]
-    /web/metadata-architecture/exec /web/svc-iris-hub/script/release-and-deploy www [optional tag]
+    /web/metadata-architecture/exec /web/svc-iris-hub/script/release-and-deploy [--tag x.y.z] api www
+
