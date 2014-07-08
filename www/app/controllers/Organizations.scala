@@ -122,8 +122,9 @@ object Organizations extends Controller {
           Redirect(routes.Organizations.show(r.entity.key))
         }.recover {
           case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
+            val existingOrg = Await.result(request.api.Organizations.get(name = Some(valid.name)), 1000.millis).entity.headOption
             val tpl = MainTemplate(user = Some(request.user), title = s"Create Organization")
-            Ok(views.html.organizations.form(form, Some(errors.map(_.message).mkString(", "))))
+            Ok(views.html.organizations.form(form, Some(errors.map(_.message).mkString(", ")), existingOrg))
           }
         }
       }

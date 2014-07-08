@@ -1,5 +1,6 @@
 @(form: Form[controllers.Organizations.OrgData],
-  errorMessage: Option[String] = None
+  errorMessage: Option[String] = None,
+  existingOrg: Option[apidoc.models.Organization] = None
 )(implicit flash: Flash)
 
 @main(models.MainTemplate(title = "Add Organization")) {
@@ -7,6 +8,10 @@
 
     @errorMessage.map { msg =>
       <p><span class="error">@msg</span></p>
+    }
+
+    @existingOrg.map { org =>
+      <p><a href="@routes.Organizations.requestMembership(org.key)">Join existing organization @org.name</a></p>
     }
 
     @helper.form(action = routes.Organizations.createPost) {
