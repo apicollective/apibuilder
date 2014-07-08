@@ -60,6 +60,11 @@ object Organizations extends Controller {
   def requestMembership(orgKey: String) = Authenticated.async { implicit request =>
     for {
       orgResponse <- request.api.Organizations.get(key = Some(orgKey))
+      membershipsResponse <- request.api.Memberships.get(
+        orgKey = Some(orgKey),
+        userGuid = Some(request.user.guid),
+        role = Some(Role.Member.key)
+      )
       membershipRequestResponse <- request.api.MembershipRequests.get(
         orgKey = Some(orgKey),
         userGuid = Some(request.user.guid),
@@ -75,12 +80,14 @@ object Organizations extends Controller {
           Redirect("/").flashing("warning" -> s"Organization $orgKey not found")
         }
         case Some(org: Organization) => {
+          val isMember = !membershipsResponse.entity.headOption.isEmpty
           val hasMembershipRequest = !membershipRequestResponse.entity.isEmpty
           Ok(views.html.organizations.requestMembership(
             MainTemplate(title = s"Join ${org.name}"),
             org,
             adminsResponse.entity,
-            hasMembershipRequest
+            hasMembershipRequest,
+            isMember
           ))
         }
       }

@@ -73,8 +73,8 @@ object MembershipRequests extends Controller {
   def postAcceptByGuid(guid: UUID) = Authenticated { request =>
     MembershipRequest.findAll(guid = Some(guid.toString), limit = 1).headOption match {
       case None => NotFound
-      case Some(request: MembershipRequest) => {
-        request.accept(request.user)
+      case Some(mr: MembershipRequest) => {
+        mr.accept(request.user)
         NoContent
       }
     }
@@ -83,8 +83,8 @@ object MembershipRequests extends Controller {
   def postDeclineByGuid(guid: UUID) = Authenticated { request =>
     MembershipRequest.findAll(guid = Some(guid.toString), limit = 1).headOption match {
       case None => NotFound
-      case Some(request: MembershipRequest) => {
-        request.decline(request.user)
+      case Some(mr: MembershipRequest) => {
+        mr.decline(request.user)
         NoContent
       }
     }

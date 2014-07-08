@@ -20,9 +20,11 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
         UserDao.findByToken(auth.token) match {
 
           case Some(u: User) => {
+            println("Authorized token: " + u)
             // We have a valid token. Now check for a user guid header
             request.headers.get(UserGuidHeader) match {
               case None => {
+                println(" No x-user-guid header")
                 block(new AuthenticatedRequest(u, request))
               }
 
@@ -32,6 +34,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
                     Future.successful(Unauthorized(s"Invalid $UserGuidHeader[$guid]"))
                   }
                   case Some(userFromHeader: User) => {
+                    println(" found x-user-guid header: " + userFromHeader)
                     block(new AuthenticatedRequest(userFromHeader, request))
                   }
                 }
