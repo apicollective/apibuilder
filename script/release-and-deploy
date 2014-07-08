@@ -84,9 +84,6 @@ services.each do |service|
                :name => "%s ionblaster traffic" % service)
 end
 
-# TODO: Figure out dockerfile:
-# ENTRYPOINT ["/usr/share/apidoc-%s/bin/apidoc-%s"]
-
 puts "Deploy scripts created in %s" % commands.dir
 puts ""
 

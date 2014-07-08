@@ -25,5 +25,3 @@ RUN sbt stage
 
 RUN ln -s /usr/share/apidoc/api/target/universal/stage /usr/share/apidoc-api
 RUN ln -s /usr/share/apidoc/www/target/universal/stage /usr/share/apidoc-www
-
-ENTRYPOINT ["/usr/share/apidoc-api/bin/apidoc-api"]
