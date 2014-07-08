@@ -70,14 +70,14 @@ end
 commands.add("DOCKER_HOST=#{DOCKER_HOST} docker login --email=#{Deployer::Util.env('DOCKER_INDEX_EMAIL')} --username #{Deployer::Util.env('DOCKER_INDEX_USERNAME')} --password #{Deployer::Util.env('DOCKER_INDEX_PASSWORD')}",
              :name => "docker login")
 
+docker_image_tag = "%s/%s:%s" % [Deployer::Util.env('DOCKER_INDEX_USERNAME'), project_name, tag]
+
+commands.add("DOCKER_HOST=#{DOCKER_HOST} docker build -t #{docker_image_tag} .",
+             :name => "docker build")
+commands.add("DOCKER_HOST=#{DOCKER_HOST} docker push #{docker_image_tag}",
+             :name => "docker push")
+
 services.each do |service|
-  docker_image_tag = "%s/%s-%s:%s" % [Deployer::Util.env('DOCKER_INDEX_USERNAME'), project_name, service, tag]
-
-  commands.add("DOCKER_HOST=#{DOCKER_HOST} docker build -t #{docker_image_tag} .",
-               :name => "docker build")
-  commands.add("DOCKER_HOST=#{DOCKER_HOST} docker push #{docker_image_tag}",
-               :name => "docker push")
-
   commands.add("ionblaster new #{service} #{tag}",
                :name => "%s ionblaster new stack" % service)
   commands.add("ionblaster traffic #{service} #{tag} 100",
