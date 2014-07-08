@@ -91,7 +91,7 @@ object Operation {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
-      if (internal.namedParameters.contains(p.name.get)) {
+      if (internal.namedPathParameters.contains(p.name.get)) {
         Parameter(models, p, ParameterLocation.Path)
       } else {
         Parameter(models, p, location)
@@ -100,7 +100,7 @@ object Operation {
     val internalParamNames: Set[String] = internalParams.map(_.name).toSet
 
     // Capture any path parameters that were not explicitly annotated
-    val pathParameters = internal.namedParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(model, _) }
+    val pathParameters = internal.namedPathParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(model, _) }
 
     Operation(model = model,
               method = method,
