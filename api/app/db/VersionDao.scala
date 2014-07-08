@@ -67,6 +67,18 @@ object VersionDao {
     }
   }
 
+  def findVersion(user: User, orgKey: String, serviceKey: String, version: String): Option[Version] = {
+    OrganizationDao.findByUserAndKey(user, orgKey).flatMap { org =>
+      ServiceDao.findByOrganizationAndKey(org, serviceKey).flatMap { service =>
+        if (version == "latest") {
+          VersionDao.findAll(service_guid = Some(service.guid), limit = 1).headOption
+        } else {
+          VersionDao.findByServiceAndVersion(service, version)
+        }
+      }
+    }
+  }
+
   def findByServiceAndVersion(service: Service, version: String): Option[Version] = {
     VersionDao.findAll(service_guid = Some(service.guid),
                        version = Some(version),

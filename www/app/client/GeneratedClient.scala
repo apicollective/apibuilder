@@ -323,17 +323,25 @@ package apidoc {
       /**
        * Generate code for a specific version of a service.
        */
-      def getByVersionGuidAndTargetName(
-        versionGuid: java.util.UUID,
+      def getByOrgKeyAndServiceKeyAndVersionAndTargetName(
+        orgKey: String,
+        serviceKey: String,
+        version: String,
         targetName: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Code]] = {
         val queryBuilder = List.newBuilder[(String, String)]
         
         
-        GET(s"/code/${({x: java.util.UUID =>
-          val s = x.toString
+        GET(s"/code/${({x: String =>
+          val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
-        })(versionGuid)}/${({x: String =>
+        })(orgKey)}/${({x: String =>
+          val s = x
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(serviceKey)}/${({x: String =>
+          val s = x
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(version)}/${({x: String =>
           val s = x
           java.net.URLEncoder.encode(s, "UTF-8")
         })(targetName)}", queryBuilder.result).map {

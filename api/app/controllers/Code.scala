@@ -22,15 +22,15 @@ object Code extends Controller {
 
   }
 
-  def getByVersionGuidAndTargetName(versionGuid: UUID, target: String) = Action { request =>
-    VersionDao.findAll(guid = Some(versionGuid.toString)).headOption match {
+  def getByOrgKeyAndServiceKeyAndVersionAndTargetName(orgKey: String, serviceKey: String, version: String, targetName: String) = Authenticated { request =>
+    VersionDao.findVersion(request.user, orgKey, serviceKey, version) match {
+
       case None => NotFound
 
       case Some(v: Version) => {
-        generator(target) match {
+        generator(targetName) match {
           case None => {
-            val error = Validation.error(s"Invalid target[$target]. Must be one of: ${Target.implemented.mkString(" ")}")
-            Conflict(Json.toJson(error))
+            Conflict(Json.toJson(Validation.error(s"Invalid target[$targetName]. Must be one of: ${Target.implemented.mkString(" ")}")))
           }
 
           case Some(generator) => {
@@ -49,4 +49,5 @@ object Code extends Controller {
       }
     }
   }
+
 }

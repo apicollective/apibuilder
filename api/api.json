@@ -310,14 +310,17 @@
         },
 
         "code": {
+	    "path": "/:orgKey/:serviceKey/:version/:targetName",
+
             "operations": [
                 {
                     "method": "GET",
                     "description": "Generate code for a specific version of a service.",
-                    "path": "/:versionGuid/:targetName",
                     "parameters": [
-                        { "name": "versionGuid", "type": "uuid" },
-			{ "name": "targetName", "type": "string", "description": "The target for the code generation", "example": "play-2.3-client" }
+                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" },
+                        { "name": "serviceKey", "type": "string", "description": "The service key for which to search versions" },
+                        { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
+			{ "name": "targetName", "type": "string", "description": "The target for the code generation", "values": ["ruby-client", "play-2.3-routes", "play-2.3-client", "play-2.3-json", "scalacheck-generators", "scala-models"] }
 		    ],
                     "responses": {
                         "200": { "type": "code" },
