@@ -11,10 +11,24 @@ object Organization {
   implicit val organizationWrites = Json.writes[Organization]
 }
 
-case class Organization(guid: String, name: String, key: String)
+case class Organization(guid: String, name: String, key: String) {
+
+  // temporary as we roll out authentication
+  val emailDomain: Option[String] = {
+    if (key == OrganizationDao.GiltKey) {
+      Some(OrganizationDao.GiltComDomain)
+    } else {
+      None
+    }
+  }
+
+}
 
 
 object OrganizationDao {
+
+  private[db] val GiltComDomain = "gilt.com"
+  private[db] val GiltKey = "gilt"
 
   private val BaseQuery = """
     select guid::varchar, name, key
@@ -31,6 +45,25 @@ object OrganizationDao {
       Membership.upsert(user, org, user, Role.Admin)
       OrganizationLog.create(user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
+    }
+  }
+
+  private[db] def emailDomain(email: String): Option[String] = {
+    val parts = email.split("@")
+    if (parts.length == 2) {
+      Some(parts(1).toLowerCase)
+    } else {
+      None
+    }
+  }
+
+  private[db] def findByEmailDomain(email: String): Option[Organization] = {
+    emailDomain(email).flatMap { domain =>
+      if (domain == GiltComDomain) {
+        findAll(key = Some(GiltKey), limit = 1).headOption
+      } else {
+        None
+      }
     }
   }
 

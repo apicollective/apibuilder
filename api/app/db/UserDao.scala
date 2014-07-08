@@ -1,6 +1,7 @@
 package db
 
 import lib.Constants
+import core.Role
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -62,9 +63,15 @@ object UserDao {
       UserPasswordDao.doCreate(c, guid, guid, form.password)
     }
 
-    findByGuid(guid).getOrElse {
+    val user = findByGuid(guid).getOrElse {
       sys.error("Failed to create user")
     }
+
+    OrganizationDao.findByEmailDomain(form.email).foreach { org =>
+      Membership.create(user, org, user, Role.Member)
+    }
+
+    user
   }
 
   def findByToken(token: String): Option[User] = {

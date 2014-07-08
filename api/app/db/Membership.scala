@@ -55,7 +55,7 @@ object Membership {
     membership
   }
 
-  private def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on('guid -> guid,
