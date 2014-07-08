@@ -55,6 +55,9 @@ else
 end
 
 services = ARGV.dup
+if services.length != 1
+  raise "Can currently only specify one service"
+end
 
 project_name = `pwd`.strip.split("/").last
 
@@ -70,7 +73,7 @@ end
 commands.add("DOCKER_HOST=#{DOCKER_HOST} docker login --email=#{Deployer::Util.env('DOCKER_INDEX_EMAIL')} --username #{Deployer::Util.env('DOCKER_INDEX_USERNAME')} --password #{Deployer::Util.env('DOCKER_INDEX_PASSWORD')}",
              :name => "docker login")
 
-docker_image_tag = "%s/%s:%s" % [Deployer::Util.env('DOCKER_INDEX_USERNAME'), project_name, tag]
+docker_image_tag = "%s/%s-%s:%s" % [Deployer::Util.env('DOCKER_INDEX_USERNAME'), project_name, services.first, tag]
 
 commands.add("DOCKER_HOST=#{DOCKER_HOST} docker build -t #{docker_image_tag} .",
              :name => "docker build")
