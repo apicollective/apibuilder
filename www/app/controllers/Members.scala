@@ -15,7 +15,7 @@ object Members extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, page: Int = 0) = Authenticated.async { implicit request =>
+  def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
     for {
       org <- request.api.Organizations.get(key = Some(orgKey))
       members <- request.api.Memberships.get(orgKey = Some(orgKey),
@@ -39,7 +39,9 @@ object Members extends Controller {
     }
   }
 
-  def add(orgKey: String) = Authenticated.async { implicit request =>
+  def add(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+    require(request.isAdmin, "You are not an administrator")
+
     for {
       orgOption <- request.api.Organizations.get(key = Some(orgKey))
     } yield {
@@ -53,7 +55,9 @@ object Members extends Controller {
     }
   }
 
-  def addPost(orgKey: String) = Authenticated.async { implicit request =>
+  def addPost(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+    require(request.isAdmin, "You are not an administrator")
+
     for {
       orgOption <- request.api.Organizations.get(key = Some(orgKey))
     } yield {

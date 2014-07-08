@@ -18,7 +18,7 @@ object Versions extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
+  def show(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
     val future = for {
       org <- request.api.Organizations.get(key = Some(orgKey))
       serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
@@ -54,7 +54,7 @@ object Versions extends Controller {
     }
   }
 
-  def apiJson(orgKey: String, serviceKey: String, versionName: String) = Authenticated.async { implicit request =>
+  def apiJson(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
     val future = for {
       versionResponse <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
     } yield {
@@ -73,7 +73,7 @@ object Versions extends Controller {
   }
 
 
-  def create(orgKey: String, version: Option[String]) = Authenticated.async { implicit request =>
+  def create(orgKey: String, version: Option[String]) = AuthenticatedOrg.async { implicit request =>
     for {
       org <- request.api.Organizations.get(key = Some(orgKey))
     } yield {
@@ -90,7 +90,7 @@ object Versions extends Controller {
     }
   }
 
-  def createPost(orgKey: String) = Authenticated.async(parse.multipartFormData) { implicit request =>
+  def createPost(orgKey: String) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
     for {
       orgOption <- request.api.Organizations.get(key = Some(orgKey))
     } yield {
