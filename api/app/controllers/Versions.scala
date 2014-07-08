@@ -42,8 +42,6 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            println(form)
-
             val validator = ServiceDescriptionValidator(form.json)
 
             if (validator.isValid) {
