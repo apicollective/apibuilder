@@ -67,8 +67,7 @@ object OrganizationDao {
   }
 
   def findByUserAndKey(user: User, orgKey: String): Option[Organization] = {
-    // TODO: User authorization
-    OrganizationDao.findAll(key = Some(orgKey), limit = 1).headOption
+    OrganizationDao.findAll(userGuid = Some(user.guid), key = Some(orgKey), limit = 1).headOption
   }
 
   def findAll(guid: Option[String] = None,
