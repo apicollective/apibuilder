@@ -10,18 +10,8 @@ import java.util.UUID
 
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
-  private def configValue(name: String): String = {
-    current.configuration.getString(name).getOrElse {
-      sys.error(s"Configuration parameter named[$name] is required")
-    }
-  }
+  lazy val api = Authenticated.api
 
-  lazy val api = new apidoc.Client(configValue("apidoc.url"), Some(configValue("apidoc.token"))) {
-    override def requestHolder(path: String) = {
-      println("T: " + configValue("apidoc.token"))
-      super.requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
-    }
-  }
 }
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
