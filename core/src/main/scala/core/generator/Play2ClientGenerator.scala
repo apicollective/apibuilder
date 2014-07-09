@@ -60,25 +60,19 @@ s"""package ${ssd.packageName} {
       import play.api.Play.current
 
       val holder = play.api.libs.ws.WS.url(apiUrl + path)
-      apiToken match {
-        case None => holder
-        case Some(token: String) => {
-          holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
-        }
+      apiToken.fold(holder) { token =>
+        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
     }
 
     def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
-      val q = req.queryString.flatMap { case (name, values) =>
-        values.map(name -> _).map { case (name, value) =>
-          s"$$name=$$value"
-        }
-      }.mkString("&")
-      val url = s"$${req.url}?$$q"
-      apiToken.map { _ =>
+      val queryComponents = for {
+        (name, values) <- req.queryString
+        value <- values
+      } yield name -> value
+      val url = s"$${req.url}$${queryComponents.mkString("?", "&", "")}"
+      apiToken.fold(logger.info(s"curl -X $$method $$url")) { _ =>
         logger.info(s"curl -X $$method -u '[REDACTED]:' $$url")
-      }.getOrElse {
-        logger.info(s"curl -X $$method $$url")
       }
       req
     }
