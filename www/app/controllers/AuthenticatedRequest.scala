@@ -18,6 +18,7 @@ class AuthenticatedRequest[A](val user: User, request: Request[A]) extends Wrapp
 
   lazy val api = new apidoc.Client(configValue("apidoc.url"), Some(configValue("apidoc.token"))) {
     override def requestHolder(path: String) = {
+      println("T: " + configValue("apidoc.token"))
       super.requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
     }
   }
