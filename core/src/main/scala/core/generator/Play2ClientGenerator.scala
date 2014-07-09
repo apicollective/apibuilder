@@ -48,7 +48,7 @@ s"""package ${ssd.packageName} {
     val errors: Seq[Error] = response.json.as[scala.collection.Seq[Error]]
   }
 
-  class Client(apiUrl: String, apiToken: Option[String] = None) {
+  class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import ${ssd.packageName}.models._
     import ${ssd.packageName}.models.json._
 
@@ -163,10 +163,14 @@ PATCH($path, payload)"""
         op.responses.map { response =>
           if (response.isSuccess) {
             if (response.isOption) {
-              s"case r if r.status == ${response.code} => Some(r.json.as[${response.scalaType}])"
+              if (response.scalaType == "Unit") {
+                s"case r if r.status == ${response.code} => Some(Unit)"
+              } else {
+                s"case r if r.status == ${response.code} => Some(r.json.as[${response.scalaType}])"
+              }
 
             } else if (response.isMultiple) {
-              s"case r if r.status == ${response.code} => r.json.as[Seq[${response.scalaType}]]"
+              s"case r if r.status == ${response.code} => r.json.as[scala.collection.Seq[${response.scalaType}]]"
 
             } else {
               s"case r if r.status == ${response.code} => r.json.as[${response.scalaType}]"
