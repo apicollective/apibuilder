@@ -2,7 +2,7 @@
   organizations: lib.PaginatedCollection[apidoc.models.Organization],
   membershipRequests: lib.PaginatedCollection[apidoc.models.MembershipRequest])(implicit flash: Flash)
 
-@main(models.MainTemplate(user = Some(user), title = "Organizations")) {
+@main(models.MainTemplate(user = Some(user), title = "Organizations - Hello from Dublin Docker Meetup!")) {
 
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.create">Add organization</a>
