@@ -153,20 +153,32 @@ PATCH($path, payload)"""
 
         case _ => throw new UnsupportedOperationException(s"Attempt to use operation with unsupported type: ${op.method}")
       }
+
+      // TODO: Inject a 404 response if this operation returns an option
+      val hasOptionResult = op.responses.find { _.isOption } match {
+        case None => ""
+        case Some(r) => s"\ncase r if r.status == 404 => None"
+      }
       val matchResponse: String = {
         op.responses.map { response =>
-          val tpe = response.resultType
-          val code = response.code
-          val entity = if (tpe == "Unit") "()" else s"r.json.as[$tpe]"
           if (response.isSuccess) {
-            s"case r if r.status == $code => $entity"
+            if (response.isOption) {
+              s"case r if r.status == ${response.code} => Some(r.json.as[${response.scalaType}])"
+
+            } else if (response.isMultiple) {
+              s"case r if r.status == ${response.code} => r.json.as[Seq[${response.scalaType}]]"
+
+            } else {
+              s"case r if r.status == ${response.code} => r.json.as[${response.scalaType}]"
+            }
+
           } else if (response.isNotFound && response.isOption) {
-            s"case r if r.status == $code => None"
+            // will be added later
           } else {
-            s"case r if r.status == $code => throw new ErrorResponse(r)"
+            s"case r if r.status == ${response.code} => throw new ErrorResponse(r)"
           }
         }.mkString("\n")
-      } + "case r => throw new FailedResponse(r)\n"
+      } + hasOptionResult + "\ncase r => throw new FailedResponse(r)\n"
 
       ClientMethod(
         name = op.name,

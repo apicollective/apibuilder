@@ -98,32 +98,32 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 
-  val responses: List[ScalaResponse] = {
-    operation.responses.toList.map { new ScalaResponse(method, _) }
+  val responses: Seq[ScalaResponse] = {
+    operation.responses.toList.map { new ScalaResponse(method, _) } 
   }
 
-  lazy val resultType = responses.collectFirst {
-    case r if r.isSuccess => r.resultType
-  }.getOrElse("Unit")
+  lazy val resultType = responses.find(_.isSuccess).map(_.resultType).getOrElse("Unit")
+
 }
 
 class ScalaResponse(method: String, response: Response) {
 
   val code = response.code
+  val scalaType: String = underscoreToInitCap(response.datatype)
 
-  val isOption = !response.multiple && !GeneratorUtil.isJsonDocumentMethod(method)
+  val isMultiple = response.multiple
+  val isOption = !isMultiple && !GeneratorUtil.isJsonDocumentMethod(method)
 
   val isSuccess = code >= 200 && code < 300
   val isNotFound = code == 404
 
   val resultType: String = {
-    val scalaName: String = underscoreToInitCap(response.datatype)
     if (response.multiple) {
-      s"scala.collection.Seq[${scalaName}]"
+      s"scala.collection.Seq[${scalaType}]"
     } else if (isOption) {
-      s"Option[$scalaName]"
+      s"Option[$scalaType]"
     } else {
-      scalaName
+      scalaType
     }
   }
 
