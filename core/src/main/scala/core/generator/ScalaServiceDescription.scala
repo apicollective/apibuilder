@@ -99,29 +99,34 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 
   val responses: List[ScalaResponse] = {
-    operation.responses.toList.map { new ScalaResponse(_) }
+    operation.responses.toList.map { new ScalaResponse(method, _) }
   }
 
   lazy val resultType = responses.collectFirst {
-    case r if r.isSuccess => r.datatype
+    case r if r.isSuccess => r.resultType
   }.getOrElse("Unit")
 }
 
-class ScalaResponse(response: Response) {
-  def code = response.code
+class ScalaResponse(method: String, response: Response) {
 
-  def isSuccess = code >= 200 && code < 300
+  val code = response.code
 
-  def datatype = {
+  val isOption = !response.multiple && !GeneratorUtil.isJsonDocumentMethod(method)
+
+  val isSuccess = code >= 200 && code < 300
+  val isNotFound = code == 404
+
+  val resultType: String = {
     val scalaName: String = underscoreToInitCap(response.datatype)
     if (response.multiple) {
       s"scala.collection.Seq[${scalaName}]"
+    } else if (isOption) {
+      s"Option[$scalaName]"
     } else {
       scalaName
     }
   }
 
-  def returndoc: String = s"($code, $datatype)"
 }
 
 class ScalaField(modelName: String, field: Field) {
