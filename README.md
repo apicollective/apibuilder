@@ -58,5 +58,8 @@ in situ for a nice development experience.
 Releasing code
 ==============
 
-    /web/metadata-architecture/exec /web/svc-iris-hub/script/release-and-deploy [--tag x.y.z] api www
+Install ionblaster:
+  curl -s https://s3.amazonaws.com/ionblaster/install | sh
 
+Release to ec2:
+  /web/metadata-architecture/exec script/release-and-deploy [--tag x.y.z] api www
