@@ -1,9 +1,10 @@
-@(form: Form[controllers.Organizations.OrgData],
+@(tpl: models.MainTemplate,
+  form: Form[controllers.Organizations.OrgData],
   errorMessage: Option[String] = None,
   existingOrg: Option[apidoc.models.Organization] = None
 )(implicit flash: Flash)
 
-@main(models.MainTemplate(title = "Add Organization")) {
+@main(tpl) {
   <div class="container">
 
     @errorMessage.map { msg =>

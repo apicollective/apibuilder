@@ -30,9 +30,12 @@ object Organizations extends Controller {
         false
       }
 
-      Ok(views.html.organizations.show(MainTemplate(title = request.org.name,
-        org = Some(request.org),
-        user = Some(request.user)),
+      Ok(views.html.organizations.show(
+        MainTemplate(
+          user = Some(request.user),
+          title = request.org.name,
+          org = Some(request.org)
+        ),
         services = PaginatedCollection(page, services.entity),
         haveRequests = haveRequests)
       )
@@ -48,9 +51,9 @@ object Organizations extends Controller {
       // TODO: Make sure user is an admin
       Ok(views.html.organizations.membershipRequests(
         MainTemplate(
+          user = Some(request.user),
           title = request.org.name,
-          org = Some(request.org),
-          user = Some(request.user)
+          org = Some(request.org)
         ),
         requests = PaginatedCollection(page, requests.entity))
       )
@@ -83,7 +86,10 @@ object Organizations extends Controller {
           val isMember = !membershipsResponse.entity.headOption.isEmpty
           val hasMembershipRequest = !membershipRequestResponse.entity.isEmpty
           Ok(views.html.organizations.requestMembership(
-            MainTemplate(title = s"Join ${org.name}"),
+            MainTemplate(
+              user = Some(request.user),
+              title = s"Join ${org.name}"
+            ),
             org,
             adminsResponse.entity,
             hasMembershipRequest,
@@ -113,7 +119,13 @@ object Organizations extends Controller {
   }
 
   def create() = Authenticated { implicit request =>
-    Ok(views.html.organizations.form(orgForm))
+    Ok(views.html.organizations.form(
+      models.MainTemplate(
+        user = Some(request.user),
+        title = "Add Organization"
+      ),
+      orgForm
+    ))
   }
 
   def createPost = Authenticated.async { implicit request =>
@@ -121,7 +133,13 @@ object Organizations extends Controller {
     form.fold (
 
       errors => Future {
-        Ok(views.html.organizations.form(errors))
+        Ok(views.html.organizations.form(
+          models.MainTemplate(
+            user = Some(request.user),
+            title = "Add Organization"
+          ),
+          errors
+        ))
       },
 
       valid => {
@@ -130,8 +148,18 @@ object Organizations extends Controller {
         }.recover {
           case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
             val existingOrg = Await.result(request.api.Organizations.get(name = Some(valid.name)), 1000.millis).entity.headOption
-            val tpl = MainTemplate(user = Some(request.user), title = s"Create Organization")
-            Ok(views.html.organizations.form(form, Some(errors.map(_.message).mkString(", ")), existingOrg))
+            val tpl = MainTemplate(
+              user = Some(request.user),
+              title = s"Create Organization"
+            )
+            Ok(views.html.organizations.form(
+              models.MainTemplate(
+                user = Some(request.user),
+                title = "Add Organization"
+              ),
+              form,
+              Some(errors.map(_.message).mkString(", ")), existingOrg)
+            )
           }
         }
       }

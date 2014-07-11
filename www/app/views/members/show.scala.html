@@ -1,5 +1,7 @@
 @(tpl: models.MainTemplate,
-  members: lib.PaginatedCollection[apidoc.models.Membership])(implicit flash: Flash)
+  members: lib.PaginatedCollection[apidoc.models.Membership],
+  isAdmin: Boolean
+)(implicit flash: Flash)
 
 @main(tpl) {
 
@@ -18,6 +20,16 @@
            <td>@member.role</td>
            <td>@member.user.email</td>
            <td>@member.user.name</td>
+           @if(isAdmin) {
+             <td>
+               @if(member.role == core.Role.Member.key) {
+                 <a class="postForm" href="@routes.Members.postMakeAdmin(tpl.org.get.key, member.guid)">Make admin</a>
+               } else {
+                 <a class="postForm" href="@routes.Members.postRevokeAdmin(tpl.org.get.key, member.guid)">Revoke admin</a>
+               }
+               | <a href="@routes.Members.postRemove(tpl.org.get.key, member.guid)" class="delete" data-confirm="Are you sure?">Remove</a>
+             </td>
+           }
          </tr>
        }
       </tbody>

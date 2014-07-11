@@ -222,6 +222,19 @@
                     "responses": {
                         "200": { "type": "[membership]" }
                     }
+                },
+
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+		    "responses": {
+			"200": { "type": "membership" }
+		    }
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/:guid"
                 }
             ]
         },

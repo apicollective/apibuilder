@@ -22,11 +22,11 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
+  val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
     sys.error("apidoc.url is required")
   }
 
-  private val apiToken = current.configuration.getString("apidoc.token").getOrElse {
+  val apiToken = current.configuration.getString("apidoc.token").getOrElse {
     sys.error("apidoc.token is required")
   }
 

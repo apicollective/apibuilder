@@ -17,4 +17,32 @@ object Memberships extends Controller {
     Ok(Json.toJson(memberships))
   }
 
+  def getByGuid(guid: java.util.UUID) = Authenticated { request =>
+    Membership.findAll(guid = Some(guid.toString), limit = 1).headOption match {
+      case None => NotFound
+      case Some(membership) => {
+        if (Membership.isUserAdmin(request.user, membership.organization)) {
+          Ok(Json.toJson(membership))
+        } else {
+          Unauthorized
+        }
+      }
+    }
+  }
+
+  def deleteByGuid(guid: java.util.UUID) = Authenticated { request =>
+    val membership = Membership.findAll(guid = Some(guid.toString), limit = 1).headOption
+
+    println("Membership: " + membership)
+    println("user: " + request.user)
+    println("org: " + membership.map(_.organization))
+
+    if (membership.isEmpty || Membership.isUserAdmin(request.user, membership.get.organization)) {
+      membership.map { m => Membership.softDelete(request.user, m) }
+      NoContent
+    } else {
+      Unauthorized
+    }
+  }
+
 }
