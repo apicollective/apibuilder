@@ -1,7 +1,9 @@
 package db
 
+
 import core.{ Role, UrlKey }
 import anorm._
+import lib.{ Validation, ValidationError }
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -27,6 +29,8 @@ case class Organization(guid: String, name: String, key: String) {
 
 object OrganizationDao {
 
+  val MinNameLength = 4
+
   private[db] val GiltComDomain = "gilt.com"
   private[db] val GiltKey = "gilt"
 
@@ -35,6 +39,17 @@ object OrganizationDao {
       from organizations
      where deleted_at is null
   """
+
+  def validate(name: String): Seq[ValidationError] = {
+    if (name.length < MinNameLength) {
+      Validation.error(s"name must be at least $MinNameLength characters")
+    } else {
+      OrganizationDao.findAll(name = Some(name), limit = 1).headOption match {
+        case None => Seq.empty
+        case Some(org: Organization) => Validation.error("Org with this name already exists")
+      }
+    }
+  }
 
   /**
    * Creates the org and assigns the user as its administrator.
@@ -68,6 +83,8 @@ object OrganizationDao {
   }
 
   private def create(createdBy: User, name: String): Organization = {
+    require(name.length >= MinNameLength, "Name too short")
+
     val org = Organization(guid = UUID.randomUUID.toString,
                            key = UrlKey.generate(name),
                            name = name)

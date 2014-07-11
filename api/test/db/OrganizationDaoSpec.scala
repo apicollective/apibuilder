@@ -28,4 +28,19 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     assertEquals(OrganizationDao.findAll(key = Some(Util.gilt.key)).head.key, Util.gilt.key)
   }
 
+  describe("validates name") {
+
+    it("validates") {
+      OrganizationDao.validate("this is a long name") should be(Seq.empty)
+      OrganizationDao.validate("a").head.message should be("name must be at least 4 characters")
+    }
+
+    it("raises error if you try to create an org with a short name") {
+      intercept[java.lang.IllegalArgumentException] {
+        OrganizationDao.createWithAdministrator(Util.createdBy, "a")
+      }.getMessage should be("requirement failed: Name too short")
+    }
+
+  }
+
 }

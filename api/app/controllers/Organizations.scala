@@ -25,15 +25,12 @@ object Organizations extends Controller {
       }
 
       case Some(name: String) => {
-        OrganizationDao.findAll(name = Some(name), limit = 1).headOption match {
-          case None => {
-            val org = OrganizationDao.createWithAdministrator(request.user, name)
-            Ok(Json.toJson(org))
-          }
-
-          case Some(org: Organization) => {
-            Conflict(Json.toJson(Validation.error("Org with this name already exists")))
-          }
+        val errors = OrganizationDao.validate(name)
+        if (errors.isEmpty) {
+          val org = OrganizationDao.createWithAdministrator(request.user, name)
+          Ok(Json.toJson(org))
+        } else {
+          Conflict(Json.toJson(errors))
         }
       }
     }
