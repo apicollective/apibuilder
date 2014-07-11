@@ -33,10 +33,6 @@ object Memberships extends Controller {
   def deleteByGuid(guid: java.util.UUID) = Authenticated { request =>
     val membership = Membership.findAll(guid = Some(guid.toString), limit = 1).headOption
 
-    println("Membership: " + membership)
-    println("user: " + request.user)
-    println("org: " + membership.map(_.organization))
-
     if (membership.isEmpty || Membership.isUserAdmin(request.user, membership.get.organization)) {
       membership.map { m => Membership.softDelete(request.user, m) }
       NoContent
