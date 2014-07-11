@@ -96,11 +96,62 @@ object Members extends Controller {
   }
 
   def postRevokeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
-    sys.error("TODO")
+    for {
+      membership <- request.api.Memberships.getByGuid(guid)
+      memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.entity.user.guid))
+    } yield {
+      memberships.entity.find(_.role == Role.Member.key) match {
+        case None => createMembership(request.api, request.org, membership.entity.user.guid, Role.Member)
+        case Some(m) => {}
+      }
+
+      memberships.entity.find(_.role == Role.Admin.key) match {
+        case None => {}
+        case Some(membership) => {
+          Await.result(
+            request.api.Memberships.deleteByGuid(membership.guid),
+            1500.millis
+          )
+        }
+      }
+
+      Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"Member's admin access has been revoked")
+    }
   }
 
   def postMakeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
-    sys.error("TODO")
+    for {
+      membership <- request.api.Memberships.getByGuid(guid)
+      memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.entity.user.guid))
+    } yield {
+      memberships.entity.find(_.role == Role.Admin.key) match {
+        case None => createMembership(request.api, request.org, membership.entity.user.guid, Role.Admin)
+        case Some(m) => {}
+      }
+
+      memberships.entity.find(_.role == Role.Member.key) match {
+        case None => {}
+        case Some(membership) => {
+          Await.result(
+            request.api.Memberships.deleteByGuid(membership.guid),
+            1500.millis
+          )
+        }
+      }
+
+      Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"Member granted admin access")
+    }
+  }
+
+  private def createMembership(api: apidoc.Client, org: Organization, userGuid: UUID, role: Role) {
+    val membershipRequest = Await.result(
+      api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role.key),
+      1500.millis
+    )
+    Await.result(
+      api.MembershipRequests.postAcceptByGuid(membershipRequest.entity.guid),
+      1500.millis
+    )
   }
 
   case class AddMemberData(role: String, email: String)

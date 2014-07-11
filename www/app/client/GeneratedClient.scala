@@ -554,6 +554,21 @@ package apidoc {
         }
       }
       
+      def getByGuid(
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Membership]] = {
+        val queryBuilder = List.newBuilder[(String, String)]
+        
+        
+        GET(s"/memberships/${({x: java.util.UUID =>
+          val s = x.toString
+          java.net.URLEncoder.encode(s, "UTF-8")
+        })(guid)}", queryBuilder.result).map {
+          case r if r.status == 200 => new ResponseImpl(r.json.as[Membership], 200)
+          case r => throw new FailedResponse(r.body, r.status)
+        }
+      }
+      
       def deleteByGuid(
         guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Unit]] = {
