@@ -10,7 +10,11 @@ import java.util.UUID
 
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
-  lazy val api = Authenticated.api
+  lazy val api = new apidoc.Client(Authenticated.apiUrl, Some(Authenticated.apiToken)) {
+    override def requestHolder(path: String) = {
+      super.requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
+    }
+  }
 
 }
 
