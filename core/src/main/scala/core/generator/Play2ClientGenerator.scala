@@ -20,24 +20,13 @@ ${client(ssd)}"""
   private[generator] def errorTypeClass(response: ScalaResponse): String = {
     require(!response.isSuccess)
 
-    val underscore = Text.camelCaseToUnderscore(response.scalaType)
-    val label = if (response.isMultiple) {
-      Text.snakeToCamelCase(Text.pluralize(underscore.toLowerCase))
-    } else {
-      Text.snakeToCamelCase(underscore)
-    }
-    val labelInitCap = Text.initCap(label)
-
-    val result = Seq(
-      s"case class ${labelInitCap}Response(response: play.api.libs.ws.Response) extends Exception {",
+    Seq(
+      s"case class ${response.errorClassName}(response: play.api.libs.ws.Response) extends Exception {",
       "",
-      s"  lazy val $label: ${response.resultType} = response.json.as[${response.resultType}]",
+      s"  lazy val ${response.errorVariableName} = response.json.as[${response.resultType}]",
       "",
       "}"
     ).mkString("\n")
-
-    println(result)
-    result
   }
 
   private def errors(ssd: ScalaServiceDescription): Option[String] = {
@@ -132,15 +121,15 @@ ${modelClients(ssd).indent(4)}
     val grouped = ssd.resources.groupBy(_.model.plural)
     grouped.toSeq.sortBy(_._1).map { case (plural, resources) =>
       s"  trait $plural {\n" +
-      clientMethods(resources).map(_.interface).mkString("\n\n").indent(4) +
+      clientMethods(ssd, resources).map(_.interface).mkString("\n\n").indent(4) +
       "  }\n\n" +
       s"  object $plural extends $plural {\n" +
-      clientMethods(resources).map(_.code).mkString("\n\n").indent(4) +
-      "  }"
+      clientMethods(ssd, resources).map(_.code).mkString("\n\n").indent(4) +
+      "\n  }"
     }.mkString("\n\n")
   }
 
-  private def clientMethods(resources: Seq[ScalaResource]): Seq[ClientMethod] = {
+  private def clientMethods(ssd: ScalaServiceDescription, resources: Seq[ScalaResource]): Seq[ClientMethod] = {
     resources.flatMap(_.operations).map { op =>
       val path: String = Play2Util.pathParams(op)
       def payload = Play2Util.formParams(op)
@@ -186,20 +175,20 @@ PATCH($path, payload)"""
               if (response.scalaType == "Unit") {
                 s"case r if r.status == ${response.code} => Some(Unit)"
               } else {
-                s"case r if r.status == ${response.code} => Some(r.json.as[${response.scalaType}])"
+                s"case r if r.status == ${response.code} => Some(r.json.as[${response.qualifiedScalaType}])"
               }
 
             } else if (response.isMultiple) {
-              s"case r if r.status == ${response.code} => r.json.as[scala.collection.Seq[${response.scalaType}]]"
+              s"case r if r.status == ${response.code} => r.json.as[scala.collection.Seq[${response.qualifiedScalaType}]]"
 
             } else {
-              s"case r if r.status == ${response.code} => r.json.as[${response.scalaType}]"
+              s"case r if r.status == ${response.code} => r.json.as[${response.qualifiedScalaType}]"
             }
 
           } else if (response.isNotFound && response.isOption) {
             // will be added later
           } else {
-            s"case r if r.status == ${response.code} => throw new ErrorResponse(r)"
+            s"case r if r.status == ${response.code} => throw new ${ssd.packageName}.error.${response.errorClassName}(r)"
           }
         }.mkString("\n")
       } + hasOptionResult + "\ncase r => throw new FailedResponse(r)\n"

@@ -47,9 +47,10 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
 
   val models = serviceDescription.models.map { new ScalaModel(_) }
 
-  val resources = serviceDescription.resources.map { new ScalaResource(_) }
-
   val packageName = ScalaUtil.packageName(serviceDescription.name)
+
+  val resources = serviceDescription.resources.map { new ScalaResource(packageName, _) }
+
 }
 
 class ScalaModel(val model: Model) {
@@ -66,13 +67,13 @@ class ScalaModel(val model: Model) {
 
 }
 
-class ScalaResource(resource: Resource) {
+class ScalaResource(val packageName: String, resource: Resource) {
   val model = new ScalaModel(resource.model)
 
   val path = resource.path
 
-  val operations = resource.operations.map {
-    new ScalaOperation(model, _, this)
+  val operations = resource.operations.map { op =>
+    new ScalaOperation(model, op, this)
   }
 }
 
@@ -99,17 +100,18 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
   val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 
   val responses: Seq[ScalaResponse] = {
-    operation.responses.toList.map { new ScalaResponse(method, _) } 
+    operation.responses.toList.map { new ScalaResponse(resource.packageName, method, _) } 
   }
 
   lazy val resultType = responses.find(_.isSuccess).map(_.resultType).getOrElse("Unit")
 
 }
 
-class ScalaResponse(method: String, response: Response) {
+class ScalaResponse(packageName: String, method: String, response: Response) {
 
   val code = response.code
   val scalaType: String = underscoreToInitCap(response.datatype)
+  val qualifiedScalaType: String = if (scalaType == "Unit") { scalaType } else { packageName + ".models." + scalaType }
 
   val isMultiple = response.multiple
   val isOption = !isMultiple && !GeneratorUtil.isJsonDocumentMethod(method)
@@ -119,13 +121,22 @@ class ScalaResponse(method: String, response: Response) {
 
   val resultType: String = {
     if (response.multiple) {
-      s"scala.collection.Seq[${scalaType}]"
+      s"scala.collection.Seq[${qualifiedScalaType}]"
     } else if (isOption) {
-      s"Option[$scalaType]"
+      s"Option[$qualifiedScalaType]"
     } else {
-      scalaType
+      qualifiedScalaType
     }
   }
+
+  private val underscore = Text.camelCaseToUnderscore(scalaType)
+  val errorVariableName = if (isMultiple) {
+    Text.snakeToCamelCase(Text.pluralize(underscore.toLowerCase))
+  } else {
+    Text.snakeToCamelCase(underscore)
+  }
+
+  val errorClassName = Text.initCap(errorVariableName) + "Response"
 
 }
 

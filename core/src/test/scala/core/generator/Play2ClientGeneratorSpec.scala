@@ -18,7 +18,7 @@ class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
     val target = """
 case class ErrorsResponse(response: play.api.libs.ws.Response) extends Exception {
 
-  lazy val errors: scala.collection.Seq[Error] = response.json.as[scala.collection.Seq[Error]]
+  lazy val errors = response.json.as[scala.collection.Seq[apidoc.models.Error]]
 
 }
 """.trim
