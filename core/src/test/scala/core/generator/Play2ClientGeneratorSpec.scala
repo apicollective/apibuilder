@@ -13,7 +13,6 @@ class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
     val resource = ssd.resources.find(_.model.name == "Organization").get
     val operation = resource.operations.find(_.method == "POST").get
     val errorResponse = operation.responses.find(_.code == 409).get
-    println("errorResponse:" + errorResponse.resultType)
 
     val target = """
 case class ErrorsResponse(response: play.api.libs.ws.Response) extends Exception {
