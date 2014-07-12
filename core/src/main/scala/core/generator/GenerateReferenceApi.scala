@@ -33,7 +33,6 @@ object GenerateReferenceApi extends App {
     "conf/routes"
   )
   genCode(Play2ClientGenerator(json), "app/Play2Client.scala")
-  genCode(ScalaCheckGenerators(json), "test/ScalaCheck.scala")
   genCode(
     RubyGemGenerator(ServiceDescription(json)).generate,
     "ruby/client.rb"

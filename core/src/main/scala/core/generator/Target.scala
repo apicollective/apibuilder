@@ -6,7 +6,6 @@ object Target {
     case "play-2.3-routes" => Play2RouteGenerator.apply
     case "play-2.3-client" => Play2ClientGenerator.apply
     case "play-2.3-json" => Play2Models.apply
-    case "scalacheck-generators" => ScalaCheckGenerators.apply
     case "scala-models" => ScalaCaseClasses.apply
   }
 
@@ -18,8 +17,6 @@ object Target {
     case "play-2.3-client" => "Play Framework 2.3 offers a very rich <a href=\"http://www.playframework.com/documentation/2.2.x/ScalaWS\">WS API</a>. We are exploring the ability to code generate a client library that will integrate natively with the Play WS API to make it simpler to consume api.json web services."
 
     case "play-2.3-json" => "Generate a play 2.3 json (includes the output of Scala Models). No need to use this target if you are already using the Play Client target."
-
-    case "scalacheck-generators" => "Generate scalacheck generators for the API models."
 
     case "scala-models" => "Generate scala models from the API description."
 
@@ -33,7 +30,6 @@ object Target {
     case "play-2.3-routes" => "Alpha"
     case "play-2.3-client" => "Alpha"
     case "play-2.3-json" => "Alpha"
-    case "scalacheck-generators" => "Alpha"
     case "scala-models" => "Alpha"
     case "swagger-json" => "Proposal"
     case "javascript" => "Proposal"
@@ -44,7 +40,6 @@ object Target {
     "play-2.3-routes",
     "play-2.3-client",
     "play-2.3-json",
-    "scalacheck-generators",
     "scala-models",
     "swagger-json",
     "javascript"

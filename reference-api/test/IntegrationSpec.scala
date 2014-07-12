@@ -10,7 +10,6 @@ import java.util.UUID
 import org.specs2._
 import org.specs2.mutable._
 import org.specs2.runner._
-import org.scalacheck._
 import org.junit.runner._
 
 import play.api.test._
@@ -30,7 +29,7 @@ import ch.qos.logback.classic.Level
  * Integration spec for generated clients against the reference API.
  */
 @RunWith(classOf[JUnitRunner])
-class IntegrationSpec extends org.specs2.mutable.Specification with ScalaCheck {
+class IntegrationSpec extends org.specs2.mutable.Specification {
   // This implicit let's you unwrap the Future as is done everywhere in this file
   // I will admit, that I discoverred this by accident, but it's still awesome.
   implicit def result[T](future: Future[T]) = Await.result(future, Duration.Inf)
