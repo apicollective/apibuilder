@@ -59,6 +59,11 @@ ${client(ssd)}"""
       }
     }
 
+    val accessors = ssd.resources.map(_.model.plural).sorted.map { plural =>
+      val methodName = Text.snakeToCamelCase(Text.camelCaseToUnderscore(plural).toLowerCase)
+      s"def ${methodName} = ${plural}"
+    }.mkString("\n\n")
+
 s"""package ${ssd.packageName} {
 
   case class FailedResponse(response: play.api.libs.ws.Response) extends Exception$errorsString
@@ -71,7 +76,9 @@ s"""package ${ssd.packageName} {
 
     logger.info(s"Initializing ${ssd.packageName}.client for url $$apiUrl")
 
-    def requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
+${accessors.indent(4)}
+
+    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
       val holder = play.api.libs.ws.WS.url(apiUrl + path)
@@ -80,7 +87,7 @@ s"""package ${ssd.packageName} {
       }
     }
 
-    def logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
       val queryComponents = for {
         (name, values) <- req.queryString
         value <- values
@@ -93,36 +100,35 @@ s"""package ${ssd.packageName} {
     }
 
     private def POST(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      logRequest("POST", requestHolder(path)).post(data)
+      _logRequest("POST", _requestHolder(path)).post(data)
     }
 
     private def GET(path: String, q: Seq[(String, String)])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      logRequest("GET", requestHolder(path).withQueryString(q:_*)).get()
+      _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
     private def PUT(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      logRequest("PUT", requestHolder(path)).put(data)
+      _logRequest("PUT", _requestHolder(path)).put(data)
     }
 
     private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      logRequest("PATCH", requestHolder(path)).patch(data)
+      _logRequest("PATCH", _requestHolder(path)).patch(data)
     }
 
     private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      logRequest("DELETE", requestHolder(path)).delete()
+      _logRequest("DELETE", _requestHolder(path)).delete()
     }
 
-${modelClients(ssd).indent(4)}
+${modelClients(ssd).indent(2)}
   }
 }"""
   }
 
   private def modelClients(ssd: ScalaServiceDescription): String = {
-    val grouped = ssd.resources.groupBy(_.model.plural)
-    grouped.toSeq.sortBy(_._1).map { case (plural, resources) =>
+    ssd.resources.groupBy(_.model.plural).toSeq.sortBy(_._1).map { case (plural, resources) =>
       s"  trait $plural {\n" +
       clientMethods(ssd, resources).map(_.interface).mkString("\n\n").indent(4) +
-      "  }\n\n" +
+      "\n  }\n\n" +
       s"  object $plural extends $plural {\n" +
       clientMethods(ssd, resources).map(_.code).mkString("\n\n").indent(4) +
       "\n  }"
