@@ -91,7 +91,7 @@ ${builder.indent}(unlift(${name}.unapply))
   def pathParams(op: ScalaOperation): String = {
     val pairs = op.pathParameters.map { p =>
       require(!p.multiple, "Path parameters cannot be lists.")
-      p.originalName -> s"(${PathParamHelper.urlEncode(p.datatype)})(${p.name})"
+      p.originalName -> PathParamHelper.urlEncode(p.name, p.datatype)
     }
     val tmp: String = pairs.foldLeft(op.path) {
       case (path, (name, value)) =>
@@ -120,11 +120,14 @@ ${builder.indent}(unlift(${name}.unapply))
   }
 
   private object PathParamHelper {
-    def urlEncode(d: ScalaDataType): String = {
-      s"""{x: ${d.name} =>
-  val s = ${ScalaDataType.asString("x", d)}
-  java.net.URLEncoder.encode(s, "UTF-8")
-}"""
+    def urlEncode(name: String, d: ScalaDataType): String = {
+      d match {
+        case ScalaStringType => s"""java.net.URLEncoder.encode($name, "UTF-8")"""
+        case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
+        case t => {
+          sys.error("Cannot encode params of type[$t] as path parameters")
+        }
+      }
     }
   }
 
