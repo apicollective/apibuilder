@@ -138,7 +138,7 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
   val errorVariableName = if (isMultiple) {
     Text.snakeToCamelCase(Text.pluralize(underscore.toLowerCase))
   } else {
-    Text.snakeToCamelCase(underscore)
+    Text.snakeToCamelCase(underscore.toLowerCase)
   }
 
   val errorClassName = Text.initCap(errorVariableName) + "Response"
