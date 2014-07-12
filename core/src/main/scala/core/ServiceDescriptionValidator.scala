@@ -360,9 +360,15 @@ case class ServiceDescriptionValidator(apiJson: String) {
         case Some(model: InternalModel) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
             val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.fieldtype.isEmpty).map(f => (f.name.get -> f.fieldtype.get)).toMap
+            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.paramtype.isEmpty).map(p => (p.name.get -> p.paramtype.get)).toMap
 
             op.namedPathParameters.flatMap { name =>
-              val typeName = fieldMap.get(name).getOrElse(Datatype.StringType.name)
+              val typeName = paramMap.get(name).getOrElse {
+                fieldMap.get(name).getOrElse {
+                  Datatype.StringType.name
+                }
+              }
+
               Datatype.findByName(typeName) match {
                 case Some(Datatype.BooleanType) => None
                 case Some(Datatype.DecimalType) => None
