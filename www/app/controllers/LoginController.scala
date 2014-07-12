@@ -27,12 +27,11 @@ object LoginController extends Controller {
       },
 
       validForm => {
-        Authenticated.api.Users.postAuthenticate(email = validForm.email, password = validForm.password).map { r =>
-          val user = r.entity
+        Authenticated.api.Users.postAuthenticate(email = validForm.email, password = validForm.password).map { user =>
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }.recover {
-          case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
-            Ok(views.html.login.index(Tab.Login, form, registerForm, Some(errors.map(_.message).mkString(", "))))
+          case r: apidoc.error.ErrorsResponse => {
+            Ok(views.html.login.index(Tab.Login, form, registerForm, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
       }
@@ -49,12 +48,11 @@ object LoginController extends Controller {
       },
 
       validForm => {
-        Authenticated.api.Users.post(name = validForm.name, email = validForm.email, password = validForm.password).map { r =>
-          val user = r.entity
+        Authenticated.api.Users.post(name = validForm.name, email = validForm.email, password = validForm.password).map { user =>
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }.recover {
-          case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
-            Ok(views.html.login.index(Tab.Register, loginForm, form, Some(errors.map(_.message).mkString(", "))))
+          case r: apidoc.error.ErrorsResponse => {
+            Ok(views.html.login.index(Tab.Register, loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
       }

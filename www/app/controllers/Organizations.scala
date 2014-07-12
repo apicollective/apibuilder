@@ -25,7 +25,7 @@ object Organizations extends Controller {
     } yield {
       val haveRequests = if (request.isAdmin) {
         val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(request.org.guid), limit = Some(1)), 1500.millis)
-        !pendingRequests.entity.isEmpty
+        !pendingRequests.isEmpty
       } else {
         false
       }
@@ -36,27 +36,32 @@ object Organizations extends Controller {
           title = request.org.name,
           org = Some(request.org)
         ),
-        services = PaginatedCollection(page, services.entity),
+        services = PaginatedCollection(page, services),
         haveRequests = haveRequests)
       )
     }
   }
 
   def membershipRequests(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
-    for {
-      requests <- request.api.MembershipRequests.get(orgKey = Some(orgKey),
-                                                     limit = Some(Pagination.DefaultLimit+1),
-                                                     offset = Some(page * Pagination.DefaultLimit))
-    } yield {
-      // TODO: Make sure user is an admin
-      Ok(views.html.organizations.membershipRequests(
-        MainTemplate(
-          user = Some(request.user),
-          title = request.org.name,
-          org = Some(request.org)
-        ),
-        requests = PaginatedCollection(page, requests.entity))
-      )
+    request.api.MembershipRequests.get(
+      orgKey = Some(orgKey),
+      limit = Some(Pagination.DefaultLimit+1),
+      offset = Some(page * Pagination.DefaultLimit)
+    ).map { requests =>
+      if (request.isAdmin) {
+        Ok(views.html.organizations.membershipRequests(
+          MainTemplate(
+            user = Some(request.user),
+            title = request.org.name,
+            org = Some(request.org)
+          ),
+          requests = PaginatedCollection(page, requests))
+        )
+      } else {
+        Redirect(routes.Organizations.show(orgKey)).flashing(
+          "warning" -> s"You are not authorized to review membership requests for $orgKey"
+        )
+      }
     }
   }
 
@@ -78,20 +83,20 @@ object Organizations extends Controller {
         role = Some(Role.Admin.key)
       )
     } yield {
-      orgResponse.entity.headOption match {
+      orgResponse.headOption match {
         case None => {
           Redirect("/").flashing("warning" -> s"Organization $orgKey not found")
         }
         case Some(org: Organization) => {
-          val isMember = !membershipsResponse.entity.headOption.isEmpty
-          val hasMembershipRequest = !membershipRequestResponse.entity.isEmpty
+          val isMember = !membershipsResponse.headOption.isEmpty
+          val hasMembershipRequest = !membershipRequestResponse.isEmpty
           Ok(views.html.organizations.requestMembership(
             MainTemplate(
               user = Some(request.user),
               title = s"Join ${org.name}"
             ),
             org,
-            adminsResponse.entity,
+            adminsResponse,
             hasMembershipRequest,
             isMember
           ))
@@ -101,18 +106,17 @@ object Organizations extends Controller {
   }
 
   def postRequestMembership(orgKey: String) = Authenticated.async { implicit request =>
-    for {
-      orgResponse <- request.api.Organizations.get(key = Some(orgKey))
-    } yield {
-      orgResponse.entity.headOption match {
-        case None => {
+    request.api.Organizations.get(key = Some(orgKey)).flatMap { orgs =>
+      orgs.headOption match {
+        case None => Future {
           Redirect("/").flashing("warning" -> s"Organization $orgKey not found")
         }
         case Some(org: Organization) => {
-          Await.result(request.api.MembershipRequests.post(org.guid, request.user.guid, Role.Member.key), 1000.millis)
-          Redirect(routes.Organizations.requestMembership(orgKey)).flashing(
-            "success" -> s"We have submitted your membership request to join ${org.name}"
-          )
+          request.api.MembershipRequests.post(org.guid, request.user.guid, Role.Member.key).map { _ =>
+            Redirect(routes.Organizations.requestMembership(orgKey)).flashing(
+              "success" -> s"We have submitted your membership request to join ${org.name}"
+            )
+          }
         }
       }
     }
@@ -143,23 +147,18 @@ object Organizations extends Controller {
       },
 
       valid => {
-        request.api.Organizations.post(valid.name).map { r =>
-          Redirect(routes.Organizations.show(r.entity.key))
+        request.api.Organizations.post(valid.name).map { org =>
+          Redirect(routes.Organizations.show(org.key))
         }.recover {
-          case apidoc.FailedResponse(errors: Seq[apidoc.models.Error], 409) => {
-            val existingOrg = Await.result(request.api.Organizations.get(name = Some(valid.name)), 1000.millis).entity.headOption
-            val tpl = MainTemplate(
-              user = Some(request.user),
-              title = s"Create Organization"
-            )
+          case r: apidoc.error.ErrorsResponse => {
             Ok(views.html.organizations.form(
               models.MainTemplate(
                 user = Some(request.user),
-                title = "Add Organization"
+                title = "Create Organization"
               ),
               form,
-              Some(errors.map(_.message).mkString(", ")), existingOrg)
-            )
+              Some(r.errors.map(_.message).mkString(", "))
+            ))
           }
         }
       }

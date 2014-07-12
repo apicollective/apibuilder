@@ -11,8 +11,8 @@ import java.util.UUID
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
   lazy val api = new apidoc.Client(Authenticated.apiUrl, Some(Authenticated.apiToken)) {
-    override def requestHolder(path: String) = {
-      super.requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
+    override def _requestHolder(path: String) = {
+      super._requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
     }
   }
 
@@ -35,7 +35,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
     request.session.get("user_guid").map { userGuid =>
-      Await.result(api.Users.get(guid = Some(UUID.fromString(userGuid))), 5000.millis).entity.headOption match {
+      Await.result(api.Users.getByGuid(UUID.fromString(userGuid)), 5000.millis) match {
 
         case None => {
           // have a user guid, but user does not exist

@@ -18,12 +18,12 @@ object Members extends Controller {
 
   def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
     for {
-      org <- request.api.Organizations.get(key = Some(orgKey))
+      orgs <- request.api.Organizations.get(key = Some(orgKey))
       members <- request.api.Memberships.get(orgKey = Some(orgKey),
                                              limit = Some(Pagination.DefaultLimit+1),
                                              offset = Some(page * Pagination.DefaultLimit))
     } yield {
-      org.entity.headOption match {
+      orgs.headOption match {
 
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
@@ -31,7 +31,7 @@ object Members extends Controller {
           Ok(views.html.members.show(MainTemplate(title = o.name,
                                                   org = Some(o),
                                                   user = Some(request.user)),
-                                     members = PaginatedCollection(page, members.entity),
+                                     members = PaginatedCollection(page, members),
                                      isAdmin = request.isAdmin))
         }
       }
@@ -66,7 +66,7 @@ object Members extends Controller {
         },
 
         valid => {
-          Await.result(request.api.Users.get(email = Some(valid.email)), 1500.millis).entity.headOption match {
+          Await.result(request.api.Users.get(email = Some(valid.email)), 1500.millis).headOption match {
 
             case None => {
               val filledForm = addMemberForm.fill(valid)
@@ -74,7 +74,7 @@ object Members extends Controller {
             }
 
             case Some(user: User) => {
-              val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis).entity
+              val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis)
               val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
               Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"${valid.role} added")
             }
@@ -98,14 +98,14 @@ object Members extends Controller {
   def postRevokeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
     for {
       membership <- request.api.Memberships.getByGuid(guid)
-      memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.entity.user.guid))
+      memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
     } yield {
-      memberships.entity.find(_.role == Role.Member.key) match {
-        case None => createMembership(request.api, request.org, membership.entity.user.guid, Role.Member)
+      memberships.find(_.role == Role.Member.key) match {
+        case None => createMembership(request.api, request.org, membership.get.user.guid, Role.Member)
         case Some(m) => {}
       }
 
-      memberships.entity.find(_.role == Role.Admin.key) match {
+      memberships.find(_.role == Role.Admin.key) match {
         case None => {}
         case Some(membership) => {
           Await.result(
@@ -122,14 +122,14 @@ object Members extends Controller {
   def postMakeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
     for {
       membership <- request.api.Memberships.getByGuid(guid)
-      memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.entity.user.guid))
+      memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
     } yield {
-      memberships.entity.find(_.role == Role.Admin.key) match {
-        case None => createMembership(request.api, request.org, membership.entity.user.guid, Role.Admin)
+      memberships.find(_.role == Role.Admin.key) match {
+        case None => createMembership(request.api, request.org, membership.get.user.guid, Role.Admin)
         case Some(m) => {}
       }
 
-      memberships.entity.find(_.role == Role.Member.key) match {
+      memberships.find(_.role == Role.Member.key) match {
         case None => {}
         case Some(membership) => {
           Await.result(
@@ -149,7 +149,7 @@ object Members extends Controller {
       1500.millis
     )
     Await.result(
-      api.MembershipRequests.postAcceptByGuid(membershipRequest.entity.guid),
+      api.MembershipRequests.postAcceptByGuid(membershipRequest.guid),
       1500.millis
     )
   }

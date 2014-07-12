@@ -3,15 +3,15 @@ package controllers
 import play.api._
 import play.api.mvc._
 
-object Internal extends Controller {
+object Healthchecks extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def healthcheck() = Action.async { implicit request =>
+  def index() = Action.async { implicit request =>
     for {
       orgs <- Authenticated.api.Organizations.get(limit = Some(1))
     } yield {
-      Ok(views.html._internal_.healthcheck(orgs.entity.headOption))
+      Ok(views.html.healthchecks.index(orgs.headOption))
     }
   }
 

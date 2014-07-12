@@ -23,7 +23,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
   def invokeBlock[A](request: Request[A], block: (AuthenticatedOrgRequest[A]) => Future[Result]) = {
 
     request.session.get("user_guid").map { userGuid =>
-      Await.result(Authenticated.api.Users.get(guid = Some(UUID.fromString(userGuid))), 5000.millis).entity.headOption match {
+      Await.result(Authenticated.api.Users.getByGuid(UUID.fromString(userGuid)), 5000.millis) match {
 
         case None => {
           // have a user guid, but user does not exist
@@ -35,8 +35,8 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             sys.error(s"No org key for request path[${request.path}]")
           }
 
-          val orgOption = Await.result(Authenticated.api.Organizations.get(key = Some(orgKey)), 1000.millis).entity.headOption
-          val memberships = Await.result(Authenticated.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(u.guid)), 1000.millis).entity
+          val orgOption = Await.result(Authenticated.api.Organizations.get(key = Some(orgKey)), 1000.millis).headOption
+          val memberships = Await.result(Authenticated.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(u.guid)), 1000.millis)
           orgOption match {
             case None => {
               Future.successful(Redirect("/").flashing("warning" -> s"Organization $orgKey not found"))
