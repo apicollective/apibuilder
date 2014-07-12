@@ -49,6 +49,11 @@ class ServiceDescriptionParametersSpec extends FunSpec with Matchers {
     ServiceDescriptionValidator(json).errors.mkString("") should be("")
   }
 
+  it("parameters not defined on the model are accepted (assumed strings)") {
+    val json = baseJson.format("/:some_string")
+    ServiceDescriptionValidator(json).errors.mkString("") should be("")
+  }
+
   it("dates cannot be path parameters") {
     val json = baseJson.format("/:created_at")
     ServiceDescriptionValidator(json).errors.mkString("") should be("Resource[user] GET path parameter[created_at] has an invalid type[date-time-iso8601]. Only numbers and strings can be specified as path parameters")
