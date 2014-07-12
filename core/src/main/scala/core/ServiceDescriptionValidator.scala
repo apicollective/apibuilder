@@ -258,7 +258,19 @@ case class ServiceDescriptionValidator(apiJson: String) {
       Seq.empty
     }
 
-    invalidCodes ++ missingTypes ++ mixed2xxResponseTypes
+    val noContentWithTypes = if (invalidCodes.isEmpty) {
+      internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
+        resource.operations.flatMap { op =>
+          op.responses.filter(r => r.code.toInt == 204 && !r.datatype.isEmpty && r.datatype.get != Datatype.UnitType.name).map { r =>
+            s"Resource[${resource.modelName.get}] ${op.label} has a response code of 204 (No Content). Cannot specify a type[${r.datatype.get}] for this reponse code."
+          }
+        }
+      }
+    } else {
+      Seq.empty
+    }
+
+    invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ noContentWithTypes
   }
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted.mkString(" ")
