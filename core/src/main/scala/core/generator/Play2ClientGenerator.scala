@@ -21,7 +21,7 @@ ${client(ssd)}"""
     require(!response.isSuccess)
 
     Seq(
-      s"case class ${response.errorClassName}(response: play.api.libs.ws.Response) extends Exception {",
+      s"case class ${response.errorClassName}(response: play.api.libs.ws.WSResponse) extends Exception {",
       "",
       s"  lazy val ${response.errorVariableName} = response.json.as[${response.resultType}]",
       "",
@@ -61,7 +61,7 @@ ${client(ssd)}"""
 
 s"""package ${ssd.packageName} {
 
-  case class FailedResponse(response: play.api.libs.ws.Response) extends Exception$errorsString
+  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception$errorsString
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import ${ssd.packageName}.models._
