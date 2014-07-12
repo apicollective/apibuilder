@@ -17,36 +17,62 @@ s"""${Play2Models(ssd)}
 ${client(ssd)}"""
   }
 
+  private[generator] def errorTypeClass(response: ScalaResponse): String = {
+    require(!response.isSuccess)
+
+    val underscore = Text.camelCaseToUnderscore(response.scalaType)
+    val label = if (response.isMultiple) {
+      Text.snakeToCamelCase(Text.pluralize(underscore.toLowerCase))
+    } else {
+      Text.snakeToCamelCase(underscore)
+    }
+    val labelInitCap = Text.initCap(label)
+
+    val result = Seq(
+      s"case class ${labelInitCap}Response(response: play.api.libs.ws.Response) extends Exception {",
+      "",
+      s"  lazy val $label: ${response.resultType} = response.json.as[${response.resultType}]",
+      "",
+      "}"
+    ).mkString("\n")
+
+    println(result)
+    result
+  }
+
+  private def errors(ssd: ScalaServiceDescription): Option[String] = {
+    val errorTypes = ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(!_.isSuccess)
+
+    if (errorTypes.isEmpty) {
+      None
+    } else {
+      println("errorTypes: " + errorTypeClass(errorTypes.head))
+
+      Some(
+        Seq(
+          "package error {",
+          "",
+          s"  import ${ssd.packageName}.models.json._",
+          "",
+          errorTypes.map { t => errorTypeClass(t) }.distinct.sorted.mkString("\n\n").indent(2),
+          "}"
+        ).mkString("\n").indent(2)
+      )
+    }
+  }
+
   private def client(ssd: ScalaServiceDescription): String = {
-s"""package ${ssd.packageName} {
-
-  case class FailedResponse(response: play.api.libs.ws.Response) extends Exception
-
-  case class ErrorResponse(response: play.api.libs.ws.Response) extends Exception {
-
-    case class Error (
-      code: String,
-      message: String
-    )
-
-    object Error {
-      implicit def readsError: play.api.libs.json.Reads[Error] = {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \\ "code").read[String] and
-          (__ \\ "message").read[String])(Error.apply _)
-      }
-    
-      implicit def writesError: play.api.libs.json.Writes[Error] = {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \\ "code").write[String] and
-          (__ \\ "message").write[String])(unlift(Error.unapply))
+    val errorsString = errors(ssd) match {
+      case None => ""
+      case Some(s: String) => {
+        println("S: " + s)
+        s"\n\n$s\n"
       }
     }
 
-    val errors: Seq[Error] = response.json.as[scala.collection.Seq[Error]]
-  }
+s"""package ${ssd.packageName} {
+
+  case class FailedResponse(response: play.api.libs.ws.Response) extends Exception$errorsString
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import ${ssd.packageName}.models._
