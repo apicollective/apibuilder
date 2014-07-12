@@ -113,15 +113,16 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
 class ScalaResponse(packageName: String, method: String, response: Response) {
 
-  val code = response.code
   val scalaType: String = underscoreToInitCap(response.datatype)
-  val qualifiedScalaType: String = if (scalaType == "Unit") { scalaType } else { packageName + ".models." + scalaType }
-
+  val isUnit = scalaType == "Unit"
   val isMultiple = response.multiple
   val isOption = !isMultiple && !GeneratorUtil.isJsonDocumentMethod(method)
 
+  val code = response.code
   val isSuccess = code >= 200 && code < 300
   val isNotFound = code == 404
+
+  val qualifiedScalaType: String = if (isUnit) { scalaType } else { packageName + ".models." + scalaType }
 
   val resultType: String = {
     if (response.multiple) {

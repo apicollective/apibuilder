@@ -35,8 +35,6 @@ ${client(ssd)}"""
     if (errorTypes.isEmpty) {
       None
     } else {
-      println("errorTypes: " + errorTypeClass(errorTypes.head))
-
       Some(
         Seq(
           "package error {",
@@ -53,10 +51,7 @@ ${client(ssd)}"""
   private def client(ssd: ScalaServiceDescription): String = {
     val errorsString = errors(ssd) match {
       case None => ""
-      case Some(s: String) => {
-        println("S: " + s)
-        s"\n\n$s\n"
-      }
+      case Some(s: String) => s"\n\n$s\n"
     }
 
     val accessors = ssd.resources.map(_.model.plural).sorted.map { plural =>
@@ -160,7 +155,7 @@ ${modelClients(ssd).indent(2)}
         op.responses.map { response =>
           if (response.isSuccess) {
             if (response.isOption) {
-              if (response.scalaType == "Unit") {
+              if (response.isUnit) {
                 s"case r if r.status == ${response.code} => Some(Unit)"
               } else {
                 s"case r if r.status == ${response.code} => Some(r.json.as[${response.qualifiedScalaType}])"
@@ -168,6 +163,9 @@ ${modelClients(ssd).indent(2)}
 
             } else if (response.isMultiple) {
               s"case r if r.status == ${response.code} => r.json.as[scala.collection.Seq[${response.qualifiedScalaType}]]"
+
+            } else if (response.isUnit) {
+              s"case r if r.status == ${response.code} => ${response.qualifiedScalaType}"
 
             } else {
               s"case r if r.status == ${response.code} => r.json.as[${response.qualifiedScalaType}]"
