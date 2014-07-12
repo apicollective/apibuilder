@@ -57,7 +57,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateFieldDefaults ++
           validateResources ++
           validateParameters ++
-          validateResponses
+          validateResponses ++
+          validatePathParameters
         } else {
           requiredFieldErrors
         }
@@ -352,4 +353,32 @@ case class ServiceDescriptionValidator(apiJson: String) {
     modelNameErrors ++ missingOperations ++ duplicateModels
   }
 
+  private def validatePathParameters(): Seq[String] = {
+    internalServiceDescription.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
+      internalServiceDescription.get.models.find(_.name == resource.modelName.get) match {
+        case None => None
+        case Some(model: InternalModel) => {
+          resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
+            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.fieldtype.isEmpty).map(f => (f.name.get -> f.fieldtype.get)).toMap
+
+            op.namedPathParameters.flatMap { name =>
+              val typeName = fieldMap.get(name).getOrElse(Datatype.StringType.name)
+              Datatype.findByName(typeName) match {
+                case Some(Datatype.BooleanType) => None
+                case Some(Datatype.DecimalType) => None
+                case Some(Datatype.IntegerType) => None
+                case Some(Datatype.DoubleType) => None
+                case Some(Datatype.LongType) => None
+                case Some(Datatype.StringType) => None
+                case Some(Datatype.UuidType) => None
+                case _ => {
+                  Some(s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[$typeName]. Only numbers and strings can be specified as path parameters")
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
