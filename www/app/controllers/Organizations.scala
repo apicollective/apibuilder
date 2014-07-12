@@ -43,11 +43,13 @@ object Organizations extends Controller {
   }
 
   def membershipRequests(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
-    request.api.MembershipRequests.get(
-      orgKey = Some(orgKey),
-      limit = Some(Pagination.DefaultLimit+1),
-      offset = Some(page * Pagination.DefaultLimit)
-    ).map { requests =>
+    for {
+      requests <- request.api.MembershipRequests.get(
+        orgKey = Some(orgKey),
+        limit = Some(Pagination.DefaultLimit+1),
+        offset = Some(page * Pagination.DefaultLimit)
+      )
+    } yield {
       if (request.isAdmin) {
         Ok(views.html.organizations.membershipRequests(
           MainTemplate(
@@ -133,17 +135,16 @@ object Organizations extends Controller {
   }
 
   def createPost = Authenticated.async { implicit request =>
+    val tpl = models.MainTemplate(
+      user = Some(request.user),
+      title = "Add Organization"
+    )
+
     val form = orgForm.bindFromRequest
     form.fold (
 
       errors => Future {
-        Ok(views.html.organizations.form(
-          models.MainTemplate(
-            user = Some(request.user),
-            title = "Add Organization"
-          ),
-          errors
-        ))
+        Ok(views.html.organizations.form(tpl, errors))
       },
 
       valid => {
@@ -151,14 +152,7 @@ object Organizations extends Controller {
           Redirect(routes.Organizations.show(org.key))
         }.recover {
           case r: apidoc.error.ErrorsResponse => {
-            Ok(views.html.organizations.form(
-              models.MainTemplate(
-                user = Some(request.user),
-                title = "Create Organization"
-              ),
-              form,
-              Some(r.errors.map(_.message).mkString(", "))
-            ))
+            Ok(views.html.organizations.form(tpl, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
       }
