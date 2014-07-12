@@ -199,8 +199,6 @@ object InternalOperation {
           responses.fields.map {
             case(code, value) => {
               if (code == NoContentCode) {
-                println("ASFASDF")
-                println("NoContentResponse: " + NoContentResponse)
                 NoContentResponse
               } else {
                 InternalResponse(code, value.as[JsObject])
