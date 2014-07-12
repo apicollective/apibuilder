@@ -99,19 +99,19 @@ ${accessors.indent(4)}
       req
     }
 
-    private def POST(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def POST(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("POST", _requestHolder(path)).post(data)
     }
 
-    private def GET(path: String, q: Seq[(String, String)])(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def GET(path: String, q: Seq[(String, String)] = Seq.empty)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
-    private def PUT(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def PUT(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("PUT", _requestHolder(path)).put(data)
     }
 
-    private def PATCH(path: String, data: play.api.libs.json.JsValue)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def PATCH(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("PATCH", _requestHolder(path)).patch(data)
     }
 
@@ -137,39 +137,21 @@ ${modelClients(ssd).indent(2)}
 
   private def clientMethods(ssd: ScalaServiceDescription, resources: Seq[ScalaResource]): Seq[ClientMethod] = {
     resources.flatMap(_.operations).map { op =>
-      val path: String = Play2Util.pathParams(op)
-      def payload = Play2Util.formParams(op)
-      val methodCall: String = op.method match {
-        case "GET" => {
-          s"""${Play2Util.queryParams(op)}
+      val path = Play2Util.pathParams(op)
 
-GET($path, queryBuilder.result)"""
+      val methodCall = if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
+        Play2Util.formParams(op) match {
+          case None => s"${op.method}($path)"
+          case Some(payload) => s"${payload}\n\n${op.method}($path, payload)"
         }
 
-        case "POST" => {
-          s"""$payload
-
-POST($path, payload)"""
+      } else {
+        Play2Util.queryParams(op) match {
+          case None => s"${op.method}($path)"
+          case Some(query) => s"${query}\n\n${op.method}($path, query)"
         }
-
-        case "PUT" => {
-          s"""$payload
-
-PUT($path, payload)"""
-        }
-
-        case "PATCH" => {
-          s"""$payload
-
-PATCH($path, payload)"""
-        }
-
-        case "DELETE" => s"DELETE($path)"
-
-        case _ => throw new UnsupportedOperationException(s"Attempt to use operation with unsupported type: ${op.method}")
       }
 
-      // TODO: Inject a 404 response if this operation returns an option
       val hasOptionResult = op.responses.find { _.isOption } match {
         case None => ""
         case Some(r) => s"\ncase r if r.status == 404 => None"

@@ -25,7 +25,11 @@ object ScalaUtil {
   }
 
   def fieldsToArgList(fields: Seq[String]) = {
-    fields.map(_.indent).mkString("\n", ",\n", "\n")
+    if (fields.isEmpty) {
+      ""
+    } else {
+      fields.map(_.indent).mkString("\n", ",\n", "\n")
+    }
   }
 
   def quoteNameIfKeyword(name: String): String = {
@@ -194,19 +198,22 @@ class ScalaParameter(param: Parameter) {
 
   def originalName: String = param.name
 
-  def datatype: ScalaDataType = {
+  def baseType: ScalaDataType = {
     import ScalaDataType._
-    val base: ScalaDataType = param.paramtype match {
+    param.paramtype match {
       case t: PrimitiveParameterType => ScalaDataType(t.datatype)
       case m: ModelParameterType => new ScalaModelType(new ScalaModel(m.model))
     }
+  }
 
+  def datatype: ScalaDataType = {
+    import ScalaDataType._
     if (multiple) {
-      new ScalaListType(base)
+      new ScalaListType(baseType)
     } else if (isOption) {
-      new ScalaOptionType(base)
+      new ScalaOptionType(baseType)
     } else {
-      base
+      baseType
     }
   }
 
@@ -272,16 +279,16 @@ object ScalaDataType {
     case Datatype.DateTimeIso8601Type => ScalaDateTimeIso8601Type
   }
 
-  def asString(d: ScalaDataType): String = d match {
-    case x @ ScalaStringType => "x"
-    case x @ ScalaIntegerType => "x.toString"
-    case x @ ScalaDoubleType => "x.toString"
-    case x @ ScalaLongType => "x.toString"
-    case x @ ScalaBooleanType => "x.toString"
-    case x @ ScalaDecimalType => "x.toString"
-    case x @ ScalaUuidType => "x.toString"
+  def asString(varName: String, d: ScalaDataType): String = d match {
+    case x @ ScalaStringType => s"$varName"
+    case x @ ScalaIntegerType => s"$varName.toString"
+    case x @ ScalaDoubleType => s"$varName.toString"
+    case x @ ScalaLongType => s"$varName.toString"
+    case x @ ScalaBooleanType => s"$varName.toString"
+    case x @ ScalaDecimalType => s"$varName.toString"
+    case x @ ScalaUuidType => s"$varName.toString"
     case x @ ScalaDateTimeIso8601Type => {
-      "org.joda.time.format.ISODateTimeFormat.dateTime.print(x)"
+      s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
     case x => throw new UnsupportedOperationException(s"unsupported conversion of type ${d.name} to query string")
   }
