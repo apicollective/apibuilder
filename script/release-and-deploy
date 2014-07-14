@@ -72,6 +72,7 @@ commands.add("DOCKER_HOST=#{DOCKER_HOST} docker login --email=#{Deployer::Util.e
 
 docker_image_tag = "%s/%s:%s" % [Deployer::Util.env('DOCKER_INDEX_USERNAME'), project_name, tag]
 
+commands.add("sbt -Dsbt.ivy.home=.ivy2 test:update", :name => "sbt update")
 commands.add("DOCKER_HOST=#{DOCKER_HOST} docker build -t #{docker_image_tag} .",
              :name => "docker build")
 commands.add("DOCKER_HOST=#{DOCKER_HOST} docker push #{docker_image_tag}",
