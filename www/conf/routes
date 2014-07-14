@@ -17,6 +17,7 @@ GET     /doc/types                                                controllers.Do
 GET     /doc/codeGeneration                                       controllers.DocController.codeGeneration
 GET     /doc/examples                                             controllers.DocController.examples
 GET     /doc/history                                              controllers.DocController.history
+GET     /doc/releaseNotes                                         controllers.DocController.releaseNotes
 GET     /doc/todo                                                 controllers.DocController.todo
 
 GET     /org/create                                               controllers.Organizations.create

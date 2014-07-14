@@ -1,0 +1,27 @@
+@doc.main("Release notes") {
+
+<h3>0.4.42</h3>
+
+  <ul>
+
+    <li>Validate that if a response explicitly specifies a 404, that
+    its type is Unit. This ensures that we can build friently clients
+    in scala which can turn a 2xx/404 response into an Option which is
+    much nicer to use when building apps with the client.</li>
+
+  </ul>
+
+<h3>0.4.41</h3>
+  <ul>
+
+    <li>Validate that if a response explicitly specifies a 204, that
+    its type is Unit. Previously we accepted api specifications that
+    incorrectly specified a type.</li>
+
+    <li> Add validation for path parameters - only strings, UUID, and
+    number types are now supported in path parameters which keeps
+    serialization simpler.</li>
+
+  </ul>
+
+}

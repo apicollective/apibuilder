@@ -17,6 +17,10 @@ object DocController extends Controller {
     Ok(views.html.doc.apiJson())
   }
 
+  def types = Action { implicit request =>
+    Ok(views.html.doc.types())
+  }
+
   def codeGeneration = Action { implicit request =>
     Ok(views.html.doc.codeGeneration())
   }
@@ -29,12 +33,12 @@ object DocController extends Controller {
     Ok(views.html.doc.history())
   }
 
-  def todo = Action { implicit request =>
-    Ok(views.html.doc.todo())
+  def releaseNotes = Action { implicit request =>
+    Ok(views.html.doc.releaseNotes())
   }
 
-  def types = Action { implicit request =>
-    Ok(views.html.doc.types())
+  def todo = Action { implicit request =>
+    Ok(views.html.doc.todo())
   }
 
 }
