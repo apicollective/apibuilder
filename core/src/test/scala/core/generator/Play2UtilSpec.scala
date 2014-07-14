@@ -31,7 +31,7 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
         )
       )
       code should equal("""val query = Seq(
-  Some(q1).map("q1" -> _.toString),
+  "q1" -> q1.toString,
   q2.map("q2" -> _.toString)
 ).flatten""")
     }
