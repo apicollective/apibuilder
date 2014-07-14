@@ -2,6 +2,9 @@ FROM ubuntu:14.04
 
 MAINTAINER architecture@gilt.com
 
+# need to run to make sure the apt-get installs work
+RUN apt-get update
+
 RUN apt-get install -y wget
 
 WORKDIR /tmp
