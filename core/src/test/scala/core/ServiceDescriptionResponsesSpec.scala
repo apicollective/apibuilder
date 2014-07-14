@@ -30,7 +30,7 @@ class ServiceDescriptionResponsesSpec extends FunSpec with Matchers {
   """
 
   it("Returns error message if user specifies non Unit Response type") {
-    Seq(204, 404).foreach { code =>
+    Seq(204, 304, 404).foreach { code =>
       val json = baseJson.format(s""", "responses": { "$code": { "type": "user" } } """)
       val validator = ServiceDescriptionValidator(json)
       validator.errors.mkString("") should be(s"Resource[user] DELETE /users/:id Responses w/ code[$code] must return unit and not[user]")

@@ -259,7 +259,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
       Seq.empty
     }
 
-    val typesRequiringUnit = Seq(204, 404)
+    val typesRequiringUnit = Seq(204, 304, 404)
     val noContentWithTypes = if (invalidCodes.isEmpty) {
       internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
         resource.operations.flatMap { op =>
