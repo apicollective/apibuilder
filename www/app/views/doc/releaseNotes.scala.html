@@ -24,4 +24,66 @@
 
   </ul>
 
+<h3>0.4.40</h3>
+  <ul>
+
+    <li>Introduce support for new datatype map. For the initial release,
+    both the keys and the values of the map must be String which we
+    believe enables most of the necessary use-cases while minimizing
+    complexity. Strings will natively serialize / deserialize from JSON
+    making the generated clients much simpler to use.
+
+    <pre>
+    {
+      "models": {
+	"event": {
+          "fields": [
+            { "name": "tags", "type": "map" }
+          ]
+        }
+      }
+    }
+    </pre>
+
+    <p>
+    This allows the user to pass in key/value pairs using a map.
+
+    </li>
+
+    <li>Introduce support for enums. Enums are specified by appending
+    a 'values' element in the definition of the field. For example:
+
+    <pre>
+    {
+      "models": {
+	"event": {
+          "fields": [
+            { "name": "source", "type": "string", "values": ["incident", "plan"] }
+          ]
+        }
+      }
+    }
+    </pre>
+
+    There are a few constraints on enums:
+    <ul>
+        <li>The field type must be string</li>
+        <li>The values must be valid names - Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+    </ul>
+
+    <p>
+    Note that in future releases, it is likely we will rename 'values'
+    to 'enum' to parallel JSON-Schema.
+    </p>
+    </li>
+
+    <li> Validation for path parameters - only strings, UUID, and
+    number types are now supported in path parameters which keeps
+    serialization simpler. Previously we were allowing specification
+    of, for examples, dates as path parameters which we do not intend
+    to support.
+    </li>
+
+  </ul>
+
 }
