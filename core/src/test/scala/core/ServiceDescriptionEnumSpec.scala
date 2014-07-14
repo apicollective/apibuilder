@@ -13,7 +13,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
       "models": {
         "user": {
           "fields": [
-            { "name": "age_group", "type": "string", "values": ["Twenties", "Thirties"] }
+            { "name": "age_group", "type": "string", "enum": ["Twenties", "Thirties"] }
           ]
         }
       }
@@ -41,7 +41,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
       "models": {
         "user": {
           "fields": [
-            { "name": "age_group", "type": "integer", "values": ["Twenties", "Thirties"] }
+            { "name": "age_group", "type": "integer", "enum": ["Twenties", "Thirties"] }
           ]
         }
       }
@@ -49,7 +49,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     """
 
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("Model[user] field[age_group]: values can only be specified for fields of type 'string'")
+    validator.errors.mkString("") should be("Model[user] field[age_group]: enum can only be specified for fields of type 'string'")
   }
 
 }

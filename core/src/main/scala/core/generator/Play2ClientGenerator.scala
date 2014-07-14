@@ -6,7 +6,10 @@ import ScalaUtil._
 
 object Play2ClientGenerator {
   def apply(json: String): String = {
-    val sd = ServiceDescription(json)
+    Play2ClientGenerator(ServiceDescription(json))
+  }
+
+  def apply(sd: ServiceDescription): String = {
     val ssd = new ScalaServiceDescription(sd)
     apply(ssd)
   }

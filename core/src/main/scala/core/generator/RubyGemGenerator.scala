@@ -6,8 +6,12 @@ import scala.collection.mutable.ListBuffer
 
 object RubyGemGenerator {
 
-  def apply(json: String) = {
-    new RubyGemGenerator(ServiceDescription(json)).generate
+  def apply(json: String): String = {
+    generate(ServiceDescription(json))
+  }
+
+  def generate(sd: ServiceDescription): String = {
+    new RubyGemGenerator(sd).generate
   }
 
   def generateEnumClass(modelName: String, fieldName: String, et: EnumerationFieldType): String = {

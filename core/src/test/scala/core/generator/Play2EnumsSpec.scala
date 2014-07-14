@@ -36,8 +36,8 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
   describe("for a model with 2 enum fields") {
 
     val service = ServiceDescription(json.format("""
-{ "name": "age_group", "type": "string", "values": ["twenties", "thirties"] },
-{ "name": "party_theme", "type": "string", "values": ["twenties", "thirties"] }
+{ "name": "age_group", "type": "string", "enum": ["twenties", "thirties"] },
+{ "name": "party_theme", "type": "string", "enum": ["twenties", "thirties"] }
 """))
 
     it("generates valid models") {

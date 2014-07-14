@@ -2,6 +2,7 @@ package controllers
 
 import java.util.UUID
 import lib.Validation
+import core.ServiceDescription
 import core.generator.Target
 
 import play.api.mvc._
@@ -23,29 +24,23 @@ object Code extends Controller {
   }
 
   def getByOrgKeyAndServiceKeyAndVersionAndTargetName(orgKey: String, serviceKey: String, version: String, targetName: String) = Authenticated { request =>
-    VersionDao.findVersion(request.user, orgKey, serviceKey, version) match {
+    Target.findByKey(targetName) match {
+      case None => {
+        Conflict(Json.toJson(Validation.error(s"Invalid target[$targetName]. Must be one of: ${Target.Implemented.mkString(" ")}")))
+      }
+      case Some(target: Target) => {
+        VersionDao.findVersion(request.user, orgKey, serviceKey, version) match {
 
-      case None => NotFound
+          case None => NotFound
 
-      case Some(v: Version) => {
-        generator(targetName) match {
-          case None => {
-            Conflict(Json.toJson(Validation.error(s"Invalid target[$targetName]. Must be one of: ${Target.implemented.mkString(" ")}")))
-          }
-
-          case Some(generator) => {
-            val code = generator(v)
+          case Some(v: Version) => {
+            val code = Code(
+              target = targetName,
+              source = Target.generate(target, ServiceDescription(v.json))
+            )
             Ok(Json.toJson(code))
           }
         }
-      }
-    }
-  }
-
-  private def generator(target: String): Option[Version => Code] = {
-    Target.generator.lift(target).map { source =>
-      { v: Version =>
-        new Code(target, source(v.json))
       }
     }
   }

@@ -74,8 +74,8 @@
 
             <b>Codgen</b>
             <ul class="nav nav-sidebar">
-              @core.generator.Target.implemented.map { target =>
-                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, target)">@core.generator.Target.humanize(target)</a>
+              @core.generator.Target.Implemented.map { target =>
+                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, target.key)">@target.name</a>
               }
             </ul>
           }
