@@ -176,8 +176,7 @@ object InternalResource {
 
 object InternalOperation {
 
-  private val NoContentCode = "204"
-  private val NoContentResponse = InternalResponse(code = NoContentCode, datatype = Some(Datatype.UnitType.name))
+  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.UnitType.name))
 
   def apply(resourcePath: String, json: JsObject): InternalOperation = {
     val path = resourcePath + (json \ "path").asOpt[String].getOrElse("")
@@ -198,11 +197,7 @@ object InternalOperation {
         case Some(responses: JsObject) => {
           responses.fields.map {
             case(code, value) => {
-              if (code == NoContentCode) {
-                NoContentResponse
-              } else {
-                InternalResponse(code, value.as[JsObject])
-              }
+              InternalResponse(code, value.as[JsObject])
             }
           }
         }
