@@ -60,11 +60,11 @@
 
     <tbody>
 
-      @core.generator.Target.values.map { target =>
+      @core.generator.Target.All.map { target =>
         <tr>
-          <td>@(Target.status(target))</td>
-          <td>@(Target.humanize(target))</td>
-          <td>@Html(Target.description(target))</td>
+          <td>@target.status</td>
+          <td>@target.key</td>
+          <td>@Html(target.description)</td>
         </tr>
       }
     </tbody>

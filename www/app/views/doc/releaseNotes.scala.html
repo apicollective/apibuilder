@@ -1,5 +1,14 @@
 @doc.main("Release notes") {
 
+<h3>0.4.43</h3>
+
+  <ul>
+
+    <li>Replace 'values' element with 'enum' to be compliant with JSON
+    Schema.</li>
+
+  </ul>
+
 <h3>0.4.42</h3>
 
   <ul>
@@ -74,14 +83,14 @@
     </li>
 
     <li>Introduce support for enums. Enums are specified by appending
-    a 'values' element in the definition of the field. For example:
+    an enum element in the definition of the field. For example:
 
     <pre>
     {
       "models": {
 	"event": {
           "fields": [
-            { "name": "source", "type": "string", "values": ["incident", "plan"] }
+            { "name": "source", "type": "string", "enum": ["incident", "plan"] }
           ]
         }
       }
@@ -91,13 +100,12 @@
     There are a few constraints on enums:
     <ul>
         <li>The field type must be string</li>
-        <li>The values must be valid names - Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+        <li>The enum values must be valid names - Names must be alphanumeric and must
+	start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. Main
+        reason to restrict character space is to enable code generation tools to produce
+	nice enum classes w/ valid symbols for each value.</li>
     </ul>
 
-    <p>
-    Note that in future releases, it is likely we will rename 'values'
-    to 'enum' to parallel JSON-Schema.
-    </p>
     </li>
 
     <li> Validation for path parameters - only strings, UUID, and

@@ -5,9 +5,11 @@ import Text._
 
 object Play2Models {
   def apply(json: String): String = {
-    val sd = ServiceDescription(json)
-    val ssd = new ScalaServiceDescription(sd)
-    apply(ssd)
+    apply(ServiceDescription(json))
+  }
+
+  def apply(sd: ServiceDescription): String = {
+    apply(new ScalaServiceDescription(sd))
   }
 
   def apply(ssd: ScalaServiceDescription): String = {

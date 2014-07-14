@@ -4,8 +4,13 @@ import core._
 import io.Source
 
 object Play2RouteGenerator {
-  def apply(json: String) = {
-    new Play2RouteGenerator(ServiceDescription(json)).generate.getOrElse("")
+
+  def apply(json: String): String = {
+    generate(ServiceDescription(json))
+  }
+
+  def generate(sd: ServiceDescription): String = {
+    new Play2RouteGenerator(sd).generate.getOrElse("")
   }
 }
 

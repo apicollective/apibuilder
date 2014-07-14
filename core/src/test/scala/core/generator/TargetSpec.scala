@@ -1,43 +1,31 @@
 package core.generator
 
-import org.scalatest._
+import core.{ EnumerationFieldType, TestHelper }
+import org.scalatest.{ FunSpec, Matchers }
 
-class TargetSpec extends FunSpec with Matchers with PartialFunctionValues {
+class TargetSpec extends FunSpec with Matchers {
 
-  describe("generator") {
-    it("should be defined for all implemented values") {
-      Target.values.foreach { v =>
-        if (Target.status(v) != "Proposal") {
-          Target.generator valueAt v
-        }
-      }
-    }
+  private val Path = "api/api.json"
+  private val service = TestHelper.parseFile(Path).serviceDescription.get
+
+  private val code = service.models.find(_.name == "code").get
+  lazy val target = code.fields.find(_.name == "target").getOrElse {
+    sys.error("Cannot find code.target field")
   }
 
-  describe("description") {
-    it("should be defined for all values") {
-      Target.values.foreach { v =>
-        Target.description valueAt v
-      }
-    }
+  it("api.json target lists all implemented keys in sort order") {
+    val keys = target.fieldtype.asInstanceOf[EnumerationFieldType].values
+    keys.sorted should be(keys)
   }
 
-  describe("status") {
-    it("should be defined for all values") {
-      Target.values.foreach { v =>
-        List("Alpha", "Proposal") should contain(Target.status valueAt v)
-      }
-    }
+  it("api.json target lists all implemented targets") {
+    val keys = target.fieldtype.asInstanceOf[EnumerationFieldType].values
+    val implementedKeys = Target.Implemented.map(_.key).sorted
+    keys should be(implementedKeys)
   }
 
-  describe("transform") {
-    it("should be well defined") {
-      Target.values.foreach { v =>
-        Target.mechanize(v) should equal(v)
-        Target.humanize(v) should not equal(v)
-        Target.mechanize(Target.humanize(v)) should equal(v)
-        Target.humanize(Target.mechanize(Target.humanize(v))) should equal(Target.humanize(v))
-      }
-    }
+  it("findByKey") {
+    Target.findByKey("ADSFADSF") should be(None)
+    Target.findByKey("ruby_client").get.key should be("ruby_client")
   }
 }
