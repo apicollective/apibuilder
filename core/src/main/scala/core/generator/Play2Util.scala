@@ -79,8 +79,13 @@ ${builder.indent}(unlift(${name}.unapply))
       Some(
         Seq(
           "val query = Seq(",
-          op.queryParameters.map { p =>
-            s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
+          op.queryParameters.map {
+            case opt if opt.isOption => {
+              s"""  ${opt.name}.map("${opt.originalName}" -> ${ScalaDataType.asString("_", opt.baseType)})"""
+            }
+            case p => {
+              s"""  Some(${p.name}).map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
+            }
           }.mkString(",\n"),
           ").flatten"
         ).mkString("\n")
