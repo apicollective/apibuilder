@@ -22,6 +22,29 @@
     number types are now supported in path parameters which keeps
     serialization simpler.</li>
 
+    <li> Major refactoring of the play client. Highlights include:
+
+    <ul>
+
+      <li>Methods that can return a 404 are now handled as returning
+      an Option. This means you do not need to catch errors to handle
+      404s, instead matching on the response leading to much nicer
+      client code.</li>
+
+      <li>Introduced traits for all resource clients and methods to
+      obtain an instance of the resource client. This should make it
+      simple to mock the clients in tests.</li>
+
+      <li>Nicer internal implementation of a number of helpers
+      (e.g. generating query parameters, path parameters, etc.). Helps
+      improve readability of the client code.</li>
+
+      <li>Fix bug to fully specify package of DateTime class.</li>
+
+    </ul>
+
+    </li>
+
   </ul>
 
 <h3>0.4.40</h3>
