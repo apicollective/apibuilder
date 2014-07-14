@@ -259,11 +259,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
       Seq.empty
     }
 
+    val typesRequiringUnit = Seq(204, 404)
     val noContentWithTypes = if (invalidCodes.isEmpty) {
       internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
         resource.operations.flatMap { op =>
-          op.responses.filter(r => r.code.toInt == 204 && !r.datatype.isEmpty && r.datatype.get != Datatype.UnitType.name).map { r =>
-            s"Resource[${resource.modelName.get}] ${op.label} has a response code of 204 (No Content). Cannot specify a type[${r.datatype.get}] for this reponse code."
+          op.responses.filter(r => typesRequiringUnit.contains(r.code.toInt) && !r.datatype.isEmpty && r.datatype.get != Datatype.UnitType.name).map { r =>
+            s"Resource[${resource.modelName.get}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get}]"
           }
         }
       }
