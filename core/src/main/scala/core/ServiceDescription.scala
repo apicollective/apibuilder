@@ -243,6 +243,8 @@ object Datatype {
 
   val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, MapType, UuidType, DateTimeIso8601Type)
 
+  val QueryParameterTypes = All.filter(_ != MapType)
+
   def findByName(name: String): Option[Datatype] = {
     // TODO: This is weird. If we include UnitType in All - it ends up
     // being a NPE in the all loop. For now pull out unit explicitly

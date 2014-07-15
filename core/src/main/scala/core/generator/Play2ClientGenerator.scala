@@ -137,7 +137,7 @@ ${modelClients(ssd).indent(2)}
     resources.flatMap(_.operations).map { op =>
       val path = Play2Util.pathParams(op)
 
-      val methodCall = if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
+      val methodCall = if (Util.isJsonDocumentMethod(op.method)) {
         Play2Util.formParams(op) match {
           case None => s"${op.method}($path)"
           case Some(payload) => s"${payload}\n\n${op.method}($path, payload)"
