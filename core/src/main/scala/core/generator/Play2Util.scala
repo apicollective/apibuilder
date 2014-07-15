@@ -129,7 +129,7 @@ ${builder.indent}(unlift(${name}.unapply))
         case ScalaStringType => s"""java.net.URLEncoder.encode($name, "UTF-8")"""
         case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
         case t => {
-          sys.error("Cannot encode params of type[$t] as path parameters")
+          sys.error(s"Cannot encode params of type[$t] as path parameters (name: $name)")
         }
       }
     }
