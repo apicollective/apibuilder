@@ -169,6 +169,38 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     guid.paramtype should be(PrimitiveParameterType(Datatype.UuidType))
   }
 
+  it("path parameters cannot be optional") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        }
+      },
+      "resources": {
+       "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:id",
+              "parameters": [
+                { "name": "id", "type": "long", "required": false }
+              ]
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("Resource[user] GET path parameter[id] is specified as optional. All path parameters are required")
+  }
+
   it("infers datatype for a path parameter from the associated model") {
 
     val json = """

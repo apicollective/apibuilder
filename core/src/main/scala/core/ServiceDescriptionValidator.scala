@@ -58,7 +58,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateResources ++
           validateParameters ++
           validateResponses ++
-          validatePathParameters
+          validatePathParameters ++
+          validatePathParametersAreRequired
         } else {
           requiredFieldErrors
         }
@@ -381,6 +382,34 @@ case class ServiceDescriptionValidator(apiJson: String) {
                 case _ => {
                   Some(s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[$typeName]. Only numbers and strings can be specified as path parameters")
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private def validatePathParametersAreRequired(): Seq[String] = {
+    internalServiceDescription.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
+      internalServiceDescription.get.models.find(_.name == resource.modelName.get) match {
+        case None => None
+        case Some(model: InternalModel) => {
+          resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
+            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.fieldtype.isEmpty).map(f => (f.name.get -> f.required)).toMap
+            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.paramtype.isEmpty).map(p => (p.name.get -> p.required)).toMap
+
+            op.namedPathParameters.flatMap { name =>
+              val isRequired = paramMap.get(name).getOrElse {
+                fieldMap.get(name).getOrElse {
+                  true
+                }
+              }
+
+              if (isRequired) {
+                None
+              } else {
+                Some(s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] is specified as optional. All path parameters are required")
               }
             }
           }

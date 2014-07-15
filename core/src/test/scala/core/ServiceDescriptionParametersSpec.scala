@@ -22,7 +22,7 @@ class ServiceDescriptionParametersSpec extends FunSpec with Matchers {
             { "name": "id", "type": "long" },
             { "name": "name", "type": "string" },
             { "name": "created_at", "type": "date-time-iso8601" },
-            { "name": "tag", "type": "tag", "required": false }
+            { "name": "tag", "type": "tag" }
           ]
         }
       },
