@@ -291,6 +291,6 @@ object ScalaDataType {
     case x @ ScalaDateTimeIso8601Type => {
       s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
-    case x => throw new UnsupportedOperationException(s"unsupported conversion of type ${d.name} to query string")
+    case x => s"play.api.libs.Json.toJson($varName)"
   }
 }
