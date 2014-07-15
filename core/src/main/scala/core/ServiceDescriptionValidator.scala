@@ -249,7 +249,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
                   if (modelNames.contains(typeName)) {
                     None
                   } else {
-                    Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[${typeName}]. Must be one of: ${ValidDatatypes} or the name of a model")
+                    Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of a model")
                   }
                 }
               }
@@ -308,7 +308,9 @@ case class ServiceDescriptionValidator(apiJson: String) {
     invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes
   }
 
-  private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted.mkString(" ")
+  private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted
+  private lazy val ValidQueryDatatypes = ValidDatatypes
+  //private lazy val ValidQueryDatatypes = Datatype.QueryParameterTypes.map(_.name).sorted
 
   private def validateParameters(): Seq[String] = {
     val missingNames = internalServiceDescription.get.resources.flatMap { resource =>
@@ -320,12 +322,21 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
 
     val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.parameters.filter { p => !p.name.isEmpty && p.paramtype.isEmpty }.map { p =>
-          s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${p.name.get}] is missing a type. Must be one of: ${ValidDatatypes} or the name of a model"
+      resource.operations.filter(!_.method.isEmpty).flatMap { op =>
+        val types = if (Util.isJsonDocumentMethod(op.method.get)) { ValidDatatypes } else { ValidQueryDatatypes }
+
+        op.parameters.filter { !_.name.isEmpty }.flatMap { p =>
+          if (p.paramtype.isEmpty) {
+            Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${p.name.get}] is missing a type. Must be one of: ${types.mkString(" ")}")
+          } else if (!types.contains(p.paramtype.get)) {
+            Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${p.name.get}] has an invalid type[${p.paramtype.get}]. Must be one of: ${types.mkString(" ")}")
+          } else {
+            None
+          }
         }
       }
     }
+
     missingNames ++ missingTypes
   }
 
@@ -345,7 +356,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
             case None => {
               internalServiceDescription.get.models.find(_.name == typeName) match {
                 case None => {
-                  Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${param.name.get}] has an invalid datatype[${typeName}]. Must be one of: ${ValidDatatypes} or the name of a model")
+                  Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${param.name.get}] has an invalid datatype[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of a model")
                 }
                 case Some(m: InternalModel) => {
                   None

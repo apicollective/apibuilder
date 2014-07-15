@@ -58,7 +58,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
   lazy val url = op.path
   lazy val method = s"$controllerName.$methodName"
 
-  lazy val params = if (GeneratorUtil.isJsonDocumentMethod(verb)) {
+  lazy val params = if (Util.isJsonDocumentMethod(verb)) {
     pathParameters
   } else {
     parameters

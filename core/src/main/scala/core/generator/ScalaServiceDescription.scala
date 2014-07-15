@@ -116,7 +116,7 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
   val scalaType: String = underscoreToInitCap(response.datatype)
   val isUnit = scalaType == "Unit"
   val isMultiple = response.multiple
-  val isOption = !GeneratorUtil.isJsonDocumentMethod(method) && !isMultiple
+  val isOption = !isMultiple && !Util.isJsonDocumentMethod(method)
 
   val code = response.code
   val isSuccess = code >= 200 && code < 300
@@ -291,6 +291,6 @@ object ScalaDataType {
     case x @ ScalaDateTimeIso8601Type => {
       s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
-    case x => s"play.api.libs.Json.toJson($varName)"
+    case x => throw new UnsupportedOperationException(s"unsupported conversion of type ${d.name} to query string for $varName")
   }
 }

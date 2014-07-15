@@ -150,12 +150,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
 
-      val hasQueryParams = (!GeneratorUtil.isJsonDocumentMethod(op.method) && !otherParams.isEmpty)
+      val hasQueryParams = (!Util.isJsonDocumentMethod(op.method) && !otherParams.isEmpty)
       if (hasQueryParams) {
         paramStrings.append("incoming={}")
       }
 
-      if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
+      if (Util.isJsonDocumentMethod(op.method)) {
         paramStrings.append("hash")
       }
 
@@ -195,7 +195,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
         requestBuilder.append(".with_query(query)")
       }
 
-      if (GeneratorUtil.isJsonDocumentMethod(op.method)) {
+      if (Util.isJsonDocumentMethod(op.method)) {
         sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
         requestBuilder.append(".with_json(hash.to_json)")
       }

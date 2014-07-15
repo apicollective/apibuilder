@@ -14,7 +14,19 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this user." },
                 { "name": "email", "type": "string" },
-                { "name": "name", "type": "string" }
+                { "name": "name", "type": "string", "required": false }
+            ]
+        },
+
+        "contact": {
+
+            "description": "A contact represents contact information for a person.",
+
+            "fields": [
+                { "name": "name", "type": "string", "required": false },
+                { "name": "email", "type": "string", "required": false },
+                { "name": "phone", "type": "string", "required": false },
+                { "name": "role", "type": "string", "required": false, "description": "An optional specific role for this contact", "example": "merchandise, inventory, accounts payable, etc." }
             ]
         },
 
@@ -33,8 +45,8 @@
 
             "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Uniquely identifies this vendor tag." },
-                { "name": "user_guid", "type": "uuid", "description": "TODO: Change type to user" },
-                { "name": "vendor", "type": "vendor" },
+                { "name": "user_guid", "type": "uuid" },
+                { "name": "vendor_guid", "type": "uuid" },
                 { "name": "tag", "type": "string", "description": "The actual tag you have applied to this vendor" }
             ]
         },
@@ -44,10 +56,18 @@
 
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "vendor", "type": "vendor" },
+                { "name": "vendor_guid", "type": "uuid" },
                 { "name": "number", "type": "string", "description": "This is the vendor's unique identifier for this item. The item number is case sensitive." },
                 { "name": "quantity", "type": "long", "description": "The number of units that this vendor currently has available for sale.", "required": false },
-                { "name": "prices", "type": "prices", "required": false }
+                { "name": "prices", "type": "prices", "required": false },
+                { "name": "attributes", "type": "[attribute]", "required": false, "example": "size", "description": "Attributes are part of the unique item composition. In they physical world, attributes would be sku-defining properties like color or size." },
+                { "name": "return_policy", "type": "return_policy", "required": false },
+                { "name": "metadata", "type": "[metadata]", "required": false, "example": "product_category", "description": "Metadata are additional properties of an item that are useful generally (like a product category) in describing the item." },
+                { "name": "identifiers", "type": "[identifier]", "required": false, "example": "UPC or EAN-13", "description": "Unique identifiers for this item" },
+                { "name": "dimensions", "type": "[dimension]", "required": false },
+                { "name": "content", "type": "[content]", "required": false },
+                { "name": "images", "type": "[media]", "required": false },
+                { "name": "videos", "type": "[media]", "required": false }
             ]
         },
 
@@ -68,11 +88,70 @@
             ]
         },
 
+        "attribute": {
+            "description": "An attribute is a critical property of the item - i.e. it identifies an intrinsic property that would be used, for example, in determining a stock keeping unit. Common examples of attributes include size (e.g. a small is a physically different item from a large), color, fabric, etc.",
+            "fields": [
+                { "name": "name", "type": "string", "description": "The name of this attribute" },
+                { "name": "value", "type": "string", "description": "The value of this attribute for this item" },
+                { "name": "locale", "type": "string", "description": "The locale in which the value is encoded.", "example": "en_US" }
+            ]
+        },
+
+        "metadata": {
+            "description": "Metadata are name/value pairs further describing an item.",
+            "fields": [
+                { "name": "name", "type": "string", "description": "The name of this metadata" },
+                { "name": "value", "type": "string", "description": "The value of this metadata for this item" },
+                { "name": "locale", "type": "string", "description": "The locale in which the value is encoded.", "example": "en_US" }
+            ]
+        },
+
+        "return_policy": {
+            "description": "A return policy defines whether or not an item is returnable and for how long",
+            "fields": [
+                { "name": "number_days", "type": "integer", "description": "The number of days from purchase that this item can be returned. Specifying a value of 0 means the item is not returnable. A value of 10, for example, means the item is returnable for 10 days from time of purchase.", "minimum": 0 }
+            ]
+        },
+
+        "identifier": {
+            "description": "An identifier is a unique identifier for this item. Common use cases will include providing your own bar code - e.g. a UPC-A or EAN-13 for each of your items",
+            "fields": [
+                { "name": "name", "type": "string", "description": "The name of this identifier", "example": "UPC-A" },
+                { "name": "value", "type": "string", "description": "The value of this identifier", "example": "954390947257" }
+            ]
+        },
+
+        "dimension": {
+            "description": "A physical dimension of an item - e.g. weight, width, height, etc. Each dimension contains a name, a value, and the units in which the measurement was made.",
+            "fields": [
+                { "name": "name", "type": "string", "description": "The name of this dimension", "example": "width" },
+                { "name": "value", "type": "decimal", "description": "The actual value for this dimension", "example": "12" },
+                { "name": "units", "type": "string", "description": "The units for this dimension", "example": "inches" }
+            ]
+        },
+
+        "content": {
+            "description": "Content refers to a piece of text about this item. Each piece of content can be identified by its name and must specify the locale in which that content is stored.",
+            "fields": [
+                { "name": "name", "type": "string", "description": "The name of this content item", "example": "'title' or 'description'" },
+                { "name": "value", "type": "string", "description": "The actual textual contents." },
+                { "name": "locale", "type": "string", "description": "The locale for this value text.", "example": "en_US" }
+            ]
+        },
+
+        "media": {
+            "description": "Media refers to an image or video available via URL.",
+            "fields": [
+                { "name": "url", "type": "string", "description": "The full URL where this media is located." },
+                { "name": "tags", "type": "[string]", "description": "Arbitrary tags associated with this media item.", "required": false }
+            ]
+        },
+
         "term": {
             "description": "Represents the terms by which two vendors are transacting. Primary purpose is to capture things like 'NET30' so that both parties can correctly invoice and pay.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "vendor", "type": "vendor" },
+                { "name": "vendor_guid", "type": "uuid" },
                 { "name": "code", "type": "string", "description": "An identifier that people at both vendors understand (e.g. NET30)." },
                 { "name": "description", "type": "string", "required": false, "description": "Description to help people understand the intent of the terms (e.g. Payment is due 30 days after receipt of invoice)" }
             ]
@@ -83,12 +162,15 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this agreement" },
                 { "name": "identifier", "type": "string", "description": "A human readable unique identifier for this agreement. Format will be something like IA2014-123456 - IA: Iris Agreement followed by the year followed by a number." },
-                { "name": "purchasing_vendor", "type": "vendor", "description": "The vendor that will be purchasing items - i.e. the vendor that will be responsible for creating the Purchases in Iris Hub" },
-                { "name": "fulfilling_vendor", "type": "vendor", "description": "The vendor that will be fulfilling items - i.e. the vendor that will be responsible for receiving a shipment request and actually shipping the goods." },
-                { "name": "term", "type": "term", "description": "The specific payment terms in place for this agreement" },
+                { "name": "purchasing_vendor_guid", "type": "uuid", "description": "The vendor that will be purchasing items - i.e. the vendor that will be responsible for creating the Purchases in Iris Hub" },
+                { "name": "fulfilling_vendor_guid", "type": "uuid", "description": "The vendor that will be fulfilling items - i.e. the vendor that will be responsible for receiving a shipment request and actually shipping the goods." },
+                { "name": "fulfillment_type", "type": "string", "description": "Can be set to either 'direct_to_customer' or 'direct_to_purchasing_vendor'. Determines if the fulfilling vendor is going to ship directly to the customer (e.g. drop ship) or ship in bulk to the purchasing vendor who will then cross-dock and ship to customer." },
+                { "name": "term_guid", "type": "uuid", "description": "The specific payment terms in place for this agreement" },
                 { "name": "begin_datetime", "type": "date-time-iso8601", "description": "The date on which this agreement goes into effect." },
                 { "name": "end_datetime", "type": "date-time-iso8601", "required": false, "description": "The date on which this agreement ends. If not specified, this agreement is considered perpetual and it never ends." },
-                { "name": "currency", "type": "string", "description": "Determines the currency in which transactions pertaining to this agreement are made. The value is the 3-character upper case iso4217 code for this currency", "example": "USD or EUR" }
+                { "name": "currency", "type": "string", "description": "Determines the currency in which transactions pertaining to this agreement are made. The value is the 3-character upper case iso4217 code for this currency", "example": "USD or EUR" },
+                { "name": "purchasing_vendor_contacts", "type": "[contact]", "required": false, "description": "Contact information for the purchasing vendor." },
+                { "name": "fulfilling_vendor_contacts", "type": "[contact]", "required": false, "description": "Contact information for the fulfilling vendor." }
             ]
         },
 
@@ -96,7 +178,7 @@
             "description": "A shipment schedule defines how frequently a vendor would like to ship. A common use case is to ship every week on monday. IRIS will then aggregate pending purchases into a single shipment request on Mondays for the vendor to ship in bulk.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "vendor", "type": "vendor" },
+                { "name": "vendor_guid", "type": "uuid" },
                 { "name": "frequency", "type": "string", "description": "supported values: immediate (e.g. for drop ship orders create shipment requests immediately following purchase), daily (create one shipment request / day), weekly (create one shipment request / week)." },
                 { "name": "begin_datetime", "type": "date-time-iso8601", "description": "Date on which to start schedule. For daily/weekly schedules, determines the day of the week on which to generate a shipment request" }
             ]
@@ -130,30 +212,38 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
                 { "name": "vendor_purchase_number", "type": "string", "description": "Unique identifier in vendor's system for this purchase. This token is used to ensure that a purchase is not duplicated in IRIS" },
-                { "name": "agreement", "type": "agreement" },
-                { "name": "item", "type": "item" },
+                { "name": "agreement_guid", "type": "uuid" },
+                { "name": "item_guid", "type": "uuid" },
+                { "name": "created_at", "type": "date-time-iso8601" },
                 { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." },
-                { "name": "address", "type": "address" }
+                { "name": "address_name", "type": "string", "required": false },
+                { "name": "address_line1", "type": "string" },
+                { "name": "address_line2", "type": "string", "required": false },
+                { "name": "address_line3", "type": "string", "required": false },
+                { "name": "address_city", "type": "string", "required": false },
+                { "name": "address_state", "type": "string", "required": false },
+                { "name": "address_postal_code", "type": "string" },
+                { "name": "address_country", "type": "string" },
+                { "name": "address_phone", "type": "string", "required": false },
+                { "name": "metadata", "type": "[metadata]", "required": false, "description": "Optional metadata associated with this purchase (e.g. a customer order number)" }
             ]
         },
 
-        "shipment_request": {
-            "description": "A shipment request refers to a collection of items that the fulfilling vendor should now ship to a single address, subject to the terms of a single agreement. Conceptually - a shipment request relates to one order that the vendor must now ship - containing at least 1 item in it.",
+        "tracking_information": {
+            "description": "Capture tracking information (e.g. UPS tracking number) for purchases that have been shipped.",
             "fields": [
-                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "agreement", "type": "agreement" },
-                { "name": "identifier", "type": "string", "description": "A human readable unique identifier for this shipment request. Format will be something like SR2014-123456 - SR: Shipment Request followed by the year followed by a number." },
-                { "name": "address", "type": "address" }
+                { "name": "carrier", "type": "string", "description": "The shipping carrier - e.g. UPS", "example": "UPS" },
+                { "name": "identifier", "type": "string", "description": "The actual tracking number or identifier" }
             ]
         },
 
-        "shipment_request_item": {
-            "description": "Represents the list of items inside one shipment request.",
+        "purchase_confirmation": {
+            "description": "For vendors that are shipping direct to customer, the purchase confirmation represents the action that the fulfilling vendor took on behalf of a purchase. Purchases are either 'shipped' or 'cannot_fulfill', and for shipped confirmations, optional tracking information can be provided for the recipient.",
             "fields": [
-                { "name": "shipment_request", "type": "shipment_request" },
-                { "name": "item", "type": "item" },
-                { "name": "item_number", "type": "string", "description": "The fulfilling vendor's number" },
-                { "name": "quantity", "type": "long", "description": "The quantity requested for this item", "minimum": 1 }
+                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this purchase confirmation" },
+                { "name": "purchase_guid", "type": "uuid", "description": "The purchase that we are confirming. Unique." },
+                { "name": "status", "type": "string", "description": "Either 'shipped' or 'cannot_fulfill'" },
+                { "name": "tracking", "type": "tracking_information", "required": false, "description": "Optional tracking information for shipped purchases" }
             ]
         },
 
@@ -161,9 +251,10 @@
             "description": "A receipt represents a single unit of merchandise that was received.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
-                { "name": "agreement", "type": "agreement" },
-                { "name": "item", "type": "item" },
+                { "name": "agreement_guid", "type": "uuid" },
+                { "name": "item_guid", "type": "uuid" },
                 { "name": "price", "type": "decimal" },
+                { "name": "purchase_order", "type": "purchase_order", "required": false },
                 { "name": "vendor_receipt_number", "type": "string", "description": "Uniquely identifies this receipt in the vendor system. Main purpose is to guarantee idempotence" }
             ]
         },
@@ -173,12 +264,43 @@
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
                 { "name": "message", "type": "string", "description": "Description of the error" }
             ]
+        },
+
+        "purchase_order": {
+            "description": "A purchase order refers to a collection of items that the fulfilling vendor should now ship to a single address, subject to the terms of a single agreement. Conceptually - a purchase order relates to one order that the vendor must now ship - containing at least 1 item in it.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Uniquely identifies this record" },
+                { "name": "agreement_guid", "type": "uuid" },
+                { "name": "address", "type": "address" },
+                { "name": "is_open", "type": "boolean" }
+            ]
+        },
+
+        "purchase_order_item": {
+            "description": "Represents the list of items inside one purchase order.",
+            "fields": [
+                { "name": "purchase_order_guid", "type": "uuid" },
+                { "name": "item_guid", "type": "uuid" },
+                { "name": "item_number", "type": "string", "description": "The fulfilling vendor's number" },
+                { "name": "quantity", "type": "long", "description": "The quantity requested for this item", "minimum": 1 }
+            ]
+        },
+
+        "purchase_order_authorization": {
+            "description": "Before a purchase order is sent to the fulfilling vendor, the purchasing vendor must provide an authorization number (e.g. an internal purchase order number).",
+            "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "purchase_order_guid", "type": "uuid" },
+                { "name": "authorization_number", "type": "string" }
+            ]
         }
 
     },
 
-    "resources": {
-	"vendor": {
+    "resources": [
+        {
+            "model": "vendor",
+
             "operations": [
                 {
                     "method": "GET",
@@ -186,6 +308,7 @@
                     "parameters": [
                         { "name": "name", "type": "string", "required": false, "description": "Finds the vendor with this name. Exact match" },
                         { "name": "key", "type": "string", "required": false, "description": "Finds the vendor with this key. Exact match" },
+                        { "name": "tag", "type": "string", "required": false, "description": "Finds all vendors with this tag. Exact match" },
                         { "name": "limit", "type": "integer", "default": 50, "description": "The number of records to return", "minimum": 0, "maximum": 50 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -221,7 +344,53 @@
             ]
         },
 
-        "item": {
+        {
+            "model": "vendor_tag",
+            "path": "/vendor-tags",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all vendor tags. Results are always paginated.",
+                    "parameters": [
+                        { "name": "vendor_guid", "type": "uuid", "required": false },
+                        { "name": "tag", "type": "string", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[vendor_tag]" }
+                    }
+                },
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "description": "Gets one vendor tag.",
+                    "responses": {
+                        "200": { "type": "vendor_tag" }
+                    }
+                },
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "vendor_guid", "type": "uuid" },
+                        { "name": "tag", "type": "string" }
+                    ],
+                    "responses": {
+                        "201": { "type": "vendor_tag" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+                {
+                    "method": "DELETE",
+                    "path": "/:guid"
+                }
+            ]
+        },
+
+
+        {
+            "model": "item",
+
             "operations": [
                 {
                     "method": "GET",
@@ -234,7 +403,7 @@
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[item]", "fields": ["guid", "vendor", "number", "quantity"] }
+                        "200": { "type": "[item]" }
                     }
                 },
                 {
@@ -248,7 +417,7 @@
                 {
                     "method": "POST",
                     "parameters": [
-                        { "name": "vendor", "type": "vendor" },
+                        { "name": "vendor_guid", "type": "uuid" },
                         { "name": "number", "type": "string" },
                         { "name": "quantity", "type": "long", "required": false, "default": 0 }
                     ],
@@ -290,7 +459,8 @@
             ]
         },
 
-	"term": {
+        {
+            "model": "term",
             "operations": [
                 {
                     "method": "GET",
@@ -307,9 +477,17 @@
                 },
 
                 {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "term" }
+                    }
+                },
+
+                {
                     "method": "POST",
                     "parameters": [
-                        { "name": "vendor_guid", "type": "vendor" },
+                        { "name": "vendor_guid", "type": "uuid" },
                         { "name": "code", "type": "string" },
                         { "name": "description", "type": "string", "required": false }
                     ],
@@ -326,7 +504,8 @@
             ]
         },
 
-        "agreement": {
+        {
+            "model": "agreement",
             "operations": [
                 {
                     "method": "GET",
@@ -344,11 +523,21 @@
                 },
 
                 {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "agreement" }
+                    }
+                },
+
+
+                {
                     "method": "POST",
                     "parameters": [
-                        { "name": "purchasing_vendor", "type": "vendor" },
-                        { "name": "fulfilling_vendor", "type": "vendor" },
-                        { "name": "term", "type": "term" },
+                        { "name": "purchasing_vendor_guid", "type": "uuid" },
+                        { "name": "fulfilling_vendor_guid", "type": "uuid" },
+                        { "name": "term_guid", "type": "uuid" },
+                        { "name": "fulfillment_type", "type": "string" },
                         { "name": "begin_datetime", "type": "date-time-iso8601" },
                         { "name": "end_datetime", "type": "date-time-iso8601", "required": false },
                         { "name": "currency", "type": "string", "description": "3-character upper case iso4217 code for this currency", "example": "USD or EUR" }
@@ -366,7 +555,8 @@
             ]
         },
 
-        "shipment_schedule": {
+        {
+            "model": "shipment_schedule",
             "path": "/shipment-schedules",
             "operations": [
                 {
@@ -384,9 +574,17 @@
                 },
 
                 {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "shipment_schedule" }
+                    }
+                },
+
+                {
                     "method": "POST",
                     "parameters": [
-                        { "name": "vendor", "type": "vendor" },
+                        { "name": "vendor_guid", "type": "uuid" },
                         { "name": "frequency", "type": "string" },
                         { "name": "begin_datetime", "type": "date-time-iso8601" }
                     ],
@@ -403,7 +601,8 @@
             ]
         },
 
-        "planned_shipment": {
+        {
+            "model": "planned_shipment",
             "path": "/planned-shipments",
             "operations": [
                 {
@@ -422,7 +621,8 @@
             ]
         },
 
-        "purchase": {
+        {
+            "model": "purchase",
             "operations": [
                 {
                     "method": "GET",
@@ -431,6 +631,7 @@
                         { "name": "vendor_purchase_number", "type": "string", "required": false },
                         { "name": "agreement_guid", "type": "uuid", "required": false },
                         { "name": "item_guid", "type": "uuid", "required": false },
+                        { "name": "since", "type": "date-time-iso8601", "required": false },
                         { "name": "limit", "type": "integer", "default": 50 },
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
@@ -452,10 +653,19 @@
                     "method": "POST",
                     "parameters": [
                         { "name": "vendor_purchase_number", "type": "string" },
-                        { "name": "agreement", "type": "agreement" },
-                        { "name": "item", "type": "item" },
-                        { "name": "address", "type": "address" },
-                        { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." }
+                        { "name": "agreement_guid", "type": "uuid" },
+                        { "name": "item_guid", "type": "uuid" },
+                        { "name": "price", "type": "decimal", "description": "Price of the item being purchased. Currency is that of the agreement." },
+                        { "name": "metadata", "type": "[metadata]", "required": false },
+                        { "name": "address_name", "type": "string", "required": false },
+                        { "name": "address_line1", "type": "string" },
+                        { "name": "address_line2", "type": "string", "required": false },
+                        { "name": "address_line3", "type": "string", "required": false },
+                        { "name": "address_city", "type": "string", "required": false },
+                        { "name": "address_state", "type": "string", "required": false },
+                        { "name": "address_postal_code", "type": "string" },
+                        { "name": "address_country", "type": "string" },
+                        { "name": "address_phone", "type": "string", "required": false }
                     ],
                     "responses": {
                         "201": { "type": "purchase" },
@@ -465,71 +675,86 @@
             ]
         },
 
-        "shipment_request": {
-            "path": "/shipment-requests",
+        {
+            "model": "purchase_confirmation",
+            "path": "/purchase-confirmations",
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Search all shipment requests. Results are always paginated.",
+                    "description": "Search all purchase confirmations. Results are always paginated.",
                     "parameters": [
-                        { "name": "fulfilling_vendor_guid", "type": "uuid", "required": false },
-                        { "name": "agreement_guid", "type": "uuid", "required": false },
-                        { "name": "identifier", "type": "string", "required": false },
-                        { "name": "is_open", "type": "boolean", "required": false },
+                        { "name": "purchase_guid", "type": "uuid", "required": false },
                         { "name": "limit", "type": "integer", "default": 50 },
                         { "name": "offset", "type": "integer", "default": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[shipment_request]" }
+                        "200": { "type": "[purchase_confirmation]" }
                     }
                 },
 
                 {
-                    "path": "/:guid",
-                    "method": "PUT",
-                    "description": "Closes an open shipment request ahead of schedule.",
-                    "responses": {
-                        "201": { "type": "shipment_request" },
-                        "409": { "type": "[error]" }
-                    }
-                }
-            ]
-        },
-
-        "shipment_request_item": {
-            "path": "/shipment-request-items",
-            "operations": [
-                {
-                    "method": "GET",
-                    "description": "Retrieve the items in a shipment request. Results are always paginated.",
-                    "parameters": [
-                        { "name": "shipment_request_guid", "type": "uuid" },
-                        { "name": "limit", "type": "integer", "default": 50 },
-                        { "name": "offset", "type": "integer", "default": 0 }
-                    ],
-                    "responses": {
-                        "200": { "type": "[shipment_request_item]" }
-                    }
-                }
-            ]
-        },
-
-        "receipt": {
-            "operations": [
-                {
                     "method": "GET",
                     "path": "/:guid",
                     "responses": {
-                        "200": { "type": "[receipt]" }
+                        "200": { "type": "purchase_confirmation" }
                     }
                 },
 
                 {
                     "method": "POST",
                     "parameters": [
-                        { "name": "agreement", "type": "agreement" },
-                        { "name": "item", "type": "item" },
+                        { "name": "purchase_guid", "type": "uuid" },
+                        { "name": "status", "type": "string" },
+                        { "name": "tracking", "type": "tracking_information", "required": false }
+                    ],
+                    "responses": {
+                        "201": { "type": "purchase_confirmation" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/:guid"
+                }
+
+            ]
+        },
+
+        {
+            "model": "receipt",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all receipts. Results are always paginated.",
+                    "parameters": [
+                        { "name": "agreement_guid", "type": "uuid", "required": false },
+                        { "name": "item_guid", "type": "uuid", "required": false },
+                        { "name": "vendor_receipt_number", "type": "string", "required": false },
+                        { "name": "purchase_order_guid", "type": "uuid", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[receipt]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "receipt" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "parameters": [
+                        { "name": "agreement_guid", "type": "uuid" },
+                        { "name": "item_guid", "type": "uuid" },
                         { "name": "vendor_receipt_number", "type": "string" },
+                        { "name": "purchase_order_guid", "type": "uuid" },
                         { "name": "price", "type": "decimal" }
                     ],
                     "responses": {
@@ -543,6 +768,112 @@
                     "path": "/:guid"
                 }
             ]
+        },
+
+        {
+            "model": "purchase_order",
+            "path": "/purchase-orders",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all purchase orders. Results are always paginated.",
+                    "parameters": [
+                        { "name": "fulfilling_vendor_guid", "type": "uuid", "required": false },
+                        { "name": "agreement_guid", "type": "uuid", "required": false },
+                        { "name": "is_open", "type": "boolean", "required": false },
+                        { "name": "is_authorized", "type": "boolean", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[purchase_order]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "purchase_order" }
+                    }
+                },
+
+                {
+                    "path": "/:guid",
+                    "method": "PUT",
+                    "description": "Closes an open purchase order ahead of schedule.",
+                    "responses": {
+                        "201": { "type": "purchase_order" },
+                        "409": { "type": "[error]" }
+                    }
+                }
+            ]
+        },
+
+        {
+            "model": "purchase_order_item",
+            "path": "/purchase-order-items",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Retrieve the items in a purchase order. Results are always paginated.",
+                    "parameters": [
+                        { "name": "purchase_order_guid", "type": "uuid", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[purchase_order_item]" }
+                    }
+                }
+            ]
+        },
+
+        {
+            "model": "purchase_order_authorization",
+            "path": "/purchase-order-authorizations",
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search purchase order authorizations.",
+                    "parameters": [
+                        { "name": "purchase_order_guid", "type": "uuid", "required": false},
+                        { "name": "authorization_number", "type": "string", "required": false },
+                        { "name": "limit", "type": "integer", "default": 50 },
+                        { "name": "offset", "type": "integer", "default": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[purchase_order_authorization]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "description": "Get a puchase order authorization by its guid.",
+                    "responses": {
+                        "200": { "type": "purchase_order_authorization" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "path": "/:guid",
+                    "description": "Authorize a purchase order.",
+                    "parameters": [
+                        { "name": "authorization_number", "type": "string" }
+                    ],
+                    "responses": {
+                        "201": { "type": "purchase_order_authorization" },
+                        "409": { "type": "[error]", "description": "If the purchase order has already been authorized with a different number." }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+                    "path": "/:guid"
+                }
+            ]
         }
-    }
+    ]
 }

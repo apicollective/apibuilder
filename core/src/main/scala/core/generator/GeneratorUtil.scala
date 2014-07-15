@@ -31,10 +31,6 @@ private[generator] object GeneratorUtil {
     }
   }
 
-  def isJsonDocumentMethod(verb: String): Boolean = {
-    verb != "GET" && verb != "DELETE"
-  }
-
   /**
    * Splits a string into lines with a given max length
    * leading indentation.
