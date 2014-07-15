@@ -3,7 +3,7 @@ package core
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
-class ServiceDescriptionParametersSpec extends FunSpec with Matchers {
+class ServiceDescriptionPathParametersSpec extends FunSpec with Matchers {
 
   val baseJson = """
     {
