@@ -28,7 +28,7 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
     }
 
     it("Generates no json conversions") {
-      Play2Enums.buildJson(service.models.head) should be(None)
+      Play2Enums.buildJson("Test", service.models.head) should be(None)
     }
 
   }
@@ -53,7 +53,7 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
     }
 
     it("generates valid json conversions") {
-      val jsonConversions = Play2Enums.buildJson(service.models.head).get
+      val jsonConversions = Play2Enums.buildJson("Test", service.models.head).get
       println(jsonConversions)
       jsonConversions.trim should be(TestHelper.readFile("core/src/test/files/play2enums-json-example.txt").trim)
     }

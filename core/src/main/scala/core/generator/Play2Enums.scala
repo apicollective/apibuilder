@@ -27,7 +27,7 @@ object Play2Enums {
     * If this model has any enumerations, returns the implicits for
     * json serialization.
     */
-  def buildJson(model: Model): Option[String] = {
+  def buildJson(prefix: String, model: Model): Option[String] = {
     val fields = enumFields(model)
 
     if (fields.isEmpty) {
@@ -38,8 +38,8 @@ object Play2Enums {
         // TODO: datatype instead of string
         fields.map { field =>
           val traitName = Text.underscoreToInitCap(field.name)
-          s"implicit val jsonReads${className}_$traitName = __.read[String].map($className.$traitName.apply)\n\n" +
-          s"implicit val jsonWrites${className}_$traitName = new Writes[$className.$traitName] {\n" +
+          s"implicit val jsonReads${prefix}${className}_$traitName = __.read[String].map($className.$traitName.apply)\n\n" +
+          s"implicit val jsonWrites${prefix}${className}_$traitName = new Writes[$className.$traitName] {\n" +
           s"  def writes(x: $className.$traitName) = JsString(x.toString)\n" +
           "}"
         }.mkString("\n\n")
