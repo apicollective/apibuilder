@@ -23,5 +23,4 @@ class RubyGemGeneratorSpec extends FunSpec with Matchers {
     val generator = RubyGemGenerator(ServiceDescription(json))
     println(generator.generate())
   }
-
 }

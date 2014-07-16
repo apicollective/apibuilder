@@ -90,8 +90,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
   class Client
 
     def initialize(url, opts={})
-      HttpClient::Preconditions.assert_class('url', url, String)
-      @url = URI.parse(url)
+      @url = HttpClient::Preconditions.assert_class('url', url, String)
       @authorization = HttpClient::Preconditions.assert_class_or_nil('authorization', opts.delete(:authorization), HttpClient::Authorization)
       HttpClient::Preconditions.assert_empty_opts(opts)
       HttpClient::Preconditions.check_state(url.match(/http.+/i), "URL[%s] must start with http" % url)
@@ -111,7 +110,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil('path', path, String)
-      request = HttpClient::Request.new(@url + path.to_s)
+      request = HttpClient::Request.new(URI.parse(@url + path.to_s))
 
       if @authorization
         request.with_auth(@authorization)

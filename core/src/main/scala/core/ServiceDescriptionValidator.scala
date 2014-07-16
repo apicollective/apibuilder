@@ -50,6 +50,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
         if (requiredFieldErrors.isEmpty) {
           validateName ++
+          validateBaseUrl ++
           validateModels ++
           validateFields ++
           validateParameterTypes ++
@@ -77,6 +78,19 @@ case class ServiceDescriptionValidator(apiJson: String) {
       Seq.empty
     } else {
       Seq(s"Name[${serviceDescription.get.name}] must start with a letter")
+    }
+  }
+
+  private def validateBaseUrl(): Seq[String] = {
+    serviceDescription.get.baseUrl match {
+      case Some(url) => { 
+        if(url.endsWith("/")){
+          Seq(s"base_url[${url}] must not end with a '/'")  
+        } else {
+          Seq.empty
+        } 
+      }
+      case None => Seq.empty
     }
   }
 
