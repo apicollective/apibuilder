@@ -277,8 +277,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted
-  private lazy val ValidQueryDatatypes = ValidDatatypes
-  //private lazy val ValidQueryDatatypes = Datatype.QueryParameterTypes.map(_.name).sorted
+  private lazy val ValidQueryDatatypes = Datatype.QueryParameterTypes.map(_.name).sorted
 
   private def validateParameters(): Seq[String] = {
     val missingNames = internalServiceDescription.get.resources.flatMap { resource =>
@@ -291,7 +290,11 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
     val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(!_.method.isEmpty).flatMap { op =>
-        val types = if (Util.isJsonDocumentMethod(op.method.get)) { ValidDatatypes } else { ValidQueryDatatypes }
+        val types = if (Util.isJsonDocumentMethod(op.method.get)) { 
+          ValidDatatypes ++ internalServiceDescription.get.models.filter(!_.name.isEmpty).map(_.name)
+        } else {
+          ValidQueryDatatypes
+        }
 
         op.parameters.filter { !_.name.isEmpty }.flatMap { p =>
           if (p.paramtype.isEmpty) {

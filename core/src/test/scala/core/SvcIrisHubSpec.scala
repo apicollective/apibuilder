@@ -19,12 +19,13 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
   it("parses models") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
-    service.models.map(_.name).sorted.mkString(" ") should be("address agreement error item money planned_shipment prices purchase " +
-                                                              "receipt shipment_request shipment_request_item shipment_schedule " +
-                                                              "term user vendor vendor_tag")
+    val modelNames = service.models.map(_.name).toSet
+    modelNames.contains("foo") should be(false)
+    modelNames.contains("agreement") should be(true)
+    modelNames.contains("vendor") should be(true)
 
     val item = service.models.find(_.name == "item").get
-    item.fields.map(_.name).mkString(" ") should be("guid vendor number quantity prices")
+    item.fields.map(_.name).mkString(" ") should be("guid vendor_guid number quantity prices attributes return_policy metadata identifiers dimensions content images videos")
     item.fields.find(_.name == "number").get.fieldtype.asInstanceOf[PrimitiveFieldType].datatype.name should be("string")
   }
 
