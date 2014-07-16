@@ -14,12 +14,13 @@ object Play2Models {
 
   def apply(ssd: ScalaServiceDescription): String = {
     val caseClasses = ScalaCaseClasses(ssd)
-    val enumJson: String = ssd.serviceDescription.models.flatMap { model => Play2Enums.buildJson(model) }.mkString("\n\n")
+    val prefix = underscoreToInitCap(ssd.name)
+    val enumJson: String = ssd.serviceDescription.models.flatMap { model => Play2Enums.buildJson(prefix, model) }.mkString("\n\n")
     val modelJson: String = ssd.models.map { model =>
-s"""implicit def reads${model.name}: play.api.libs.json.Reads[${model.name}] =
+s"""implicit def jsonReads${prefix}${model.name}: play.api.libs.json.Reads[${model.name}] =
 ${Play2Util.jsonReads(model).indent(2)}
 
-implicit def writes${model.name}: play.api.libs.json.Writes[${model.name}] =
+implicit def jsonWrites${prefix}${model.name}: play.api.libs.json.Writes[${model.name}] =
 ${Play2Util.jsonWrites(model).indent(2)}"""
     }.mkString("\n\n")
 
