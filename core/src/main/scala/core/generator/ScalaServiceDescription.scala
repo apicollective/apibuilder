@@ -110,7 +110,7 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
     case Some(bodyModel: Model) => {
       Some(
         Seq(
-          Some(s"${Text.initLowerCase(model.name)}: ${resource.packageName}.${model.name}"),
+          Some(s"${Text.initLowerCase(model.name)}: ${resource.packageName}.models.${model.name}"),
           ScalaUtil.fieldsToArgList(parameters.map(_.definition))
         ).flatten.mkString(", ")
       )

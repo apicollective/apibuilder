@@ -92,8 +92,6 @@ s"""package ${ssd.packageName} {
     }
   }
 
-  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception$errorsString
-
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import ${ssd.packageName}.models._
     import ${ssd.packageName}.models.json._
@@ -103,6 +101,8 @@ s"""package ${ssd.packageName} {
     logger.info(s"Initializing ${ssd.packageName}.client for url $$apiUrl")
 
 ${accessors.indent(4)}
+
+${modelClients(ssd).indent(2)}
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
@@ -125,28 +125,48 @@ ${accessors.indent(4)}
       req
     }
 
-    private def POST(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("POST", _requestHolder(path)).post(data)
+    private def POST(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
-    private def GET(path: String, q: Seq[(String, String)] = Seq.empty)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def GET(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
-    private def PUT(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PUT", _requestHolder(path)).put(data)
+    private def PUT(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(data)
     }
 
-    private def PATCH(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PATCH", _requestHolder(path)).patch(data)
+    private def PATCH(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)
     }
 
-    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("DELETE", _requestHolder(path)).delete()
+    private def DELETE(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("DELETE", _requestHolder(path).withQueryString(q:_*)).delete()
     }
 
-${modelClients(ssd).indent(2)}
   }
+
+  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception$errorsString
+
 }"""
   }
 
