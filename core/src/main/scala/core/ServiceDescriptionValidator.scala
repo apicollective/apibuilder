@@ -274,6 +274,24 @@ case class ServiceDescriptionValidator(apiJson: String) {
       Seq.empty
     }
 
+    val typesNotAllowed = Seq(404) // also >= 500
+    val responsesWithDisallowedTypes = if (invalidCodes.isEmpty) {
+      internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
+        resource.operations.flatMap { op =>
+          op.responses.find { r => typesNotAllowed.contains(r.code.toInt) || r.code.toInt >= 500 } match {
+            case None => {
+              None
+            }
+            case Some(r) => {
+              Some(s"Resource[${resource.modelName.get}] ${op.label} has a response with code[${r.code}] - this code cannot be explicitly specified")
+            }
+          }
+        }
+      }
+    } else {
+      Seq.empty
+    }
+
     val typesRequiringUnit = Seq(204, 304, 404)
     val noContentWithTypes = if (invalidCodes.isEmpty) {
       internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
@@ -287,7 +305,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
       Seq.empty
     }
 
-    invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ noContentWithTypes
+    invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes
   }
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted.mkString(" ")

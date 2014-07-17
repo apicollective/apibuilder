@@ -116,7 +116,7 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
   val scalaType: String = underscoreToInitCap(response.datatype)
   val isUnit = scalaType == "Unit"
   val isMultiple = response.multiple
-  val isOption = !isMultiple && !GeneratorUtil.isJsonDocumentMethod(method)
+  val isOption = !GeneratorUtil.isJsonDocumentMethod(method) && !isMultiple
 
   val code = response.code
   val isSuccess = code >= 200 && code < 300
