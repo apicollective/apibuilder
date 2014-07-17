@@ -60,7 +60,7 @@
       "type": <em>type</em>,
       "description": <em>string (optional)</em>,
       "required": <em>boolean (optional, true by default)</em>,
-      "values": <em>JSON array of Strings</em>,
+      "enum": <em>JSON array of Strings (optional)</em>,
       "default": <em>type (optional)</em>,
       "example": <em>string (optional)</em>
     }
@@ -72,7 +72,7 @@
       <li><em>type</em> the datatype of this field. This is an enumeration. Acceptable values are either the name of a model or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>description</em> optional longer description for this field.</li>
       <li><em>required</em> boolean: true|false. By default all fields are considered required. To make a field optional, set "required" to false</li>
-      <li><em>values</em> Json Array of String values. This option can be used to define an enumeration - values provides the list of all of the acceptable values for this field. There are a few constraints on enumerations. First, the datatype must be string. Second, the values themselves must be proper names. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>enum</em> Json Array of String values. This option can be used to define an enumeration - enum provides the list of all of the acceptable values for this field. There are a few constraints on enumerations. First, the datatype must be string. Second, the values themselves must be proper names. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
       <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
     </ul>
