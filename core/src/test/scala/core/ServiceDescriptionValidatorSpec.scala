@@ -34,6 +34,18 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     validator.errors.mkString should be("Name[5@4] must start with a letter")
   }
 
+  it("base url shouldn't end with a '/'") {
+    val json = """
+    {
+      "name": "TestApp",
+      "base_url": "http://localhost:9000/"
+    }
+    """
+
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString should be("base_url[http://localhost:9000/] must not end with a '/'")
+  }
+
   it("model that is missing fields") {
     val json = """
     {
