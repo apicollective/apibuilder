@@ -5,6 +5,7 @@
     <tr>
       <th>Name</th>
       <th>Type</th>
+      <th>Location</th>
       <th>Required?</th>
       <th>Multi valued?</th>
       <th>Default</th>
@@ -20,6 +21,7 @@
              case mt: core.ModelParameterType => mt.model.name
            }}
        </td>
+       <td>@param.location</td>
        <td>@if(param.required && param.default.isEmpty) { Yes } else { No }</td>
        <td>@if(param.multiple) { Yes } else { No }</td>
        <td>@param.default.getOrElse("-")</td>

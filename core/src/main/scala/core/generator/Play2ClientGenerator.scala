@@ -186,11 +186,21 @@ ${modelClients(ssd).indent(2)}
       val path = Play2Util.pathParams(op)
 
       val methodCall = if (Util.isJsonDocumentMethod(op.method)) {
-        println("TODO op.body: " + op.body)
+        val payload = Play2Util.formBody(op)
+        val query = Play2Util.queryParams(op)
 
-        Play2Util.formParams(op) match {
-          case None => s"${op.method}($path)"
-          case Some(payload) => s"${payload}\n\n${op.method}($path, payload)"
+        if (payload.isEmpty && query.isEmpty) {
+          s"${op.method}($path)"
+
+        } else if (!payload.isEmpty && !query.isEmpty) {
+          s"${payload.get}\n\n${query.get}\n\n${op.method}($path, payload, query)"
+
+        } else if (payload.isEmpty) {
+          s"${query.get}\n\n${op.method}(path = $path, q = query)"
+
+        } else {
+          s"${payload.get}\n\n${op.method}($path, payload)"
+
         }
 
       } else {

@@ -106,9 +106,16 @@ ${builder.indent}(unlift(${name}.unapply))
     s""" s"$tmp" """.trim
   }
 
-  def formParams(op: ScalaOperation): Option[String] = {
-    if (op.formParameters.isEmpty) {
+  def formBody(op: ScalaOperation): Option[String] = {
+    // Can have both or form params but not both as we can only send a single document
+    assert(op.body.isEmpty || op.formParameters.isEmpty)
+
+    if (op.formParameters.isEmpty && op.body.isEmpty) {
       None
+
+    } else if (!op.body.isEmpty) {
+      Some(s"val payload = play.api.libs.json.Json.toJson(${Text.initLowerCase(op.body.get.name)})")
+
     } else {
       val params = op.formParameters.map { param =>
         s""" "${param.originalName}" -> play.api.libs.json.Json.toJson(${param.name})""".trim
