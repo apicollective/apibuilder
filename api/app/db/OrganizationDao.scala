@@ -20,7 +20,7 @@ case class Organization(guid: String, name: String, key: String) {
     if (key == OrganizationDao.GiltKey) {
       OrganizationDao.GiltComDomains
     } else {
-      Nil
+      Set.empty
     }
   }
 
