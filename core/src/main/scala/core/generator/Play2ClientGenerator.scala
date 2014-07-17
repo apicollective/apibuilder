@@ -166,6 +166,8 @@ ${modelClients(ssd).indent(2)}
       val path = Play2Util.pathParams(op)
 
       val methodCall = if (Util.isJsonDocumentMethod(op.method)) {
+        println("TODO op.body: " + op.body)
+
         Play2Util.formParams(op) match {
           case None => s"${op.method}($path)"
           case Some(payload) => s"${payload}\n\n${op.method}($path, payload)"
@@ -244,11 +246,11 @@ ${modelClients(ssd).indent(2)}
     private val commentString = comments.map(string => ScalaUtil.textToComment(string) + "\n").getOrElse("")
 
     val interface: String = {
-      s"""${commentString}def $name($argList.getOrElse(""))(implicit ec: scala.concurrent.ExecutionContext): $returnType"""
+      s"""${commentString}def $name(${argList.getOrElse("")})(implicit ec: scala.concurrent.ExecutionContext): $returnType"""
     }
 
     val code: String = {
-      s"""override def $name($argList)(implicit ec: scala.concurrent.ExecutionContext): $returnType = {
+      s"""override def $name(${argList.getOrElse("")})(implicit ec: scala.concurrent.ExecutionContext): $returnType = {
 ${methodCall.indent}.map {
 ${response.indent(4)}
   }

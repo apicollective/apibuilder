@@ -128,11 +128,19 @@ object Text {
   }
 
   def initCap(word: String): String = {
-    new StringOps(Text.safeName(word)).capitalize
+    new StringOps(word).capitalize
   }
 
   def initCap(parts: Seq[String]): String = {
     parts.map(s => initCap(s)).mkString("")
+  }
+
+  /**
+    * Returns the word with first character in lower case
+    */
+  private val InitLowerCaseRx = """^([A-Z])""".r
+  def initLowerCase(word: String) = {
+    InitLowerCaseRx.replaceAllIn(word, m => s"${m.toString.toLowerCase}")
   }
 
   private val Capitals = """([A-Z])""".r
