@@ -90,7 +90,7 @@ object Operation {
 
   def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
-    val location = if (method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
+    val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
       if (internal.namedPathParameters.contains(p.name.get)) {
         Parameter(models, p, ParameterLocation.Path)
