@@ -57,6 +57,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateFieldTypes ++
           validateFieldDefaults ++
           validateResources ++
+          validateParameterBodies ++
           validateParameters ++
           validateResponses ++
           validatePathParameters ++
@@ -310,6 +311,16 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted
   private lazy val ValidQueryDatatypes = Datatype.QueryParameterTypes.map(_.name).sorted
+
+  private def validateParameterBodies(): Seq[String] = {
+    val modelNames = internalServiceDescription.get.models.map(_.name).toSet
+
+    internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(op => !op.body.isEmpty && !modelNames.contains(op.body.get)).map { op =>
+        s"Resource[${resource.modelName.getOrElse("")}] ${op.label} body: Model named[${op.body.get}] not found"
+      }
+    }
+  }
 
   private def validateParameters(): Seq[String] = {
     val missingNames = internalServiceDescription.get.resources.flatMap { resource =>

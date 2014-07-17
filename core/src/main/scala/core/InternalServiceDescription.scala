@@ -83,6 +83,7 @@ case class InternalOperation(method: Option[String],
                              description: Option[String],
                              namedPathParameters: Seq[String],
                              parameters: Seq[InternalParameter],
+                             body: Option[String],
                              responses: Seq[InternalResponse]) {
 
   lazy val label = "%s %s".format(method.getOrElse(""), path)
@@ -204,8 +205,14 @@ object InternalOperation {
       }
     }
 
+    val body = (json \ "body").asOpt[JsObject] match {
+      case None => None
+      case Some(body: JsObject) => (body \ "type").asOpt[String]
+    }
+
     InternalOperation(method = (json \ "method").asOpt[String].map(_.toUpperCase),
                       path = path,
+                      body = body,
                       description = (json \ "description").asOpt[String],
                       responses = responses,
                       namedPathParameters = namedPathParameters,
