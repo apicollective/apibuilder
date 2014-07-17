@@ -7,6 +7,13 @@ import org.scalatest.Matchers
 
 class UtilSpec extends FunSpec with Matchers {
 
+  it("isJsonDocumentMethod") {
+    Util.isJsonDocumentMethod("GET") should be(false)
+    Util.isJsonDocumentMethod("POST") should be(true)
+    Util.isJsonDocumentMethod("PUT") should be(true)
+    Util.isJsonDocumentMethod("PATCH") should be(true)
+  }
+
   it("namedParametersInPath") {
     Util.namedParametersInPath("/users") should be(Seq.empty)
     Util.namedParametersInPath("/users/:guid") should be(Seq("guid"))
