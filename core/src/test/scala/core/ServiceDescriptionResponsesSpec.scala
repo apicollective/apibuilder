@@ -30,7 +30,7 @@ class ServiceDescriptionResponsesSpec extends FunSpec with Matchers {
   """
 
   it("Returns error message if user specifies non Unit Response type") {
-    Seq(204, 304, 404).foreach { code =>
+    Seq(204, 304).foreach { code =>
       val json = baseJson.format(s""", "responses": { "$code": { "type": "user" } } """)
       val validator = ServiceDescriptionValidator(json)
       validator.errors.mkString("") should be(s"Resource[user] DELETE /users/:id Responses w/ code[$code] must return unit and not[user]")
@@ -44,6 +44,14 @@ class ServiceDescriptionResponsesSpec extends FunSpec with Matchers {
     val response = validator.serviceDescription.get.resources.head.operations.head.responses.head
     response.code should be(204)
     response.datatype should be("unit")
+  }
+
+  it("does not allow explicit definition of 404, 5xx status codes") {
+    Seq(404, 500, 501, 502).foreach { code =>
+      val json = baseJson.format(s""", "responses": { "$code": { "type": "unit" } } """)
+      val validator = ServiceDescriptionValidator(json)
+      validator.errors.mkString("") should be(s"Resource[user] DELETE /users/:id has a response with code[$code] - this code cannot be explicitly specified")
+    }
   }
 
 }

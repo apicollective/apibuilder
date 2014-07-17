@@ -32,8 +32,8 @@ ${client(ssd)}"""
     ).mkString("\n")
   }
 
-  private def errors(ssd: ScalaServiceDescription): Option[String] = {
-    val errorTypes = ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(!_.isSuccess)
+  private[generator] def errors(ssd: ScalaServiceDescription): Option[String] = {
+    val errorTypes = ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(r => !(r.isSuccess || r.isUnit))
 
     if (errorTypes.isEmpty) {
       None
@@ -152,32 +152,40 @@ ${modelClients(ssd).indent(2)}
 
       val hasOptionResult = op.responses.find { _.isOption } match {
         case None => ""
-        case Some(r) => s"\ncase r if r.status == 404 => None"
+        case Some(r) => {
+          if (r.isMultiple) {
+            s"\ncase r if r.status == 404 => Nil"
+          } else {
+            s"\ncase r if r.status == 404 => None"
+          }
+        }
       }
       val matchResponse: String = {
-        op.responses.map { response =>
+        op.responses.flatMap { response =>
           if (response.isSuccess) {
             if (response.isOption) {
               if (response.isUnit) {
-                s"case r if r.status == ${response.code} => Some(Unit)"
+                Some(s"case r if r.status == ${response.code} => Some(Unit)")
               } else {
-                s"case r if r.status == ${response.code} => Some(r.json.as[${response.qualifiedScalaType}])"
+                Some(s"case r if r.status == ${response.code} => Some(r.json.as[${response.qualifiedScalaType}])")
               }
 
             } else if (response.isMultiple) {
-              s"case r if r.status == ${response.code} => r.json.as[scala.collection.Seq[${response.qualifiedScalaType}]]"
+              Some(s"case r if r.status == ${response.code} => r.json.as[scala.collection.Seq[${response.qualifiedScalaType}]]")
 
             } else if (response.isUnit) {
-              s"case r if r.status == ${response.code} => ${response.qualifiedScalaType}"
+              Some(s"case r if r.status == ${response.code} => ${response.qualifiedScalaType}")
 
             } else {
-              s"case r if r.status == ${response.code} => r.json.as[${response.qualifiedScalaType}]"
+              Some(s"case r if r.status == ${response.code} => r.json.as[${response.qualifiedScalaType}]")
             }
 
           } else if (response.isNotFound && response.isOption) {
             // will be added later
+            None
+
           } else {
-            s"case r if r.status == ${response.code} => throw new ${ssd.packageName}.error.${response.errorClassName}(r)"
+            Some(s"case r if r.status == ${response.code} => throw new ${ssd.packageName}.error.${response.errorClassName}(r)")
           }
         }.mkString("\n")
       } + hasOptionResult + "\ncase r => throw new FailedResponse(r)\n"
