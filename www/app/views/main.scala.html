@@ -72,7 +72,7 @@
               </ul>
             }
 
-            <b>Codgen</b>
+            <b>Codegen</b>
             <ul class="nav nav-sidebar">
               @core.generator.Target.Implemented.map { target =>
                 <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, target.key)">@target.name</a>
