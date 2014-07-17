@@ -1,8 +1,47 @@
 package apidoc.models {
   case class Code(
-    target: String,
+    target: Code.Target,
     source: String
   )
+  object Code {
+
+    sealed trait Target
+
+    object Target {
+
+      case object Play23Client extends Target { override def toString = "play_2_3_client" }
+      case object Play23Json extends Target { override def toString = "play_2_3_json" }
+      case object Play23Routes extends Target { override def toString = "play_2_3_routes" }
+      case object RubyClient extends Target { override def toString = "ruby_client" }
+      case object ScalaModels extends Target { override def toString = "scala_models" }
+
+      /**
+       * UNDEFINED captures values that are sent either in error or
+       * that were added by the server after this library was
+       * generated. We want to make it easy and obvious for users of
+       * this library to handle this case gracefully.
+       *
+       * We use all CAPS for the variable name to avoid collisions
+       * with the camel cased values above.
+       */
+      case class UNDEFINED(override val toString: String) extends Target
+
+      /**
+       * all returns a list of all the valid, known values. We use
+       * lower case to avoid collisions with the camel cased values
+       * above.
+       */
+      val all = Seq(Play23Client, Play23Json, Play23Routes, RubyClient, ScalaModels)
+
+      private[this]
+      val byName = all.map(x => x.toString -> x).toMap
+
+      def apply(value: String): Target = fromString(value).getOrElse(UNDEFINED(value))
+
+      def fromString(value: String): Option[Target] = byName.get(value)
+
+    }
+  }
   case class Error(
     code: String,
     message: String
@@ -50,18 +89,18 @@ package apidoc.models {
     import play.api.libs.json._
     import play.api.libs.functional.syntax._
 
-    implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
+    private implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
-    implicit val jsonWritesUUID = new Writes[java.util.UUID] {
+    private implicit val jsonWritesUUID = new Writes[java.util.UUID] {
       def writes(x: java.util.UUID) = JsString(x.toString)
     }
 
-    implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
+    private implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       import org.joda.time.format.ISODateTimeFormat.dateTimeParser
       dateTimeParser.parseDateTime(str)
     }
 
-    implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
+    private implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
       def writes(x: org.joda.time.DateTime) = {
         import org.joda.time.format.ISODateTimeFormat.dateTime
         val str = dateTime.print(x)
@@ -69,25 +108,29 @@ package apidoc.models {
       }
     }
 
+    implicit val jsonReadsApiDocCode_Target = __.read[String].map(Code.Target.apply)
     
+    implicit val jsonWritesApiDocCode_Target = new Writes[Code.Target] {
+      def writes(x: Code.Target) = JsString(x.toString)
+    }
 
-    implicit def readsCode: play.api.libs.json.Reads[Code] =
+    implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "target").read[String] and
+        ((__ \ "target").read[Code.Target] and
          (__ \ "source").read[String])(Code.apply _)
       }
     
-    implicit def writesCode: play.api.libs.json.Writes[Code] =
+    implicit def jsonWritesApiDocCode: play.api.libs.json.Writes[Code] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
-        ((__ \ "target").write[String] and
+        ((__ \ "target").write[Code.Target] and
          (__ \ "source").write[String])(unlift(Code.unapply))
       }
     
-    implicit def readsError: play.api.libs.json.Reads[Error] =
+    implicit def jsonReadsApiDocError: play.api.libs.json.Reads[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -95,7 +138,7 @@ package apidoc.models {
          (__ \ "message").read[String])(Error.apply _)
       }
     
-    implicit def writesError: play.api.libs.json.Writes[Error] =
+    implicit def jsonWritesApiDocError: play.api.libs.json.Writes[Error] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -103,7 +146,7 @@ package apidoc.models {
          (__ \ "message").write[String])(unlift(Error.unapply))
       }
     
-    implicit def readsHealthcheck: play.api.libs.json.Reads[Healthcheck] =
+    implicit def jsonReadsApiDocHealthcheck: play.api.libs.json.Reads[Healthcheck] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -112,14 +155,14 @@ package apidoc.models {
         }
       }
     
-    implicit def writesHealthcheck: play.api.libs.json.Writes[Healthcheck] =
+    implicit def jsonWritesApiDocHealthcheck: play.api.libs.json.Writes[Healthcheck] =
       new play.api.libs.json.Writes[Healthcheck] {
         def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
           "status" -> play.api.libs.json.Json.toJson(x.status)
         )
       }
     
-    implicit def readsMembership: play.api.libs.json.Reads[Membership] =
+    implicit def jsonReadsApiDocMembership: play.api.libs.json.Reads[Membership] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -129,7 +172,7 @@ package apidoc.models {
          (__ \ "role").read[String])(Membership.apply _)
       }
     
-    implicit def writesMembership: play.api.libs.json.Writes[Membership] =
+    implicit def jsonWritesApiDocMembership: play.api.libs.json.Writes[Membership] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -139,7 +182,7 @@ package apidoc.models {
          (__ \ "role").write[String])(unlift(Membership.unapply))
       }
     
-    implicit def readsMembershipRequest: play.api.libs.json.Reads[MembershipRequest] =
+    implicit def jsonReadsApiDocMembershipRequest: play.api.libs.json.Reads[MembershipRequest] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -149,7 +192,7 @@ package apidoc.models {
          (__ \ "role").read[String])(MembershipRequest.apply _)
       }
     
-    implicit def writesMembershipRequest: play.api.libs.json.Writes[MembershipRequest] =
+    implicit def jsonWritesApiDocMembershipRequest: play.api.libs.json.Writes[MembershipRequest] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -159,7 +202,7 @@ package apidoc.models {
          (__ \ "role").write[String])(unlift(MembershipRequest.unapply))
       }
     
-    implicit def readsOrganization: play.api.libs.json.Reads[Organization] =
+    implicit def jsonReadsApiDocOrganization: play.api.libs.json.Reads[Organization] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -168,7 +211,7 @@ package apidoc.models {
          (__ \ "name").read[String])(Organization.apply _)
       }
     
-    implicit def writesOrganization: play.api.libs.json.Writes[Organization] =
+    implicit def jsonWritesApiDocOrganization: play.api.libs.json.Writes[Organization] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -177,7 +220,7 @@ package apidoc.models {
          (__ \ "name").write[String])(unlift(Organization.unapply))
       }
     
-    implicit def readsService: play.api.libs.json.Reads[Service] =
+    implicit def jsonReadsApiDocService: play.api.libs.json.Reads[Service] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -187,7 +230,7 @@ package apidoc.models {
          (__ \ "description").readNullable[String])(Service.apply _)
       }
     
-    implicit def writesService: play.api.libs.json.Writes[Service] =
+    implicit def jsonWritesApiDocService: play.api.libs.json.Writes[Service] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -197,7 +240,7 @@ package apidoc.models {
          (__ \ "description").write[scala.Option[String]])(unlift(Service.unapply))
       }
     
-    implicit def readsUser: play.api.libs.json.Reads[User] =
+    implicit def jsonReadsApiDocUser: play.api.libs.json.Reads[User] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -206,7 +249,7 @@ package apidoc.models {
          (__ \ "name").readNullable[String])(User.apply _)
       }
     
-    implicit def writesUser: play.api.libs.json.Writes[User] =
+    implicit def jsonWritesApiDocUser: play.api.libs.json.Writes[User] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -215,7 +258,7 @@ package apidoc.models {
          (__ \ "name").write[scala.Option[String]])(unlift(User.unapply))
       }
     
-    implicit def readsVersion: play.api.libs.json.Reads[Version] =
+    implicit def jsonReadsApiDocVersion: play.api.libs.json.Reads[Version] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
@@ -224,7 +267,7 @@ package apidoc.models {
          (__ \ "json").read[String])(Version.apply _)
       }
     
-    implicit def writesVersion: play.api.libs.json.Writes[Version] =
+    implicit def jsonWritesApiDocVersion: play.api.libs.json.Writes[Version] =
       {
         import play.api.libs.json._
         import play.api.libs.functional.syntax._
