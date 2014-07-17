@@ -12,7 +12,7 @@ require 'base64'
 require 'rubygems'
 require 'json'
 require 'bigdecimal'
-"""
+""".trim
 
   val contents = """
   module HttpClient
@@ -386,6 +386,6 @@ require 'bigdecimal'
     end
 
   end
-"""
+""".trim
 
 }

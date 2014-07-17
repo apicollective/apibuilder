@@ -62,18 +62,18 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
   def generate(): String = {
     RubyHttpClient.require +
-    "\n" +
+    "\n\n" +
     service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +
     s"module ${moduleName}\n" +
     generateClient() +
     "\n\n  module Models\n" +
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end" +
-    "\n\n  module Clients\n" +
+    "\n\n  module Clients\n\n" +
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
-    "\n\n  end\n\n" +
+    "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +
-    "end"
+    "\nend"
   }
 
   private def generateClient(): String = {
@@ -128,7 +128,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
     resource.operations.foreach { op =>
       val pathParams = op.parameters.filter { p => p.location == ParameterLocation.Path }
-      val otherParams = op.parameters.filter { p => p.location != ParameterLocation.Path }
+      val queryParams = op.parameters.filter { p => p.location == ParameterLocation.Query }
+      val formParams = op.parameters.filter { p => p.location == ParameterLocation.Form }
 
       val rubyPath = op.path.split("/").map { name =>
         if (name.startsWith(":")) {
@@ -138,15 +139,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
         }
       }.mkString("/")
 
-      val methodName = {
-        Text.camelCaseToUnderscore(GeneratorUtil.urlToMethodName(resource.path, op.method, op.path)).toLowerCase
-      }
+      val methodName = Text.camelCaseToUnderscore(GeneratorUtil.urlToMethodName(resource.path, op.method, op.path)).toLowerCase
 
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
 
-      val hasQueryParams = (!Util.isJsonDocumentMethod(op.method) && !otherParams.isEmpty)
-      if (hasQueryParams) {
+      if (!queryParams.isEmpty) {
         paramStrings.append("incoming={}")
       }
 
@@ -170,10 +168,10 @@ case class RubyGemGenerator(service: ServiceDescription) {
         sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
       }
 
-      if (hasQueryParams) {
+      if (!queryParams.isEmpty) {
         val paramBuilder = ListBuffer[String]()
 
-        otherParams.foreach { param =>
+        queryParams.foreach { param =>
           paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
         }
 
@@ -186,7 +184,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
       val requestBuilder = new StringBuilder()
       requestBuilder.append("@client.request(\"" + rubyPath + "\")")
 
-      if (hasQueryParams) {
+      if (!queryParams.isEmpty) {
         requestBuilder.append(".with_query(query)")
       }
 
