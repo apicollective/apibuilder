@@ -85,7 +85,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
     serviceDescription.get.baseUrl match {
       case Some(url) => { 
         if(url.endsWith("/")){
-          Seq(s"base_url[${url}] must not end with a '/'")  
+          Seq(s"base_url[$url] must not end with a '/'")  
         } else {
           Seq.empty
         } 
