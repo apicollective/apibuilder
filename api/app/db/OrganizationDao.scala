@@ -16,11 +16,11 @@ object Organization {
 case class Organization(guid: String, name: String, key: String) {
 
   // temporary as we roll out authentication
-  val emailDomain: Option[String] = {
+  val emailDomains: Set[String] = {
     if (key == OrganizationDao.GiltKey) {
-      Some(OrganizationDao.GiltComDomain)
+      OrganizationDao.GiltComDomains
     } else {
-      None
+      Nil
     }
   }
 
@@ -31,7 +31,7 @@ object OrganizationDao {
 
   val MinNameLength = 4
 
-  private[db] val GiltComDomain = "gilt.com"
+  private[db] val GiltComDomains = Set("gilt.com", "giltcity.com")
   private[db] val GiltKey = "gilt"
 
   private val BaseQuery = """
@@ -74,7 +74,7 @@ object OrganizationDao {
 
   private[db] def findByEmailDomain(email: String): Option[Organization] = {
     emailDomain(email).flatMap { domain =>
-      if (domain == GiltComDomain) {
+      if (GiltComDomains.contains(domain.toLowerCase)) {
         findAll(key = Some(GiltKey), limit = 1).headOption
       } else {
         None
