@@ -59,7 +59,7 @@ object RubyGemGenerator {
 }
 
 /**
- * Generates a Play routes file based on the service description
+ * Generates a Ruby Gem file based on the service description
  * from api.json
  */
 case class RubyGemGenerator(service: ServiceDescription) {
@@ -95,18 +95,6 @@ case class RubyGemGenerator(service: ServiceDescription) {
       @authorization = HttpClient::Preconditions.assert_class_or_nil('authorization', opts.delete(:authorization), HttpClient::Authorization)
       HttpClient::Preconditions.assert_empty_opts(opts)
       HttpClient::Preconditions.check_state(url.match(/http.+/i), "URL[%s] must start with http" % url)
-    end
-
-    def Client.authorize(url, opts={})
-      HttpClient::Preconditions.assert_class('url', url, String)
-      token = HttpClient::Preconditions.assert_class_or_nil('token', opts.delete(:token), String)
-      HttpClient::Preconditions.assert_empty_opts(opts)
-
-      if token
-        Client.new(url, :authorization => HttpClient::Authorization.basic(token))
-      else
-        Client.new(url)
-      end
     end
 
     def request(path=nil)
