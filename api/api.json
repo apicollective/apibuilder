@@ -1,7 +1,7 @@
 {
     "name": "Api Doc",
     "description": "Host API documentation for REST services, facilitating the design of good resource first APIs.",
-    "base_url": "http://localhost:9000",
+    "base_url": "http://api.apidoc.me",
 
     "models": {
 
@@ -94,7 +94,7 @@
                 {
                     "method": "GET",
                     "responses": {
-                        "200": { "type": "[healthcheck]" }
+                        "200": { "type": "healthcheck" }
                     }
                 }
 	    ]
