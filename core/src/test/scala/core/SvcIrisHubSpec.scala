@@ -6,7 +6,7 @@ import org.scalatest.Matchers
 class SvcIrisHubSpec extends FunSpec with Matchers {
 
   val Filenames = Seq("svc-iris-hub-0-0-1.json")
-  val Dir = "core/src/test/files"
+  val Dir = "core/src/test/resources"
 
   it("should parse valid json") {
     Filenames.foreach { name =>
