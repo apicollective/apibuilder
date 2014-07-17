@@ -20,12 +20,6 @@ object RubyGemGenerator {
     lines.append(s"class $className")
 
     lines.append("")
-    lines.append(et.values.map { value =>
-      val enumName = value.toUpperCase
-      s"""  $enumName = $className.new("$value")"""
-    }.mkString("\n"))
-
-    lines.append("")
     lines.append("  attr_reader :value")
 
     lines.append("")
@@ -34,21 +28,21 @@ object RubyGemGenerator {
     lines.append("  end")
 
     lines.append("")
-    lines.append("  def AgeGroup.all")
-    lines.append("    [" + et.values.map(_.toUpperCase).mkString(", ") + "]")
-    lines.append("  end")
-
-    lines.append("")
     lines.append(s"  # Returns the instance of ${className} for this value, creating a new instance for an unknown value")
     lines.append(s"  def $className.apply(value)")
     lines.append(s"    HttpClient::Preconditions.assert_class_or_nil('value', value, String)")
-    lines.append(s"    value.nil? ? nil : (from_string(value) || AgeGroup.new(value))")
+    lines.append(s"    value.nil? ? nil : (from_string(value) || $className.new(value))")
     lines.append(s"  end")
     lines.append("")
-    lines.append("  # Returns the instance of AgeGroup for this value, or nil if not found")
+    lines.append(s"  # Returns the instance of $className for this value, or nil if not found")
     lines.append(s"  def $className.from_string(value)")
     lines.append("    HttpClient::Preconditions.assert_class('value', value, String)")
     lines.append("    all.find { |v| v.value == value }")
+    lines.append("  end")
+
+    lines.append("")
+    lines.append(s"  def $className.all")
+    lines.append("    @@all ||= [" + et.values.map(v => s"$className.new('$v')").mkString(", ") + "]")
     lines.append("  end")
 
     lines.append("")
