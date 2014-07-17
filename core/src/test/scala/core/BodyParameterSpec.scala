@@ -22,7 +22,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
         "message": {
           "operations": [
             {
-              "method": "post",
+              "method": "%s",
               "path": "/:mimeType",
               "body": { "type": "%s" },
               "parameters": [
@@ -36,12 +36,19 @@ class BodyParameterSpec extends FunSpec with Matchers {
   """
 
   it("validates that body refers to a known model") {
-    val validator = ServiceDescriptionValidator(baseJson.format("foo"))
+    val validator = ServiceDescriptionValidator(baseJson.format("POST", "foo"))
     validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Model named[foo] not found")
   }
 
+  it("validates that body cannot be specified for GET, DELETE operations") {
+    Util.MethodsNotAcceptingBodies.foreach { method =>
+      val validator = ServiceDescriptionValidator(baseJson.format(method, "message"))
+      validator.errors.mkString("") should be(s"Resource[message] $method /messages/:mimeType: Cannot specify body for HTTP method[$method]")
+    }
+  }
+
   it("operation body is parsed") {
-    val validator = ServiceDescriptionValidator(baseJson.format("message"))
+    val validator = ServiceDescriptionValidator(baseJson.format("POST", "message"))
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
@@ -49,7 +56,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
   }
 
   it("If body specified, all parameters are either PATH or QUERY") {
-    val validator = ServiceDescriptionValidator(baseJson.format("message"))
+    val validator = ServiceDescriptionValidator(baseJson.format("POST", "message"))
     validator.errors.mkString("") should be("")
     val op = validator.serviceDescription.get.resources.head.operations.head
     val params = op.parameters
