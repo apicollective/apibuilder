@@ -1,5 +1,43 @@
 @doc.main("Release notes") {
 
+<h3>0.4.47</h3>
+
+  <ul>
+
+    <li>Validation added to verify that any path parameters refer to
+    fields that are required (not possible to specify an optional path
+    parameter).</li>
+
+    <li>Path parameters now must be a string, uuid, or number -
+    previously we accepted any datatype.</li>
+
+    <li>Responses of type 204 and 304 cannot return a type - must be
+    unit - datatypes do not make sense for these response types.</li>
+
+    <li>We no longer accept response codes 404 or 5xx in any json
+    specification. We found inconsistencies across different services
+    with these types, making it difficult / impossible to create clean
+    clients that behaved consistently. A 404 will automatically be
+    handled in the play client for all GET requests, returning either
+    None or Nil depending on whether the method returns a single
+    instance or an array.</li>
+
+    <li>Play 2.3 Client: Few implicits made private / renamed to avoid
+    name conflicts when a user imports json implicits for multiple
+    services.</li>
+
+    <li>Fixed bug where ruby client was incorrectly dropping path
+    after domain.</li>
+
+    <li>Ruby client breaking change: Removed authorize method as
+    signature only supported a single user. Preferred method is to
+    instantiate the client direclty:
+    <pre>
+      Client.new(url, :authorization => Xyz::HttpClient::Authorization.basic(username, password=nil))
+    </pre></li>
+
+  </ul>
+
 <h3>0.4.43</h3>
 
   <ul>
