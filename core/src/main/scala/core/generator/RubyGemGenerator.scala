@@ -37,7 +37,7 @@ object RubyGemGenerator {
     lines.append(s"  # Returns the instance of $className for this value, or nil if not found")
     lines.append(s"  def $className.from_string(value)")
     lines.append("    HttpClient::Preconditions.assert_class('value', value, String)")
-    lines.append("    all.find { |v| v.value == value }")
+    lines.append(s"    $className.all.find { |v| v.value == value }")
     lines.append("  end")
 
     lines.append("")
