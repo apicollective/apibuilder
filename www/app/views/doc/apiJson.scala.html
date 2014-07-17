@@ -111,6 +111,7 @@
     <pre>
     {
       "method": <em>string</em>,
+      "path": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
       "parameters": <em>JSON Array of Parameters</em>
       "responses": <em>JSON Object (optional)</em>
@@ -120,6 +121,7 @@
     where
     <ul>
       <li><em>method</em> the HTTP method for this operation</li>
+      <li><em>path</em> optional path for this particular operation. If not provided, defaults to no additional path. Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that this operation is available at /resource_path/:guid. Path parameter types are inferred by looking for a field with that name on the model associated with this resource. If not found, the datatype of any path parameter will be string.</li>
       <li><em>description</em> optional longer description for this operation.</li>
       <li><em>parameters</em> optional JSON Array of the parameters to this method. See <a href="#parameter">Parameter</a>.</li>
       <li><em>responses</em> optional JSON Object of HTTP Response Code => Response. See <a name="#response"Response></a>. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented.</li>
