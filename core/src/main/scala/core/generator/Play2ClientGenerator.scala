@@ -205,7 +205,7 @@ ${modelClients(ssd).indent(2)}
 
   private case class ClientMethod(
     name: String,
-    argList: String,
+    argList: Option[String],
     returnType: String,
     methodCall: String,
     response: String,
@@ -216,7 +216,7 @@ ${modelClients(ssd).indent(2)}
     private val commentString = comments.map(string => ScalaUtil.textToComment(string) + "\n").getOrElse("")
 
     val interface: String = {
-      s"""${commentString}def $name($argList)(implicit ec: scala.concurrent.ExecutionContext): $returnType"""
+      s"""${commentString}def $name($argList.getOrElse(""))(implicit ec: scala.concurrent.ExecutionContext): $returnType"""
     }
 
     val code: String = {

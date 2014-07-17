@@ -24,11 +24,11 @@ object ScalaUtil {
     }
   }
 
-  def fieldsToArgList(fields: Seq[String]) = {
+  def fieldsToArgList(fields: Seq[String]): Option[String] = {
     if (fields.isEmpty) {
-      ""
+      None
     } else {
-      fields.map(_.indent).mkString("\n", ",\n", "\n")
+      Some(fields.map(_.indent).mkString("\n", ",\n", "\n"))
     }
   }
 
@@ -67,7 +67,7 @@ class ScalaModel(val model: Model) {
 
   val fields = model.fields.map { f => new ScalaField(this.name, f) }
 
-  val argList = ScalaUtil.fieldsToArgList(fields.map(_.definition))
+  val argList: Option[String] = ScalaUtil.fieldsToArgList(fields.map(_.definition))
 
 }
 
@@ -101,7 +101,7 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
 
-  val argList: String = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+  val argList: Option[String] = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
 
   val responses: Seq[ScalaResponse] = {
     operation.responses.toList.map { new ScalaResponse(resource.packageName, method, _) } 
