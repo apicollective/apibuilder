@@ -101,7 +101,13 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
 
-  val argList: Option[String] = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+  val argList: Option[String] = operation.body match {
+    case None => ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+    case Some(bodyModel: Model) => {
+      sys.error("TODO: Finish argument list with bodies: " + bodyModel)
+      ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+    }
+  }
 
   val responses: Seq[ScalaResponse] = {
     operation.responses.toList.map { new ScalaResponse(resource.packageName, method, _) } 
