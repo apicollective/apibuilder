@@ -108,11 +108,12 @@ case class RubyGemGenerator(service: ServiceDescription) {
     end
 """)
 
-    sb.append(service.models.map { model =>
-      val className = Text.underscoreToInitCap(model.plural)
+    sb.append(service.resources.map { resource =>
+      val modelPlural = resource.model.plural
+      val className = Text.underscoreToInitCap(modelPlural)
 
-      s"    def ${model.plural}\n" +
-      s"      @${model.plural} ||= ${moduleName}::Clients::${className}.new(self)\n" +
+      s"    def ${modelPlural}\n" +
+      s"      @${modelPlural} ||= ${moduleName}::Clients::${className}.new(self)\n" +
       "    end"
     }.mkString("\n\n"))
 
