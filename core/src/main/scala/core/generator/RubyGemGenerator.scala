@@ -50,20 +50,22 @@ object RubyGemGenerator {
     // good enough for now.
     lines.append("")
     lines.append(s"  def $className.all")
-    lines.append("    @@all ||= [" + et.values.map(v => s"$className.$v").mkString(", ") + "]")
+    lines.append("    @@all ||= [" + et.values.map(v => s"$className.${Text.initLowerCase(Text.camelCaseToUnderscore(v))}").mkString(", ") + "]")
     lines.append("  end")
 
     lines.append("")
     et.values.foreach { value =>
-      lines.append(s"  def $className.${value}")
-      lines.append(s"    @@_$value ||= $className.new('$value')")
+      val varName = Text.initLowerCase(Text.camelCaseToUnderscore(value))
+      lines.append(s"  def $className.$varName")
+      lines.append(s"    @@_$varName ||= $className.new('$value')")
       lines.append("  end")
       lines.append("")
     }
 
-    lines.append("")
     lines.append("end")
-    lines.mkString("\n")
+    val result = lines.mkString("\n")
+    println(result)
+    result
   }
 
 }
