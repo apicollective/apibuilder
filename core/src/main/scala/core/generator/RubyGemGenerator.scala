@@ -30,8 +30,12 @@ object RubyGemGenerator {
     lines.append("")
     lines.append(s"  # Returns the instance of ${className} for this value, creating a new instance for an unknown value")
     lines.append(s"  def $className.apply(value)")
-    lines.append(s"    HttpClient::Preconditions.assert_class_or_nil('value', value, String)")
-    lines.append(s"    value.nil? ? nil : (from_string(value) || $className.new(value))")
+    lines.append(s"    if value.instance_of?($className)")
+    lines.append(s"      value")
+    lines.append(s"    else")
+    lines.append(s"      HttpClient::Preconditions.assert_class_or_nil('value', value, String)")
+    lines.append(s"      value.nil? ? nil : (from_string(value) || $className.new(value))")
+    lines.append(s"    end")
     lines.append(s"  end")
     lines.append("")
     lines.append(s"  # Returns the instance of $className for this value, or nil if not found")
@@ -40,10 +44,22 @@ object RubyGemGenerator {
     lines.append(s"    $className.all.find { |v| v.value == value }")
     lines.append("  end")
 
+    // .all needs to come first. In the event there is an enum value
+    // named 'all' - user will lose the 'all' method but their enum
+    // value will be preserved. This is subpar, but an edge case and
+    // good enough for now.
     lines.append("")
     lines.append(s"  def $className.all")
-    lines.append("    @@all ||= [" + et.values.map(v => s"$className.new('$v')").mkString(", ") + "]")
+    lines.append("    @@all ||= [" + et.values.map(v => s"$className.$v").mkString(", ") + "]")
     lines.append("  end")
+
+    lines.append("")
+    et.values.foreach { value =>
+      lines.append(s"  def $className.${value}")
+      lines.append(s"    @@_$value ||= $className.new('$value')")
+      lines.append("  end")
+      lines.append("")
+    }
 
     lines.append("")
     lines.append("end")
@@ -144,12 +160,15 @@ case class RubyGemGenerator(service: ServiceDescription) {
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
 
-      if (!queryParams.isEmpty) {
-        paramStrings.append("incoming={}")
+      if (Util.isJsonDocumentMethod(op.method)) {
+        op.body match {
+          case None => paramStrings.append("hash")
+          case Some(model: Model) => paramStrings.append(model.name)
+        }
       }
 
-      if (Util.isJsonDocumentMethod(op.method)) {
-        paramStrings.append("hash")
+      if (!queryParams.isEmpty) {
+        paramStrings.append("incoming={}")
       }
 
       sb.append("")
@@ -189,8 +208,17 @@ case class RubyGemGenerator(service: ServiceDescription) {
       }
 
       if (Util.isJsonDocumentMethod(op.method)) {
-        sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
-        requestBuilder.append(".with_json(hash.to_json)")
+        op.body match {
+          case None => {
+            sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
+            requestBuilder.append(".with_json(hash.to_json)")
+          }
+          case Some(model: Model) => {
+            val klass = s"$moduleName::Models${Text.underscoreToInitCap(model.name)}"
+            sb.append(s"        HttpClient::Preconditions.assert_class('${model.name}', ${model.name}, $klass)")
+            requestBuilder.append(s".with_json(${model.name}.to_hash.to_json)")
+          }
+        }
       }
       requestBuilder.append(s".${op.method.toLowerCase}")
 
@@ -248,6 +276,21 @@ case class RubyGemGenerator(service: ServiceDescription) {
     }
 
     sb.append("      end\n")
+
+    sb.append("      def to_hash")
+    sb.append("        {")
+    sb.append(
+      model.fields.map { field =>
+        field.fieldtype match {
+          case PrimitiveFieldType(datatype) => s":${field.name} => ${field.name}"
+          case ModelFieldType(model) => s":${field.name} => ${field.name}.to_hash"
+          case EnumerationFieldType(datatype, values) => s":${field.name} => ${field.name}.value"
+        }
+      }.mkString("            ", ",\n            ", "")
+    )
+    sb.append("        }")
+    sb.append("      end\n")
+
     sb.append("    end")
 
     sb.mkString("\n")
