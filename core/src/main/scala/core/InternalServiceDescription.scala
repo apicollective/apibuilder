@@ -246,7 +246,7 @@ object InternalField {
     InternalField(name = (json \ "name").asOpt[String],
                   fieldtype = parsedDatatype.map(_.name),
                   description = (json \ "description").asOpt[String],
-                  required = (json \ "required").asOpt[Boolean].getOrElse(true),
+                  required = JsonStringParser.asOptBoolean(json \ "required").getOrElse(true),
                   multiple = parsedDatatype.map(_.multiple).getOrElse(false),
                   default = JsonStringParser.asOptString(json, "default"),
                   enum = enum,
@@ -265,7 +265,7 @@ object InternalParameter {
     InternalParameter(name = (json \ "name").asOpt[String],
                       paramtype = dt.map(_.name),
                       description = (json \ "description").asOpt[String],
-                      required = (json \ "required").asOpt[Boolean].getOrElse(true),
+                      required = JsonStringParser.asOptBoolean(json \ "required").getOrElse(true),
                       multiple = dt.map(_.multiple).getOrElse(false),
                       default = JsonStringParser.asOptString(json, "default"),
                       minimum = (json \ "minimum").asOpt[Long],
@@ -291,6 +291,10 @@ private[core] object JsonStringParser {
       case (v: JsString) => Some(v.value)
       case (v: JsValue) => Some(v.toString)
     }
+  }
+
+  def asOptBoolean(value: JsValue): Option[Boolean] = {
+    asOptString(value).map(_ == "true")
   }
 
 }

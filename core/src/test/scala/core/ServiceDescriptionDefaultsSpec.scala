@@ -13,8 +13,8 @@ class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
       "models": {
         "user": {
           "fields": [
-            { "name": "is_active", "type": "boolean", "default": "true" },
-            { "name": "is_athlete", "type": "boolean", "default": false }
+            { "name": "is_active", "type": "boolean", "default": "true", "required": "true" },
+            { "name": "is_athlete", "type": "boolean", "default": "false", "required": "false" }
           ]
         }
       }
@@ -23,9 +23,13 @@ class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
 
-    validator.serviceDescription.get.models.head.fields.find { _.name == "is_active" }.get.default should be(Some("true"))
+    val isActiveField = validator.serviceDescription.get.models.head.fields.find { _.name == "is_active" }.get
+    isActiveField.default should be(Some("true"))
+    isActiveField.required should be(true)
 
-    validator.serviceDescription.get.models.head.fields.find { _.name == "is_active" }.get.default should be(Some("true"))
+    val isAthleteField = validator.serviceDescription.get.models.head.fields.find { _.name == "is_athlete" }.get
+    isAthleteField.default should be(Some("false"))
+    isAthleteField.required should be(false)
   }
 
   it("rejects invalid boolean defaults") {
