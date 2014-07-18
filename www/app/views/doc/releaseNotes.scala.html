@@ -1,5 +1,45 @@
 @doc.main("Release notes") {
 
+<h3>0.4.50</h3>
+
+  <ul>
+
+    <li>Introduce 'body' on operations. For operations that support
+    posting data, you can now specify a 'body' for the JSON document
+    instead of explicit parameters. The body parameter takes a single
+    attribute - type - specifying the name of a model. Example:
+    <pre>
+  "resources": {
+    "message": {
+      "operations": [
+        {
+          "method": "POST",
+	  "body": { "type": "message" }
+        }
+      ]
+    }
+  }
+    </pre>
+
+    Bodies and query parameters are now fully supported in the play
+    2.3 client and the ruby client.
+    </li>
+
+    <li>Query parameter support for operations. When specifying a
+    body, you can also specify additional query parameters for an
+    operation. The parameters section of operations is now interpreted
+    as being in the body by default, and if a 'body' element is
+    provided, the parameters are expected to be sent as query
+    parameters. If this works out in practice, we will likely
+    formalize parameter location to enable specifying query parameters
+    without specifying a location.</li>
+
+    <li>Added date time helper for parsing date time query parameters
+    in play framework routes file. Thanks to Gary Coady - see
+    https://github.com/gilt/apidoc/pull/62</li>
+
+    <li>Update ruby client to ensure enums are fully supported.</li>
+
 <h3>0.4.47</h3>
 
   <ul>
