@@ -214,7 +214,7 @@ case class RubyGemGenerator(service: ServiceDescription) {
             requestBuilder.append(".with_json(hash.to_json)")
           }
           case Some(model: Model) => {
-            val klass = s"$moduleName::Models${Text.underscoreToInitCap(model.name)}"
+            val klass = s"$moduleName::Models::${Text.underscoreToInitCap(model.name)}"
             sb.append(s"        HttpClient::Preconditions.assert_class('${model.name}', ${model.name}, $klass)")
             requestBuilder.append(s".with_json(${model.name}.to_hash.to_json)")
           }
