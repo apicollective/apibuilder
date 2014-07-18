@@ -130,7 +130,7 @@ ${modelClients(ssd).indent(2)}
       data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
       q: Seq[(String, String)] = Seq.empty
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).get()
+      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).post(data)
     }
 
     private def GET(
