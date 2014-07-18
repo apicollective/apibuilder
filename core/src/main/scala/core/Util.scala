@@ -2,8 +2,10 @@ package core
 
 object Util {
 
+  val MethodsNotAcceptingBodies = Seq("GET", "DELETE")
+
   def isJsonDocumentMethod(verb: String): Boolean = {
-    verb != "GET" && verb != "DELETE"
+    !MethodsNotAcceptingBodies.contains(verb.toUpperCase)
   }
 
   // Select out named parameters in the path. E.g. /:org/:service/foo would return [org, service]

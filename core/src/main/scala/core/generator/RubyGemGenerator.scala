@@ -20,12 +20,6 @@ object RubyGemGenerator {
     lines.append(s"class $className")
 
     lines.append("")
-    lines.append(et.values.map { value =>
-      val enumName = value.toUpperCase
-      s"""  $enumName = $className.new("$value")"""
-    }.mkString("\n"))
-
-    lines.append("")
     lines.append("  attr_reader :value")
 
     lines.append("")
@@ -34,22 +28,38 @@ object RubyGemGenerator {
     lines.append("  end")
 
     lines.append("")
-    lines.append("  def AgeGroup.all")
-    lines.append("    [" + et.values.map(_.toUpperCase).mkString(", ") + "]")
+    lines.append(s"  # Returns the instance of ${className} for this value, creating a new instance for an unknown value")
+    lines.append(s"  def $className.apply(value)")
+    lines.append(s"    if value.instance_of?($className)")
+    lines.append(s"      value")
+    lines.append(s"    else")
+    lines.append(s"      HttpClient::Preconditions.assert_class_or_nil('value', value, String)")
+    lines.append(s"      value.nil? ? nil : (from_string(value) || $className.new(value))")
+    lines.append(s"    end")
+    lines.append(s"  end")
+    lines.append("")
+    lines.append(s"  # Returns the instance of $className for this value, or nil if not found")
+    lines.append(s"  def $className.from_string(value)")
+    lines.append("    HttpClient::Preconditions.assert_class('value', value, String)")
+    lines.append(s"    $className.all.find { |v| v.value == value }")
+    lines.append("  end")
+
+    // .all needs to come first. In the event there is an enum value
+    // named 'all' - user will lose the 'all' method but their enum
+    // value will be preserved. This is subpar, but an edge case and
+    // good enough for now.
+    lines.append("")
+    lines.append(s"  def $className.all")
+    lines.append("    @@all ||= [" + et.values.map(v => s"$className.$v").mkString(", ") + "]")
     lines.append("  end")
 
     lines.append("")
-    lines.append(s"  # Returns the instance of ${className} for this value, creating a new instance for an unknown value")
-    lines.append(s"  def $className.apply(value)")
-    lines.append(s"    HttpClient::Preconditions.assert_class_or_nil('value', value, String)")
-    lines.append(s"    value.nil? ? nil : (from_string(value) || AgeGroup.new(value))")
-    lines.append(s"  end")
-    lines.append("")
-    lines.append("  # Returns the instance of AgeGroup for this value, or nil if not found")
-    lines.append(s"  def $className.from_string(value)")
-    lines.append("    HttpClient::Preconditions.assert_class('value', value, String)")
-    lines.append("    all.find { |v| v.value == value }")
-    lines.append("  end")
+    et.values.foreach { value =>
+      lines.append(s"  def $className.${value}")
+      lines.append(s"    @@_$value ||= $className.new('$value')")
+      lines.append("  end")
+      lines.append("")
+    }
 
     lines.append("")
     lines.append("end")
@@ -68,18 +78,18 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
   def generate(): String = {
     RubyHttpClient.require +
-    "\n" +
+    "\n\n" +
     service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +
     s"module ${moduleName}\n" +
     generateClient() +
     "\n\n  module Models\n" +
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end" +
-    "\n\n  module Clients\n" +
+    "\n\n  module Clients\n\n" +
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
-    "\n\n  end\n\n" +
+    "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +
-    "end"
+    "\nend"
   }
 
   private def generateClient(): String = {
@@ -134,7 +144,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
 
     resource.operations.foreach { op =>
       val pathParams = op.parameters.filter { p => p.location == ParameterLocation.Path }
-      val otherParams = op.parameters.filter { p => p.location != ParameterLocation.Path }
+      val queryParams = op.parameters.filter { p => p.location == ParameterLocation.Query }
+      val formParams = op.parameters.filter { p => p.location == ParameterLocation.Form }
 
       val rubyPath = op.path.split("/").map { name =>
         if (name.startsWith(":")) {
@@ -144,20 +155,20 @@ case class RubyGemGenerator(service: ServiceDescription) {
         }
       }.mkString("/")
 
-      val methodName = {
-        Text.camelCaseToUnderscore(GeneratorUtil.urlToMethodName(resource.path, op.method, op.path)).toLowerCase
-      }
+      val methodName = Text.camelCaseToUnderscore(GeneratorUtil.urlToMethodName(resource.path, op.method, op.path)).toLowerCase
 
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
 
-      val hasQueryParams = (!Util.isJsonDocumentMethod(op.method) && !otherParams.isEmpty)
-      if (hasQueryParams) {
-        paramStrings.append("incoming={}")
+      if (Util.isJsonDocumentMethod(op.method)) {
+        op.body match {
+          case None => paramStrings.append("hash")
+          case Some(model: Model) => paramStrings.append(model.name)
+        }
       }
 
-      if (Util.isJsonDocumentMethod(op.method)) {
-        paramStrings.append("hash")
+      if (!queryParams.isEmpty) {
+        paramStrings.append("incoming={}")
       }
 
       sb.append("")
@@ -176,10 +187,10 @@ case class RubyGemGenerator(service: ServiceDescription) {
         sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
       }
 
-      if (hasQueryParams) {
+      if (!queryParams.isEmpty) {
         val paramBuilder = ListBuffer[String]()
 
-        otherParams.foreach { param =>
+        queryParams.foreach { param =>
           paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
         }
 
@@ -192,13 +203,22 @@ case class RubyGemGenerator(service: ServiceDescription) {
       val requestBuilder = new StringBuilder()
       requestBuilder.append("@client.request(\"" + rubyPath + "\")")
 
-      if (hasQueryParams) {
+      if (!queryParams.isEmpty) {
         requestBuilder.append(".with_query(query)")
       }
 
       if (Util.isJsonDocumentMethod(op.method)) {
-        sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
-        requestBuilder.append(".with_json(hash.to_json)")
+        op.body match {
+          case None => {
+            sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
+            requestBuilder.append(".with_json(hash.to_json)")
+          }
+          case Some(model: Model) => {
+            val klass = s"$moduleName::Models::${Text.underscoreToInitCap(model.name)}"
+            sb.append(s"        HttpClient::Preconditions.assert_class('${model.name}', ${model.name}, $klass)")
+            requestBuilder.append(s".with_json(${model.name}.to_hash.to_json)")
+          }
+        }
       }
       requestBuilder.append(s".${op.method.toLowerCase}")
 
@@ -256,6 +276,21 @@ case class RubyGemGenerator(service: ServiceDescription) {
     }
 
     sb.append("      end\n")
+
+    sb.append("      def to_hash")
+    sb.append("        {")
+    sb.append(
+      model.fields.map { field =>
+        field.fieldtype match {
+          case PrimitiveFieldType(datatype) => s":${field.name} => ${field.name}"
+          case ModelFieldType(model) => s":${field.name} => ${field.name}.to_hash"
+          case EnumerationFieldType(datatype, values) => s":${field.name} => ${field.name}.value"
+        }
+      }.mkString("            ", ",\n            ", "")
+    )
+    sb.append("        }")
+    sb.append("      end\n")
+
     sb.append("    end")
 
     sb.mkString("\n")

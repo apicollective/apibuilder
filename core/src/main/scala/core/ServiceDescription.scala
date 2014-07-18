@@ -63,6 +63,7 @@ case class Operation(model: Model,
                      method: String,
                      path: String,
                      description: Option[String],
+                     body: Option[Model],
                      parameters: Seq[Parameter],
                      responses: Seq[Response]) {
 
@@ -89,7 +90,7 @@ object Operation {
 
   def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
-    val location = if (method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
+    val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
       if (internal.namedPathParameters.contains(p.name.get)) {
         Parameter(models, p, ParameterLocation.Path)
@@ -102,10 +103,22 @@ object Operation {
     // Capture any path parameters that were not explicitly annotated
     val pathParameters = internal.namedPathParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(model, _) }
 
+    val bodyModel: Option[Model] = internal.body match {
+      case None => None
+      case Some(modelName) => {
+        Some(
+          models.find(_.name == modelName).getOrElse {
+            sys.error(s"Operation specifies body[$modelName] which references an undefined model")
+          }
+        )
+      }
+    }
+
     Operation(model = model,
               method = method,
               path = internal.path,
               description = internal.description,
+              body = bodyModel,
               parameters = pathParameters ++ internalParams,
               responses = internal.responses.map { Response(_) })
   }

@@ -12,7 +12,7 @@ require 'base64'
 require 'rubygems'
 require 'json'
 require 'bigdecimal'
-"""
+""".trim
 
   val contents = """
   module HttpClient
@@ -317,7 +317,11 @@ require 'bigdecimal'
       end
 
       def Helper.to_model_instance(field_name, klass, value, opts={})
-        Helper.parse_args(field_name, value, opts) { |v| klass.send(:new, v) }
+        if value.instance_of?(klass)
+          Helper.parse_args(field_name, value, opts)
+        else
+          Helper.parse_args(field_name, value, opts) { |v| klass.send(:new, v) }
+        end
       end
 
       def Helper.to_big_decimal(field_name, value, opts={})
@@ -386,6 +390,6 @@ require 'bigdecimal'
     end
 
   end
-"""
+""".trim
 
 }

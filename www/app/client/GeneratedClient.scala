@@ -280,20 +280,6 @@ package apidoc.models {
 
 package apidoc {
 
-  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception
-
-  package error {
-  
-    import apidoc.models.json._
-  
-    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
-    
-      lazy val errors = response.json.as[scala.collection.Seq[apidoc.models.Error]]
-    
-    }
-  }
-
-
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import apidoc.models._
     import apidoc.models.json._
@@ -317,47 +303,6 @@ package apidoc {
     def users = Users
     
     def versions = Versions
-
-    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
-      import play.api.Play.current
-
-      val holder = play.api.libs.ws.WS.url(apiUrl + path)
-      apiToken.fold(holder) { token =>
-        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
-      }
-    }
-
-    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
-      val queryComponents = for {
-        (name, values) <- req.queryString
-        value <- values
-      } yield name -> value
-      val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
-      apiToken.fold(logger.info(s"curl -X $method $url")) { _ =>
-        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
-      }
-      req
-    }
-
-    private def POST(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("POST", _requestHolder(path)).post(data)
-    }
-
-    private def GET(path: String, q: Seq[(String, String)] = Seq.empty)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
-    }
-
-    private def PUT(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PUT", _requestHolder(path)).put(data)
-    }
-
-    private def PATCH(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PATCH", _requestHolder(path)).patch(data)
-    }
-
-    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("DELETE", _requestHolder(path)).delete()
-    }
 
     trait Code {
       /**
@@ -388,13 +333,14 @@ package apidoc {
     }
   
     trait Healthchecks {
-      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Healthcheck]]
+      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Healthcheck]]
     }
   
     object Healthchecks extends Healthchecks {
-      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Healthcheck]] = {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Healthcheck]] = {
         GET(s"/_internal_/healthcheck").map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Healthcheck]]
+          case r if r.status == 200 => Some(r.json.as[apidoc.models.Healthcheck])
+          case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
         }
       }
@@ -925,5 +871,80 @@ package apidoc {
         }
       }
     }
+
+    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
+      import play.api.Play.current
+
+      val holder = play.api.libs.ws.WS.url(apiUrl + path)
+      apiToken.fold(holder) { token =>
+        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
+      }
+    }
+
+    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+      val queryComponents = for {
+        (name, values) <- req.queryString
+        value <- values
+      } yield name -> value
+      val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
+      apiToken.fold(logger.info(s"curl -X $method $url")) { _ =>
+        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
+      }
+      req
+    }
+
+    private def POST(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).get()
+    }
+
+    private def GET(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
+    }
+
+    private def PUT(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(data)
+    }
+
+    private def PATCH(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)
+    }
+
+    private def DELETE(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("DELETE", _requestHolder(path).withQueryString(q:_*)).delete()
+    }
+
   }
+
+  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception
+
+  package error {
+  
+    import apidoc.models.json._
+  
+    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
+    
+      lazy val errors = response.json.as[scala.collection.Seq[apidoc.models.Error]]
+    
+    }
+  }
+
+
 }

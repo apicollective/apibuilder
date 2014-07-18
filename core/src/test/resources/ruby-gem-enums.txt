@@ -1,16 +1,9 @@
 class AgeGroup
 
-  THIRTIES = AgeGroup.new("Thirties")
-  FORTIES = AgeGroup.new("Forties")
-
   attr_reader :value
 
   def initialize(value)
     @value = HttpClient::Preconditions.assert_class('value', value, String)
-  end
-
-  def AgeGroup.all
-    [THIRTIES, FORTIES]
   end
 
   # Returns the instance of AgeGroup for this value, creating a new instance for an unknown value
@@ -22,7 +15,11 @@ class AgeGroup
   # Returns the instance of AgeGroup for this value, or nil if not found
   def AgeGroup.from_string(value)
     HttpClient::Preconditions.assert_class('value', value, String)
-    all.find { |v| v.value == value }
+    AgeGroup.all.find { |v| v.value == value }
+  end
+
+  def AgeGroup.all
+    @@all ||= [AgeGroup.new('Thirties'), AgeGroup.new('Forties')]
   end
 
 end

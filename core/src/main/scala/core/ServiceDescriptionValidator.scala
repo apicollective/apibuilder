@@ -57,6 +57,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateFieldTypes ++
           validateFieldDefaults ++
           validateResources ++
+          validateParameterBodies ++
           validateParameters ++
           validateResponses ++
           validatePathParameters ++
@@ -310,6 +311,24 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted
   private lazy val ValidQueryDatatypes = Datatype.QueryParameterTypes.map(_.name).sorted
+
+  private def validateParameterBodies(): Seq[String] = {
+    val modelNames = internalServiceDescription.get.models.map(_.name).toSet
+
+    val modelsNotFound = internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(op => !op.body.isEmpty && !modelNames.contains(op.body.get)).map { op =>
+        s"Resource[${resource.modelName.getOrElse("")}] ${op.label} body: Model named[${op.body.get}] not found"
+      }
+    }
+
+    val invalidMethods = internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(op => !op.body.isEmpty && !op.method.isEmpty && !Util.isJsonDocumentMethod(op.method.get)).map { op =>
+        s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Cannot specify body for HTTP method[${op.method.get}]"
+      }
+    }
+
+    modelsNotFound ++ invalidMethods
+  }
 
   private def validateParameters(): Seq[String] = {
     val missingNames = internalServiceDescription.get.resources.flatMap { resource =>

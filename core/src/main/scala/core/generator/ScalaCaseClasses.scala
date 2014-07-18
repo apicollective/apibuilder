@@ -13,7 +13,7 @@ object ScalaCaseClasses {
   }
 
   def apply(ssd: ScalaServiceDescription): String = ssd.models.map { model =>
-    val classDef = s"case class ${model.name}(${model.argList})"
+    val classDef = s"case class ${model.name}(${model.argList.getOrElse("")})"
     Play2Enums.build(model.model) match {
       case None => classDef.indent
       case Some(enums) => classDef.indent + "\n" + enums

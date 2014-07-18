@@ -9,9 +9,15 @@ class UtilSpec extends FunSpec with Matchers {
 
   it("isJsonDocumentMethod") {
     Util.isJsonDocumentMethod("GET") should be(false)
+    Util.isJsonDocumentMethod("get") should be(false)
+    Util.isJsonDocumentMethod("DELETE") should be(false)
+    Util.isJsonDocumentMethod("delete") should be(false)
     Util.isJsonDocumentMethod("POST") should be(true)
+    Util.isJsonDocumentMethod("post") should be(true)
     Util.isJsonDocumentMethod("PUT") should be(true)
+    Util.isJsonDocumentMethod("put") should be(true)
     Util.isJsonDocumentMethod("PATCH") should be(true)
+    Util.isJsonDocumentMethod("patch") should be(true)
   }
 
   it("namedParametersInPath") {

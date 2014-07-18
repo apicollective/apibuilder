@@ -19,7 +19,7 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
       ParameterLocation.Query,
       None, false, false, None, None, None, None
     )
-    val operation = new Operation(model, "GET", "models", None, Seq(q1, q2), Nil)
+    val operation = new Operation(model, "GET", "models", None, None, Seq(q1, q2), Nil)
     val resource = new Resource(model, "models", Seq(operation))
 
     it("should handle required and non-required params") {

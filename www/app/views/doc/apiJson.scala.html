@@ -113,7 +113,8 @@
       "method": <em>string</em>,
       "path": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
-      "parameters": <em>JSON Array of Parameters</em>
+      "body": <em>JSON Object (optional)</em>,
+      "parameters": <em>JSON Array of Parameters (optional)</em>
       "responses": <em>JSON Object (optional)</em>
     }
     </pre>
@@ -123,8 +124,27 @@
       <li><em>method</em> the HTTP method for this operation</li>
       <li><em>path</em> optional path for this particular operation. If not provided, defaults to no additional path. Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that this operation is available at /resource_path/:guid. Path parameter types are inferred by looking for a field with that name on the model associated with this resource. If not found, the datatype of any path parameter will be string.</li>
       <li><em>description</em> optional longer description for this operation.</li>
-      <li><em>parameters</em> optional JSON Array of the parameters to this method. See <a href="#parameter">Parameter</a>.</li>
+      <li><em>body</em> optional specification for the type of the body of this request. For all operations that support bodies (e.g. POST, PUT, PATCH), allows you to specify the type of the body. See <a href="#body">Body</a>.</li>
+      <li><em>parameters</em> optional JSON Array of the parameters to this method. By default, for @core.Util.MethodsNotAcceptingBodies.mkString(" and ") methods, parameters are assumed to be in the path or in the query. For other methods, parameters are assumed to be in the path or form body, unless you have explicitly specified a body in which case parameters can be provided in the path or the query. See <a href="#parameter">Parameter</a>.</li>
       <li><em>responses</em> optional JSON Object of HTTP Response Code => Response. See <a name="#response"Response></a>. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented.</li>
+    </ul>
+  </p>
+
+  <a name="body"></a>
+  <h2>Body declaration</h2>
+
+  <p>
+    A body is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "type": <em>type</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>type</em> the name of a model describing this body.
     </ul>
   </p>
 
@@ -176,6 +196,27 @@
       <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
       <li><em>type</em> the datatype of this response. The value must be the name of a model. To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of users (assuming there is a model with name user), use "[user]".</li>
     </ul>
+
+    There are a few conventions enforced:
+
+    <ul>
+
+      <li> HTTP Response codes of 404, 5xx cannot be explicitly
+      specified and are handled automatically to ensure consistent
+      behavior in generated client libraries.</li>
+
+      <ul>
+
+        <li> 404 response is automatically added for all GET requests</li>
+        <li> if a successful response returns an array, 404 returns an empty list</li>
+        <li> if a successful response returns a single instance, 404 returns null (or None in languages that support options)</li>
+
+      </ul>
+
+      <li> HTTP Response codes of 204 and 304 cannot contain a type - they must return no content.</li>
+
+    </ul>
+
 
   </p>
 

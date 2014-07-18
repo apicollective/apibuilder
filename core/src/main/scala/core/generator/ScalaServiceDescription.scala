@@ -89,6 +89,8 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   val description: Option[String] = operation.description
 
+  val body: Option[ScalaModel] = operation.body.map(new ScalaModel(_))
+
   val parameters: List[ScalaParameter] = {
     operation.parameters.toList.map { new ScalaParameter(_) }
   }
@@ -101,7 +103,19 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
 
-  val argList: Option[String] = ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+  val argList: Option[String] = operation.body match {
+    case None => {
+      ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+    }
+    case Some(bodyModel: Model) => {
+      Some(
+        Seq(
+          Some(s"${Text.initLowerCase(model.name)}: ${resource.packageName}.models.${model.name}"),
+          ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+        ).flatten.mkString(", ")
+      )
+    }
+  }
 
   val responses: Seq[ScalaResponse] = {
     operation.responses.toList.map { new ScalaResponse(resource.packageName, method, _) } 

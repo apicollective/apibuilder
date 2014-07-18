@@ -92,8 +92,6 @@ s"""package ${ssd.packageName} {
     }
   }
 
-  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception$errorsString
-
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import ${ssd.packageName}.models._
     import ${ssd.packageName}.models.json._
@@ -103,6 +101,8 @@ s"""package ${ssd.packageName} {
     logger.info(s"Initializing ${ssd.packageName}.client for url $$apiUrl")
 
 ${accessors.indent(4)}
+
+${modelClients(ssd).indent(2)}
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
@@ -125,28 +125,48 @@ ${accessors.indent(4)}
       req
     }
 
-    private def POST(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("POST", _requestHolder(path)).post(data)
+    private def POST(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
-    private def GET(path: String, q: Seq[(String, String)] = Seq.empty)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    private def GET(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
-    private def PUT(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PUT", _requestHolder(path)).put(data)
+    private def PUT(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(data)
     }
 
-    private def PATCH(path: String, data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj())(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PATCH", _requestHolder(path)).patch(data)
+    private def PATCH(
+      path: String,
+      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)
     }
 
-    private def DELETE(path: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("DELETE", _requestHolder(path)).delete()
+    private def DELETE(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("DELETE", _requestHolder(path).withQueryString(q:_*)).delete()
     }
 
-${modelClients(ssd).indent(2)}
   }
+
+  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception$errorsString
+
 }"""
   }
 
@@ -166,9 +186,21 @@ ${modelClients(ssd).indent(2)}
       val path = Play2Util.pathParams(op)
 
       val methodCall = if (Util.isJsonDocumentMethod(op.method)) {
-        Play2Util.formParams(op) match {
-          case None => s"${op.method}($path)"
-          case Some(payload) => s"${payload}\n\n${op.method}($path, payload)"
+        val payload = Play2Util.formBody(op)
+        val query = Play2Util.queryParams(op)
+
+        if (payload.isEmpty && query.isEmpty) {
+          s"${op.method}($path)"
+
+        } else if (!payload.isEmpty && !query.isEmpty) {
+          s"${payload.get}\n\n${query.get}\n\n${op.method}($path, payload, query)"
+
+        } else if (payload.isEmpty) {
+          s"${query.get}\n\n${op.method}(path = $path, q = query)"
+
+        } else {
+          s"${payload.get}\n\n${op.method}($path, payload)"
+
         }
 
       } else {
@@ -244,11 +276,11 @@ ${modelClients(ssd).indent(2)}
     private val commentString = comments.map(string => ScalaUtil.textToComment(string) + "\n").getOrElse("")
 
     val interface: String = {
-      s"""${commentString}def $name($argList.getOrElse(""))(implicit ec: scala.concurrent.ExecutionContext): $returnType"""
+      s"""${commentString}def $name(${argList.getOrElse("")})(implicit ec: scala.concurrent.ExecutionContext): $returnType"""
     }
 
     val code: String = {
-      s"""override def $name($argList)(implicit ec: scala.concurrent.ExecutionContext): $returnType = {
+      s"""override def $name(${argList.getOrElse("")})(implicit ec: scala.concurrent.ExecutionContext): $returnType = {
 ${methodCall.indent}.map {
 ${response.indent(4)}
   }
