@@ -279,6 +279,34 @@ package apidoc.models {
 }
 
 package apidoc {
+  object helpers {
+    import org.joda.time.DateTime
+    import org.joda.time.format.ISODateTimeFormat
+    import play.api.mvc.QueryStringBindable
+
+    import scala.util.{ Failure, Success, Try }
+
+    private[helpers] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
+    private[helpers] val dateTimeISOFormatter = ISODateTimeFormat.dateTime()
+
+    private[helpers] def parseDateTimeISO(s: String): Either[String, DateTime] = {
+      Try(dateTimeISOParser.parseDateTime(s)) match {
+        case Success(dt) => Right(dt)
+        case Failure(f) => Left("Could not parse DateTime: " + f.getMessage)
+      }
+    }
+
+    implicit object DateTimeISOQueryStringBinder extends QueryStringBindable[DateTime] {
+      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
+        for {
+          values <- params.get(key)
+          s <- values.headOption
+        } yield parseDateTimeISO(s)
+      }
+
+      override def unbind(key: String, time: DateTime): String = key + "=" + dateTimeISOFormatter.print(time)
+    }
+  }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import apidoc.models._
