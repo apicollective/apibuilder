@@ -46,7 +46,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       OrganizationDao.isDomainValid("gilt.org") should be(true)
       OrganizationDao.isDomainValid("www.gilt.com") should be(true)
       OrganizationDao.isDomainValid("WWW.GILT.COM") should be(true)
-      OrganizationDao.isDomainValid("gilt-com") should be(false)
+      OrganizationDao.isDomainValid("www gilt com") should be(false)
     }
 
   }

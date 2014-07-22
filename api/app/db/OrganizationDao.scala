@@ -68,7 +68,8 @@ object OrganizationDao {
   }
 
 
-  private val DomainRx = """\w+\.\w+$""".r
+  // We just care that the domain does not have a space in it
+  private val DomainRx = """^[^\s]+$""".r
   private[db] def isDomainValid(domain: String): Boolean = {
     domain match {
       case DomainRx() => true
