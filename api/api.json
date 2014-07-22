@@ -25,7 +25,8 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this organization." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the organization name." },
-                { "name": "name", "type": "string", "description": "The name of this organization." }
+                { "name": "name", "type": "string", "description": "The name of this organization." },
+                { "name": "domains", "type": "[string]", "required": false }
             ]
         },
 
@@ -183,6 +184,15 @@
                     ],
                     "responses": {
                         "200": { "type": "[organization]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "path": "/:guid",
+                    "description": "Returns the organization with this guid.",
+                    "responses": {
+                        "200": { "type": "organization" }
                     }
                 },
 

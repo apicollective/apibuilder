@@ -28,9 +28,9 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     assertEquals(OrganizationDao.findAll(key = Some(Util.gilt.key)).head.key, Util.gilt.key)
   }
 
-  describe("validates name") {
+  describe("validation") {
 
-    it("validates") {
+    it("validates name") {
       OrganizationDao.validate("this is a long name") should be(Seq.empty)
       OrganizationDao.validate("a").head.message should be("name must be at least 4 characters")
     }
@@ -39,6 +39,14 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       intercept[java.lang.IllegalArgumentException] {
         OrganizationDao.createWithAdministrator(Util.createdBy, "a")
       }.getMessage should be("requirement failed: Name too short")
+    }
+
+    it("isDomainValid") {
+      OrganizationDao.isDomainValid("gilt.com") should be(true)
+      OrganizationDao.isDomainValid("gilt.org") should be(true)
+      OrganizationDao.isDomainValid("www.gilt.com") should be(true)
+      OrganizationDao.isDomainValid("WWW.GILT.COM") should be(true)
+      OrganizationDao.isDomainValid("gilt-com") should be(false)
     }
 
   }

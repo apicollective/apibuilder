@@ -9,23 +9,25 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
+case class Organization(
+  guid: String,
+  name: String,
+  key: String,
+  domains: Seq[String] = Seq.empty
+)
+
 object Organization {
   implicit val organizationWrites = Json.writes[Organization]
 }
 
-case class Organization(guid: String, name: String, key: String) {
+case class OrganizationForm(
+  name: String,
+  domains: Option[Seq[String]] = None
+)
 
-  // temporary as we roll out authentication
-  val emailDomains: Set[String] = {
-    if (key == OrganizationDao.GiltKey) {
-      OrganizationDao.GiltComDomains
-    } else {
-      Set.empty
-    }
-  }
-
+object OrganizationForm {
+  implicit val organizationFormReads = Json.reads[OrganizationForm]
 }
-
 
 object OrganizationDao {
 
@@ -35,28 +37,51 @@ object OrganizationDao {
   private[db] val GiltKey = "gilt"
 
   private val BaseQuery = """
-    select guid::varchar, name, key
+    select guid::varchar, name, key,
+           (select array_to_string(array_agg(domain), ' ') 
+              from organization_domains
+             where deleted_at is null
+               and organization_guid = organizations.guid) as domains
       from organizations
      where deleted_at is null
   """
 
-  def validate(name: String): Seq[ValidationError] = {
-    if (name.length < MinNameLength) {
-      Validation.error(s"name must be at least $MinNameLength characters")
+  def validate(form: OrganizationForm): Seq[ValidationError] = {
+    val nameErrors = if (form.name.length < MinNameLength) {
+      Seq(s"name must be at least $MinNameLength characters")
     } else {
-      OrganizationDao.findAll(name = Some(name), limit = 1).headOption match {
+      OrganizationDao.findAll(name = Some(form.name), limit = 1).headOption match {
         case None => Seq.empty
-        case Some(org: Organization) => Validation.error("Org with this name already exists")
+        case Some(org: Organization) => Seq("Org with this name already exists")
       }
+    }
+
+    val domainErrors = form.domains.getOrElse(Seq.empty).flatMap { domain =>
+      if (isDomainValid(domain)) {
+        None
+      } else {
+        Some(s"Domain $domain is not valid. Expected a domain name like gilt.com")
+      }
+    }
+
+    Validation.errors(nameErrors ++ domainErrors)
+  }
+
+
+  private val DomainRx = "^\\w+\\.\\w+$".r
+  private[db] def isDomainValid(domain: String): Boolean = {
+    domain match {
+      case DomainRx() => true
+      case _ => false
     }
   }
 
   /**
    * Creates the org and assigns the user as its administrator.
    */
-  def createWithAdministrator(user: User, name: String): Organization = {
+  def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
     DB.withTransaction { implicit c =>
-      val org = create(user, name)
+      val org = create(c, user, form)
       Membership.upsert(user, org, user, Role.Admin)
       OrganizationLog.create(user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
@@ -74,31 +99,36 @@ object OrganizationDao {
 
   private[db] def findByEmailDomain(email: String): Option[Organization] = {
     emailDomain(email).flatMap { domain =>
-      if (GiltComDomains.contains(domain.toLowerCase)) {
-        findAll(key = Some(GiltKey), limit = 1).headOption
-      } else {
-        None
+      OrganizationDomainDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
+        findByGuid(UUID.fromString(domain.organization_guid))
       }
     }
   }
 
-  private def create(createdBy: User, name: String): Organization = {
-    require(name.length >= MinNameLength, "Name too short")
+  private def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): Organization = {
+    require(form.name.length >= MinNameLength, "Name too short")
 
-    val org = Organization(guid = UUID.randomUUID.toString,
-                           key = UrlKey.generate(name),
-                           name = name)
+    val org = Organization(
+      guid = UUID.randomUUID.toString,
+      key = UrlKey.generate(form.name),
+      name = form.name,
+      domains = form.domains.getOrElse(Seq.empty)
+    )
 
-    DB.withConnection { implicit c =>
-      SQL("""
-          insert into organizations
-          (guid, name, key, created_by_guid)
-          values
-          ({guid}::uuid, {name}, {key}, {created_by_guid}::uuid)
-          """).on('guid -> org.guid,
-                  'name -> org.name,
-                  'key -> org.key,
-                  'created_by_guid -> createdBy.guid).execute()
+    SQL("""
+      insert into organizations
+      (guid, name, key, created_by_guid)
+      values
+      ({guid}::uuid, {name}, {key}, {created_by_guid}::uuid)
+    """).on(
+      'guid -> org.guid,
+      'name -> org.name,
+      'key -> org.key,
+      'created_by_guid -> createdBy.guid
+    ).execute()
+
+    org.domains.foreach { domain =>
+      OrganizationDomainDao.create(c, createdBy, org, domain)
     }
 
     org
@@ -144,9 +174,12 @@ object OrganizationDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        Organization(guid = row[String]("guid"),
-                     name = row[String]("name"),
-                     key = row[String]("key"))
+        Organization(
+          guid = row[String]("guid"),
+          name = row[String]("name"),
+          key = row[String]("key"),
+          domains = row[Option[String]]("domain").fold(Seq.empty[String])(_.split(" "))
+        )
       }.toSeq
     }
   }
