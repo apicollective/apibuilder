@@ -17,6 +17,12 @@ object OrganizationDomainDao {
      where deleted_at is null
   """
 
+  private[db] def create(createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
+    DB.withConnection { implicit c =>
+      create(c, createdBy, org, domainName)
+    }
+  }
+
   private[db] def create(implicit c: java.sql.Connection, createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
     val domain = OrganizationDomain(
       guid = UUID.randomUUID.toString,

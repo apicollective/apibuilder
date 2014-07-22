@@ -20,6 +20,22 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     Membership.isUserAdmin(user, org) should be(true)
   }
 
+  it("creates with domains") {
+    val domains = Seq(UUID.randomUUID.toString + ".com", UUID.randomUUID.toString + ".org")
+    val org = OrganizationDao.createWithAdministrator(
+      Util.createdBy,
+      OrganizationForm(
+        name = "Test Org " + UUID.randomUUID.toString,
+        domains = Some(domains)
+      )
+    )
+
+    org.domains.mkString(" ") should be(domains.mkString(" "))
+
+    val fetched = OrganizationDao.findByGuid(org.guid).get
+    fetched.domains.mkString(" ") should be(domains.mkString(" "))
+  }
+
   it("find by guid") {
     assertEquals(OrganizationDao.findByGuid(Util.gilt.guid).get.guid, Util.gilt.guid)
   }
