@@ -11,15 +11,23 @@ object Util {
     }
   }
 
+  def upsertOrganization(name: String): Organization = {
+    OrganizationDao.findAll(name = Some(name)).headOption.getOrElse {
+      createOrganization(name = Some(name))
+    }
+  }
+
+  def createOrganization(name: Option[String] = None): Organization = {
+    val form = OrganizationForm(
+      name = name.getOrElse(UUID.randomUUID().toString)
+    )
+    OrganizationDao.createWithAdministrator(Util.createdBy, form)
+  }
+
   lazy val createdBy = Util.upsertUser("admin@apidoc.me")
 
-  lazy val gilt = OrganizationDao.findAll(name = Some("gilt")).headOption.getOrElse {
-    OrganizationDao.createWithAdministrator(createdBy, "Gilt")
-  }
+  lazy val gilt = upsertOrganization("Gilt")
 
-  private lazy val testOrgName = "Test Org %s".format(UUID.randomUUID)
-  lazy val testOrg = OrganizationDao.findAll(name = Some(testOrgName)).headOption.getOrElse {
-    OrganizationDao.createWithAdministrator(createdBy, testOrgName)
-  }
+  lazy val testOrg = upsertOrganization("Test Org %s".format(UUID.randomUUID))
 
 }

@@ -14,7 +14,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
   it("user that creates org should be an admin") {
     val user = Util.upsertUser(UUID.randomUUID.toString + "@gilttest.com")
     val name = UUID.randomUUID.toString
-    val org = OrganizationDao.createWithAdministrator(user, name)
+    val org = OrganizationDao.createWithAdministrator(user, OrganizationForm(name = name))
     org.name should be(name)
 
     Membership.isUserAdmin(user, org) should be(true)
@@ -31,13 +31,13 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
   describe("validation") {
 
     it("validates name") {
-      OrganizationDao.validate("this is a long name") should be(Seq.empty)
-      OrganizationDao.validate("a").head.message should be("name must be at least 4 characters")
+      OrganizationDao.validate(OrganizationForm(name = "this is a long name")) should be(Seq.empty)
+      OrganizationDao.validate(OrganizationForm(name = "a")).head.message should be("name must be at least 4 characters")
     }
 
     it("raises error if you try to create an org with a short name") {
       intercept[java.lang.IllegalArgumentException] {
-        OrganizationDao.createWithAdministrator(Util.createdBy, "a")
+        OrganizationDao.createWithAdministrator(Util.createdBy, OrganizationForm("a"))
       }.getMessage should be("requirement failed: Name too short")
     }
 
