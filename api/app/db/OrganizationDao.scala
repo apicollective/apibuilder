@@ -68,7 +68,7 @@ object OrganizationDao {
   }
 
 
-  private val DomainRx = "^\\w+\\.\\w+$".r
+  private val DomainRx = """\w+\.\w+$""".r
   private[db] def isDomainValid(domain: String): Boolean = {
     domain match {
       case DomainRx() => true
@@ -82,8 +82,8 @@ object OrganizationDao {
   def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
     DB.withTransaction { implicit c =>
       val org = create(c, user, form)
-      Membership.upsert(user, org, user, Role.Admin)
-      OrganizationLog.create(user, org, s"Created organization and joined as ${Role.Admin.name}")
+      Membership.create(c, user, org, user, Role.Admin)
+      OrganizationLog.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
     }
   }
@@ -178,7 +178,7 @@ object OrganizationDao {
           guid = row[String]("guid"),
           name = row[String]("name"),
           key = row[String]("key"),
-          domains = row[Option[String]]("domain").fold(Seq.empty[String])(_.split(" "))
+          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" "))
         )
       }.toSeq
     }

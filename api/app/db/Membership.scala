@@ -38,9 +38,7 @@ object Membership {
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     val membership = findByOrganizationAndUserAndRole(organization, user, role) match {
       case Some(r: Membership) => r
-      case None => {
-        create(createdBy, organization, user, role)
-      }
+      case None => create(createdBy, organization, user, role)
     }
 
     // If we made this user an admin, and s/he already exists as a
@@ -56,18 +54,28 @@ object Membership {
   }
 
   private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
-    val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
-      SQL(InsertQuery).on('guid -> guid,
-                          'organization_guid -> organization.guid,
-                          'user_guid -> user.guid,
-                          'role -> role.key,
-                          'created_by_guid -> createdBy.guid).execute()
+      create(c, createdBy, organization, user, role)
     }
+  }
 
-    findAll(guid = Some(guid.toString), limit = 1).headOption.getOrElse {
-      sys.error("Failed to create membership")
-    }
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+    val membership = Membership(
+      guid = UUID.randomUUID.toString,
+      organization = organization,
+      user = user,
+      role = role.key
+    )
+
+    SQL(InsertQuery).on(
+      'guid -> membership.guid,
+      'organization_guid -> membership.organization.guid,
+      'user_guid -> membership.user.guid,
+      'role -> membership.role,
+      'created_by_guid -> createdBy.guid
+    ).execute()
+
+    membership
   }
 
   def softDelete(user: User, membership: Membership) {
