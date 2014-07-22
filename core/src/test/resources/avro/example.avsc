@@ -1,0 +1,52 @@
+{
+  "type": "record",
+  "name": "purchase",
+  "namespace": "apidoc",
+  "fields": [
+     { "name": "product", "type": "string" },
+     { "name": "price", "type": {"type": "record",
+          "name": "BigDecimal",
+          "namespace": "java.math",
+          "fields": [
+             {"name": "bigInt", "type": "bytes"},
+             {"name": "scale", "type": "int"}
+          ]
+         }}
+  ]
+}
+{
+  "type": "record",
+  "name": "user",
+  "namespace": "apidoc",
+  "fields": [
+    {"name": "uuid", "type": {"namespace": "java.util", "type": "fixed", "size": 16, "name": "UUID"}},
+    {"name": "first_name", "type": "string"},
+    {"name": "age", "type": ["int", "null"]},
+    {"name": "gender", "type": "enum", "symbols": ["male", "female", "other", "unknown"]},
+    {"name": "interests", "type": "array", "items": "string"},
+    {"name": "has_purchased", "type": "boolean"},
+    {"name": "num_visits", "type": "long"},
+    {"name": "last_visit", "type": "string"},
+    {"name": "loyalty_score", "type": "double", "default": "0.0"},
+    {"name": "account_balance", "type": {"type": "record",
+          "name": "BigDecimal",
+          "namespace": "java.math",
+          "fields": [
+             {"name": "bigInt", "type": "bytes"},
+             {"name": "scale", "type": "int"}
+          ]
+         }, "default": "0.0"},
+    {"name": "last_purchase", "type": [{
+          "type": "record",
+          "name": "purchase",
+          "namespace": "apidoc",
+          "fields": [
+             { "name": "product", "type": "string" },
+             { "name": "price", "type": "java.math.BigDecimal" }
+          ]
+        }, "null"]
+    },
+    {"name": "referring_user_uuid", "type": ["java.util.UUID", "null"]},
+    {"name": "adhoc", "type": "map", "values": "string"}
+  ]
+}
