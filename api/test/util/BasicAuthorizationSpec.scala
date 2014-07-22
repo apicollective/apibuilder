@@ -30,6 +30,10 @@ class BasicAuthorizationSpec extends FunSpec with Matchers {
     BasicAuthorization.get("Other " + encode("user:pass")) should be(None)
   }
 
+  it("Ignores invalid auth") {
+    BasicAuthorization.get("Basic " + encode("user:pass:other")) should be(None)
+  }
+
   it("Ignores empty string") {
     BasicAuthorization.get("Basic " + encode("")) should be(None)
   }
