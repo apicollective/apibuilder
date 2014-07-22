@@ -72,7 +72,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "target", "type": "string", "description": "The target platform.", "enum": ["play_2_3_client", "play_2_3_json", "play_2_3_routes", "ruby_client", "scala_models"] },
+                { "name": "target", "type": "string", "description": "The target platform.", "enum": ["avro_schema", "play_2_3_client", "play_2_3_json", "play_2_3_routes", "ruby_client", "scala_models"] },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },

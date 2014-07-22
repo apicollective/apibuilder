@@ -46,6 +46,12 @@ object Target {
       status = Status.Alpha
     ),
     Target(
+      key = "avro_schema",
+      name = "Avro schemas",
+      description = "Generates AVRO JSON schema for the models in this service.",
+      status = Status.Alpha
+    ),
+    Target(
       key = "swagger_json",
       name = "Swagger JSON",
       description = "We have a prototype to convert api.json to swagger-json. This enables access to all of the great tooling already built on swagger. We specifically made sure the conversion was straight forward as we built api.json and hope to soon have the time to productize the swagger-json generation.",
@@ -68,6 +74,7 @@ object Target {
       case "play_2_3_client" => Play2ClientGenerator.apply(sd)
       case "play_2_3_json" => Play2Models.apply(sd)
       case "scala_models" => ScalaCaseClasses.apply(sd)
+      case "avro_schema" => AvroSchemas.apply(sd)
       case (other) => {
         sys.error(s"unsupported code generation for target[$other]")
       }
