@@ -36,6 +36,22 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     fetched.domains.mkString(" ") should be(domains.mkString(" "))
   }
 
+  it("creates with metadata") {
+    val org = OrganizationDao.createWithAdministrator(
+      Util.createdBy,
+      OrganizationForm(
+        name = "Test Org " + UUID.randomUUID.toString,
+        metadata = Some(OrganizationMetadataForm(
+          package_name = Some("com.gilt")
+        ))
+      )
+    )
+
+    org.metadata.package_name should be(Some("com.gilt"))
+    val fetched = OrganizationDao.findByGuid(org.guid).get
+    fetched.metadata.package_name should be(Some("com.gilt"))
+  }
+
   it("find by guid") {
     assertEquals(OrganizationDao.findByGuid(Util.gilt.guid).get.guid, Util.gilt.guid)
   }
