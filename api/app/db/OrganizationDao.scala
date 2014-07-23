@@ -33,9 +33,6 @@ object OrganizationDao {
 
   val MinNameLength = 4
 
-  private[db] val GiltComDomains = Set("gilt.com", "giltcity.com")
-  private[db] val GiltKey = "gilt"
-
   private val BaseQuery = """
     select guid::varchar, name, key,
            (select array_to_string(array_agg(domain), ' ') 

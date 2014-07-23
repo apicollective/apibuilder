@@ -44,11 +44,18 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     assertEquals(OrganizationDao.findAll(key = Some(Util.gilt.key)).head.key, Util.gilt.key)
   }
 
+  it("emailDomain") {
+    OrganizationDao.emailDomain("mb@gilt.com") should be(Some("gilt.com"))
+    OrganizationDao.emailDomain("mb@internal.gilt.com") should be(Some("internal.gilt.com"))
+    OrganizationDao.emailDomain("mb") should be(None)
+  }
+
   describe("validation") {
 
     it("validates name") {
       OrganizationDao.validate(OrganizationForm(name = "this is a long name")) should be(Seq.empty)
       OrganizationDao.validate(OrganizationForm(name = "a")).head.message should be("name must be at least 4 characters")
+      OrganizationDao.validate(OrganizationForm(name = Util.gilt.name)).head.message should be("Org with this name already exists")
     }
 
     it("raises error if you try to create an org with a short name") {
@@ -65,6 +72,12 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       OrganizationDao.isDomainValid("www gilt com") should be(false)
     }
 
+    it("validates domains") {
+      val name = UUID.randomUUID.toString
+      OrganizationDao.validate(OrganizationForm(name = name, domains = None)) should be(Seq.empty)
+      OrganizationDao.validate(OrganizationForm(name = name, domains = Some(Seq.empty))) should be(Seq.empty)
+      OrganizationDao.validate(OrganizationForm(name = name, domains = Some(Seq("bad name")))).head.message should be("Domain bad name is not valid. Expected a domain name like gilt.com")
+    }
   }
 
 }
