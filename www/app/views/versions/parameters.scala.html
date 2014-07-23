@@ -1,4 +1,4 @@
-@(parameters: Iterable[core.Parameter])
+@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, operation: core.Operation)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -13,12 +13,12 @@
     </tr>
   </thead>
   <tbody>
-   @parameters.map { param =>
+   @operation.parameters.map { param =>
      <tr>
        <td>@param.name</td>
        <td>@{param.paramtype match {
-             case pt: core.PrimitiveParameterType => Html(s"<a href='${routes.DocController.types}#${pt.datatype.name}'>${pt.datatype.name}</a>")
-             case mt: core.ModelParameterType => mt.model.name
+             case pt: core.PrimitiveParameterType => datatype(pt.datatype)
+             case mt: core.ModelParameterType => modelType(org, service, version, mt.model)
            }}
        </td>
        <td>@param.location</td>
