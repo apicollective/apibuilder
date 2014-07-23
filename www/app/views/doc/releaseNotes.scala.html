@@ -1,5 +1,33 @@
 @doc.main("Release notes") {
 
+<h3>0.4.53</h3>
+
+  <ul>
+
+    <li>Introduce support to generate Avro Schemas (thanks
+    kscaldef!). There is a new code generation
+    target <code>avro_schema</code> that generates AVRO JSON from the
+    model definitions.</li>
+
+    <li>Add support for domains in the API for organizations - this
+    can be used to associate a new user with an organization
+    automatically based on email domain. Currently only available in
+    API - UI is coming in a future release.</li>
+
+    <li>Add support for metadata in the API for organizations, with
+    the first attribute of <code>package_name</code> that becomes
+    available to code generators that need a fully qualified package
+    name. Currently only available in API - UI is coming in a future
+    release.</li>
+
+    <li>API route added to GET /organizations/:guid</li>
+
+    <li>Add 'body' information to online documentation.</li>
+
+    <li>Expanded unit tests based on scala coverage plugin.</li>
+
+  </ul>
+
 <h3>0.4.50</h3>
 
   <ul>
