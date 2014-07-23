@@ -26,7 +26,15 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this organization." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the organization name." },
                 { "name": "name", "type": "string", "description": "The name of this organization." },
-                { "name": "domains", "type": "[string]", "required": false }
+                { "name": "domains", "type": "[string]", "required": false },
+                { "name": "metadata", "type": "organization_metadata", "required": false }
+            ]
+        },
+
+        "organization_metadata": {
+            "description": "Supplemental (non-required) information about an organization",
+            "fields": [
+                { "name": "package_name", "type": "string", "description": "The package name when used by code generators (e.g. scala package name for the clients)", "required": false }
             ]
         },
 

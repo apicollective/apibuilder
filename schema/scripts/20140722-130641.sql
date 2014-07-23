@@ -18,3 +18,12 @@ select '169daeaf-7e1a-4dbb-9d7c-551e811b4681',
  where lower(trim(name)) = 'gilt'
    and deleted_at is null;
 
+insert into organization_domains
+(guid, organization_guid, domain, created_by_guid)
+select '169daeaf-7e1a-4dbb-9d7c-551e811b4680',
+       guid,
+       'gilt.jp',
+       created_by_guid
+  from organizations
+ where lower(trim(name)) = 'gilt'
+   and deleted_at is null;

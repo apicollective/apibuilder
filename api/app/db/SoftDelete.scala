@@ -12,8 +12,12 @@ private[db] object SoftDelete {
 
   def delete(tableName: String, deletedBy: User, guid: String) {
     DB.withConnection { implicit c =>
-      SQL(SoftDeleteQuery.format(tableName)).on('deleted_by_guid -> deletedBy.guid, 'guid -> guid).execute()
+      delete(c, tableName, deletedBy, guid)
     }
+  }
+
+  private[db] def delete(implicit c: java.sql.Connection, tableName: String, deletedBy: User, guid: String) {
+    SQL(SoftDeleteQuery.format(tableName)).on('deleted_by_guid -> deletedBy.guid, 'guid -> guid).execute()
   }
 
 }
