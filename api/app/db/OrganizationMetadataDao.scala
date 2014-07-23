@@ -11,10 +11,19 @@ case class OrganizationMetadata(
   package_name: Option[String]
 )
 
+object OrganizationMetadata {
+  val Empty = OrganizationMetadata(package_name = None)
+
+  implicit val organizationMetadataWrites = Json.writes[OrganizationMetadata]
+}
+
 case class OrganizationMetadataForm(
-  organization_guid: String,
   package_name: Option[String] = None
 )
+
+object OrganizationMetadataForm {
+  implicit val OrganizationMetadataFormReads = Json.reads[OrganizationMetadataForm]
+}
 
 object OrganizationMetadataDao {
 
@@ -40,13 +49,13 @@ object OrganizationMetadataDao {
        and deleted_at is null
   """
 
-  private[db] def create(createdBy: User, form: OrganizationMetadataForm): OrganizationMetadata = {
+  private[db] def create(createdBy: User, org: Organization, form: OrganizationMetadataForm): OrganizationMetadata = {
     DB.withConnection { implicit c =>
-      create(c, createdBy, form)
+      create(c, createdBy, org, form)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationMetadataForm): OrganizationMetadata = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, org: Organization, form: OrganizationMetadataForm): OrganizationMetadata = {
     val metadata = OrganizationMetadata(
       package_name = form.package_name
     )
@@ -54,7 +63,7 @@ object OrganizationMetadataDao {
 
     SQL(InsertQuery).on(
       'guid -> guid,
-      'organization_guid -> form.organization_guid,
+      'organization_guid -> org.guid,
       'package_name -> metadata.package_name,
       'created_by_guid -> createdBy.guid
     ).execute()

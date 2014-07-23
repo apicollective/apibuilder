@@ -13,7 +13,8 @@ case class Organization(
   guid: String,
   name: String,
   key: String,
-  domains: Seq[String] = Seq.empty
+  domains: Seq[String] = Seq.empty,
+  metadata: OrganizationMetadata = OrganizationMetadata.Empty
 )
 
 object Organization {
@@ -22,7 +23,8 @@ object Organization {
 
 case class OrganizationForm(
   name: String,
-  domains: Option[Seq[String]] = None
+  domains: Option[Seq[String]] = None,
+  metadata: Option[OrganizationMetadataForm] = None
 )
 
 object OrganizationForm {
@@ -34,13 +36,16 @@ object OrganizationDao {
   val MinNameLength = 4
 
   private val BaseQuery = """
-    select guid::varchar, name, key,
+    select organizations.guid::varchar, organizations.name, organizations.key,
+           organization_metadata.package_name as metadata_package_name,
            (select array_to_string(array_agg(domain), ' ') 
               from organization_domains
              where deleted_at is null
                and organization_guid = organizations.guid) as domains
       from organizations
-     where deleted_at is null
+      left join organization_metadata on organization_metadata.deleted_at is null
+                                     and organization_metadata.organization_guid = organizations.guid
+     where organizations.deleted_at is null
   """
 
   def validate(form: OrganizationForm): Seq[ValidationError] = {
@@ -106,11 +111,21 @@ object OrganizationDao {
   private def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): Organization = {
     require(form.name.length >= MinNameLength, "Name too short")
 
+    val metadata = form.metadata match {
+      case None => OrganizationMetadata.Empty
+      case Some(form) => {
+        OrganizationMetadata(
+          package_name = form.package_name
+        )
+      }
+    }
+
     val org = Organization(
       guid = UUID.randomUUID.toString,
       key = UrlKey.generate(form.name),
       name = form.name,
-      domains = form.domains.getOrElse(Seq.empty)
+      domains = form.domains.getOrElse(Seq.empty),
+      metadata = metadata
     )
 
     SQL("""
@@ -127,6 +142,10 @@ object OrganizationDao {
 
     org.domains.foreach { domain =>
       OrganizationDomainDao.create(c, createdBy, org, domain)
+    }
+
+    form.metadata.foreach { form =>
+      OrganizationMetadataDao.create(c, createdBy, org, form)
     }
 
     org
@@ -156,11 +175,11 @@ object OrganizationDao {
               offset: Int = 0): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      userGuid.map { v => "and guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
-      guid.map { v => "and guid = {guid}::uuid" },
-      key.map { v => "and key = lower(trim({key}))" },
-      name.map { v => "and lower(name) = lower(trim({name}))" },
-      Some(s"order by lower(name) limit ${limit} offset ${offset}")
+      userGuid.map { v => "and organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
+      guid.map { v => "and organizations.guid = {guid}::uuid" },
+      key.map { v => "and organizations.key = lower(trim({key}))" },
+      name.map { v => "and lower(organizations.name) = lower(trim({name}))" },
+      Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
@@ -176,7 +195,10 @@ object OrganizationDao {
           guid = row[String]("guid"),
           name = row[String]("name"),
           key = row[String]("key"),
-          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" "))
+          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")),
+          metadata = OrganizationMetadata(
+            package_name = row[Option[String]]("metadata_package_name")
+          )
         )
       }.toSeq
     }
