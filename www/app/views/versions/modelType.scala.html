@@ -1,4 +1,4 @@
-@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, model: core.Model)
+@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, model: core.Model, isMultiple: Boolean)
 
-<a href="@routes.Versions.show(org.key, service.key, version)#model-@core.UrlKey.generate(model.name)">@model.name</a>
+<a href="@routes.Versions.show(org.key, service.key, version)#model-@core.UrlKey.generate(model.name)">@lib.Util.formatType(model.name, isMultiple)</a>
 

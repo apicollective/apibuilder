@@ -7,7 +7,6 @@
       <th>Type</th>
       <th>Location</th>
       <th>Required?</th>
-      <th>Multi valued?</th>
       <th>Default</th>
       <th>Description</th>
     </tr>
@@ -17,13 +16,12 @@
      <tr>
        <td>@param.name</td>
        <td>@{param.paramtype match {
-             case pt: core.PrimitiveParameterType => datatype(pt.datatype)
-             case mt: core.ModelParameterType => modelType(org, service, version, mt.model)
+             case pt: core.PrimitiveParameterType => datatype(pt.datatype, param.multiple)
+             case mt: core.ModelParameterType => modelType(org, service, version, mt.model, param.multiple)
            }}
        </td>
        <td>@param.location</td>
        <td>@if(param.required && param.default.isEmpty) { Yes } else { No }</td>
-       <td>@if(param.multiple) { Yes } else { No }</td>
        <td>@param.default.getOrElse("-")</td>
        <td>@param.description.getOrElse("")
            <p>

@@ -1,6 +1,6 @@
-@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, sd: core.ServiceDescription, paramTypeName: String)
+@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, sd: core.ServiceDescription, paramTypeName: String, isMultiple: Boolean)
 
 @{core.Datatype.findByName(paramTypeName) match {
-  case Some(dt: core.Datatype) => datatype(dt)
-  case None => modelTypeByName(org, service, version, sd, paramTypeName)
+  case Some(dt: core.Datatype) => datatype(dt, isMultiple)
+  case None => modelTypeByName(org, service, version, sd, paramTypeName, isMultiple)
 }}

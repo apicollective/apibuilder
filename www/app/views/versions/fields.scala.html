@@ -6,7 +6,6 @@
       <th>Name</th>
       <th>Type</th>
       <th>Required?</th>
-      <th>Multi valued?</th>
       <th>Default</th>
       <th>Description</th>
     </tr>
@@ -16,13 +15,12 @@
      <tr>
        <td>@field.name</td>
        <td>@{field.fieldtype match {
-             case pt: core.PrimitiveFieldType => datatype(pt.datatype)
-             case mt: core.ModelFieldType => modelType(org, service, version, mt.model)
+             case pt: core.PrimitiveFieldType => datatype(pt.datatype, field.multiple)
+             case mt: core.ModelFieldType => modelType(org, service, version, mt.model, field.multiple)
              case et: core.EnumerationFieldType => enumeration(et)
            }}
        </td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
-       <td>@if(field.multiple) { Yes } else { No }</td>
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
            <p>

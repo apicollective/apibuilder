@@ -1,5 +1,5 @@
-@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, sd: core.ServiceDescription, modelName: String)
+@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, sd: core.ServiceDescription, modelName: String, isMultiple: Boolean)
 
 @sd.models.find { _.name == modelName }.map { model =>
-  @modelType(org, service, version, model)
+  @modelType(org, service, version, model, isMultiple)
 }
