@@ -9,56 +9,84 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
+case class Organization(
+  guid: String,
+  name: String,
+  key: String,
+  domains: Seq[String] = Seq.empty,
+  metadata: OrganizationMetadata = OrganizationMetadata.Empty
+)
+
 object Organization {
   implicit val organizationWrites = Json.writes[Organization]
 }
 
-case class Organization(guid: String, name: String, key: String) {
+case class OrganizationForm(
+  name: String,
+  domains: Option[Seq[String]] = None,
+  metadata: Option[OrganizationMetadataForm] = None
+)
 
-  // temporary as we roll out authentication
-  val emailDomains: Set[String] = {
-    if (key == OrganizationDao.GiltKey) {
-      OrganizationDao.GiltComDomains
-    } else {
-      Set.empty
-    }
-  }
-
+object OrganizationForm {
+  implicit val organizationFormReads = Json.reads[OrganizationForm]
 }
-
 
 object OrganizationDao {
 
   val MinNameLength = 4
 
-  private[db] val GiltComDomains = Set("gilt.com", "giltcity.com")
-  private[db] val GiltKey = "gilt"
-
   private val BaseQuery = """
-    select guid::varchar, name, key
+    select organizations.guid::varchar, organizations.name, organizations.key,
+           organization_metadata.package_name as metadata_package_name,
+           (select array_to_string(array_agg(domain), ' ') 
+              from organization_domains
+             where deleted_at is null
+               and organization_guid = organizations.guid) as domains
       from organizations
-     where deleted_at is null
+      left join organization_metadata on organization_metadata.deleted_at is null
+                                     and organization_metadata.organization_guid = organizations.guid
+     where organizations.deleted_at is null
   """
 
-  def validate(name: String): Seq[ValidationError] = {
-    if (name.length < MinNameLength) {
-      Validation.error(s"name must be at least $MinNameLength characters")
+  def validate(form: OrganizationForm): Seq[ValidationError] = {
+    val nameErrors = if (form.name.length < MinNameLength) {
+      Seq(s"name must be at least $MinNameLength characters")
     } else {
-      OrganizationDao.findAll(name = Some(name), limit = 1).headOption match {
+      OrganizationDao.findAll(name = Some(form.name), limit = 1).headOption match {
         case None => Seq.empty
-        case Some(org: Organization) => Validation.error("Org with this name already exists")
+        case Some(org: Organization) => Seq("Org with this name already exists")
       }
+    }
+
+    val domainErrors = form.domains.getOrElse(Seq.empty).flatMap { domain =>
+      if (isDomainValid(domain)) {
+        None
+      } else {
+        Some(s"Domain $domain is not valid. Expected a domain name like gilt.com")
+      }
+    }
+
+    Validation.errors(nameErrors ++ domainErrors)
+  }
+
+
+  // We just care that the domain does not have a space in it
+  private val DomainRx = """^[^\s]+$""".r
+  private[db] def isDomainValid(domain: String): Boolean = {
+    domain match {
+      case DomainRx() => true
+      case _ => false
     }
   }
 
   /**
    * Creates the org and assigns the user as its administrator.
    */
-  def createWithAdministrator(user: User, name: String): Organization = {
+  def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
     DB.withTransaction { implicit c =>
-      val org = create(user, name)
-      Membership.upsert(user, org, user, Role.Admin)
-      OrganizationLog.create(user, org, s"Created organization and joined as ${Role.Admin.name}")
+      val org = create(c, user, form)
+      Membership.create(c, user, org, user, Role.Admin)
+      OrganizationLog.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
     }
   }
@@ -74,31 +102,50 @@ object OrganizationDao {
 
   private[db] def findByEmailDomain(email: String): Option[Organization] = {
     emailDomain(email).flatMap { domain =>
-      if (GiltComDomains.contains(domain.toLowerCase)) {
-        findAll(key = Some(GiltKey), limit = 1).headOption
-      } else {
-        None
+      OrganizationDomainDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
+        findByGuid(UUID.fromString(domain.organization_guid))
       }
     }
   }
 
-  private def create(createdBy: User, name: String): Organization = {
-    require(name.length >= MinNameLength, "Name too short")
+  private def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): Organization = {
+    require(form.name.length >= MinNameLength, "Name too short")
 
-    val org = Organization(guid = UUID.randomUUID.toString,
-                           key = UrlKey.generate(name),
-                           name = name)
+    val metadata = form.metadata match {
+      case None => OrganizationMetadata.Empty
+      case Some(form) => {
+        OrganizationMetadata(
+          package_name = form.package_name
+        )
+      }
+    }
 
-    DB.withConnection { implicit c =>
-      SQL("""
-          insert into organizations
-          (guid, name, key, created_by_guid)
-          values
-          ({guid}::uuid, {name}, {key}, {created_by_guid}::uuid)
-          """).on('guid -> org.guid,
-                  'name -> org.name,
-                  'key -> org.key,
-                  'created_by_guid -> createdBy.guid).execute()
+    val org = Organization(
+      guid = UUID.randomUUID.toString,
+      key = UrlKey.generate(form.name),
+      name = form.name,
+      domains = form.domains.getOrElse(Seq.empty),
+      metadata = metadata
+    )
+
+    SQL("""
+      insert into organizations
+      (guid, name, key, created_by_guid)
+      values
+      ({guid}::uuid, {name}, {key}, {created_by_guid}::uuid)
+    """).on(
+      'guid -> org.guid,
+      'name -> org.name,
+      'key -> org.key,
+      'created_by_guid -> createdBy.guid
+    ).execute()
+
+    org.domains.foreach { domain =>
+      OrganizationDomainDao.create(c, createdBy, org, domain)
+    }
+
+    form.metadata.foreach { form =>
+      OrganizationMetadataDao.create(c, createdBy, org, form)
     }
 
     org
@@ -128,11 +175,11 @@ object OrganizationDao {
               offset: Int = 0): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      userGuid.map { v => "and guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
-      guid.map { v => "and guid = {guid}::uuid" },
-      key.map { v => "and key = lower(trim({key}))" },
-      name.map { v => "and lower(name) = lower(trim({name}))" },
-      Some(s"order by lower(name) limit ${limit} offset ${offset}")
+      userGuid.map { v => "and organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
+      guid.map { v => "and organizations.guid = {guid}::uuid" },
+      key.map { v => "and organizations.key = lower(trim({key}))" },
+      name.map { v => "and lower(organizations.name) = lower(trim({name}))" },
+      Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
@@ -144,9 +191,15 @@ object OrganizationDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        Organization(guid = row[String]("guid"),
-                     name = row[String]("name"),
-                     key = row[String]("key"))
+        Organization(
+          guid = row[String]("guid"),
+          name = row[String]("name"),
+          key = row[String]("key"),
+          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")),
+          metadata = OrganizationMetadata(
+            package_name = row[Option[String]]("metadata_package_name")
+          )
+        )
       }.toSeq
     }
   }

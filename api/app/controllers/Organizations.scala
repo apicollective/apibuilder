@@ -1,9 +1,9 @@
 package controllers
 
 import lib.Validation
-import db.{ Organization, OrganizationDao }
+import db.{ Organization, OrganizationDao, OrganizationForm }
 import play.api.mvc._
-import play.api.libs.json.Json
+import play.api.libs.json._
 import java.util.UUID
 
 object Organizations extends Controller {
@@ -18,16 +18,23 @@ object Organizations extends Controller {
     Ok(Json.toJson(orgs))
   }
 
-  def post() = Authenticated(parse.json) { request =>
-    (request.body \ "name").asOpt[String] match {
-      case None => {
-        Conflict(Json.toJson(Validation.error("name is required")))
-      }
+  def getByGuid(guid: UUID) = Authenticated { request =>
+    OrganizationDao.findByGuid(guid.toString) match {
+      case None => NotFound
+      case Some(org) => Ok(Json.toJson(org))
+    }
+  }
 
-      case Some(name: String) => {
-        val errors = OrganizationDao.validate(name)
+  def post() = Authenticated(parse.json) { request =>
+    request.body.validate[OrganizationForm] match {
+      case e: JsError => {
+        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+      }
+      case s: JsSuccess[OrganizationForm] => {
+        val form = s.get
+        val errors = OrganizationDao.validate(form)
         if (errors.isEmpty) {
-          val org = OrganizationDao.createWithAdministrator(request.user, name)
+          val org = OrganizationDao.createWithAdministrator(request.user, form)
           Ok(Json.toJson(org))
         } else {
           Conflict(Json.toJson(errors))

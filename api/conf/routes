@@ -7,6 +7,7 @@ GET        /memberships                                  controllers.Memberships
 GET        /memberships/:guid                            controllers.Memberships.getByGuid(guid: java.util.UUID)
 DELETE     /memberships/:guid                            controllers.Memberships.deleteByGuid(guid: java.util.UUID)
 GET        /organizations                                controllers.Organizations.get(guid: Option[java.util.UUID], user_guid: Option[java.util.UUID], key: Option[String], name: Option[String], limit: Int ?= 25, offset: Int ?= 0)
+GET        /organizations/:guid                          controllers.Organizations.getByGuid(guid: java.util.UUID)
 POST       /organizations                                controllers.Organizations.post()
 DELETE     /organizations/:guid                          controllers.Organizations.deleteByGuid(guid: java.util.UUID)
 GET        /users                                        controllers.Users.get(guid: Option[java.util.UUID], email: Option[String], token: Option[String])

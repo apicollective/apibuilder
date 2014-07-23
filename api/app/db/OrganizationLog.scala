@@ -19,21 +19,30 @@ object OrganizationLog {
   """
 
   def create(createdBy: User, organization: Organization, message: String): OrganizationLog = {
-    val log = OrganizationLog(guid = UUID.randomUUID.toString,
-                              organization_guid = organization.guid,
-                              message = message)
-
     DB.withConnection { implicit c =>
-      SQL("""
-          insert into organization_logs
-          (guid, organization_guid, message, created_by_guid)
-          values
-          ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
-          """).on('guid -> log.guid,
-                  'organization_guid -> log.organization_guid,
-                  'message -> log.message,
-                  'created_by_guid -> createdBy.guid).execute()
+      create(c, createdBy, organization, message)
     }
+  }
+
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, message: String): OrganizationLog = {
+    val log = OrganizationLog(
+      guid = UUID.randomUUID.toString,
+      organization_guid = organization.guid,
+      message = message
+    )
+
+    SQL("""
+      insert into organization_logs
+      (guid, organization_guid, message, created_by_guid)
+      values
+      ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
+      """
+    ).on(
+      'guid -> log.guid,
+      'organization_guid -> log.organization_guid,
+      'message -> log.message,
+      'created_by_guid -> createdBy.guid
+    ).execute()
 
     log
   }

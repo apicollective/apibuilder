@@ -49,4 +49,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatest" %% "scalatest" % "2.2.0" % "test"
   ),
   scalacOptions += "-feature"
-)
+) ++ instrumentSettings ++ Seq(ScoverageKeys.highlighting := true)
+
+
+
