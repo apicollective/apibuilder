@@ -6,5 +6,6 @@
 #
 
 command = "sem-apply --host localhost --user web --name api"
-puts command
-system(command)
+puts "Executing: " + command
+`#{command}`
+

@@ -30,10 +30,12 @@ the JSON files are stored in src/main/api.
 Developing
 ==========
 
-You'll need to get the api schema into your dev database; to do that:
+You'll need to get the api schema into your dev postgresql database.
 
 $ psql
 psql> CREATE DATABASE api;
+
+Then you'll need to create the database schema using schema evolution manager.  Installation instructions are [here](https://github.com/gilt/schema-evolution-manager#installation).
 
 $ cd /web/apidoc/schema
 $ ./dev.rb
