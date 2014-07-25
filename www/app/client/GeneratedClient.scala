@@ -9,6 +9,7 @@ package apidoc.models {
 
     object Target {
 
+      case object AvroSchema extends Target { override def toString = "avro_schema" }
       case object Play23Client extends Target { override def toString = "play_2_3_client" }
       case object Play23Json extends Target { override def toString = "play_2_3_json" }
       case object Play23Routes extends Target { override def toString = "play_2_3_routes" }
@@ -31,7 +32,7 @@ package apidoc.models {
        * lower case to avoid collisions with the camel cased values
        * above.
        */
-      val all = Seq(Play23Client, Play23Json, Play23Routes, RubyClient, ScalaModels)
+      val all = Seq(AvroSchema, Play23Client, Play23Json, Play23Routes, RubyClient, ScalaModels)
 
       private[this]
       val byName = all.map(x => x.toString -> x).toMap
@@ -64,7 +65,12 @@ package apidoc.models {
   case class Organization(
     guid: java.util.UUID,
     key: String,
-    name: String
+    name: String,
+    domains: scala.collection.Seq[String] = Nil,
+    metadata: scala.Option[OrganizationMetadata] = None
+  )
+  case class OrganizationMetadata(
+    packageName: scala.Option[String] = None
   )
   case class Service(
     guid: java.util.UUID,
@@ -208,7 +214,11 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "key").read[String] and
-         (__ \ "name").read[String])(Organization.apply _)
+         (__ \ "name").read[String] and
+         (__ \ "domains").readNullable[scala.collection.Seq[String]].map { x =>
+          x.getOrElse(Nil)
+        } and
+         (__ \ "metadata").readNullable[OrganizationMetadata])(Organization.apply _)
       }
     
     implicit def jsonWritesApiDocOrganization: play.api.libs.json.Writes[Organization] =
@@ -217,7 +227,25 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "guid").write[java.util.UUID] and
          (__ \ "key").write[String] and
-         (__ \ "name").write[String])(unlift(Organization.unapply))
+         (__ \ "name").write[String] and
+         (__ \ "domains").write[scala.collection.Seq[String]] and
+         (__ \ "metadata").write[scala.Option[OrganizationMetadata]])(unlift(Organization.unapply))
+      }
+    
+    implicit def jsonReadsApiDocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        (__ \ "package_name").readNullable[String].map { x =>
+          new OrganizationMetadata(packageName = x)
+        }
+      }
+    
+    implicit def jsonWritesApiDocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] =
+      new play.api.libs.json.Writes[OrganizationMetadata] {
+        def writes(x: OrganizationMetadata) = play.api.libs.json.Json.obj(
+          "package_name" -> play.api.libs.json.Json.toJson(x.packageName)
+        )
       }
     
     implicit def jsonReadsApiDocService: play.api.libs.json.Reads[Service] =
@@ -557,6 +585,13 @@ package apidoc {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Organization]]
       
       /**
+       * Returns the organization with this key.
+       */
+      def getByKey(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Organization]]
+      
+      /**
        * Create a new organization.
        */
       def post(
@@ -566,8 +601,8 @@ package apidoc {
       /**
        * Deletes an organization and all of its associated services.
        */
-      def deleteByGuid(
-        guid: java.util.UUID
+      def deleteByKey(
+        key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]]
     }
   
@@ -595,6 +630,16 @@ package apidoc {
         }
       }
       
+      override def getByKey(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Organization]] = {
+        GET(s"/organizations/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
+          case r if r.status == 200 => Some(r.json.as[apidoc.models.Organization])
+          case r if r.status == 404 => None
+          case r => throw new FailedResponse(r)
+        }
+      }
+      
       override def post(
         name: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Organization] = {
@@ -609,10 +654,10 @@ package apidoc {
         }
       }
       
-      override def deleteByGuid(
-        guid: java.util.UUID
+      override def deleteByKey(
+        key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
-        DELETE(s"/organizations/${guid}").map {
+        DELETE(s"/organizations/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedResponse(r)

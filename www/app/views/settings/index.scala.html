@@ -1,0 +1,19 @@
+@(tpl: models.MainTemplate)(implicit flash: Flash)
+
+@main(tpl) {
+
+  @tpl.org.map { org =>
+    @if(org.domains.isEmpty) {
+      <em>No domains</em>
+
+    } else {
+     
+      @org.domains.map { domain =>
+        <ul>
+          <li>@domain (<a href="@routes.Settings.index(tpl.org.get.key)" class="delete" data-confirm="Are you sure?">Remove</a>)</li>
+        </ul>
+      }
+    }
+  }
+
+}

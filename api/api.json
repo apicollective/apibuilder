@@ -197,8 +197,8 @@
 
                 {
                     "method": "GET",
-                    "path": "/:guid",
-                    "description": "Returns the organization with this guid.",
+                    "path": "/:key",
+                    "description": "Returns the organization with this key.",
                     "responses": {
                         "200": { "type": "organization" }
                     }
@@ -218,7 +218,7 @@
 
                 {
                     "method": "DELETE",
-                    "path": "/:guid",
+                    "path": "/:key",
                     "description": "Deletes an organization and all of its associated services."
                 }
             ]

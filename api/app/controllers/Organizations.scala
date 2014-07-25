@@ -18,8 +18,8 @@ object Organizations extends Controller {
     Ok(Json.toJson(orgs))
   }
 
-  def getByGuid(guid: UUID) = Authenticated { request =>
-    OrganizationDao.findByGuid(guid.toString) match {
+  def getByKey(key: String) = Authenticated { request =>
+    OrganizationDao.findAll(key = Some(key), limit = 1).headOption match {
       case None => NotFound
       case Some(org) => Ok(Json.toJson(org))
     }
@@ -43,8 +43,8 @@ object Organizations extends Controller {
     }
   }
 
-  def deleteByGuid(guid: UUID) = Authenticated { request =>
-    OrganizationDao.findByGuid(guid).map { organization =>
+  def deleteByKey(key: String) = Authenticated { request =>
+    OrganizationDao.findAll(key = Some(key), limit = 1).headOption.map { organization =>
       OrganizationDao.softDelete(request.user, organization)
     }
     NoContent

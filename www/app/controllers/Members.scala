@@ -3,7 +3,7 @@ package controllers
 import core.{ Review, Role }
 import lib.{ Pagination, PaginatedCollection }
 import apidoc.models.{ Organization, User }
-import models.MainTemplate
+import models._
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -30,7 +30,8 @@ object Members extends Controller {
         case Some(o: Organization) => {
           Ok(views.html.members.show(MainTemplate(title = o.name,
                                                   org = Some(o),
-                                                  user = Some(request.user)),
+                                                  user = Some(request.user),
+                                                  settings = Some(SettingsMenu(section = Some(SettingSection.Members)))),
                                      members = PaginatedCollection(page, members),
                                      isAdmin = request.isAdmin))
         }

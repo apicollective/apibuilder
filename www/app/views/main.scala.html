@@ -50,6 +50,10 @@
                 <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@service.name</a></li>
                 <li><a href="@routes.Versions.apiJson(orgKey = org.key, serviceKey = service.key, version = metadata.version.get)">api.json</a></li>
               }
+              @if(metadata.settings) {
+                <li><a@if(metadata.settings.get.section == Some(models.SettingSection.Domains)) { class="active" } href="@routes.Settings.index(orgKey = org.key)">Domains</a></li>
+                <li><a@if(metadata.settings.get.section == Some(models.SettingSection.Members)) { class="active" } href="@routes.Members.show(orgKey = org.key)">Members</a></li>
+              }
             </ul>
           }
 

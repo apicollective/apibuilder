@@ -30,6 +30,8 @@ POST    /:orgKey/members/postRemove                               controllers.Me
 POST    /:orgKey/members/postRevokeAdmin                          controllers.Members.postRevokeAdmin(orgKey: String, guid: java.util.UUID)
 POST    /:orgKey/members/postMakeAdmin                            controllers.Members.postMakeAdmin(orgKey: String, guid: java.util.UUID)
 
+GET     /:orgKey/settings                                         controllers.Settings.index(orgKey: String)
+
 GET     /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 POST    /:orgKey/memberships/request                              controllers.Organizations.postRequestMembership(orgKey: String)
 GET     /:orgKey/membership_requests                              controllers.Organizations.membershipRequests(orgKey: String, page: Int ?= 0)
