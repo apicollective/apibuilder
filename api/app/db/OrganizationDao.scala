@@ -195,7 +195,7 @@ object OrganizationDao {
           guid = row[String]("guid"),
           name = row[String]("name"),
           key = row[String]("key"),
-          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")),
+          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted,
           metadata = OrganizationMetadata(
             package_name = row[Option[String]]("metadata_package_name")
           )
