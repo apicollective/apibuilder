@@ -43,6 +43,9 @@ package apidoc.models {
 
     }
   }
+  case class Domain(
+    name: String
+  )
   case class Error(
     code: String,
     message: String
@@ -66,7 +69,7 @@ package apidoc.models {
     guid: java.util.UUID,
     key: String,
     name: String,
-    domains: scala.collection.Seq[String] = Nil,
+    domains: scala.collection.Seq[Domain] = Nil,
     metadata: scala.Option[OrganizationMetadata] = None
   )
   case class OrganizationMetadata(
@@ -134,6 +137,22 @@ package apidoc.models {
         import play.api.libs.functional.syntax._
         ((__ \ "target").write[Code.Target] and
          (__ \ "source").write[String])(unlift(Code.unapply))
+      }
+    
+    implicit def jsonReadsApiDocDomain: play.api.libs.json.Reads[Domain] =
+      {
+        import play.api.libs.json._
+        import play.api.libs.functional.syntax._
+        (__ \ "name").read[String].map { x =>
+          new Domain(name = x)
+        }
+      }
+    
+    implicit def jsonWritesApiDocDomain: play.api.libs.json.Writes[Domain] =
+      new play.api.libs.json.Writes[Domain] {
+        def writes(x: Domain) = play.api.libs.json.Json.obj(
+          "name" -> play.api.libs.json.Json.toJson(x.name)
+        )
       }
     
     implicit def jsonReadsApiDocError: play.api.libs.json.Reads[Error] =
@@ -215,7 +234,7 @@ package apidoc.models {
         ((__ \ "guid").read[java.util.UUID] and
          (__ \ "key").read[String] and
          (__ \ "name").read[String] and
-         (__ \ "domains").readNullable[scala.collection.Seq[String]].map { x =>
+         (__ \ "domains").readNullable[scala.collection.Seq[Domain]].map { x =>
           x.getOrElse(Nil)
         } and
          (__ \ "metadata").readNullable[OrganizationMetadata])(Organization.apply _)
@@ -228,7 +247,7 @@ package apidoc.models {
         ((__ \ "guid").write[java.util.UUID] and
          (__ \ "key").write[String] and
          (__ \ "name").write[String] and
-         (__ \ "domains").write[scala.collection.Seq[String]] and
+         (__ \ "domains").write[scala.collection.Seq[Domain]] and
          (__ \ "metadata").write[scala.Option[OrganizationMetadata]])(unlift(Organization.unapply))
       }
     
@@ -346,6 +365,8 @@ package apidoc {
 
     def code = Code
     
+    def domains = Domains
+    
     def healthchecks = Healthchecks
     
     def membershipRequests = MembershipRequests
@@ -382,6 +403,48 @@ package apidoc {
         GET(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}/${java.net.URLEncoder.encode(version, "UTF-8")}/${java.net.URLEncoder.encode(targetName, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Code])
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 404 => None
+          case r => throw new FailedResponse(r)
+        }
+      }
+    }
+  
+    trait Domains {
+      /**
+       * Add a domain to this organization
+       */
+      def post(domain: apidoc.models.Domain, 
+        orgKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Domain]
+      
+      /**
+       * Remove this domain from this organization
+       */
+      def deleteByName(
+        orgKey: String,
+        name: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]]
+    }
+  
+    object Domains extends Domains {
+      override def post(domain: apidoc.models.Domain, 
+        orgKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Domain] = {
+        val payload = play.api.libs.json.Json.toJson(domain)
+        
+        POST(s"/domains/${java.net.URLEncoder.encode(orgKey, "UTF-8")}", payload).map {
+          case r if r.status == 200 => r.json.as[apidoc.models.Domain]
+          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r => throw new FailedResponse(r)
+        }
+      }
+      
+      override def deleteByName(
+        orgKey: String,
+        name: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
+        DELETE(s"/domains/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(name, "UTF-8")}").map {
+          case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedResponse(r)
         }

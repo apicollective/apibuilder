@@ -10,7 +10,7 @@
      
       @org.domains.map { domain =>
         <ul>
-          <li>@domain (<a href="@routes.Domains.postRemove(tpl.org.get.key, domain)" class="delete" data-confirm="Are you sure?">Remove</a>)</li>
+          <li>@domain (<a href="@routes.Domains.postRemove(tpl.org.get.key, domain.name)" class="delete" data-confirm="Are you sure?">Remove</a>)</li>
         </ul>
       }
     }

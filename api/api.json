@@ -26,8 +26,15 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this organization." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the organization name." },
                 { "name": "name", "type": "string", "description": "The name of this organization." },
-                { "name": "domains", "type": "[string]", "required": false },
+                { "name": "domains", "type": "[domain]", "required": false },
                 { "name": "metadata", "type": "organization_metadata", "required": false }
+            ]
+        },
+
+        "domain": {
+            "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associated that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@gilt.com, we will automatically add you as a member to the organization with domain gilt.com.",
+            "fields": [
+                { "name": "name", "type": "string", "description": "The domain name", "example": "www.apidoc.me" }
             ]
         },
 
@@ -223,6 +230,27 @@
                 }
             ]
         },
+
+	"domain": {
+            "path": "/domains/:orgKey",
+	    "operations": [
+		{
+		    "method": "POST",
+		    "description": "Add a domain to this organization",
+		    "body": { "type": "domain" },
+                    "responses": {
+                        "200": { "type": "domain" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "method": "DELETE",
+		    "description": "Remove this domain from this organization",
+		    "path": "/:name"
+                }
+	    ]
+	},
 
         "membership": {
             "operations": [

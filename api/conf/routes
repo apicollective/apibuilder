@@ -1,3 +1,5 @@
+POST       /domains/:orgKey                              controllers.Domains.post(orgKey: String)
+DELETE     /domains/:orgKey/:name                        controllers.Domains.deleteByName(orgKey: String, name: String)
 GET        /_internal_/healthcheck                       controllers.Healthchecks.get()
 GET        /membership_requests                          controllers.MembershipRequests.get(org_guid: Option[java.util.UUID], org_key: Option[String], user_guid: Option[java.util.UUID], role: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 POST       /membership_requests                          controllers.MembershipRequests.post()

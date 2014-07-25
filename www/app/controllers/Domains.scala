@@ -26,8 +26,7 @@ object Domains extends Controller {
     require(request.isAdmin, s"User is not an admin of org[$orgKey]")
 
     for {
-      //response <- request.api.Domains.deleteByOrgKeyAndDomain(orgKey, domain)
-      req <- request.api.Organizations.getByKey(orgKey)
+      response <- request.api.Domains.deleteByName(orgKey, domain)
     } yield {
       Redirect(routes.Domains.index(request.org.key)).flashing("success" -> s"Domain removed")
     }

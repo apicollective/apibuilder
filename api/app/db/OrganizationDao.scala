@@ -9,11 +9,18 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
+case class Domain(name: String)
+
+object Domain {
+  implicit val domainWrites = Json.writes[Domain]
+  implicit val domainReads = Json.reads[Domain]
+}
+
 case class Organization(
   guid: String,
   name: String,
   key: String,
-  domains: Seq[String] = Seq.empty,
+  domains: Seq[Domain] = Seq.empty,
   metadata: OrganizationMetadata = OrganizationMetadata.Empty
 )
 
@@ -124,7 +131,7 @@ object OrganizationDao {
       guid = UUID.randomUUID.toString,
       key = UrlKey.generate(form.name),
       name = form.name,
-      domains = form.domains.getOrElse(Seq.empty),
+      domains = form.domains.getOrElse(Seq.empty).map(Domain(_)),
       metadata = metadata
     )
 
@@ -141,7 +148,7 @@ object OrganizationDao {
     ).execute()
 
     org.domains.foreach { domain =>
-      OrganizationDomainDao.create(c, createdBy, org, domain)
+      OrganizationDomainDao.create(c, createdBy, org, domain.name)
     }
 
     form.metadata.foreach { form =>
@@ -195,7 +202,7 @@ object OrganizationDao {
           guid = row[String]("guid"),
           name = row[String]("name"),
           key = row[String]("key"),
-          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted,
+          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_)),
           metadata = OrganizationMetadata(
             package_name = row[Option[String]]("metadata_package_name")
           )
