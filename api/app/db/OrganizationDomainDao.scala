@@ -7,7 +7,13 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-case class OrganizationDomain(guid: String, organization_guid: String, domain: String)
+case class OrganizationDomain(guid: String, organization_guid: String, domain: String) {
+
+  def toDomain(): Domain = {
+    Domain(domain)
+  }
+
+}
 
 object OrganizationDomainDao {
 
@@ -17,7 +23,7 @@ object OrganizationDomainDao {
      where deleted_at is null
   """
 
-  private[db] def create(createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
+  def create(createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
     DB.withConnection { implicit c =>
       create(c, createdBy, org, domainName)
     }

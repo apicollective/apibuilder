@@ -32,6 +32,8 @@ POST    /:orgKey/members/postMakeAdmin                            controllers.Me
 
 GET     /:orgKey/domains                                          controllers.Domains.index(orgKey: String)
 POST    /:orgKey/domains/:domain/remove                           controllers.Domains.postRemove(orgKey: String, domain: String)
+GET     /:orgKey/domains/create                                   controllers.Domains.create(orgKey: String)
+POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
 
 GET     /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 POST    /:orgKey/memberships/request                              controllers.Organizations.postRequestMembership(orgKey: String)

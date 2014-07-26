@@ -1,6 +1,7 @@
 package controllers
 
 import apidoc.models.{ Membership, Organization, User }
+import models.MainTemplate
 import core.Role
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
@@ -14,7 +15,17 @@ class AuthenticatedOrgRequest[A](
   val isAdmin: Boolean,
   user: User,
   request: Request[A]
-) extends AuthenticatedRequest[A](user, request)
+) extends AuthenticatedRequest[A](user, request) {
+
+  def mainTemplate(title: String): MainTemplate = {
+    MainTemplate(
+      title = s"${org.name}: $title",
+      user = Some(user),
+      org = Some(org)
+    )
+  }
+
+}
 
 object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
 

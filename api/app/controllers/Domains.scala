@@ -17,8 +17,15 @@ object Domains extends Controller {
         OrganizationDao.findByUserAndKey(request.user, orgKey) match {
           case None => NotFound
           case Some(org) => {
-            println("DOMAIN TO ADD: " + form)
-            Ok(Json.toJson(form))
+            OrganizationDomainDao.findAll(organizationGuid = Some(org.guid), domain = Some(form.name)).headOption match {
+              case None => {
+                val od = OrganizationDomainDao.create(request.user, org, form.name)
+                Ok(Json.toJson(od.toDomain))
+              }
+              case Some(d) => {
+                Conflict(Json.toJson(Validation.error("domain already exists for this org")))
+              }
+            }
           }
         }
       }
