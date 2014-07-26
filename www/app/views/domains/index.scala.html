@@ -2,6 +2,13 @@
 
 @main(tpl) {
 
+  <p>
+    Organizations can provide one or more domains to automate user
+    signup. When a user registers, if their domain matches a company
+    domain, that user will be automatically added as a member of the
+    organization.
+  </p>
+
   @tpl.org.map { org =>
     <div class="pull-right">
       <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Domains.create(org.key)">Add domain</a>
