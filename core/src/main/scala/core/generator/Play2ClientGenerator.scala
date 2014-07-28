@@ -59,7 +59,7 @@ ${client(ssd)}"""
 
     val accessors = ssd.resources.map(_.model.plural).sorted.map { plural =>
       val methodName = Text.snakeToCamelCase(Text.camelCaseToUnderscore(plural).toLowerCase)
-      s"def ${methodName} = ${plural}"
+      s"def ${methodName}: ${plural} = ${plural}"
     }.mkString("\n\n")
 
 s"""package ${ssd.packageName} {
