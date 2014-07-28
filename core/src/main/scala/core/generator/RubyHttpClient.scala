@@ -342,6 +342,7 @@ require 'bigdecimal'
         elsif value.is_a?(Time)
           Helper.parse_args(field_name, value, opts) { |v| DateTime.parse(v.to_s) }
         else
+          Preconditions.assert_class_or_nil(field_name, value, String)
           Helper.parse_args(field_name, value, opts) { |v| DateTime.parse(v) }
         end
       end
