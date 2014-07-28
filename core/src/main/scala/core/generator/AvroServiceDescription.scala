@@ -50,7 +50,7 @@ object AvroField {
       case LongType => AvroPrimitiveType.Long
       case StringType => AvroPrimitiveType.String
       case MapType => AvroMapType(AvroPrimitiveType.String)
-      case DateTimeIso8601Type => AvroPrimitiveType.String  // ???
+      case DateTimeIso8601Type => DATETIME
       case UuidType => UUID
       case UnitType => AvroPrimitiveType.Null
     }
@@ -62,6 +62,12 @@ object AvroField {
       "BigDecimal",
       Seq(AvroField("bigInt", AvroPrimitiveType.Bytes), AvroField("scale", AvroPrimitiveType.Int)),
       Some("java.math"))
+    )
+  val DATETIME =
+    AvroRecordType(new AvroModel(
+      "DateTime",
+      Seq(AvroField("timestamp", AvroPrimitiveType.Long), AvroField("timezone", AvroPrimitiveType.String)),
+      Some("org.joda.time"))
     )
 }
 
