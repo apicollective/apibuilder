@@ -84,11 +84,11 @@ case class RubyGemGenerator(service: ServiceDescription) {
     service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +
     s"module ${moduleName}\n" +
     generateClient() +
+    "\n\n  module Clients\n\n" +
+    service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  module Models\n" +
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end" +
-    "\n\n  module Clients\n\n" +
-    service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +
     "\nend"
@@ -177,7 +177,9 @@ case class RubyGemGenerator(service: ServiceDescription) {
       op.description.map { desc =>
         sb.append(GeneratorUtil.formatComment(desc, 6))
       }
-      sb.append(s"      def ${methodName}(" + paramStrings.mkString(", ") + ")")
+
+      val paramCall = if (paramStrings.isEmpty) { "" } else { "(" + paramStrings.mkString(", ") + ")" }
+      sb.append(s"      def ${methodName}$paramCall")
 
       pathParams.foreach { param =>
 
