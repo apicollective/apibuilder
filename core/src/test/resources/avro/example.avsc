@@ -26,7 +26,16 @@
     {"name": "interests", "type": "array", "items": "string"},
     {"name": "has_purchased", "type": "boolean"},
     {"name": "num_visits", "type": "long"},
-    {"name": "last_visit", "type": "string"},
+    {"name": "last_visit", "type":
+             {"type": "record",
+              "name": "DateTime",
+              "namespace": "org.joda.time",
+              "fields": [
+                 {"name": "timestamp", "type": "long"},
+                 {"name": "timezone", "type": "string"}
+              ]
+             }
+         },
     {"name": "loyalty_score", "type": "double", "default": "0.0"},
     {"name": "account_balance", "type": {"type": "record",
           "name": "BigDecimal",
