@@ -337,7 +337,13 @@ require 'bigdecimal'
       end
 
       def Helper.to_date_time_iso8601(field_name, value, opts={})
-        Helper.parse_args(field_name, value, opts) { |v| DateTime.parse(v) }
+        if value.is_a?(DateTime)
+          Helper.parse_args(field_name, value, opts) { |v| v }
+        elsif value.is_a?(Time)
+          Helper.parse_args(field_name, value, opts) { |v| DateTime.parse(v.to_s) }
+        else
+          Helper.parse_args(field_name, value, opts) { |v| DateTime.parse(v) }
+        end
       end
 
       TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRINGS)
