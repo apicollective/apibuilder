@@ -30,10 +30,10 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       )
     )
 
-    org.domains.mkString(" ") should be(domains.mkString(" "))
+    org.domains.map(_.name).mkString(" ") should be(domains.mkString(" "))
 
     val fetched = OrganizationDao.findByGuid(org.guid).get
-    fetched.domains.mkString(" ") should be(domains.mkString(" "))
+    fetched.domains.map(_.name).mkString(" ") should be(domains.mkString(" "))
   }
 
   it("creates with metadata") {
