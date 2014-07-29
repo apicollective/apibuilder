@@ -52,9 +52,18 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
     }
     """
 
-    // TODO: Do we want to handle references back to self?
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("Circular dependencies found while trying to resolve references for models: userVariant")
+    validator.errors.mkString("") should be("")
+    val model = validator.serviceDescription.get.model("userVariant").get
+    val parentField = model.fields.find(_.name == "parent").get
+    parentField.fieldtype match {
+      case ModelFieldType(name) => {
+        name should be("userVariant")
+      }
+      case other => {
+        fail("Expected field to be of type userVariant but was: " + other)
+      }
+    }
   }
 
 }

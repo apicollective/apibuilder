@@ -34,6 +34,10 @@ case class ServiceDescription(internal: InternalServiceDescription) {
     models.filter { m => !modelNames.contains(m.name) }
   }
 
+  def model(name: String): Option[Model] = {
+    models.find(_.name == name)
+  }
+
 }
 
 case class Model(name: String,
@@ -137,7 +141,7 @@ case class Field(name: String,
 
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
-case class ModelFieldType(model: Model) extends FieldType
+case class ModelFieldType(modelName: String) extends FieldType
 case class EnumerationFieldType(datatype: Datatype, values: Seq[String]) extends FieldType
 
 sealed trait ParameterType
@@ -349,11 +353,7 @@ object Field {
 
           case None => {
             require(internal.default.isEmpty, s"Cannot have a default for a field of type[$name]")
-
-            models.find { m => m.name == name } match {
-              case Some(m) => ModelFieldType(m)
-              case None => sys.error(s"Invalid field type[$name]. Must be a valid primitive datatype or the name of a known model")
-            }
+            ModelFieldType(name)
           }
         }
       }

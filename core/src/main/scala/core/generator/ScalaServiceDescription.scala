@@ -49,15 +49,15 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
 
   val name = safeName(serviceDescription.name)
 
-  val models = serviceDescription.models.map { new ScalaModel(_) }
+  val models = serviceDescription.models.map { new ScalaModel(serviceDescription, _) }
 
   val packageName = ScalaUtil.packageName(serviceDescription.name)
 
-  val resources = serviceDescription.resources.map { new ScalaResource(packageName, _) }
+  val resources = serviceDescription.resources.map { new ScalaResource(serviceDescription, packageName, _) }
 
 }
 
-class ScalaModel(val model: Model) {
+class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
   val name: String = underscoreToInitCap(model.name)
 
@@ -65,23 +65,23 @@ class ScalaModel(val model: Model) {
 
   val description: Option[String] = model.description
 
-  val fields = model.fields.map { f => new ScalaField(this.name, f) }
+  val fields = model.fields.map { f => new ScalaField(serviceDescription, this.name, f) }
 
   val argList: Option[String] = ScalaUtil.fieldsToArgList(fields.map(_.definition))
 
 }
 
-class ScalaResource(val packageName: String, resource: Resource) {
-  val model = new ScalaModel(resource.model)
+class ScalaResource(serviceDescription: ServiceDescription, val packageName: String, resource: Resource) {
+  val model = new ScalaModel(serviceDescription, resource.model)
 
   val path = resource.path
 
   val operations = resource.operations.map { op =>
-    new ScalaOperation(model, op, this)
+    new ScalaOperation(serviceDescription, model, op, this)
   }
 }
 
-class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaResource) {
+class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, operation: Operation, resource: ScalaResource) {
 
   val method: String = operation.method
 
@@ -89,10 +89,10 @@ class ScalaOperation(model: ScalaModel, operation: Operation, resource: ScalaRes
 
   val description: Option[String] = operation.description
 
-  val body: Option[ScalaModel] = operation.body.map(new ScalaModel(_))
+  val body: Option[ScalaModel] = operation.body.map(new ScalaModel(serviceDescription, _))
 
   val parameters: List[ScalaParameter] = {
-    operation.parameters.toList.map { new ScalaParameter(_) }
+    operation.parameters.toList.map { new ScalaParameter(serviceDescription, _) }
   }
 
   lazy val pathParameters = parameters.filter { _.location == ParameterLocation.Path }
@@ -159,7 +159,7 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
 
 }
 
-class ScalaField(modelName: String, field: Field) {
+class ScalaField(serviceDescription: ServiceDescription, modelName: String, field: Field) {
 
   def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(field.name))
 
@@ -169,7 +169,7 @@ class ScalaField(modelName: String, field: Field) {
     import ScalaDataType._
     val base: ScalaDataType = field.fieldtype match {
       case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-      case m: ModelFieldType => new ScalaModelType(new ScalaModel(m.model))
+      case ModelFieldType(modelName: String) => new ScalaModelType(new ScalaModel(serviceDescription, serviceDescription.model(modelName).get))
       case e: EnumerationFieldType => new ScalaEnumerationType("%s.%s".format(modelName, Text.initCap(Text.snakeToCamelCase(field.name))), ScalaDataType(e.datatype))
     }
     if (multiple) {
@@ -207,7 +207,7 @@ class ScalaField(modelName: String, field: Field) {
   }
 }
 
-class ScalaParameter(param: Parameter) {
+class ScalaParameter(serviceDescription: ServiceDescription, param: Parameter) {
 
   def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(param.name))
 
@@ -217,7 +217,7 @@ class ScalaParameter(param: Parameter) {
     import ScalaDataType._
     param.paramtype match {
       case t: PrimitiveParameterType => ScalaDataType(t.datatype)
-      case m: ModelParameterType => new ScalaModelType(new ScalaModel(m.model))
+      case m: ModelParameterType => new ScalaModelType(new ScalaModel(serviceDescription, m.model))
     }
   }
 

@@ -5,6 +5,8 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2UtilSpec extends FunSpec with ShouldMatchers {
 
+  private lazy val service = TestHelper.parseFile("api/api.json").serviceDescription.get
+
   describe("queryParams") {
     val model = new Model("model", "models", None, Nil)
     val q1 = new Parameter(
@@ -25,9 +27,10 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
     it("should handle required and non-required params") {
       val Some(code) = Play2Util.queryParams(
         new ScalaOperation(
-          new ScalaModel(model),
+          service,
+          new ScalaModel(service, model),
           operation,
-          new ScalaResource("test", resource)
+          new ScalaResource(service, "test", resource)
         )
       )
       code should equal("""val query = Seq(
