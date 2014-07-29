@@ -6,13 +6,15 @@ package core
  */
 private[core] object ModelResolver {
 
+  case class CircularReferenceException(message: String) extends Exception
+
   def build(internalModels: Seq[InternalModel], models: Seq[Model] = Seq.empty): Seq[Model] = {
     if (internalModels.isEmpty) {
       models
     } else {
       internalModels.find { im => referencesSatisfied(models, im) } match {
         case None => {
-          sys.error("Circular dependencies found while trying to resolve references for models: " + internalModels.map(_.name).mkString(" "))
+          throw new CircularReferenceException("Circular dependencies found while trying to resolve references for models: " + internalModels.map(_.name).mkString(" "))
         }
 
         case Some(nextModel: InternalModel) => {

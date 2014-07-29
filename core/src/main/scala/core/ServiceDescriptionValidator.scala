@@ -168,7 +168,20 @@ case class ServiceDescriptionValidator(apiJson: String) {
       s"Model[$modelName] appears more than once"
     }
 
-    nameErrors ++ fieldErrors ++ duplicates
+    val circularReferenceErrors = if (nameErrors.isEmpty) {
+      try {
+        ModelResolver.build(internalServiceDescription.get.models)
+        Seq.empty
+      } catch {
+        case e: ModelResolver.CircularReferenceException => {
+          Seq(e.message)
+        }
+      }
+    } else {
+      Seq.empty
+    }
+
+    nameErrors ++ fieldErrors ++ duplicates ++ circularReferenceErrors
   }
 
   private def validateFields(): Seq[String] = {
