@@ -192,7 +192,7 @@ object Model {
     Model(name = im.name,
           plural = im.plural,
           description = im.description,
-          fields = ModelResolver.buildFields(models, im))
+          fields = ModelResolver.buildFields(im, models))
   }
 
 }
@@ -338,7 +338,7 @@ object Field {
     models.find { m => m.plural == modelPlural }.flatMap { _.fields.find { f => f.name == fieldName } }
   }
 
-  def apply(models: Seq[Model], internal: InternalField, modelPlural: Option[String], fields: Seq[Field]): Field = {
+  def apply(models: Seq[Model], im: InternalModel, internal: InternalField): Field = {
     val fieldtype = internal.fieldtype match {
       case Some(name: String) => {
         Datatype.findByName(name) match {
@@ -350,10 +350,10 @@ object Field {
           case None => {
             require(internal.default.isEmpty, s"Cannot have a default for a field of type[$name]")
 
-            val model = models.find { m => m.name == name }.getOrElse {
-              sys.error(s"Invalid field type[$name]. Must be a valid primitive datatype or the name of a known model")
+            models.find { m => m.name == name } match {
+              case Some(m) => ModelFieldType(m)
+              case None => sys.error(s"Invalid field type[$name]. Must be a valid primitive datatype or the name of a known model")
             }
-            ModelFieldType(model)
           }
         }
       }
