@@ -52,9 +52,9 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
     }
     """
 
+    // TODO: Do we want to handle references back to self?
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("")
-    validator.serviceDescription.get.models.size should be(1)
+    validator.errors.mkString("") should be("Circular dependencies found while trying to resolve references for models: userVariant")
   }
 
 }

@@ -48,7 +48,7 @@ private[core] object ModelResolver {
         case None => false
 
         case Some(name: String) => {
-          name != im.name && Datatype.findByName(name).isEmpty && models.find { _.name == name }.isEmpty
+          Datatype.findByName(name).isEmpty && models.find { _.name == name }.isEmpty
         }
       }
     }.isEmpty
