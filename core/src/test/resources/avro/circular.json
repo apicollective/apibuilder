@@ -1,0 +1,12 @@
+{
+  "base_url": "http://localhost:9000",
+  "name": "Api Doc",
+  "models": {
+    "category": {
+      "fields": [
+        { "name": "uuid", "type": "uuid" },
+        { "name": "parent", "type": "category"}
+      ]
+    }
+  }
+}

@@ -45,16 +45,7 @@
              {"name": "scale", "type": "int"}
           ]
          }, "default": "0.0"},
-    {"name": "last_purchase", "type": [{
-          "type": "record",
-          "name": "purchase",
-          "namespace": "apidoc",
-          "fields": [
-             { "name": "product", "type": "string" },
-             { "name": "price", "type": "java.math.BigDecimal" }
-          ]
-        }, "null"]
-    },
+    {"name": "last_purchase", "type": ["purchase", "null"]},
     {"name": "referring_user_uuid", "type": ["java.util.UUID", "null"]},
     {"name": "adhoc", "type": "map", "values": "string"}
   ]

@@ -9,8 +9,17 @@ class AvroGeneratorSpec extends FunSpec with ShouldMatchers {
 
     it("should generate correct Avro schema") {
       val schema = AvroSchemas(TestHelper.readFile("core/src/test/resources/avro/example.json"))
-      //println(schema)
+      // println(schema)
       cleanws(schema) should be(cleanws(TestHelper.readFile("core/src/test/resources/avro/example.avsc")))
+    }
+
+  }
+
+  describe("for example json with circular references") {
+
+    it("should generate correct Avro schema") {
+      val schema = AvroSchemas(TestHelper.readFile("core/src/test/resources/avro/circular.json"))
+      cleanws(schema) should be(cleanws(TestHelper.readFile("core/src/test/resources/avro/circular.avsc")))
     }
 
   }
