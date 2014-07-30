@@ -7,21 +7,21 @@ class AvroServiceDescription(sd: ServiceDescription) {
 
   val namespace = Text.safeName(sd.name).toLowerCase
 
-  def models = sd.models.map(AvroModel(_))
+  def models = sd.models.map(AvroModel(sd, _))
 
 }
 
 case class AvroModel(name: String, fields: Seq[AvroField], namespace: Option[String] = None)
 
 object AvroModel {
-  def apply(model: Model): AvroModel = new AvroModel(model.name, model.fields.map(AvroField(_)))
+  def apply(sd: ServiceDescription, model: Model): AvroModel = new AvroModel(model.name, model.fields.map(AvroField(sd, _)))
 }
 
 case class AvroField(name: String, fieldtype: AvroType, default: Option[String] = None)
 
 object AvroField {
-  def apply(field:Field) = {
-    val baseAvroType = determineType(field.fieldtype)
+  def apply(sd: ServiceDescription, field: Field) = {
+    val baseAvroType = determineType(sd, field.fieldtype)
     val avroType =
       if (field.multiple) {
         AvroArrayType(baseAvroType)
@@ -34,9 +34,14 @@ object AvroField {
     new AvroField(field.name, avroType, field.default)
   }
 
-  private def determineType(t: FieldType): AvroType = t match {
+  private def determineType(sd: ServiceDescription, t: FieldType): AvroType = t match {
     case PrimitiveFieldType(d) => primativeType(d)
-    case ModelFieldType(m) => AvroRecordType(AvroModel(m))
+    case ModelFieldType(name) => {
+      val model = sd.model(name).getOrElse {
+        sys.error(s"Could not find model named[$name]")
+      }
+      AvroRecordType(AvroModel(sd, model))
+    }
     case EnumerationFieldType(d, values) => AvroEnumType(values)
   }
 

@@ -305,8 +305,8 @@ case class RubyGemGenerator(service: ServiceDescription) {
       case PrimitiveFieldType(datatype: Datatype) => {
         parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.multiple)
       }
-      case ModelFieldType(model: Model) => {
-        parseModelArgument(field.name, model, field.required, field.multiple)
+      case ModelFieldType(modelName: String) => {
+        parseModelArgument(field.name, modelName, field.required, field.multiple)
       }
       case EnumerationFieldType(datatype: Datatype, values: Seq[String]) => {
         parseEnumArgument(field.name, field.required, field.multiple)
@@ -321,14 +321,14 @@ case class RubyGemGenerator(service: ServiceDescription) {
         parsePrimitiveArgument(param.name, dt.datatype, param.required, param.default, param.multiple)
       }
       case mt: ModelParameterType => {
-        parseModelArgument(param.name, mt.model, param.required, param.multiple)
+        parseModelArgument(param.name, mt.model.name, param.required, param.multiple)
       }
     }
   }
 
-  private def parseModelArgument(name: String, model: Model, required: Boolean, multiple: Boolean): String = {
+  private def parseModelArgument(name: String, modelName: String, required: Boolean, multiple: Boolean): String = {
     val value = s"opts.delete(:${name})"
-    val klass = Text.underscoreToInitCap(model.name)
+    val klass = Text.underscoreToInitCap(modelName)
     s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => $required, :multiple => $multiple)"
   }
 

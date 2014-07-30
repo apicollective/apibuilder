@@ -20,7 +20,7 @@ object ServiceDescription {
 
 case class ServiceDescription(internal: InternalServiceDescription) {
 
-  lazy val models: Seq[Model] = ModelResolver.build(internal.models).sorted
+  lazy val models: Seq[Model] = internal.models.map { Model(this, _) }.sortBy(_.name.toLowerCase)
   lazy val resources: Seq[Resource] = internal.resources.map { Resource(models, _) }.sorted
   lazy val baseUrl: Option[String] = internal.baseUrl
   lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
@@ -32,6 +32,10 @@ case class ServiceDescription(internal: InternalServiceDescription) {
   def modelsWithoutResources(): Seq[Model] = {
     val modelNames = resources.map(_.model.name).toSet
     models.filter { m => !modelNames.contains(m.name) }
+  }
+
+  def model(name: String): Option[Model] = {
+    models.find(_.name == name)
   }
 
 }
@@ -137,7 +141,7 @@ case class Field(name: String,
 
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
-case class ModelFieldType(model: Model) extends FieldType
+case class ModelFieldType(modelName: String) extends FieldType
 case class EnumerationFieldType(datatype: Datatype, values: Seq[String]) extends FieldType
 
 sealed trait ParameterType
@@ -188,11 +192,11 @@ case class Response(code: Int,
 
 object Model {
 
-  def apply(models: Seq[Model], im: InternalModel): Model = {
+  def apply(sd: ServiceDescription, im: InternalModel): Model = {
     Model(name = im.name,
           plural = im.plural,
           description = im.description,
-          fields = ModelResolver.buildFields(im, models))
+          fields = im.fields.map { Field(im, _) })
   }
 
 }
@@ -201,7 +205,7 @@ object Response {
 
   def apply(ir: InternalResponse): Response = {
     val dt = ir.datatype.getOrElse {
-      sys.error("No datatype for respones: " + ir)
+      sys.error("No datatype for response: " + ir)
     }
     Response(code = ir.code.toInt,
              datatype = dt,
@@ -338,7 +342,7 @@ object Field {
     models.find { m => m.plural == modelPlural }.flatMap { _.fields.find { f => f.name == fieldName } }
   }
 
-  def apply(models: Seq[Model], im: InternalModel, internal: InternalField): Field = {
+  def apply(im: InternalModel, internal: InternalField): Field = {
     val fieldtype = internal.fieldtype match {
       case Some(name: String) => {
         Datatype.findByName(name) match {
@@ -349,11 +353,7 @@ object Field {
 
           case None => {
             require(internal.default.isEmpty, s"Cannot have a default for a field of type[$name]")
-
-            models.find { m => m.name == name } match {
-              case Some(m) => ModelFieldType(m)
-              case None => sys.error(s"Invalid field type[$name]. Must be a valid primitive datatype or the name of a known model")
-            }
+            ModelFieldType(name)
           }
         }
       }
