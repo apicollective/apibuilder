@@ -65,7 +65,7 @@ class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
   val description: Option[String] = model.description
 
-  val fields = model.fields.map { f => new ScalaField(serviceDescription, this.name, f) }
+  val fields = model.fields.map { f => new ScalaField(this.name, f) }
 
   val argList: Option[String] = ScalaUtil.fieldsToArgList(fields.map(_.definition))
 
@@ -159,7 +159,7 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
 
 }
 
-class ScalaField(serviceDescription: ServiceDescription, modelName: String, field: Field) {
+class ScalaField(modelName: String, field: Field) {
 
   def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(field.name))
 
@@ -169,7 +169,7 @@ class ScalaField(serviceDescription: ServiceDescription, modelName: String, fiel
     import ScalaDataType._
     val base: ScalaDataType = field.fieldtype match {
       case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-      case ModelFieldType(modelName: String) => new ScalaModelType(new ScalaModel(serviceDescription, serviceDescription.model(modelName).get))
+      case ModelFieldType(modelName: String) => new ScalaModelType(modelName)
       case e: EnumerationFieldType => new ScalaEnumerationType("%s.%s".format(modelName, Text.initCap(Text.snakeToCamelCase(field.name))), ScalaDataType(e.datatype))
     }
     if (multiple) {
@@ -217,7 +217,7 @@ class ScalaParameter(serviceDescription: ServiceDescription, param: Parameter) {
     import ScalaDataType._
     param.paramtype match {
       case t: PrimitiveParameterType => ScalaDataType(t.datatype)
-      case m: ModelParameterType => new ScalaModelType(new ScalaModel(serviceDescription, m.model))
+      case m: ModelParameterType => new ScalaModelType(m.model.name)
     }
   }
 
@@ -277,7 +277,7 @@ object ScalaDataType {
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
-  case class ScalaModelType(model: ScalaModel) extends ScalaDataType(model.name)
+  case class ScalaModelType(modelName: String) extends ScalaDataType(modelName)
   case class ScalaEnumerationType(fieldName: String, inner: ScalaDataType) extends ScalaDataType(fieldName)
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 

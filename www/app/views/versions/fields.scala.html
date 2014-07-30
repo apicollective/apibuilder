@@ -16,7 +16,7 @@
        <td>@field.name</td>
        <td>@{field.fieldtype match {
              case pt: core.PrimitiveFieldType => datatype(pt.datatype, field.multiple)
-             case mt: core.ModelFieldType => modelType(org, service, version, mt.model, field.multiple)
+             case mt: core.ModelFieldType => modelTypeByName(org, service, version, sd, mt.modelName, field.multiple)
              case et: core.EnumerationFieldType => enumeration(et)
            }}
        </td>
