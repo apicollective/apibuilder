@@ -49,7 +49,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          val errors = validateName ++
+          validateName ++
           validateBaseUrl ++
           validateModels ++
           validateFields ++
@@ -62,14 +62,6 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateResponses ++
           validatePathParameters ++
           validatePathParametersAreRequired
-
-          if (errors.isEmpty) {
-            // Only validate circular references if rest is valid -
-            // else we may get an exception parsing the schema
-            validateCircularReferences
-          } else {
-            errors
-          }
 
         } else {
           requiredFieldErrors
@@ -223,17 +215,6 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
 
     missingTypes ++ missingNames ++ badNames ++ badValues ++ enumsForNonStringTypes
-  }
-
-  def validateCircularReferences(): Seq[String] = {
-    try {
-      ModelResolver.build(internalServiceDescription.get.models)
-      Seq.empty
-    } catch {
-      case e: ModelResolver.CircularReferenceException => {
-        Seq(e.message)
-      }
-    }
   }
 
   private def validateResponses(): Seq[String] = {
