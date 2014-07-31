@@ -42,6 +42,7 @@ s"""{
 
   private def genType(t: AvroType, knownTypes: MSet[String]): String = t match {
     case p: AvroPrimitiveType => s""""${p.name}""""
+    case AvroModelType(modelName) => s""""${modelName}""""
     case AvroRecordType(model) => genModel(model, knownTypes)
     case AvroEnumType(symbols) => s""""enum", "symbols": [${symbols.mkString("\"","\", \"","\"")}]"""
     case AvroArrayType(itemType) => s""""array", "items": ${genType(itemType, knownTypes)}"""

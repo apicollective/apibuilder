@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "category",
+  "namespace": "apidoc",
+  "fields": [
+    {"name": "uuid", "type": {"namespace": "java.util", "type": "fixed", "size": 16, "name": "UUID"}},
+    {"name": "parent", "type": "category"}
+  ]
+}
