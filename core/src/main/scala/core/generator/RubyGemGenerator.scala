@@ -90,9 +90,9 @@ case class RubyGemGenerator(service: ServiceDescription) {
     generateClient() +
     "\n\n  module Clients\n\n" +
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
+    "\n\n  end" +
     "\n\n  module Models\n" +
     service.models.map { generateModel(_) }.mkString("\n\n") +
-    "\n\n  end" +
     "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +
     "\nend"
