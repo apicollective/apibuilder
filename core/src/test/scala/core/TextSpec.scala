@@ -94,17 +94,14 @@ class TextSpec extends FunSpec with Matchers {
 
   }
 
-  it("underscoreToInitCap") {
-    Text.underscoreToInitCap("FooBar") should be("FooBar")
-    Text.underscoreToInitCap("fooBar") should be("FooBar")
-    Text.underscoreToInitCap("foo_bar") should be("FooBar")
-  }
-
   it("initCap") {
     Text.initCap("foo") should be("Foo")
     Text.initCap("Foo") should be("Foo")
     Text.initCap("foo_bar") should be("Foo_bar")
     Text.initCap("Foo_bar") should be("Foo_bar")
+    Text.initCap("foo") should be("Foo")
+    Text.initCap("foo_bar") should be("Foo_bar")
+    Text.initCap("foo_bar_baz") should be("Foo_bar_baz")
   }
 
   it("initLowerCase") {
@@ -112,6 +109,38 @@ class TextSpec extends FunSpec with Matchers {
     Text.initLowerCase("Foo") should be("foo")
     Text.initLowerCase("foo_bar") should be("foo_bar")
     Text.initLowerCase("Foo_bar") should be("foo_bar")
+    Text.initLowerCase("FooBar") should be("fooBar")
+    Text.initLowerCase("fooBar") should be("fooBar")
+  }
+
+  it("safeName") {
+    Text.safeName("foo") should be("foo")
+    Text.safeName("val") should be("val")
+    Text.safeName("foo Bar") should be("fooBar")
+  }
+
+  it("underscoreToInitCap") {
+    Text.underscoreToInitCap("FooBar") should be("FooBar")
+    Text.underscoreToInitCap("fooBar") should be("FooBar")
+    Text.underscoreToInitCap("foo_bar") should be("FooBar")
+  }
+
+  it("camelCaseToUnderscore") {
+    Text.camelCaseToUnderscore("Hey") should be("Hey")
+    Text.camelCaseToUnderscore("HeyThere") should be("Hey_There")
+    Text.camelCaseToUnderscore("heyThere") should be("hey_There")
+  }
+
+  it("dashToInitCap") {
+    Text.dashToInitCap("FooBar") should be("FooBar")
+    Text.dashToInitCap("fooBar") should be("FooBar")
+    Text.dashToInitCap("foo-bar") should be("FooBar")
+  }
+
+  it("snakeToCamelCase") {
+    Text.snakeToCamelCase("foo") should be("foo")
+    Text.snakeToCamelCase("foo_bar") should be("fooBar")
+    Text.snakeToCamelCase("foo_bar_baz") should be("fooBarBaz")
   }
 
 }

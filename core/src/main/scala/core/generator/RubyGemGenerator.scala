@@ -50,12 +50,12 @@ object RubyGemGenerator {
     // good enough for now.
     lines.append("")
     lines.append(s"  def $className.all")
-    lines.append("    @@all ||= [" + et.values.map(v => s"$className.${Text.initLowerCase(Text.camelCaseToUnderscore(v))}").mkString(", ") + "]")
+    lines.append("    @@all ||= [" + et.values.map(v => s"$className.${enumName(v)}").mkString(", ") + "]")
     lines.append("  end")
 
     lines.append("")
     et.values.foreach { value =>
-      val varName = Text.initLowerCase(Text.camelCaseToUnderscore(value))
+      val varName = enumName(value)
       lines.append(s"  def $className.$varName")
       lines.append(s"    @@_$varName ||= $className.new('$value')")
       lines.append("  end")
@@ -66,6 +66,10 @@ object RubyGemGenerator {
     val result = lines.mkString("\n")
     println(result)
     result
+  }
+
+  private def enumName(value: String): String = {
+    Text.camelCaseToUnderscore(value).split("_").map(Text.initLowerCase(_)).mkString("_")
   }
 
 }
