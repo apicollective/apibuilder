@@ -68,8 +68,12 @@ object RubyGemGenerator {
     result
   }
 
-  private def enumName(value: String): String = {
-    Text.camelCaseToUnderscore(value).split("_").map(Text.initLowerCase(_)).mkString("_")
+  def enumName(value: String): String = {
+    if (value == value.toUpperCase) {
+      Text.camelCaseToUnderscore(value.toLowerCase).split("_").map(Text.initLowerCase(_)).mkString("_")
+    } else {
+      Text.camelCaseToUnderscore(value).split("_").map(Text.initLowerCase(_)).mkString("_")
+    }
   }
 
 }

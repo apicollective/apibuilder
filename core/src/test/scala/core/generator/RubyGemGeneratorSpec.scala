@@ -8,6 +8,12 @@ import org.scalatest.{ FunSpec, Matchers }
 
 class RubyGemGeneratorSpec extends FunSpec with Matchers {
 
+  it("enumName") {
+    RubyGemGenerator.enumName("CANCEL_REQUEST") should be("cancel_request")
+    RubyGemGenerator.enumName("cancel_request") should be("cancel_request")
+    RubyGemGenerator.enumName("cancelRequest") should be("cancel_request")
+  }
+
   describe("generateEnumClass") {
 
     it("for enum with multiple values") {
