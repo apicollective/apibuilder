@@ -59,9 +59,7 @@ object RubyGemGenerator {
     }
 
     lines.append("end")
-    val result = lines.mkString("\n")
-    println(result)
-    result
+    lines.mkString("\n")
   }
 
   def enumName(value: String): String = {
