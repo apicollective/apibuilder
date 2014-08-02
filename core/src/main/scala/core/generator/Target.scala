@@ -1,6 +1,6 @@
 package core.generator
 
-import core.ServiceDescription
+import core.{ServiceDescription, Text}
 
 sealed trait Status
 
@@ -67,11 +67,12 @@ object Target {
 
   val Implemented = All.filter(_.status != Status.Proposal)
 
-  def generate(target: Target, orgName: String, sd: ServiceDescription, version: String): String = {
+  def generate(target: Target, apidocVersion: String, orgKey: String, sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
+    val userAgent = Target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
     target.key match {
-      case "ruby_client" => RubyGemGenerator.generate(sd, orgName, version)
+      case "ruby_client" => RubyGemGenerator.generate(sd, userAgent)
       case "play_2_3_routes" => Play2RouteGenerator.generate(sd)
-      case "play_2_3_client" => Play2ClientGenerator.apply(sd, orgName, version)
+      case "play_2_3_client" => Play2ClientGenerator.apply(sd, userAgent)
       case "play_2_3_json" => Play2Models.apply(sd)
       case "scala_models" => ScalaCaseClasses.apply(sd)
       case "avro_schema" => AvroSchemas.apply(sd)
@@ -80,6 +81,13 @@ object Target {
       }
     }
   }
+
+  def userAgent(apidocVersion: String, orgKey: String, serviceKey: String, serviceVersion: String): String = {
+    val safeOrg = Text.safeName(orgKey)
+    val safeServiceKey = Text.safeName(serviceKey)
+    s"www.apidoc.me:$apidocVersion $safeOrg/$safeServiceKey:$serviceVersion"
+  }
+
 
   def findByKey(key: String): Option[Target] = All.find(_.key == key)
 

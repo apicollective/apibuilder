@@ -6,8 +6,8 @@ import scala.collection.mutable.ListBuffer
 
 object RubyGemGenerator {
 
-  def generate(sd: ServiceDescription, orgName: String, version: String): String = {
-    new RubyGemGenerator(sd, orgName, version).generate
+  def generate(sd: ServiceDescription, userAgent: String): String = {
+    new RubyGemGenerator(sd, userAgent).generate
   }
 
   def generateEnumClass(modelName: String, fieldName: String, et: EnumerationFieldType): String = {
@@ -78,7 +78,7 @@ object RubyGemGenerator {
  * Generates a Ruby Gem file based on the service description
  * from api.json
  */
-case class RubyGemGenerator(service: ServiceDescription, orgName: String, version: String) {
+case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
 
   private val moduleName = Text.safeName(service.name)
 
@@ -87,7 +87,7 @@ case class RubyGemGenerator(service: ServiceDescription, orgName: String, versio
     "\n\n" +
     service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +
     s"module ${moduleName}\n" +
-    generateClient(GeneratorUtil.userAgent(orgName, service.name, version)) +
+    generateClient(userAgent) +
     "\n\n  module Clients\n\n" +
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  end" +
@@ -105,6 +105,8 @@ case class RubyGemGenerator(service: ServiceDescription, orgName: String, versio
     sb.append(s"""
   class Client
 
+    USER_AGENT = '$userAgent'
+
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
       @authorization = HttpClient::Preconditions.assert_class_or_nil('authorization', opts.delete(:authorization), HttpClient::Authorization)
@@ -114,7 +116,7 @@ case class RubyGemGenerator(service: ServiceDescription, orgName: String, versio
 
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil('path', path, String)
-      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('User-Agent', '${userAgent}')
+      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('User-Agent', USER_AGENT)
 
       if @authorization
         request.with_auth(@authorization)
