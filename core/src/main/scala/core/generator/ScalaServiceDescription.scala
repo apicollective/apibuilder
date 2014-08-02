@@ -169,9 +169,19 @@ class ScalaField(modelName: String, field: Field) {
     import ScalaDataType._
     val base: ScalaDataType = field.fieldtype match {
       case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-      case ModelFieldType(modelName: String) => new ScalaModelType(modelName)
-      case e: EnumerationFieldType => new ScalaEnumerationType("%s.%s".format(modelName, Text.initCap(Text.snakeToCamelCase(field.name))), ScalaDataType(e.datatype))
+      case m: ModelFieldType => new ScalaModelType(m.modelName)
+      case e: EnumerationFieldType => new ScalaEnumerationType(
+        "%s.%s".format(
+          ScalaModelType(modelName).name,
+          Text.initCap(Text.snakeToCamelCase(field.name))
+        ),
+        ScalaDataType(e.datatype)
+      )
     }
+
+    println(s"$originalName => " + ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(originalName)))
+    println(s"MODEL[$modelName] field[$originalName] => $base")
+
     if (multiple) {
       new ScalaListType(base)
     } else if (isOption) {
@@ -277,7 +287,7 @@ object ScalaDataType {
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
-  case class ScalaModelType(modelName: String) extends ScalaDataType(modelName)
+  case class ScalaModelType(modelName: String) extends ScalaDataType(ScalaUtil.quoteNameIfKeyword(Text.initCap(snakeToCamelCase(modelName))))
   case class ScalaEnumerationType(fieldName: String, inner: ScalaDataType) extends ScalaDataType(fieldName)
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
