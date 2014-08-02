@@ -4,6 +4,12 @@ import core.{ Text, Util }
 
 private[generator] object GeneratorUtil {
 
+  def userAgent(orgName: String, serviceName: String, version: String): String = {
+    val orgKey = Text.safeName(orgName)
+    val serviceKey = Text.safeName(serviceName)
+    s"www.apidoc.me $orgKey $serviceKey $version"
+  }
+
   /**
    * Turns a URL path to a camelcased method name.
    */

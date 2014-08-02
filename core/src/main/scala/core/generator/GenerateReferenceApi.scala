@@ -29,12 +29,12 @@ object GenerateReferenceApi extends App {
     sys.error("refrence api.json is invalid!")
   }
   genCode(
-    Play2RouteGenerator(ServiceDescription(json)).generate.get,
+    Play2RouteGenerator(validator.serviceDescription.get).generate.get,
     "conf/routes"
   )
-  genCode(Play2ClientGenerator(json), "app/Play2Client.scala")
+  genCode(Play2ClientGenerator(validator.serviceDescription.get, "gilt", "0.0.1-reference"), "app/Play2Client.scala")
   genCode(
-    RubyGemGenerator(ServiceDescription(json)).generate,
+    RubyGemGenerator(validator.serviceDescription.get, "gilt", "0.0.1-reference").generate,
     "ruby/client.rb"
   )
 }

@@ -5,19 +5,16 @@ import Text._
 import ScalaUtil._
 
 object Play2ClientGenerator {
-  def apply(json: String): String = {
-    Play2ClientGenerator(ServiceDescription(json))
-  }
-
-  def apply(sd: ServiceDescription): String = {
+  def apply(sd: ServiceDescription, orgName: String, version: String): String = {
     val ssd = new ScalaServiceDescription(sd)
-    apply(ssd)
+    apply(ssd, orgName, version)
   }
 
-  def apply(ssd: ScalaServiceDescription): String = {
+  def apply(ssd: ScalaServiceDescription, orgName: String, version: String): String = {
+    val userAgent = GeneratorUtil.userAgent(orgName, ssd.name, version)
 s"""${Play2Models(ssd)}
 
-${client(ssd)}"""
+${client(ssd, userAgent)}"""
   }
 
   private[generator] def errorTypeClass(response: ScalaResponse): String = {
@@ -51,7 +48,7 @@ ${client(ssd)}"""
     }
   }
 
-  private def client(ssd: ScalaServiceDescription): String = {
+  private def client(ssd: ScalaServiceDescription, userAgent: String): String = {
     val errorsString = errors(ssd) match {
       case None => ""
       case Some(s: String) => s"\n\n$s\n"
@@ -107,7 +104,7 @@ ${modelClients(ssd).indent(2)}
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path)
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeader("User-Agent", "$userAgent")
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
