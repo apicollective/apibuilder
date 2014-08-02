@@ -4,7 +4,9 @@
 #  script/tag [major|minor|micro]
 #  micro assumed unless specified
 
-tag = `sem-info tag next #{ARGV.first}`
+tag = `sem-info tag next #{ARGV.first}`.strip
+
+apidoc_version = "apidoc.version"
 
 files = ['api/conf/base.conf', 'www/conf/base.conf']
 files.each do |path|
@@ -18,8 +20,8 @@ files.each do |path|
     File.open(tmp, "w") do |out|
       IO.readlines(path).each do |l|
         key,value = l.split("=", 2).map(&:strip)
-        if key == "apidoc.version"
-          out << "apidoc.version=%s" % tag
+        if key == apidoc_version
+          out << "#{apidoc_version}=%s\n" % tag
           found = true
         else
           out << l
@@ -27,7 +29,7 @@ files.each do |path|
       end
 
       if !found
-        out << "\napidoc.version=%s" % tag
+        out << "\n#{apidoc_version}=%s\n" % tag
       end
     end
 
@@ -43,5 +45,5 @@ end
 
 run("git commit -m 'Update configuration to record apidoc version #{tag}' " + files.join(" "))
 run("git tag -a -m #{tag} #{tag}")
-run("git push --tag origin")
+run("git push --tags origin")
 
