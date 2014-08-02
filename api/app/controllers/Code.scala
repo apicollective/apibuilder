@@ -7,10 +7,15 @@ import core.generator.Target
 
 import play.api.mvc._
 import play.api.libs.json._
+import play.api.Play.current
 
 import db.{ Version, VersionDao }
 
 object Code extends Controller {
+
+  val apidocVersion = current.configuration.getString("apidoc.version").getOrElse {
+    sys.error("apidoc.version is required")
+  }
 
   case class Code(
     target: String,
@@ -36,7 +41,7 @@ object Code extends Controller {
           case Some(v: Version) => {
             val code = Code(
               target = targetName,
-              source = Target.generate(target, ServiceDescription(v.json))
+              source = Target.generate(target, apidocVersion, orgKey, ServiceDescription(v.json), serviceKey, version)
             )
             Ok(Json.toJson(code))
           }

@@ -26,7 +26,7 @@ class RubyGemGeneratorSpec extends FunSpec with Matchers {
 
   it("generate ruby") {
     val json = io.Source.fromFile(new File("reference-api/api.json")).getLines.mkString("\n")
-    val generator = RubyGemGenerator(ServiceDescription(json))
+    val generator = RubyGemGenerator(ServiceDescription(json), "gilt 0.0.1-test")
     //println(generator.generate())
   }
 }

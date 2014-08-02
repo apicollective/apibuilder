@@ -4,9 +4,6 @@ import core._
 import Text._
 
 object Play2Models {
-  def apply(json: String): String = {
-    apply(ServiceDescription(json))
-  }
 
   def apply(sd: ServiceDescription): String = {
     apply(new ScalaServiceDescription(sd))

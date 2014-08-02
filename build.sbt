@@ -8,7 +8,6 @@ lazy val core = project
   .settings(
     // play-json needs this to resolve correctly when not using Gilt's internal mirrors
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % "2.3.0"
     )
@@ -21,12 +20,11 @@ lazy val api = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       jdbc,
       anorm,
       "org.postgresql" % "postgresql" % "9.3-1101-jdbc4",
-      "org.mindrot"          %  "jbcrypt"                 % "0.3m"
+      "org.mindrot"    %  "jbcrypt"   % "0.3m"
     )
   )
 
@@ -37,7 +35,6 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
       ws
     )

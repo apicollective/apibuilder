@@ -83,7 +83,7 @@ object Play2Enums {
     s"      private[this]\n" +
     s"      val byName = all.map(x => x.toString -> x).toMap\n\n" +
     s"      def apply(value: String): $traitName = fromString(value).getOrElse(UNDEFINED(value))\n\n" +
-    s"      def fromString(value: String): Option[$traitName] = byName.get(value)\n\n" +
+    s"      def fromString(value: String): scala.Option[$traitName] = byName.get(value)\n\n" +
     s"    }\n"
   }
 

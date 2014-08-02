@@ -28,4 +28,13 @@ class TargetSpec extends FunSpec with Matchers {
     Target.findByKey("ADSFADSF") should be(None)
     Target.findByKey("ruby_client").get.key should be("ruby_client")
   }
+
+  it("userAgent") {
+    Target.userAgent(
+      apidocVersion = "0.0.1",
+      orgKey = "gilt",
+      serviceKey = "apidoc",
+      serviceVersion = "0.0.5"
+    ) should be("www.apidoc.me:0.0.1 gilt/apidoc:0.0.5")
+  }
 }

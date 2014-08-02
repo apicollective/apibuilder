@@ -30,7 +30,7 @@
 
       def apply(value: String): AgeGroup = fromString(value).getOrElse(UNDEFINED(value))
 
-      def fromString(value: String): Option[AgeGroup] = byName.get(value)
+      def fromString(value: String): scala.Option[AgeGroup] = byName.get(value)
 
     }
 
@@ -64,7 +64,7 @@
 
       def apply(value: String): PartyTheme = fromString(value).getOrElse(UNDEFINED(value))
 
-      def fromString(value: String): Option[PartyTheme] = byName.get(value)
+      def fromString(value: String): scala.Option[PartyTheme] = byName.get(value)
 
     }
   }
