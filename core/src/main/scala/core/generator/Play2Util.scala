@@ -6,45 +6,30 @@ import Text._
 object Play2Util {
   import ScalaDataType._
 
-  def jsonReads(x: ScalaModel): String = {
-    val name = x.name
-    def read(field: ScalaField): String = field.datatype match {
-      case x: ScalaDataType.ScalaListType => {
-        // if the key is absent, we return an empty
-        // list
-        s"""readNullable[${x.name}].map { x =>
-  x.getOrElse(Nil)
-}"""
-      }
-      case ScalaDataType.ScalaOptionType(inner) => {
-        s"readNullable[${inner.name}]"
-      }
-      case x => {
-        s"read[${x.name}]"
-      }
+  def read(field: ScalaField): String = field.datatype match {
+    case x: ScalaDataType.ScalaListType => {
+      // if the key is absent, we return an empty
+      // list
+      s"""readNullable[${x.name}].map { _.getOrElse(Nil) }"""
     }
-    x.fields match {
-      case field::Nil => {
-        s"""{
-  import play.api.libs.json._
-  import play.api.libs.functional.syntax._
-  (__ \\ "${field.originalName}").${read(field)}.map { x =>
-    new ${name}(${field.name} = x)
+    case ScalaDataType.ScalaOptionType(inner) => {
+      s"readNullable[${inner.name}]"
+    }
+    case x => {
+      s"read[${x.name}]"
+    }
   }
-}"""
-      }
-      case fields => {
-        val builder: String = x.fields.map { field =>
-          s"""(__ \\ "${field.originalName}").${read(field)}"""
-        }.mkString("(", " and\n ", ")")
 
-        s"""{
+  def jsonReads(model: ScalaModel): String = {
+    val builder = model.fields.map { field =>
+      s"""(__ \\ "${field.originalName}").${read(field)}"""
+    }.mkString("(", " and\n ", ")")
+
+    s"""{
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
-${builder.indent}(${name}.apply _)
+${builder.indent}(${model.name}.apply _)
 }"""
-      }
-    }
   }
 
   def jsonWrites(x: ScalaModel): String = {
