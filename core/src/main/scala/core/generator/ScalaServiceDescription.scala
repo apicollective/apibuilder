@@ -142,7 +142,7 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
     if (response.multiple) {
       s"scala.collection.Seq[${qualifiedScalaType}]"
     } else if (isOption) {
-      s"Option[$qualifiedScalaType]"
+      s"scala.Option[$qualifiedScalaType]"
     } else {
       qualifiedScalaType
     }
@@ -178,9 +178,6 @@ class ScalaField(modelName: String, field: Field) {
         ScalaDataType(e.datatype)
       )
     }
-
-    println(s"$originalName => " + ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(originalName)))
-    println(s"MODEL[$modelName] field[$originalName] => $base")
 
     if (multiple) {
       new ScalaListType(base)
