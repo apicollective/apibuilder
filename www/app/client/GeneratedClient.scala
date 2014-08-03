@@ -544,11 +544,7 @@ package apidoc {
         POST(s"/membership_requests", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.MembershipRequest]
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => {
-            println("RESPONSE STATUS: " + r.status)
-            println("r.body: " + r.body)
-            throw new FailedResponse(r)
-          }
+          case r => throw new FailedResponse(r)
         }
       }
       
@@ -558,11 +554,7 @@ package apidoc {
         POST(s"/membership_requests/${guid}/accept").map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => {
-            println("RESPONSE STATUS: " + r.status)
-            println("r.body: " + r.body)
-            throw new FailedResponse(r)
-          }
+          case r => throw new FailedResponse(r)
         }
       }
       
@@ -1018,7 +1010,7 @@ package apidoc {
       }
     }
 
-    private val UserAgent = "www.apidoc.me:0.4.64 gilt/apidoc:0.0.1-dev"
+    private val UserAgent = "www.apidoc.me:0.4.64 gilt/apidoc:0.4.65"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
