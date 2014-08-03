@@ -1,7 +1,6 @@
-implicit def jsonWritesQualityHealthcheck: play.api.libs.json.Writes[Healthcheck] = {
-  new play.api.libs.json.Writes[Healthcheck] {
-    def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
-      "status" -> play.api.libs.json.Json.toJson(x.status)
-    )
-  }
+implicit def jsonWritesQualityHealthcheck: play.api.libs.json.Writes[Healthcheck] = new play.api.libs.json.Writes[Healthcheck] {
+  def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
+    "status" -> play.api.libs.json.Json.toJson(x.status)
+  )
 }
+

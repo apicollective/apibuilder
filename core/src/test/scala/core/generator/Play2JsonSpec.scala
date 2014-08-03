@@ -34,7 +34,6 @@ class Play2JsonSpec extends FunSpec with ShouldMatchers {
       lazy val healthcheck = quality.models.find(_.name == "Healthcheck").get
 
       it("readers") {
-        println(play2Json.readers(healthcheck))
         TestHelper.assertEqualsFile(
           "core/src/test/resources/generators/play-2-json-spec-quality-healthcheck-readers.txt",
           play2Json.readers(healthcheck)
