@@ -54,7 +54,8 @@
             "fields": [
                 { "name": "guid", "type": "uuid" },
                 { "name": "email", "type": "string" },
-                { "name": "active", "type": "boolean" }
+                { "name": "active", "type": "boolean" },
+                { "name": "age_group", "type": "string", "enum": ["Youth", "Adult"] }
             ]
         },
 

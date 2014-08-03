@@ -11,7 +11,7 @@ object TestHelper {
     Files.write(outputPath, bytes)
   }
 
-  def readFile(path: String): String = {
+  def  readFile(path: String): String = {
     scala.io.Source.fromFile(path).getLines.mkString("\n")
   }
 
@@ -22,6 +22,15 @@ object TestHelper {
       sys.error(s"Invalid api.json file[${filename}]: " + validator.errors.mkString("\n"))
     }
     validator
+  }
+
+  def assertEqualsFile(filename: String, contents: String) {
+    val contents = readFile(filename)
+    if (contents.trim != TestHelper.readFile(filename).trim) {
+      val tmpPath = "/tmp/apidoc.tmp"
+      TestHelper.writeToFile(tmpPath, contents.trim)
+      sys.error(s"Test output did not match. diff $filename $tmpPath")
+    }
   }
 
 }
