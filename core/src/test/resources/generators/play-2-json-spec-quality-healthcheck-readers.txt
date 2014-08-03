@@ -1,0 +1,7 @@
+implicit def jsonReadsQualityHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+  (__ \ "status").read[String].map { x =>
+    new Healthcheck(status = x)
+  }
+}

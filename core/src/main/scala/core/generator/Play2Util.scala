@@ -6,57 +6,6 @@ import Text._
 object Play2Util {
   import ScalaDataType._
 
-  def read(field: ScalaField): String = field.datatype match {
-    case x: ScalaDataType.ScalaListType => {
-      // if the key is absent, we return an empty
-      // list
-      s"""readNullable[${x.name}].map { _.getOrElse(Nil) }"""
-    }
-    case ScalaDataType.ScalaOptionType(inner) => {
-      s"readNullable[${inner.name}]"
-    }
-    case x => {
-      s"read[${x.name}]"
-    }
-  }
-
-  def jsonReads(model: ScalaModel): String = {
-    val builder = model.fields.map { field =>
-      s"""(__ \\ "${field.originalName}").${read(field)}"""
-    }.mkString("(", " and\n ", ")")
-
-    s"""{
-  import play.api.libs.json._
-  import play.api.libs.functional.syntax._
-${builder.indent}(${model.name}.apply _)
-}"""
-  }
-
-  def jsonWrites(x: ScalaModel): String = {
-    val name = x.name
-
-    x.fields match {
-      case field::Nil => {
-        s"""new play.api.libs.json.Writes[$name] {
-  def writes(x: ${name}) = play.api.libs.json.Json.obj(
-    "${field.originalName}" -> play.api.libs.json.Json.toJson(x.${field.name})
-  )
-}"""
-      }
-      case fields => {
-        val builder: String = x.fields.map { field =>
-          s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
-        }.mkString("(", " and\n ", ")")
-
-        s"""{
-  import play.api.libs.json._
-  import play.api.libs.functional.syntax._
-${builder.indent}(unlift(${name}.unapply))
-}"""
-      }
-    }
-  }
-
   def queryParams(op: ScalaOperation): Option[String] = {
     if (op.queryParameters.isEmpty) {
       None

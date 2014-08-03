@@ -10,7 +10,7 @@ class Play2JsonSpec extends FunSpec with ShouldMatchers {
   describe("quality schema") {
 
     lazy val quality = new ScalaServiceDescription(TestHelper.parseFile("core/src/test/resources/examples/quality.json").serviceDescription.get)
-    lazy val play2Json = Play2Json(quality)
+    lazy val play2Json = Play2Json(quality.name)
 
     describe("plan") {
 
@@ -27,6 +27,26 @@ class Play2JsonSpec extends FunSpec with ShouldMatchers {
         TestHelper.assertEqualsFile(
           "core/src/test/resources/generators/play-2-json-spec-quality-plan-writers.txt",
           play2Json.writers(plan)
+        )
+      }
+    }
+
+    describe("healthcheck") {
+
+      lazy val healthcheck = quality.models.find(_.name == "Healthcheck").get
+
+      it("readers") {
+        println(play2Json.readers(healthcheck))
+        TestHelper.assertEqualsFile(
+          "core/src/test/resources/generators/play-2-json-spec-quality-healthcheck-readers.txt",
+          play2Json.readers(healthcheck)
+        )
+      }
+
+      it("writers") {
+        TestHelper.assertEqualsFile(
+          "core/src/test/resources/generators/play-2-json-spec-quality-healthcheck-writers.txt",
+          play2Json.writers(healthcheck)
         )
       }
     }
