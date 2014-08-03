@@ -1,0 +1,328 @@
+{
+    "name": "Quality",
+    "description": "Application to track perfect day and quality at gilt",
+    "base_url": "http://localhost:9000",
+
+    "models": {
+
+	"healthcheck": {
+	    "fields": [
+                { "name": "status", "type": "string", "example": "healthy" }
+	    ]
+	},
+
+	"event_data": {
+            "description": "Generic, descriptive data about a specific event",
+            "fields": [
+                { "name": "model_id", "type": "long", "description": "The actual ID of the model instance that generated the event" },
+                { "name": "summary", "type": "string", "description": "Human readable description of the event" }
+	    ]
+	},
+
+	"event": {
+            "description": "Represents something that has happened - e.g. a team was created, an incident created, a plan updated, etc.",
+            "fields": [
+                { "name": "model", "type": "string", "description": "The name of the model that was the subject of the event", "enum": ["incident", "plan", "rating"] },
+		{ "name": "action", "type": "string", "description": "The action that occurred to this model", "enum": ["created", "updated", "deleted"] },
+		{ "name": "timestamp", "type": "date-time-iso8601", "description": "The timestamp on which this event occurred" },
+                { "name": "url", "type": "string", "description": "The location to fetch more information about this resource, if applicable. URL will be empty in the case of events that delete a model instance (as one example)", "required": false },
+                { "name": "data", "type": "event_data", "description": "Basic summary information about the object and the event. The intent is to use this data to quickly summarize the event - for detailed informations, callers should issue an HTTP GET to the URL" }
+            ]
+	},
+
+        "team": {
+            "description": "A team is the main actor in the system. Teams have a unique key and own incidents",
+            "fields": [
+                { "name": "key", "type": "string", "description": "Unique identifier for this team" }
+            ]
+        },
+
+        "statistic": {
+            "description": "Statistics on each team's quality metrics, number of issues",
+            "fields": [
+                {"name": "team", "type": "team", "description": "Team for statistics. Blank returns all."},
+                {"name": "total_grades", "type": "long", "description": "Number of graded plans given time span requested."},
+                {"name": "average_grade", "type": "integer", "description": "Average grade for graded plans given time span requested.", "required": false},
+                {"name": "total_open_incidents", "type": "long", "description": "Number of incidents without a plan for this team."},
+                {"name": "total_incidents", "type": "long", "description": "Number of incidents reported in the time span requested."},
+                {"name": "total_plans", "type": "long", "description": "Number of plans attached to reported incidents in the time span requested."},
+                {"name": "plans", "type": "[plan]", "description": "Last plans to display grades for.", "required": false}
+            ]
+        },
+
+        "incident": {
+            "description": "A bug or error that affected public or internal users in a negative way",
+            "fields": [
+                { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
+                { "name": "summary", "type": "string", "description": "Summary of the incident." },
+                { "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
+                { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident", "required": false },
+                { "name": "severity", "type": "string", "enum": ["low", "high"] },
+                { "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" },
+                { "name": "plan", "type": "plan", "required": false },
+                { "name": "created_at", "type": "date-time-iso8601" }
+            ]
+        },
+
+        "plan": {
+            "description": "Details for how an incident will be resolved",
+            "fields": [
+                { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
+                { "name": "incident_id", "type": "long" },
+                { "name": "body", "type": "string", "description": "Full description of the incident" },
+                { "name": "grade", "type": "integer", "required": false, "minimum": 0, "maximum": 100, "description": "Grade given to this plan on a scale of 0 (bad) to 100 (good)" },
+                { "name": "created_at", "type": "date-time-iso8601" }
+            ]
+        },
+
+        "error": {
+            "fields": [
+                { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
+                { "name": "message", "type": "string", "description": "Description of the error" }
+            ]
+        }
+
+    },
+
+    "resources": {
+
+	"healthcheck": {
+	    "path": "/_internal_/healthcheck",
+            "operations": [
+                {
+                    "method": "GET",
+                    "responses": {
+                        "200": { "type": "healthcheck" }
+                    }
+                }
+	    ]
+	},
+
+	"event": {
+            "operations": [
+		{
+		    "method": "GET",
+		    "description": "Search all events. Results are always paginated. Events are sorted in time order - the first record is the most recent event.",
+                    "parameters": [
+                        { "name": "model", "type": "string", "description": "Find events on this model", "required": false },
+                        { "name": "action", "type": "string", "description": "Find events with this action", "required": false },
+                        { "name": "number_hours", "type": "integer", "description": "Filter to events created in the last n hours", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[event]" }
+                    }
+                }
+	    ]
+	},
+
+	"team": {
+	    "operations": [
+		{
+		    "method": "GET",
+		    "description": "Search all teams. Results are always paginated.",
+                    "parameters": [
+                        { "name": "key", "type": "string", "description": "Find team with this key. Exact match", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[team]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Returns information about the team with this specific key.",
+                    "path": "/:key",
+                    "responses": {
+                        "200": { "type": "team" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "description": "Create a new team.",
+                    "parameters": [
+                        { "name": "key", "type": "string" }
+		    ],
+                    "responses": {
+                        "201": { "type": "team" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "method": "DELETE",
+                    "path": "/:key"
+		}
+	    ]
+	},
+
+    "statistic":{
+        "operations": [
+            {   
+                "method": "GET",
+                "description": "Retrieve team statistics for all or one team.",
+                "parameters": [
+                    { "name": "team_key", "type": "string", "description": "Find stats for this team. Leave blank to retrieve all teams", "required": false},
+                    { "name": "number_hours", "type": "integer", "description": "Number of hours in the past to retrieve requested statistics. Default is 1 week.", "default": 168}
+                ],
+                "responses": {
+                    "200": {"type": "[statistic]"}
+                }
+            }
+        ]
+
+    },
+
+        "incident": {
+
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search all incidents. Results are always paginated.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find incident with this id. Exact match", "required": false },
+                        { "name": "team_key", "type": "string", "description": "Find incidents for which this team is responsible. Exact match", "required": false },
+                        { "name": "has_team", "type": "boolean", "description": "If true, find incidents with a team assigned to them. If false, find incidents w/out a team", "required": false },
+                        { "name": "has_plan", "type": "boolean", "description": "If true, find incidents with a plan. If false, find incidents w/out a plan", "required": false },
+                        { "name": "has_grade", "type": "boolean", "description": "If true, find incidents with a grade. If false, find incidents w/out a grade", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[incident]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Returns information about the incident with this specific id.",
+                    "path": "/:id",
+                    "responses": {
+                        "200": { "type": "incident" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "description": "Create a new incident.",
+                    "parameters": [
+			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident", "required": false },
+			{ "name": "severity", "type": "string", "example": "low or high" },
+			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
+			{ "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
+			{ "name": "tags", "type": "[string]", "description": "Optional list of tags to apply to this incident", "required": false }
+		    ],
+                    "responses": {
+                        "201": { "type": "incident" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "PUT",
+		    "path": "/:id",
+                    "description": "Updates an incident.",
+                    "parameters": [
+			{ "name": "team_key", "type": "string", "description": "Team responsible for resolution of this incident", "required": false },
+			{ "name": "severity", "type": "string", "example": "low or high" },
+			{ "name": "summary", "type": "string", "description": "Summary of the incident." },
+			{ "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
+			{ "name": "tags", "type": "[string]", "description": "Optional list of tags to apply to this incident", "required": false }
+		    ],
+                    "responses": {
+                        "201": { "type": "incident" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "method": "DELETE",
+                    "path": "/:id"
+		}
+
+            ]
+        },
+
+	"plan": {
+	    "operations": [
+		{
+		    "method": "GET",
+                    "description": "Search all plans. Results are always paginated.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find plan with this id. Exact match", "required": false },
+                        { "name": "incident_id", "type": "long", "description": "Find plan for this incident_id", "required": false },
+                        { "name": "team_key", "type": "string", "description": "Find all plans for requested team", "required": false},
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[plan]" }
+                    }
+                },
+
+		{
+		    "method": "POST",
+                    "description": "Create a plan.",
+                    "parameters": [
+                        { "name": "incident_id", "type": "long" },
+                        { "name": "body", "type": "string" },
+                        { "name": "grade", "type": "integer", "required": false }
+                    ],
+                    "responses": {
+                        "201": { "type": "plan" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "method": "PUT",
+                    "description": "Update a plan.",
+		    "path": "/:id",
+                    "parameters": [
+                        { "name": "incident_id", "type": "long" },
+                        { "name": "body", "type": "string" },
+                        { "name": "grade", "type": "integer", "required": false }
+                    ],
+                    "responses": {
+                        "200": { "type": "plan" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "method": "PUT",
+                    "description": "Update the grade assigned to a plan.",
+		    "path": "/:id/grade",
+                    "parameters": [
+                        { "name": "grade", "type": "integer" }
+                    ],
+                    "responses": {
+                        "200": { "type": "plan" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+                    "description": "Get a single plan.",
+                    "path": "/:id",
+                    "responses": {
+                        "200": { "type": "plan" }
+                    }
+                },
+
+		{
+		    "method": "DELETE",
+                    "description": "Delete a plan.",
+                    "path": "/:id"
+                }
+
+	    ]
+	}
+
+    }
+}

@@ -165,26 +165,26 @@ class ScalaField(modelName: String, field: Field) {
 
   def originalName: String = field.name
 
-  def datatype: ScalaDataType = {
-    import ScalaDataType._
-    val base: ScalaDataType = field.fieldtype match {
-      case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-      case m: ModelFieldType => new ScalaModelType(m.modelName)
-      case e: EnumerationFieldType => new ScalaEnumerationType(
-        "%s.%s".format(
-          ScalaModelType(modelName).name,
-          Text.initCap(Text.snakeToCamelCase(field.name))
-        ),
-        ScalaDataType(e.datatype)
-      )
-    }
+  import ScalaDataType._
+  val baseType: ScalaDataType = field.fieldtype match {
+    case t: PrimitiveFieldType => ScalaDataType(t.datatype)
+    case m: ModelFieldType => new ScalaModelType(m.modelName)
+    case e: EnumerationFieldType => new ScalaEnumerationType(
+      "%s.%s".format(
+        ScalaModelType(modelName).name,
+        Text.initCap(Text.snakeToCamelCase(field.name))
+      ),
+      ScalaDataType(e.datatype)
+    )
+  }
 
+  def datatype: ScalaDataType = {
     if (multiple) {
-      new ScalaListType(base)
+      new ScalaListType(baseType)
     } else if (isOption) {
-      new ScalaOptionType(base)
+      new ScalaOptionType(baseType)
     } else {
-      base
+      baseType
     }
   }
 

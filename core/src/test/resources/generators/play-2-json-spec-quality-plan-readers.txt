@@ -1,0 +1,11 @@
+implicit def jsonReadsQualityPlan: play.api.libs.json.Reads[Plan] = {
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+  (
+    (__ \ "id").read[Long] and
+    (__ \ "incident_id").read[Long] and
+    (__ \ "body").read[String] and
+    (__ \ "grade").readNullable[Int] and
+    (__ \ "created_at").read[org.joda.time.DateTime]
+  )(Plan.apply _)
+}
