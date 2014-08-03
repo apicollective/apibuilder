@@ -25,8 +25,7 @@ object TestHelper {
   }
 
   def assertEqualsFile(filename: String, contents: String) {
-    val contents = readFile(filename)
-    if (contents.trim != TestHelper.readFile(filename).trim) {
+    if (contents.trim != readFile(filename).trim) {
       val tmpPath = "/tmp/apidoc.tmp"
       TestHelper.writeToFile(tmpPath, contents.trim)
       sys.error(s"Test output did not match. diff $filename $tmpPath")

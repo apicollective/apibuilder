@@ -11,7 +11,11 @@ class Play2JsonSpec extends FunSpec with ShouldMatchers {
 
     it("user") {
       val user = service.models.find(_.name == "user").get
-      Play2Json.readers(user) should be(TestHelper.readFile("core/src/test/resources/generators/play-2-json-spec-readers-user.scala"))
+      
+      TestHelper.assertEqualsFile(
+        "core/src/test/resources/generators/play-2-json-spec-readers-user.scala",
+        Play2Json.readers(user)
+      )
     }
   }
 
