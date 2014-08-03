@@ -39,7 +39,7 @@ package apidoc.models {
 
       def apply(value: String): Target = fromString(value).getOrElse(UNDEFINED(value))
 
-      def fromString(value: String): Option[Target] = byName.get(value)
+      def fromString(value: String): scala.Option[Target] = byName.get(value)
 
     }
   }
@@ -123,205 +123,207 @@ package apidoc.models {
       def writes(x: Code.Target) = JsString(x.toString)
     }
 
-    implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "target").read[Code.Target] and
-         (__ \ "source").read[String])(Code.apply _)
-      }
+    implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "target").read[Code.Target] and
+        (__ \ "source").read[String]
+      )(Code.apply _)
+    }
     
-    implicit def jsonWritesApiDocCode: play.api.libs.json.Writes[Code] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "target").write[Code.Target] and
-         (__ \ "source").write[String])(unlift(Code.unapply))
-      }
+    implicit def jsonWritesApiDocCode: play.api.libs.json.Writes[Code] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "target").write[Code.Target] and
+        (__ \ "source").write[String]
+      )(unlift(Code.unapply _))
+    }
     
-    implicit def jsonReadsApiDocDomain: play.api.libs.json.Reads[Domain] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        (__ \ "name").read[String].map { x =>
-          new Domain(name = x)
-        }
-      }
+    implicit def jsonReadsApiDocDomain: play.api.libs.json.Reads[Domain] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "name").read[String].map { x => new Domain(name = x) }
+    }
     
-    implicit def jsonWritesApiDocDomain: play.api.libs.json.Writes[Domain] =
-      new play.api.libs.json.Writes[Domain] {
-        def writes(x: Domain) = play.api.libs.json.Json.obj(
-          "name" -> play.api.libs.json.Json.toJson(x.name)
-        )
-      }
+    implicit def jsonWritesApiDocDomain: play.api.libs.json.Writes[Domain] = new play.api.libs.json.Writes[Domain] {
+      def writes(x: Domain) = play.api.libs.json.Json.obj(
+        "name" -> play.api.libs.json.Json.toJson(x.name)
+      )
+    }
     
-    implicit def jsonReadsApiDocError: play.api.libs.json.Reads[Error] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "code").read[String] and
-         (__ \ "message").read[String])(Error.apply _)
-      }
+    implicit def jsonReadsApiDocError: play.api.libs.json.Reads[Error] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "code").read[String] and
+        (__ \ "message").read[String]
+      )(Error.apply _)
+    }
     
-    implicit def jsonWritesApiDocError: play.api.libs.json.Writes[Error] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "code").write[String] and
-         (__ \ "message").write[String])(unlift(Error.unapply))
-      }
+    implicit def jsonWritesApiDocError: play.api.libs.json.Writes[Error] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "code").write[String] and
+        (__ \ "message").write[String]
+      )(unlift(Error.unapply _))
+    }
     
-    implicit def jsonReadsApiDocHealthcheck: play.api.libs.json.Reads[Healthcheck] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        (__ \ "status").read[String].map { x =>
-          new Healthcheck(status = x)
-        }
-      }
+    implicit def jsonReadsApiDocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
+    }
     
-    implicit def jsonWritesApiDocHealthcheck: play.api.libs.json.Writes[Healthcheck] =
-      new play.api.libs.json.Writes[Healthcheck] {
-        def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
-          "status" -> play.api.libs.json.Json.toJson(x.status)
-        )
-      }
+    implicit def jsonWritesApiDocHealthcheck: play.api.libs.json.Writes[Healthcheck] = new play.api.libs.json.Writes[Healthcheck] {
+      def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
+        "status" -> play.api.libs.json.Json.toJson(x.status)
+      )
+    }
     
-    implicit def jsonReadsApiDocMembership: play.api.libs.json.Reads[Membership] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "user").read[User] and
-         (__ \ "organization").read[Organization] and
-         (__ \ "role").read[String])(Membership.apply _)
-      }
+    implicit def jsonReadsApiDocMembership: play.api.libs.json.Reads[Membership] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "user").read[User] and
+        (__ \ "organization").read[Organization] and
+        (__ \ "role").read[String]
+      )(Membership.apply _)
+    }
     
-    implicit def jsonWritesApiDocMembership: play.api.libs.json.Writes[Membership] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "user").write[User] and
-         (__ \ "organization").write[Organization] and
-         (__ \ "role").write[String])(unlift(Membership.unapply))
-      }
+    implicit def jsonWritesApiDocMembership: play.api.libs.json.Writes[Membership] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "user").write[User] and
+        (__ \ "organization").write[Organization] and
+        (__ \ "role").write[String]
+      )(unlift(Membership.unapply _))
+    }
     
-    implicit def jsonReadsApiDocMembershipRequest: play.api.libs.json.Reads[MembershipRequest] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "user").read[User] and
-         (__ \ "organization").read[Organization] and
-         (__ \ "role").read[String])(MembershipRequest.apply _)
-      }
+    implicit def jsonReadsApiDocMembershipRequest: play.api.libs.json.Reads[MembershipRequest] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "user").read[User] and
+        (__ \ "organization").read[Organization] and
+        (__ \ "role").read[String]
+      )(MembershipRequest.apply _)
+    }
     
-    implicit def jsonWritesApiDocMembershipRequest: play.api.libs.json.Writes[MembershipRequest] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "user").write[User] and
-         (__ \ "organization").write[Organization] and
-         (__ \ "role").write[String])(unlift(MembershipRequest.unapply))
-      }
+    implicit def jsonWritesApiDocMembershipRequest: play.api.libs.json.Writes[MembershipRequest] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "user").write[User] and
+        (__ \ "organization").write[Organization] and
+        (__ \ "role").write[String]
+      )(unlift(MembershipRequest.unapply _))
+    }
     
-    implicit def jsonReadsApiDocOrganization: play.api.libs.json.Reads[Organization] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "key").read[String] and
-         (__ \ "name").read[String] and
-         (__ \ "domains").readNullable[scala.collection.Seq[Domain]].map { x =>
-          x.getOrElse(Nil)
-        } and
-         (__ \ "metadata").readNullable[OrganizationMetadata])(Organization.apply _)
-      }
+    implicit def jsonReadsApiDocOrganization: play.api.libs.json.Reads[Organization] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "key").read[String] and
+        (__ \ "name").read[String] and
+        (__ \ "domains").readNullable[scala.collection.Seq[Domain]].map(_.getOrElse(Nil)) and
+        (__ \ "metadata").readNullable[OrganizationMetadata]
+      )(Organization.apply _)
+    }
     
-    implicit def jsonWritesApiDocOrganization: play.api.libs.json.Writes[Organization] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "key").write[String] and
-         (__ \ "name").write[String] and
-         (__ \ "domains").write[scala.collection.Seq[Domain]] and
-         (__ \ "metadata").write[scala.Option[OrganizationMetadata]])(unlift(Organization.unapply))
-      }
+    implicit def jsonWritesApiDocOrganization: play.api.libs.json.Writes[Organization] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "key").write[String] and
+        (__ \ "name").write[String] and
+        (__ \ "domains").write[scala.collection.Seq[Domain]] and
+        (__ \ "metadata").write[scala.Option[OrganizationMetadata]]
+      )(unlift(Organization.unapply _))
+    }
     
-    implicit def jsonReadsApiDocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        (__ \ "package_name").readNullable[String].map { x =>
-          new OrganizationMetadata(packageName = x)
-        }
-      }
+    implicit def jsonReadsApiDocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (__ \ "package_name").readNullable[String].map { x => new OrganizationMetadata(packageName = x) }
+    }
     
-    implicit def jsonWritesApiDocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] =
-      new play.api.libs.json.Writes[OrganizationMetadata] {
-        def writes(x: OrganizationMetadata) = play.api.libs.json.Json.obj(
-          "package_name" -> play.api.libs.json.Json.toJson(x.packageName)
-        )
-      }
+    implicit def jsonWritesApiDocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] = new play.api.libs.json.Writes[OrganizationMetadata] {
+      def writes(x: OrganizationMetadata) = play.api.libs.json.Json.obj(
+        "package_name" -> play.api.libs.json.Json.toJson(x.packageName)
+      )
+    }
     
-    implicit def jsonReadsApiDocService: play.api.libs.json.Reads[Service] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "name").read[String] and
-         (__ \ "key").read[String] and
-         (__ \ "description").readNullable[String])(Service.apply _)
-      }
+    implicit def jsonReadsApiDocService: play.api.libs.json.Reads[Service] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "name").read[String] and
+        (__ \ "key").read[String] and
+        (__ \ "description").readNullable[String]
+      )(Service.apply _)
+    }
     
-    implicit def jsonWritesApiDocService: play.api.libs.json.Writes[Service] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "name").write[String] and
-         (__ \ "key").write[String] and
-         (__ \ "description").write[scala.Option[String]])(unlift(Service.unapply))
-      }
+    implicit def jsonWritesApiDocService: play.api.libs.json.Writes[Service] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "name").write[String] and
+        (__ \ "key").write[String] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(Service.unapply _))
+    }
     
-    implicit def jsonReadsApiDocUser: play.api.libs.json.Reads[User] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "email").read[String] and
-         (__ \ "name").readNullable[String])(User.apply _)
-      }
+    implicit def jsonReadsApiDocUser: play.api.libs.json.Reads[User] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "email").read[String] and
+        (__ \ "name").readNullable[String]
+      )(User.apply _)
+    }
     
-    implicit def jsonWritesApiDocUser: play.api.libs.json.Writes[User] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "email").write[String] and
-         (__ \ "name").write[scala.Option[String]])(unlift(User.unapply))
-      }
+    implicit def jsonWritesApiDocUser: play.api.libs.json.Writes[User] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "email").write[String] and
+        (__ \ "name").write[scala.Option[String]]
+      )(unlift(User.unapply _))
+    }
     
-    implicit def jsonReadsApiDocVersion: play.api.libs.json.Reads[Version] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").read[java.util.UUID] and
-         (__ \ "version").read[String] and
-         (__ \ "json").read[String])(Version.apply _)
-      }
+    implicit def jsonReadsApiDocVersion: play.api.libs.json.Reads[Version] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "version").read[String] and
+        (__ \ "json").read[String]
+      )(Version.apply _)
+    }
     
-    implicit def jsonWritesApiDocVersion: play.api.libs.json.Writes[Version] =
-      {
-        import play.api.libs.json._
-        import play.api.libs.functional.syntax._
-        ((__ \ "guid").write[java.util.UUID] and
-         (__ \ "version").write[String] and
-         (__ \ "json").write[String])(unlift(Version.unapply))
-      }
+    implicit def jsonWritesApiDocVersion: play.api.libs.json.Writes[Version] = {
+      import play.api.libs.json._
+      import play.api.libs.functional.syntax._
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "version").write[String] and
+        (__ \ "json").write[String]
+      )(unlift(Version.unapply _))
+    }
   }
 }
 
@@ -363,23 +365,23 @@ package apidoc {
 
     logger.info(s"Initializing apidoc.client for url $apiUrl")
 
-    def code = Code
+    def code: Code = Code
     
-    def domains = Domains
+    def domains: Domains = Domains
     
-    def healthchecks = Healthchecks
+    def healthchecks: Healthchecks = Healthchecks
     
-    def membershipRequests = MembershipRequests
+    def membershipRequests: MembershipRequests = MembershipRequests
     
-    def memberships = Memberships
+    def memberships: Memberships = Memberships
     
-    def organizations = Organizations
+    def organizations: Organizations = Organizations
     
-    def services = Services
+    def services: Services = Services
     
-    def users = Users
+    def users: Users = Users
     
-    def versions = Versions
+    def versions: Versions = Versions
 
     trait Code {
       /**
@@ -390,7 +392,7 @@ package apidoc {
         serviceKey: String,
         version: String,
         targetName: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Code]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Code]]
     }
   
     object Code extends Code {
@@ -399,7 +401,7 @@ package apidoc {
         serviceKey: String,
         version: String,
         targetName: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Code]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Code]] = {
         GET(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}/${java.net.URLEncoder.encode(version, "UTF-8")}/${java.net.URLEncoder.encode(targetName, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Code])
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
@@ -423,7 +425,7 @@ package apidoc {
       def deleteByName(
         orgKey: String,
         name: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
   
     object Domains extends Domains {
@@ -442,7 +444,7 @@ package apidoc {
       override def deleteByName(
         orgKey: String,
         name: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         DELETE(s"/domains/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(name, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
@@ -452,11 +454,11 @@ package apidoc {
     }
   
     trait Healthchecks {
-      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Healthcheck]]
+      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Healthcheck]]
     }
   
     object Healthchecks extends Healthchecks {
-      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Healthcheck]] = {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Healthcheck]] = {
         GET(s"/_internal_/healthcheck").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Healthcheck])
           case r if r.status == 404 => None
@@ -542,7 +544,11 @@ package apidoc {
         POST(s"/membership_requests", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.MembershipRequest]
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => {
+            println("RESPONSE STATUS: " + r.status)
+            println("r.body: " + r.body)
+            throw new FailedResponse(r)
+          }
         }
       }
       
@@ -552,7 +558,11 @@ package apidoc {
         POST(s"/membership_requests/${guid}/accept").map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => {
+            println("RESPONSE STATUS: " + r.status)
+            println("r.body: " + r.body)
+            throw new FailedResponse(r)
+          }
         }
       }
       
@@ -582,11 +592,11 @@ package apidoc {
       
       def getByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Membership]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Membership]]
       
       def deleteByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
   
     object Memberships extends Memberships {
@@ -615,7 +625,7 @@ package apidoc {
       
       override def getByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Membership]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Membership]] = {
         GET(s"/memberships/${guid}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Membership])
           case r if r.status == 404 => None
@@ -625,7 +635,7 @@ package apidoc {
       
       override def deleteByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         DELETE(s"/memberships/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
@@ -652,7 +662,7 @@ package apidoc {
        */
       def getByKey(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Organization]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Organization]]
       
       /**
        * Create a new organization.
@@ -666,7 +676,7 @@ package apidoc {
        */
       def deleteByKey(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
   
     object Organizations extends Organizations {
@@ -695,7 +705,7 @@ package apidoc {
       
       override def getByKey(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Organization]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Organization]] = {
         GET(s"/organizations/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Organization])
           case r if r.status == 404 => None
@@ -719,7 +729,7 @@ package apidoc {
       
       override def deleteByKey(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         DELETE(s"/organizations/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
@@ -746,7 +756,7 @@ package apidoc {
       def deleteByOrgKeyAndServiceKey(
         orgKey: String,
         serviceKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
   
     object Services extends Services {
@@ -773,7 +783,7 @@ package apidoc {
       override def deleteByOrgKeyAndServiceKey(
         orgKey: String,
         serviceKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         DELETE(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
@@ -798,7 +808,7 @@ package apidoc {
        */
       def getByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.User]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.User]]
       
       /**
        * Used to authenticate a user with an email address and password. Successful
@@ -849,7 +859,7 @@ package apidoc {
       
       override def getByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.User]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.User]] = {
         GET(s"/users/${guid}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.User])
           case r if r.status == 404 => None
@@ -927,7 +937,7 @@ package apidoc {
         orgKey: String,
         serviceKey: String,
         version: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Version]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Version]]
       
       /**
        * Create or update the service with the specified version.
@@ -946,7 +956,7 @@ package apidoc {
         orgKey: String,
         serviceKey: String,
         version: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
   
     object Versions extends Versions {
@@ -971,7 +981,7 @@ package apidoc {
         orgKey: String,
         serviceKey: String,
         version: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[apidoc.models.Version]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Version]] = {
         GET(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}/${java.net.URLEncoder.encode(version, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Version])
           case r if r.status == 404 => None
@@ -999,7 +1009,7 @@ package apidoc {
         orgKey: String,
         serviceKey: String,
         version: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Option[Unit]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         DELETE(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}/${java.net.URLEncoder.encode(version, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
@@ -1008,10 +1018,12 @@ package apidoc {
       }
     }
 
+    private val UserAgent = "www.apidoc.me:0.4.64 gilt/apidoc:0.0.1-dev"
+
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path)
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("User-Agent" -> UserAgent)
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
