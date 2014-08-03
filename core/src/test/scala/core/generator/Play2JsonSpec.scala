@@ -5,8 +5,6 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2JsonSpec extends FunSpec with ShouldMatchers {
 
-  //private lazy val service = TestHelper.parseFile("reference-api/api.json").serviceDescription.get
-
   describe("quality schema") {
 
     lazy val quality = new ScalaServiceDescription(TestHelper.parseFile("core/src/test/resources/examples/quality.json").serviceDescription.get)
