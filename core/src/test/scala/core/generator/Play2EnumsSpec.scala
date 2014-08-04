@@ -19,6 +19,11 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
     }
     """
 
+  it("enumName") {
+    Play2Enums.enumName("UnableToFulfill") should be("UnableToFulfill")
+    Play2Enums.enumName("UNABLE_TO_FULFILL") should be("UnableToFulfill")
+  }
+
   describe("for a model without enums") {
 
     val service = ServiceDescription(json.format("""{ "name": "age_group", "type": "string" }"""))

@@ -51,8 +51,18 @@ object Play2Enums {
     model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }
   }
 
-  private def enumName(value: String): String = {
-    Text.underscoreToInitCap(value)
+  /**
+    * Returns a scala friend name for this enumeration
+    * value. e.g. cannot_fulfill => CannotFulfill
+    */
+  def enumName(value: String): String = {
+    Text.safeName(
+      if (value == value.toUpperCase) {
+        Text.initCap(value.split("_").map(_.toLowerCase)).mkString("")
+      } else {
+        Text.initCap(value)
+      }
+    )
   }
 
   private def buildEnumForField(traitName: String, enumType: EnumerationFieldType): String = {
