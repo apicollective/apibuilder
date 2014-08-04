@@ -291,7 +291,13 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
       model.fields.map { field =>
         field.fieldtype match {
           case PrimitiveFieldType(datatype) => s":${field.name} => ${field.name}"
-          case ModelFieldType(model) => s":${field.name} => ${field.name}.to_hash"
+          case ModelFieldType(model) => {
+            if (field.multiple) {
+              s":${field.name} => ${field.name}.map(&:to_hash)"
+            } else {
+              s":${field.name} => ${field.name}.to_hash"
+            }
+          }
           case EnumerationFieldType(datatype, values) => s":${field.name} => ${field.name}.value"
         }
       }.mkString("            ", ",\n            ", "")
