@@ -65,7 +65,7 @@ class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
   val description: Option[String] = model.description
 
-  val fields = model.fields.map { f => new ScalaField(this.name, f) }
+  val fields = model.fields.map { f => new ScalaField(this.name, f) }.toList
 
   val argList: Option[String] = ScalaUtil.fieldsToArgList(fields.map(_.definition))
 
