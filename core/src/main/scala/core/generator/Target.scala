@@ -10,7 +10,14 @@ object Status {
   case object Proposal extends Status
 }
 
-case class Target(key: String, name: String, description: String, status: Status)
+case class Target(key: String, name: String, description: String, status: Status) {
+ 
+ def userAgent(apidocVersion: String, orgKey: String, serviceKey: String, serviceVersion: String): String = {
+    // USER_AGENT = "apidoc:0.4.64 http://www.apidoc.me/gilt/code/mercury-generic-warehouse-api/0.0.3-dev/ruby_client"
+    s"apidoc:$apidocVersion http://www.apidoc.me/$orgKey/code/$serviceKey/$serviceVersion/$key"
+  }
+
+}
 
 object Target {
 
@@ -68,7 +75,7 @@ object Target {
   val Implemented = All.filter(_.status != Status.Proposal)
 
   def generate(target: Target, apidocVersion: String, orgKey: String, sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
-    val userAgent = Target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
+    val userAgent = target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
     target.key match {
       case "ruby_client" => RubyGemGenerator.generate(sd, userAgent)
       case "play_2_3_routes" => Play2RouteGenerator.generate(sd)
@@ -81,13 +88,6 @@ object Target {
       }
     }
   }
-
-  def userAgent(apidocVersion: String, orgKey: String, serviceKey: String, serviceVersion: String): String = {
-    val safeOrg = Text.safeName(orgKey)
-    val safeServiceKey = Text.safeName(serviceKey)
-    s"www.apidoc.me:$apidocVersion $safeOrg/$safeServiceKey:$serviceVersion"
-  }
-
 
   def findByKey(key: String): Option[Target] = All.find(_.key == key)
 
