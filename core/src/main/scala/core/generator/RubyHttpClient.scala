@@ -317,7 +317,11 @@ require 'bigdecimal'
       end
 
       def Helper.to_model_instance(field_name, klass, value, opts={})
-        if value.instance_of?(klass)
+        # Allow call to pass in either a hash from json or an actual
+        # instance of the klass. If the value provided is an array, we
+        # inspect the first element of the array to determine the
+        # type.
+        if value.instance_of?(klass) || (value.is_a?(Array) && value.first.instance_of?(klass))
           Helper.parse_args(field_name, value, opts)
         else
           Helper.parse_args(field_name, value, opts) { |v| klass.send(:new, v) }
