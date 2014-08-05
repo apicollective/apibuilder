@@ -4,23 +4,60 @@ import core._
 import Text._
 import ScalaUtil._
 
+case class PlayFrameworkVersion(
+  name: String,
+  responseClass: String,
+  requestHolderClass: String,
+  authSchemeClass: String,
+  supportsHttpPatch: Boolean
+)
+
+object PlayFrameworkVersions {
+
+  val V2_2_x = PlayFrameworkVersion(
+    name = "2.2.x",
+    responseClass = "play.api.libs.ws.Response",
+    requestHolderClass = "play.api.libs.ws.WS.WSRequestHolder",
+    authSchemeClass = "com.ning.http.client.Realm.AuthScheme",
+    supportsHttpPatch = false
+  )
+
+  val V2_3_x = PlayFrameworkVersion(
+    name = "2.3.x",
+    responseClass = "play.api.libs.ws.WSResponse",
+    requestHolderClass = "play.api.libs.ws.WSRequestHolder",
+    authSchemeClass = "play.api.libs.ws.WSAuthScheme",
+    supportsHttpPatch = true
+  )
+}
+
 object Play2ClientGenerator {
-  def apply(sd: ServiceDescription, userAgent: String): String = {
+
+  def generate(version: PlayFrameworkVersion, sd: ServiceDescription, userAgent: String): String = {
     val ssd = new ScalaServiceDescription(sd)
-    apply(ssd, userAgent)
+    generate(version, ssd, userAgent)
   }
 
-  def apply(ssd: ScalaServiceDescription, userAgent: String): String = {
-s"""${Play2Models(ssd)}
+  def generate(version: PlayFrameworkVersion, ssd: ScalaServiceDescription, userAgent: String): String = {
+    Play2ClientGenerator(version, ssd, userAgent).generate()
+  }
 
-${client(ssd, userAgent)}"""
+}
+
+case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaServiceDescription, userAgent: String) {
+
+  def generate(): String = {
+    Seq(
+      Play2Models(ssd),
+      client()
+    ).mkString("\n\n")
   }
 
   private[generator] def errorTypeClass(response: ScalaResponse): String = {
     require(!response.isSuccess)
 
     Seq(
-      s"case class ${response.errorClassName}(response: play.api.libs.ws.WSResponse) extends Exception {",
+      s"case class ${response.errorClassName}(response: ${version.responseClass}) extends Exception {",
       "",
       s"  lazy val ${response.errorVariableName} = response.json.as[${response.resultType}]",
       "",
@@ -28,7 +65,7 @@ ${client(ssd, userAgent)}"""
     ).mkString("\n")
   }
 
-  private[generator] def errors(ssd: ScalaServiceDescription): Option[String] = {
+  private[generator] def errors(): Option[String] = {
     val errorTypes = ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(r => !(r.isSuccess || r.isUnit))
 
     if (errorTypes.isEmpty) {
@@ -47,8 +84,8 @@ ${client(ssd, userAgent)}"""
     }
   }
 
-  private def client(ssd: ScalaServiceDescription, userAgent: String): String = {
-    val errorsString = errors(ssd) match {
+  private def client(): String = {
+    val errorsString = errors() match {
       case None => ""
       case Some(s: String) => s"\n\n$s\n"
     }
@@ -58,7 +95,12 @@ ${client(ssd, userAgent)}"""
       s"def ${methodName}: ${plural} = ${plural}"
     }.mkString("\n\n")
 
-s"""package ${ssd.packageName} {
+    val patchMethod = version.supportsHttpPatch match {
+      case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)"""
+      case false => """sys.error("PATCH method is not supported in Play Framework Version ${version.name}")"""
+    }
+
+    s"""package ${ssd.packageName} {
   object helpers {
     import org.joda.time.DateTime
     import org.joda.time.format.ISODateTimeFormat
@@ -98,20 +140,20 @@ s"""package ${ssd.packageName} {
 
 ${accessors.indent(4)}
 
-${modelClients(ssd).indent(2)}
+${modelClients().indent(2)}
 
     private val UserAgent = "$userAgent"
 
-    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
+    def _requestHolder(path: String): ${version.requestHolderClass} = {
       import play.api.Play.current
 
       val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("User-Agent" -> UserAgent)
       apiToken.fold(holder) { token =>
-        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
+        holder.withAuth(token, "", ${version.authSchemeClass}.BASIC)
       }
     }
 
-    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+    def _logRequest(method: String, req: ${version.requestHolderClass})(implicit ec: scala.concurrent.ExecutionContext): ${version.requestHolderClass} = {
       val queryComponents = for {
         (name, values) <- req.queryString
         value <- values
@@ -123,63 +165,63 @@ ${modelClients(ssd).indent(2)}
       req
     }
 
-    private def POST(
+    def POST(
       path: String,
       data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
       q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
       _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).post(data)
     }
 
-    private def GET(
+    def GET(
       path: String,
       q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
       _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
     }
 
-    private def PUT(
+    def PUT(
       path: String,
       data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
       q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
       _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(data)
     }
 
-    private def PATCH(
+    def PATCH(
       path: String,
       data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
       q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
+      $patchMethod
     }
 
-    private def DELETE(
+    def DELETE(
       path: String,
       q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
       _logRequest("DELETE", _requestHolder(path).withQueryString(q:_*)).delete()
     }
 
   }
 
-  case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception$errorsString
+  case class FailedRequest(response: ${version.responseClass}) extends Exception$errorsString
 
 }"""
   }
 
-  private def modelClients(ssd: ScalaServiceDescription): String = {
+  private def modelClients(): String = {
     ssd.resources.groupBy(_.model.plural).toSeq.sortBy(_._1).map { case (plural, resources) =>
       s"  trait $plural {\n" +
-      clientMethods(ssd, resources).map(_.interface).mkString("\n\n").indent(4) +
+      clientMethods(resources).map(_.interface).mkString("\n\n").indent(4) +
       "\n  }\n\n" +
       s"  object $plural extends $plural {\n" +
-      clientMethods(ssd, resources).map(_.code).mkString("\n\n").indent(4) +
+      clientMethods(resources).map(_.code).mkString("\n\n").indent(4) +
       "\n  }"
     }.mkString("\n\n")
   }
 
-  private def clientMethods(ssd: ScalaServiceDescription, resources: Seq[ScalaResource]): Seq[ClientMethod] = {
+  private def clientMethods(resources: Seq[ScalaResource]): Seq[ClientMethod] = {
     resources.flatMap(_.operations).map { op =>
       val path = Play2Util.pathParams(op)
 
