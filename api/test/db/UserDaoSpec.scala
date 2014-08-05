@@ -45,6 +45,11 @@ class UserDaoSpec extends FunSpec with Matchers {
 
     it("are linked if the email domain matches") {
       val gilt = Util.gilt
+
+      if (gilt.domains.find(_.name == "gilt.com").isEmpty) {
+        OrganizationDomainDao.create(Util.createdBy, gilt, "gilt.com")
+      }
+
       val user = UserDao.create(UserForm(
         email = UUID.randomUUID.toString + "@gilt.com",
         password = "testing"
