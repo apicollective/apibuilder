@@ -67,7 +67,7 @@ object Play2Util {
   private object PathParamHelper {
     def urlEncode(name: String, d: ScalaDataType): String = {
       d match {
-        case ScalaStringType => s"""java.net.URLEncoder.encode($name, "UTF-8")"""
+        case ScalaStringType => s"""play.utils.UriEncoding.encodePathSegment($name, "UTF-8")"""
         case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
         case t => {
           sys.error(s"Cannot encode params of type[$t] as path parameters (name: $name)")
