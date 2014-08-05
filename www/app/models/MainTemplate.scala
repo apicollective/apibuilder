@@ -2,6 +2,7 @@ package models
 
 import core.{ Model, Resource, ServiceDescription }
 import apidoc.models.{ Organization, Service, User }
+import play.api.Play.current
 
 case class MainTemplate(
   title: String,
@@ -15,6 +16,14 @@ case class MainTemplate(
   model: Option[Model] = None,
   settings: Option[SettingsMenu] = None
 )
+
+object MainTemplate {
+
+  val apidocVersion = current.configuration.getString("apidoc.version").getOrElse {
+    sys.error("apidoc.version is required")
+  }
+
+}
 
 case class SettingsMenu(
   section: Option[SettingSection] = None
