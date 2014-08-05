@@ -29,21 +29,27 @@ object Target {
       status = Status.Alpha
     ),
     Target(
-      key = "play_2_3_routes",
-      name = "Play 2.3 routes",
-      description = "Apidoc can generate a routes file for the play 2.3 framework. One workflow here is to write the service description in apidoc, upload, copy the routes file, then implement the controllers in play. By code generating the routes file, the compiler tells you if you are missing any operations defined by api.json. While this does not provide full testing (e.g. does not validate the responses), we have found it very pragmatic to ensure services match specifications.",
+      key = "play_2_2_client",
+      name = "Play 2.2 client",
+      description = "Play Framework 2.2 client based on <a href='http://www.playframework.com/documentation/2.2.x/ScalaWS''>WS API</a>.",
       status = Status.Alpha
     ),
     Target(
       key = "play_2_3_client",
       name = "Play 2.3 client",
-      description = "Play Framework 2.3 offers a very rich <a href='http://www.playframework.com/documentation/2.3.x/ScalaWS'>WS API</a>. We are exploring the ability to code generate a client library that will integrate natively with the Play WS API to make it simpler to consume api.json web services.",
+      description = "Play Framework 2.3 client based on  <a href='http://www.playframework.com/documentation/2.3.x/ScalaWS'>WS API</a>.",
       status = Status.Alpha
     ),
     Target(
-      key = "play_2_3_json",
-      name = "Play 2.3 json",
-      description = "Generate a play 2.3 json (includes the output of Scala Models). No need to use this target if you are already using the Play Client target.",
+      key = "play_2_x_json",
+      name = "Play 2.x json",
+      description = "Generate play 2.x case classes with json serialization based on <a href='http://www.playframework.com/documentation/2.3.x/ScalaJsonCombinators'>Scala Json combinators</a>. No need to use this target if you are already using the Play Client target.",
+      status = Status.Alpha
+    ),
+    Target(
+      key = "play_2_x_routes",
+      name = "Play 2.x routes",
+      description = "Apidoc can generate a routes file for the play 2.x framework. One workflow here is to write the service description in apidoc, upload, copy the routes file, then implement the controllers in play. By code generating the routes file, the compiler tells you if you are missing any operations defined by api.json. While this does not provide full testing (e.g. does not validate the responses), we have found it very pragmatic to ensure services match specifications.",
       status = Status.Alpha
     ),
     Target(
@@ -61,7 +67,7 @@ object Target {
     Target(
       key = "swagger_json",
       name = "Swagger JSON",
-      description = "We have a prototype to convert api.json to swagger-json. This enables access to all of the great tooling already built on swagger. We specifically made sure the conversion was straight forward as we built api.json and hope to soon have the time to productize the swagger-json generation.",
+      description = "We have a prototype to convert api.json to swagger-json. This enables access to all of the great tooling already built on swagger. We specifically made sure the conversion was straight forward as we built api.json and hope to soon have the time to productize the swagger-json generation. Currently we are waiting for the swagger version 2 working group to produce its final recommendation as the 2nd version of the specification is very close in spirit to how apidoc works.",
       status = Status.Proposal
     ),
     Target(
@@ -78,9 +84,10 @@ object Target {
     val userAgent = target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
     target.key match {
       case "ruby_client" => RubyGemGenerator.generate(sd, userAgent)
-      case "play_2_3_routes" => Play2RouteGenerator.generate(sd)
-      case "play_2_3_client" => Play2ClientGenerator.apply(sd, userAgent)
-      case "play_2_3_json" => Play2Models.apply(sd)
+      case "play_2_2_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, sd, userAgent)
+      case "play_2_3_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, sd, userAgent)
+      case "play_2_x_routes" => Play2RouteGenerator.generate(sd)
+      case "play_2_x_json" => Play2Models.apply(sd)
       case "scala_models" => ScalaCaseClasses.apply(sd)
       case "avro_schema" => AvroSchemas.apply(sd)
       case (other) => {

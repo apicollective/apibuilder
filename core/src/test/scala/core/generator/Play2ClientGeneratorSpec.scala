@@ -19,7 +19,7 @@ case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Excepti
 
 }
 """.trim
-    Play2ClientGenerator.errorTypeClass(errorResponse).trim should be(target)
+    Play2ClientGenerator(PlayFrameworkVersions.V2_3_x, ssd, "test").errorTypeClass(errorResponse).trim should be(target)
   }
 
   it("only generates error wrappers for model classes (not primitives)") {
@@ -55,7 +55,7 @@ case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Excepti
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ssd = new ScalaServiceDescription(validator.serviceDescription.get)
-    Play2ClientGenerator.errors(ssd) should be(None)
+    Play2ClientGenerator(PlayFrameworkVersions.V2_3_x, ssd, "test").errors() should be(None)
   }
 
 }

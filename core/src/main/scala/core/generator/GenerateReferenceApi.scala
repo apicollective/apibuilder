@@ -34,7 +34,7 @@ object GenerateReferenceApi extends App {
     Play2RouteGenerator(validator.serviceDescription.get).generate.get,
     "conf/routes"
   )
-  genCode(Play2ClientGenerator(validator.serviceDescription.get, "apidoc gilt 0.0.1-reference"), "app/Play2Client.scala")
+  genCode(Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, validator.serviceDescription.get, "apidoc gilt 0.0.1-reference"), "app/Play2Client.scala")
   genCode(
     RubyGemGenerator(validator.serviceDescription.get, "apidoc gilt 0.0.1-reference").generate,
     "ruby/client.rb"
