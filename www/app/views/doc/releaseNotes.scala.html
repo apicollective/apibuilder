@@ -4,12 +4,38 @@
 
   <ul>
 
-    <li>First class support for organization domains. Makes it
-    possible to list org domains (e.g. gilt.com, giltcity.com) for
-    auto association with org when new users
-    register.
-    See <a href='https://github.com/gilt/apidoc/pull/102'>PR 102</a>
+    <li>Play 2.2 client support (currently alpha). Main differences
+    with Play 2.3 client related to a few package names that changed
+    in play 2.3 and a runtime error if you attempt to use HTTP PATCH
+    (play 2.2 does not support patch natively). If you need to access
+    a service using patch, you can override the PATCH method in the
+    generated client to implement your own PATCH method.
+    See <a href='https://github.com/gilt/apidoc/pull/122'>PR 122</a>
     </li>
+
+    <li>Bug fixed in encoding of path parameters - thanks Gary!
+    See <a href='https://github.com/gilt/apidoc/pull/120'>PR 120</a>
+    </li>
+
+    <li>Play client: FailedResponse class renamed to FailedRequest as
+    it is actually the request that failed.</li>
+
+    <li>User agents in client: All generated clients now provide a
+    default user agent to identify the version of apidoc that
+    generated the client as well as the specific org, service, and
+    version of the service description used to generate the client.
+    See <a href='https://github.com/gilt/apidoc/pull/116'>PR 116</a>
+    </li>
+
+    <li>Few bug fixes to make enum values more readable and to enable
+    using the ruby client library both with objects as well as hashes (from
+    json).
+    See <a href='https://github.com/gilt/apidoc/issues/114'>Issue 114</a>,
+    <a href='https://github.com/gilt/apidoc/issues/117'>Issue 117</a>,
+    and <a href='https://github.com/gilt/apidoc/issues/118'>Issue 118</a>
+    </li>
+
+</li>
 
   </ul>
 
