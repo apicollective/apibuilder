@@ -66,7 +66,7 @@ class IntegrationSpec extends org.specs2.mutable.Specification {
           .entity must equalTo(organization)
 
         Organizations.getByGuid(guid = UUID.randomUUID).recover[Any] {
-          case r: FailedResponse[_] => r.status must equalTo(404)
+          case r: FailedRequest[_] => r.status must equalTo(404)
         }
 
         Organizations.get(guid = organization.guid)

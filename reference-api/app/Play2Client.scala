@@ -218,7 +218,7 @@ package referenceapi.models {
 
 package referenceapi {
 
-  case class FailedResponse(response: play.api.libs.ws.Response) extends Exception
+  case class FailedRequest(response: play.api.libs.ws.Response) extends Exception
 
 package error {
 import #{ssd.packageName}.models.json._
@@ -328,7 +328,7 @@ import #{ssd.packageName}.models.json._
           POST(s"/members", payload).map {
             case r if r.status == 201 => r.json.as[Member]
             case r if r.status == 409 => throw new ErrorResponse(r)
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }
         
@@ -370,7 +370,7 @@ import #{ssd.packageName}.models.json._
           
           GET(s"/members", queryBuilder.result).map {
             case r if r.status == 200 => r.json.as[scala.collection.Seq[Member]]
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }
         
@@ -385,7 +385,7 @@ import #{ssd.packageName}.models.json._
             java.net.URLEncoder.encode(s, "UTF-8")
           })(organization)}", queryBuilder.result).map {
             case r if r.status == 200 => r.json.as[scala.collection.Seq[Member]]
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }  }
     
@@ -414,7 +414,7 @@ import #{ssd.packageName}.models.json._
           POST(s"/organizations", payload).map {
             case r if r.status == 201 => r.json.as[Organization]
             case r if r.status == 409 => throw new ErrorResponse(r)
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }
         
@@ -440,7 +440,7 @@ import #{ssd.packageName}.models.json._
           
           GET(s"/organizations", queryBuilder.result).map {
             case r if r.status == 200 => r.json.as[scala.collection.Seq[Organization]]
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }
         
@@ -456,7 +456,7 @@ import #{ssd.packageName}.models.json._
           })(guid)}", queryBuilder.result).map {
             case r if r.status == 200 => Some(r.json.as[Organization])
             case r if r.status == 404 => None
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }  }
     
@@ -492,7 +492,7 @@ import #{ssd.packageName}.models.json._
           POST(s"/users", payload).map {
             case r if r.status == 201 => r.json.as[User]
             case r if r.status == 409 => throw new ErrorResponse(r)
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }
         
@@ -526,7 +526,7 @@ import #{ssd.packageName}.models.json._
           
           GET(s"/users", queryBuilder.result).map {
             case r if r.status == 200 => r.json.as[scala.collection.Seq[User]]
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }
         
@@ -539,7 +539,7 @@ import #{ssd.packageName}.models.json._
           
           POST(s"/users/noop", payload).map {
             case r if r.status == 200 => r.json.as[Unit]
-            case r => throw new FailedResponse(r)
+            case r => throw new FailedRequest(r)
           }
         }  }
   }

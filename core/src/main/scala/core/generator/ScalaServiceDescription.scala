@@ -155,7 +155,7 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
     Text.snakeToCamelCase(underscore.toLowerCase)
   }
 
-  val errorClassName = Text.initCap(errorVariableName) + "Response"
+  val errorClassName = Text.initCap(errorVariableName) + "Request"
 
 }
 

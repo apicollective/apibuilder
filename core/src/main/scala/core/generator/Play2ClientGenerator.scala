@@ -163,7 +163,7 @@ ${modelClients(ssd).indent(2)}
 
   }
 
-  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception$errorsString
+  case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception$errorsString
 
 }"""
   }
@@ -246,7 +246,7 @@ ${modelClients(ssd).indent(2)}
             Some(s"case r if r.status == ${response.code} => throw new ${ssd.packageName}.error.${response.errorClassName}(r)")
           }
         }.mkString("\n")
-      } + hasOptionResult + "\ncase r => throw new FailedResponse(r)\n"
+      } + hasOptionResult + "\ncase r => throw new FailedRequest(r)\n"
 
       ClientMethod(
         name = op.name,

@@ -406,7 +406,7 @@ package apidoc {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Code])
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -437,7 +437,7 @@ package apidoc {
         POST(s"/domains/${java.net.URLEncoder.encode(orgKey, "UTF-8")}", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.Domain]
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -448,7 +448,7 @@ package apidoc {
         DELETE(s"/domains/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(name, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -462,7 +462,7 @@ package apidoc {
         GET(s"/_internal_/healthcheck").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Healthcheck])
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -526,7 +526,7 @@ package apidoc {
         
         GET(s"/membership_requests", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.MembershipRequest]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -544,7 +544,7 @@ package apidoc {
         POST(s"/membership_requests", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.MembershipRequest]
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -554,7 +554,7 @@ package apidoc {
         POST(s"/membership_requests/${guid}/accept").map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -564,7 +564,7 @@ package apidoc {
         POST(s"/membership_requests/${guid}/decline").map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -611,7 +611,7 @@ package apidoc {
         
         GET(s"/memberships", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Membership]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -621,7 +621,7 @@ package apidoc {
         GET(s"/memberships/${guid}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Membership])
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -631,7 +631,7 @@ package apidoc {
         DELETE(s"/memberships/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -691,7 +691,7 @@ package apidoc {
         
         GET(s"/organizations", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Organization]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -701,7 +701,7 @@ package apidoc {
         GET(s"/organizations/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Organization])
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -715,7 +715,7 @@ package apidoc {
         POST(s"/organizations", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.Organization]
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -725,7 +725,7 @@ package apidoc {
         DELETE(s"/organizations/${java.net.URLEncoder.encode(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -768,7 +768,7 @@ package apidoc {
         
         GET(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Service]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -779,7 +779,7 @@ package apidoc {
         DELETE(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -845,7 +845,7 @@ package apidoc {
         
         GET(s"/users", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.User]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -855,7 +855,7 @@ package apidoc {
         GET(s"/users/${guid}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.User])
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -871,7 +871,7 @@ package apidoc {
         POST(s"/users/authenticate", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.User]
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -889,7 +889,7 @@ package apidoc {
         POST(s"/users", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.User]
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -906,7 +906,7 @@ package apidoc {
         PUT(s"/users/${guid}", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.User]
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -965,7 +965,7 @@ package apidoc {
         
         GET(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Version]]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -977,7 +977,7 @@ package apidoc {
         GET(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}/${java.net.URLEncoder.encode(version, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Version])
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -993,7 +993,7 @@ package apidoc {
         
         PUT(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}/${java.net.URLEncoder.encode(version, "UTF-8")}", payload).map {
           case r if r.status == 200 => r.json.as[apidoc.models.Version]
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
       
@@ -1005,7 +1005,7 @@ package apidoc {
         DELETE(s"/${java.net.URLEncoder.encode(orgKey, "UTF-8")}/${java.net.URLEncoder.encode(serviceKey, "UTF-8")}/${java.net.URLEncoder.encode(version, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedResponse(r)
+          case r => throw new FailedRequest(r)
         }
       }
     }
@@ -1073,7 +1073,7 @@ package apidoc {
 
   }
 
-  case class FailedResponse(response: play.api.libs.ws.WSResponse) extends Exception
+  case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception
 
   package error {
   
