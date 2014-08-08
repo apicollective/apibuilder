@@ -40,12 +40,8 @@ object RubyGemGenerator {
     lines.append(s"    $className.all.find { |v| v.value == value }")
     lines.append("  end")
 
-    // .all needs to come first. In the event there is an enum value
-    // named 'all' - user will lose the 'all' method but their enum
-    // value will be preserved. This is subpar, but an edge case and
-    // good enough for now.
     lines.append("")
-    lines.append(s"  def $className.all")
+    lines.append(s"  def $className.ALL") // Upper case to avoid naming conflict
     lines.append("    @@all ||= [" + et.values.map(v => s"$className.${enumName(v)}").mkString(", ") + "]")
     lines.append("  end")
 
