@@ -17,7 +17,7 @@ object Play2Util {
             if (p.isOption) {
               s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
             } else {
-              s"""  "${p.originalName}" -> ${ScalaDataType.asString(p.name, p.baseType)}"""
+              s"""  Some("${p.originalName}" -> ${ScalaDataType.asString(p.name, p.baseType)})"""
             }
           }.mkString(",\n"),
           ").flatten"
