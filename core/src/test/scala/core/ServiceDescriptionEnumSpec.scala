@@ -10,10 +10,19 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "enums": {
+        "age_group": {
+          "values": [
+            { "name": "Twenties" },
+            { "name": "Thirties" }
+          ]
+        }
+      },
+
       "models": {
         "user": {
           "fields": [
-            { "name": "age_group", "type": "string", "enum": ["Twenties", "Thirties"] }
+            { "name": "age_group", "type": "age_group" }
           ]
         }
       }

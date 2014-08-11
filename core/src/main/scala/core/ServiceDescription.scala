@@ -364,7 +364,7 @@ object Field {
     }
 
     Field(name = internal.name.get,
-          fieldtype = parseTypeAndValues(internal.name.get, fieldtype, internal.enum),
+          fieldtype = fieldtype,
           description = internal.description,
           required = internal.required,
           multiple = internal.multiple,
@@ -372,23 +372,6 @@ object Field {
           minimum = internal.minimum.map(_.toLong),
           maximum = internal.maximum.map(_.toLong),
           example = internal.example)
-  }
-
-  /**
-    * If we have an enum, validate the values and convert field type
-    * into an enumeration.
-    */
-  private def parseTypeAndValues(fieldName: String, fieldtype: FieldType, enum: Seq[String]): FieldType = {
-    if (enum.isEmpty) {
-      fieldtype
-    } else {
-      assert(fieldtype == PrimitiveFieldType(Datatype.StringType), "Field type must be string for enumerations")
-      enum.foreach { value =>
-        val errors = Text.validateName(value)
-        assert(errors.isEmpty, s"Field[${fieldName}] has an invalid value[${value}]: " + errors.mkString(" "))
-      }
-      EnumerationFieldType(Datatype.StringType, enum)
-    }
   }
 
   private val BooleanValues = Seq("true", "false")

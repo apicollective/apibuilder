@@ -77,7 +77,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString should be("user.foo has invalid type. There is no model nor datatype named[foo]")
+    validator.errors.mkString should be("user.foo has invalid type. There is no model, enum, nor datatype named[foo]")
     validator.isValid should be(false)
   }
 

@@ -3,6 +3,21 @@
     "description": "Host API documentation for REST services, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
 
+    "enums": {
+	"target": {
+	    "description": "The target platform for code generation.",
+	    "values": [
+		{ "name": "avro_schema", "description": "Generates an avro JSON schema" },
+		{ "name": "play_2_2_client", "description": "Generates a client w/ no dependencies external to play framework 2.2" },
+		{ "name": "play_2_3_client", "description": "Generates a client w/ no dependencies external to play framework 2.3" },
+		{ "name": "play_2_x_json" },
+		{ "name": "play_2_x_routes" },
+		{ "name": "ruby_client" },
+		{ "name": "scala_models" }
+	    ]
+	}
+    },
+
     "models": {
 
 	"healthcheck": {
@@ -88,7 +103,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "target", "type": "string", "description": "The target platform.", "enum": ["avro_schema", "play_2_2_client", "play_2_3_client", "play_2_x_json", "play_2_x_routes", "ruby_client", "scala_models"] },
+                { "name": "target", "type": "target" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
