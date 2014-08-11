@@ -5,55 +5,51 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2EnumsSpec extends FunSpec with ShouldMatchers {
 
-  private lazy val json = """
+  describe("for a model with 2 enum fields") {
+
+    val json = """
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "enums": {
+        "age_group": {
+          "values": [
+            { "name": "Twenties" },
+            { "name": "Thirties" }
+          ]
+        },
+        "genre": {
+          "values": [
+            { "name": "Classical" },
+            { "name": "Jazz" }
+          ]
+        }
+      },
+
       "models": {
         "user": {
           "fields": [
-            %s
+            { "name": "age_group", "type": "age_group" },
+            { "name": "music", "type": "genre" }
           ]
         }
       }
     }
     """
 
-  it("enumName") {
-    Play2Enums.enumName("UnableToFulfill") should be("UnableToFulfill")
-    Play2Enums.enumName("UNABLE_TO_FULFILL") should be("UnableToFulfill")
-  }
-
-  describe("for a model without enums") {
-
-    val service = ServiceDescription(json.format("""{ "name": "age_group", "type": "string" }"""))
-
-    it("Generates no models") {
-      Play2Enums.build(service.models.head) should be(None)
-    }
-
-    it("Generates no json conversions") {
-      Play2Enums.buildJson("Test", service.models.head) should be(None)
-    }
-
-  }
-
-  describe("for a model with 2 enum fields") {
-
-    val service = ServiceDescription(json.format("""
-{ "name": "age_group", "type": "string", "enum": ["twenties", "thirties"] },
-{ "name": "party_theme", "type": "string", "enum": ["twenties", "thirties"] }
-"""))
+    val ssd = new ScalaServiceDescription(ServiceDescription(json))
 
     it("generates valid models") {
-      val enums = Play2Enums.build(service.models.head).get
+      println("ENUMS: " + ssd.enums.map(_.name).mkString(" --- "))
+      val enums = ssd.enums.map(Play2Enums.build(_)).mkString("\n\n")
       TestHelper.assertEqualsFile("core/src/test/resources/play2enums-example.txt", enums)
     }
-
+/*
     it("generates valid json conversions") {
-      val jsonConversions = Play2Enums.buildJson("Test", service.models.head).get
+      val jsonConversions = ssd.enums.map(Play2Enums.buildJson("Test", _))
       jsonConversions.trim should be(TestHelper.readFile("core/src/test/resources/play2enums-json-example.txt").trim)
     }
+ */
   }
 
 

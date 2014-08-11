@@ -1,100 +1,62 @@
 package core.generator
 
-import core.{ EnumerationFieldType, Field, Model, ServiceDescription, Text }
+import core.{ Enum, EnumValue, ServiceDescription, Text }
 
 object Play2Enums {
 
-  def build(model: Model): Option[String] = {
-    val fields = enumFields(model)
-
-    if (fields.isEmpty) {
-      None
-    } else {
-      val className = Text.underscoreToInitCap(model.name)
-      Some(
-        s"  object $className {\n\n" +
-          fields.map { field =>
-            val traitName = Text.underscoreToInitCap(field.name)
-            s"    sealed trait ${traitName}\n\n" +
-            buildEnumForField(traitName, field.fieldtype.asInstanceOf[EnumerationFieldType])
-          }.mkString("\n") +
-        "  }"
-      )
-    }
+  def build(enum: ScalaEnum): String = {
+    import Text._
+    val className = Text.underscoreToInitCap(enum.name)
+    Seq(
+      s"sealed trait ${enum.name}",
+      s"object ${enum.name} {",
+      buildValues(enum).indent(2),
+      s"}"
+    ).mkString("\n\n")
   }
 
   /**
-    * If this model has any enumerations, returns the implicits for
-    * json serialization.
+    * Returns the implicits for json serialization.
     */
-  def buildJson(prefix: String, model: Model): Option[String] = {
-    val fields = enumFields(model)
-
-    if (fields.isEmpty) {
-      None
-    } else {
-      val className = Text.underscoreToInitCap(model.name)
-      Some(
-        // TODO: datatype instead of string
-        fields.map { field =>
-          val traitName = Text.underscoreToInitCap(field.name)
-          s"implicit val jsonReads${prefix}${className}_$traitName = __.read[String].map($className.$traitName.apply)\n\n" +
-          s"implicit val jsonWrites${prefix}${className}_$traitName = new Writes[$className.$traitName] {\n" +
-          s"  def writes(x: $className.$traitName) = JsString(x.toString)\n" +
-          "}"
-        }.mkString("\n\n")
-      )
-    }
+  def buildJson(prefix: String, enum: ScalaEnum): String = {
+    enum.values.map { value =>
+      s"implicit val jsonReads${prefix}${{enum.name}}_${value.name} = __.read[String].map(${enum.name}.${value.name}.apply)\n\n" +
+      s"implicit val jsonWrites${prefix}${{enum.name}}_${value.name} = new Writes[${enum.name}.${value.name}] {\n" +
+      s"  def writes(x: ${enum.name}.${value.name}) = JsString(x.toString)\n" +
+      "}"
+    }.mkString("\n\n")
   }
 
-  private def enumFields(model: Model): Seq[Field] = {
-    model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }
-  }
-
-  /**
-    * Returns a scala friend name for this enumeration
-    * value. e.g. cannot_fulfill => CannotFulfill
-    */
-  def enumName(value: String): String = {
-    Text.safeName(
-      if (value == value.toUpperCase) {
-        Text.initCap(value.split("_").map(_.toLowerCase)).mkString("")
-      } else {
-        Text.initCap(value)
-      }
-    )
-  }
-
-  private def buildEnumForField(traitName: String, enumType: EnumerationFieldType): String = {
-    s"    object $traitName {\n\n" +
-    enumType.values.map { value => 
-      val name = enumName(value)
-      s"""      case object ${name} extends $traitName { override def toString = "$value" }"""
+  private def buildValues(enum: ScalaEnum): String = {
+    enum.values.map { value => 
+      Seq(
+        value.description.map { desc => ScalaUtil.textToComment(desc) },
+        Some(s"""case object ${value.name} extends ${enum.name} { override def toString = "${value.name}" }""")
+      ).flatten.mkString("\n")
     }.mkString("\n") + "\n" +
     s"""
-      /**
-       * UNDEFINED captures values that are sent either in error or
-       * that were added by the server after this library was
-       * generated. We want to make it easy and obvious for users of
-       * this library to handle this case gracefully.
-       *
-       * We use all CAPS for the variable name to avoid collisions
-       * with the camel cased values above.
-       */
-      case class UNDEFINED(override val toString: String) extends ${traitName}
+/**
+ * UNDEFINED captures values that are sent either in error or
+ * that were added by the server after this library was
+ * generated. We want to make it easy and obvious for users of
+ * this library to handle this case gracefully.
+ *
+ * We use all CAPS for the variable name to avoid collisions
+ * with the camel cased values above.
+ */
+case class UNDEFINED(override val toString: String) extends ${enum.name}
 
-      /**
-       * all returns a list of all the valid, known values. We use
-       * lower case to avoid collisions with the camel cased values
-       * above.
-       */
+/**
+ * all returns a list of all the valid, known values. We use
+ * lower case to avoid collisions with the camel cased values
+ * above.
+ */
 """ +
-    s"      val all = Seq(" + enumType.values.map { n => enumName(n) }.mkString(", ") + ")\n\n" +
-    s"      private[this]\n" +
-    s"      val byName = all.map(x => x.toString -> x).toMap\n\n" +
-    s"      def apply(value: String): $traitName = fromString(value).getOrElse(UNDEFINED(value))\n\n" +
-    s"      def fromString(value: String): scala.Option[$traitName] = byName.get(value)\n\n" +
-    s"    }\n"
+    s"val all = Seq(" + enum.values.map(_.name).mkString(", ") + ")\n\n" +
+    s"private[this]\n" +
+    s"val byName = all.map(x => x.toString -> x).toMap\n\n" +
+    s"def apply(value: String): ${enum.name} = fromString(value).getOrElse(UNDEFINED(value))\n\n" +
+    s"def fromString(value: String): scala.Option[${enum.name}] = byName.get(value)\n\n"
   }
 
 }

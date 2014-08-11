@@ -12,11 +12,19 @@ object ScalaCaseClasses {
     apply(new ScalaServiceDescription(sd))
   }
 
-  def apply(ssd: ScalaServiceDescription): String = ssd.models.map { model =>
-    val classDef = s"case class ${model.name}(${model.argList.getOrElse("")})"
-    Play2Enums.build(model.model) match {
-      case None => classDef.indent
-      case Some(enums) => classDef.indent + "\n" + enums
-    }
-  }.mkString(s"package ${ssd.packageName}.models {\n", "\n", "\n}")
+  def apply(ssd: ScalaServiceDescription): String = {
+    Seq(
+      s"package ${ssd.packageName}.models {",
+      ssd.models.map { model =>
+        val classDef = s"case class ${model.name}(${model.argList.getOrElse("")})"
+      }.mkString("\n\n"),
+      s"}",
+      "",
+      s"package ${ssd.packageName}.enums {",
+      ssd.enums.map { enum =>
+        Play2Enums.build(enum)
+      }.mkString("\n\n"),
+      s"}"
+    ).mkString("\n")
+  }
 }

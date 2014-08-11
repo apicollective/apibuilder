@@ -4,6 +4,12 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class ScalaUtilSpec extends FunSpec with ShouldMatchers {
 
+  it("toClassName") {
+    ScalaUtil.toClassName("UnableToFulfill") should be("UnableToFulfill")
+    ScalaUtil.toClassName("UNABLE_TO_FULFILL") should be("UnableToFulfill")
+  }
+
+
   it("quoteNameIfKeyword") {
     ScalaUtil.quoteNameIfKeyword("foo") should be("foo")
     ScalaUtil.quoteNameIfKeyword("val") should be("`val`")

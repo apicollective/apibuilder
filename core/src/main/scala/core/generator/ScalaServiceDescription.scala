@@ -43,6 +43,11 @@ object ScalaUtil {
   def packageName(serviceName: String): String = {
     Text.safeName(serviceName).toLowerCase
   }
+
+  def toClassName(name: String) = {
+    ScalaUtil.quoteNameIfKeyword(Text.initCap(snakeToCamelCase(name)))
+  }
+
 }
 
 class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
@@ -50,6 +55,8 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
   val name = safeName(serviceDescription.name)
 
   val models = serviceDescription.models.map { new ScalaModel(serviceDescription, _) }
+
+  val enums = serviceDescription.enums.map { new ScalaEnum(_) }
 
   val packageName = ScalaUtil.packageName(serviceDescription.name)
 
@@ -59,7 +66,7 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
 
 class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
-  val name: String = underscoreToInitCap(model.name)
+  val name: String = ScalaUtil.toClassName(model.name)
 
   val plural: String = underscoreToInitCap(model.plural)
 
@@ -68,6 +75,36 @@ class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
   val fields = model.fields.map { f => new ScalaField(this.name, f) }.toList
 
   val argList: Option[String] = ScalaUtil.fieldsToArgList(fields.map(_.definition))
+
+}
+
+class ScalaEnum(val enum: Enum) {
+
+  val name: String = ScalaUtil.toClassName(enum.name)
+
+  val description: Option[String] = enum.description
+
+  val values: Seq[ScalaEnumValue] = enum.values.map { new ScalaEnumValue(_) }
+
+}
+
+class ScalaEnumValue(value: EnumValue) {
+
+  /**
+    * Returns a scala friend name for this enumeration
+    * value. e.g. cannot_fulfill => CannotFulfill
+    */
+  val name: String = {
+    Text.safeName(
+      if (value.name == value.name.toUpperCase) {
+        Text.initCap(value.name.split("_").map(_.toLowerCase)).mkString("")
+      } else {
+        Text.initCap(value.name)
+      }
+    )
+  }
+
+  val description: Option[String] = value.description
 
 }
 
@@ -169,13 +206,7 @@ class ScalaField(modelName: String, field: Field) {
   val baseType: ScalaDataType = field.fieldtype match {
     case t: PrimitiveFieldType => ScalaDataType(t.datatype)
     case m: ModelFieldType => new ScalaModelType(m.modelName)
-    case e: EnumerationFieldType => new ScalaEnumerationType(
-      "%s.%s".format(
-        ScalaModelType(modelName).name,
-        Text.initCap(Text.snakeToCamelCase(field.name))
-      ),
-      ScalaDataType(e.datatype)
-    )
+    case e: EnumFieldType => new ScalaEnumType(e.enum.name, field.name)
   }
 
   def datatype: ScalaDataType = {
@@ -225,6 +256,7 @@ class ScalaParameter(serviceDescription: ServiceDescription, param: Parameter) {
     param.paramtype match {
       case t: PrimitiveParameterType => ScalaDataType(t.datatype)
       case m: ModelParameterType => new ScalaModelType(m.model.name)
+      case e: EnumParameterType => new ScalaEnumType(e.enum.name, param.name)
     }
   }
 
@@ -284,8 +316,10 @@ object ScalaDataType {
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
-  case class ScalaModelType(modelName: String) extends ScalaDataType(ScalaUtil.quoteNameIfKeyword(Text.initCap(snakeToCamelCase(modelName))))
-  case class ScalaEnumerationType(fieldName: String, inner: ScalaDataType) extends ScalaDataType(fieldName)
+  case class ScalaModelType(modelName: String) extends ScalaDataType(ScalaUtil.toClassName(modelName))
+  case class ScalaEnumType(enumName: String, fieldName: String) extends ScalaDataType(
+    s"${ScalaUtil.toClassName(enumName)}.${ScalaUtil.toClassName(fieldName)}"
+  )
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {

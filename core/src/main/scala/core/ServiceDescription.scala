@@ -22,7 +22,7 @@ case class ServiceDescription(internal: InternalServiceDescription) {
 
   val enums: Seq[Enum] = internal.enums.map { Enum(_) }.sortBy(_.name.toLowerCase)
   lazy val models: Seq[Model] = internal.models.map { Model(this, _) }.sortBy(_.name.toLowerCase)
-  lazy val resources: Seq[Resource] = internal.resources.map { Resource(models, _) }.sorted
+  lazy val resources: Seq[Resource] = internal.resources.map { Resource(enums, models, _) }.sorted
   lazy val baseUrl: Option[String] = internal.baseUrl
   lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
   lazy val description: Option[String] = internal.description
@@ -91,27 +91,27 @@ case class Operation(model: Model,
 
 object Resource {
 
-  def apply(models: Seq[Model], internal: InternalResource): Resource = {
+  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResource): Resource = {
     val model = models.find { _.name == internal.modelName.get }.getOrElse {
       sys.error(s"Could not find model for resource[${internal.modelName.getOrElse("")}]")
     }
     Resource(model = model,
              path = internal.path,
-             operations = internal.operations.map(op => Operation(models, model, op)))
+             operations = internal.operations.map(op => Operation(enums, models, model, op)))
   }
 
 }
 
 object Operation {
 
-  def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
+  def apply(enums: Seq[Enum], models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
       if (internal.namedPathParameters.contains(p.name.get)) {
-        Parameter(models, p, ParameterLocation.Path)
+        Parameter(enums, models, p, ParameterLocation.Path)
       } else {
-        Parameter(models, p, location)
+        Parameter(enums, models, p, location)
       }
      }
     val internalParamNames: Set[String] = internalParams.map(_.name).toSet
@@ -161,6 +161,7 @@ case class EnumerationFieldType(datatype: Datatype, values: Seq[String]) extends
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
 case class ModelParameterType(model: Model) extends ParameterType
+case class EnumParameterType(enum: Enum) extends ParameterType
 
 case class Parameter(name: String,
                      paramtype: ParameterType,
@@ -303,17 +304,26 @@ object Parameter {
               required = true)
   }
 
-  def apply(models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
+  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
     val typeName = internal.paramtype.getOrElse {
       sys.error("Missing parameter type for: " + internal)
     }
 
     val paramtype = Datatype.findByName(typeName) match {
       case None => {
-        assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
-        ModelParameterType(models.find(_.name == typeName).getOrElse {
-          sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
-        })
+        enums.find(_.name == typeName) match {
+          case Some(enum) => {
+            internal.default.map { v => Field.assertValidDefault(Datatype.StringType, v) }
+            EnumParameterType(enum)
+          }
+
+          case None => {
+            assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
+            ModelParameterType(models.find(_.name == typeName).getOrElse {
+              sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
+            })
+          }
+        }
       }
 
       case Some(dt: Datatype) => {
