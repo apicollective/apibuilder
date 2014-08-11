@@ -99,7 +99,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     sb.append(s"""
   class Client
 
-    USER_AGENT = '$userAgent'
+    USER_AGENT = '$userAgent' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
