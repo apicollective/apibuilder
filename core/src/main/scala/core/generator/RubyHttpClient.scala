@@ -175,6 +175,7 @@ require 'bigdecimal'
         @details = HttpClient::Preconditions.assert_class('details', details, String)
         @body = HttpClient::Preconditions.assert_class_or_nil('body', opts.delete(:body), String)
         HttpClient::Preconditions.assert_empty_opts(opts)
+        super(self.message)
       end
 
       def message
