@@ -20,6 +20,7 @@ object ServiceDescription {
 
 case class ServiceDescription(internal: InternalServiceDescription) {
 
+  val enums: Seq[Enum] = internal.enums.map { Enum(_) }.sortBy(_.name.toLowerCase)
   lazy val models: Seq[Model] = internal.models.map { Model(this, _) }.sortBy(_.name.toLowerCase)
   lazy val resources: Seq[Resource] = internal.resources.map { Resource(models, _) }.sorted
   lazy val baseUrl: Option[String] = internal.baseUrl
@@ -39,6 +40,17 @@ case class ServiceDescription(internal: InternalServiceDescription) {
   }
 
 }
+
+case class Enum(
+  name: String,
+  description: Option[String],
+  values: Seq[EnumValue]
+)
+
+case class EnumValue(
+  name: String,
+  description: Option[String]
+)
 
 case class Model(name: String,
                  plural: String,
@@ -142,37 +154,13 @@ case class Field(name: String,
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
 case class ModelFieldType(modelName: String) extends FieldType
+case class EnumFieldType(enum: Enum) extends FieldType
+
 case class EnumerationFieldType(datatype: Datatype, values: Seq[String]) extends FieldType
 
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
 case class ModelParameterType(model: Model) extends ParameterType
-
-object PrimitiveParameterType {
-
-  def apply(field: Field): PrimitiveParameterType = {
-    field.fieldtype match {
-
-      case pft: PrimitiveFieldType => {
-        PrimitiveParameterType(pft.datatype)
-      }
-
-      case mft: ModelFieldType => {
-        // Too complex, at least for now, to think about supporting
-        // models in things like path parameters
-        sys.error("Cannot convert model fieldtype[%s] to parameter type".format(field.fieldtype))
-      }
-
-      case mft: EnumerationFieldType => {
-        // This branch would only be used to support an enumeration
-        // value as a path parameter. It seems complex to convert the
-        // string value into an enumeration instance (e.g. play routes
-        // file won't support this natively)
-        sys.error("Cannot convert enumeration fieldtype[%s] to parameter type".format(field.fieldtype))
-      }
-    }
-  }
-}
 
 case class Parameter(name: String,
                      paramtype: ParameterType,
@@ -190,13 +178,25 @@ case class Response(code: Int,
                     datatype: String,
                     multiple: Boolean = false)
 
+object Enum {
+
+  def apply(ie: InternalEnum): Enum = {
+    Enum(
+      name = ie.name,
+      description = ie.description,
+      values = ie.values.map { iv => EnumValue(iv.name.get, iv.description) }
+    )
+  }
+
+}
+
 object Model {
 
   def apply(sd: ServiceDescription, im: InternalModel): Model = {
     Model(name = im.name,
           plural = im.plural,
           description = im.description,
-          fields = im.fields.map { Field(im, _) })
+          fields = im.fields.map { Field(sd.enums, im, _) })
   }
 
 }
@@ -338,28 +338,28 @@ object Parameter {
 
 object Field {
 
-  def findByModelPluralAndFieldName(models: Seq[Model], modelPlural: String, fieldName: String): Option[Field] = {
-    models.find { m => m.plural == modelPlural }.flatMap { _.fields.find { f => f.name == fieldName } }
-  }
+  def apply(enums: Seq[Enum], im: InternalModel, internal: InternalField): Field = {
+    val fieldTypeName = internal.fieldtype.getOrElse {
+      sys.error("missing field type")
+    }
 
-  def apply(im: InternalModel, internal: InternalField): Field = {
-    val fieldtype = internal.fieldtype match {
-      case Some(name: String) => {
-        Datatype.findByName(name) match {
-          case Some(dt: Datatype) => {
-            internal.default.map { v => assertValidDefault(dt, v) }
-            PrimitiveFieldType(dt)
-          }
-
-          case None => {
-            require(internal.default.isEmpty, s"Cannot have a default for a field of type[$name]")
-            ModelFieldType(name)
-          }
-        }
+    val fieldtype = Datatype.findByName(fieldTypeName) match {
+      case Some(dt: Datatype) => {
+        internal.default.map { v => assertValidDefault(dt, v) }
+        PrimitiveFieldType(dt)
       }
 
       case None => {
-        sys.error("missing field type")
+        enums.find(_.name == fieldTypeName) match {
+          case Some(e: Enum) => {
+            internal.default.map { v => assertValidDefault(Datatype.StringType, v) }
+            EnumFieldType(e)
+          }
+          case None => {
+            require(internal.default.isEmpty, s"Cannot have a default for a field of type[$fieldTypeName]")
+            ModelFieldType(fieldTypeName)
+          }
+        }
       }
     }
 

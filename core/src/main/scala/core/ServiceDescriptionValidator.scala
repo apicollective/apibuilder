@@ -199,11 +199,22 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
+    val valuesWithInvalidNames = internalServiceDescription.get.enums.flatMap { enum =>
+      enum.values.filter(!_.name.isEmpty).flatMap { value =>
+        val errors = Text.validateName(value.name.get)
+        if (errors.isEmpty) {
+          None
+        } else {
+          Some(s"Enum[${enum.name}] value[${value.name.get}] is invalid: ${errors.mkString(" ")}")
+        }
+      }
+    }
+
     val duplicates = internalServiceDescription.get.enums.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { enumName =>
       s"Enum[$enumName] appears more than once"
     }
 
-    nameErrors ++ valueErrors ++ valuesWithoutNames ++ duplicates
+    nameErrors ++ valueErrors ++ valuesWithoutNames ++ valuesWithInvalidNames ++ duplicates
   }
 
   /**
