@@ -45,7 +45,15 @@ object ScalaUtil {
   }
 
   def toClassName(name: String) = {
-    ScalaUtil.quoteNameIfKeyword(Text.initCap(snakeToCamelCase(name)))
+    ScalaUtil.quoteNameIfKeyword(
+      Text.safeName(
+        if (name == name.toUpperCase) {
+          Text.initCap(name.split("_").map(_.toLowerCase)).mkString("")
+        } else {
+          Text.initCap(snakeToCamelCase(name))
+        }
+      )
+    )
   }
 
 }
