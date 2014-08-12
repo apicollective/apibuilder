@@ -1,0 +1,3 @@
+@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, enumName: String, isMultiple: Boolean)
+
+<a href="@routes.Versions.show(org.key, service.key, version)#enum-@core.UrlKey.generate(enumName)">@lib.Util.formatType(enumName, isMultiple)</a>

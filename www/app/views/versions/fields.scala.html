@@ -17,7 +17,7 @@
        <td>@{field.fieldtype match {
              case pt: core.PrimitiveFieldType => datatype(pt.datatype, field.multiple)
              case mt: core.ModelFieldType => modelTypeByName(org, service, version, sd, mt.modelName, field.multiple)
-             case et: core.EnumerationFieldType => enumeration(et)
+             case et: core.EnumFieldType => enumType(org, service, version, et.enum.name, field.multiple)
            }}
        </td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
@@ -25,7 +25,7 @@
        <td>@field.description.getOrElse("")
            <p>
              @{field.fieldtype match {
-               case et: core.EnumerationFieldType => s"Acceptable values: ${et.values.mkString(", ")}"
+               case et: core.EnumFieldType => s"Acceptable values: ${et.enum.values.mkString(", ")}"
                case _ => ""
              }}
 

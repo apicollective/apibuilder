@@ -19,12 +19,12 @@ object Play2Enums {
     * Returns the implicits for json serialization.
     */
   def buildJson(prefix: String, enum: ScalaEnum): String = {
-    enum.values.map { value =>
-      s"implicit val jsonReads${prefix}${{enum.name}}_${value.name} = __.read[String].map(${enum.name}.${value.name}.apply)\n\n" +
-      s"implicit val jsonWrites${prefix}${{enum.name}}_${value.name} = new Writes[${enum.name}.${value.name}] {\n" +
-      s"  def writes(x: ${enum.name}.${value.name}) = JsString(x.toString)\n" +
+    Seq(
+      s"implicit val jsonReads${prefix}Enum_${enum.name} = __.read[String].map(${enum.name}.apply)",
+      s"implicit val jsonWrites${prefix}Enum_${enum.name} = new Writes[${enum.name}] {",
+      s"  def writes(x: ${enum.name}) = JsString(x.toString)",
       "}"
-    }.mkString("\n\n")
+    ).mkString("\n")
   }
 
   private def buildValues(enum: ScalaEnum): String = {

@@ -214,7 +214,7 @@ class ScalaField(modelName: String, field: Field) {
   val baseType: ScalaDataType = field.fieldtype match {
     case t: PrimitiveFieldType => ScalaDataType(t.datatype)
     case m: ModelFieldType => new ScalaModelType(m.modelName)
-    case e: EnumFieldType => new ScalaEnumType(e.enum.name, field.name)
+    case e: EnumFieldType => new ScalaEnumType(e.enum.name)
   }
 
   def datatype: ScalaDataType = {
@@ -264,7 +264,7 @@ class ScalaParameter(serviceDescription: ServiceDescription, param: Parameter) {
     param.paramtype match {
       case t: PrimitiveParameterType => ScalaDataType(t.datatype)
       case m: ModelParameterType => new ScalaModelType(m.model.name)
-      case e: EnumParameterType => new ScalaEnumType(e.enum.name, param.name)
+      case e: EnumParameterType => new ScalaEnumType(e.enum.name)
     }
   }
 
@@ -325,9 +325,7 @@ object ScalaDataType {
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaModelType(modelName: String) extends ScalaDataType(ScalaUtil.toClassName(modelName))
-  case class ScalaEnumType(enumName: String, fieldName: String) extends ScalaDataType(
-    s"${ScalaUtil.toClassName(enumName)}.${ScalaUtil.toClassName(fieldName)}"
-  )
+  case class ScalaEnumType(enumName: String) extends ScalaDataType(ScalaUtil.toClassName(enumName))
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {
