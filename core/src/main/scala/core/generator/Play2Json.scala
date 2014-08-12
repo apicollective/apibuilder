@@ -12,8 +12,6 @@ case class Play2Json(serviceName: String) {
   def readers(model: ScalaModel): String = {
     Seq(
       s"implicit def jsonReads${serviceName}${model.name}: play.api.libs.json.Reads[${model.name}] = {",
-      s"  import play.api.libs.json._",
-      s"  import play.api.libs.functional.syntax._",
       fieldReaders(model).indent(2),
       s"}"
     ).mkString("\n")
@@ -59,8 +57,6 @@ case class Play2Json(serviceName: String) {
       case fields => {
         Seq(
           s"implicit def jsonWrites${serviceName}${model.name}: play.api.libs.json.Writes[${model.name}] = {",
-          s"  import play.api.libs.json._",
-          s"  import play.api.libs.functional.syntax._",
           s"  (",
           model.fields.map { field =>
             s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""

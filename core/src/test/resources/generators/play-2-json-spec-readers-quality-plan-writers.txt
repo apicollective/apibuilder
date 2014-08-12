@@ -1,6 +1,4 @@
 implicit def jsonWritesQualityPlan: play.api.libs.json.Writes[Plan] = {
-  import play.api.libs.json._
-  import play.api.libs.functional.syntax._
   (
     (__ \ "id").write[Long] and
     (__ \ "incident_id").write[Long] and
