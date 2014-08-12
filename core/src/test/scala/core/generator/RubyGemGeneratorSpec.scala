@@ -33,7 +33,7 @@ class RubyGemGeneratorSpec extends FunSpec with Matchers {
         )
       )
             
-      val enums = RubyGemGenerator.generateEnumClass("age_group", EnumFieldType(enum))
+      val enums = RubyGemGenerator.generateEnum(enum)
       enums.trim should be(TestHelper.readFile("core/src/test/resources/ruby-gem-enums.txt").trim)
     }
 

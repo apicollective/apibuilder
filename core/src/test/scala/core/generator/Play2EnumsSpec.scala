@@ -14,8 +14,8 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
       "enums": {
         "age_group": {
           "values": [
-            { "name": "Twenties" },
-            { "name": "Thirties" }
+            { "name": "twenties" },
+            { "name": "thirties" }
           ]
         },
         "genre": {

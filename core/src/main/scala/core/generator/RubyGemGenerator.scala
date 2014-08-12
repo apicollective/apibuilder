@@ -10,8 +10,8 @@ object RubyGemGenerator {
     new RubyGemGenerator(sd, userAgent).generate
   }
 
-  def generateEnumClass(fieldName: String, enumFieldType: EnumFieldType): String = {
-    val className = Text.underscoreToInitCap(fieldName)
+  def generateEnum(enum: Enum): String = {
+    val className = Text.underscoreToInitCap(enum.name)
     val lines = ListBuffer[String]()
     lines.append(s"class $className")
 
@@ -42,11 +42,11 @@ object RubyGemGenerator {
 
     lines.append("")
     lines.append(s"  def $className.ALL") // Upper case to avoid naming conflict
-    lines.append("    @@all ||= [" + enumFieldType.enum.values.map(v => s"$className.${enumName(v.name)}").mkString(", ") + "]")
+    lines.append("    @@all ||= [" + enum.values.map(v => s"$className.${enumName(v.name)}").mkString(", ") + "]")
     lines.append("  end")
 
     lines.append("")
-    enumFieldType.enum.values.foreach { value =>
+    enum.values.foreach { value =>
       val varName = enumName(value.name)
       value.description.foreach { desc =>
         lines.append(GeneratorUtil.formatComment(desc))
@@ -89,6 +89,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  end" +
     "\n\n  module Models\n" +
+    service.enums.map { RubyGemGenerator.generateEnum(_) }.mkString("\n\n") +
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +

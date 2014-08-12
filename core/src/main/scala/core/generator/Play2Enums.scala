@@ -7,12 +7,12 @@ object Play2Enums {
   def build(enum: ScalaEnum): String = {
     import Text._
     Seq(
-      enum.description.map { desc => ScalaUtil.textToComment(desc) },
-      Some(s"sealed trait ${enum.name}"),
-      Some(s"object ${enum.name} {"),
-      Some(buildValues(enum).indent(2)),
-      Some(s"}")
-    ).flatten.mkString("\n\n")
+      enum.description.map { desc => ScalaUtil.textToComment(desc) + "\n" }.getOrElse("") +
+        s"sealed trait ${enum.name}",
+      s"object ${enum.name} {",
+      buildValues(enum).indent(2),
+      s"}"
+    ).mkString("\n\n")
   }
 
   /**
@@ -31,7 +31,7 @@ object Play2Enums {
     enum.values.map { value => 
       Seq(
         value.description.map { desc => ScalaUtil.textToComment(desc) },
-        Some(s"""case object ${value.name} extends ${enum.name} { override def toString = "${value.name}" }""")
+        Some(s"""case object ${value.name} extends ${enum.name} { override def toString = "${value.originalName}" }""")
       ).flatten.mkString("\n")
     }.mkString("\n") + "\n" +
     s"""
