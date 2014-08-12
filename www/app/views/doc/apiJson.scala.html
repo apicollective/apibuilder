@@ -9,7 +9,8 @@
     {
       "name": <em>name</em>,
       "base_url": <em>string</em>,
-      "models": <em>{ modelName: model, ... }</em>,
+      "models": <em>{ name: model, ... }</em>,
+      "enums": <em>{ name: enum, ... }</em>,
       "resources": <em>{ modelName: resource, ... }</em>,
       "description": <em>string (optional)</em>
     }
@@ -20,6 +21,7 @@
       <li><em>name</em> specifies the human readable name of this service - used for display and as the basis for generating a unique key for URL</li>
       <li><em>baseUrl</em> specifies the base URL where this service is hosted. Must start with http.</li>
       <li><em>models</em> a JSON object defining all of the models in this API. The key of each object is the model name.</li>
+      <li><em>enums</em> a JSON object defining all of the enums in this API. The key of each object is the enum name.</li>
       <li><em>resources</em> a JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the models object. </li>
       <li><em>description</em> optional description for what this service provides.</li>
     </ul>
@@ -60,7 +62,6 @@
       "type": <em>type</em>,
       "description": <em>string (optional)</em>,
       "required": <em>boolean (optional, true by default)</em>,
-      "enum": <em>JSON array of Strings (optional)</em>,
       "default": <em>type (optional)</em>,
       "example": <em>string (optional)</em>
     }
@@ -69,10 +70,9 @@
     where
     <ul>
       <li><em>name</em> the name of the field. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this field. This is an enumeration. Acceptable values are either the name of a model or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> the datatype of this field. This is an enumeration. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>description</em> optional longer description for this field.</li>
       <li><em>required</em> boolean: true|false. By default all fields are considered required. To make a field optional, set "required" to false</li>
-      <li><em>enum</em> Json Array of String values. This option can be used to define an enumeration - enum provides the list of all of the acceptable values for this field. There are a few constraints on enumerations. First, the datatype must be string. Second, the values themselves must be proper names. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
       <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
     </ul>
@@ -168,7 +168,7 @@
     where
     <ul>
       <li><em>name</em> the name of the parameter. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this parameter. This is an enumeration. Acceptable values are either the name of a model or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> the datatype of this parameter. This is an enumeration. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>description</em> optional longer description for this parameter.</li>
       <li><em>required</em> boolean: true|false. By default all parameters are considered required. To make a parameter optional, set "required" to false</li>
       <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
@@ -176,6 +176,49 @@
     </ul>
 
   </p>
+
+  <a name="enum"></a>
+  <h2>Enum declaration</h2>
+
+  <p>
+    An enum is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "name": <em>name</em>,
+      "description": <em>string (optional)</em>,
+      "values": <em>JSON Array of EnumValues</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>name</em> the name of the enum. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>description</em> optional longer description for this enum.</li>
+      <li><em>values</em> Json Array of EnumValue objects. Each element defines a valid value and an optional description. See <a href="#enumValue">EnumValue</a>.</li>
+   </ul>
+
+
+  <a name="enumValue"></a>
+  <h2>EnumValue declaration</h2>
+
+  <p>
+    An EnumValue is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "name": <em>name</em>,
+      "description": <em>string (optional)</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>name</em> the name of the value. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>description</em> optional longer description for this enum.</li>
+   </ul>
+
+
 
   <a name="response"></a>
   <h2>Response declaration</h2>
