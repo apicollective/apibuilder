@@ -49,7 +49,7 @@ object RubyGemGenerator {
     enum.values.foreach { value =>
       val varName = enumName(value.name)
       value.description.foreach { desc =>
-        lines.append(GeneratorUtil.formatComment(desc))
+        lines.append(GeneratorUtil.formatComment(desc).indent(2))
       }
       lines.append(s"  def $className.$varName")
       lines.append(s"    @@_$varName ||= $className.new('${value.name}')")
@@ -89,7 +89,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  end" +
     "\n\n  module Models\n" +
-    service.enums.map { RubyGemGenerator.generateEnum(_) }.mkString("\n\n") +
+    service.enums.map { RubyGemGenerator.generateEnum(_) }.mkString("\n\n").indent(4) + "\n\n" +
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +
@@ -341,7 +341,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
 
   private def parseEnumArgument(name: String, enumName: String, required: Boolean, multiple: Boolean): String = {
     val value = s"opts.delete(:${name})"
-    val klass = Text.underscoreToInitCap(name)
+    val klass = Text.underscoreToInitCap(enumName)
     s"HttpClient::Helper.to_klass('$name', $klass.apply($value), $klass, :required => $required, :multiple => $multiple)"
   }
 
