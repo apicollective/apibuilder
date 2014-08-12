@@ -56,8 +56,10 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
   private[generator] def errorTypeClass(response: ScalaResponse): String = {
     require(!response.isSuccess)
 
+    // pass in status and UNPARSED body so that there is still a useful error
+    // message even when the body is malformed and cannot be parsed
     Seq(
-      s"case class ${response.errorClassName}(response: ${version.responseClass}) extends Exception {",
+      s"""case class ${response.errorClassName}(response: ${version.responseClass}) extends Exception(response.status + ": " + response.body) {""",
       "",
       s"  lazy val ${response.errorVariableName} = response.json.as[${response.resultType}]",
       "",
@@ -205,7 +207,7 @@ ${modelClients().indent(2)}
 
   }
 
-  case class FailedRequest(response: ${version.responseClass}) extends Exception$errorsString
+  case class FailedRequest(response: ${version.responseClass}) extends Exception(response.status + ": " + response.body)$errorsString
 
 }"""
   }

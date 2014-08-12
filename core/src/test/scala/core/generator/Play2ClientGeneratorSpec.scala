@@ -13,7 +13,7 @@ class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
     val errorResponse = operation.responses.find(_.code == 409).get
 
     val target = """
-case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
+case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body) {
 
   lazy val errors = response.json.as[scala.collection.Seq[apidoc.models.Error]]
 
