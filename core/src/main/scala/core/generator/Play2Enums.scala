@@ -6,13 +6,13 @@ object Play2Enums {
 
   def build(enum: ScalaEnum): String = {
     import Text._
-    val className = Text.underscoreToInitCap(enum.name)
     Seq(
-      s"sealed trait ${enum.name}",
-      s"object ${enum.name} {",
-      buildValues(enum).indent(2),
-      s"}"
-    ).mkString("\n\n")
+      enum.description.map { desc => ScalaUtil.textToComment(desc) },
+      Some(s"sealed trait ${enum.name}"),
+      Some(s"object ${enum.name} {"),
+      Some(buildValues(enum).indent(2)),
+      Some(s"}")
+    ).flatten.mkString("\n\n")
   }
 
   /**

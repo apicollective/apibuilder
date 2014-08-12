@@ -10,7 +10,7 @@ object Play2Models {
   }
 
   def apply(ssd: ScalaServiceDescription): String = {
-    val caseClasses = ScalaCaseClasses(ssd)
+    val caseClasses = ScalaCaseClasses.generate(ssd)
     val prefix = underscoreToInitCap(ssd.name)
     val enumJson: String = ssd.enums.map { enum => Play2Enums.buildJson(ssd.name, enum) }.mkString("\n\n")
     val modelJson: String = ssd.models.map { model => Play2Json(ssd.name).generate(model) }.mkString("\n\n")

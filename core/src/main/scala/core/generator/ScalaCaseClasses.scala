@@ -4,15 +4,11 @@ import core._
 import Text._
 
 object ScalaCaseClasses {
-  def apply(json: String): String = {
-    apply(ServiceDescription(json))
+  def generate(sd: ServiceDescription): String = {
+    generate(new ScalaServiceDescription(sd))
   }
 
-  def apply(sd: ServiceDescription): String = {
-    apply(new ScalaServiceDescription(sd))
-  }
-
-  def apply(ssd: ScalaServiceDescription): String = {
+  def generate(ssd: ScalaServiceDescription): String = {
     Seq(
       s"package ${ssd.packageName}.models {",
       ssd.models.map { model =>
