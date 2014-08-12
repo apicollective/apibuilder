@@ -1,13 +1,23 @@
 {
   "base_url": "http://localhost:9000",
   "name": "Api Doc",
+  "enums": {
+    "gender": {
+      "values": [
+        { "name": "male" },
+        { "name": "female" },
+        { "name": "other" },
+        { "name": "unknown" }
+      ]
+    }
+  },
   "models": {
     "user": {
       "fields": [
         { "name": "uuid", "type": "uuid" },
         { "name": "first_name", "type": "string" },
         { "name": "age", "type": "integer", "required": false },
-        { "name": "gender", "type": "string", "enum": ["male", "female", "other", "unknown"]},
+        { "name": "gender", "type": "gender" },
         { "name": "interests", "type": "[string]" },
         { "name": "has_purchased", "type": "boolean" },
         { "name": "num_visits", "type": "long" },
