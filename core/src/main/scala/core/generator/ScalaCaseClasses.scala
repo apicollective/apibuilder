@@ -12,6 +12,7 @@ object ScalaCaseClasses {
     Seq(
       s"package ${ssd.packageName}.models {",
       ssd.models.map { model =>
+        model.description.map { desc => ScalaUtil.textToComment(desc) }.getOrElse("") +
         s"case class ${model.name}(${model.argList.getOrElse("")})"
       }.mkString("\n").indent(2),
       "",
