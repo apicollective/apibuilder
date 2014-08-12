@@ -12,6 +12,6 @@ before_script:
   - cd schema-evolution-manager
   - git checkout 0.9.12
   - cd ../schema
-  - ../schema-evolution-manager/bin/sem-apply
+  - ../schema-evolution-manager/bin/sem-apply --host localhost --user web --name api
   - cd ..
 script: sbt test
