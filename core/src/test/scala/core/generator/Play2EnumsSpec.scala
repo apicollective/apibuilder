@@ -40,16 +40,14 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
     val ssd = new ScalaServiceDescription(ServiceDescription(json))
 
     it("generates valid models") {
-      println("ENUMS: " + ssd.enums.map(_.name).mkString(" --- "))
       val enums = ssd.enums.map(Play2Enums.build(_)).mkString("\n\n")
       TestHelper.assertEqualsFile("core/src/test/resources/play2enums-example.txt", enums)
     }
-/*
+
     it("generates valid json conversions") {
-      val jsonConversions = ssd.enums.map(Play2Enums.buildJson("Test", _))
-      jsonConversions.trim should be(TestHelper.readFile("core/src/test/resources/play2enums-json-example.txt").trim)
+      val jsonConversions = ssd.enums.map(Play2Enums.buildJson("Test", _)).mkString("\n\n")
+      TestHelper.assertEqualsFile("core/src/test/resources/play2enums-json-example.txt", jsonConversions)
     }
- */
   }
 
 
