@@ -19,10 +19,10 @@ class AgeGroup
   # Returns the instance of AgeGroup for this value, or nil if not found
   def AgeGroup.from_string(value)
     HttpClient::Preconditions.assert_class('value', value, String)
-    AgeGroup.all.find { |v| v.value == value }
+    AgeGroup.ALL.find { |v| v.value == value }
   end
 
-  def AgeGroup.all
+  def AgeGroup.ALL
     @@all ||= [AgeGroup.thirties, AgeGroup.forties]
   end
 
