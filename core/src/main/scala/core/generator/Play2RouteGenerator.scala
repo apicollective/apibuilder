@@ -87,6 +87,15 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
         sys.error("Model parameter types not supported in play routes")
       }
 
+      case et: EnumParameterType => {
+        // TODO: Should we use the real class here or leave to user to convert?
+        if (param.required) {
+          "String"
+        } else {
+          s"Option[String]"
+        }
+      }
+
       case dt: PrimitiveParameterType => {
         val scalaType = dt.datatype match {
           case Datatype.StringType => "String"

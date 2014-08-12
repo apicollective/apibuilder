@@ -156,8 +156,6 @@ case class PrimitiveFieldType(datatype: Datatype) extends FieldType
 case class ModelFieldType(modelName: String) extends FieldType
 case class EnumFieldType(enum: Enum) extends FieldType
 
-case class EnumerationFieldType(datatype: Datatype, values: Seq[String]) extends FieldType
-
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
 case class ModelParameterType(model: Model) extends ParameterType

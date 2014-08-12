@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ EnumerationFieldType, TestHelper }
+import core.{ EnumFieldType, TestHelper }
 import org.scalatest.{ FunSpec, Matchers }
 
 class TargetSpec extends FunSpec with Matchers {
@@ -14,12 +14,12 @@ class TargetSpec extends FunSpec with Matchers {
   }
 
   it("api.json target lists all implemented keys in sort order") {
-    val keys = target.fieldtype.asInstanceOf[EnumerationFieldType].values
+    val keys = target.fieldtype.asInstanceOf[EnumFieldType].enum.values.map(_.name)
     keys.sorted should be(keys)
   }
 
   it("api.json target lists all implemented targets") {
-    val keys = target.fieldtype.asInstanceOf[EnumerationFieldType].values
+    val keys = target.fieldtype.asInstanceOf[EnumFieldType].enum.values.map(_.name)
     val implementedKeys = Target.Implemented.map(_.key).sorted
     keys should be(implementedKeys)
   }
