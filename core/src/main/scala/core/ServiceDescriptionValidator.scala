@@ -160,11 +160,11 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
   private def validateModels(): Seq[String] = {
     val nameErrors = internalServiceDescription.get.models.flatMap { model =>
-      val errors = Text.validateName(model.name)
-      if (errors.isEmpty) {
-        None
-      } else {
-        Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" ")}")
+      Text.validateName(model.name) match {
+        case Nil => None
+        case errors => {
+          Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" ")}")
+        }
       }
     }
 
@@ -181,11 +181,11 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
   private def validateEnums(): Seq[String] = {
     val nameErrors = internalServiceDescription.get.enums.flatMap { enum =>
-      val errors = Text.validateName(enum.name)
-      if (errors.isEmpty) {
-        None
-      } else {
-        Some(s"Enum[${enum.name}] name is invalid: ${errors.mkString(" ")}")
+      Text.validateName(enum.name) match {
+        case Nil => None
+        case errors => {
+          Some(s"Enum[${enum.name}] name is invalid: ${errors.mkString(" ")}")
+        }
       }
     }
 
@@ -201,11 +201,11 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
     val valuesWithInvalidNames = internalServiceDescription.get.enums.flatMap { enum =>
       enum.values.filter(!_.name.isEmpty).flatMap { value =>
-        val errors = Text.validateName(value.name.get)
-        if (errors.isEmpty) {
-          None
-        } else {
-          Some(s"Enum[${enum.name}] value[${value.name.get}] is invalid: ${errors.mkString(" ")}")
+        Text.validateName(value.name.get) match {
+          case Nil => None
+          case errors => {
+            Some(s"Enum[${enum.name}] value[${value.name.get}] is invalid: ${errors.mkString(" ")}")
+          }
         }
       }
     }

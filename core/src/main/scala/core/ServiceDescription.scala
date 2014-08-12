@@ -20,7 +20,7 @@ object ServiceDescription {
 
 case class ServiceDescription(internal: InternalServiceDescription) {
 
-  val enums: Seq[Enum] = internal.enums.map { Enum(_) }.sortBy(_.name.toLowerCase)
+  lazy val enums: Seq[Enum] = internal.enums.map { Enum(_) }.sortBy(_.name.toLowerCase)
   lazy val models: Seq[Model] = internal.models.map { Model(this, _) }.sortBy(_.name.toLowerCase)
   lazy val resources: Seq[Resource] = internal.resources.map { Resource(enums, models, _) }.sorted
   lazy val baseUrl: Option[String] = internal.baseUrl
@@ -45,12 +45,16 @@ case class Enum(
   name: String,
   description: Option[String],
   values: Seq[EnumValue]
-)
+) {
+  require(Text.isValidName(name), s"Enum name[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
+}
 
 case class EnumValue(
   name: String,
   description: Option[String]
-)
+) {
+  require(Text.isValidName(name), s"Enum value[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
+}
 
 case class Model(name: String,
                  plural: String,
