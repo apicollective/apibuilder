@@ -98,19 +98,9 @@ class ScalaEnum(val enum: Enum) {
 
 class ScalaEnumValue(value: EnumValue) {
 
-  /**
-    * Returns a scala friend name for this enumeration
-    * value. e.g. cannot_fulfill => CannotFulfill
-    */
-  val name: String = {
-    Text.safeName(
-      if (value.name == value.name.toUpperCase) {
-        Text.initCap(value.name.split("_").map(_.toLowerCase)).mkString("")
-      } else {
-        Text.initCap(value.name)
-      }
-    )
-  }
+  val originalName: String = value.name
+
+  val name: String = ScalaUtil.toClassName(value.name)
 
   val description: Option[String] = value.description
 

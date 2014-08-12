@@ -12,9 +12,9 @@ object ScalaCaseClasses {
     Seq(
       s"package ${ssd.packageName}.models {",
       ssd.models.map { model =>
-        model.description.map { desc => ScalaUtil.textToComment(desc) }.getOrElse("") +
+        model.description.map { desc => ScalaUtil.textToComment(desc) + "\n" }.getOrElse("") +
         s"case class ${model.name}(${model.argList.getOrElse("")})"
-      }.mkString("\n").indent(2),
+      }.mkString("\n\n").indent(2),
       "",
       ssd.enums.map { enum =>
         Play2Enums.build(enum)
