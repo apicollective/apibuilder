@@ -144,7 +144,9 @@
 	    "operations": [
 		{ 
 		    "method": "POST",
-                    "body": { "type": "file" },
+                    "parameters": [
+                        { "name": "json", "type": "string", "required": false }
+		    ],
                     "responses": {
                         "200": { "type": "validation" }
                     }
