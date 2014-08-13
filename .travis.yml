@@ -1,4 +1,4 @@
-1language: scala
+language: scala
 scala:
   - 2.11.1
 jdk:
@@ -14,4 +14,4 @@ before_script:
   - cd ../schema
   - ../schema-evolution-manager/bin/sem-apply --host localhost --user web --name api
   - cd ..
-script: sbt test
+
