@@ -75,6 +75,19 @@
       </div>
     }
 
+    <h2>Enums</h2>
+    @service.enums.map { enum =>
+      <div id="enum-@core.UrlKey.generate(enum.name)"></div>
+      <a name="enum-@core.UrlKey.generate(enum.name)"></a>
+      <div class="version_model">
+        <h3>@enum.name</h3>
+
+        @enum.description.getOrElse("")
+
+        @values(tpl.org.get, tpl.service.get, tpl.version.get, enum)
+      </div>
+    }
+
     <h2>Models</h2>
     @service.modelsWithoutResources.map { model =>
       <div id="model-@core.UrlKey.generate(model.name)"></div>
@@ -84,7 +97,6 @@
 
         @model.description.getOrElse("")
 
-        <h4>Fields</h4>
         @fields(tpl.org.get, tpl.service.get, tpl.version.get, service, model.fields)
       </div>
     }

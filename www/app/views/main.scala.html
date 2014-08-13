@@ -67,11 +67,20 @@
               </ul>
             }
 
+            @if(!sd.enums.isEmpty) {
+              <b>Enums</b>
+              <ul class="nav nav-sidebar">
+                @sd.enums.map { enum =>
+                  <li><a href="#enum-@core.UrlKey.generate(enum.name)">@enum.name</a></li>
+                }
+              </ul>
+            }
+
             @if(!sd.models.isEmpty) {
               <b>Models</b>
               <ul class="nav nav-sidebar">
                 @sd.modelsWithoutResources.map { model =>
-                  <li@if(metadata.model == Some(model)) { class="active" }><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
+                  <li><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
                 }
               </ul>
             }

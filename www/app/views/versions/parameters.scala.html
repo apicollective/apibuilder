@@ -18,6 +18,7 @@
        <td>@{param.paramtype match {
              case pt: core.PrimitiveParameterType => datatype(pt.datatype, param.multiple)
              case mt: core.ModelParameterType => modelType(org, service, version, mt.model, param.multiple)
+             case et: core.EnumParameterType => enumType(org, service, version, et.enum.name, param.multiple)
            }}
        </td>
        <td>@param.location</td>

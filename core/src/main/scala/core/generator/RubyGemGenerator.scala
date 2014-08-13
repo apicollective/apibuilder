@@ -10,8 +10,8 @@ object RubyGemGenerator {
     new RubyGemGenerator(sd, userAgent).generate
   }
 
-  def generateEnumClass(modelName: String, fieldName: String, et: EnumerationFieldType): String = {
-    val className = Text.underscoreToInitCap(fieldName)
+  def generateEnum(enum: Enum): String = {
+    val className = Text.underscoreToInitCap(enum.name)
     val lines = ListBuffer[String]()
     lines.append(s"class $className")
 
@@ -42,14 +42,17 @@ object RubyGemGenerator {
 
     lines.append("")
     lines.append(s"  def $className.ALL") // Upper case to avoid naming conflict
-    lines.append("    @@all ||= [" + et.values.map(v => s"$className.${enumName(v)}").mkString(", ") + "]")
+    lines.append("    @@all ||= [" + enum.values.map(v => s"$className.${enumName(v.name)}").mkString(", ") + "]")
     lines.append("  end")
 
     lines.append("")
-    et.values.foreach { value =>
-      val varName = enumName(value)
+    enum.values.foreach { value =>
+      val varName = enumName(value.name)
+      value.description.foreach { desc =>
+        lines.append(GeneratorUtil.formatComment(desc).indent(2))
+      }
       lines.append(s"  def $className.$varName")
-      lines.append(s"    @@_$varName ||= $className.new('$value')")
+      lines.append(s"    @@_$varName ||= $className.new('${value.name}')")
       lines.append("  end")
       lines.append("")
     }
@@ -86,6 +89,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  end" +
     "\n\n  module Models\n" +
+    service.enums.map { RubyGemGenerator.generateEnum(_) }.mkString("\n\n").indent(4) + "\n\n" +
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +
@@ -186,6 +190,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
         val klass = param.paramtype match {
           case t: PrimitiveParameterType => rubyClass(t.datatype)
           case m: ModelParameterType => Text.underscoreToInitCap(m.model.name)
+          case e: EnumParameterType => Text.underscoreToInitCap(e.enum.name)
         }
 
         sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
@@ -262,13 +267,6 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
     sb.append(s"    class $className\n")
 
-    val enums = model.fields.filter { _.fieldtype.isInstanceOf[EnumerationFieldType] }.map { field =>
-      RubyGemGenerator.generateEnumClass(model.name, field.name, field.fieldtype.asInstanceOf[EnumerationFieldType])
-    }
-    if (!enums.isEmpty) {
-      sb.append(enums.mkString("\n\n").indent(6) + "\n")
-    }
-
     sb.append("      attr_reader " + model.fields.map( f => s":${f.name}" ).mkString(", "))
 
     sb.append("")
@@ -294,7 +292,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
               s":${field.name} => ${field.name}.to_hash"
             }
           }
-          case EnumerationFieldType(datatype, values) => s":${field.name} => ${field.name}.value"
+          case EnumFieldType(enum) => s":${field.name} => ${field.name}.value"
         }
       }.mkString("            ", ",\n            ", "")
     )
@@ -314,8 +312,8 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
       case ModelFieldType(modelName: String) => {
         parseModelArgument(field.name, modelName, field.required, field.multiple)
       }
-      case EnumerationFieldType(datatype: Datatype, values: Seq[String]) => {
-        parseEnumArgument(field.name, field.required, field.multiple)
+      case EnumFieldType(enum: Enum) => {
+        parseEnumArgument(field.name, enum.name, field.required, field.multiple)
       }
     }
 
@@ -329,6 +327,9 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
       case mt: ModelParameterType => {
         parseModelArgument(param.name, mt.model.name, param.required, param.multiple)
       }
+      case et: EnumParameterType => {
+        parseEnumArgument(param.name, et.enum.name, param.required, param.multiple)
+      }
     }
   }
 
@@ -338,9 +339,9 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => $required, :multiple => $multiple)"
   }
 
-  private def parseEnumArgument(name: String, required: Boolean, multiple: Boolean): String = {
+  private def parseEnumArgument(name: String, enumName: String, required: Boolean, multiple: Boolean): String = {
     val value = s"opts.delete(:${name})"
-    val klass = Text.underscoreToInitCap(name)
+    val klass = Text.underscoreToInitCap(enumName)
     s"HttpClient::Helper.to_klass('$name', $klass.apply($value), $klass, :required => $required, :multiple => $multiple)"
   }
 

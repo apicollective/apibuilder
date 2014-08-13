@@ -3,6 +3,34 @@
     "description": "Application to track perfect day and quality at gilt",
     "base_url": "http://localhost:9000",
 
+    "enums": {
+	"model": {
+	    "description": "The name of the model that was the subject of the event",
+	    "values": [
+		{ "name": "incident" },
+		{ "name": "plan" },
+		{ "name": "rating" }
+	    ]
+	},
+
+	"action": {
+	    "description": "The action that occurred to this model",
+	    "values": [
+		{ "name": "created" },
+		{ "name": "updated" },
+		{ "name": "deleted" }
+	    ]
+	},
+
+	"severity": {
+	    "values": [
+		{ "name": "low" },
+		{ "name": "high" }
+	    ]
+	}
+
+    },
+
     "models": {
 
 	"healthcheck": {
@@ -22,8 +50,8 @@
 	"event": {
             "description": "Represents something that has happened - e.g. a team was created, an incident created, a plan updated, etc.",
             "fields": [
-                { "name": "model", "type": "string", "description": "The name of the model that was the subject of the event", "enum": ["incident", "plan", "rating"] },
-		{ "name": "action", "type": "string", "description": "The action that occurred to this model", "enum": ["created", "updated", "deleted"] },
+                { "name": "model", "type": "model" },
+		{ "name": "action", "type": "action" },
 		{ "name": "timestamp", "type": "date-time-iso8601", "description": "The timestamp on which this event occurred" },
                 { "name": "url", "type": "string", "description": "The location to fetch more information about this resource, if applicable. URL will be empty in the case of events that delete a model instance (as one example)", "required": false },
                 { "name": "data", "type": "event_data", "description": "Basic summary information about the object and the event. The intent is to use this data to quickly summarize the event - for detailed informations, callers should issue an HTTP GET to the URL" }
@@ -57,7 +85,7 @@
                 { "name": "summary", "type": "string", "description": "Summary of the incident." },
                 { "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
                 { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident", "required": false },
-                { "name": "severity", "type": "string", "enum": ["low", "high"] },
+                { "name": "severity", "type": "severity" },
                 { "name": "tags", "type": "[string]", "required": false, "description": "Optional list of tags to apply to this incident" },
                 { "name": "plan", "type": "plan", "required": false },
                 { "name": "created_at", "type": "date-time-iso8601" }

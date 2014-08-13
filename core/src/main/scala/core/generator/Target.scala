@@ -88,7 +88,7 @@ object Target {
       case "play_2_3_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, sd, userAgent)
       case "play_2_x_routes" => Play2RouteGenerator.generate(sd)
       case "play_2_x_json" => Play2Models.apply(sd)
-      case "scala_models" => ScalaCaseClasses.apply(sd)
+      case "scala_models" => ScalaCaseClasses.generate(sd)
       case "avro_schema" => AvroSchemas.apply(sd)
       case (other) => {
         sys.error(s"unsupported code generation for target[$other]")

@@ -12,13 +12,28 @@ class RubyGemGeneratorSpec extends FunSpec with Matchers {
     RubyGemGenerator.enumName("CANCEL_REQUEST") should be("cancel_request")
     RubyGemGenerator.enumName("cancel_request") should be("cancel_request")
     RubyGemGenerator.enumName("cancelRequest") should be("cancel_request")
+    RubyGemGenerator.enumName("CancelRequest") should be("cancel_request")
   }
 
   describe("generateEnumClass") {
 
     it("for enum with multiple values") {
-      val values = Seq("Thirties", "Forties")
-      val enums = RubyGemGenerator.generateEnumClass("User", "age_group", EnumerationFieldType(Datatype.StringType, values))
+      val enum = Enum(
+        name = "age_group",
+        description = None,
+        values = Seq(
+          EnumValue(
+            name = "Thirties",
+            description = None
+          ),
+          EnumValue(
+            name = "Forties",
+            description = None
+          )
+        )
+      )
+            
+      val enums = RubyGemGenerator.generateEnum(enum)
       enums.trim should be(TestHelper.readFile("core/src/test/resources/ruby-gem-enums.txt").trim)
     }
 

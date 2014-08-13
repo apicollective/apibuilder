@@ -5,51 +5,49 @@ import org.scalatest.Matchers
 
 class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
 
-  it("enum with string type") {
-    val json = """
+    val baseJson = """
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "enums": {
+        "age_group": {
+          "values": [
+            { "name": "Twenties" },
+            { "name": "Thirties" }%s
+          ]
+        }
+      },
+
       "models": {
         "user": {
           "fields": [
-            { "name": "age_group", "type": "string", "enum": ["Twenties", "Thirties"] }
+            { "name": "age_group", "type": "age_group" }
           ]
         }
       }
     }
     """
 
+  it("field can be defined as an enum") {
+    val json = baseJson.format("")
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
     ageGroup.fieldtype match {
-      case et: EnumerationFieldType => {
-        et.values should be(Seq("Twenties", "Thirties"))
+      case et: EnumFieldType => {
+        et.enum.name should be("age_group")
+        et.enum.values.map(_.name) should be(Seq("Twenties", "Thirties"))
       }
       case ft => {
-        fail(s"Invalid field type[${ft} for agegroup - should have been an enumeration")
+        fail(s"Invalid field type[${ft}] for age_group - should have been an enumeration")
       }
     }
   }
 
-  it("validates that enum type must be string") {
-    val json = """
-    {
-      "base_url": "http://localhost:9000",
-      "name": "Api Doc",
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "age_group", "type": "integer", "enum": ["Twenties", "Thirties"] }
-          ]
-        }
-      }
-    }
-    """
-
+  it("validates that enum values must be valid symbols") {
+    val json = baseJson.format(""", { "name": "1" } """)
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("Model[user] field[age_group]: enum can only be specified for fields of type 'string'")
+    validator.errors.mkString("") should be("Enum[age_group] value[1] is invalid: Name must start with a letter")
   }
 
 }

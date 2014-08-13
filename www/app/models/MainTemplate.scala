@@ -1,6 +1,6 @@
 package models
 
-import core.{ Model, Resource, ServiceDescription }
+import core.{ Enum, Model, Resource, ServiceDescription }
 import apidoc.models.{ Organization, Service, User }
 import play.api.Play.current
 
@@ -13,7 +13,6 @@ case class MainTemplate(
   allServiceVersions: Seq[String] = Seq.empty,
   user: Option[User] = None,
   resource: Option[Resource] = None,
-  model: Option[Model] = None,
   settings: Option[SettingsMenu] = None
 )
 

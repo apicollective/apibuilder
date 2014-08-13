@@ -37,7 +37,7 @@ object AvroField {
   private def determineType(t: FieldType): AvroType = t match {
     case PrimitiveFieldType(d) => primitiveType(d)
     case ModelFieldType(name) => new AvroModelType(name)
-    case EnumerationFieldType(d, values) => AvroEnumType(values)
+    case EnumFieldType(enum) => AvroEnumType(enum.values.map(_.name))
   }
 
   private def primitiveType(d: Datatype): AvroType = {

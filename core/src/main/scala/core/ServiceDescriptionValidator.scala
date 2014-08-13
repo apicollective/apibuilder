@@ -52,6 +52,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateName ++
           validateBaseUrl ++
           validateModels ++
+          validateEnums ++
+          validateModelAndEnumNamesAreDistinct ++
           validateFields ++
           validateParameterTypes ++
           validateFieldTypes ++
@@ -123,7 +125,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
         Datatype.findByName(name) match {
           case None => {
             internalServiceDescription.get.models.find { _.name == name } match {
-              case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model nor datatype named[$name]")
+              case None => {
+                internalServiceDescription.get.enums.find { _.name == name } match {
+                  case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[$name]")
+                  case Some(_) => None
+                }
+              }
               case Some(_) => None
             }
           }
@@ -153,11 +160,11 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
   private def validateModels(): Seq[String] = {
     val nameErrors = internalServiceDescription.get.models.flatMap { model =>
-      val errors = Text.validateName(model.name)
-      if (errors.isEmpty) {
-        None
-      } else {
-        Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" ")}")
+      Text.validateName(model.name) match {
+        case Nil => None
+        case errors => {
+          Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" ")}")
+        }
       }
     }
 
@@ -165,11 +172,64 @@ case class ServiceDescriptionValidator(apiJson: String) {
       s"Model[${model.name}] must have at least one field"
     }
 
-    val duplicates = internalServiceDescription.get.models.groupBy(_.name).filter { _._2.size > 1 }.keys.map { modelName =>
+    val duplicates = internalServiceDescription.get.models.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { modelName =>
       s"Model[$modelName] appears more than once"
     }
 
     nameErrors ++ fieldErrors ++ duplicates
+  }
+
+  private def validateEnums(): Seq[String] = {
+    val nameErrors = internalServiceDescription.get.enums.flatMap { enum =>
+      Text.validateName(enum.name) match {
+        case Nil => None
+        case errors => {
+          Some(s"Enum[${enum.name}] name is invalid: ${errors.mkString(" ")}")
+        }
+      }
+    }
+
+    val valueErrors = internalServiceDescription.get.enums.filter { _.values.isEmpty }.map { enum =>
+      s"Enum[${enum.name}] must have at least one value"
+    }
+
+    val valuesWithoutNames = internalServiceDescription.get.enums.flatMap { enum =>
+      enum.values.filter(_.name.isEmpty).map { value =>
+        s"Enum[${enum.name}] - all values must have a name"
+      }
+    }
+
+    val valuesWithInvalidNames = internalServiceDescription.get.enums.flatMap { enum =>
+      enum.values.filter(!_.name.isEmpty).flatMap { value =>
+        Text.validateName(value.name.get) match {
+          case Nil => None
+          case errors => {
+            Some(s"Enum[${enum.name}] value[${value.name.get}] is invalid: ${errors.mkString(" ")}")
+          }
+        }
+      }
+    }
+
+    val duplicates = internalServiceDescription.get.enums.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { enumName =>
+      s"Enum[$enumName] appears more than once"
+    }
+
+    nameErrors ++ valueErrors ++ valuesWithoutNames ++ valuesWithInvalidNames ++ duplicates
+  }
+
+  /**
+    * While not strictly necessary, we do this to reduce
+    * confusion. Otherwise we would require an extension to api.json
+    * to indicate if a type referenced a model or an enum. By keeping
+    * them distinct, we can avoid any confusion.
+    */
+  private def validateModelAndEnumNamesAreDistinct(): Seq[String] = {
+    val modelNames = internalServiceDescription.get.models.map(_.name.toLowerCase)
+    val enumNames = internalServiceDescription.get.enums.map(_.name.toLowerCase).toSet
+
+    modelNames.filter { enumNames.contains(_) }.map { name =>
+      s"Name[$name] cannot be used as the name of both a model and an enum"
+    }
   }
 
   private def validateFields(): Seq[String] = {
@@ -193,28 +253,13 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
-    val badValues = internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter(!_.enum.isEmpty).flatMap { f =>
-        f.enum.map { n => n -> Text.validateName(n) }
-      }.filter(_._2.nonEmpty).flatMap { case (name, errors) =>
-          errors.map { e =>
-            s"Invalid value for Model[${model.name}] field[${name}]: $e"
-          }
+    val warnings = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter(f => !f.warnings.isEmpty && !f.name.isEmpty).map { f =>
+        s"Model[${model.name}] field[${f.name.get}]: " + f.warnings.mkString(", ")
       }
     }
 
-    /**
-      * Currently we only support enumeration values for string
-      * datatypes. This may change in future but was the simplest and
-      * most common use case to fully support.
-      */
-    val enumsForNonStringTypes = internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter(!_.name.isEmpty).filter(!_.enum.isEmpty).filter(_.fieldtype != Some("string")).map { f =>
-        s"Model[${model.name}] field[${f.name.get}]: enum can only be specified for fields of type 'string'"
-      }
-    }
-
-    missingTypes ++ missingNames ++ badNames ++ badValues ++ enumsForNonStringTypes
+    missingTypes ++ missingNames ++ badNames ++ warnings
   }
 
   private def validateResponses(): Seq[String] = {

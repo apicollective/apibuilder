@@ -20,8 +20,9 @@ object ServiceDescription {
 
 case class ServiceDescription(internal: InternalServiceDescription) {
 
+  lazy val enums: Seq[Enum] = internal.enums.map { Enum(_) }.sortBy(_.name.toLowerCase)
   lazy val models: Seq[Model] = internal.models.map { Model(this, _) }.sortBy(_.name.toLowerCase)
-  lazy val resources: Seq[Resource] = internal.resources.map { Resource(models, _) }.sorted
+  lazy val resources: Seq[Resource] = internal.resources.map { Resource(enums, models, _) }.sorted
   lazy val baseUrl: Option[String] = internal.baseUrl
   lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
   lazy val description: Option[String] = internal.description
@@ -38,6 +39,21 @@ case class ServiceDescription(internal: InternalServiceDescription) {
     models.find(_.name == name)
   }
 
+}
+
+case class Enum(
+  name: String,
+  description: Option[String],
+  values: Seq[EnumValue]
+) {
+  require(Text.isValidName(name), s"Enum name[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
+}
+
+case class EnumValue(
+  name: String,
+  description: Option[String]
+) {
+  require(Text.isValidName(name), s"Enum value[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
 }
 
 case class Model(name: String,
@@ -79,27 +95,27 @@ case class Operation(model: Model,
 
 object Resource {
 
-  def apply(models: Seq[Model], internal: InternalResource): Resource = {
+  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResource): Resource = {
     val model = models.find { _.name == internal.modelName.get }.getOrElse {
       sys.error(s"Could not find model for resource[${internal.modelName.getOrElse("")}]")
     }
     Resource(model = model,
              path = internal.path,
-             operations = internal.operations.map(op => Operation(models, model, op)))
+             operations = internal.operations.map(op => Operation(enums, models, model, op)))
   }
 
 }
 
 object Operation {
 
-  def apply(models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
+  def apply(enums: Seq[Enum], models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
       if (internal.namedPathParameters.contains(p.name.get)) {
-        Parameter(models, p, ParameterLocation.Path)
+        Parameter(enums, models, p, ParameterLocation.Path)
       } else {
-        Parameter(models, p, location)
+        Parameter(enums, models, p, location)
       }
      }
     val internalParamNames: Set[String] = internalParams.map(_.name).toSet
@@ -142,37 +158,12 @@ case class Field(name: String,
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
 case class ModelFieldType(modelName: String) extends FieldType
-case class EnumerationFieldType(datatype: Datatype, values: Seq[String]) extends FieldType
+case class EnumFieldType(enum: Enum) extends FieldType
 
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
 case class ModelParameterType(model: Model) extends ParameterType
-
-object PrimitiveParameterType {
-
-  def apply(field: Field): PrimitiveParameterType = {
-    field.fieldtype match {
-
-      case pft: PrimitiveFieldType => {
-        PrimitiveParameterType(pft.datatype)
-      }
-
-      case mft: ModelFieldType => {
-        // Too complex, at least for now, to think about supporting
-        // models in things like path parameters
-        sys.error("Cannot convert model fieldtype[%s] to parameter type".format(field.fieldtype))
-      }
-
-      case mft: EnumerationFieldType => {
-        // This branch would only be used to support an enumeration
-        // value as a path parameter. It seems complex to convert the
-        // string value into an enumeration instance (e.g. play routes
-        // file won't support this natively)
-        sys.error("Cannot convert enumeration fieldtype[%s] to parameter type".format(field.fieldtype))
-      }
-    }
-  }
-}
+case class EnumParameterType(enum: Enum) extends ParameterType
 
 case class Parameter(name: String,
                      paramtype: ParameterType,
@@ -190,13 +181,25 @@ case class Response(code: Int,
                     datatype: String,
                     multiple: Boolean = false)
 
+object Enum {
+
+  def apply(ie: InternalEnum): Enum = {
+    Enum(
+      name = ie.name,
+      description = ie.description,
+      values = ie.values.map { iv => EnumValue(iv.name.get, iv.description) }
+    )
+  }
+
+}
+
 object Model {
 
   def apply(sd: ServiceDescription, im: InternalModel): Model = {
     Model(name = im.name,
           plural = im.plural,
           description = im.description,
-          fields = im.fields.map { Field(im, _) })
+          fields = im.fields.map { Field(sd.enums, im, _) })
   }
 
 }
@@ -303,17 +306,26 @@ object Parameter {
               required = true)
   }
 
-  def apply(models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
+  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
     val typeName = internal.paramtype.getOrElse {
       sys.error("Missing parameter type for: " + internal)
     }
 
     val paramtype = Datatype.findByName(typeName) match {
       case None => {
-        assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
-        ModelParameterType(models.find(_.name == typeName).getOrElse {
-          sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
-        })
+        enums.find(_.name == typeName) match {
+          case Some(enum) => {
+            internal.default.map { v => Field.assertValidDefault(Datatype.StringType, v) }
+            EnumParameterType(enum)
+          }
+
+          case None => {
+            assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
+            ModelParameterType(models.find(_.name == typeName).getOrElse {
+              sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
+            })
+          }
+        }
       }
 
       case Some(dt: Datatype) => {
@@ -338,33 +350,33 @@ object Parameter {
 
 object Field {
 
-  def findByModelPluralAndFieldName(models: Seq[Model], modelPlural: String, fieldName: String): Option[Field] = {
-    models.find { m => m.plural == modelPlural }.flatMap { _.fields.find { f => f.name == fieldName } }
-  }
+  def apply(enums: Seq[Enum], im: InternalModel, internal: InternalField): Field = {
+    val fieldTypeName = internal.fieldtype.getOrElse {
+      sys.error("missing field type")
+    }
 
-  def apply(im: InternalModel, internal: InternalField): Field = {
-    val fieldtype = internal.fieldtype match {
-      case Some(name: String) => {
-        Datatype.findByName(name) match {
-          case Some(dt: Datatype) => {
-            internal.default.map { v => assertValidDefault(dt, v) }
-            PrimitiveFieldType(dt)
-          }
-
-          case None => {
-            require(internal.default.isEmpty, s"Cannot have a default for a field of type[$name]")
-            ModelFieldType(name)
-          }
-        }
+    val fieldtype = Datatype.findByName(fieldTypeName) match {
+      case Some(dt: Datatype) => {
+        internal.default.map { v => assertValidDefault(dt, v) }
+        PrimitiveFieldType(dt)
       }
 
       case None => {
-        sys.error("missing field type")
+        enums.find(_.name == fieldTypeName) match {
+          case Some(e: Enum) => {
+            internal.default.map { v => assertValidDefault(Datatype.StringType, v) }
+            EnumFieldType(e)
+          }
+          case None => {
+            require(internal.default.isEmpty, s"Cannot have a default for a field of type[$fieldTypeName]")
+            ModelFieldType(fieldTypeName)
+          }
+        }
       }
     }
 
     Field(name = internal.name.get,
-          fieldtype = parseTypeAndValues(internal.name.get, fieldtype, internal.enum),
+          fieldtype = fieldtype,
           description = internal.description,
           required = internal.required,
           multiple = internal.multiple,
@@ -372,23 +384,6 @@ object Field {
           minimum = internal.minimum.map(_.toLong),
           maximum = internal.maximum.map(_.toLong),
           example = internal.example)
-  }
-
-  /**
-    * If we have an enum, validate the values and convert field type
-    * into an enumeration.
-    */
-  private def parseTypeAndValues(fieldName: String, fieldtype: FieldType, enum: Seq[String]): FieldType = {
-    if (enum.isEmpty) {
-      fieldtype
-    } else {
-      assert(fieldtype == PrimitiveFieldType(Datatype.StringType), "Field type must be string for enumerations")
-      enum.foreach { value =>
-        val errors = Text.validateName(value)
-        assert(errors.isEmpty, s"Field[${fieldName}] has an invalid value[${value}]: " + errors.mkString(" "))
-      }
-      EnumerationFieldType(Datatype.StringType, enum)
-    }
   }
 
   private val BooleanValues = Seq("true", "false")

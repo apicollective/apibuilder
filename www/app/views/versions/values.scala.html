@@ -1,0 +1,12 @@
+@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, enum: core.Enum)
+
+<table class="table table-hover table-condensed">
+  <tbody>
+   @enum.values.map { value =>
+     <tr>
+       <td>@value.name</td>
+       <td>@value.description.getOrElse("")</td>
+     </tr>
+   }
+  </tbody>
+</table>
