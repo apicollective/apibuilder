@@ -54,4 +54,10 @@ class ServiceDescriptionResponsesSpec extends FunSpec with Matchers {
     }
   }
 
+  it("validates that responses is map from string to object") {
+    val json = baseJson.format(s""", "responses": { "204": "unit" } """)
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.contains(s"Resource[user] DELETE 204: Value must be an JsObject") should be(true)
+  }
+
 }

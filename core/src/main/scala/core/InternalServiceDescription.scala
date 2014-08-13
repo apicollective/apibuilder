@@ -123,7 +123,7 @@ case class InternalField(name: Option[String] = None,
                          example: Option[String] = None,
                          minimum: Option[Long] = None,
                          maximum: Option[Long] = None,
-                         warnings: Seq[String])
+                         warnings: Seq[String] = Seq.empty)
 
 case class InternalParameter(name: Option[String] = None,
                              paramtype: Option[String] = None,
@@ -136,9 +136,12 @@ case class InternalParameter(name: Option[String] = None,
                              maximum: Option[Long] = None)
 
 
-case class InternalResponse(code: String,
-                            datatype: Option[String] = None,
-                            multiple: Boolean = false) {
+case class InternalResponse(
+code: String,
+  datatype: Option[String] = None,
+  multiple: Boolean = false,
+  warnings: Seq[String] = Seq.empty
+) {
 
   lazy val datatypeLabel: Option[String] = datatype.map { dt =>
     if (multiple) {
@@ -246,7 +249,15 @@ object InternalOperation {
         case Some(responses: JsObject) => {
           responses.fields.map {
             case(code, value) => {
-              InternalResponse(code, value.as[JsObject])
+              value match {
+                case o: JsObject => InternalResponse(code, o)
+                case other => {
+                  InternalResponse(
+                    code = code,
+                    warnings = Seq("Value must be an JsObject")
+                  )
+                }
+              }
             }
           }
         }

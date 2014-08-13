@@ -352,7 +352,15 @@ case class ServiceDescriptionValidator(apiJson: String) {
       Seq.empty
     }
 
-    invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes
+    val warnings = internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.responses.filter(r => !r.warnings.isEmpty).map { r =>
+          s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} ${r.code}: " + r.warnings.mkString(", ")
+        }
+      }
+    }
+
+    invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
   }
 
   private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted
