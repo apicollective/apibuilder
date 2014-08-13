@@ -26,6 +26,14 @@
 	    ]
 	},
 
+	"validation": {
+	    "description": "Used only to validate json files - used as a resource where http status code defines success",
+	    "fields": [
+                { "name": "valid", "type": "boolean", "description": "If true, the json schema is valid. If false, there is at least one validation error." },
+		{ "name": "errors", "type": "[string]", "required": false, "description": "Contains any validation errors that result from parsing the json document. If empty, the document is valid." }
+	    ]
+	},
+
         "user": {
             "description": "A user is a top level person interacting with the api doc server.",
             "fields": [
@@ -128,6 +136,19 @@
                         "200": { "type": "healthcheck" }
                     }
                 }
+	    ]
+	},
+
+	"validation": {
+	    "description": "Public resource that can accept JSON input and returns a validation object describing any validation errors.",
+	    "operations": [
+		{ 
+		    "method": "POST",
+                    "body": { "type": "file" },
+                    "responses": {
+                        "200": { "type": "validation" }
+                    }
+		}
 	    ]
 	},
 
@@ -436,7 +457,7 @@
                     "description": "Create or update the service with the specified version.",
                     "path": "/:version",
                     "parameters": [
-                        { "name": "json", "type": "string", "description": "The actual full contents of the json scheme" }
+                        { "name": "json", "type": "string", "description": "The actual full contents of the json schema" }
 		    ],
                     "responses": {
                         "200": { "type": "version" }
