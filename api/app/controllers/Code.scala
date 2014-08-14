@@ -28,7 +28,7 @@ object Code extends Controller {
 
   }
 
-  def getByOrgKeyAndServiceKeyAndVersionAndTargetName(orgKey: String, serviceKey: String, version: String, targetName: String) = Authenticated { request =>
+  def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetName: String) = Authenticated { request =>
     Target.findByKey(targetName) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Invalid target[$targetName]. Must be one of: ${Target.Implemented.mkString(" ")}")))

@@ -97,6 +97,7 @@ object Play2Util {
       d match {
         case ScalaStringType => s"""play.utils.UriEncoding.encodePathSegment($name, "UTF-8")"""
         case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
+        case ScalaEnumType(_) => s"""play.utils.UriEncoding.encodePathSegment($name.toString, "UTF-8")"""
         case t => {
           sys.error(s"Cannot encode params of type[$t] as path parameters (name: $name)")
         }

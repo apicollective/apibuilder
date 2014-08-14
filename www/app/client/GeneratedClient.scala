@@ -388,22 +388,22 @@ package apidoc {
       /**
        * Generate code for a specific version of a service.
        */
-      def getByOrgKeyAndServiceKeyAndVersionAndTargetName(
+      def getByOrgKeyAndServiceKeyAndVersionAndTarget(
         orgKey: String,
         serviceKey: String,
         version: String,
-        targetName: String
+        target: Target
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Code]]
     }
 
     object Code extends Code {
-      override def getByOrgKeyAndServiceKeyAndVersionAndTargetName(
+      override def getByOrgKeyAndServiceKeyAndVersionAndTarget(
         orgKey: String,
         serviceKey: String,
         version: String,
-        targetName: String
+        target: Target
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Code]] = {
-        GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(targetName, "UTF-8")}").map {
+        GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(target.toString, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[apidoc.models.Code])
           case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
           case r if r.status == 404 => None

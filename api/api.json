@@ -407,7 +407,7 @@
         },
 
         "code": {
-	    "path": "/:orgKey/:serviceKey/:version/:targetName",
+	    "path": "/:orgKey/:serviceKey/:version/:target",
 
             "operations": [
                 {
@@ -417,7 +417,7 @@
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" },
                         { "name": "serviceKey", "type": "string", "description": "The service key for which to search versions" },
                         { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
-			{ "name": "targetName", "type": "string", "description": "The target for the code generation" }
+			{ "name": "target", "type": "target" }
 		    ],
                     "responses": {
                         "200": { "type": "code" },
