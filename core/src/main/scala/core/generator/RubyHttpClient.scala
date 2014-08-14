@@ -250,6 +250,7 @@ require 'bigdecimal'
       end
 
       def Preconditions.assert_collection_of_class(field_name, values, klass)
+        Preconditions.assert_class(field_name, values, Array)
         values.each { |v| Preconditions.assert_class(field_name, v, klass) }
       end
 
