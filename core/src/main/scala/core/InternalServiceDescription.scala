@@ -26,28 +26,28 @@ private[core] case class InternalServiceDescription(json: JsValue) {
   lazy val description = (json \ "description").asOpt[String]
 
   lazy val models: Seq[InternalModel] = {
-    (json \ "models").asOpt[JsObject] match {
-      case None => Seq.empty
+    (json \ "models").asOpt[JsValue] match {
       case Some(models: JsObject) => {
-        models.fields.map { v =>
+        models.fields.flatMap { v =>
           v match {
-            case(key, value) => InternalModel(key, value.as[JsObject])
+            case(key, value) => value.asOpt[JsObject].map(InternalModel(key, _))
           }
         }
       }
+      case _ => Seq.empty
     }
   }
 
   lazy val enums: Seq[InternalEnum] = {
-    (json \ "enums").asOpt[JsObject] match {
-      case None => Seq.empty
+    (json \ "enums").asOpt[JsValue] match {
       case Some(enums: JsObject) => {
-        enums.fields.map { v =>
+        enums.fields.flatMap { v =>
           v match {
-            case(key, value) => InternalEnum(key, value.as[JsObject])
+            case(key, value) => value.asOpt[JsObject].map(InternalEnum(key, _))
           }
         }
       }
+      case _ => Seq.empty
     }
   }
 
