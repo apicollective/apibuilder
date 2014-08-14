@@ -1,7 +1,23 @@
 {
     "base_url": "http://localhost:9000",
     "name": "Reference Api",
+
+    "enums": {
+	"age_group": {
+	    "values": [
+		{ "name": "Youth", "description": "under 18" },
+		{ "name": "Adult", "description": "18 and over" }
+	    ]
+	}
+    },
+
     "models": {
+	"echo": {
+	    "fields": [
+                { "name": "value", "type": "string" }
+	    ]
+	},
+
         "user_list": {
             "fields": [
                 { "name": "users", "type": "[user]" }
@@ -55,7 +71,7 @@
                 { "name": "guid", "type": "uuid" },
                 { "name": "email", "type": "string" },
                 { "name": "active", "type": "boolean" },
-                { "name": "age_group", "type": "string", "enum": ["Youth", "Adult"] }
+                { "name": "age_group", "type": "age_group" }
             ]
         },
 
@@ -69,9 +85,21 @@
         }
     },
 
-    "resources": [
-        {
-            "model": "organization",
+    "resources": {
+	"echo": {
+	    "operations": [
+		{
+		    "method": "GET",
+                    "parameters": [
+                        { "name": "foo", "type": "string", "required": false },
+                        { "name": "optional_messages", "type": "[string]", "required": false },
+                        { "name": "required_messages", "type": "[string]" }
+                    ]
+                }
+	    ]
+	},
+
+        "organization": {
             "operations": [
                 {
                     "method": "POST",
@@ -105,8 +133,8 @@
                 }
             ]
         },
-        {
-            "model": "user",
+
+        "user": {
             "operations": [
                 {
                     "method": "POST",
@@ -140,8 +168,8 @@
                 }
             ]
         },
-        {
-            "model": "member",
+
+        "member": {
             "operations": [
                 {
                     "method": "POST",
@@ -180,5 +208,5 @@
                 }
             ]
         }
-    ]
+    }
 }

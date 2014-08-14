@@ -29,7 +29,7 @@ case class Play2RouteGenerator(service: ServiceDescription) {
         Play2Route(op, resource)
       }
     }
-    if (all.size == 0) {
+    if (all.isEmpty) {
       None
     } else {
       val maxVerbLength = all.map(_.verb.length).sorted.last
@@ -45,7 +45,8 @@ case class Play2RouteGenerator(service: ServiceDescription) {
           r.method,
           "(",
           r.params.mkString(", "),
-          ")"
+          ")",
+          r.paramComments.map( c => "\n" + c ).getOrElse("")
         ).mkString("")
       }.mkString("\n"))
     }
@@ -54,69 +55,74 @@ case class Play2RouteGenerator(service: ServiceDescription) {
 
 private[generator] case class Play2Route(op: Operation, resource: Resource) {
 
-  lazy val verb = op.method
-  lazy val url = op.path
-  lazy val method = s"$controllerName.$methodName"
+  val verb = op.method
+  val url = op.path
+  val params = parametersWithTypesAndDefaults(op.parameters.filter(!_.multiple).filter(_.location != ParameterLocation.Form))
 
-  lazy val params = if (Util.isJsonDocumentMethod(verb)) {
-    pathParameters
+  /**
+    * Play does not have native support for providing a list as a
+    * query parameter. Document these query parameters in the routes
+    * file - but do not implement.
+    */
+  private val parametersToComment = op.parameters.filter(_.multiple).filter(_.location != ParameterLocation.Form)
+  val paramComments = if (parametersToComment.isEmpty) {
+    None
   } else {
-    parameters
+    Some(
+      Seq(
+        "# Additional parameters to GET /echos",
+        parametersToComment.map { p =>
+          "#   - " + parameterWithType(p)
+        }.mkString("\n")
+      ).mkString("\n")
+    )
   }
 
-  private lazy val parameters = parametersWithTypes(op.parameters)
-  private lazy val pathParameters = parametersWithTypes(op.pathParameters)
+  val method = "%s.%s".format(
+    "controllers." + Text.underscoreToInitCap(op.model.plural),
+    GeneratorUtil.urlToMethodName(resource.path, op.method, url)
+  )
 
-  private lazy val methodName = GeneratorUtil.urlToMethodName(resource.path, op.method, url)
-
-  private lazy val controllerName: String = "controllers." + Text.underscoreToInitCap(op.model.plural)
-
-  private def parametersWithTypes(params: Seq[Parameter]): Seq[String] = {
+  private def parametersWithTypesAndDefaults(params: Seq[Parameter]): Seq[String] = {
     params.map { param =>
       Seq(
-        Some(s"${param.name}: ${scalaDataType(param)}"),
+        Some(parameterWithType(param)),
         param.default.map( d => s"?= ${d}" )
       ).flatten.mkString(" ")
-              }
+    }
+  }
+
+  private def parameterWithType(param: Parameter): String = {
+    s"${param.name}: ${scalaDataType(param)}"
   }
 
   private def scalaDataType(param: Parameter): String = {
     param.paramtype match {
-
       case dt: ModelParameterType => {
         sys.error("Model parameter types not supported in play routes")
       }
-
       case et: EnumParameterType => {
         // TODO: Should we use the real class here or leave to user to convert?
-        if (param.required) {
-          "String"
-        } else {
-          s"Option[String]"
-        }
+        qualifyParam(ScalaDataType.ScalaStringType.name, param.required, param.multiple)
       }
-
       case dt: PrimitiveParameterType => {
-        val scalaType = dt.datatype match {
-          case Datatype.StringType => "String"
-          case Datatype.DoubleType => "Double"
-          case Datatype.LongType => "Long"
-          case Datatype.IntegerType => "Int"
-          case Datatype.BooleanType => "Boolean"
-          case Datatype.DecimalType => "BigDecimal"
-          case Datatype.UuidType => "java.util.UUID"
-          case Datatype.DateTimeIso8601Type => "org.joda.time.DateTime"
-          case Datatype.UnitType => "Unit"
-          case Datatype.MapType => sys.error("Map not allowed as a parameter")
-        }
-
-        if (param.required) {
-          scalaType
-        } else {
-          s"Option[$scalaType]"
-        }
+        val name = ScalaDataType(dt.datatype).name
+        qualifyParam(name, param.required, param.multiple)
       }
     }
   }
+
+  private def qualifyParam(name: String, required: Boolean, multiple: Boolean): String = {
+    if (!required && multiple) {
+      s"Option[Seq[$name]]"
+    } else if (!required) {
+      s"Option[$name]"
+    } else if (multiple) {
+      s"Seq[$name]"
+    } else {
+      name
+    }
+  }
+
 }
 

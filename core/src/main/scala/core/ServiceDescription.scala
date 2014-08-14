@@ -89,8 +89,6 @@ case class Operation(model: Model,
 
   lazy val label = "%s %s".format(method, path)
 
-  lazy val pathParameters = parameters.filter { _.location == ParameterLocation.Path }
-
 }
 
 object Resource {

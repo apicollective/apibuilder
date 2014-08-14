@@ -127,7 +127,7 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
   val body: Option[ScalaModel] = operation.body.map(new ScalaModel(serviceDescription, _))
 
   val parameters: List[ScalaParameter] = {
-    operation.parameters.toList.map { new ScalaParameter(serviceDescription, _) }
+    operation.parameters.toList.map { new ScalaParameter(_) }
   }
 
   lazy val pathParameters = parameters.filter { _.location == ParameterLocation.Path }
@@ -243,7 +243,7 @@ class ScalaField(modelName: String, field: Field) {
   }
 }
 
-class ScalaParameter(serviceDescription: ServiceDescription, param: Parameter) {
+class ScalaParameter(param: Parameter) {
 
   def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(param.name))
 
