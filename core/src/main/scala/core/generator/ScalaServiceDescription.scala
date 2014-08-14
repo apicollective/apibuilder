@@ -71,6 +71,8 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription, metada
     case Some(name) => name + "." + ScalaUtil.packageName(serviceDescription.name)
   }
 
+  val packageNamePrivate = packageName.split("\\.").last
+
   val resources = serviceDescription.resources.map { new ScalaResource(serviceDescription, packageName, _) }
 
 }
