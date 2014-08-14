@@ -142,7 +142,11 @@ require 'bigdecimal'
       private
       def to_query(params={})
         parts = (params || {}).map do |k,v|
-          "%s=%s" % [k, CGI.escape(v.to_s)]
+          if v.respond_to?(:each)
+            v.map { |el| "%s=%s" % [k, CGI.escape(el.to_s)] }
+          else
+            "%s=%s" % [k, CGI.escape(v.to_s)]
+          end
         end
         parts.empty? ? nil : parts.join("&")
       end
