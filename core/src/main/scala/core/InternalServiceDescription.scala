@@ -254,7 +254,7 @@ object InternalOperation {
                 case other => {
                   InternalResponse(
                     code = code,
-                    warnings = Seq("Value must be an JsObject")
+                    warnings = Seq("Value must be a JsObject")
                   )
                 }
               }
