@@ -301,6 +301,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
 
     val modelNames = internalServiceDescription.get.models.map { _.name }.toSet
+    val enumNames = internalServiceDescription.get.enums.map { _.name }.toSet
 
     val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
@@ -315,10 +316,10 @@ case class ServiceDescriptionValidator(apiJson: String) {
                   None
                 }
                 case None => {
-                  if (modelNames.contains(typeName)) {
+                  if (modelNames.contains(typeName) || enumNames.contains(typeName)) {
                     None
                   } else {
-                    Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of a model")
+                    Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of an enum or model")
                   }
                 }
               }
@@ -418,9 +419,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(!_.method.isEmpty).flatMap { op =>
         val types = if (Util.isJsonDocumentMethod(op.method.get)) { 
-          ValidDatatypes ++ internalServiceDescription.get.models.filter(!_.name.isEmpty).map(_.name)
+          ValidDatatypes ++
+          internalServiceDescription.get.models.filter(!_.name.isEmpty).map(_.name) ++
+          internalServiceDescription.get.enums.filter(!_.name.isEmpty).map(_.name)
         } else {
-          ValidQueryDatatypes
+          ValidQueryDatatypes ++
+          internalServiceDescription.get.enums.filter(!_.name.isEmpty).map(_.name)
         }
 
         op.parameters.filter { !_.name.isEmpty }.flatMap { p =>
@@ -447,18 +451,16 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
           Datatype.findByName(typeName) match {
 
-            case Some(dt: Datatype) => {
-              None
-            }
+            case Some(dt: Datatype) => None
 
             case None => {
-              internalServiceDescription.get.models.find(_.name == typeName) match {
-                case None => {
-                  Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${param.name.get}] has an invalid datatype[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of a model")
-                }
-                case Some(m: InternalModel) => {
-                  None
-                }
+              val model = internalServiceDescription.get.models.find(_.name == typeName)
+              val enum = internalServiceDescription.get.enums.find(_.name == typeName)
+
+              if (model.isEmpty && enum.isEmpty) {
+                Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${param.name.get}] has an invalid datatype[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of an enum or model")
+              } else {
+                None
               }
             }
           }

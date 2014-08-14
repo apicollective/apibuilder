@@ -24,6 +24,19 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
             { "name": "age_group", "type": "age_group"%s }
           ]
         }
+      },
+
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "parameters": [
+                { "name": "age_group", "type": "age_group", "required": false }
+              ]
+            }
+          ]
+        }
       }
     }
     """
