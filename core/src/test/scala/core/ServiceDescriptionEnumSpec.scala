@@ -21,15 +21,35 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
       "models": {
         "user": {
           "fields": [
-            { "name": "age_group", "type": "age_group" }
+            { "name": "age_group", "type": "age_group"%s }
           ]
         }
       }
     }
     """
 
+  describe("defaults") {
+
+    it("supports a known default") {
+      val json = baseJson.format("", """, "default": "Twenties" """)
+      val validator = ServiceDescriptionValidator(json)
+      validator.errors.mkString("") should be("")
+      val field = validator.serviceDescription.get.models.head.fields.find(_.name == "age_group").get
+      field.default should be(Some("Twenties"))
+    }
+
+    it("validates unknown defaults") {
+      val json = baseJson.format("", """, "default": "other" """)
+      val validator = ServiceDescriptionValidator(json)
+      validator.errors.mkString("") should be("Model[user] field[age_group] Default[other] is not valid. Must be one of: Twenties, Thirties")
+    }
+
+  }
+
+
+
   it("field can be defined as an enum") {
-    val json = baseJson.format("")
+    val json = baseJson.format("", "")
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
@@ -45,7 +65,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
   }
 
   it("validates that enum values must be valid symbols") {
-    val json = baseJson.format(""", { "name": "1" } """)
+    val json = baseJson.format(""", { "name": "1" } """, "")
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("Enum[age_group] value[1] is invalid: Name must start with a letter")
   }

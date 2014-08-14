@@ -141,17 +141,39 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   /**
-   * Validates that any defaults specified for fields are valid for the field datatype
+   * Validates that any defaults specified for fields are valid:
+   *   Valid based on the datatype
+   *   If an enum, the default is listed as a value for that enum
    */
   private def validateFieldDefaults(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
       model.fields.filter { f => !f.fieldtype.isEmpty && !f.name.isEmpty && !f.default.isEmpty }.flatMap { field =>
         val name = field.fieldtype.get
-        Datatype.findByName(name).flatMap { dt =>
-          if (Field.isValid(dt, field.default.get)) {
-            None
-          } else {
-            Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid for datatype[$name]")
+        Datatype.findByName(name) match {
+          case None => {
+            internalServiceDescription.get.enums.find(_.name == name) match {
+              case None => None
+              case Some(enum) => {
+                enum.values.filter(!_.name.isEmpty).map(_.name.get) match {
+                  case Nil => None
+                  case values => {
+                    if (values.contains(field.default.get)) {
+                      None
+                    } else {
+                      Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid. Must be one of: " + values.mkString(", "))
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          case Some(dt) => {
+            if (Field.isValid(dt, field.default.get)) {
+              None
+            } else {
+              Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid for datatype[$name]")
+            }
           }
         }
       }
