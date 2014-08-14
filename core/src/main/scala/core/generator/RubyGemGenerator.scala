@@ -341,7 +341,11 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
 
   private def parseEnumArgument(name: String, enumName: String, required: Boolean, multiple: Boolean): String = {
     val value = s"opts.delete(:${name})"
-    val klass = Text.underscoreToInitCap(enumName)
+    val klass = "%s::Models::%s".format(
+      moduleName,
+      Text.underscoreToInitCap(enumName)
+    )
+
     s"HttpClient::Helper.to_klass('$name', $klass.apply($value), $klass, :required => $required, :multiple => $multiple)"
   }
 

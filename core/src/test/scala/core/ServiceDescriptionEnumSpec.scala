@@ -59,8 +59,6 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
 
   }
 
-
-
   it("field can be defined as an enum") {
     val json = baseJson.format("", "")
     val validator = ServiceDescriptionValidator(json)
