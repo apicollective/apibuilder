@@ -1,71 +1,60 @@
 package apidoc.models {
+  /**
+   * Generated source code.
+   */
   case class Code(
-    target: Code.Target,
+    target: Target,
     source: String
   )
-  object Code {
 
-    sealed trait Target
-
-    object Target {
-
-      case object Avroschema extends Target { override def toString = "avro_schema" }
-      case object Play22client extends Target { override def toString = "play_2_2_client" }
-      case object Play23client extends Target { override def toString = "play_2_3_client" }
-      case object Play2xjson extends Target { override def toString = "play_2_x_json" }
-      case object Play2xroutes extends Target { override def toString = "play_2_x_routes" }
-      case object Rubyclient extends Target { override def toString = "ruby_client" }
-      case object Scalamodels extends Target { override def toString = "scala_models" }
-
-      /**
-       * UNDEFINED captures values that are sent either in error or
-       * that were added by the server after this library was
-       * generated. We want to make it easy and obvious for users of
-       * this library to handle this case gracefully.
-       *
-       * We use all CAPS for the variable name to avoid collisions
-       * with the camel cased values above.
-       */
-      case class UNDEFINED(override val toString: String) extends Target
-
-      /**
-       * all returns a list of all the valid, known values. We use
-       * lower case to avoid collisions with the camel cased values
-       * above.
-       */
-      val all = Seq(Avroschema, Play22client, Play23client, Play2xjson, Play2xroutes, Rubyclient, Scalamodels)
-
-      private[this]
-      val byName = all.map(x => x.toString -> x).toMap
-
-      def apply(value: String): Target = fromString(value).getOrElse(UNDEFINED(value))
-
-      def fromString(value: String): scala.Option[Target] = byName.get(value)
-
-    }
-  }
+  /**
+   * Represents a single domain name (e.g. www.apidoc.me). When a new user registers
+   * and confirms their email, we automatically associated that user with a member of
+   * the organization associated with their domain. For example, if you confirm your
+   * account with an email address of foo@gilt.com, we will automatically add you as
+   * a member to the organization with domain gilt.com.
+   */
   case class Domain(
     name: String
   )
+
   case class Error(
     code: String,
     message: String
   )
+
   case class Healthcheck(
     status: String
   )
+
+  /**
+   * A membership represents a user in a specific role to an organization.
+   * Memberships cannot be created directly. Instead you first create a membership
+   * request, then that request is either accepted or declined.
+   */
   case class Membership(
     guid: java.util.UUID,
     user: User,
     organization: Organization,
     role: String
   )
+
+  /**
+   * A membership request represents a user requesting to join an organization with a
+   * specificed role (e.g. as a member or an admin). Membership requests can be
+   * reviewed by any current admin of the organization who can either accept or
+   * decline the request.
+   */
   case class MembershipRequest(
     guid: java.util.UUID,
     user: User,
     organization: Organization,
     role: String
   )
+
+  /**
+   * An organization is used to group a set of services together.
+   */
   case class Organization(
     guid: java.util.UUID,
     key: String,
@@ -73,44 +62,122 @@ package apidoc.models {
     domains: scala.collection.Seq[Domain] = Nil,
     metadata: scala.Option[OrganizationMetadata] = None
   )
+
+  /**
+   * Supplemental (non-required) information about an organization
+   */
   case class OrganizationMetadata(
     packageName: scala.Option[String] = None
   )
+
+  /**
+   * A service has a name and multiple versions of an API (Interface).
+   */
   case class Service(
     guid: java.util.UUID,
     name: String,
     key: String,
     description: scala.Option[String] = None
   )
+
+  /**
+   * A user is a top level person interacting with the api doc server.
+   */
   case class User(
     guid: java.util.UUID,
     email: String,
     name: scala.Option[String] = None
   )
+
+  /**
+   * Used only to validate json files - used as a resource where http status code
+   * defines success
+   */
+  case class Validation(
+    valid: Boolean,
+    errors: scala.collection.Seq[String] = Nil
+  )
+
+  /**
+   * Represents a unique version of the service.
+   */
   case class Version(
     guid: java.util.UUID,
     version: String,
     json: String
   )
+
+  /**
+   * The target platform for code generation.
+   */
+  sealed trait Target
+
+  object Target {
+
+    /**
+     * Generates an avro JSON schema
+     */
+    case object AvroSchema extends Target { override def toString = "avro_schema" }
+    /**
+     * Generates a client w/ no dependencies external to play framework 2.2
+     */
+    case object Play22Client extends Target { override def toString = "play_2_2_client" }
+    /**
+     * Generates a client w/ no dependencies external to play framework 2.3
+     */
+    case object Play23Client extends Target { override def toString = "play_2_3_client" }
+    case object Play2XJson extends Target { override def toString = "play_2_x_json" }
+    case object Play2XRoutes extends Target { override def toString = "play_2_x_routes" }
+    case object RubyClient extends Target { override def toString = "ruby_client" }
+    case object ScalaModels extends Target { override def toString = "scala_models" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Target
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(AvroSchema, Play22Client, Play23Client, Play2XJson, Play2XRoutes, RubyClient, ScalaModels)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Target = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Target] = byName.get(value)
+
+  }
 }
 
 package apidoc.models {
   package object json {
-    import play.api.libs.json._
+    import play.api.libs.json.__
+    import play.api.libs.json.JsString
+    import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
 
-    private implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
+    private[apidoc] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
-    private implicit val jsonWritesUUID = new Writes[java.util.UUID] {
+    private[apidoc] implicit val jsonWritesUUID = new Writes[java.util.UUID] {
       def writes(x: java.util.UUID) = JsString(x.toString)
     }
 
-    private implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
+    private[apidoc] implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       import org.joda.time.format.ISODateTimeFormat.dateTimeParser
       dateTimeParser.parseDateTime(str)
     }
 
-    private implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
+    private[apidoc] implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
       def writes(x: org.joda.time.DateTime) = {
         import org.joda.time.format.ISODateTimeFormat.dateTime
         val str = dateTime.print(x)
@@ -118,33 +185,25 @@ package apidoc.models {
       }
     }
 
-    implicit val jsonReadsApiDocCode_Target = __.read[String].map(Code.Target.apply)
-
-    implicit val jsonWritesApiDocCode_Target = new Writes[Code.Target] {
-      def writes(x: Code.Target) = JsString(x.toString)
+    implicit val jsonReadsApiDocEnum_Target = __.read[String].map(Target.apply)
+    implicit val jsonWritesApiDocEnum_Target = new Writes[Target] {
+      def writes(x: Target) = JsString(x.toString)
     }
-
     implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
-        (__ \ "target").read[Code.Target] and
+        (__ \ "target").read[Target] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApiDocCode: play.api.libs.json.Writes[Code] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
-        (__ \ "target").write[Code.Target] and
+        (__ \ "target").write[Target] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
 
     implicit def jsonReadsApiDocDomain: play.api.libs.json.Reads[Domain] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (__ \ "name").read[String].map { x => new Domain(name = x) }
     }
 
@@ -155,8 +214,6 @@ package apidoc.models {
     }
 
     implicit def jsonReadsApiDocError: play.api.libs.json.Reads[Error] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "code").read[String] and
         (__ \ "message").read[String]
@@ -164,8 +221,6 @@ package apidoc.models {
     }
 
     implicit def jsonWritesApiDocError: play.api.libs.json.Writes[Error] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "code").write[String] and
         (__ \ "message").write[String]
@@ -173,8 +228,6 @@ package apidoc.models {
     }
 
     implicit def jsonReadsApiDocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
     }
 
@@ -185,8 +238,6 @@ package apidoc.models {
     }
 
     implicit def jsonReadsApiDocMembership: play.api.libs.json.Reads[Membership] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "user").read[User] and
@@ -196,8 +247,6 @@ package apidoc.models {
     }
 
     implicit def jsonWritesApiDocMembership: play.api.libs.json.Writes[Membership] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "user").write[User] and
@@ -207,8 +256,6 @@ package apidoc.models {
     }
 
     implicit def jsonReadsApiDocMembershipRequest: play.api.libs.json.Reads[MembershipRequest] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "user").read[User] and
@@ -218,8 +265,6 @@ package apidoc.models {
     }
 
     implicit def jsonWritesApiDocMembershipRequest: play.api.libs.json.Writes[MembershipRequest] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "user").write[User] and
@@ -229,8 +274,6 @@ package apidoc.models {
     }
 
     implicit def jsonReadsApiDocOrganization: play.api.libs.json.Reads[Organization] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "key").read[String] and
@@ -241,8 +284,6 @@ package apidoc.models {
     }
 
     implicit def jsonWritesApiDocOrganization: play.api.libs.json.Writes[Organization] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "key").write[String] and
@@ -253,8 +294,6 @@ package apidoc.models {
     }
 
     implicit def jsonReadsApiDocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (__ \ "package_name").readNullable[String].map { x => new OrganizationMetadata(packageName = x) }
     }
 
@@ -265,8 +304,6 @@ package apidoc.models {
     }
 
     implicit def jsonReadsApiDocService: play.api.libs.json.Reads[Service] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "name").read[String] and
@@ -276,8 +313,6 @@ package apidoc.models {
     }
 
     implicit def jsonWritesApiDocService: play.api.libs.json.Writes[Service] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "name").write[String] and
@@ -287,8 +322,6 @@ package apidoc.models {
     }
 
     implicit def jsonReadsApiDocUser: play.api.libs.json.Reads[User] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "email").read[String] and
@@ -297,8 +330,6 @@ package apidoc.models {
     }
 
     implicit def jsonWritesApiDocUser: play.api.libs.json.Writes[User] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "email").write[String] and
@@ -306,9 +337,21 @@ package apidoc.models {
       )(unlift(User.unapply _))
     }
 
+    implicit def jsonReadsApiDocValidation: play.api.libs.json.Reads[Validation] = {
+      (
+        (__ \ "valid").read[Boolean] and
+        (__ \ "errors").readNullable[scala.collection.Seq[String]].map(_.getOrElse(Nil))
+      )(Validation.apply _)
+    }
+
+    implicit def jsonWritesApiDocValidation: play.api.libs.json.Writes[Validation] = {
+      (
+        (__ \ "valid").write[Boolean] and
+        (__ \ "errors").write[scala.collection.Seq[String]]
+      )(unlift(Validation.unapply _))
+    }
+
     implicit def jsonReadsApiDocVersion: play.api.libs.json.Reads[Version] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "version").read[String] and
@@ -317,8 +360,6 @@ package apidoc.models {
     }
 
     implicit def jsonWritesApiDocVersion: play.api.libs.json.Writes[Version] = {
-      import play.api.libs.json._
-      import play.api.libs.functional.syntax._
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "version").write[String] and
@@ -376,11 +417,15 @@ package apidoc {
 
     def memberships: Memberships = Memberships
 
+    def organizationMetadata: OrganizationMetadata = OrganizationMetadata
+
     def organizations: Organizations = Organizations
 
     def services: Services = Services
 
     def users: Users = Users
+
+    def validations: Validations = Validations
 
     def versions: Versions = Versions
 
@@ -632,6 +677,29 @@ package apidoc {
         DELETE(s"/memberships/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    trait OrganizationMetadata {
+      /**
+       * Update metadata for this organization
+       */
+      def put(organizationMetadata: apidoc.models.OrganizationMetadata, 
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.OrganizationMetadata]
+    }
+
+    object OrganizationMetadata extends OrganizationMetadata {
+      override def put(organizationMetadata: apidoc.models.OrganizationMetadata, 
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.OrganizationMetadata] = {
+        val payload = play.api.libs.json.Json.toJson(organizationMetadata)
+
+        PUT(s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/metadata", payload).map {
+          case r if r.status == 200 => r.json.as[apidoc.models.OrganizationMetadata]
+          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -912,6 +980,27 @@ package apidoc {
       }
     }
 
+    trait Validations {
+      def post(
+        json: scala.Option[String] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Validation]
+    }
+
+    object Validations extends Validations {
+      override def post(
+        json: scala.Option[String] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Validation] = {
+        val payload = play.api.libs.json.Json.obj(
+          "json" -> play.api.libs.json.Json.toJson(json)
+        )
+
+        POST(s"/validations", payload).map {
+          case r if r.status == 200 => r.json.as[apidoc.models.Validation]
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
     trait Versions {
       /**
        * Search all versions of this service. Results are always paginated.
@@ -1011,7 +1100,7 @@ package apidoc {
       }
     }
 
-    private val UserAgent = "apidoc:0.4.68 http://www.apidoc.me/gilt/code/api-doc/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.4.72 http://www.apidoc.me/gilt/code/api-doc/0.0.1-dev/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
@@ -1074,13 +1163,13 @@ package apidoc {
 
   }
 
-  case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception
+  case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body)
 
   package error {
 
     import apidoc.models.json._
 
-    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception {
+    case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body) {
 
       lazy val errors = response.json.as[scala.collection.Seq[apidoc.models.Error]]
 
