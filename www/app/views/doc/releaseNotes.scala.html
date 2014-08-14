@@ -1,5 +1,60 @@
 @doc.main("Release notes") {
 
+<h3>0.5.0</h3>
+
+  <ul>
+
+    <li> Simple command line validation of api.json files! To validate
+    a file, you can now use a public REST endpoint:
+
+    <pre>curl -XPOST -d @@./api.json http://api.apidoc.me/validations</pre>
+    </li>
+
+    <li> Organization metadata now part of settings - To access, visit
+    http://www.apidoc.me, click on your organization, click on
+    settings, then click on Metadata. Currently we have one setting
+    which is the package name to use for JVM based clients. This
+    allows you to specify explicitly the package name for all
+    generated clients.
+    See <a href='https://github.com/gilt/apidoc/issues/86'>Issue
+    86</a></li>
+
+    <li> Expand support for body to include primitive types and enums.
+    See <a href='https://github.com/gilt/apidoc/issues/139'>Issue
+    139</a></li>
+
+    <li> Play and ruby clients now use strong types for all parameters
+    of type enum. Previously these were sent as Strings.
+    See <a href='https://github.com/gilt/apidoc/issues/127'>Issue
+    127</a></li>
+
+    <li> Add support to play and ruby clients for GET parameters that
+    are lists - parameters are now sent as proper HTTP parameters. For
+    example, a GET method with type "[id]" will now generate HTTP
+    requests like /foo?id=1&id=2&... Note that as Play framework does
+    not have native support for collections in its routes file, these
+    parameters are explicitly excluded from the generated routes file
+    - instead you will see a comment describing the additional
+    parameter.
+    See <a href='https://github.com/gilt/apidoc/issues/139'>Issue
+    139</a></li>
+
+    <li> Better JSON validation around requiring JsObjects for things
+    like models, enum, body, etc.
+    See <a href='https://github.com/gilt/apidoc/issues/138'>Issue 138</a>
+    and <a href='https://github.com/gilt/apidoc/issues/134'>Issue 134</a>
+    for examples.
+    </li>
+
+    <li> Better error messages when explicitly speciying a 404
+    response w/ a type.
+    See <a href='https://github.com/gilt/apidoc/issues/135'>Issue
+    135</a>.
+    </li>
+
+  </ul>
+
+
 <h3>0.4.71</h3>
 
   <ul>
