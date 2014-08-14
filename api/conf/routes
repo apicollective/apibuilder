@@ -8,7 +8,7 @@ POST       /membership_requests/:guid/decline        controllers.MembershipReque
 GET        /memberships                              controllers.Memberships.get(org_guid: Option[java.util.UUID], org_key: Option[String], user_guid: Option[java.util.UUID], role: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 GET        /memberships/:guid                        controllers.Memberships.getByGuid(guid: java.util.UUID)
 DELETE     /memberships/:guid                        controllers.Memberships.deleteByGuid(guid: java.util.UUID)
-PUT        /organizations/:key/metadata              controllers.OrganizationMetadata.put(key: String)
+PUT        /organizations/:key/metadata              controllers.OrganizationMetadataController.put(key: String)
 GET        /organizations                            controllers.Organizations.get(guid: Option[java.util.UUID], user_guid: Option[java.util.UUID], key: Option[String], name: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 GET        /organizations/:key                       controllers.Organizations.getByKey(key: String)
 POST       /organizations                            controllers.Organizations.post()

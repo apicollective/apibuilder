@@ -1,7 +1,6 @@
 package db
 
-
-import core.{ Role, UrlKey }
+import core.{ OrganizationMetadata, Role, UrlKey }
 import anorm._
 import lib.{ Validation, ValidationError }
 import play.api.db._

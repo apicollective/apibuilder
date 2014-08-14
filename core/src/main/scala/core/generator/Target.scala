@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ServiceDescription, Text}
+import core.{OrganizationMetadata, ServiceDescription, Text}
 
 sealed trait Status
 
@@ -80,15 +80,16 @@ object Target {
 
   val Implemented = All.filter(_.status != Status.Proposal)
 
-  def generate(target: Target, apidocVersion: String, orgKey: String, sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
+  def generate(target: Target, apidocVersion: String, orgKey: String, metadata: OrganizationMetadata, sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
     val userAgent = target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
+    lazy val ssd = new ScalaServiceDescription(sd, Some(metadata))
     target.key match {
       case "ruby_client" => RubyGemGenerator.generate(sd, userAgent)
-      case "play_2_2_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, sd, userAgent)
-      case "play_2_3_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, sd, userAgent)
+      case "play_2_2_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, ssd, userAgent)
+      case "play_2_3_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, ssd, userAgent)
       case "play_2_x_routes" => Play2RouteGenerator.generate(sd)
-      case "play_2_x_json" => Play2Models.apply(sd)
-      case "scala_models" => ScalaCaseClasses.generate(sd)
+      case "play_2_x_json" => Play2Models.apply(ssd)
+      case "scala_models" => ScalaCaseClasses.generate(ssd)
       case "avro_schema" => AvroSchemas.apply(sd)
       case (other) => {
         sys.error(s"unsupported code generation for target[$other]")

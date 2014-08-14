@@ -1,5 +1,6 @@
 package db
 
+import core.OrganizationMetadata
 import lib.Validation
 import org.scalatest.{ FunSpec, Matchers }
 import org.junit.Assert._

@@ -2,21 +2,12 @@ package db
 
 import core.Text
 import lib.{Validation, ValidationError}
+import core.OrganizationMetadata
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
-
-case class OrganizationMetadata(
-  package_name: Option[String]
-)
-
-object OrganizationMetadata {
-  val Empty = OrganizationMetadata(package_name = None)
-
-  implicit val organizationMetadataWrites = Json.writes[OrganizationMetadata]
-}
 
 case class OrganizationMetadataForm(
   package_name: Option[String] = None

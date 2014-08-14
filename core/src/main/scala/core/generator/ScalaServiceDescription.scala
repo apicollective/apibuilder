@@ -58,7 +58,7 @@ object ScalaUtil {
 
 }
 
-class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
+class ScalaServiceDescription(val serviceDescription: ServiceDescription, metadata: Option[OrganizationMetadata] = None) {
 
   val name = safeName(serviceDescription.name)
 
@@ -66,7 +66,10 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
 
   val enums = serviceDescription.enums.map { new ScalaEnum(_) }
 
-  val packageName = ScalaUtil.packageName(serviceDescription.name)
+  val packageName: String = metadata.flatMap(_.package_name) match {
+    case None => ScalaUtil.packageName(serviceDescription.name)
+    case Some(name) => name + "." + ScalaUtil.packageName(serviceDescription.name)
+  }
 
   val resources = serviceDescription.resources.map { new ScalaResource(serviceDescription, packageName, _) }
 
