@@ -40,9 +40,13 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Model named[foo] not found")
   }
 
+  it("support primitive types with body") {
+    val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "string" }"""))
+    //validator.errors.mkString("") should be("")
+  }
+
   it("validates if body is not a map") {
     val validator = ServiceDescriptionValidator(baseJson.format("POST", """"string""""))
-    println(validator.errors.mkString(""))
     validator.errors.mkString("") should be(s"""Resource[message] POST /messages/:mimeType: body declaration must be an object, e.g. { "type": "string" }""")
   }
 

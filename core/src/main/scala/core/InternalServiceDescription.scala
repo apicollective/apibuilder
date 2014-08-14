@@ -269,11 +269,11 @@ object InternalOperation {
 
     val body = (json \ "body") match {
       case o: JsObject => (o \ "type").asOpt[String]
+      case u: JsUndefined => None
       case v: JsValue => {
         warnings = Seq(s"""body declaration must be an object, e.g. { "type": ${v} }""")
         None
       }
-      case _ => None
     }
 
     InternalOperation(method = (json \ "method").asOpt[String].map(_.toUpperCase),
