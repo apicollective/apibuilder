@@ -1,4 +1,8 @@
-GET      /echos                     controllers.Echos.get(foo: Option[String])
+GET      /echoes                    controllers.Echoes.get(foo: Option[String])
+# Additional parameters to GET /echos
+#   - optional_messages: Option[Seq[String]]
+#   - required_messages: Seq[String]
+GET      /echoes/arrays-only        controllers.Echoes.getArraysOnly()
 # Additional parameters to GET /echos
 #   - optional_messages: Option[Seq[String]]
 #   - required_messages: Seq[String]

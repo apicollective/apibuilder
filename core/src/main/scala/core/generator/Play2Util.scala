@@ -10,18 +10,46 @@ object Play2Util {
     if (op.queryParameters.isEmpty) {
       None
     } else {
-      Some(
-        Seq(
-          "val query = Seq(",
-          op.queryParameters.map { p =>
+      val arrayParams = op.queryParameters.filter(_.multiple) match {
+        case Nil => Seq.empty
+        case params => {
+          params.map { p =>
             if (p.isOption) {
-              s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
+              s"""  ${p.name}.getOrElse(Seq.empty).map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
             } else {
-              s"""  Some("${p.originalName}" -> ${ScalaDataType.asString(p.name, p.baseType)})"""
+              s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
             }
-          }.mkString(",\n"),
-          ").flatten"
-        ).mkString("\n")
+          }
+        }
+      }
+      val arrayParamString = arrayParams.mkString(" ++\n")
+
+      val singleParams = op.queryParameters.filter(!_.multiple) match {
+        case Nil => Seq.empty
+        case params => {
+          Seq(
+            "val query = Seq(",
+            params.map { p =>
+              if (p.isOption) {
+                s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
+              } else {
+                s"""  Some("${p.originalName}" -> ${ScalaDataType.asString(p.name, p.baseType)})"""
+              }
+            }.mkString(",\n"),
+            ").flatten"
+          )
+        }
+      }
+      val singleParamString = singleParams.mkString("\n")
+
+      Some(
+        if (singleParams.isEmpty) {
+          "val query = " + arrayParamString.trim
+        } else if (arrayParams.isEmpty) {
+          singleParamString
+        } else {
+          singleParamString + " ++\n" + arrayParamString
+        }
       )
     }
   }

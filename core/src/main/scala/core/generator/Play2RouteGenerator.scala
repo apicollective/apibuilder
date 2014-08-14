@@ -79,7 +79,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
   }
 
   val method = "%s.%s".format(
-    "controllers." + Text.underscoreToInitCap(op.model.plural),
+    "controllers." + Text.underscoreAndDashToInitCap(op.model.plural),
     GeneratorUtil.urlToMethodName(resource.path, op.method, url)
   )
 

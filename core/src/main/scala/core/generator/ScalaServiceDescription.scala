@@ -76,7 +76,7 @@ class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
   val name: String = ScalaUtil.toClassName(model.name)
 
-  val plural: String = underscoreToInitCap(model.plural)
+  val plural: String = underscoreAndDashToInitCap(model.plural)
 
   val description: Option[String] = model.description
 
@@ -162,7 +162,7 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
 
 class ScalaResponse(packageName: String, method: String, response: Response) {
 
-  val scalaType: String = underscoreToInitCap(response.datatype)
+  val scalaType: String = underscoreAndDashToInitCap(response.datatype)
   val isUnit = scalaType == "Unit"
   val isMultiple = response.multiple
   val isOption = !isMultiple && !Util.isJsonDocumentMethod(method)

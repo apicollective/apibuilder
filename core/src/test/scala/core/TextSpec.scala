@@ -125,16 +125,20 @@ class TextSpec extends FunSpec with Matchers {
     Text.underscoreToInitCap("foo_bar") should be("FooBar")
   }
 
+  it("underscoreAndDashToInitCap") {
+    Text.underscoreAndDashToInitCap("FooBar") should be("FooBar")
+    Text.underscoreAndDashToInitCap("fooBar") should be("FooBar")
+    Text.underscoreAndDashToInitCap("foo_bar") should be("FooBar")
+    Text.underscoreAndDashToInitCap("FooBar") should be("FooBar")
+    Text.underscoreAndDashToInitCap("fooBar") should be("FooBar")
+    Text.underscoreAndDashToInitCap("foo-bar") should be("FooBar")
+    Text.underscoreAndDashToInitCap("foo-bar_baz") should be("FooBarBaz")
+  }
+
   it("camelCaseToUnderscore") {
     Text.camelCaseToUnderscore("Hey") should be("Hey")
     Text.camelCaseToUnderscore("HeyThere") should be("Hey_There")
     Text.camelCaseToUnderscore("heyThere") should be("hey_There")
-  }
-
-  it("dashToInitCap") {
-    Text.dashToInitCap("FooBar") should be("FooBar")
-    Text.dashToInitCap("fooBar") should be("FooBar")
-    Text.dashToInitCap("foo-bar") should be("FooBar")
   }
 
   it("snakeToCamelCase") {

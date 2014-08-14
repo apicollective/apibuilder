@@ -13,6 +13,7 @@
 
     "models": {
 	"echo": {
+	    "plural": "echoes",
 	    "fields": [
                 { "name": "value", "type": "string" }
 	    ]
@@ -95,7 +96,16 @@
                         { "name": "optional_messages", "type": "[string]", "required": false },
                         { "name": "required_messages", "type": "[string]" }
                     ]
+                },
+		{
+		    "method": "GET",
+		    "path": "/arrays-only",
+                    "parameters": [
+                        { "name": "optional_messages", "type": "[string]", "required": false },
+                        { "name": "required_messages", "type": "[string]" }
+                    ]
                 }
+
 	    ]
 	},
 

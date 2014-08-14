@@ -96,11 +96,11 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
   describe("with reference-api service") {
     lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
 
-    describe("multiple query parameters") {
+    it("supports multiple query parameters") {
       val echoResource = getResource(service, "echo")
-      val op = getMethod(service, "echo", "GET", "/echos")
+      val op = getMethod(service, "echo", "GET", "/echoes")
       val r = Play2Route(op, echoResource)
-      r.method should be("controllers.Echos.get")
+      r.method should be("controllers.Echoes.get")
       r.params.mkString(" ") should be("foo: Option[String]")
       r.paramComments.getOrElse("") should be("""
 # Additional parameters to GET /echos
@@ -112,6 +112,13 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
         "core/src/test/resources/generators/play-2-route-reference-api.routes",
         Play2RouteGenerator(service).generate().getOrElse("")
       )
+    }
+
+    it("camel cases hypen in route") {
+      val echoResource = getResource(service, "echo")
+      val op = getMethod(service, "echo", "GET", "/echoes/arrays-only")
+      val r = Play2Route(op, echoResource)
+      r.method should be("controllers.Echoes.getArraysOnly")
     }
 
   }

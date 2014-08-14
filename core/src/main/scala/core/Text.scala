@@ -116,8 +116,8 @@ object Text {
     initCap(value.split("_"))
   }
 
-  def dashToInitCap(value: String): String = {
-    initCap(value.split("-"))
+  def underscoreAndDashToInitCap(value: String): String = {
+    initCap(value.split("_").flatMap(_.split("-")))
   }
 
   def snakeToCamelCase(value: String) = {

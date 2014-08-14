@@ -14,8 +14,8 @@ private[generator] object GeneratorUtil {
       url.replaceAll("^" + resourcePath, "")
     }).split("/").filter { !_.isEmpty }
 
-    val named = pieces.filter { _.startsWith(":") }.map { name => Text.initCap(Text.safeName(name.slice(1, name.length))) }
-    val notNamed = pieces.filter { !_.startsWith(":") }.map( name => Text.initCap(Text.safeName(name)) )
+    val named = pieces.filter { _.startsWith(":") }.map { name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name.slice(1, name.length)))) }
+    val notNamed = pieces.filter { !_.startsWith(":") }.map( name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name))) )
 
     if (named.isEmpty && notNamed.isEmpty) {
       httpMethod.toLowerCase
