@@ -24,7 +24,8 @@ object Metadata extends Controller {
 
   def edit(orgKey: String) = AuthenticatedOrg { implicit request =>
     val tpl = request.mainTemplate("Edit Metadata")
-    Ok(views.html.metadata.form(tpl, metadataForm))
+    val filledForm = metadataForm.fill(request.org.metadata.getOrElse(OrganizationMetadata()))
+    Ok(views.html.metadata.form(tpl, filledForm))
   }
 
   def postEdit(orgKey: String) = AuthenticatedOrg.async { implicit request =>
@@ -37,7 +38,14 @@ object Metadata extends Controller {
       },
 
       valid => {
-        sys.error("TODO: Post metadata:" + valid)
+        request.api.organizationMetadata.put(valid, request.org.key).map { m =>
+          Redirect(routes.Metadata.show(request.org.key)).flashing("success" -> s"Metadata updated")
+        }.recover {
+          case response: apidoc.error.ErrorsResponse => {
+            Ok(views.html.metadata.form(tpl, boundForm, response.errors.map(_.message)))
+          }
+        }
+
       }
 
     )

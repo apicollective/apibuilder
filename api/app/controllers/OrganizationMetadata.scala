@@ -13,7 +13,7 @@ object OrganizationMetadata extends Controller {
         Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
       }
       case s: JsSuccess[OrganizationMetadataForm] => {
-        val form = s.get
+        val form = s.get.copy(package_name = s.get.package_name.map(_.trim))
         OrganizationDao.findByUserAndKey(request.user, key) match {
           case None => NotFound
           case Some(org) => {
