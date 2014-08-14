@@ -97,28 +97,26 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
   }
 
   private def scalaDataType(param: Parameter): String = {
+    assert(!param.multiple)
+
     param.paramtype match {
       case dt: ModelParameterType => {
         sys.error("Model parameter types not supported in play routes")
       }
       case et: EnumParameterType => {
         // TODO: Should we use the real class here or leave to user to convert?
-        qualifyParam(ScalaDataType.ScalaStringType.name, param.required, param.multiple)
+        qualifyParam(ScalaDataType.ScalaStringType.name, param.required)
       }
       case dt: PrimitiveParameterType => {
         val name = ScalaDataType(dt.datatype).name
-        qualifyParam(name, param.required, param.multiple)
+        qualifyParam(name, param.required)
       }
     }
   }
 
-  private def qualifyParam(name: String, required: Boolean, multiple: Boolean): String = {
-    if (!required && multiple) {
-      s"Option[Seq[$name]]"
-    } else if (!required) {
+  private def qualifyParam(name: String, required: Boolean): String = {
+    if (!required) {
       s"Option[$name]"
-    } else if (multiple) {
-      s"Seq[$name]"
     } else {
       name
     }
