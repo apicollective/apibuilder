@@ -332,16 +332,17 @@ object ScalaDataType {
   }
 
   def asString(varName: String, d: ScalaDataType): String = d match {
-    case x @ ScalaStringType => s"$varName"
-    case x @ ScalaIntegerType => s"$varName.toString"
-    case x @ ScalaDoubleType => s"$varName.toString"
-    case x @ ScalaLongType => s"$varName.toString"
-    case x @ ScalaBooleanType => s"$varName.toString"
-    case x @ ScalaDecimalType => s"$varName.toString"
-    case x @ ScalaUuidType => s"$varName.toString"
-    case x @ ScalaDateTimeIso8601Type => {
+    case ScalaStringType => s"$varName"
+    case ScalaIntegerType => s"$varName.toString"
+    case ScalaDoubleType => s"$varName.toString"
+    case ScalaLongType => s"$varName.toString"
+    case ScalaBooleanType => s"$varName.toString"
+    case ScalaDecimalType => s"$varName.toString"
+    case ScalaUuidType => s"$varName.toString"
+    case ScalaDateTimeIso8601Type => {
       s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
-    case x => throw new UnsupportedOperationException(s"unsupported conversion of type ${d.name} to query string for $varName")
+    case ScalaEnumType(_) => s"$varName.toString"
+    case _ => throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
   }
 }

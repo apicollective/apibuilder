@@ -9,6 +9,16 @@ class ServiceDescriptionPathParametersSpec extends FunSpec with Matchers {
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
+
+      "enums": {
+        "age_group": {
+          "values": [
+            { "name": "Youth" },
+            { "name": "Adult" }
+          ]
+        }
+      },
+
       "models": {
 
         "tag": {
@@ -23,7 +33,8 @@ class ServiceDescriptionPathParametersSpec extends FunSpec with Matchers {
             { "name": "name", "type": "string" },
             { "name": "created_at", "type": "date-time-iso8601" },
             { "name": "tag", "type": "tag" },
-            { "name": "tags", "type": "map" }
+            { "name": "tags", "type": "map" },
+            { "name": "age_group", "type": "age_group" }
           ]
         }
       },
@@ -52,6 +63,11 @@ class ServiceDescriptionPathParametersSpec extends FunSpec with Matchers {
 
   it("parameters not defined on the model are accepted (assumed strings)") {
     val json = baseJson.format("GET", "/:some_string")
+    ServiceDescriptionValidator(json).errors.mkString("") should be("")
+  }
+
+  it("enums can be path parameters - assumed type is string") {
+    val json = baseJson.format("GET", "/:age_group")
     ServiceDescriptionValidator(json).errors.mkString("") should be("")
   }
 

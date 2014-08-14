@@ -499,6 +499,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validatePathParameters(): Seq[String] = {
+    val enums = internalServiceDescription.get.enums.map(_.name).toSet
+
     internalServiceDescription.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
       internalServiceDescription.get.models.find(_.name == resource.modelName.get) match {
         case None => None
@@ -523,7 +525,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
                 case Some(Datatype.StringType) => None
                 case Some(Datatype.UuidType) => None
                 case _ => {
-                  Some(s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[$typeName]. Only numbers and strings can be specified as path parameters")
+                  if (enums.contains(typeName)) {
+                    // Enums are treated as strings here
+                    None
+                  } else {
+                    Some(s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[$typeName]. Only numbers and strings can be specified as path parameters")
+                  }
                 }
               }
             }
