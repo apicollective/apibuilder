@@ -1,20 +1,20 @@
 package controllers
 
-import db.{ OrganizationDao, OrganizationMetadata, OrganizationMetadataDao, OrganizationMetadataForm }
+import db.{ OrganizationDao, OrganizationMetadataDao, OrganizationMetadataForm }
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
 
 object OrganizationMetadata extends Controller {
 
-  def put(orgKey: String) = Authenticated(parse.json) { request =>
+  def put(key: String) = Authenticated(parse.json) { request =>
     request.body.validate[OrganizationMetadataForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
       }
       case s: JsSuccess[OrganizationMetadataForm] => {
         val form = s.get
-        OrganizationDao.findByUserAndKey(request.user, orgKey) match {
+        OrganizationDao.findByUserAndKey(request.user, key) match {
           case None => NotFound
           case Some(org) => {
             OrganizationMetadataForm.validate(form) match {

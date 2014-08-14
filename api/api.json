@@ -270,7 +270,7 @@
         },
 
         "organization_metadata": {
-	    "path": "/organizations/metadata",
+	    "path": "/organizations/:key/metadata",
 	    "operations": [
 		{
 		    "method": "PUT",
