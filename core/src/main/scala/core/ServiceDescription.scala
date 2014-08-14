@@ -83,7 +83,7 @@ case class Operation(model: Model,
                      method: String,
                      path: String,
                      description: Option[String],
-                     body: Option[Model],
+                     body: Option[Body],
                      parameters: Seq[Parameter],
                      responses: Seq[Response]) {
 
@@ -121,14 +121,22 @@ object Operation {
     // Capture any path parameters that were not explicitly annotated
     val pathParameters = internal.namedPathParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(model, _) }
 
-    val bodyModel: Option[Model] = internal.body match {
-      case None => None
-      case Some(modelName) => {
-        Some(
-          models.find(_.name == modelName).getOrElse {
-            sys.error(s"Operation specifies body[$modelName] which references an undefined model")
+    val body: Option[Body] = internal.body.map { name =>
+      Datatype.findByName(name) match {
+        case Some(dt) => PrimitiveBody(dt)
+        case None => {
+          models.find(_.name == name) match {
+            case Some(model) => ModelBody(model.name)
+            case None => {
+              enums.find(_.name == name) match {
+                case Some(enum) => EnumBody(enum.name)
+                case None => {
+                  sys.error(s"Operation specifies body[$name] which references an undefined model")
+                }
+              }
+            }
           }
-        )
+        }
       }
     }
 
@@ -136,7 +144,7 @@ object Operation {
               method = method,
               path = internal.path,
               description = internal.description,
-              body = bodyModel,
+              body = body,
               parameters = pathParameters ++ internalParams,
               responses = internal.responses.map { Response(_) })
   }
@@ -152,6 +160,11 @@ case class Field(name: String,
                  example: Option[String] = None,
                  minimum: Option[Long] = None,
                  maximum: Option[Long] = None)
+
+sealed trait Body
+case class PrimitiveBody(datatype: Datatype) extends Body
+case class ModelBody(name: String) extends Body
+case class EnumBody(name: String) extends Body
 
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType

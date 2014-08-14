@@ -169,7 +169,9 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
       if (Util.isJsonDocumentMethod(op.method)) {
         op.body match {
           case None => paramStrings.append("hash")
-          case Some(model: Model) => paramStrings.append(model.name)
+          case Some(PrimitiveBody(dt)) => paramStrings.append("value")
+          case Some(ModelBody(name)) => paramStrings.append(name)
+          case Some(EnumBody(name)) => paramStrings.append(name)
         }
       }
 
@@ -222,10 +224,19 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
             sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
             requestBuilder.append(".with_json(hash.to_json)")
           }
-          case Some(model: Model) => {
-            val klass = s"$moduleName::Models::${Text.underscoreToInitCap(model.name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_class('${model.name}', ${model.name}, $klass)")
-            requestBuilder.append(s".with_json(${model.name}.to_hash.to_json)")
+          case Some(PrimitiveBody(dt)) => {
+            sb.append("        HttpClient::Preconditions.assert_class('value', value, ${rubyClass(dt)})")
+            requestBuilder.append(".with_body(value)")
+          }
+          case Some(ModelBody(name)) => {
+            val klass = s"$moduleName::Models::${Text.underscoreToInitCap(name)}"
+            sb.append(s"        HttpClient::Preconditions.assert_class('name', $name, $klass)")
+            requestBuilder.append(s".with_json($name.to_hash.to_json)")
+          }
+          case Some(EnumBody(name)) => {
+            val klass = s"$moduleName::Models::${Text.underscoreToInitCap(name)}"
+            sb.append(s"        HttpClient::Preconditions.assert_class('name', $name, $klass)")
+            requestBuilder.append(s".with_json($name.to_hash.to_json)")
           }
         }
       }

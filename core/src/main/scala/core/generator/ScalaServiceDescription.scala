@@ -89,6 +89,16 @@ class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
 }
 
+class ScalaBody(val body: Body) {
+
+  val name: String = body match {
+    case PrimitiveBody(dt) => "value"
+    case ModelBody(name) => ScalaUtil.toClassName(name)
+    case EnumBody(name) => ScalaUtil.toClassName(name)
+  }
+
+}
+
 class ScalaEnum(val enum: Enum) {
 
   val name: String = ScalaUtil.toClassName(enum.name)
@@ -127,7 +137,7 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
 
   val description: Option[String] = operation.description
 
-  val body: Option[ScalaModel] = operation.body.map(new ScalaModel(serviceDescription, _))
+  val body: Option[ScalaBody] = operation.body.map(new ScalaBody(_))
 
   val parameters: List[ScalaParameter] = {
     operation.parameters.toList.map { new ScalaParameter(_) }
@@ -142,17 +152,25 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
   val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
 
   val argList: Option[String] = operation.body match {
-    case None => {
-      ScalaUtil.fieldsToArgList(parameters.map(_.definition))
-    }
-    case Some(bodyModel: Model) => {
+    case None => ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+    case Some(PrimitiveBody(dt)) => {
+      val typeName = ScalaDataType(dt).name
       Some(
         Seq(
-          Some(s"${Text.initLowerCase(model.name)}: ${resource.packageName}.models.${model.name}"),
+          Some(s"value: $typeName"),
           ScalaUtil.fieldsToArgList(parameters.map(_.definition))
         ).flatten.mkString(", ")
       )
     }
+    case Some(ModelBody(name)) => Some(bodyClassArg(name))
+    case Some(EnumBody(name)) => Some(bodyClassArg(name))
+  }
+
+  private def bodyClassArg(name: String): String = {
+    Seq(
+      Some(s"${Text.initLowerCase(name)}: ${resource.packageName}.models.${name}"),
+      ScalaUtil.fieldsToArgList(parameters.map(_.definition))
+    ).flatten.mkString(", ")
   }
 
   val responses: Seq[ScalaResponse] = {

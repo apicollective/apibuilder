@@ -9,6 +9,16 @@ class BodyParameterSpec extends FunSpec with Matchers {
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
+
+      "enums": {
+        "age_group": {
+          "values": [
+            { "name": "Twenties" },
+            { "name": "Thirties" }
+          ]
+        }
+      },
+
       "models": {
         "message": {
           "fields": [
@@ -40,9 +50,20 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Model named[foo] not found")
   }
 
-  it("support primitive types with body") {
+  it("support primitive types in body") {
     val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "string" }"""))
-    //validator.errors.mkString("") should be("")
+    validator.errors.mkString("") should be("")
+    val model = validator.serviceDescription.get.models.find(_.name == "message").get
+    val op = validator.serviceDescription.get.resources.head.operations.head
+    op.body should be(Some(PrimitiveBody(Datatype.StringType)))
+  }
+
+  it("support enums in body") {
+    val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "age_group" }"""))
+    validator.errors.mkString("") should be("")
+    val model = validator.serviceDescription.get.models.find(_.name == "message").get
+    val op = validator.serviceDescription.get.resources.head.operations.head
+    op.body should be(Some(EnumBody("age_group")))
   }
 
   it("validates if body is not a map") {
@@ -62,7 +83,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(model))
+    op.body should be(Some(ModelBody(model.name)))
   }
 
   it("If body specified, all parameters are either PATH or QUERY") {

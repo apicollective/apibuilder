@@ -392,9 +392,10 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
   private def validateParameterBodies(): Seq[String] = {
     val modelNames = internalServiceDescription.get.models.map(_.name).toSet
+    val enumNames = internalServiceDescription.get.enums.map(_.name).toSet
 
-    val modelsNotFound = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(op => !op.body.isEmpty && !modelNames.contains(op.body.get)).map { op =>
+    val typesNotFound = internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(op => !op.body.isEmpty && !modelNames.contains(op.body.get) && !enumNames.contains(op.body.get) && Datatype.findByName(op.body.get).isEmpty).map { op =>
         s"Resource[${resource.modelName.getOrElse("")}] ${op.label} body: Model named[${op.body.get}] not found"
       }
     }
@@ -405,7 +406,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
-    modelsNotFound ++ invalidMethods
+    typesNotFound ++ invalidMethods
   }
 
   private def validateParameters(): Seq[String] = {
