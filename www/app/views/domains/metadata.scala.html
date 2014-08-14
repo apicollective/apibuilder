@@ -1,0 +1,18 @@
+@(
+  tpl: models.MainTemplate,
+  metadata: apidoc.models.OrganizationMetadata
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  @tpl.org.map { org =>
+    <div class="pull-right">
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Metadata.edit(org.key)">Edit</a>
+    </div>
+
+    <ul>
+      <li>Package name: @metadata.packageName.getOrElse("N/A")</li>
+    </ul>
+  }
+
+}

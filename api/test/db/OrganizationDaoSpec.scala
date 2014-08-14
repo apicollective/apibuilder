@@ -20,8 +20,16 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     Membership.isUserAdmin(user, org) should be(true)
   }
 
-  it("creates with domains") {
-    val domains = Seq(UUID.randomUUID.toString + ".com", UUID.randomUUID.toString + ".org")
+  it("reverseDomain") {
+    OrganizationDao.reverseDomain("gilt.com") should be("com.gilt")
+    OrganizationDao.reverseDomain("foo.gilt.com") should be("com.gilt.foo")
+
+  }
+
+  describe("domain") {
+
+    val domainName = UUID.randomUUID.toString
+    val domains = Seq(domainName + ".com", UUID.randomUUID.toString + ".org")
     val org = OrganizationDao.createWithAdministrator(
       Util.createdBy,
       OrganizationForm(
@@ -30,10 +38,17 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       )
     )
 
-    org.domains.map(_.name).mkString(" ") should be(domains.mkString(" "))
+    it("creates with domains") {
+      org.domains.map(_.name).mkString(" ") should be(domains.mkString(" "))
+      val fetched = OrganizationDao.findByGuid(org.guid).get
+      fetched.domains.map(_.name).sorted.mkString(" ") should be(domains.sorted.mkString(" "))
+    }
 
-    val fetched = OrganizationDao.findByGuid(org.guid).get
-    fetched.domains.map(_.name).sorted.mkString(" ") should be(domains.sorted.mkString(" "))
+    it("defaults metadata.package_name to reverse of first domain if provided") {
+      val fetched = OrganizationDao.findByGuid(org.guid).get
+      fetched.metadata.package_name should be(Some("com." + domainName))
+    }
+
   }
 
   it("creates with metadata") {

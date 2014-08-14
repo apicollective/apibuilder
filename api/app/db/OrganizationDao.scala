@@ -115,16 +115,19 @@ object OrganizationDao {
     }
   }
 
+  private[db] def reverseDomain(name: String): String = {
+    name.split("\\.").reverse.mkString(".")
+  }
+
   private def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): Organization = {
     require(form.name.length >= MinNameLength, "Name too short")
 
-    val metadata = form.metadata match {
-      case None => OrganizationMetadata.Empty
-      case Some(form) => {
-        OrganizationMetadata(
-          package_name = form.package_name
-        )
-      }
+    val defaultPackageName = form.domains.getOrElse(Seq.empty).headOption.map(reverseDomain(_))
+
+    val initialMetadataForm = form.metadata.getOrElse(OrganizationMetadataForm.Empty)
+    val metadataForm = initialMetadataForm.package_name match {
+      case None => initialMetadataForm.copy(package_name = defaultPackageName)
+      case Some(_) => initialMetadataForm
     }
 
     val org = Organization(
@@ -132,7 +135,9 @@ object OrganizationDao {
       key = UrlKey.generate(form.name),
       name = form.name,
       domains = form.domains.getOrElse(Seq.empty).map(Domain(_)),
-      metadata = metadata
+      metadata = OrganizationMetadata(
+        package_name = metadataForm.package_name
+      )
     )
 
     SQL("""
@@ -151,8 +156,8 @@ object OrganizationDao {
       OrganizationDomainDao.create(c, createdBy, org, domain.name)
     }
 
-    form.metadata.foreach { form =>
-      OrganizationMetadataDao.create(c, createdBy, org, form)
+    if (metadataForm != OrganizationMetadataForm.Empty) {
+      OrganizationMetadataDao.create(c, createdBy, org, metadataForm)
     }
 
     org

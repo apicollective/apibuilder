@@ -1,6 +1,7 @@
 package db
 
-import core.{ Role, UrlKey }
+import core.Text
+import lib.{Validation, ValidationError}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -23,6 +24,28 @@ case class OrganizationMetadataForm(
 
 object OrganizationMetadataForm {
   implicit val OrganizationMetadataFormReads = Json.reads[OrganizationMetadataForm]
+
+  val Empty = OrganizationMetadataForm()
+
+  def validate(form: OrganizationMetadataForm): Seq[ValidationError] = {
+    form.package_name match {
+      case None => Seq.empty
+      case Some(name: String) => {
+        if (isValidPackageName(name)) {
+          Seq.empty
+        } else {
+          Validation.invalidName
+        }
+      }
+    }
+  }
+
+  private[db] def isValidPackageName(name: String): Boolean = {
+    name.split("\\.").find(!Text.isValidName(_)) match {
+      case None => true
+      case _ => false
+    }
+  }
 }
 
 object OrganizationMetadataDao {
@@ -48,6 +71,14 @@ object OrganizationMetadataDao {
      where organization_guid = {organization_guid}::uuid
        and deleted_at is null
   """
+
+
+  def upsert(user: User, org: Organization, form: OrganizationMetadataForm): OrganizationMetadata = {
+    DB.withTransaction { implicit c =>
+      softDelete(c, user, org)
+      create(c, user, org, form)
+    }
+  }
 
   private[db] def create(createdBy: User, org: Organization, form: OrganizationMetadataForm): OrganizationMetadata = {
     DB.withConnection { implicit c =>

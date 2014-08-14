@@ -11,8 +11,10 @@ class TextSpec extends FunSpec with Matchers {
     Text.isValidName("1vendor") should be(false)
     Text.isValidName("1") should be(false)
     Text.isValidName("_") should be(false)
+    Text.isValidName("some vendor") should be(false)
     Text.isValidName("vendor") should be(true)
     Text.isValidName("Vendor") should be(true)
+    Text.isValidName("some_vendor") should be(true)
   }
 
   it("validateName") {

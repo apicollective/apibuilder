@@ -269,6 +269,21 @@
             ]
         },
 
+        "organization_metadata": {
+	    "path": "/organizations/metadata",
+	    "operations": [
+		{
+		    "method": "PUT",
+		    "description": "Update metadata for this organization",
+		    "body": { "type": "organization_metadata" },
+                    "responses": {
+                        "200": { "type": "organization_metadata" },
+                        "409": { "type": "[error]" }
+                    }
+                }
+	    ]
+	},
+
 	"domain": {
             "path": "/domains/:orgKey",
 	    "operations": [

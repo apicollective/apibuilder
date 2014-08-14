@@ -1,5 +1,6 @@
 package db
 
+import lib.Validation
 import org.scalatest.{ FunSpec, Matchers }
 import org.junit.Assert._
 import java.util.UUID
@@ -17,6 +18,19 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
   it("create") {
     val org = Util.createOrganization()
     createOrganizationMetadata(org).package_name should be(Some("com.gilt"))
+  }
+
+  it("upsert") {
+    val org = Util.createOrganization()
+    val form = OrganizationMetadataForm(
+      package_name = Some("com.giltgroupe")
+    )
+
+    OrganizationMetadataDao.upsert(Util.createdBy, org, form)
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.package_name should be(Some("com.giltgroupe"))
+
+    OrganizationMetadataDao.upsert(Util.createdBy, org, form.copy(package_name = Some("com.gilt")))
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.package_name should be(Some("com.gilt"))
   }
 
   it("raises error on duplicate") {
@@ -45,6 +59,27 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
     OrganizationMetadataDao.findByOrganizationGuid(org.guid) should be(None)
     createOrganizationMetadata(org)
     OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.package_name should be(Some("com.gilt"))
+  }
+
+  describe("OrganizationMetadataForm") {
+    val form = OrganizationMetadataForm(
+      package_name = None
+    )
+
+    it("no package name") {
+      OrganizationMetadataForm.validate(form) should be(Seq.empty)
+    }
+
+    it("valid package name") {
+      OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt"))) should be(Seq.empty)
+      OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt.foo"))) should be(Seq.empty)
+      OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt.foo.bar"))) should be(Seq.empty)
+      OrganizationMetadataForm.validate(form.copy(package_name = Some("me.apidoc"))) should be(Seq.empty)
+    }
+
+    it("invalid package name") {
+      OrganizationMetadataForm.validate(form.copy(package_name = Some("com gilt"))) should be(Validation.invalidName())
+    }
   }
 
 }

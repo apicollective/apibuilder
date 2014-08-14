@@ -32,5 +32,5 @@ case class SettingSection(name: String)
 object SettingSection {
   val Domains = SettingSection("domains")
   val Members = SettingSection("members")
+  val Metadata = SettingSection("metadata")
 }
-
