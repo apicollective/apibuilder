@@ -76,7 +76,15 @@ object Play2Util {
       None
 
     } else if (!op.body.isEmpty) {
-      Some(s"val payload = play.api.libs.json.Json.toJson(${Text.initLowerCase(op.body.get.name)})")
+      Some(
+        op.body.get.body match {
+          case PrimitiveBody(dt) => {
+            s"val payload = " + ScalaDataType.asString(Text.initLowerCase(op.body.get.name), ScalaDataType(dt))
+          }
+          case ModelBody(name) => s"val payload = play.api.libs.json.Json.toJson(${Text.initLowerCase(op.body.get.name)})"
+          case EnumBody(name) => s"val payload = ${Text.initLowerCase(op.body.get.name)}.toString"
+        }
+      )
 
     } else {
       val params = op.formParameters.map { param =>

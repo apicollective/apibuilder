@@ -1,4 +1,4 @@
-@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, operation: core.Operation)
+@(org: apidoc.models.Organization, service: apidoc.models.Service, version: String, sd: core.ServiceDescription, operation: core.Operation)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -8,7 +8,12 @@
   </thead>
   <tbody>
    <tr>
-     <td>@modelType(org, service, version, operation.body.get, false)</td>
+     <td>@{operation.body.get match {
+           case pt: core.PrimitiveBody => datatype(pt.datatype, false)
+           case mt: core.ModelBody => modelTypeByName(org, service, version, sd, mt.name, false)
+           case et: core.EnumBody => enumType(org, service, version, et.name, false)
+         }}
+     </td>
    </tr>
   </tbody>
 </table>

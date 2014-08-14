@@ -225,7 +225,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
             requestBuilder.append(".with_json(hash.to_json)")
           }
           case Some(PrimitiveBody(dt)) => {
-            sb.append("        HttpClient::Preconditions.assert_class('value', value, ${rubyClass(dt)})")
+            sb.append(s"        HttpClient::Preconditions.assert_class('value', value, ${rubyClass(dt)})")
             requestBuilder.append(".with_body(value)")
           }
           case Some(ModelBody(name)) => {
