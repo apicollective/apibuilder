@@ -58,6 +58,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateParameterTypes ++
           validateFieldTypes ++
           validateFieldDefaults ++
+          validateOperations ++
           validateResources ++
           validateParameterBodies ++
           validateParameters ++
@@ -465,6 +466,14 @@ case class ServiceDescriptionValidator(apiJson: String) {
             }
           }
         }
+      }
+    }
+  }
+
+  private def validateOperations(): Seq[String] = {
+    internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(!_.warnings.isEmpty).map { op =>
+        s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: " + op.warnings.mkString(", ")
       }
     }
   }

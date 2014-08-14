@@ -108,7 +108,8 @@ case class InternalOperation(method: Option[String],
                              namedPathParameters: Seq[String],
                              parameters: Seq[InternalParameter],
                              body: Option[String],
-                             responses: Seq[InternalResponse]) {
+                             responses: Seq[InternalResponse],
+                             warnings: Seq[String] = Seq.empty) {
 
   lazy val label = "%s %s".format(method.getOrElse(""), path)
 
@@ -264,9 +265,15 @@ object InternalOperation {
       }
     }
 
-    val body = (json \ "body").asOpt[JsObject] match {
-      case None => None
-      case Some(body: JsObject) => (body \ "type").asOpt[String]
+    var warnings: Seq[String] = Seq.empty
+
+    val body = (json \ "body") match {
+      case o: JsObject => (o \ "type").asOpt[String]
+      case v: JsValue => {
+        warnings = Seq(s"""body declaration must be an object, e.g. { "type": ${v} }""")
+        None
+      }
+      case _ => None
     }
 
     InternalOperation(method = (json \ "method").asOpt[String].map(_.toUpperCase),
@@ -275,9 +282,10 @@ object InternalOperation {
                       description = (json \ "description").asOpt[String],
                       responses = responses,
                       namedPathParameters = namedPathParameters,
-                      parameters = parameters)
+                      parameters = parameters,
+                      warnings = warnings)
+  
   }
-
 }
 
 object InternalResponse {
