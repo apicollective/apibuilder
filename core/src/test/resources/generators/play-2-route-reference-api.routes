@@ -1,0 +1,13 @@
+GET      /echos                     controllers.Echos.get(foo: Option[String])
+# Additional parameters to GET /echos
+#   - optional_messages: Option[Seq[String]]
+#   - required_messages: Seq[String]
+POST     /members                   controllers.Members.post()
+GET      /members                   controllers.Members.get(guid: Option[java.util.UUID], organization_guid: Option[java.util.UUID], user_guid: Option[java.util.UUID], role: Option[String])
+GET      /members/:organization     controllers.Members.getByOrganization(organization: java.util.UUID)
+POST     /organizations             controllers.Organizations.post()
+GET      /organizations             controllers.Organizations.get(guid: Option[java.util.UUID], name: Option[String])
+GET      /organizations/:guid       controllers.Organizations.getByGuid(guid: java.util.UUID)
+POST     /users                     controllers.Users.post()
+GET      /users                     controllers.Users.get(guid: Option[java.util.UUID], email: Option[String], active: Boolean ?= true)
+POST     /users/noop                controllers.Users.postNoop()

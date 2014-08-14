@@ -107,7 +107,11 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 #   - optional_messages: Option[Seq[String]]
 #   - required_messages: Seq[String]
 """.trim)
-      println(Play2RouteGenerator(service).generate())
+
+      TestHelper.assertEqualsFile(
+        "core/src/test/resources/generators/play-2-route-reference-api.routes",
+        Play2RouteGenerator(service).generate().getOrElse("")
+      )
     }
 
   }
