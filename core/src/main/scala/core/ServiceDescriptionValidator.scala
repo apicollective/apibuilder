@@ -53,6 +53,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateBaseUrl ++
           validateModels ++
           validateEnums ++
+          validateHeaders ++
           validateModelAndEnumNamesAreDistinct ++
           validateFields ++
           validateParameterTypes ++
@@ -223,13 +224,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
 
     val valuesWithInvalidNames = internalServiceDescription.get.enums.flatMap { enum =>
-      enum.values.filter(!_.name.isEmpty).flatMap { value =>
-        Text.validateName(value.name.get) match {
-          case Nil => None
-          case errors => {
-            Some(s"Enum[${enum.name}] value[${value.name.get}] is invalid: ${errors.mkString(" ")}")
-          }
-        }
+      enum.values.filter(v => !v.name.isEmpty && !Text.startsWithLetter(v.name.get)).map { value =>
+        s"Enum[${enum.name}] value[${value.name.get}] is invalid: must start with a letter"
       }
     }
 
@@ -238,6 +234,35 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
 
     nameErrors ++ valueErrors ++ valuesWithoutNames ++ valuesWithInvalidNames ++ duplicates
+  }
+
+  private def validateHeaders(): Seq[String] = {
+    val enumNames = internalServiceDescription.get.enums.map(_.name).toSet
+
+    val headersWithoutNames = internalServiceDescription.get.headers.filter(_.name.isEmpty) match {
+      case Nil => Seq.empty
+      case headers => Seq("All headers must have a name")
+    }
+
+    val headersWithoutTypes = internalServiceDescription.get.headers.filter(_.headertype.isEmpty) match {
+      case Nil => Seq.empty
+      case headers => Seq("All headers must have a type")
+    }
+
+    val headersWithInvalidTypes = internalServiceDescription.get.headers.filter(h => !h.name.isEmpty && !h.headertype.isEmpty).flatMap { header =>
+      val htype = header.headertype.get
+      if (htype == Datatype.StringType.name || enumNames.contains(htype)) {
+        Seq.empty
+      } else {
+        Seq(s"Header[${header.name.get}] type[$htype] is invalid: Must be a string or the name of an enum")
+      }
+    }
+
+    val duplicates = internalServiceDescription.get.headers.filter(!_.name.isEmpty).groupBy(_.name.get.toLowerCase).filter { _._2.size > 1 }.keys.map { headerName =>
+      s"Header[$headerName] appears more than once"
+    }
+
+    headersWithoutNames ++ headersWithoutTypes ++ headersWithInvalidTypes ++ duplicates
   }
 
   /**
