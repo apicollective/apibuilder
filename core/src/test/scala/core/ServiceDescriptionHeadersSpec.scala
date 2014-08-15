@@ -39,6 +39,7 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
       ct.default should be(None)
       ct.required should be(true)
       ct.description should be(None)
+      ct.required should be(true)
 
       val foo = validator.serviceDescription.get.headers.find(_.name == "X-Foo").get
       foo.name should be("X-Foo")
