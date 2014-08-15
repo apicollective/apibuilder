@@ -13,7 +13,8 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
 
       "headers": [
         { "name": "Content-Type", "type": "content_type" },
-        { "name": "X-Foo", "type": "string", "value": "bar", "description": "test" }
+        { "name": "X-Foo", "type": "string", "description": "test", "default": "bar" },
+        { "name": "X-Bar", "type": "string", "required": false }
       ],
 
       "enums": {
@@ -35,14 +36,23 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
       val ct = validator.serviceDescription.get.headers.find(_.name == "Content-Type").get
       ct.name should be("Content-Type")
       ct.headertype should be(EnumHeaderType(ctEnum))
-      ct.value should be(None)
+      ct.default should be(None)
+      ct.required should be(true)
       ct.description should be(None)
 
       val foo = validator.serviceDescription.get.headers.find(_.name == "X-Foo").get
       foo.name should be("X-Foo")
       foo.headertype should be(StringHeaderType)
-      foo.value should be(Some("bar"))
+      foo.default should be(Some("bar"))
       foo.description should be(Some("test"))
+      foo.required should be(true)
+
+      val bar = validator.serviceDescription.get.headers.find(_.name == "X-Bar").get
+      bar.name should be("X-Bar")
+      bar.headertype should be(StringHeaderType)
+      bar.default should be(None)
+      bar.description should be(None)
+      bar.required should be(false)
     }
   }
 

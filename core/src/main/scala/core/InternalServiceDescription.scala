@@ -59,8 +59,9 @@ private[core] case class InternalServiceDescription(json: JsValue) {
             InternalHeader(
               name = JsonUtil.asOptString(o, "name"),
               headertype = JsonUtil.asOptString(o, "type"),
-              value = JsonUtil.asOptString(o, "value"),
-              description = JsonUtil.asOptString(o, "description")
+              required = JsonUtil.asOptBoolean(o \ "required").getOrElse(true),
+              description = JsonUtil.asOptString(o, "description"),
+              default = JsonUtil.asOptString(o, "default")
             )
           )
         }
@@ -119,8 +120,9 @@ case class InternalEnumValue(
 case class InternalHeader(
   name: Option[String],
   headertype: Option[String],
-  value: Option[String],
-  description: Option[String]
+  required: Boolean,
+  description: Option[String],
+  default: Option[String]
 )
 
 case class InternalResource(modelName: Option[String],
