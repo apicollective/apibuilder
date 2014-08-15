@@ -14,7 +14,8 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
       "headers": [
         { "name": "Content-Type", "type": "content_type" },
         { "name": "X-Foo", "type": "string", "description": "test", "default": "bar" },
-        { "name": "X-Bar", "type": "string", "required": false }
+        { "name": "X-Bar", "type": "string", "required": false },
+        { "name": "X-Multi", "type": "[string]" }
       ],
 
       "enums": {
@@ -40,6 +41,7 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
       ct.required should be(true)
       ct.description should be(None)
       ct.required should be(true)
+      ct.multiple should be(false)
 
       val foo = validator.serviceDescription.get.headers.find(_.name == "X-Foo").get
       foo.name should be("X-Foo")
@@ -47,6 +49,7 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
       foo.default should be(Some("bar"))
       foo.description should be(Some("test"))
       foo.required should be(true)
+      foo.multiple should be(false)
 
       val bar = validator.serviceDescription.get.headers.find(_.name == "X-Bar").get
       bar.name should be("X-Bar")
@@ -54,6 +57,15 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
       bar.default should be(None)
       bar.description should be(None)
       bar.required should be(false)
+      bar.multiple should be(false)
+
+      val multi = validator.serviceDescription.get.headers.find(_.name == "X-Multi").get
+      multi.name should be("X-Multi")
+      multi.headertype should be(StringHeaderType)
+      multi.default should be(None)
+      multi.description should be(None)
+      multi.required should be(true)
+      multi.multiple should be(true)
     }
   }
 

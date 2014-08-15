@@ -60,6 +60,7 @@ case class EnumValue(
 case class Header(
   name: String,
   headertype: HeaderType,
+  multiple: Boolean,
   required: Boolean,
   description: Option[String],
   default: Option[String]
@@ -232,6 +233,7 @@ object Header {
     Header(
       name = ih.name.get,
       headertype = headertype,
+      multiple = ih.multiple,
       required = ih.required,
       description = ih.description,
       default = ih.default

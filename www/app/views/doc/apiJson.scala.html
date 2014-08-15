@@ -75,7 +75,7 @@
     where
     <ul>
       <li><em>name</em> the name of the field. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>description</em> optional longer description for this field.</li>
       <li><em>required</em> boolean: true|false. By default all fields are considered required. To make a field optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
@@ -173,7 +173,7 @@
     where
     <ul>
       <li><em>name</em> the name of the parameter. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this parameter. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> the datatype of this parameter. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>description</em> optional longer description for this parameter.</li>
       <li><em>required</em> boolean: true|false. By default all parameters are considered required. To make a parameter optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive and enum types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
@@ -242,7 +242,7 @@
     where
     <ul>
       <li><em>name</em> the name of the header.</li>
-      <li><em>type</em> the type of this header. Acceptable values are either the name of an enum or @core.Datatype.StringType.name.</li>
+      <li><em>type</em> the type of this header. Acceptable values are either the name of an enum or string. To specify a collection (meaning multiple values for this header can be provided), the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>required</em> boolean: true|false. By default all headers are considered required. To make a parameter optional, set "required" to false.</li>
       <li><em>default</em> the default value for this header. If specified, generated clients will automatically include this header in all requests. Default values must be specified as strings.</li>
       <li><em>description</em> optional longer description for this header.</li>
