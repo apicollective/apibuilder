@@ -51,6 +51,28 @@ private[core] case class InternalServiceDescription(json: JsValue) {
     }
   }
 
+  lazy val headers: Seq[InternalHeader] = {
+    (json \ "headers").asOpt[JsArray].map(_.value).getOrElse(Seq.empty).flatMap { el =>
+      el match {
+        case o: JsObject => {
+          val parsedDatatype = JsonUtil.asOptString(o, "type").map(InternalParsedDatatype(_))
+
+          Some(
+            InternalHeader(
+              name = JsonUtil.asOptString(o, "name"),
+              headertype = parsedDatatype.map(_.name),
+              multiple = parsedDatatype.map(_.multiple).getOrElse(false),
+              required = JsonUtil.asOptBoolean(o \ "required").getOrElse(true),
+              description = JsonUtil.asOptString(o, "description"),
+              default = JsonUtil.asOptString(o, "default")
+            )
+          )
+        }
+        case _ => None
+      }
+    }
+  }
+
   lazy val resources: Seq[InternalResource] = {
     (json \ "resources").asOpt[JsValue] match {
       case None => Seq.empty
@@ -96,6 +118,15 @@ case class InternalEnum(
 case class InternalEnumValue(
   name: Option[String],
   description: Option[String]
+)
+
+case class InternalHeader(
+  name: Option[String],
+  headertype: Option[String],
+  multiple: Boolean,
+  required: Boolean,
+  description: Option[String],
+  default: Option[String]
 )
 
 case class InternalResource(modelName: Option[String],

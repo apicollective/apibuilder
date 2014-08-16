@@ -3,6 +3,10 @@
     "description": "Host API documentation for REST services, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
 
+    "headers": [
+      { "name": "X-Api-Doc", "type": "string", "description": "Example of an explicit header", "default": "www.apidoc.me" }
+    ],
+
     "enums": {
 	"target": {
 	    "description": "The target platform for code generation.",

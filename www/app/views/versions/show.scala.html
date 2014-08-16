@@ -9,6 +9,13 @@
   <div class="pull-left">
     @service.description.getOrElse("")
 
+    <h2>Headers</h2>
+    @if(service.headers.isEmpty) {
+      <em>No headers</em>
+    } else {
+      @headers(tpl.org.get, tpl.service.get, tpl.version.get, service, service.headers)
+    }
+
     <h2>Resources</h2>
     @service.resources.map { resource =>
       <div id="model-@core.UrlKey.generate(resource.model.name)"></div>

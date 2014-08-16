@@ -86,6 +86,14 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     }
   }
 
+  case class Header(name: String, value: String)
+
+  private def headers(): Seq[Header] = {
+    ssd.serviceDescription.headers.filter(!_.default.isEmpty).map { h =>
+      Header(h.name, s""""${h.default.get}"""")
+    } ++ Seq(Header("User-Agent", "UserAgent"))
+  }
+
   private def client(): String = {
     val errorsString = errors() match {
       case None => ""
@@ -101,6 +109,11 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
       case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)"""
       case false => """sys.error("PATCH method is not supported in Play Framework Version ${version.name}")"""
     }
+
+    val headerString = ".withHeaders(" +
+    headers.map { h =>
+      s""""${h.name}" -> ${h.value}"""
+    }.mkString(", ") + ")"
 
     s"""package ${ssd.packageName} {
   object helpers {
@@ -149,7 +162,7 @@ ${modelClients().indent(2)}
     def _requestHolder(path: String): ${version.requestHolderClass} = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("User-Agent" -> UserAgent)
+      val holder = play.api.libs.ws.WS.url(apiUrl + path)$headerString
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", ${version.authSchemeClass}.BASIC)
       }

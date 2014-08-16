@@ -22,6 +22,7 @@ case class ServiceDescription(internal: InternalServiceDescription) {
 
   lazy val enums: Seq[Enum] = internal.enums.map { Enum(_) }.sortBy(_.name.toLowerCase)
   lazy val models: Seq[Model] = internal.models.map { Model(this, _) }.sortBy(_.name.toLowerCase)
+  lazy val headers: Seq[Header] = internal.headers.map { Header(enums, _) }
   lazy val resources: Seq[Resource] = internal.resources.map { Resource(enums, models, _) }.sorted
   lazy val baseUrl: Option[String] = internal.baseUrl
   lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
@@ -53,8 +54,17 @@ case class EnumValue(
   name: String,
   description: Option[String]
 ) {
-  require(Text.isValidName(name), s"Enum value[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
+  require(Text.startsWithLetter(name), s"Enum value[$name] is invalid - must start with a letter")
 }
+
+case class Header(
+  name: String,
+  headertype: HeaderType,
+  multiple: Boolean,
+  required: Boolean,
+  description: Option[String],
+  default: Option[String]
+)
 
 case class Model(name: String,
                  plural: String,
@@ -171,6 +181,10 @@ case class PrimitiveFieldType(datatype: Datatype) extends FieldType
 case class ModelFieldType(modelName: String) extends FieldType
 case class EnumFieldType(enum: Enum) extends FieldType
 
+sealed trait HeaderType
+case object StringHeaderType extends HeaderType
+case class EnumHeaderType(enum: Enum) extends HeaderType
+
 sealed trait ParameterType
 case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
 case class ModelParameterType(model: Model) extends ParameterType
@@ -199,6 +213,30 @@ object Enum {
       name = ie.name,
       description = ie.description,
       values = ie.values.map { iv => EnumValue(iv.name.get, iv.description) }
+    )
+  }
+
+}
+
+object Header {
+
+  def apply(enums: Seq[Enum], ih: InternalHeader): Header = {
+    val headertype = if (ih.headertype.get == Datatype.StringType.name) {
+      StringHeaderType
+    } else {
+      val enum = enums.find(_.name == ih.headertype.get).getOrElse {
+        sys.error(s"Invalid header type[${ih.headertype.get}]")
+      }
+      EnumHeaderType(enum)
+    }
+
+    Header(
+      name = ih.name.get,
+      headertype = headertype,
+      multiple = ih.multiple,
+      required = ih.required,
+      description = ih.description,
+      default = ih.default
     )
   }
 

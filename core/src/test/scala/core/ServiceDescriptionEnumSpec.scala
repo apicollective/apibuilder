@@ -75,10 +75,10 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     }
   }
 
-  it("validates that enum values must be valid symbols") {
+  it("validates that enum values do not start with numbers") {
     val json = baseJson.format(""", { "name": "1" } """, "")
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("Enum[age_group] value[1] is invalid: Name must start with a letter")
+    validator.errors.mkString("") should be("Enum[age_group] value[1] is invalid: must start with a letter")
   }
 
 }

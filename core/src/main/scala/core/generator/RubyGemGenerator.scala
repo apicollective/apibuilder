@@ -84,7 +84,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     "\n\n" +
     service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +
     s"module ${moduleName}\n" +
-    generateClient(userAgent) +
+    generateClient() +
     "\n\n  module Clients\n\n" +
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  end" +
@@ -96,9 +96,21 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     "\nend"
   }
 
-  private def generateClient(userAgent: String): String = {
+  case class Header(name: String, value: String)
+
+  private def headers(): Seq[Header] = {
+    service.headers.filter(!_.default.isEmpty).map { h =>
+      Header(h.name, s"'${h.default.get}'")
+    } ++ Seq(Header("User-Agent", "USER_AGENT"))
+  }
+
+  private def generateClient(): String = {
     val sb = ListBuffer[String]()
     val url = service.baseUrl
+
+    val headerString = headers.map { h =>
+      s"with_header('${h.name}', ${h.value})"
+    }.mkString(".")
 
     sb.append(s"""
   class Client
@@ -114,7 +126,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
 
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil('path', path, String)
-      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('User-Agent', USER_AGENT)
+      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).$headerString
 
       if @authorization
         request.with_auth(@authorization)

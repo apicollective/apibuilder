@@ -9,10 +9,11 @@
     {
       "name": <em>name</em>,
       "base_url": <em>string</em>,
-      "models": <em>{ name: model, ... }</em>,
-      "enums": <em>{ name: enum, ... }</em>,
-      "resources": <em>{ modelName: resource, ... }</em>,
-      "description": <em>string (optional)</em>
+      "description": <em>string (optional)</em>,
+      "headers": <em>JSON Array of <a href="#header">Header</a> (optional)</em>,
+      "enums": <em>JSON Object of <a href="#enum">Enum</a> (optional)</em>,
+      "models": <em>JSON Object of <a href="#model">Model</a> (optional)</em>,
+      "resources": <em>JSON Object of <a href="#resource">Resource</a> (optional)</em>
     }
     </pre>
 
@@ -20,14 +21,16 @@
     <ul>
       <li><em>name</em> specifies the human readable name of this service - used for display and as the basis for generating a unique key for URL</li>
       <li><em>baseUrl</em> specifies the base URL where this service is hosted. Must start with http.</li>
-      <li><em>models</em> a JSON object defining all of the models in this API. The key of each object is the model name.</li>
-      <li><em>enums</em> a JSON object defining all of the enums in this API. The key of each object is the enum name.</li>
-      <li><em>resources</em> a JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the models object. </li>
       <li><em>description</em> optional description for what this service provides.</li>
+      <li><em>headers</em> a JSON array defining any HTTP Headers that the service understands or expects.See <a href="#enum">Enum</a></li>
+      <li><em>enums</em> a JSON object defining all of the enums in this API. The key of each object is the enum name.See <a href="#header">Header</a></li>
+      <li><em>models</em> a JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
+      <li><em>resources</em> a JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the models object. See <a href="#resource">Resource</a></li>
     </ul>
 
   </p>
 
+  <a name="model"></a>
   <h2>Model declaration</h2>
 
   <p>
@@ -37,7 +40,8 @@
     {
       "name" => {
         "description": <em>string (optional)</em>,
-        "fields": <em>JSON Array of Field</em>
+        "plural": <em>string (optional)</em>,
+        "fields": <em>JSON Array of <a href="#field">Field</a></em>
       }
     }
     </pre>
@@ -45,6 +49,7 @@
     where
     <ul>
       <li><em>name</em> the name of the model. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>plural</em> optional plural form of the name of this model. By default, we will pluralize the name of the model to create the plural. The plural is used as a default whereever more natural in speciying web services. For example, the default path for a resource will be the plural.</li>
       <li><em>description</em> optional longer description for what this model represents.</li>
       <li><em>fields</em> one or more fields is required. See <a href="#field">Fields</a>.</li>
     </ul>
@@ -70,9 +75,9 @@
     where
     <ul>
       <li><em>name</em> the name of the field. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>description</em> optional longer description for this field.</li>
-      <li><em>required</em> boolean: true|false. By default all fields are considered required. To make a field optional, set "required" to false</li>
+      <li><em>required</em> boolean: true|false. By default all fields are considered required. To make a field optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
     </ul>
@@ -89,7 +94,7 @@
     {
       "modelName" => {
         "path": <em>string (optional)</em>,
-        "operations": <em>JSON Array of Operations</em>
+        "operations": <em>JSON Array of <a href="#operation">Operation</a></em>
       }
     }
     </pre>
@@ -113,9 +118,9 @@
       "method": <em>string</em>,
       "path": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
-      "body": <em>JSON Object (optional)</em>,
-      "parameters": <em>JSON Array of Parameters (optional)</em>
-      "responses": <em>JSON Object (optional)</em>
+      "body": <em>JSON Object of <a href="#body">Body</a> (optional)</em>,
+      "parameters": <em>JSON Array of <a href="#parameter">Parameter</a> (optional)</em>,
+      "responses": <em>JSON Object of <a href="#response">Response</a> (optional)</em>
     }
     </pre>
 
@@ -144,7 +149,7 @@
 
     where
     <ul>
-      <li><em>type</em> the name of a model describing this body.
+      <li><em>type</em> the type of the body. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>).</li>
     </ul>
   </p>
 
@@ -168,10 +173,10 @@
     where
     <ul>
       <li><em>name</em> the name of the parameter. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this parameter. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> the datatype of this parameter. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>description</em> optional longer description for this parameter.</li>
-      <li><em>required</em> boolean: true|false. By default all parameters are considered required. To make a parameter optional, set "required" to false</li>
-      <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
+      <li><em>required</em> boolean: true|false. By default all parameters are considered required. To make a parameter optional, set "required" to false.</li>
+      <li><em>default</em> optional default value. Can only be used for primitive and enum types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this parameter used only in the produced documentation</li>
     </ul>
 
@@ -187,7 +192,7 @@
     {
       "name": <em>name</em>,
       "description": <em>string (optional)</em>,
-      "values": <em>JSON Array of EnumValues</em>
+      "values": <em>JSON Array of <a href="#enumValue">EnumValue</a></em>
     }
     </pre>
 
@@ -214,8 +219,33 @@
 
     where
     <ul>
-      <li><em>name</em> the name of the value. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>name</em> the name of the value. Names must start with a letter.</li>
       <li><em>description</em> optional longer description for this enum.</li>
+   </ul>
+
+  <a name="header"></a>
+  <h2>Header declaration</h2>
+
+  <p>
+    An header is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "name": <em>name</em>,
+      "type": <em>type</em>,
+      "required": <em>boolean (optional, true by default)</em>,
+      "default": <em>string (optional)</em>,
+      "description": <em>string (optional)</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>name</em> the name of the header.</li>
+      <li><em>type</em> the type of this header. Acceptable values are either the name of an enum or string. To specify a collection (meaning multiple values for this header can be provided), the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>required</em> boolean: true|false. By default all headers are considered required. To make a parameter optional, set "required" to false.</li>
+      <li><em>default</em> the default value for this header. If specified, generated clients will automatically include this header in all requests. Default values must be specified as strings.</li>
+      <li><em>description</em> optional longer description for this header.</li>
    </ul>
 
 
@@ -237,7 +267,7 @@
     where
     <ul>
       <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
-      <li><em>type</em> the datatype of this response. The value must be the name of a model. To specify a collection, the type name can be wrapped with "[<name>]". For example, to specify that the type is a collection of users (assuming there is a model with name user), use "[user]".</li>
+      <li><em>type</em> the datatype of this response. The value must be the name of a model. To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of users (assuming there is a model with name user), use "[user]".</li>
     </ul>
 
     There are a few conventions enforced:
@@ -260,9 +290,7 @@
 
     </ul>
 
-
   </p>
-
 
 }
 
