@@ -14,4 +14,6 @@ GET      /organizations             controllers.Organizations.get(guid: Option[j
 GET      /organizations/:guid       controllers.Organizations.getByGuid(guid: java.util.UUID)
 POST     /users                     controllers.Users.post()
 GET      /users                     controllers.Users.get(guid: Option[java.util.UUID], email: Option[String], active: Boolean ?= true)
+# Additional parameters to GET /users
+#   - organization_guids: Option[Seq[Long]]
 POST     /users/noop                controllers.Users.postNoop()

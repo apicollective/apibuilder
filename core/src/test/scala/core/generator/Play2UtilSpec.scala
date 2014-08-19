@@ -48,7 +48,7 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
 val query = Seq(
   foo.map("foo" -> _)
 ).flatten ++
-  optionalMessages.getOrElse(Seq.empty).map("optional_messages" -> _) ++
+  optionalMessages.map("optional_messages" -> _) ++
   requiredMessages.map("required_messages" -> _)
 """.trim)
   }
@@ -58,9 +58,24 @@ val query = Seq(
     val operation = ssd.resources.find(_.model.name == "Echo").get.operations.find(_.path == "/echoes/arrays-only").get
     val code = Play2Util.queryParams(operation).get
     code should be("""
-val query = optionalMessages.getOrElse(Seq.empty).map("optional_messages" -> _) ++
+val query = optionalMessages.map("optional_messages" -> _) ++
   requiredMessages.map("required_messages" -> _)
 """.trim)
+  }
+
+  describe("with reference-api service") {
+    lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
+
+    it("supports optional seq  query parameters") {
+      val ssd = new ScalaServiceDescription(service)
+      val operation = ssd.resources.find(_.model.name == "User").get.operations.find(op => op.method == "GET" && op.path == "/users").get
+
+      TestHelper.assertEqualsFile(
+        "core/src/test/resources/generators/play-2-route-util-reference-get-users.txt",
+        Play2Util.queryParams(operation).get
+      )
+    }
+
   }
 
 }

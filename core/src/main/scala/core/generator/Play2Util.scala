@@ -14,11 +14,7 @@ object Play2Util {
         case Nil => Seq.empty
         case params => {
           params.map { p =>
-            if (p.isOption) {
-              s"""  ${p.name}.getOrElse(Seq.empty).map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
-            } else {
-              s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
-            }
+            s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
           }
         }
       }

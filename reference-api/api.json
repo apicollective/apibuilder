@@ -162,6 +162,7 @@
                     "method": "GET",
                     "parameters": [
                         { "name": "guid", "type": "uuid", "required": false },
+                        { "name": "organization_guids", "type": "[long]", "description": "Limits employees to the specified organizations.", "required": false },
                         { "name": "email", "type": "string", "required": false },
                         { "name": "active", "type": "boolean", "default": true }
                     ],
