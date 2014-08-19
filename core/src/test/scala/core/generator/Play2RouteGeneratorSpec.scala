@@ -103,7 +103,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       r.method should be("controllers.Echoes.get")
       r.params.mkString(" ") should be("foo: Option[String]")
       r.paramComments.getOrElse("") should be("""
-# Additional parameters to GET /echos
+# Additional parameters to GET /echoes
 #   - optional_messages: Option[Seq[String]]
 #   - required_messages: Seq[String]
 """.trim)

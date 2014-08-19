@@ -70,7 +70,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
   } else {
     Some(
       Seq(
-        "# Additional parameters to GET /echos",
+        s"# Additional parameters to ${op.label}",
         parametersToComment.map { p =>
           "#   - " + parameterWithType(p)
         }.mkString("\n")

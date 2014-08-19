@@ -1,9 +1,9 @@
 GET      /echoes                    controllers.Echoes.get(foo: Option[String])
-# Additional parameters to GET /echos
+# Additional parameters to GET /echoes
 #   - optional_messages: Option[Seq[String]]
 #   - required_messages: Seq[String]
 GET      /echoes/arrays-only        controllers.Echoes.getArraysOnly()
-# Additional parameters to GET /echos
+# Additional parameters to GET /echoes/arrays-only
 #   - optional_messages: Option[Seq[String]]
 #   - required_messages: Seq[String]
 POST     /members                   controllers.Members.post()
