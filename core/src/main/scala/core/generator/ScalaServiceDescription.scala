@@ -169,8 +169,9 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
   }
 
   private def bodyClassArg(name: String): String = {
+    val className = ScalaUtil.toClassName(name)
     Seq(
-      Some(s"${Text.initLowerCase(name)}: ${resource.packageName}.models.${name}"),
+      Some(s"${Text.initLowerCase(name)}: ${resource.packageName}.models.${className}"),
       ScalaUtil.fieldsToArgList(parameters.map(_.definition))
     ).flatten.mkString(", ")
   }
