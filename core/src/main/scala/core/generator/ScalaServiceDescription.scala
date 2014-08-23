@@ -56,6 +56,10 @@ object ScalaUtil {
     )
   }
 
+  def toVariable(name: String): String = {
+    Text.initLowerCase(toClassName(name))
+  }
+
 }
 
 class ScalaServiceDescription(val serviceDescription: ServiceDescription, metadata: Option[OrganizationMetadata] = None) {
@@ -171,7 +175,7 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
   private def bodyClassArg(name: String): String = {
     val className = ScalaUtil.toClassName(name)
     Seq(
-      Some(s"${Text.initLowerCase(name)}: ${resource.packageName}.models.${className}"),
+      Some(s"${ScalaUtil.toVariable(name)}: ${resource.packageName}.models.${className}"),
       ScalaUtil.fieldsToArgList(parameters.map(_.definition))
     ).flatten.mkString(", ")
   }
@@ -269,7 +273,7 @@ class ScalaField(modelName: String, field: Field) {
 
 class ScalaParameter(param: Parameter) {
 
-  def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(param.name))
+  def name: String = ScalaUtil.toVariable(param.name)
 
   def originalName: String = param.name
 

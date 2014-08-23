@@ -9,6 +9,12 @@ class ScalaUtilSpec extends FunSpec with ShouldMatchers {
     ScalaUtil.toClassName("UNABLE_TO_FULFILL") should be("UnableToFulfill")
   }
 
+  it("toVariable") {
+    ScalaUtil.toVariable("Foo") should be("foo")
+    ScalaUtil.toVariable("FooBar") should be("fooBar")
+    ScalaUtil.toVariable("Foo_Bar") should be("fooBar")
+    ScalaUtil.toVariable("foo_bar") should be("fooBar")
+  }
 
   it("quoteNameIfKeyword") {
     ScalaUtil.quoteNameIfKeyword("foo") should be("foo")
