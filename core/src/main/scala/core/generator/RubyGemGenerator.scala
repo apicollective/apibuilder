@@ -167,7 +167,15 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
 
       val rubyPath = op.path.split("/").map { name =>
         if (name.startsWith(":")) {
-          "#{" + name.slice(1, name.length) + "}"
+          val varName = name.slice(1, name.length)
+          val param = pathParams.find(_.name == varName).getOrElse {
+            sys.error(s"Could not find path parameter named[$varName]")
+          }
+          param.paramtype match {
+            case t: PrimitiveParameterType => s"#{${param.name}}"
+            case m: ModelParameterType => sys.error("Models cannot be in the path")
+            case e: EnumParameterType => s"#{${param.name}.value}"
+          }
         } else {
           name
         }
@@ -203,8 +211,8 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
 
         val klass = param.paramtype match {
           case t: PrimitiveParameterType => rubyClass(t.datatype)
-          case m: ModelParameterType => Text.underscoreToInitCap(m.model.name)
-          case e: EnumParameterType => Text.underscoreToInitCap(e.enum.name)
+          case m: ModelParameterType => qualifiedClassName(m.model.name)
+          case e: EnumParameterType => qualifiedClassName(e.enum.name)
         }
 
         sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
@@ -356,19 +364,22 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     }
   }
 
+  private def qualifiedClassName(name: String): String = {
+    "%s::Models::%s".format(
+      moduleName,
+      Text.underscoreToInitCap(name)
+    )
+  }
+
   private def parseModelArgument(name: String, modelName: String, required: Boolean, multiple: Boolean): String = {
     val value = s"opts.delete(:${name})"
-    val klass = Text.underscoreToInitCap(modelName)
+    val klass = qualifiedClassName(modelName)
     s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => $required, :multiple => $multiple)"
   }
 
   private def parseEnumArgument(name: String, enumName: String, required: Boolean, multiple: Boolean): String = {
     val value = s"opts.delete(:${name})"
-    val klass = "%s::Models::%s".format(
-      moduleName,
-      Text.underscoreToInitCap(enumName)
-    )
-
+    val klass = qualifiedClassName(enumName)
     s"HttpClient::Helper.to_klass('$name', $klass.apply($value), $klass, :required => $required, :multiple => $multiple)"
   }
 
@@ -400,7 +411,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
       s"HttpClient::Helper.to_boolean('$name', $value, :required => ${required}, :multiple => ${multiple})"
 
     } else {
-      s"HttpClient::Helper.to_klass('$name', $value, ${klass}, :required => ${required}, :multiple => ${multiple})"
+      s"HttpClient::Helper.to_klass('$name', $value, $klass, :required => ${required}, :multiple => ${multiple})"
     }
 
   }
