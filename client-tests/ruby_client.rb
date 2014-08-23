@@ -14,7 +14,7 @@ module ApiDoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.5.5 http://www.apidoc.me/gilt/code/api-doc/0.5.0/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.5.6 http://www.apidoc.me/gilt/code/api-doc/0.0.1-dev/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -25,7 +25,7 @@ module ApiDoc
 
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil('path', path, String)
-      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('User-Agent', USER_AGENT)
+      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('X-Api-Doc', 'www.apidoc.me').with_header('User-Agent', USER_AGENT)
 
       if @authorization
         request.with_auth(@authorization)
@@ -92,8 +92,8 @@ module ApiDoc
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
         HttpClient::Preconditions.assert_class('serviceKey', serviceKey, String)
         HttpClient::Preconditions.assert_class('version', version, String)
-        HttpClient::Preconditions.assert_class('target', target, Target)
-        @client.request("/#{orgKey}/#{serviceKey}/#{version}/#{target}").get { |hash| ApiDoc::Models::Code.new(hash) }
+        HttpClient::Preconditions.assert_class('target', target, ApiDoc::Models::Target)
+        @client.request("/#{orgKey}/#{serviceKey}/#{version}/#{target.value}").get { |hash| ApiDoc::Models::Code.new(hash) }
       end
 
     end
@@ -558,8 +558,8 @@ module ApiDoc
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
-        @user = HttpClient::Helper.to_model_instance('user', User, opts.delete(:user), :required => true, :multiple => false)
-        @organization = HttpClient::Helper.to_model_instance('organization', Organization, opts.delete(:organization), :required => true, :multiple => false)
+        @user = HttpClient::Helper.to_model_instance('user', ApiDoc::Models::User, opts.delete(:user), :required => true, :multiple => false)
+        @organization = HttpClient::Helper.to_model_instance('organization', ApiDoc::Models::Organization, opts.delete(:organization), :required => true, :multiple => false)
         @role = HttpClient::Helper.to_klass('role', opts.delete(:role), String, :required => true, :multiple => false)
       end
 
@@ -585,8 +585,8 @@ module ApiDoc
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
-        @user = HttpClient::Helper.to_model_instance('user', User, opts.delete(:user), :required => true, :multiple => false)
-        @organization = HttpClient::Helper.to_model_instance('organization', Organization, opts.delete(:organization), :required => true, :multiple => false)
+        @user = HttpClient::Helper.to_model_instance('user', ApiDoc::Models::User, opts.delete(:user), :required => true, :multiple => false)
+        @organization = HttpClient::Helper.to_model_instance('organization', ApiDoc::Models::Organization, opts.delete(:organization), :required => true, :multiple => false)
         @role = HttpClient::Helper.to_klass('role', opts.delete(:role), String, :required => true, :multiple => false)
       end
 
@@ -611,8 +611,8 @@ module ApiDoc
         @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
         @key = HttpClient::Helper.to_klass('key', opts.delete(:key), String, :required => true, :multiple => false)
         @name = HttpClient::Helper.to_klass('name', opts.delete(:name), String, :required => true, :multiple => false)
-        @domains = HttpClient::Helper.to_model_instance('domains', Domain, opts.delete(:domains), :required => false, :multiple => true)
-        @metadata = HttpClient::Helper.to_model_instance('metadata', OrganizationMetadata, opts.delete(:metadata), :required => false, :multiple => false)
+        @domains = HttpClient::Helper.to_model_instance('domains', ApiDoc::Models::Domain, opts.delete(:domains), :required => false, :multiple => true)
+        @metadata = HttpClient::Helper.to_model_instance('metadata', ApiDoc::Models::OrganizationMetadata, opts.delete(:metadata), :required => false, :multiple => false)
       end
 
       def to_hash
