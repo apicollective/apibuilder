@@ -1,3 +1,4 @@
 target/
 logs/
 .ivy2
+client-tests/src/main/scala/clients
