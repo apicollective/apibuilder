@@ -199,7 +199,14 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
   val isSuccess = code >= 200 && code < 300
   val isNotFound = code == 404
 
-  val qualifiedScalaType: String = if (isUnit) { scalaType } else { packageName + ".models." + scalaType }
+  val qualifiedScalaType: String = if (isUnit) {
+    scalaType
+  } else {
+    Datatype.findByName(response.datatype) match {
+      case None => packageName + ".models." + scalaType
+      case Some(dt) => ScalaDataType(dt).name
+    }
+  }
 
   val resultType: String = {
     if (response.multiple) {
