@@ -61,7 +61,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     Seq(
       s"""case class ${response.errorClassName}(response: ${version.responseClass}) extends Exception(response.status + ": " + response.body) {""",
       "",
-      s"  lazy val ${response.errorVariableName} = response.json.as[${response.resultType}]",
+      s"  lazy val ${response.errorVariableName} = response.json.as[${response.qualifiedScalaType}]",
       "",
       "}"
     ).mkString("\n")
