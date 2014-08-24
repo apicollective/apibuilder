@@ -1,14 +1,13 @@
 #!/usr/bin/env ruby
 
 load 'ruby_client.rb'
-#APIDOC_URL = "http://api.apidoc.me"
-APIDOC_URL = "http://localhost:9001"
-
 CLIENT_DIR = "src/main/scala/clients"
 
+service_uri = ARGV.shift
+
 token = ARGV.shift
-if token.to_s.strip == ""
-  raise "Token required"
+if service_uri.to_s.strip == "" || token.to_s.strip == ""
+  raise "service uri and token required"
 end
 
 targets = ['play_2_2_client', 'play_2_3_client', 'play_2_x_json', 'scala_models']
@@ -30,7 +29,7 @@ cmd = "rm -f #{CLIENT_DIR}/*.downloaded.scala"
 puts cmd
 system(cmd)
 
-client = ApiDoc::Client.new(APIDOC_URL, :authorization => ApiDoc::HttpClient::Authorization.basic(token))
+client = ApiDoc::Client.new(service_uri, :authorization => ApiDoc::HttpClient::Authorization.basic(token))
 client.organizations.get.each do |org|
   #next unless orgs.include?(org.key)
   puts org.name
