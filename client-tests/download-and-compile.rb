@@ -11,7 +11,7 @@ if service_uri.to_s.strip == "" || token.to_s.strip == ""
 end
 
 orgs = ['gilt']
-services = ['api-doc']
+#services = ['api-doc']
 
 targets = {
   :play_2_2 => ['play_2_2_client', 'play_2_x_json', 'scala_models'],
@@ -44,7 +44,7 @@ targets.each do |key, target_names|
   client.organizations.get.each do |org|
     next unless orgs.include?(org.key)
     client.services.get_by_org_key(org.key).each do |service|
-      next unless services.include?(service.key)
+      #next unless services.include?(service.key)
       puts "  %s/%s" % [org.key, service.key]
       target_names.each do |target_name|
         target = ApiDoc::Models::Target.send(target_name)
