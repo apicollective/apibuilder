@@ -13,13 +13,23 @@ end
 orgs = ['gilt']
 #services = ['api-doc']
 
-targets = {
-  :play_2_2 => ['play_2_2_client', 'play_2_x_json', 'scala_models'],
-  :play_2_3 => ['play_2_3_client', 'play_2_x_json', 'scala_models']
-}
+class Target
 
-def write_target(key, org, service, target, code)
-  filename = File.join(key.to_s, CLIENT_DIR, [org.key, service.key, "#{target.value}.downloaded.scala"].join("."))
+  attr_reader :platform, :test_command, :names
+
+  def initialize(platform, test_command, names)
+    @platform = platform
+    @test_command = test_command
+    @names = names
+  end
+
+end
+
+targets = [Target.new('play_2_2', 'sbt compile', ['play_2_2_client', 'play_2_x_json', 'scala_models']),
+           Target.new('play_2_3', 'sbt compile', ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
+
+def write_target(platform, org, service, target, code)
+  filename = File.join(platform, CLIENT_DIR, [org.key, service.key, "#{target.value}.downloaded.scala"].join("."))
   File.open(filename, "w") do |out|
     out << "package clienttests_#{target.value} {\n\n"
     out << code.source
@@ -38,28 +48,28 @@ system(cmd)
 
 client = ApiDoc::Client.new(service_uri, :authorization => ApiDoc::HttpClient::Authorization.basic(token))
 
-targets.each do |key, target_names|
-  puts "Platform: #{key}"
+targets.each do |target|
+  puts "Platform: #{target.platform}"
   puts "--------------------------------------------------"
   client.organizations.get.each do |org|
     next unless orgs.include?(org.key)
     client.services.get_by_org_key(org.key).each do |service|
       #next unless services.include?(service.key)
       puts "  %s/%s" % [org.key, service.key]
-      target_names.each do |target_name|
-        target = ApiDoc::Models::Target.send(target_name)
-        if code = get_code(client, org, service, target)
-          filename = write_target(key, org, service, target, code)
-          puts "    #{target.value}: #{filename}"
+      target.names.each do |target_name|
+        t = ApiDoc::Models::Target.send(target_name)
+        if code = get_code(client, org, service, t)
+          filename = write_target(target.platform, org, service, t, code)
+          puts "    #{t.value}: #{filename}"
         end
       end
     end
   end
 
   puts ""
-  puts "  cd ./#{key} && sbt compile"
-  Dir.chdir(key.to_s) do
-    if system("sbt compile")
+  puts "  cd ./#{target.platform} && #{target.test_command}"
+  Dir.chdir(target.platform) do
+    if system(target.test_command)
       puts "  - All clients compiled"
     else
       puts "  - Clients failed to compile"
