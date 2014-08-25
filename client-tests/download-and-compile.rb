@@ -113,9 +113,9 @@ targets.each do |target|
   puts "  Testing in ./#{target.platform}"
   Dir.chdir(target.platform) do
     if target.tester.test
-      puts "  - Client tests passed"
+      puts "  - Client tests passed\n\n"
     else
-      puts "  - Client tests failed"
+      puts "  - Client tests failed\n\n"
       exit 1
     end
   end
