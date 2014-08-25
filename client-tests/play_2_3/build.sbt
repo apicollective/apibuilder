@@ -1,4 +1,4 @@
-name := "play_2_#"
+name := "play_2_3"
 
 version := "0.0.1"
 
