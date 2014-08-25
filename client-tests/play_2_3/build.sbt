@@ -1,4 +1,4 @@
-name := "bare-play"
+name := "play_2_#"
 
 version := "0.0.1"
 

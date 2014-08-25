@@ -14,7 +14,7 @@ orgs = ['gilt']
 services = ['api-doc']
 
 targets = {
-#  :play_2_2 => ['play_2_2_client', 'play_2_x_json', 'scala_models'],
+  :play_2_2 => ['play_2_2_client', 'play_2_x_json', 'scala_models'],
   :play_2_3 => ['play_2_3_client', 'play_2_x_json', 'scala_models']
 }
 
