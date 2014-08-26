@@ -79,6 +79,14 @@ object ServiceSettings extends Controller {
     }
   }
 
+  def postDelete(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+    for {
+      result <- request.api.Services.deleteByOrgKeyAndServiceKey(request.org.key, serviceKey)
+    } yield {
+      Redirect(routes.Organizations.show(request.org.key)).flashing("success" -> s"Service $serviceKey deleted")
+    }
+  }
+
   case class Settings(visibility: String)
   private val settingsForm = Form(
     mapping(
