@@ -48,7 +48,10 @@
               <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
               @metadata.service.map { service =>
                 <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@service.name</a></li>
-                <li><a href="@routes.Versions.apiJson(orgKey = org.key, serviceKey = service.key, version = metadata.version.get)">api.json</a></li>
+                @metadata.version.map { version =>
+                  <li><a href="@routes.ServiceSettings.show(orgKey = org.key, serviceKey = service.key, version = version)">Settings</a></li>
+                  <li><a href="@routes.Versions.apiJson(orgKey = org.key, serviceKey = service.key, version = version)">api.json</a></li>
+                }
               }
 
               @metadata.settings.map { settings =>
