@@ -1,7 +1,9 @@
 package controllers
 
+import com.gilt.apidoc.models.User
+import com.gilt.apidoc.models.json._
 import lib.Validation
-import db.{ User, UserForm, UserDao, UserPasswordDao }
+import db.{UserForm, UserDao, UserPasswordDao}
 import play.api.mvc._
 import play.api.libs.json.{ Json, JsError, JsSuccess }
 import java.util.UUID
@@ -89,7 +91,7 @@ object Users extends Controller {
           }
 
           case Some(u: User) => {
-            if (UserPasswordDao.isValid(UUID.fromString(u.guid), form.password)) {
+            if (UserPasswordDao.isValid(u.guid, form.password)) {
               Ok(Json.toJson(u))
             } else {
               Conflict(Json.toJson(Validation.userAuthorizationFailed()))

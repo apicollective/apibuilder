@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Service, Visibility}
+import com.gilt.apidoc.models.{Service, User, Visibility}
 import core.UrlKey
 import anorm._
 import play.api.db._

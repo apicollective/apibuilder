@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.apidoc.models.User
 import lib.Constants
 import anorm._
 import play.api.db._
@@ -110,7 +111,7 @@ object UserPasswordDao {
   def create(user: User, userGuid: UUID, cleartextPassword: String) {
     DB.withTransaction { implicit c =>
       softDeleteByUserGuid(c, user, userGuid)
-      doCreate(c, UUID.fromString(user.guid), userGuid, cleartextPassword)
+      doCreate(c, user.guid, userGuid, cleartextPassword)
     }
   }
 

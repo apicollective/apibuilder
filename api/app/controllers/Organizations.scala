@@ -9,7 +9,7 @@ import java.util.UUID
 object Organizations extends Controller {
 
   def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val orgs = OrganizationDao.findAll(userGuid = userGuid.map(_.toString),
+    val orgs = OrganizationDao.findAll(userGuid = userGuid,
                                        guid = guid.map(_.toString),
                                        key = key,
                                        name = name,

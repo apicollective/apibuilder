@@ -1,6 +1,7 @@
 package controllers
 
-import db.{ User, UserDao }
+import com.gilt.apidoc.models.User
+import db.UserDao
 import play.api.mvc._
 import play.api.mvc.Results.Unauthorized
 import scala.concurrent.Future

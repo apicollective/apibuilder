@@ -36,9 +36,8 @@ class UserDaoSpec extends FunSpec with Matchers {
       password = "testing"
     )
     val user = UserDao.create(form)
-    val guid = UUID.fromString(user.guid)
-    UserPasswordDao.isValid(guid, "testing") should be(true)
-    UserPasswordDao.isValid(guid, "password") should be(false)
+    UserPasswordDao.isValid(user.guid, "testing") should be(true)
+    UserPasswordDao.isValid(user.guid, "password") should be(false)
   }
 
   describe("users and orgs") {

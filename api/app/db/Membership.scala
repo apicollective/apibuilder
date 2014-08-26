@@ -1,5 +1,7 @@
 package db
 
+import com.gilt.apidoc.models.User
+import com.gilt.apidoc.models.json._
 import core.Role
 import anorm._
 import play.api.db._
@@ -26,7 +28,7 @@ object Membership {
            organizations.guid::varchar as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
-           users.guid::varchar as user_guid,
+           users.guid as user_guid,
            users.email as user_email,
            users.name as user_name
       from memberships
@@ -90,31 +92,31 @@ object Membership {
   }
 
   def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: Role): Option[Membership] = {
-    findAll(organization_guid = Some(organization.guid), user_guid = Some(user.guid), role = Some(role.key)).headOption
+    findAll(organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
   }
 
   def findAll(guid: Option[String] = None,
-              organization_guid: Option[String] = None,
-              organization_key: Option[String] = None,
-              user_guid: Option[String] = None,
+              organizationGuid: Option[String] = None,
+              organizationKey: Option[String] = None,
+              userGuid: Option[UUID] = None,
               role: Option[String] = None,
               limit: Int = 50,
               offset: Int = 0): Seq[Membership] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and memberships.guid = {guid}::uuid" },
-      organization_guid.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
-      organization_key.map { v => "and memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
-      user_guid.map { v => "and memberships.user_guid = {user_guid}::uuid" },
+      organizationGuid.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
+      organizationKey.map { v => "and memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
+      userGuid.map { v => "and memberships.user_guid = {user_guid}::uuid" },
       role.map { v => "and role = {role}" },
       Some(s"order by lower(users.name), lower(users.email) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _ ),
-      organization_guid.map('organization_guid -> _ ),
-      organization_key.map('organization_key -> _ ),
-      user_guid.map('user_guid -> _),
+      organizationGuid.map('organization_guid -> _ ),
+      organizationKey.map('organization_key -> _ ),
+      userGuid.map('user_guid -> _.toString),
       role.map('role -> _)
     ).flatten
 
@@ -124,7 +126,7 @@ object Membership {
                    organization = Organization(guid = row[String]("organization_guid"),
                                                name = row[String]("organization_name"),
                                                key = row[String]("organization_key")),
-                   user = User(guid = row[String]("user_guid"),
+                   user = User(guid = row[UUID]("user_guid"),
                                email = row[String]("user_email"),
                                name = row[Option[String]]("user_name")),
                    role = row[String]("role"))

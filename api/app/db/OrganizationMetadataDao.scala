@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.json._
-import com.gilt.apidoc.models.{OrganizationMetadata, Version}
+import com.gilt.apidoc.models.{OrganizationMetadata, User, Version}
 import core.Text
 import lib.{Validation, ValidationError}
 import anorm._

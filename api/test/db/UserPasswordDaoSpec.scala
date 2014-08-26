@@ -9,7 +9,6 @@ class UserPasswordDaoSpec extends FlatSpec {
   new play.core.StaticApplication(new java.io.File("."))
 
   private val user = Util.upsertUser("michael@mailinator.com")
-  private val userGuid = UUID.fromString(user.guid)
 
   it should "have distinct keys for all algorithms" in {
     val keys = PasswordAlgorithm.All.map(_.key.toLowerCase)
@@ -17,30 +16,30 @@ class UserPasswordDaoSpec extends FlatSpec {
   }
 
   it should "findByUserGuid" in {
-    UserPasswordDao.create(user, userGuid, "password")
+    UserPasswordDao.create(user, user.guid, "password")
 
-    val up = UserPasswordDao.findByUserGuid(userGuid).get
-    assertEquals(up.userGuid.toString, user.guid)
+    val up = UserPasswordDao.findByUserGuid(user.guid).get
+    assertEquals(up.userGuid, user.guid)
     assertEquals(up.algorithm, PasswordAlgorithm.Latest)
   }
 
   it should "validate matching passwords" in {
-    UserPasswordDao.create(user, userGuid, "password")
-    assertEquals(UserPasswordDao.isValid(userGuid, "password"), true)
-    assertEquals(UserPasswordDao.isValid(userGuid, "password2"), false)
-    assertEquals(UserPasswordDao.isValid(userGuid, "test"), false)
-    assertEquals(UserPasswordDao.isValid(userGuid, ""), false)
+    UserPasswordDao.create(user, user.guid, "password")
+    assertEquals(UserPasswordDao.isValid(user.guid, "password"), true)
+    assertEquals(UserPasswordDao.isValid(user.guid, "password2"), false)
+    assertEquals(UserPasswordDao.isValid(user.guid, "test"), false)
+    assertEquals(UserPasswordDao.isValid(user.guid, ""), false)
 
-    UserPasswordDao.create(user, userGuid, "test")
-    assertEquals(UserPasswordDao.isValid(userGuid, "password"), false)
-    assertEquals(UserPasswordDao.isValid(userGuid, "password2"), false)
-    assertEquals(UserPasswordDao.isValid(userGuid, "test"), true)
-    assertEquals(UserPasswordDao.isValid(userGuid, ""), false)
+    UserPasswordDao.create(user, user.guid, "test")
+    assertEquals(UserPasswordDao.isValid(user.guid, "password"), false)
+    assertEquals(UserPasswordDao.isValid(user.guid, "password2"), false)
+    assertEquals(UserPasswordDao.isValid(user.guid, "test"), true)
+    assertEquals(UserPasswordDao.isValid(user.guid, ""), false)
   }
 
   it should "hash the password" in {
-    UserPasswordDao.create(user, userGuid, "password")
-    val up = UserPasswordDao.findByUserGuid(userGuid).get
+    UserPasswordDao.create(user, user.guid, "password")
+    val up = UserPasswordDao.findByUserGuid(user.guid).get
     assertEquals(-1, up.hash.indexOf("password"))
   }
 

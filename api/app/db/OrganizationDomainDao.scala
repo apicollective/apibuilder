@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.Domain
+import com.gilt.apidoc.models.{Domain, User}
 import core.{ Role, UrlKey }
 import anorm._
 import play.api.db._

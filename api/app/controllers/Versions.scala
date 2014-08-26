@@ -1,10 +1,10 @@
 package controllers
 
-import com.gilt.apidoc.models.{Version, Visibility}
+import com.gilt.apidoc.models.{User, Version, Visibility}
 import com.gilt.apidoc.models.json._
 import lib.Validation
 import core.{ServiceDescription, ServiceDescriptionValidator}
-import db.{Organization, OrganizationDao, ServiceDao, User, VersionDao, VersionForm}
+import db.{Organization, OrganizationDao, ServiceDao, VersionDao, VersionForm}
 import play.api.mvc._
 import play.api.libs.json._
 

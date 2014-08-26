@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Domain, OrganizationMetadata, Version}
+import com.gilt.apidoc.models.{Domain, OrganizationMetadata, User, Version}
 import com.gilt.apidoc.models.json._
 import core.{Role, UrlKey}
 import anorm._
@@ -176,7 +176,7 @@ object OrganizationDao {
   }
 
   def findAll(guid: Option[String] = None,
-              userGuid: Option[String] = None,
+              userGuid: Option[UUID] = None,
               key: Option[String] = None,
               name: Option[String] = None,
               limit: Int = 50,
@@ -192,7 +192,7 @@ object OrganizationDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),
-      userGuid.map('user_guid -> _),
+      userGuid.map('user_guid -> _.toString),
       key.map('key -> _),
       name.map('name ->_)
     ).flatten

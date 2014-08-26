@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.apidoc.models.User
 import lib.Constants
 import core.Role
 import anorm._
@@ -7,12 +8,6 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
-
-object User {
-  implicit val userWrites = Json.writes[User]
-}
-
-case class User(guid: String, email: String, name: Option[String] = None)
 
 case class UserForm(email: String, password: String, name: Option[String] = None)
 
@@ -23,7 +18,7 @@ object UserForm {
 object UserDao {
 
   private val BaseQuery = """
-    select guid::varchar, email, name
+    select guid, email, name
       from users
      where deleted_at is null
   """
@@ -120,9 +115,11 @@ object UserDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        User(guid = row[String]("guid"),
-             email = row[String]("email"),
-             name = row[Option[String]]("name"))
+        User(
+          guid = row[UUID]("guid"),
+          email = row[String]("email"),
+          name = row[Option[String]]("name")
+        )
       }.toSeq
     }
   }

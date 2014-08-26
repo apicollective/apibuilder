@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Service, Version, Visibility}
+import com.gilt.apidoc.models.{Service, User, Version, Visibility}
 import lib.VersionSortKey
 import anorm._
 import play.api.db._
