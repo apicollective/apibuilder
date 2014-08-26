@@ -9,10 +9,12 @@ class VersionSpec extends FlatSpec {
   new play.core.StaticApplication(new java.io.File("."))
 
   private lazy val service = {
-    val name = UUID.randomUUID.toString
-    ServiceDao.findByOrganizationAndName(Util.testOrg, name).getOrElse {
-      ServiceDao.create(Util.createdBy, Util.testOrg, name, Visibility.Organization)
-    }
+    val serviceForm = ServiceForm(
+      name = UUID.randomUUID.toString,
+      description = None,
+      visibility = Visibility.Organization
+    )
+    ServiceDao.create(Util.createdBy, Util.testOrg, serviceForm)
   }
 
   it should "create" in {

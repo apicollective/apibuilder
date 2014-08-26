@@ -4,7 +4,7 @@ import com.gilt.apidoc.models.{User, Version, Visibility}
 import com.gilt.apidoc.models.json._
 import lib.Validation
 import core.{ServiceDescription, ServiceDescriptionValidator}
-import db.{Organization, OrganizationDao, ServiceDao, VersionDao, VersionForm}
+import db.{Organization, OrganizationDao, ServiceDao, ServiceForm, VersionDao, VersionForm}
 import play.api.mvc._
 import play.api.libs.json._
 
@@ -52,7 +52,12 @@ object Versions extends Controller {
               val visibility = form.visibility.getOrElse(Visibility.Organization)
 
               val service = ServiceDao.findByOrganizationAndKey(org, serviceKey).getOrElse {
-                ServiceDao.create(request.user, org, validator.serviceDescription.get.name, visibility, Some(serviceKey))
+                val serviceForm = ServiceForm(
+                  name = validator.serviceDescription.get.name,
+                  description = None,
+                  visibility = visibility
+                )
+                ServiceDao.create(request.user, org, serviceForm, Some(serviceKey))
               }
 
               if (service.visibility != Some(visibility)) {

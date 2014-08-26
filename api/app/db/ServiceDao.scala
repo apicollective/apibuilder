@@ -2,11 +2,23 @@ package db
 
 import com.gilt.apidoc.models.{Service, User, Visibility}
 import core.UrlKey
+import lib.{Validation, ValidationError}
 import anorm._
 import play.api.db._
 import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
+
+case class ServiceForm(
+  name: String,
+  description: Option[String],
+  visibility: Visibility
+)
+
+object ServiceForm {
+  import com.gilt.apidoc.models.json._
+  implicit val jsonReadsServiceForm = Json.reads[ServiceForm]
+}
 
 object ServiceDao {
 
@@ -21,16 +33,37 @@ object ServiceDao {
      where services.deleted_at is null
   """
 
+  def validate(
+    org: Organization,
+    form: ServiceForm,
+    existing: Option[Service]
+  ): Seq[ValidationError] = {
+    val nameErrors = findByOrganizationAndName(org, form.name) match {
+      case None => Seq.empty
+      case Some(service: Service) => {
+        if (existing.map(_.guid) == Some(service.guid)) {
+          Seq.empty
+        } else {
+          Seq("Service with this name already exists")
+        }
+      }
+    }
+
+    Validation.errors(nameErrors)
+  }
+
   def update(updatedBy: User, dao: Service) {
     DB.withConnection { implicit c =>
       SQL("""
           update services
              set name = {name},
+                 visibility = {visibility},
                  description = {description},
-                 updated_by_guid = {updated_by_guid}
-           where guid = {guid}
+                 updated_by_guid = {updated_by_guid}::uuid
+           where guid = {guid}::uuid
           """).on('guid -> dao.guid,
                   'name -> dao.name,
+                  'visibility -> dao.visibility.map(_.toString),
                   'description -> dao.description,
                   'updated_by_guid -> updatedBy.guid).execute()
     }
@@ -39,23 +72,23 @@ object ServiceDao {
   def create(
     createdBy: User,
     org: Organization,
-    name: String,
-    visibility: Visibility,
+    form: ServiceForm,
     keyOption: Option[String] = None
   ): Service = {
     val guid = UUID.randomUUID
-    val key = keyOption.getOrElse(UrlKey.generate(name))
+    val key = keyOption.getOrElse(UrlKey.generate(form.name))
     DB.withConnection { implicit c =>
       SQL("""
           insert into services
-          (guid, organization_guid, name, key, visibility, created_by_guid, updated_by_guid)
+          (guid, organization_guid, name, description, key, visibility, created_by_guid, updated_by_guid)
           values
-          ({guid}::uuid, {organization_guid}::uuid, {name}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+          ({guid}::uuid, {organization_guid}::uuid, {name}, {description}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
           """).on('guid -> guid,
                   'organization_guid -> org.guid,
-                  'name -> name,
+                  'name -> form.name,
+                  'description -> form.description,
                   'key -> key,
-                  'visibility -> visibility.toString,
+                  'visibility -> form.visibility.toString,
                   'created_by_guid -> createdBy.guid,
                   'updated_by_guid -> createdBy.guid).execute()
     }
