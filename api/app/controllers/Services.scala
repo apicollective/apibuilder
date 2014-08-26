@@ -38,7 +38,7 @@ object Services extends Controller {
                     visibility = Some(form.visibility)
                   )
                   ServiceDao.update(request.user, service)
-                  Ok(Json.toJson(service))
+                  NoContent
                 } else {
                   Conflict(Json.toJson(errors))
                 }
