@@ -49,12 +49,14 @@ object Versions extends Controller {
             val validator = ServiceDescriptionValidator(form.json)
 
             if (validator.isValid) {
+              val visibility = form.visibility.getOrElse(Visibility.Organization)
+
               val service = ServiceDao.findByOrganizationAndKey(org, serviceKey).getOrElse {
-                ServiceDao.create(request.user, org, validator.serviceDescription.get.name, form.visibility, Some(serviceKey))
+                ServiceDao.create(request.user, org, validator.serviceDescription.get.name, visibility, Some(serviceKey))
               }
 
-              if (service.visibility != Some(form.visibility)) {
-                ServiceDao.update(request.user, service.copy(visibility = Some(form.visibility)))
+              if (service.visibility != Some(visibility)) {
+                ServiceDao.update(request.user, service.copy(visibility = Some(visibility)))
               }
 
               val resultingVersion = VersionDao.findByServiceAndVersion(service, version) match {

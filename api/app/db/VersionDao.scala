@@ -10,7 +10,7 @@ import java.util.UUID
 
 case class VersionForm(
   json: String,
-  visibility: Visibility
+  visibility: Option[Visibility] = None
 )
 
 object VersionForm {
