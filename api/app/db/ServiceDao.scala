@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.apidoc.models.{Service, Visibility}
 import core.UrlKey
 import anorm._
 import play.api.db._
@@ -7,24 +8,10 @@ import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-case class Service(
-  guid: String,
-  name: String,
-  key: String,
-  visibility: String,
-  description: Option[String]
-)
-
-object Service {
-
-  implicit val serviceWrites = Json.writes[Service]
-
-}
-
 object ServiceDao {
 
   private val BaseQuery = """
-    select services.guid::varchar, services.name, services.key, services.description,
+    select services.guid, services.name, services.key, services.description,
            coalesce(services.visibility, 'organization') as visibility,
            organizations.guid::varchar as organization_guid,
            organizations.name as organization_name,
@@ -49,19 +36,26 @@ object ServiceDao {
     }
   }
 
-  def create(createdBy: User, org: Organization, name: String, keyOption: Option[String] = None): Service = {
+  def create(
+    createdBy: User,
+    org: Organization,
+    name: String,
+    visibility: Visibility,
+    keyOption: Option[String] = None
+  ): Service = {
     val guid = UUID.randomUUID
     val key = keyOption.getOrElse(UrlKey.generate(name))
     DB.withConnection { implicit c =>
       SQL("""
           insert into services
-          (guid, organization_guid, name, key, created_by_guid, updated_by_guid)
+          (guid, organization_guid, name, key, visibility, created_by_guid, updated_by_guid)
           values
-          ({guid}::uuid, {organization_guid}::uuid, {name}, {key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+          ({guid}::uuid, {organization_guid}::uuid, {name}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
           """).on('guid -> guid,
                   'organization_guid -> org.guid,
                   'name -> name,
                   'key -> key,
+                  'visibility -> visibility.toString,
                   'created_by_guid -> createdBy.guid,
                   'updated_by_guid -> createdBy.guid).execute()
     }
@@ -109,10 +103,10 @@ object ServiceDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Service(
-          guid = row[String]("guid"),
+          guid = row[UUID]("guid"),
           name = row[String]("name"),
           key = row[String]("key"),
-          visibility = row[String]("visibility"),
+          visibility = Visibility.fromString(row[String]("visibility")),
           description = row[Option[String]]("description")
         )
         }.toSeq

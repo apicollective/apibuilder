@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.apidoc.models.{Service, Visibility}
 import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID
@@ -13,7 +14,7 @@ class ServiceDaoSpec extends FlatSpec {
   private def upsertService(nameOption: Option[String] = None): Service = {
     val n = nameOption.getOrElse(name)
     ServiceDao.findByOrganizationAndName(Util.testOrg, n).getOrElse {
-      ServiceDao.create(Util.createdBy, Util.testOrg, n)
+      ServiceDao.create(Util.createdBy, Util.testOrg, n, Visibility.Organization)
     }
   }
 

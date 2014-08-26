@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.apidoc.models.Service
 import lib.VersionSortKey
 import anorm._
 import play.api.db._
@@ -80,16 +81,20 @@ object VersionDao {
   }
 
   def findByServiceAndVersion(service: Service, version: String): Option[Version] = {
-    VersionDao.findAll(service_guid = Some(service.guid),
-                       version = Some(version),
-                       limit = 1).headOption
+    VersionDao.findAll(
+      service_guid = Some(service.guid),
+      version = Some(version),
+      limit = 1
+    ).headOption
   }
 
-  def findAll(service_guid: Option[String] = None,
-              guid: Option[String] = None,
-              version: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[Version] = {
+  def findAll(
+    service_guid: Option[UUID] = None,
+    guid: Option[String] = None,
+    version: Option[String] = None,
+    limit: Int = 50,
+    offset: Int = 0
+  ): Seq[Version] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and versions.guid = {guid}::uuid" },
@@ -100,7 +105,7 @@ object VersionDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),
-      service_guid.map('service_guid -> _),
+      service_guid.map('service_guid -> _.toString),
       version.map('version ->_)
     ).flatten
 

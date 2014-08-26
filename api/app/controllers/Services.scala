@@ -1,5 +1,6 @@
 package controllers
 
+import com.gilt.apidoc.models.json._
 import db.{ OrganizationDao, ServiceDao }
 import play.api.mvc._
 import play.api.libs.json.Json

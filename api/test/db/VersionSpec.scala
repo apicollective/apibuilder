@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.apidoc.models.Visibility
 import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID
@@ -10,7 +11,7 @@ class VersionSpec extends FlatSpec {
   private lazy val service = {
     val name = UUID.randomUUID.toString
     ServiceDao.findByOrganizationAndName(Util.testOrg, name).getOrElse {
-      ServiceDao.create(Util.createdBy, Util.testOrg, name)
+      ServiceDao.create(Util.createdBy, Util.testOrg, name, Visibility.Organization)
     }
   }
 
