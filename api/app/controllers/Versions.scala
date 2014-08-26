@@ -31,11 +31,8 @@ object Versions extends Controller {
   def putByOrgKeyAndServiceKeyAndVersion(
     orgKey: String,
     serviceKey: String,
-    version: String,
-    visibilityKey: Option[String]
+    version: String
   ) = Authenticated(parse.json) { request =>
-    val visibility = visibilityKey.map(Visibility(_)).getOrElse(Visibility.Organization)
-
     OrganizationDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
@@ -53,7 +50,11 @@ object Versions extends Controller {
 
             if (validator.isValid) {
               val service = ServiceDao.findByOrganizationAndKey(org, serviceKey).getOrElse {
-                ServiceDao.create(request.user, org, validator.serviceDescription.get.name, visibility, Some(serviceKey))
+                ServiceDao.create(request.user, org, validator.serviceDescription.get.name, form.visibility, Some(serviceKey))
+              }
+
+              if (service.visibility != Some(form.visibility)) {
+                ServiceDao.update(request.user, service.copy(visibility = Some(form.visibility)))
               }
 
               val resultingVersion = VersionDao.findByServiceAndVersion(service, version) match {
