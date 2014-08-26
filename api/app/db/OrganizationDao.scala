@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{OrganizationMetadata, Version}
+import com.gilt.apidoc.models.{Domain, OrganizationMetadata, Version}
 import com.gilt.apidoc.models.json._
 import core.{Role, UrlKey}
 import anorm._
@@ -9,13 +9,6 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
-
-case class Domain(name: String)
-
-object Domain {
-  implicit val domainWrites = Json.writes[Domain]
-  implicit val domainReads = Json.reads[Domain]
-}
 
 case class Organization(
   guid: String,

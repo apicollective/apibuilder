@@ -1,6 +1,8 @@
 package controllers
 
-import db.{ Domain, OrganizationDao, OrganizationDomainDao }
+import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.models.Domain
+import db.{OrganizationDao, OrganizationDomainDao}
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
