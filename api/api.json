@@ -19,6 +19,13 @@
 		{ "name": "ruby_client" },
 		{ "name": "scala_models" }
 	    ]
+	},
+	"visibility": {
+	    "description": "Controls who is able to view this version",
+	    "values": [
+		{ "name": "organization", "description": "Any member of the organization can view this service" },
+		{ "name": "public", "description": "Anybody, including non logged in users, can view this service" }
+	    ]
 	}
     },
 
@@ -98,6 +105,7 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this service." },
                 { "name": "name", "type": "string", "description": "The unique name for this service." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the service name." },
+                { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this service", "default": "organization" },
                 { "name": "description", "type": "string", "required": false }
             ]
         },

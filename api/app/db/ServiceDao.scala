@@ -7,7 +7,13 @@ import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-case class Service(guid: String, name: String, key: String, description: Option[String])
+case class Service(
+  guid: String,
+  name: String,
+  key: String,
+  visibility: String,
+  description: Option[String]
+)
 
 object Service {
 
@@ -19,6 +25,7 @@ object ServiceDao {
 
   private val BaseQuery = """
     select services.guid::varchar, services.name, services.key, services.description,
+           coalesce(services.visibility, 'organization') as visibility,
            organizations.guid::varchar as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key
@@ -101,10 +108,13 @@ object ServiceDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        Service(guid = row[String]("guid"),
-                   name = row[String]("name"),
-                   key = row[String]("key"),
-                   description = row[Option[String]]("description"))
+        Service(
+          guid = row[String]("guid"),
+          name = row[String]("name"),
+          key = row[String]("key"),
+          visibility = row[String]("visibility"),
+          description = row[Option[String]]("description")
+        )
         }.toSeq
     }
   }

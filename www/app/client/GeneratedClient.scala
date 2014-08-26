@@ -9,7 +9,7 @@ package apidoc.models {
 
   /**
    * Represents a single domain name (e.g. www.apidoc.me). When a new user registers
-   * and confirms their email, we automatically associated that user with a member of
+   * and confirms their email, we automatically associate that user with a member of
    * the organization associated with their domain. For example, if you confirm your
    * account with an email address of foo@gilt.com, we will automatically add you as
    * a member to the organization with domain gilt.com.
@@ -77,6 +77,7 @@ package apidoc.models {
     guid: java.util.UUID,
     name: String,
     key: String,
+    visibility: scala.Option[Visibility] = None,
     description: scala.Option[String] = None
   )
 
@@ -157,6 +158,49 @@ package apidoc.models {
     def fromString(value: String): scala.Option[Target] = byName.get(value)
 
   }
+
+  /**
+   * Controls who is able to view this version
+   */
+  sealed trait Visibility
+
+  object Visibility {
+
+    /**
+     * Any member of the organization can view this service
+     */
+    case object Organization extends Visibility { override def toString = "organization" }
+    /**
+     * Anybody, including non logged in users, can view this service
+     */
+    case object Public extends Visibility { override def toString = "public" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Visibility
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Organization, Public)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Visibility = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Visibility] = byName.get(value)
+
+  }
 }
 
 package apidoc.models {
@@ -188,6 +232,11 @@ package apidoc.models {
     implicit val jsonReadsApiDocEnum_Target = __.read[String].map(Target.apply)
     implicit val jsonWritesApiDocEnum_Target = new Writes[Target] {
       def writes(x: Target) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsApiDocEnum_Visibility = __.read[String].map(Visibility.apply)
+    implicit val jsonWritesApiDocEnum_Visibility = new Writes[Visibility] {
+      def writes(x: Visibility) = JsString(x.toString)
     }
     implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] = {
       (
@@ -308,6 +357,7 @@ package apidoc.models {
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "name").read[String] and
         (__ \ "key").read[String] and
+        (__ \ "visibility").readNullable[Visibility] and
         (__ \ "description").readNullable[String]
       )(Service.apply _)
     }
@@ -317,6 +367,7 @@ package apidoc.models {
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "name").write[String] and
         (__ \ "key").write[String] and
+        (__ \ "visibility").write[scala.Option[Visibility]] and
         (__ \ "description").write[scala.Option[String]]
       )(unlift(Service.unapply _))
     }
@@ -1100,7 +1151,7 @@ package apidoc {
       }
     }
 
-    private val UserAgent = "apidoc:0.4.72 http://www.apidoc.me/gilt/code/api-doc/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.5.11 http://www.apidoc.me/gilt/code/api-doc/0.0.1-dev/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
