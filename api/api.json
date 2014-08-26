@@ -425,6 +425,17 @@
                 },
 
                 {
+                    "method": "PUT",
+                    "description": "Updates a service.",
+                    "path": "/:serviceKey",
+                    "parameters": [
+                        { "name": "name", "type": "string" },
+                        { "name": "description", "type": "string", "required": false },
+                        { "name": "visibility", "type": "visibility" }
+		    ]
+                },
+
+                {
                     "method": "DELETE",
                     "description": "Deletes a specific service and its associated versions.",
                     "path": "/:serviceKey"

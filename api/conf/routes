@@ -21,6 +21,7 @@ PUT        /users/:guid                              controllers.Users.putByGuid
 POST       /validations                              controllers.Validations.post()
 GET        /:orgKey/:serviceKey/:version/:target     controllers.Code.getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, target: String)
 GET        /:orgKey                                  controllers.Services.getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
+PUT        /:orgKey/:serviceKey                      controllers.Services.putByOrgKeyAndServiceKey(orgKey: String, serviceKey: String)
 DELETE     /:orgKey/:serviceKey                      controllers.Services.deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String)
 GET        /:orgKey/:serviceKey                      controllers.Versions.getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int ?= 25, offset: Int ?= 0)
 GET        /:orgKey/:serviceKey/:version             controllers.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String)

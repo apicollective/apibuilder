@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.models.{Organization, Service, User}
+import com.gilt.apidoc.models.{Organization, Service, User, Visibility}
 import core.ServiceDescription
 import models._
 import play.api._
@@ -57,19 +57,23 @@ object ServiceSettings extends Controller {
   }
 
   def postEdit(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
-    for {
-      tpl <- mainTemplate(request.api, request.user, request.org, serviceKey, versionName)
-    } yield {
+    mainTemplate(request.api, request.user, request.org, serviceKey, versionName).flatMap { tpl =>
       val boundForm = settingsForm.bindFromRequest
       boundForm.fold (
-        errors => {
+        errors => Future {
           Ok(views.html.service_settings.form(tpl, errors))
         },
 
         valid => {
-          sys.error("TODO: Update vis: " + valid.visibility)
+          val service = tpl.service.get
+          request.api.Services.putByOrgKeyAndServiceKey(request.org.key, service.key, service.name, service.description, Visibility(valid.visibility)).map { Unit =>
+            Redirect(routes.ServiceSettings.show(request.org.key, service.key, versionName)).flashing("success" -> s"Settings updated")
+          }.recover {
+            case response: com.gilt.apidoc.error.ErrorsResponse => {
+              Ok(views.html.service_settings.form(tpl, boundForm, response.errors.map(_.message)))
+            }
+          }
         }
-
       )
 
     }

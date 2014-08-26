@@ -863,6 +863,17 @@ package com.gilt.apidoc {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Service]]
 
       /**
+       * Updates a service.
+       */
+      def putByOrgKeyAndServiceKey(
+        orgKey: String,
+        serviceKey: String,
+        name: String,
+        description: scala.Option[String] = None,
+        visibility: Visibility
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+
+      /**
        * Deletes a specific service and its associated versions.
        */
       def deleteByOrgKeyAndServiceKey(
@@ -888,6 +899,25 @@ package com.gilt.apidoc {
 
         GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", query).map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Service]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def putByOrgKeyAndServiceKey(
+        orgKey: String,
+        serviceKey: String,
+        name: String,
+        description: scala.Option[String] = None,
+        visibility: Visibility
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        val payload = play.api.libs.json.Json.obj(
+          "name" -> play.api.libs.json.Json.toJson(name),
+          "description" -> play.api.libs.json.Json.toJson(description),
+          "visibility" -> play.api.libs.json.Json.toJson(visibility)
+        )
+
+        PUT(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}", payload).map {
+          case r if r.status == 204 => Unit
           case r => throw new FailedRequest(r)
         }
       }
