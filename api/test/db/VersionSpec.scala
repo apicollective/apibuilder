@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.Visibility
+import com.gilt.apidoc.models.{Version, Visibility}
 import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID

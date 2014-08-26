@@ -105,7 +105,7 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this service." },
                 { "name": "name", "type": "string", "description": "The unique name for this service." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the service name." },
-                { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this service", "default": "organization" },
+                { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this service" },
                 { "name": "description", "type": "string", "required": false }
             ]
         },
@@ -486,7 +486,8 @@
                     "description": "Create or update the service with the specified version.",
                     "path": "/:version",
                     "parameters": [
-                        { "name": "json", "type": "string", "description": "The actual full contents of the json schema" }
+                        { "name": "json", "type": "string", "description": "The actual full contents of the json schema" },
+                        { "name": "visibility", "type": "visibility", "description": "The visibility of this service.", "default": "organization" }
 		    ],
                     "responses": {
                         "200": { "type": "version" }

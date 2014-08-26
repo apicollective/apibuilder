@@ -1,16 +1,15 @@
 package controllers
 
-import java.util.UUID
+import com.gilt.apidoc.models.Version
+import core.{ServiceDescription, OrganizationMetadata}
+import db.{OrganizationDao, VersionDao}
 import lib.Validation
-import core.ServiceDescription
 import core.generator.Target
 
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.Play.current
 
-import core.OrganizationMetadata
-import db.{ OrganizationDao, Version, VersionDao }
 
 object Code extends Controller {
 

@@ -77,7 +77,7 @@ package com.gilt.apidoc.models {
     guid: java.util.UUID,
     name: String,
     key: String,
-    visibility: scala.Option[Visibility] = None,
+    visibility: Visibility,
     description: scala.Option[String] = None
   )
 
@@ -357,7 +357,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "name").read[String] and
         (__ \ "key").read[String] and
-        (__ \ "visibility").readNullable[Visibility] and
+        (__ \ "visibility").read[Visibility] and
         (__ \ "description").readNullable[String]
       )(Service.apply _)
     }
@@ -367,7 +367,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "name").write[String] and
         (__ \ "key").write[String] and
-        (__ \ "visibility").write[scala.Option[Visibility]] and
+        (__ \ "visibility").write[Visibility] and
         (__ \ "description").write[scala.Option[String]]
       )(unlift(Service.unapply _))
     }
@@ -1079,7 +1079,8 @@ package com.gilt.apidoc {
         orgKey: String,
         serviceKey: String,
         version: String,
-        json: String
+        json: String,
+        visibility: scala.Option[Visibility] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version]
 
       /**
@@ -1126,10 +1127,12 @@ package com.gilt.apidoc {
         orgKey: String,
         serviceKey: String,
         version: String,
-        json: String
+        json: String,
+        visibility: scala.Option[Visibility] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version] = {
         val payload = play.api.libs.json.Json.obj(
-          "json" -> play.api.libs.json.Json.toJson(json)
+          "json" -> play.api.libs.json.Json.toJson(json),
+          "visibility" -> play.api.libs.json.Json.toJson(visibility)
         )
 
         PUT(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", payload).map {

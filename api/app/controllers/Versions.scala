@@ -1,9 +1,10 @@
 package controllers
 
-import com.gilt.apidoc.models.Visibility
+import com.gilt.apidoc.models.{Version, Visibility}
+import com.gilt.apidoc.models.json._
 import lib.Validation
-import core.{ ServiceDescription, ServiceDescriptionValidator }
-import db.{ Organization, OrganizationDao, ServiceDao, User, Version, VersionDao, VersionForm }
+import core.{ServiceDescription, ServiceDescriptionValidator}
+import db.{Organization, OrganizationDao, ServiceDao, User, VersionDao, VersionForm}
 import play.api.mvc._
 import play.api.libs.json._
 
@@ -30,10 +31,10 @@ object Versions extends Controller {
   def putByOrgKeyAndServiceKeyAndVersion(
     orgKey: String,
     serviceKey: String,
-    version: String
+    version: String,
+    visibilityKey: Option[String]
   ) = Authenticated(parse.json) { request =>
-    // val visibility = visibilityKey.map(Visibility(_)).getOrElse(Visibility.Organization)
-    val visibility = Visibility.Organization
+    val visibility = visibilityKey.map(Visibility(_)).getOrElse(Visibility.Organization)
 
     OrganizationDao.findByUserAndKey(request.user, orgKey) match {
       case None => {

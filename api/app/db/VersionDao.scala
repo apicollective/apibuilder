@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.Service
+import com.gilt.apidoc.models.{Service, Version, Visibility}
 import lib.VersionSortKey
 import anorm._
 import play.api.db._
@@ -8,35 +8,26 @@ import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-case class Version(guid: String, version: String, json: String)
-
-object Version {
-
-  implicit val versionWrites = Json.writes[Version]
-
-}
-
-case class VersionForm(json: String)
+case class VersionForm(
+  json: String,
+  visibility: Visibility
+)
 
 object VersionForm {
-
+  import com.gilt.apidoc.models.json._
   implicit val versionFormReads = Json.reads[VersionForm]
-
 }
 
 object VersionDao {
 
-  implicit val versionReads = Json.reads[Version]
-  implicit val versionWrites = Json.writes[Version]
-
   private val BaseQuery = """
-    select guid::varchar, version, json::varchar
+    select guid, version, json::varchar
      from versions
     where deleted_at is null
   """
 
   def create(user: User, service: Service, version: String, json: String): Version = {
-    val v = Version(guid = UUID.randomUUID.toString,
+    val v = Version(guid = UUID.randomUUID,
                     version = version,
                     json = json)
 
@@ -111,10 +102,12 @@ object VersionDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        Version(guid = row[String]("guid"),
-                version = row[String]("version"),
-                json = row[String]("json"))
-        }.toSeq
+        Version(
+          guid = row[UUID]("guid"),
+          version = row[String]("version"),
+          json = row[String]("json")
+        )
+      }.toSeq
     }
   }
 
