@@ -1,6 +1,6 @@
 package controllers
 
-import apidoc.models.{ Membership, Organization, User }
+import com.gilt.apidoc.models.{ Membership, Organization, User }
 import models.MainTemplate
 import core.Role
 import play.api.mvc._

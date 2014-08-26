@@ -1,4 +1,4 @@
-package apidoc.models {
+package com.gilt.apidoc.models {
   /**
    * Generated source code.
    */
@@ -203,7 +203,7 @@ package apidoc.models {
   }
 }
 
-package apidoc.models {
+package com.gilt.apidoc.models {
   package object json {
     import play.api.libs.json.__
     import play.api.libs.json.JsString
@@ -420,7 +420,7 @@ package apidoc.models {
   }
 }
 
-package apidoc {
+package com.gilt.apidoc {
   object helpers {
     import org.joda.time.DateTime
     import org.joda.time.format.ISODateTimeFormat
@@ -451,12 +451,12 @@ package apidoc {
   }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
-    import apidoc.models._
-    import apidoc.models.json._
+    import com.gilt.apidoc.models._
+    import com.gilt.apidoc.models.json._
 
-    private val logger = play.api.Logger("apidoc.client")
+    private val logger = play.api.Logger("com.gilt.apidoc.client")
 
-    logger.info(s"Initializing apidoc.client for url $apiUrl")
+    logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
 
     def code: Code = Code
 
@@ -489,7 +489,7 @@ package apidoc {
         serviceKey: String,
         version: String,
         target: Target
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Code]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]]
     }
 
     object Code extends Code {
@@ -498,10 +498,10 @@ package apidoc {
         serviceKey: String,
         version: String,
         target: Target
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Code]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]] = {
         GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(target.toString, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[apidoc.models.Code])
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Code])
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -512,9 +512,9 @@ package apidoc {
       /**
        * Add a domain to this organization
        */
-      def post(domain: apidoc.models.Domain, 
+      def post(domain: com.gilt.apidoc.models.Domain, 
         orgKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Domain]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain]
 
       /**
        * Remove this domain from this organization
@@ -526,14 +526,14 @@ package apidoc {
     }
 
     object Domains extends Domains {
-      override def post(domain: apidoc.models.Domain, 
+      override def post(domain: com.gilt.apidoc.models.Domain, 
         orgKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Domain] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
         val payload = play.api.libs.json.Json.toJson(domain)
 
         POST(s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.Domain]
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Domain]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -551,13 +551,13 @@ package apidoc {
     }
 
     trait Healthchecks {
-      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Healthcheck]]
+      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Healthcheck]]
     }
 
     object Healthchecks extends Healthchecks {
-      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Healthcheck]] = {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Healthcheck]] = {
         GET(s"/_internal_/healthcheck").map {
-          case r if r.status == 200 => Some(r.json.as[apidoc.models.Healthcheck])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Healthcheck])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -575,7 +575,7 @@ package apidoc {
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.MembershipRequest]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.MembershipRequest]]
 
       /**
        * Create a membership request
@@ -584,7 +584,7 @@ package apidoc {
         orgGuid: java.util.UUID,
         userGuid: java.util.UUID,
         role: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.MembershipRequest]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.MembershipRequest]
 
       /**
        * Accepts this membership request. User will become a member of the specified
@@ -611,7 +611,7 @@ package apidoc {
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.MembershipRequest]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.MembershipRequest]] = {
         val query = Seq(
           orgGuid.map("org_guid" -> _.toString),
           orgKey.map("org_key" -> _),
@@ -622,7 +622,7 @@ package apidoc {
         ).flatten
 
         GET(s"/membership_requests", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.MembershipRequest]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.MembershipRequest]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -631,7 +631,7 @@ package apidoc {
         orgGuid: java.util.UUID,
         userGuid: java.util.UUID,
         role: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.MembershipRequest] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.MembershipRequest] = {
         val payload = play.api.libs.json.Json.obj(
           "org_guid" -> play.api.libs.json.Json.toJson(orgGuid),
           "user_guid" -> play.api.libs.json.Json.toJson(userGuid),
@@ -639,8 +639,8 @@ package apidoc {
         )
 
         POST(s"/membership_requests", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.MembershipRequest]
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.MembershipRequest]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -650,7 +650,7 @@ package apidoc {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         POST(s"/membership_requests/${guid}/accept").map {
           case r if r.status == 204 => Unit
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -660,7 +660,7 @@ package apidoc {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         POST(s"/membership_requests/${guid}/decline").map {
           case r if r.status == 204 => Unit
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -677,11 +677,11 @@ package apidoc {
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Membership]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Membership]]
 
       def getByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Membership]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Membership]]
 
       def deleteByGuid(
         guid: java.util.UUID
@@ -696,7 +696,7 @@ package apidoc {
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Membership]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Membership]] = {
         val query = Seq(
           orgGuid.map("org_guid" -> _.toString),
           orgKey.map("org_key" -> _),
@@ -707,16 +707,16 @@ package apidoc {
         ).flatten
 
         GET(s"/memberships", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Membership]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Membership]]
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Membership]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Membership]] = {
         GET(s"/memberships/${guid}").map {
-          case r if r.status == 200 => Some(r.json.as[apidoc.models.Membership])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Membership])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -737,20 +737,20 @@ package apidoc {
       /**
        * Update metadata for this organization
        */
-      def put(organizationMetadata: apidoc.models.OrganizationMetadata, 
+      def put(organizationMetadata: com.gilt.apidoc.models.OrganizationMetadata, 
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.OrganizationMetadata]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.OrganizationMetadata]
     }
 
     object OrganizationMetadata extends OrganizationMetadata {
-      override def put(organizationMetadata: apidoc.models.OrganizationMetadata, 
+      override def put(organizationMetadata: com.gilt.apidoc.models.OrganizationMetadata, 
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.OrganizationMetadata] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.OrganizationMetadata] = {
         val payload = play.api.libs.json.Json.toJson(organizationMetadata)
 
         PUT(s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/metadata", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.OrganizationMetadata]
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.OrganizationMetadata]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -767,21 +767,21 @@ package apidoc {
         name: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Organization]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Organization]]
 
       /**
        * Returns the organization with this key.
        */
       def getByKey(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Organization]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Organization]]
 
       /**
        * Create a new organization.
        */
       def post(
         name: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Organization]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization]
 
       /**
        * Deletes an organization and all of its associated services.
@@ -799,7 +799,7 @@ package apidoc {
         name: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Organization]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Organization]] = {
         val query = Seq(
           guid.map("guid" -> _.toString),
           userGuid.map("user_guid" -> _.toString),
@@ -810,16 +810,16 @@ package apidoc {
         ).flatten
 
         GET(s"/organizations", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Organization]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Organization]]
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getByKey(
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Organization]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Organization]] = {
         GET(s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[apidoc.models.Organization])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Organization])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -827,14 +827,14 @@ package apidoc {
 
       override def post(
         name: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Organization] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization] = {
         val payload = play.api.libs.json.Json.obj(
           "name" -> play.api.libs.json.Json.toJson(name)
         )
 
         POST(s"/organizations", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.Organization]
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Organization]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -860,7 +860,7 @@ package apidoc {
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Service]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Service]]
 
       /**
        * Deletes a specific service and its associated versions.
@@ -878,7 +878,7 @@ package apidoc {
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Service]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Service]] = {
         val query = Seq(
           name.map("name" -> _),
           key.map("key" -> _),
@@ -887,7 +887,7 @@ package apidoc {
         ).flatten
 
         GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Service]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Service]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -913,14 +913,14 @@ package apidoc {
         guid: scala.Option[java.util.UUID] = None,
         email: scala.Option[String] = None,
         token: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.User]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.User]]
 
       /**
        * Returns information about the user with this guid.
        */
       def getByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.User]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.User]]
 
       /**
        * Used to authenticate a user with an email address and password. Successful
@@ -930,7 +930,7 @@ package apidoc {
       def postAuthenticate(
         email: String,
         password: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.User]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User]
 
       /**
        * Create a new user.
@@ -939,7 +939,7 @@ package apidoc {
         email: String,
         name: scala.Option[String] = None,
         password: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.User]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User]
 
       /**
        * Updates information about the user with the specified guid.
@@ -948,7 +948,7 @@ package apidoc {
         guid: java.util.UUID,
         email: String,
         name: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.User]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User]
     }
 
     object Users extends Users {
@@ -956,7 +956,7 @@ package apidoc {
         guid: scala.Option[java.util.UUID] = None,
         email: scala.Option[String] = None,
         token: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.User]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.User]] = {
         val query = Seq(
           guid.map("guid" -> _.toString),
           email.map("email" -> _),
@@ -964,16 +964,16 @@ package apidoc {
         ).flatten
 
         GET(s"/users", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.User]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.User]]
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getByGuid(
         guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.User]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.User]] = {
         GET(s"/users/${guid}").map {
-          case r if r.status == 200 => Some(r.json.as[apidoc.models.User])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.User])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -982,15 +982,15 @@ package apidoc {
       override def postAuthenticate(
         email: String,
         password: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.User] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
         val payload = play.api.libs.json.Json.obj(
           "email" -> play.api.libs.json.Json.toJson(email),
           "password" -> play.api.libs.json.Json.toJson(password)
         )
 
         POST(s"/users/authenticate", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.User]
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -999,7 +999,7 @@ package apidoc {
         email: String,
         name: scala.Option[String] = None,
         password: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.User] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
         val payload = play.api.libs.json.Json.obj(
           "email" -> play.api.libs.json.Json.toJson(email),
           "name" -> play.api.libs.json.Json.toJson(name),
@@ -1007,8 +1007,8 @@ package apidoc {
         )
 
         POST(s"/users", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.User]
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -1017,15 +1017,15 @@ package apidoc {
         guid: java.util.UUID,
         email: String,
         name: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.User] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
         val payload = play.api.libs.json.Json.obj(
           "email" -> play.api.libs.json.Json.toJson(email),
           "name" -> play.api.libs.json.Json.toJson(name)
         )
 
         PUT(s"/users/${guid}", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.User]
-          case r if r.status == 409 => throw new apidoc.error.ErrorsResponse(r)
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -1034,19 +1034,19 @@ package apidoc {
     trait Validations {
       def post(
         json: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Validation]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation]
     }
 
     object Validations extends Validations {
       override def post(
         json: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Validation] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
         val payload = play.api.libs.json.Json.obj(
           "json" -> play.api.libs.json.Json.toJson(json)
         )
 
         POST(s"/validations", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.Validation]
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Validation]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1061,7 +1061,7 @@ package apidoc {
         serviceKey: String,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Version]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Version]]
 
       /**
        * Retrieve a specific version of a service.
@@ -1070,7 +1070,7 @@ package apidoc {
         orgKey: String,
         serviceKey: String,
         version: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Version]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Version]]
 
       /**
        * Create or update the service with the specified version.
@@ -1080,7 +1080,7 @@ package apidoc {
         serviceKey: String,
         version: String,
         json: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Version]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version]
 
       /**
        * Deletes a specific version.
@@ -1098,14 +1098,14 @@ package apidoc {
         serviceKey: String,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[apidoc.models.Version]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Version]] = {
         val query = Seq(
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
 
         GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[apidoc.models.Version]]
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Version]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1114,9 +1114,9 @@ package apidoc {
         orgKey: String,
         serviceKey: String,
         version: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[apidoc.models.Version]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Version]] = {
         GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[apidoc.models.Version])
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Version])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -1127,13 +1127,13 @@ package apidoc {
         serviceKey: String,
         version: String,
         json: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[apidoc.models.Version] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version] = {
         val payload = play.api.libs.json.Json.obj(
           "json" -> play.api.libs.json.Json.toJson(json)
         )
 
         PUT(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", payload).map {
-          case r if r.status == 200 => r.json.as[apidoc.models.Version]
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Version]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1218,11 +1218,11 @@ package apidoc {
 
   package error {
 
-    import apidoc.models.json._
+    import com.gilt.apidoc.models.json._
 
     case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body) {
 
-      lazy val errors = response.json.as[scala.collection.Seq[apidoc.models.Error]]
+      lazy val errors = response.json.as[scala.collection.Seq[com.gilt.apidoc.models.Error]]
 
     }
   }

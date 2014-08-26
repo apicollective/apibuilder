@@ -2,7 +2,7 @@ package controllers
 
 import models.MainTemplate
 import core.{ ServiceDescription, ServiceDescriptionValidator, UrlKey }
-import apidoc.models.{ Organization, Version }
+import com.gilt.apidoc.models.{ Organization, Version }
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.Json

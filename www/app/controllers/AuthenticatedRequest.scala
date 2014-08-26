@@ -1,6 +1,6 @@
 package controllers
 
-import apidoc.models.User
+import com.gilt.apidoc.models.User
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
@@ -10,7 +10,7 @@ import java.util.UUID
 
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
-  lazy val api = new apidoc.Client(Authenticated.apiUrl, Some(Authenticated.apiToken)) {
+  lazy val api = new com.gilt.apidoc.Client(Authenticated.apiUrl, Some(Authenticated.apiToken)) {
     override def _requestHolder(path: String) = {
       super._requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
     }
@@ -30,7 +30,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
     sys.error("apidoc.token is required")
   }
 
-  lazy val api = new apidoc.Client(apiUrl, Some(apiToken))
+  lazy val api = new com.gilt.apidoc.Client(apiUrl, Some(apiToken))
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 

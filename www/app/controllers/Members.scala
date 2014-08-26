@@ -2,7 +2,7 @@ package controllers
 
 import core.{ Review, Role }
 import lib.{ Pagination, PaginatedCollection }
-import apidoc.models.{ Organization, User }
+import com.gilt.apidoc.models.{ Organization, User }
 import models._
 import play.api._
 import play.api.mvc._
@@ -144,7 +144,7 @@ object Members extends Controller {
     }
   }
 
-  private def createMembership(api: apidoc.Client, org: Organization, userGuid: UUID, role: Role) {
+  private def createMembership(api: com.gilt.apidoc.Client, org: Organization, userGuid: UUID, role: Role) {
     val membershipRequest = Await.result(
       api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role.key),
       1500.millis

@@ -3,7 +3,7 @@ package controllers
 import core.Role
 import lib.{ Pagination, PaginatedCollection }
 import models.MainTemplate
-import apidoc.models.Organization
+import com.gilt.apidoc.models.Organization
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -151,7 +151,7 @@ object Organizations extends Controller {
         request.api.Organizations.post(valid.name).map { org =>
           Redirect(routes.Organizations.show(org.key))
         }.recover {
-          case r: apidoc.error.ErrorsResponse => {
+          case r: com.gilt.apidoc.error.ErrorsResponse => {
             Ok(views.html.organizations.form(tpl, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }

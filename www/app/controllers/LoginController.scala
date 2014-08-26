@@ -30,7 +30,7 @@ object LoginController extends Controller {
         Authenticated.api.Users.postAuthenticate(email = validForm.email, password = validForm.password).map { user =>
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }.recover {
-          case r: apidoc.error.ErrorsResponse => {
+          case r: com.gilt.apidoc.error.ErrorsResponse => {
             Ok(views.html.login.index(Tab.Login, form, registerForm, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
@@ -51,7 +51,7 @@ object LoginController extends Controller {
         Authenticated.api.Users.post(name = validForm.name, email = validForm.email, password = validForm.password).map { user =>
           Redirect("/").withSession { "user_guid" -> user.guid.toString }
         }.recover {
-          case r: apidoc.error.ErrorsResponse => {
+          case r: com.gilt.apidoc.error.ErrorsResponse => {
             Ok(views.html.login.index(Tab.Register, loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }

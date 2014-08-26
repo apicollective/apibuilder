@@ -1,7 +1,7 @@
 package models
 
 import core.{ Enum, Model, Resource, ServiceDescription }
-import apidoc.models.{ Organization, Service, User }
+import com.gilt.apidoc.models.{ Organization, Service, User }
 import play.api.Play.current
 
 case class MainTemplate(

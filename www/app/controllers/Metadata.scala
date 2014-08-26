@@ -1,6 +1,6 @@
 package controllers
 
-import apidoc.models.{ Organization, OrganizationMetadata, User }
+import com.gilt.apidoc.models.{ Organization, OrganizationMetadata, User }
 import models._
 import play.api._
 import play.api.mvc._
@@ -41,7 +41,7 @@ object Metadata extends Controller {
         request.api.organizationMetadata.put(valid, request.org.key).map { m =>
           Redirect(routes.Metadata.show(request.org.key)).flashing("success" -> s"Metadata updated")
         }.recover {
-          case response: apidoc.error.ErrorsResponse => {
+          case response: com.gilt.apidoc.error.ErrorsResponse => {
             Ok(views.html.metadata.form(tpl, boundForm, response.errors.map(_.message)))
           }
         }

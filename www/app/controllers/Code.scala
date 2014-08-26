@@ -1,6 +1,6 @@
 package controllers
 
-import apidoc.models.Target
+import com.gilt.apidoc.models.Target
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.mvc._
 import play.api.libs.json._
