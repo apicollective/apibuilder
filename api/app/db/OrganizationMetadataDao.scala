@@ -1,8 +1,9 @@
 package db
 
+import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.models.{OrganizationMetadata, Version}
 import core.Text
 import lib.{Validation, ValidationError}
-import core.OrganizationMetadata
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -79,14 +80,14 @@ object OrganizationMetadataDao {
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: User, org: Organization, form: OrganizationMetadataForm): OrganizationMetadata = {
     val metadata = OrganizationMetadata(
-      package_name = form.package_name
+      packageName = form.package_name
     )
     val guid = UUID.randomUUID.toString
 
     SQL(InsertQuery).on(
       'guid -> guid,
       'organization_guid -> org.guid,
-      'package_name -> metadata.package_name,
+      'package_name -> metadata.packageName,
       'created_by_guid -> createdBy.guid
     ).execute()
 
@@ -107,7 +108,7 @@ object OrganizationMetadataDao {
     DB.withConnection { implicit c =>
       SQL(BaseQuery).on('organization_guid -> organizationGuid)().toList.map { row =>
         OrganizationMetadata(
-          package_name = row[Option[String]]("package_name")
+          packageName = row[Option[String]]("package_name")
         )
       }.toSeq.headOption
     }

@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.models.Version
-import core.{ServiceDescription, OrganizationMetadata}
+import com.gilt.apidoc.models.{OrganizationMetadata, Version}
+import core.ServiceDescription
 import db.{OrganizationDao, VersionDao}
 import lib.Validation
 import core.generator.Target

@@ -1,5 +1,6 @@
 package controllers
 
+import com.gilt.apidoc.models.json._
 import db.{ OrganizationDao, OrganizationMetadataDao, OrganizationMetadataForm }
 import lib.Validation
 import play.api.mvc._

@@ -1,6 +1,6 @@
 package db
 
-import core.OrganizationMetadata
+import com.gilt.apidoc.models.OrganizationMetadata
 import lib.Validation
 import org.scalatest.{ FunSpec, Matchers }
 import org.junit.Assert._
@@ -18,7 +18,7 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
 
   it("create") {
     val org = Util.createOrganization()
-    createOrganizationMetadata(org).package_name should be(Some("com.gilt"))
+    createOrganizationMetadata(org).packageName should be(Some("com.gilt"))
   }
 
   it("upsert") {
@@ -28,10 +28,10 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
     )
 
     OrganizationMetadataDao.upsert(Util.createdBy, org, form)
-    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.package_name should be(Some("com.giltgroupe"))
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.giltgroupe"))
 
     OrganizationMetadataDao.upsert(Util.createdBy, org, form.copy(package_name = Some("com.gilt")))
-    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.package_name should be(Some("com.gilt"))
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.gilt"))
   }
 
   it("raises error on duplicate") {
@@ -50,7 +50,7 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
   it("softDelete") {
     val org = Util.createOrganization()
     createOrganizationMetadata(org)
-    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.package_name should be(Some("com.gilt"))
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.gilt"))
     OrganizationMetadataDao.softDelete(Util.createdBy, org)
     OrganizationMetadataDao.findByOrganizationGuid(org.guid) should be(None)
   }
@@ -59,7 +59,7 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
     val org = Util.createOrganization()
     OrganizationMetadataDao.findByOrganizationGuid(org.guid) should be(None)
     createOrganizationMetadata(org)
-    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.package_name should be(Some("com.gilt"))
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.gilt"))
   }
 
   describe("OrganizationMetadataForm") {

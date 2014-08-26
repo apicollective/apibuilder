@@ -1,6 +1,7 @@
 package core.generator
 
-import core.{OrganizationMetadata, ServiceDescription, Text}
+import com.gilt.apidoc.models.OrganizationMetadata
+import core.{ServiceDescription, Text}
 
 sealed trait Status
 
@@ -80,9 +81,9 @@ object Target {
 
   val Implemented = All.filter(_.status != Status.Proposal)
 
-  def generate(target: Target, apidocVersion: String, orgKey: String, metadata: OrganizationMetadata, sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
+  def generate(target: Target, apidocVersion: String, orgKey: String, metadata: Option[OrganizationMetadata], sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
     val userAgent = target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
-    lazy val ssd = new ScalaServiceDescription(sd, Some(metadata))
+    lazy val ssd = new ScalaServiceDescription(sd, metadata)
     target.key match {
       case "ruby_client" => RubyGemGenerator.generate(sd, userAgent)
       case "play_2_2_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, ssd, userAgent)

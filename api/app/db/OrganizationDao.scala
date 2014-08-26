@@ -1,6 +1,8 @@
 package db
 
-import core.{ OrganizationMetadata, Role, UrlKey }
+import com.gilt.apidoc.models.{OrganizationMetadata, Version}
+import com.gilt.apidoc.models.json._
+import core.{Role, UrlKey}
 import anorm._
 import lib.{ Validation, ValidationError }
 import play.api.db._
@@ -20,7 +22,7 @@ case class Organization(
   name: String,
   key: String,
   domains: Seq[Domain] = Seq.empty,
-  metadata: OrganizationMetadata = OrganizationMetadata.Empty
+  metadata: Option[OrganizationMetadata] = None
 )
 
 object Organization {
@@ -134,8 +136,10 @@ object OrganizationDao {
       key = UrlKey.generate(form.name),
       name = form.name,
       domains = form.domains.getOrElse(Seq.empty).map(Domain(_)),
-      metadata = OrganizationMetadata(
-        package_name = metadataForm.package_name
+      metadata = Some(
+        OrganizationMetadata(
+          packageName = metadataForm.package_name
+        )
       )
     )
 
@@ -207,8 +211,10 @@ object OrganizationDao {
           name = row[String]("name"),
           key = row[String]("key"),
           domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_)),
-          metadata = OrganizationMetadata(
-            package_name = row[Option[String]]("metadata_package_name")
+          metadata = Some(
+            OrganizationMetadata(
+              packageName = row[Option[String]]("metadata_package_name")
+            )
           )
         )
       }.toSeq

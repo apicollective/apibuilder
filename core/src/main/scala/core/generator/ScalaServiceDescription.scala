@@ -1,5 +1,6 @@
 package core.generator
 
+import com.gilt.apidoc.models.OrganizationMetadata
 import core._
 import Text._
 
@@ -70,7 +71,7 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription, metada
 
   val enums = serviceDescription.enums.map { new ScalaEnum(_) }
 
-  val packageName: String = metadata.flatMap(_.package_name) match {
+  val packageName: String = metadata.flatMap(_.packageName) match {
     case None => ScalaUtil.packageName(serviceDescription.name)
     case Some(name) => name + "." + ScalaUtil.packageName(serviceDescription.name)
   }
