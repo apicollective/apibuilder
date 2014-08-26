@@ -6,7 +6,7 @@
 @main(tpl) {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ServiceSettings.show(orgKey = tpl.org.get.key, serviceKey = service.key, version = tpl.version.get)">Edit</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ServiceSettings.edit(orgKey = tpl.org.get.key, serviceKey = service.key, version = tpl.version.get)">Edit</a>
   </div>
 
   <ul>

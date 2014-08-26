@@ -1,0 +1,37 @@
+@(tpl: models.MainTemplate,
+  form: Form[controllers.ServiceSettings.Settings],
+  errors: Seq[String] = Seq.empty
+)(implicit flash: Flash)
+
+@main(tpl) {
+  <div class="container">
+
+    @helper.form(action = routes.ServiceSettings.postEdit(tpl.org.get.key, tpl.service.get.key, tpl.version.get)) {
+
+      <fieldset>
+          @if(!errors.isEmpty) {
+            <ul>
+              @errors.map { msg => <li><span class="error">@msg</span></li> }
+            </ul>
+          }
+
+          @helper.select(
+              form("visibility"),
+              Seq( ("" -> "-- select --") ) ++ com.gilt.apidoc.models.Visibility.all.map( v => (v.toString -> v.toString) ),
+              '_label -> "Visibility",
+              '_error -> form.error("visibility"),
+              '_help -> "Controls who is able to view this service."
+          )
+
+      </fieldset>
+
+      <div class="actions">
+        <button class="btn btn-large btn-primary" type="submit">Submit</button>
+        <a href="@routes.ServiceSettings.show(tpl.org.get.key, tpl.service.get.key, tpl.version.get)" class="btn">Cancel</a>
+      </div>
+
+    }
+
+  </div>
+
+}

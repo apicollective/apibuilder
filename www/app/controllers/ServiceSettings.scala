@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.models.{Service, User}
+import com.gilt.apidoc.models.{Organization, Service, User}
 import core.ServiceDescription
 import models._
 import play.api._
@@ -13,29 +13,73 @@ object ServiceSettings extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+  private def mainTemplate(
+    api: com.gilt.apidoc.Client,
+    user: User,
+    org: Organization,
+    serviceKey: String,
+    versionName: String
+  ): Future[MainTemplate] = {
     for {
-      serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
-      versionOption <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+      serviceResponse <- api.Services.getByOrgKey(orgKey = org.key, key = Some(serviceKey))
+      versionOption <- api.Versions.getByOrgKeyAndServiceKeyAndVersion(org.key, serviceKey, versionName)
     } yield {
-      serviceResponse.headOption match {
-        case None => {
-          Redirect(routes.Organizations.show(orgKey)).flashing("warnings" -> "Service not found")
-        }
-        case Some(service) => {
-          val sd = ServiceDescription(versionOption.get.json)
-          val tpl = MainTemplate(
-            service.name + " Settings",
-            user = Some(request.user),
-            org = Some(request.org),
-            service = Some(service),
-            version = versionOption.map(_.version),
-            serviceDescription = Some(sd)
-          )
-          Ok(views.html.service_settings.show(tpl, service))
-        }
+      val service = serviceResponse.headOption.getOrElse {
+        sys.error("Service not found")
       }
+      val sd = ServiceDescription(versionOption.get.json)
+      MainTemplate(
+        service.name + " Settings",
+        user = Some(user),
+        org = Some(org),
+        service = Some(service),
+        version = versionOption.map(_.version),
+        serviceDescription = Some(sd)
+      )
     }
   }
+
+  def show(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+    for {
+      tpl <- mainTemplate(request.api, request.user, request.org, serviceKey, versionName)
+    } yield {
+      Ok(views.html.service_settings.show(tpl, tpl.service.get))
+    }
+  }
+
+  def edit(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+    for {
+      tpl <- mainTemplate(request.api, request.user, request.org, serviceKey, versionName)
+    } yield {
+      val filledForm = settingsForm.fill(Settings(visibility = tpl.service.get.visibility.toString))
+      Ok(views.html.service_settings.form(tpl, filledForm))
+    }
+  }
+
+  def postEdit(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+    for {
+      tpl <- mainTemplate(request.api, request.user, request.org, serviceKey, versionName)
+    } yield {
+      val boundForm = settingsForm.bindFromRequest
+      boundForm.fold (
+        errors => {
+          Ok(views.html.service_settings.form(tpl, errors))
+        },
+
+        valid => {
+          sys.error("TODO: Update vis: " + valid.visibility)
+        }
+
+      )
+
+    }
+  }
+
+  case class Settings(visibility: String)
+  private val settingsForm = Form(
+    mapping(
+      "visibility" -> text
+    )(Settings.apply)(Settings.unapply)
+  )
 
 }
