@@ -115,7 +115,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
 
     val patchMethod = version.supportsHttpPatch match {
       case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)"""
-      case false => """sys.error("PATCH method is not supported in Play Framework Version ${version.name}")"""
+      case false => """sys.error(s"PATCH method is not supported in Play Framework Version ${version.name}")"""
     }
 
     val headerString = ".withHeaders(" +
