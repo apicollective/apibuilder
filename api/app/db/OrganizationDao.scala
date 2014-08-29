@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Domain, OrganizationMetadata, User, Version}
+import com.gilt.apidoc.models.{Domain, OrganizationMetadata, User, Version, Visibility}
 import com.gilt.apidoc.models.json._
 import core.{Role, UrlKey}
 import anorm._
@@ -34,7 +34,9 @@ object OrganizationForm {
 
 object OrganizationDao {
 
-  val MinNameLength = 4
+  private val MinNameLength = 4
+
+  private val PublicOrgGuids = s"select distinct organization_guid from services where deleted_at is null and visibility = '${Visibility.Public.toString}'"
 
   private val BaseQuery = """
     select organizations.guid::varchar, organizations.name, organizations.key,
@@ -175,15 +177,30 @@ object OrganizationDao {
     OrganizationDao.findAll(userGuid = Some(user.guid), key = Some(orgKey), limit = 1).headOption
   }
 
-  def findAll(guid: Option[String] = None,
-              userGuid: Option[UUID] = None,
-              key: Option[String] = None,
-              name: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[Organization] = {
+  def findAll(
+    guid: Option[String] = None,
+    userGuid: Option[UUID] = None,
+    key: Option[String] = None,
+    name: Option[String] = None,
+    limit: Int = 50,
+    offset: Int = 0
+  ): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      userGuid.map { v => "and organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
+      Some(
+        userGuid match {
+          case None => {
+            s"and organizations.guid in ($PublicOrgGuids)"
+          }
+          case Some(guid) => {
+            "and organizations.guid in (" +
+            "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
+            " UNION ALL " +
+            PublicOrgGuids
+            ")"
+          }
+        }
+      ),
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       key.map { v => "and organizations.key = lower(trim({key}))" },
       name.map { v => "and lower(organizations.name) = lower(trim({name}))" },
