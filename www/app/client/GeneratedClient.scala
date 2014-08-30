@@ -762,7 +762,6 @@ package com.gilt.apidoc {
        */
       def get(
         guid: scala.Option[java.util.UUID] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
         key: scala.Option[String] = None,
         name: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
@@ -794,7 +793,6 @@ package com.gilt.apidoc {
     object Organizations extends Organizations {
       override def get(
         guid: scala.Option[java.util.UUID] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
         key: scala.Option[String] = None,
         name: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
@@ -802,7 +800,6 @@ package com.gilt.apidoc {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Organization]] = {
         val query = Seq(
           guid.map("guid" -> _.toString),
-          userGuid.map("user_guid" -> _.toString),
           key.map("key" -> _),
           name.map("name" -> _),
           limit.map("limit" -> _.toString),
@@ -1184,7 +1181,7 @@ package com.gilt.apidoc {
       }
     }
 
-    private val UserAgent = "apidoc:0.5.11 http://www.apidoc.me/gilt/code/api-doc/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.5.12 http://www.apidoc.me/gilt/code/api-doc/0.5.13/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
