@@ -63,7 +63,7 @@ object ServiceDao {
            where guid = {guid}::uuid
           """).on('guid -> dao.guid,
                   'name -> dao.name,
-                  'visibility -> dao.visibility.map(_.toString),
+                  'visibility -> dao.visibility.toString,
                   'description -> dao.description,
                   'updated_by_guid -> updatedBy.guid).execute()
     }
@@ -139,7 +139,7 @@ object ServiceDao {
           guid = row[UUID]("guid"),
           name = row[String]("name"),
           key = row[String]("key"),
-          visibility = Visibility.fromString(row[String]("visibility")),
+          visibility = Visibility(row[String]("visibility")),
           description = row[Option[String]]("description")
         )
         }.toSeq

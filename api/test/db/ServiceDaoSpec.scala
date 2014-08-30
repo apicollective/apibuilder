@@ -75,13 +75,13 @@ class ServiceDaoSpec extends FunSpec with Matchers {
 
     it("visibility") {
       val service = upsertService()
-      service.visibility should be(Some(Visibility.Organization))
+      service.visibility should be(Visibility.Organization)
 
-      ServiceDao.update(Util.createdBy, service.copy(visibility = Some(Visibility.Public)))
-      ServiceDao.findByOrganizationAndKey(Util.testOrg, service.key).get.visibility should be(Some(Visibility.Public))
+      ServiceDao.update(Util.createdBy, service.copy(visibility = Visibility.Public))
+      ServiceDao.findByOrganizationAndKey(Util.testOrg, service.key).get.visibility should be(Visibility.Public)
 
-      ServiceDao.update(Util.createdBy, service.copy(visibility = Some(Visibility.Organization)))
-      ServiceDao.findByOrganizationAndKey(Util.testOrg, service.key).get.visibility should be(Some(Visibility.Organization))
+      ServiceDao.update(Util.createdBy, service.copy(visibility = Visibility.Organization))
+      ServiceDao.findByOrganizationAndKey(Util.testOrg, service.key).get.visibility should be(Visibility.Organization)
     }
   }
 

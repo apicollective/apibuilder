@@ -241,7 +241,6 @@
                     "description": "Search all organizations. Results are always paginated.",
                     "parameters": [
                         { "name": "guid", "type": "uuid", "required": false },
-                        { "name": "user_guid", "type": "uuid", "required": false },
                         { "name": "key", "type": "string", "description": "Find organizations with this key. Case in-sensitive. Exact match", "required": false },
                         { "name": "name", "type": "string", "description": "Find organizations with this name. Case in-sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },

@@ -60,8 +60,8 @@ object Versions extends Controller {
                 ServiceDao.create(request.user, org, serviceForm, Some(serviceKey))
               }
 
-              if (service.visibility != Some(visibility)) {
-                ServiceDao.update(request.user, service.copy(visibility = Some(visibility)))
+              if (service.visibility != visibility) {
+                ServiceDao.update(request.user, service.copy(visibility = visibility))
               }
 
               val resultingVersion = VersionDao.findByServiceAndVersion(service, version) match {

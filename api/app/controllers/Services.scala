@@ -35,7 +35,7 @@ object Services extends Controller {
                   val service = existing.copy(
                     name = form.name,
                     description = form.description,
-                    visibility = Some(form.visibility)
+                    visibility = form.visibility
                   )
                   ServiceDao.update(request.user, service)
                   NoContent

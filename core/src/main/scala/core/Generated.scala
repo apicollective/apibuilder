@@ -77,7 +77,7 @@ package com.gilt.apidoc.models {
     guid: java.util.UUID,
     name: String,
     key: String,
-    visibility: scala.Option[Visibility] = None,
+    visibility: Visibility,
     description: scala.Option[String] = None
   )
 
@@ -357,7 +357,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "name").read[String] and
         (__ \ "key").read[String] and
-        (__ \ "visibility").readNullable[Visibility] and
+        (__ \ "visibility").read[Visibility] and
         (__ \ "description").readNullable[String]
       )(Service.apply _)
     }
@@ -367,7 +367,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "name").write[String] and
         (__ \ "key").write[String] and
-        (__ \ "visibility").write[scala.Option[Visibility]] and
+        (__ \ "visibility").write[Visibility] and
         (__ \ "description").write[scala.Option[String]]
       )(unlift(Service.unapply _))
     }
