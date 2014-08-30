@@ -168,6 +168,7 @@ object OrganizationDao {
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
+    userGuid: Option[UUID] = None,
     key: Option[String] = None,
     name: Option[String] = None,
     limit: Int = 50,
@@ -181,12 +182,17 @@ object OrganizationDao {
         case Authorization.User(userGuid) => {
           Some(
             "and organizations.guid in (" +
-            "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
+            "select organization_guid from memberships where deleted_at is null and user_guid = {authorization_user_guid}::uuid" +
             " UNION ALL " +
             PublicOrgClause +
             ")"
           )
         }
+      },
+      userGuid.map { v =>
+        "and organizations.guid in (" +
+        "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
+        ")"
       },
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       key.map { v => "and organizations.key = lower(trim({key}))" },
@@ -194,13 +200,14 @@ object OrganizationDao {
       Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val userGuid = authorization match {
+    val authorizationUserGuid = authorization match {
       case Authorization.User(guid) => Some(guid)
       case _ => None
     }
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      authorizationUserGuid.map('authorization_user_guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
       key.map('key -> _),
       name.map('name ->_)

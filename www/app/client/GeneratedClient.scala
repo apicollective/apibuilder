@@ -762,6 +762,7 @@ package com.gilt.apidoc {
        */
       def get(
         guid: scala.Option[java.util.UUID] = None,
+        userGuid: scala.Option[java.util.UUID] = None,
         key: scala.Option[String] = None,
         name: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
@@ -793,6 +794,7 @@ package com.gilt.apidoc {
     object Organizations extends Organizations {
       override def get(
         guid: scala.Option[java.util.UUID] = None,
+        userGuid: scala.Option[java.util.UUID] = None,
         key: scala.Option[String] = None,
         name: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
@@ -800,6 +802,7 @@ package com.gilt.apidoc {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Organization]] = {
         val query = Seq(
           guid.map("guid" -> _.toString),
+          userGuid.map("user_guid" -> _.toString),
           key.map("key" -> _),
           name.map("name" -> _),
           limit.map("limit" -> _.toString),

@@ -10,16 +10,18 @@ import java.util.UUID
 
 object Organizations extends Controller {
 
-  // TODO: Remove userGuid
   def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    println(s"Authorization.User(${request.user.guid})")
 
-    val orgs = OrganizationDao.findAll(Authorization.User(request.user.guid),
-                                       guid = guid,
-                                       key = key,
-                                       name = name,
-                                       limit = limit,
-                                       offset = offset)
+    val orgs = OrganizationDao.findAll(
+      Authorization.User(request.user.guid),
+      userGuid = userGuid,
+      guid = guid,
+      key = key,
+      name = name,
+      limit = limit,
+      offset = offset
+    )
+
     Ok(Json.toJson(orgs))
   }
 

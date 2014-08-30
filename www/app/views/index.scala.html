@@ -1,8 +1,9 @@
 @(user: com.gilt.apidoc.models.User,
   organizations: lib.PaginatedCollection[com.gilt.apidoc.models.Organization],
-  membershipRequests: lib.PaginatedCollection[com.gilt.apidoc.models.MembershipRequest])(implicit flash: Flash)
+  membershipRequests: lib.PaginatedCollection[com.gilt.apidoc.models.MembershipRequest],
+  publicOrganizations: lib.PaginatedCollection[com.gilt.apidoc.models.Organization])(implicit flash: Flash)
 
-@main(models.MainTemplate(user = Some(user), title = "Organizations")) {
+@main(models.MainTemplate(user = Some(user), title = "Your Organizations")) {
 
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.create">Add organization</a>
@@ -21,10 +22,10 @@
   @if(organizations.hasPrevious || organizations.hasNext) {
     <ul class="pager">
       @if(organizations.hasPrevious) {
-        <li><a href="@routes.Application.index(organizations.page - 1, membershipRequests.page)">Previous</a></li>
+        <li><a href="@routes.Application.index(organizations.page - 1, membershipRequests.page, publicOrganizations.page)">Previous</a></li>
       }
       @if(organizations.hasNext) {
-        <li><a href="@routes.Application.index(organizations.page + 1, membershipRequests.page)">Next</a></li>
+        <li><a href="@routes.Application.index(organizations.page + 1, membershipRequests.page, publicOrganizations.page)">Next</a></li>
       }
     </ul>
   }
@@ -44,13 +45,39 @@
     @if(membershipRequests.hasPrevious || membershipRequests.hasNext) {
       <ul class="pager">
         @if(membershipRequests.hasPrevious) {
-          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page - 1)">Previous</a></li>
+          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page - 1, publicOrganizations.page)">Previous</a></li>
         }
         @if(membershipRequests.hasNext) {
-          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page + 1)">Next</a></li>
+          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page + 1, publicOrganizations.page)">Next</a></li>
         }
       </ul>
     }
   }
 
+  @if(!publicOrganizations.isEmpty) {
+    <h2>All Public Organizations</h2>
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @publicOrganizations.items.map { organization =>
+         <tr>
+           <td><a href="@routes.Organizations.show(organization.key)">@organization.name</a></td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+    @if(publicOrganizations.hasPrevious || publicOrganizations.hasNext) {
+      <ul class="pager">
+        @if(publicOrganizations.hasPrevious) {
+          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page, publicOrganizations.page - 1)">Previous</a></li>
+        }
+        @if(publicOrganizations.hasNext) {
+          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page, publicOrganizations.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  
+  }
+
 }
+  

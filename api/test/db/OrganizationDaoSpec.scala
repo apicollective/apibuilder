@@ -72,8 +72,35 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     assertEquals(OrganizationDao.findByGuid(Authorization.All, Util.gilt.guid).get.guid, Util.gilt.guid)
   }
 
-  it("findAll by key") {
-    assertEquals(OrganizationDao.findAll(Authorization.All, key = Some(Util.gilt.key)).head.key, Util.gilt.key)
+  describe("findAll") {
+
+    val user1 = Util.createRandomUser()
+    val org1 = Util.createOrganization(user1)
+
+    val user2 = Util.createRandomUser()
+    val org2 = Util.createOrganization(user2)
+
+    it("by key") {
+      OrganizationDao.findAll(Authorization.All, key = Some(org1.key)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationDao.findAll(Authorization.All, key = Some(org2.key)).map(_.guid) should be(Seq(org2.guid))
+    }
+
+    it("by name") {
+      OrganizationDao.findAll(Authorization.All, name = Some(org1.name)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationDao.findAll(Authorization.All, name = Some(org1.name.toUpperCase)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationDao.findAll(Authorization.All, name = Some(org1.name.toLowerCase)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationDao.findAll(Authorization.All, name = Some(org2.name)).map(_.guid) should be(Seq(org2.guid))
+    }
+
+    it("by guid") {
+      OrganizationDao.findAll(Authorization.All, guid = Some(org1.guid)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationDao.findAll(Authorization.All, guid = Some(org2.guid)).map(_.guid) should be(Seq(org2.guid))
+    }
+
+    it("by userGuid") {
+      OrganizationDao.findAll(Authorization.All, userGuid = Some(user1.guid)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationDao.findAll(Authorization.All, userGuid = Some(user2.guid)).map(_.guid) should be(Seq(org2.guid))
+    }
   }
 
   it("emailDomain") {
@@ -121,9 +148,6 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     val privateUser = Util.createRandomUser()
     val privateOrg = Util.createOrganization(privateUser, Some("Private " + UUID.randomUUID().toString))
     val privateService = ServiceDao.create(privateUser, privateOrg, ServiceForm(name = "svc", visibility = Visibility.Organization))
-
-    println("public org: " + publicOrg.guid)
-    println("private org: " + privateOrg.guid)
 
     describe("Authorization.All") {
 
