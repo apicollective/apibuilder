@@ -40,11 +40,9 @@ object Versions extends Controller {
           val service = serviceResponse.headOption.getOrElse {
             sys.error(s"Could not find service for orgKey[$orgKey] and key[$serviceKey]")
           }
+
           val sd = ServiceDescription(v.json)
-          val tpl = MainTemplate(
-            service.name + " " + v.version,
-            user = Some(request.user),
-            org = Some(request.org),
+          val tpl = request.mainTemplate(service.name + " " + v.version).copy(
             service = Some(service),
             version = Some(v.version),
             allServiceVersions = versionsResponse.map(_.version),
@@ -73,14 +71,12 @@ object Versions extends Controller {
   }
 
   def create(orgKey: String, serviceKey: Option[String] = None) = AuthenticatedOrg.async { implicit request =>
+    request.requireMember()
+
     serviceKey match {
 
       case None => Future {
-        val tpl = MainTemplate(
-          title = "Add Service",
-          user = Some(request.user),
-          org = Some(request.org)
-        )
+        val tpl = request.mainTemplate("Add service")
         val filledForm = uploadForm.fill(
           UploadData(
             version = DefaultVersion,
@@ -100,10 +96,7 @@ object Versions extends Controller {
               Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${key}")
             }
             case Some(service) => {
-              val tpl = MainTemplate(
-                title = "Upload new version",
-                user = Some(request.user),
-                org = Some(request.org),
+              val tpl = request.mainTemplate(s"${service.name}: Upload new version").copy(
                 service = Some(service),
                 version = versionsResponse.headOption.map(_.version)
               )
@@ -122,12 +115,9 @@ object Versions extends Controller {
   }
 
   def createPost(orgKey: String) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
-    val tpl = MainTemplate(
-      title = s"${request.org.name}: Add Service",
-      user = Some(request.user),
-      org = Some(request.org)
-    )
+    request.requireMember()
 
+    val tpl = request.mainTemplate("Add Service")
     val boundForm = uploadForm.bindFromRequest
     boundForm.fold (
 

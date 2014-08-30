@@ -31,11 +31,7 @@ object Organizations extends Controller {
       }
 
       Ok(views.html.organizations.show(
-        MainTemplate(
-          user = Some(request.user),
-          title = request.org.name,
-          org = Some(request.org)
-        ),
+        request.mainTemplate(),
         services = PaginatedCollection(page, services),
         haveRequests = haveRequests)
       )
@@ -43,6 +39,8 @@ object Organizations extends Controller {
   }
 
   def membershipRequests(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
+    request.requireAdmin
+
     for {
       requests <- request.api.MembershipRequests.get(
         orgKey = Some(orgKey),
@@ -50,20 +48,14 @@ object Organizations extends Controller {
         offset = Some(page * Pagination.DefaultLimit)
       )
     } yield {
-      if (request.isAdmin) {
-        Ok(views.html.organizations.membershipRequests(
-          MainTemplate(
-            user = Some(request.user),
-            title = request.org.name,
-            org = Some(request.org)
-          ),
-          requests = PaginatedCollection(page, requests))
-        )
-      } else {
-        Redirect(routes.Organizations.show(orgKey)).flashing(
-          "warning" -> s"You are not authorized to review membership requests for $orgKey"
-        )
-      }
+      Ok(views.html.organizations.membershipRequests(
+        MainTemplate(
+          user = Some(request.user),
+          title = request.org.name,
+          org = Some(request.org)
+        ),
+        requests = PaginatedCollection(page, requests))
+      )
     }
   }
 

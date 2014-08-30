@@ -13,16 +13,19 @@ object Domains extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(orgKey: String) = AuthenticatedOrg { implicit request =>
+    request.requireMember
     val tpl = request.mainTemplate("Domains")
     Ok(views.html.domains.index(tpl.copy(settings = Some(SettingsMenu(section = Some(SettingSection.Domains))))))
   }
 
   def create(orgKey: String) = AuthenticatedOrg { implicit request =>
+    request.requireAdmin
     val tpl = request.mainTemplate("Add Domain")
     Ok(views.html.domains.form(tpl, domainForm))
   }
 
   def postCreate(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+    request.requireAdmin
     val tpl = request.mainTemplate("Add Domain")
     val boundForm = domainForm.bindFromRequest
     boundForm.fold (
@@ -49,7 +52,7 @@ object Domains extends Controller {
   }
 
   def postRemove(orgKey: String, domain: String) = AuthenticatedOrg.async { implicit request =>
-    require(request.isAdmin, s"User is not an admin of org[$orgKey]")
+    request.requireAdmin
 
     for {
       response <- request.api.Domains.deleteByName(orgKey, domain)

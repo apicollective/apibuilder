@@ -13,7 +13,9 @@ case class MainTemplate(
   allServiceVersions: Seq[String] = Seq.empty,
   user: Option[User] = None,
   resource: Option[Resource] = None,
-  settings: Option[SettingsMenu] = None
+  settings: Option[SettingsMenu] = None,
+  isOrgAdmin: Boolean = false,
+  isOrgMember: Boolean = false
 )
 
 object MainTemplate {

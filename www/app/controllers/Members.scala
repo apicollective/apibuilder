@@ -17,6 +17,7 @@ object Members extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
+    request.requireAdmin
     for {
       orgs <- request.api.Organizations.get(key = Some(orgKey))
       members <- request.api.Memberships.get(orgKey = Some(orgKey),
@@ -40,54 +41,48 @@ object Members extends Controller {
   }
 
   def add(orgKey: String) = AuthenticatedOrg { implicit request =>
-    if (request.isAdmin) {
-      val filledForm = addMemberForm.fill(AddMemberData(role = Role.Member.key, email = ""))
+    request.requireAdmin
+    val filledForm = addMemberForm.fill(AddMemberData(role = Role.Member.key, email = ""))
 
-      Ok(views.html.members.add(MainTemplate(title = s"#{request.org.name}: Add member",
-                                             org = Some(request.org),
-                                             user = Some(request.user)),
-                                filledForm))
-    } else {
-      Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Only an administrator of this organization can add members")
-    }
+    Ok(views.html.members.add(MainTemplate(title = s"#{request.org.name}: Add member",
+                                           org = Some(request.org),
+                                           user = Some(request.user)),
+                              filledForm))
   }
 
   def addPost(orgKey: String) = AuthenticatedOrg { implicit request =>
-    if (!request.isAdmin) {
-      Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Only an administrator of this organization can add members")
-    } else {
-      val tpl = MainTemplate(title = "#{request.org.name}: Add member",
-                             org = Some(request.org),
-                             user = Some(request.user))
+    request.requireAdmin
+    val tpl = MainTemplate(title = "#{request.org.name}: Add member",
+                           org = Some(request.org),
+                           user = Some(request.user))
 
-      addMemberForm.bindFromRequest.fold (
+    addMemberForm.bindFromRequest.fold (
 
-        errors => {
-          Ok(views.html.members.add(tpl, errors))
-        },
+      errors => {
+        Ok(views.html.members.add(tpl, errors))
+      },
 
-        valid => {
-          Await.result(request.api.Users.get(email = Some(valid.email)), 1500.millis).headOption match {
+      valid => {
+        Await.result(request.api.Users.get(email = Some(valid.email)), 1500.millis).headOption match {
 
-            case None => {
-              val filledForm = addMemberForm.fill(valid)
-              Ok(views.html.members.add(tpl, filledForm, Some("No user found")))
-            }
+          case None => {
+            val filledForm = addMemberForm.fill(valid)
+            Ok(views.html.members.add(tpl, filledForm, Some("No user found")))
+          }
 
-            case Some(user: User) => {
-              val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis)
-              val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
-              Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"${valid.role} added")
-            }
+          case Some(user: User) => {
+            val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis)
+            val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
+            Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"${valid.role} added")
           }
         }
+      }
 
-      )
-    }
+    )
   }
 
   def postRemove(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
-    require(request.isAdmin, s"User is not an admin of org[$orgKey]")
+    request.requireAdmin
 
     for {
       response <- request.api.Memberships.deleteByGuid(guid)
@@ -97,6 +92,8 @@ object Members extends Controller {
   }
 
   def postRevokeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
+    request.requireAdmin
+
     for {
       membership <- request.api.Memberships.getByGuid(guid)
       memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
@@ -121,6 +118,8 @@ object Members extends Controller {
   }
 
   def postMakeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
+    request.requireAdmin
+
     for {
       membership <- request.api.Memberships.getByGuid(guid)
       memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))

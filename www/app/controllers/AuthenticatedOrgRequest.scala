@@ -17,13 +17,27 @@ class AuthenticatedOrgRequest[A](
   user: User,
   request: Request[A]
 ) extends AuthenticatedRequest[A](user, request) {
+  require(
+    !isAdmin || (isAdmin && isMember),
+    "A user that is an admin should always be considered a member"
+  )
 
-  def mainTemplate(title: String): MainTemplate = {
+  def mainTemplate(title: String = org.name): MainTemplate = {
     MainTemplate(
-      title = s"${org.name}: $title",
+      title = title,
       user = Some(user),
-      org = Some(org)
+      org = Some(org),
+      isOrgMember = isMember,
+      isOrgAdmin = isAdmin
     )
+  }
+
+  def requireAdmin() {
+    require(isAdmin, s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
+  }
+
+  def requireMember() {
+    require(isMember, s"Action requires member role. User[${user.guid}] is not a member of Org[${org.key}]")
   }
 
 }
