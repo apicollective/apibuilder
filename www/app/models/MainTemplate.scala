@@ -24,6 +24,11 @@ object MainTemplate {
     sys.error("apidoc.version is required")
   }
 
+  val supportEmail = current.configuration.getString("apidoc.support_email").getOrElse {
+    sys.error("apidoc.support_email is required")
+  }
+
+
 }
 
 case class SettingsMenu(
