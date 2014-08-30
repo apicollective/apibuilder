@@ -15,23 +15,20 @@ object ServiceSettings extends Controller {
 
   private def mainTemplate(
     api: com.gilt.apidoc.Client,
-    user: User,
-    org: Organization,
+    base: MainTemplate,
     serviceKey: String,
     versionName: String
   ): Future[MainTemplate] = {
     for {
-      serviceResponse <- api.Services.getByOrgKey(orgKey = org.key, key = Some(serviceKey))
-      versionOption <- api.Versions.getByOrgKeyAndServiceKeyAndVersion(org.key, serviceKey, versionName)
+      serviceResponse <- api.Services.getByOrgKey(orgKey = base.org.get.key, key = Some(serviceKey))
+      versionOption <- api.Versions.getByOrgKeyAndServiceKeyAndVersion(base.org.get.key, serviceKey, versionName)
     } yield {
       val service = serviceResponse.headOption.getOrElse {
         sys.error("Service not found")
       }
       val sd = ServiceDescription(versionOption.get.json)
-      MainTemplate(
-        service.name + " Settings",
-        user = Some(user),
-        org = Some(org),
+      base.copy(
+        title = service.name + " Settings",
         service = Some(service),
         version = versionOption.map(_.version),
         serviceDescription = Some(sd)
@@ -41,7 +38,7 @@ object ServiceSettings extends Controller {
 
   def show(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
     for {
-      tpl <- mainTemplate(request.api, request.user, request.org, serviceKey, versionName)
+      tpl <- mainTemplate(request.api, request.mainTemplate(), serviceKey, versionName)
     } yield {
       Ok(views.html.service_settings.show(tpl, tpl.service.get))
     }
@@ -49,7 +46,7 @@ object ServiceSettings extends Controller {
 
   def edit(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
     for {
-      tpl <- mainTemplate(request.api, request.user, request.org, serviceKey, versionName)
+      tpl <- mainTemplate(request.api, request.mainTemplate(), serviceKey, versionName)
     } yield {
       val filledForm = settingsForm.fill(Settings(visibility = tpl.service.get.visibility.toString))
       Ok(views.html.service_settings.form(tpl, filledForm))
@@ -57,7 +54,7 @@ object ServiceSettings extends Controller {
   }
 
   def postEdit(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
-    mainTemplate(request.api, request.user, request.org, serviceKey, versionName).flatMap { tpl =>
+    mainTemplate(request.api, request.mainTemplate(), serviceKey, versionName).flatMap { tpl =>
       val boundForm = settingsForm.bindFromRequest
       boundForm.fold (
         errors => Future {

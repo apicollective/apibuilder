@@ -9,25 +9,29 @@
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.create">Add organization</a>
   </div>
 
-  <table class="table table-hover table-condensed">
-    <tbody>
-      @organizations.items.map { organization =>
-       <tr>
-         <td><a href="@routes.Organizations.show(organization.key)">@organization.name</a></td>
-       </tr>
-     }
-    </tbody>
-  </table>
+  @if(organizations.isEmpty) {
+    <em>You currently do not belong to any organizations</em>
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @organizations.items.map { organization =>
+         <tr>
+           <td><a href="@routes.Organizations.show(organization.key)">@organization.name</a></td>
+         </tr>
+       }
+      </tbody>
+    </table>
 
-  @if(organizations.hasPrevious || organizations.hasNext) {
-    <ul class="pager">
-      @if(organizations.hasPrevious) {
-        <li><a href="@routes.Application.index(organizations.page - 1, membershipRequests.page, publicOrganizations.page)">Previous</a></li>
-      }
-      @if(organizations.hasNext) {
-        <li><a href="@routes.Application.index(organizations.page + 1, membershipRequests.page, publicOrganizations.page)">Next</a></li>
-      }
-    </ul>
+    @if(organizations.hasPrevious || organizations.hasNext) {
+      <ul class="pager">
+        @if(organizations.hasPrevious) {
+          <li><a href="@routes.Application.index(organizations.page - 1, membershipRequests.page, publicOrganizations.page)">Previous</a></li>
+        }
+        @if(organizations.hasNext) {
+          <li><a href="@routes.Application.index(organizations.page + 1, membershipRequests.page, publicOrganizations.page)">Next</a></li>
+        }
+      </ul>
+    }
   }
 
   @if(!membershipRequests.isEmpty) {

@@ -49,15 +49,19 @@
               @metadata.service.map { service =>
                 <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@service.name</a></li>
                 @metadata.version.map { version =>
-                  <li><a href="@routes.ServiceSettings.show(orgKey = org.key, serviceKey = service.key, version = version)">Settings</a></li>
+                  @if(metadata.isOrgMember) {
+                    <li><a href="@routes.ServiceSettings.show(orgKey = org.key, serviceKey = service.key, version = version)">Settings</a></li>
+                  }
                   <li><a href="@routes.Versions.apiJson(orgKey = org.key, serviceKey = service.key, version = version)">api.json</a></li>
                 }
               }
 
-              @metadata.settings.map { settings =>
-                <li><a@if(settings.section == Some(models.SettingSection.Domains)) { class="active" } href="@routes.Domains.index(orgKey = org.key)">Domains</a></li>
-                <li><a@if(settings.section == Some(models.SettingSection.Metadata)) { class="active" } href="@routes.Metadata.show(orgKey = org.key)">Metadata</a></li>
-                <li><a@if(settings.section == Some(models.SettingSection.Members)) { class="active" } href="@routes.Members.show(orgKey = org.key)">Members</a></li>
+              @if(metadata.isOrgMember) {
+                @metadata.settings.map { settings =>
+                  <li><a@if(settings.section == Some(models.SettingSection.Domains)) { class="active" } href="@routes.Domains.index(orgKey = org.key)">Domains</a></li>
+                  <li><a@if(settings.section == Some(models.SettingSection.Metadata)) { class="active" } href="@routes.Metadata.show(orgKey = org.key)">Metadata</a></li>
+                  <li><a@if(settings.section == Some(models.SettingSection.Members)) { class="active" } href="@routes.Members.show(orgKey = org.key)">Members</a></li>
+                }
               }
             </ul>
           }
