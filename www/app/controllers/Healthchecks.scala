@@ -9,7 +9,7 @@ object Healthchecks extends Controller {
 
   def index() = Action.async { implicit request =>
     for {
-      orgs <- Authenticated.api.Organizations.get(key = Some("gilt"), limit = Some(1))
+      orgs <- Authenticated.api().Organizations.get(key = Some("gilt"), limit = Some(1))
     } yield {
       Ok(views.html.healthchecks.index(orgs.headOption))
     }

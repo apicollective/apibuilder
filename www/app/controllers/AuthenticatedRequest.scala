@@ -10,11 +10,7 @@ import java.util.UUID
 
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
-  lazy val api = new com.gilt.apidoc.Client(Authenticated.apiUrl, Some(Authenticated.apiToken)) {
-    override def _requestHolder(path: String) = {
-      super._requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
-    }
-  }
+  lazy val api = Authenticated.api(Some(user))
 
 }
 
@@ -22,20 +18,29 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
+  private val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
     sys.error("apidoc.url is required")
   }
 
-  val apiToken = current.configuration.getString("apidoc.token").getOrElse {
+  private val apiToken = current.configuration.getString("apidoc.token").getOrElse {
     sys.error("apidoc.token is required")
   }
 
-  lazy val api = new com.gilt.apidoc.Client(apiUrl, Some(apiToken))
+  def api(user: Option[User] = None): com.gilt.apidoc.Client = {
+    user match {
+      case None => new com.gilt.apidoc.Client(apiUrl, Some(apiToken))
+      case Some(u) => new com.gilt.apidoc.Client(apiUrl, Some(apiToken)) {
+        override def _requestHolder(path: String) = {
+          super._requestHolder(path).withHeaders("X-User-Guid" -> u.guid.toString)
+        }
+      }
+    }
+  }
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
     request.session.get("user_guid").map { userGuid =>
-      Await.result(api.Users.getByGuid(UUID.fromString(userGuid)), 5000.millis) match {
+      Await.result(api().Users.getByGuid(UUID.fromString(userGuid)), 5000.millis) match {
 
         case None => {
           // have a user guid, but user does not exist
