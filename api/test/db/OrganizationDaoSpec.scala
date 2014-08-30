@@ -8,8 +8,8 @@ import java.util.UUID
 class OrganizationDaoSpec extends FunSpec with Matchers {
 
   it("create") {
-    assertEquals(Util.gilt.name, "Gilt")
-    assertEquals(Util.gilt.key, "gilt")
+    Util.gilt.name should be("Gilt Test Org")
+    Util.gilt.key should be("gilt-test-org")
   }
 
   it("user that creates org should be an admin") {

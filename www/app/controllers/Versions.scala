@@ -2,7 +2,7 @@ package controllers
 
 import models.MainTemplate
 import core.{ServiceDescription, ServiceDescriptionValidator, UrlKey}
-import com.gilt.apidoc.models.{Organization, Version}
+import com.gilt.apidoc.models.{Organization, Version, Visibility}
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.Json
@@ -77,7 +77,12 @@ object Versions extends Controller {
       user = Some(request.user),
       org = Some(request.org)
     )
-    val filledForm = uploadForm.fill(UploadData(version.getOrElse(DefaultVersion)))
+    val filledForm = uploadForm.fill(
+      UploadData(
+        version = version.getOrElse(DefaultVersion),
+        visibility = Visibility.Organization.toString
+      )
+    )
     Ok(views.html.versions.form(tpl, filledForm))
   }
 
@@ -105,7 +110,7 @@ object Versions extends Controller {
           val validator = ServiceDescriptionValidator(contents)
           if (validator.isValid) {
             val serviceKey = UrlKey.generate(validator.serviceDescription.get.name)
-            val response = Await.result(request.api.Versions.putByOrgKeyAndServiceKeyAndVersion(request.org.key, serviceKey, valid.version, contents), 5000.millis)
+            val response = Await.result(request.api.Versions.putByOrgKeyAndServiceKeyAndVersion(request.org.key, serviceKey, valid.version, contents, Some(Visibility(valid.visibility))), 5000.millis)
             Redirect(routes.Versions.show(request.org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
           } else {
             Ok(views.html.versions.form(tpl, boundForm, validator.errors))
@@ -118,10 +123,11 @@ object Versions extends Controller {
     )
   }
 
-  case class UploadData(version: String)
+  case class UploadData(version: String, visibility: String)
   private val uploadForm = Form(
     mapping(
-      "version" -> nonEmptyText
+      "version" -> nonEmptyText,
+      "visibility" -> nonEmptyText
     )(UploadData.apply)(UploadData.unapply)
   )
 

@@ -35,7 +35,7 @@ object Util {
 
   lazy val createdBy = Util.upsertUser("admin@apidoc.me")
 
-  lazy val gilt = upsertOrganization("Gilt")
+  lazy val gilt = upsertOrganization("Gilt Test Org")
 
   lazy val testOrg = upsertOrganization("Test Org %s".format(UUID.randomUUID))
 

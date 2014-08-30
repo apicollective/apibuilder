@@ -24,9 +24,17 @@
           }
 
           @helper.inputText(
-              form("version"),
-              '_label -> "Version",
-              '_error -> form.error("version")
+            form("version"),
+            '_label -> "Version",
+            '_error -> form.error("version")
+          )
+
+          @helper.select(
+            form("visibility"),
+            com.gilt.apidoc.models.Visibility.all.map { v => (v.toString -> v.toString) },
+            '_label -> "Visibility",
+            '_error -> form.error("visibility"),
+            '_help -> "Set to public if anybody can view this service, or organization to limit to other members of your org."
           )
 
           @helper.inputFile(
