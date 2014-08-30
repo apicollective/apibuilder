@@ -36,7 +36,7 @@ object OrganizationDao {
 
   private val MinNameLength = 4
 
-  private val PublicOrgGuids = s"select distinct organization_guid from services where deleted_at is null and visibility = '${Visibility.Public.toString}'"
+  private val PublicOrgClause = s"select distinct organization_guid from services where deleted_at is null and visibility = '${Visibility.Public.toString}'"
 
   private val BaseQuery = """
     select organizations.guid::varchar, organizations.name, organizations.key,
@@ -55,7 +55,7 @@ object OrganizationDao {
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {
-      OrganizationDao.findAll(name = Some(form.name), limit = 1).headOption match {
+      OrganizationDao.findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
         case None => Seq.empty
         case Some(org: Organization) => Seq("Org with this name already exists")
       }
@@ -106,7 +106,7 @@ object OrganizationDao {
   private[db] def findByEmailDomain(email: String): Option[Organization] = {
     emailDomain(email).flatMap { domain =>
       OrganizationDomainDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
-        findByGuid(UUID.fromString(domain.organization_guid))
+        findByGuid(Authorization.All, UUID.fromString(domain.organization_guid))
       }
     }
   }
@@ -165,21 +165,25 @@ object OrganizationDao {
     SoftDelete.delete("organizations", deletedBy, org.guid)
   }
 
-  def findByGuid(guid: UUID): Option[Organization] = {
-    findByGuid(guid.toString)
+  def findByGuid(authorization: Authorization, guid: UUID): Option[Organization] = {
+    findAll(authorization, guid = Some(guid.toString), limit = 1).headOption
   }
 
-  def findByGuid(guid: String): Option[Organization] = {
-    findAll(guid = Some(guid)).headOption
+  def findByGuid(authorization: Authorization, guid: String): Option[Organization] = {
+    findAll(authorization, guid = Some(guid), limit = 1).headOption
+  }
+
+  def findByUserAndGuid(user: User, guid: UUID): Option[Organization] = {
+    findAll(Authorization.User(user.guid), guid = Some(guid.toString), limit = 1).headOption
   }
 
   def findByUserAndKey(user: User, orgKey: String): Option[Organization] = {
-    OrganizationDao.findAll(userGuid = Some(user.guid), key = Some(orgKey), limit = 1).headOption
+    findAll(Authorization.User(user.guid), key = Some(orgKey), limit = 1).headOption
   }
 
   def findAll(
+    authorization: Authorization,
     guid: Option[String] = None,
-    userGuid: Option[UUID] = None,
     key: Option[String] = None,
     name: Option[String] = None,
     limit: Int = 50,
@@ -187,25 +191,29 @@ object OrganizationDao {
   ): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      Some(
-        userGuid match {
-          case None => {
-            s"and organizations.guid in ($PublicOrgGuids)"
-          }
-          case Some(guid) => {
+      authorization match {
+        case Authorization.All => None
+        case Authorization.PublicOnly => Some(s"and organizations.guid in ($PublicOrgClause)")
+        case Authorization.User(userGuid) => {
+          Some(
             "and organizations.guid in (" +
             "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
             " UNION ALL " +
-            PublicOrgGuids
+            PublicOrgClause +
             ")"
-          }
+          )
         }
-      ),
+      },
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       key.map { v => "and organizations.key = lower(trim({key}))" },
       name.map { v => "and lower(organizations.name) = lower(trim({name}))" },
       Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
+
+    val userGuid = authorization match {
+      case Authorization.User(guid) => Some(guid)
+      case _ => None
+    }
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),

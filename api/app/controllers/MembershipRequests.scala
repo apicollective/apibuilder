@@ -3,7 +3,7 @@ package controllers
 import com.gilt.apidoc.models.User
 import core.{Review, Role}
 import lib.Validation
-import db.{ MembershipRequest, Organization, OrganizationDao, UserDao }
+import db.{MembershipRequest, Organization, OrganizationDao, UserDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -40,9 +40,9 @@ object MembershipRequests extends Controller {
       }
       case s: JsSuccess[MembershipRequestForm] => {
         val form = s.get
-        OrganizationDao.findByGuid(form.org_guid) match {
+        OrganizationDao.findByUserAndGuid(request.user, form.org_guid) match {
           case None => {
-            Conflict(Json.toJson(Validation.error("Organization not found")))
+            Conflict(Json.toJson(Validation.error("Organization not found or not authorized to make changes to this org")))
           }
 
           case Some(org: Organization) => {

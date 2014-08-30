@@ -40,12 +40,12 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
 
     it("creates with domains") {
       org.domains.map(_.name).mkString(" ") should be(domains.mkString(" "))
-      val fetched = OrganizationDao.findByGuid(org.guid).get
+      val fetched = OrganizationDao.findByGuid(Authorization.All, org.guid).get
       fetched.domains.map(_.name).sorted.mkString(" ") should be(domains.sorted.mkString(" "))
     }
 
     it("defaults metadata.package_name to reverse of first domain if provided") {
-      val fetched = OrganizationDao.findByGuid(org.guid).get
+      val fetched = OrganizationDao.findByGuid(Authorization.All, org.guid).get
       fetched.metadata.get.packageName should be(Some("com." + domainName))
     }
 
@@ -63,16 +63,16 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     )
 
     org.metadata.get.packageName should be(Some("com.gilt"))
-    val fetched = OrganizationDao.findByGuid(org.guid).get
+    val fetched = OrganizationDao.findByGuid(Authorization.All, org.guid).get
     fetched.metadata.get.packageName should be(Some("com.gilt"))
   }
 
   it("find by guid") {
-    assertEquals(OrganizationDao.findByGuid(Util.gilt.guid).get.guid, Util.gilt.guid)
+    assertEquals(OrganizationDao.findByGuid(Authorization.All, Util.gilt.guid).get.guid, Util.gilt.guid)
   }
 
   it("findAll by key") {
-    assertEquals(OrganizationDao.findAll(key = Some(Util.gilt.key)).head.key, Util.gilt.key)
+    assertEquals(OrganizationDao.findAll(Authorization.All, key = Some(Util.gilt.key)).head.key, Util.gilt.key)
   }
 
   it("emailDomain") {

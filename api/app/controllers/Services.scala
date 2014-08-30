@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models.json._
-import db.{ OrganizationDao, ServiceDao, ServiceForm }
+import db.{OrganizationDao, ServiceDao, ServiceForm}
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
@@ -51,7 +51,7 @@ object Services extends Controller {
   }
 
   def deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String) = Authenticated { request =>
-    OrganizationDao.findAll(userGuid = Some(request.user.guid), key = Some(orgKey), limit = 1).headOption.map { org =>
+    OrganizationDao.findByUserAndKey(request.user, orgKey).map { org =>
       ServiceDao.findByOrganizationAndKey(org, serviceKey).map { service =>
         ServiceDao.softDelete(request.user, service)
       }

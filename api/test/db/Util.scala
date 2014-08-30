@@ -13,7 +13,7 @@ object Util {
   }
 
   def upsertOrganization(name: String): Organization = {
-    OrganizationDao.findAll(name = Some(name)).headOption.getOrElse {
+    OrganizationDao.findAll(Authorization.All, name = Some(name)).headOption.getOrElse {
       createOrganization(name = Some(name))
     }
   }

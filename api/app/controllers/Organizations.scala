@@ -1,7 +1,7 @@
 package controllers
 
 import lib.Validation
-import db.{ Organization, OrganizationDao, OrganizationForm }
+import db.{Authorization, Organization, OrganizationDao, OrganizationForm}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -9,7 +9,7 @@ import java.util.UUID
 object Organizations extends Controller {
 
   def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val orgs = OrganizationDao.findAll(userGuid = userGuid,
+    val orgs = OrganizationDao.findAll(Authorization(userGuid),
                                        guid = guid.map(_.toString),
                                        key = key,
                                        name = name,
@@ -19,7 +19,7 @@ object Organizations extends Controller {
   }
 
   def getByKey(key: String) = Authenticated { request =>
-    OrganizationDao.findAll(key = Some(key), limit = 1).headOption match {
+    OrganizationDao.findByUserAndKey(request.user, key) match {
       case None => NotFound
       case Some(org) => Ok(Json.toJson(org))
     }
@@ -44,7 +44,7 @@ object Organizations extends Controller {
   }
 
   def deleteByKey(key: String) = Authenticated { request =>
-    OrganizationDao.findAll(key = Some(key), limit = 1).headOption.map { organization =>
+    OrganizationDao.findByUserAndKey(request.user, key).map { organization =>
       OrganizationDao.softDelete(request.user, organization)
     }
     NoContent
