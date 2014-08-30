@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Service, User, Visibility}
+import com.gilt.apidoc.models.{Organization, Service, User, Visibility}
 import core.UrlKey
 import lib.{Validation, ValidationError}
 import anorm._

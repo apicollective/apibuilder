@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.json._
-import com.gilt.apidoc.models.{OrganizationMetadata, User, Version}
+import com.gilt.apidoc.models.{Organization, OrganizationMetadata, User, Version}
 import core.Text
 import lib.{Validation, ValidationError}
 import anorm._
@@ -104,9 +104,9 @@ object OrganizationMetadataDao {
     SQL(SoftDeleteQuery).on('deleted_by_guid -> deletedBy.guid, 'organization_guid -> org.guid).execute()
   }
 
-  def findByOrganizationGuid(organizationGuid: String): Option[OrganizationMetadata] = {
+  def findByOrganizationGuid(organizationGuid: UUID): Option[OrganizationMetadata] = {
     DB.withConnection { implicit c =>
-      SQL(BaseQuery).on('organization_guid -> organizationGuid)().toList.map { row =>
+      SQL(BaseQuery).on('organization_guid -> organizationGuid.toString)().toList.map { row =>
         OrganizationMetadata(
           packageName = row[Option[String]]("package_name")
         )

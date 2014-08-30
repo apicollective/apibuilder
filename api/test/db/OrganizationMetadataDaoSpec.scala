@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.OrganizationMetadata
+import com.gilt.apidoc.models.{Organization, OrganizationMetadata}
 import lib.Validation
 import org.scalatest.{ FunSpec, Matchers }
 import org.junit.Assert._

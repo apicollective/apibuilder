@@ -1,26 +1,14 @@
 package db
 
-import com.gilt.apidoc.models.{Domain, OrganizationMetadata, User, Version, Visibility}
+import com.gilt.apidoc.models.{Domain, Organization, OrganizationMetadata, User, Version, Visibility}
 import com.gilt.apidoc.models.json._
 import core.{Role, UrlKey}
 import anorm._
-import lib.{ Validation, ValidationError }
+import lib.{Validation, ValidationError}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
-
-case class Organization(
-  guid: String,
-  name: String,
-  key: String,
-  domains: Seq[Domain] = Seq.empty,
-  metadata: Option[OrganizationMetadata] = None
-)
-
-object Organization {
-  implicit val organizationWrites = Json.writes[Organization]
-}
 
 case class OrganizationForm(
   name: String,
@@ -39,7 +27,7 @@ object OrganizationDao {
   private val PublicOrgClause = s"select distinct organization_guid from services where deleted_at is null and visibility = '${Visibility.Public.toString}'"
 
   private val BaseQuery = """
-    select organizations.guid::varchar, organizations.name, organizations.key,
+    select organizations.guid, organizations.name, organizations.key,
            organization_metadata.package_name as metadata_package_name,
            (select array_to_string(array_agg(domain), ' ') 
               from organization_domains
@@ -106,7 +94,7 @@ object OrganizationDao {
   private[db] def findByEmailDomain(email: String): Option[Organization] = {
     emailDomain(email).flatMap { domain =>
       OrganizationDomainDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
-        findByGuid(Authorization.All, UUID.fromString(domain.organization_guid))
+        findByGuid(Authorization.All, domain.organization_guid)
       }
     }
   }
@@ -127,7 +115,7 @@ object OrganizationDao {
     }
 
     val org = Organization(
-      guid = UUID.randomUUID.toString,
+      guid = UUID.randomUUID,
       key = UrlKey.generate(form.name),
       name = form.name,
       domains = form.domains.getOrElse(Seq.empty).map(Domain(_)),
@@ -166,15 +154,11 @@ object OrganizationDao {
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Organization] = {
-    findAll(authorization, guid = Some(guid.toString), limit = 1).headOption
-  }
-
-  def findByGuid(authorization: Authorization, guid: String): Option[Organization] = {
     findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
   def findByUserAndGuid(user: User, guid: UUID): Option[Organization] = {
-    findAll(Authorization.User(user.guid), guid = Some(guid.toString), limit = 1).headOption
+    findAll(Authorization.User(user.guid), guid = Some(guid), limit = 1).headOption
   }
 
   def findByUserAndKey(user: User, orgKey: String): Option[Organization] = {
@@ -183,7 +167,7 @@ object OrganizationDao {
 
   def findAll(
     authorization: Authorization,
-    guid: Option[String] = None,
+    guid: Option[UUID] = None,
     key: Option[String] = None,
     name: Option[String] = None,
     limit: Int = 50,
@@ -216,7 +200,7 @@ object OrganizationDao {
     }
 
     val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _),
+      guid.map('guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
       key.map('key -> _),
       name.map('name ->_)
@@ -225,7 +209,7 @@ object OrganizationDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Organization(
-          guid = row[String]("guid"),
+          guid = row[UUID]("guid"),
           name = row[String]("name"),
           key = row[String]("key"),
           domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_)),

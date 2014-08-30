@@ -24,7 +24,7 @@ class OrganizationDomainDaoSpec extends FunSpec with Matchers {
     val domain = OrganizationDomainDao.create(Util.createdBy, org, domainName)
 
     OrganizationDomainDao.findAll(organizationGuid = Some(org.guid)).map(_.guid) should be(Seq(domain.guid))
-    OrganizationDomainDao.findAll(organizationGuid = Some(UUID.randomUUID.toString)).map(_.guid) should be(Seq.empty)
+    OrganizationDomainDao.findAll(organizationGuid = Some(UUID.randomUUID)).map(_.guid) should be(Seq.empty)
   }
 
 }

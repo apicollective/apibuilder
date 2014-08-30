@@ -1,9 +1,9 @@
 package controllers
 
-import com.gilt.apidoc.models.User
+import com.gilt.apidoc.models.{Organization, User}
 import core.{Review, Role}
 import lib.Validation
-import db.{MembershipRequest, Organization, OrganizationDao, UserDao}
+import db.{MembershipRequest, OrganizationDao, UserDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -22,11 +22,10 @@ object MembershipRequests extends Controller {
 
   }
 
-
-  def get(organization_guid: Option[UUID], organization_key: Option[String], user_guid: Option[UUID], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val requests = MembershipRequest.findAll(organizationGuid = organization_guid.map(_.toString),
-                                             organizationKey = organization_key,
-                                             userGuid = user_guid,
+  def get(organizationGuid: Option[UUID], organizationKey: Option[String], userGuid: Option[UUID], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
+    val requests = MembershipRequest.findAll(organizationGuid = organizationGuid,
+                                             organizationKey = organizationKey,
+                                             userGuid = userGuid,
                                              role = role,
                                              limit = limit,
                                              offset = offset)

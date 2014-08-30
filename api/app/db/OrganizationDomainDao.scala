@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Domain, User}
+import com.gilt.apidoc.models.{Domain, Organization, User}
 import core.{ Role, UrlKey }
 import anorm._
 import play.api.db._
@@ -8,7 +8,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-case class OrganizationDomain(guid: String, organization_guid: String, domain: String) {
+case class OrganizationDomain(guid: String, organization_guid: UUID, domain: String) {
 
   def toDomain(): Domain = {
     Domain(domain)
@@ -19,7 +19,7 @@ case class OrganizationDomain(guid: String, organization_guid: String, domain: S
 object OrganizationDomainDao {
 
   private val BaseQuery = """
-    select guid::varchar, organization_guid::varchar, domain
+    select guid::varchar, organization_guid, domain
       from organization_domains
      where deleted_at is null
   """
@@ -58,7 +58,7 @@ object OrganizationDomainDao {
 
   def findAll(
     guid: Option[String] = None,
-    organizationGuid: Option[String] = None,
+    organizationGuid: Option[UUID] = None,
     domain: Option[String] = None
   ): Seq[OrganizationDomain] = {
     val sql = Seq(
@@ -70,7 +70,7 @@ object OrganizationDomainDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),
-      organizationGuid.map('organization_guid -> _),
+      organizationGuid.map('organization_guid -> _.toString),
       domain.map('domain -> _)
     ).flatten
 
@@ -78,7 +78,7 @@ object OrganizationDomainDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         OrganizationDomain(
           guid = row[String]("guid"),
-          organization_guid = row[String]("organization_guid"),
+          organization_guid = row[UUID]("organization_guid"),
           domain = row[String]("domain")
         )
       }.toSeq

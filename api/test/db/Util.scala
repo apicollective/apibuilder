@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.User
+import com.gilt.apidoc.models.{Organization, User}
 import java.util.UUID
 
 object Util {

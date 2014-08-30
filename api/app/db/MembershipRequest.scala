@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.User
+import com.gilt.apidoc.models.{Organization, User}
 import com.gilt.apidoc.models.json._
 import core.Role
 import anorm._
@@ -69,7 +69,7 @@ object MembershipRequest {
     select membership_requests.guid::varchar,
            membership_requests.role,
            membership_requests.created_at::varchar,
-           organizations.guid::varchar as organization_guid,
+           organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            users.guid as user_guid,
@@ -126,7 +126,7 @@ object MembershipRequest {
   }
 
   def findAll(guid: Option[String] = None,
-              organizationGuid: Option[String] = None,
+              organizationGuid: Option[UUID] = None,
               organizationKey: Option[String] = None,
               userGuid: Option[UUID] = None,
               role: Option[String] = None,
@@ -145,7 +145,7 @@ object MembershipRequest {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),
-      organizationGuid.map('organization_guid -> _),
+      organizationGuid.map('organization_guid -> _.toString),
       organizationKey.map('organization_key -> _),
       userGuid.map('user_guid -> _.toString),
       role.map('role ->_)
@@ -155,7 +155,7 @@ object MembershipRequest {
       SQL(sql).on(bind: _*)().toList.map { row =>
         MembershipRequest(guid = row[String]("guid"),
                           created_at = row[String]("created_at"),
-                          organization = Organization(guid = row[String]("organization_guid"),
+                          organization = Organization(guid = row[UUID]("organization_guid"),
                                                       name = row[String]("organization_name"),
                                                       key = row[String]("organization_key")),
                           user = User(guid = row[UUID]("user_guid"),

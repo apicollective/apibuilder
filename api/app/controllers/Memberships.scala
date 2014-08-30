@@ -7,10 +7,10 @@ import java.util.UUID
 
 object Memberships extends Controller {
 
-  def get(organization_guid: Option[UUID], organization_key: Option[String], user_guid: Option[UUID], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val memberships = Membership.findAll(organizationGuid = organization_guid.map(_.toString),
-                                         organizationKey = organization_key,
-                                         userGuid = user_guid,
+  def get(organizationGuid: Option[UUID], organizationKey: Option[String], userGuid: Option[UUID], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
+    val memberships = Membership.findAll(organizationGuid = organizationGuid,
+                                         organizationKey = organizationKey,
+                                         userGuid = userGuid,
                                          role = role,
                                          limit = limit,
                                          offset = offset)

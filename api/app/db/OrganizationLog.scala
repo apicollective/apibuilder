@@ -1,12 +1,12 @@
 package db
 
-import com.gilt.apidoc.models.User
+import com.gilt.apidoc.models.{Organization, User}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-case class OrganizationLog(guid: String, organization_guid: String, message: String)
+case class OrganizationLog(guid: String, organization_guid: UUID, message: String)
 
 /**
  * Journal of changes to organizations
@@ -14,7 +14,7 @@ case class OrganizationLog(guid: String, organization_guid: String, message: Str
 object OrganizationLog {
 
   private val BaseQuery = """
-    select guid::varchar, organization_guid::varchar, message
+    select guid::varchar, organization_guid, message
       from organization_logs
      where true
   """
@@ -49,11 +49,11 @@ object OrganizationLog {
   }
 
   def findAllForOrganization(org: Organization): Seq[OrganizationLog] = {
-    findAll(organization_guid = org.guid)
+    findAll(organizationGuid = org.guid)
   }
 
 
-  def findAll(organization_guid: String,
+  def findAll(organizationGuid: UUID,
               limit: Int = 50,
               offset: Int = 0): Seq[OrganizationLog] = {
     val sql = Seq(
@@ -62,12 +62,12 @@ object OrganizationLog {
       Some(s"order by created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq[NamedParameter]('organization_guid -> organization_guid)
+    val bind = Seq[NamedParameter]('organization_guid -> organizationGuid.toString)
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         OrganizationLog(guid = row[String]("guid"),
-                        organization_guid = row[String]("organization_guid"),
+                        organization_guid = row[UUID]("organization_guid"),
                         message = row[String]("message"))
       }.toSeq
     }

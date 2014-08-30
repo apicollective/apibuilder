@@ -1,16 +1,19 @@
 package controllers
 
+import com.gilt.apidoc.models.Organization
+import com.gilt.apidoc.models.json._
 import lib.Validation
-import db.{Authorization, Organization, OrganizationDao, OrganizationForm}
+import db.{Authorization, OrganizationDao, OrganizationForm}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
 object Organizations extends Controller {
 
+  // TODO: Remove userGuid
   def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val orgs = OrganizationDao.findAll(Authorization(userGuid),
-                                       guid = guid.map(_.toString),
+    val orgs = OrganizationDao.findAll(Authorization.User(request.user.guid),
+                                       guid = guid,
                                        key = key,
                                        name = name,
                                        limit = limit,
