@@ -2,9 +2,11 @@
 
 @main(tpl) {
 
-  <div class="pull-right">
-    <a href="@routes.Versions.create(orgKey = tpl.org.get.key, service = tpl.service.map(_.key))">Upload new version</a>
-  </div>
+  @if(tpl.isOrgMember) {
+    <div class="pull-right">
+      <a href="@routes.Versions.create(orgKey = tpl.org.get.key, service = tpl.service.map(_.key))">Upload new version</a>
+    </div>
+  }
 
   <div class="pull-left">
     @service.description.getOrElse("")
@@ -83,16 +85,20 @@
     }
 
     <h2>Enums</h2>
-    @service.enums.map { enum =>
-      <div id="enum-@core.UrlKey.generate(enum.name)"></div>
-      <a name="enum-@core.UrlKey.generate(enum.name)"></a>
-      <div class="version_model">
-        <h3>@enum.name</h3>
+    @if(service.enums.isEmpty) {
+      <em>None</em>
+    } else {
+      @service.enums.map { enum =>
+        <div id="enum-@core.UrlKey.generate(enum.name)"></div>
+        <a name="enum-@core.UrlKey.generate(enum.name)"></a>
+        <div class="version_model">
+          <h3>@enum.name</h3>
 
-        @enum.description.getOrElse("")
+          @enum.description.getOrElse("")
 
-        @values(tpl.org.get, tpl.service.get, tpl.version.get, enum)
-      </div>
+          @values(tpl.org.get, tpl.service.get, tpl.version.get, enum)
+        </div>
+      }
     }
 
     <h2>Models</h2>
