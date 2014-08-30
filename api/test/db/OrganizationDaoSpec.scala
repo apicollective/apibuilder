@@ -1,6 +1,7 @@
 package db
 
-import org.scalatest.{ FunSpec, Matchers }
+import com.gilt.apidoc.models.Visibility
+import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
 
@@ -109,6 +110,57 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       OrganizationDao.validate(OrganizationForm(name = name, domains = Some(Seq.empty))) should be(Seq.empty)
       OrganizationDao.validate(OrganizationForm(name = name, domains = Some(Seq("bad name")))).head.message should be("Domain bad name is not valid. Expected a domain name like gilt.com")
     }
+  }
+
+  describe("visibility") {
+
+    val publicUser = Util.createRandomUser()
+    val publicOrg = Util.createOrganization(publicUser, Some("Public " + UUID.randomUUID().toString))
+    val publicService = ServiceDao.create(publicUser, publicOrg, ServiceForm(name = "svc", visibility = Visibility.Public))
+
+    val privateUser = Util.createRandomUser()
+    val privateOrg = Util.createOrganization(privateUser, Some("Private " + UUID.randomUUID().toString))
+    val privateService = ServiceDao.create(privateUser, privateOrg, ServiceForm(name = "svc", visibility = Visibility.Organization))
+
+    println("public org: " + publicOrg.guid)
+    println("private org: " + privateOrg.guid)
+
+    describe("Authorization.All") {
+
+      it("sees both orgs") {
+        val guids = OrganizationDao.findAll(Authorization.All, limit = 1000).map(_.guid)
+        guids.contains(publicOrg.guid) should be(true)
+        guids.contains(privateOrg.guid) should be(true)
+      }
+
+    }
+
+    describe("Authorization.PublicOnly") {
+
+      it("sees only the public org") {
+        val guids = OrganizationDao.findAll(Authorization.PublicOnly, limit = 1000).map(_.guid)
+        guids.contains(publicOrg.guid) should be(true)
+        guids.contains(privateOrg.guid) should be(false)
+      }
+
+    }
+
+    describe("Authorization.User") {
+
+      it("user can see own org") {
+        val guids = OrganizationDao.findAll(Authorization.User(privateUser.guid)).map(_.guid)
+        guids.contains(publicOrg.guid) should be(true)
+        guids.contains(privateOrg.guid) should be(true)
+      }
+
+      it("other user cannot see private org") {
+        val guids = OrganizationDao.findAll(Authorization.User(publicUser.guid)).map(_.guid)
+        guids.contains(publicOrg.guid) should be(true)
+        guids.contains(privateOrg.guid) should be(false)
+      }
+
+    }
+
   }
 
 }

@@ -11,7 +11,7 @@ import java.util.UUID
 
 case class ServiceForm(
   name: String,
-  description: Option[String],
+  description: Option[String] = None,
   visibility: Visibility
 )
 

@@ -6,6 +6,11 @@ import java.util.UUID
 object Util {
   new play.core.StaticApplication(new java.io.File("."))
 
+  def createRandomUser(): User = {
+    val email = "random-user-" + UUID.randomUUID.toString + "@gilttest.com"
+    UserDao.create(UserForm(email = email, name = None, password = "test"))
+  }
+
   def upsertUser(email: String): User = {
     UserDao.findByEmail(email).getOrElse {
       UserDao.create(UserForm(email = email, name = Some("Admin"), password = "test"))
@@ -18,11 +23,14 @@ object Util {
     }
   }
 
-  def createOrganization(name: Option[String] = None): Organization = {
+  def createOrganization(
+    createdBy: User = Util.createdBy,
+    name: Option[String] = None
+  ): Organization = {
     val form = OrganizationForm(
-      name = name.getOrElse(UUID.randomUUID().toString)
+      name = name.getOrElse(UUID.randomUUID.toString)
     )
-    OrganizationDao.createWithAdministrator(Util.createdBy, form)
+    OrganizationDao.createWithAdministrator(createdBy, form)
   }
 
   lazy val createdBy = Util.upsertUser("admin@apidoc.me")
