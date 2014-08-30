@@ -10,11 +10,4 @@ case object Authorization {
   private[db] case object All extends Authorization
   case class User(userGuid: UUID) extends Authorization
 
-  def apply(userGuid: Option[UUID]): Authorization = {
-    userGuid match {
-      case None => PublicOnly
-      case Some(guid) => User(guid)
-    }
-  }
-
 }
