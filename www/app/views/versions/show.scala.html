@@ -3,7 +3,7 @@
 @main(tpl) {
 
   <div class="pull-right">
-    <a href="@routes.Versions.create(orgKey = tpl.org.get.key, version = Some(tpl.version.get))">Upload new version</a>
+    <a href="@routes.Versions.create(orgKey = tpl.org.get.key, service = tpl.service.map(_.key))">Upload new version</a>
   </div>
 
   <div class="pull-left">

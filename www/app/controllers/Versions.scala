@@ -2,13 +2,14 @@ package controllers
 
 import models.MainTemplate
 import core.{ServiceDescription, ServiceDescriptionValidator, UrlKey}
+import lib.Util
 import com.gilt.apidoc.models.{Organization, Version, Visibility}
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.Json
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import java.io.File
 
@@ -71,22 +72,56 @@ object Versions extends Controller {
     }
   }
 
-  def create(orgKey: String, version: Option[String]) = AuthenticatedOrg { implicit request =>
-    val tpl = MainTemplate(
-      title = s"${request.org.name}: Add Service",
-      user = Some(request.user),
-      org = Some(request.org)
-    )
-    val filledForm = uploadForm.fill(
-      UploadData(
-        version = version.getOrElse(DefaultVersion),
-        visibility = Visibility.Organization.toString
-      )
-    )
-    Ok(views.html.versions.form(tpl, filledForm))
+  def create(orgKey: String, serviceKey: Option[String] = None) = AuthenticatedOrg.async { implicit request =>
+    serviceKey match {
+
+      case None => Future {
+        val tpl = MainTemplate(
+          title = "Add Service",
+          user = Some(request.user),
+          org = Some(request.org)
+        )
+        val filledForm = uploadForm.fill(
+          UploadData(
+            version = DefaultVersion,
+            visibility = Visibility.Organization.toString
+          )
+        )
+        Ok(views.html.versions.form(tpl, filledForm))
+      }
+
+      case Some(key) => {
+        for {
+          serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(key))
+          versionsResponse <- request.api.Versions.getByOrgKeyAndServiceKey(orgKey, key, limit = Some(1))
+        } yield {
+          serviceResponse.headOption match {
+            case None => {
+              Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${key}")
+            }
+            case Some(service) => {
+              val tpl = MainTemplate(
+                title = "Upload new version",
+                user = Some(request.user),
+                org = Some(request.org),
+                service = Some(service),
+                version = versionsResponse.headOption.map(_.version)
+              )
+              val filledForm = uploadForm.fill(
+                UploadData(
+                  version = versionsResponse.headOption.map(v => Util.calculateNextVersion(v.version)).getOrElse(DefaultVersion),
+                  visibility = service.visibility.toString
+                )
+              )
+              Ok(views.html.versions.form(tpl, filledForm))
+            }
+          }
+        }
+      }
+    }
   }
 
-  def createPost(orgKey: String) = AuthenticatedOrg(parse.multipartFormData) { implicit request =>
+  def createPost(orgKey: String) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
     val tpl = MainTemplate(
       title = s"${request.org.name}: Add Service",
       user = Some(request.user),
@@ -96,28 +131,44 @@ object Versions extends Controller {
     val boundForm = uploadForm.bindFromRequest
     boundForm.fold (
 
-      errors => {
+      errors => Future {
         Ok(views.html.versions.form(tpl, errors))
       },
 
       valid => {
 
-        request.body.file("file").map { file =>
-          val path = File.createTempFile("api", "json")
-          file.ref.moveTo(path, true)
-          val contents = scala.io.Source.fromFile(path).getLines.mkString("\n")
-
-          val validator = ServiceDescriptionValidator(contents)
-          if (validator.isValid) {
-            val serviceKey = UrlKey.generate(validator.serviceDescription.get.name)
-            val response = Await.result(request.api.Versions.putByOrgKeyAndServiceKeyAndVersion(request.org.key, serviceKey, valid.version, contents, Some(Visibility(valid.visibility))), 5000.millis)
-            Redirect(routes.Versions.show(request.org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
-          } else {
-            Ok(views.html.versions.form(tpl, boundForm, validator.errors))
+        request.body.file("file") match {
+          case None => Future {
+            Ok(views.html.versions.form(tpl, boundForm, Seq("Please select a non empty file to upload")))
           }
 
-        }.getOrElse {
-          Ok(views.html.versions.form(tpl, boundForm, Seq("Please select a non empty file to upload")))
+          case Some(file) => {
+            val path = File.createTempFile("api", "json")
+            file.ref.moveTo(path, true)
+            val contents = scala.io.Source.fromFile(path).getLines.mkString("\n")
+
+            val validator = ServiceDescriptionValidator(contents)
+            if (validator.isValid) {
+              val serviceKey = UrlKey.generate(validator.serviceDescription.get.name)
+              request.api.Versions.putByOrgKeyAndServiceKeyAndVersion(
+                request.org.key,
+                serviceKey,
+                valid.version,
+                contents,
+                Some(Visibility(valid.visibility))
+              ).map { version =>
+                Redirect(routes.Versions.show(request.org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
+              }.recover {
+                case r: com.gilt.apidoc.error.ErrorsResponse => {
+                  Ok(views.html.versions.form(tpl, boundForm, r.errors.map(_.message)))
+                }
+              }
+            } else {
+              Future {
+                Ok(views.html.versions.form(tpl, boundForm, validator.errors))
+              }
+            }
+          }
         }
       }
     )

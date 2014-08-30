@@ -1,11 +1,11 @@
-package lib
+package core
 
-import org.scalatest.{ ShouldMatchers, FunSpec }
+import org.scalatest.{FunSpec, Matchers}
 
-class VersionSortKeySpec extends FunSpec with ShouldMatchers {
+class VersionTagSpec extends FunSpec with Matchers {
 
   def assertSorted(versions: Seq[String], target: String) {
-    val versionObjects = versions.map( Version(_) )
+    val versionObjects = versions.map( VersionTag(_) )
     versionObjects.sorted.map(_.version).mkString(" ") should be(target)
   }
 

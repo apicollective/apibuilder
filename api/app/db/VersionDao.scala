@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.{Service, User, Version, Visibility}
-import lib.VersionSortKey
+import core.VersionTag
 import anorm._
 import play.api.db._
 import play.api.libs.json._
@@ -42,7 +42,7 @@ object VersionDao {
           """).on('guid -> v.guid,
                   'service_guid -> service.guid,
                   'version -> v.version,
-                  'version_sort_key -> VersionSortKey.generate(v.version),
+                  'version_sort_key -> VersionTag(v.version).sortKey,
                   'json -> v.json,
                   'created_by_guid -> user.guid).execute()
     }

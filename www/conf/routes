@@ -48,7 +48,7 @@ POST    /:orgKey/membership_request_reviews/decline               controllers.Me
 
 GET     /:orgKey                                                  controllers.Organizations.show(orgKey: String, page: Int ?= 0)
 
-GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String, version: Option[String] ?= None)
+GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String, service: Option[String] ?= None)
 POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String)
 
 GET     /:orgKey/docs/:serviceKey/:version                        controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
