@@ -139,7 +139,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     }
   }
 
-  describe("visibility") {
+  describe("Authorization") {
 
     val publicUser = Util.createRandomUser()
     val publicOrg = Util.createOrganization(publicUser, Some("Public " + UUID.randomUUID().toString))
@@ -149,7 +149,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     val privateOrg = Util.createOrganization(privateUser, Some("Private " + UUID.randomUUID().toString))
     val privateService = ServiceDao.create(privateUser, privateOrg, ServiceForm(name = "svc", visibility = Visibility.Organization))
 
-    describe("Authorization.All") {
+    describe("All") {
 
       it("sees both orgs") {
         val guids = OrganizationDao.findAll(Authorization.All, limit = 1000).map(_.guid)
@@ -159,7 +159,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
 
     }
 
-    describe("Authorization.PublicOnly") {
+    describe("PublicOnly") {
 
       it("sees only the public org") {
         val guids = OrganizationDao.findAll(Authorization.PublicOnly, limit = 1000).map(_.guid)
@@ -169,7 +169,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
 
     }
 
-    describe("Authorization.User") {
+    describe("User") {
 
       it("user can see own org") {
         val guids = OrganizationDao.findAll(Authorization.User(privateUser.guid)).map(_.guid)

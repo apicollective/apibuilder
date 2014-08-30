@@ -20,6 +20,8 @@ object VersionForm {
 
 object VersionDao {
 
+  private val LatestVersion = "latest"
+
   private val BaseQuery = """
     select guid, version, json::varchar
      from versions
@@ -60,13 +62,11 @@ object VersionDao {
   }
 
   def findVersion(user: User, orgKey: String, serviceKey: String, version: String): Option[Version] = {
-    OrganizationDao.findByUserAndKey(user, orgKey).flatMap { org =>
-      ServiceDao.findByOrganizationAndKey(org, serviceKey).flatMap { service =>
-        if (version == "latest") {
-          VersionDao.findAll(service_guid = Some(service.guid), limit = 1).headOption
-        } else {
-          VersionDao.findByServiceAndVersion(service, version)
-        }
+    ServiceDao.findByOrganizationKeyAndServiceKey(Authorization.User(user.guid), orgKey, serviceKey).flatMap { service =>
+      if (version == LatestVersion) {
+        VersionDao.findAll(service_guid = Some(service.guid), limit = 1).headOption
+      } else {
+        VersionDao.findByServiceAndVersion(service, version)
       }
     }
   }

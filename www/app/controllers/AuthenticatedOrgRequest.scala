@@ -12,6 +12,7 @@ import java.util.UUID
 
 class AuthenticatedOrgRequest[A](
   val org: Organization,
+  val isMember: Boolean,
   val isAdmin: Boolean,
   user: User,
   request: Request[A]
@@ -54,14 +55,10 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             }
 
             case Some(org: Organization) => {
-              if (memberships.isEmpty) {
-                Future.successful(Redirect(routes.Organizations.requestMembership(orgKey)))
-
-              } else {
-                val isAdmin = !memberships.find(_.role == Role.Admin.key).isEmpty
-                val authRequest = new AuthenticatedOrgRequest(org, isAdmin, u, request)
-                block(authRequest)
-              }
+              val isAdmin = !memberships.find(_.role == Role.Admin.key).isEmpty
+              val isMember = isAdmin || !memberships.find(_.role == Role.Member.key).isEmpty
+              val authRequest = new AuthenticatedOrgRequest(org, isMember, isAdmin, u, request)
+              block(authRequest)
             }
           }
         }

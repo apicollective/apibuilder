@@ -93,7 +93,7 @@ object ServiceDao {
                   'updated_by_guid -> createdBy.guid).execute()
     }
 
-    findByOrganizationAndKey(org, key).getOrElse {
+    findAll(Authorization.All, orgKey = org.key, key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create service")
     }
   }
@@ -102,32 +102,55 @@ object ServiceDao {
     SoftDelete.delete("services", deletedBy, service.guid)
   }
 
-  def findByOrganizationAndName(org: Organization, name: String): Option[Service] = {
-    val key = UrlKey.generate(name)
-    findByOrganizationAndKey(org, key)
+  private[db] def findByOrganizationAndName(org: Organization, name: String): Option[Service] = {
+    findAll(Authorization.All, orgKey = org.key, name = Some(name), limit = 1).headOption
   }
 
-  def findByOrganizationAndKey(org: Organization, key: String): Option[Service] = {
-    findAll(orgKey = org.key, key = Some(key), limit = 1).headOption
+  def findByOrganizationKeyAndServiceKey(authorization: Authorization, orgKey: String, serviceKey: String): Option[Service] = {
+    // TODO: Can we remove the org find here?
+    OrganizationDao.findAll(authorization, key = Some(orgKey), limit = 1).headOption.flatMap { org =>
+      findAll(authorization, orgKey = org.key, key = Some(serviceKey), limit = 1).headOption
+    }
   }
 
-  def findAll(orgKey: String,
-              guid: Option[String] = None,
-              name: Option[String] = None,
-              key: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[Service] = {
+  def findAll(
+    authorization: Authorization,
+    orgKey: String,
+    guid: Option[String] = None,
+    name: Option[String] = None,
+    key: Option[String] = None,
+    limit: Int = 50,
+    offset: Int = 0
+  ): Seq[Service] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      authorization match {
+        case Authorization.All => None
+        case Authorization.PublicOnly => Some(s"and services.visibility = '${Visibility.Public.toString}'")
+        case Authorization.User(userGuid) => {
+          Some(
+            s"and (services.visibility = '${Visibility.Public.toString}' or " +
+              "organizations.guid in (" +
+              "select organization_guid from memberships where deleted_at is null and user_guid = {authorization_user_guid}::uuid" +
+            "))"
+          )
+        }
+      },
       guid.map { v => "and services.guid = {guid}::uuid" },
       Some("and services.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"),
-      name.map { v => "and services.name = {name}" },
+      name.map { v => "and lower(trim(services.name)) = lower(trim({name}))" },
       key.map { v => "and services.key = lower(trim({key}))" },
       Some(s"order by lower(services.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
+    val authorizationUserGuid = authorization match {
+      case Authorization.User(guid) => Some(guid)
+      case _ => None
+    }
+
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),
+      authorizationUserGuid.map('authorization_user_guid -> _.toString),
       Some('organization_key -> orgKey),
       name.map('name -> _),
       key.map('key ->_)

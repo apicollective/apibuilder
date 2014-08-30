@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models.json._
-import db.{OrganizationDao, ServiceDao, ServiceForm}
+import db.{Authorization, OrganizationDao, ServiceDao, ServiceForm}
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
@@ -9,11 +9,14 @@ import play.api.libs.json._
 object Services extends Controller {
 
   def getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int = 25, offset: Int = 0) = Authenticated { request =>
-    val services = ServiceDao.findAll(orgKey = orgKey,
-                                      name = name,
-                                      key = key,
-                                      limit = limit,
-                                      offset = offset)
+    val services = ServiceDao.findAll(
+      Authorization.User(request.user.guid),
+      orgKey = orgKey,
+      name = name,
+      key = key,
+      limit = limit,
+      offset = offset
+    )
     Ok(Json.toJson(services))
   }
 
@@ -27,7 +30,7 @@ object Services extends Controller {
           }
           case s: JsSuccess[ServiceForm] => {
             val form = s.get
-            ServiceDao.findByOrganizationAndKey(org, serviceKey) match {
+            ServiceDao.findByOrganizationKeyAndServiceKey(Authorization.User(request.user.guid), org.key, serviceKey) match {
               case None => Conflict(Json.toJson(Validation.error(s"service[$serviceKey] not found or inaccessible")))
               case Some(existing) => {
                 val errors = ServiceDao.validate(org, form, Some(existing))
@@ -51,12 +54,9 @@ object Services extends Controller {
   }
 
   def deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String) = Authenticated { request =>
-    OrganizationDao.findByUserAndKey(request.user, orgKey).map { org =>
-      ServiceDao.findByOrganizationAndKey(org, serviceKey).map { service =>
-        ServiceDao.softDelete(request.user, service)
-      }
+    ServiceDao.findByOrganizationKeyAndServiceKey(Authorization.User(request.user.guid), orgKey, serviceKey).map { service =>
+      ServiceDao.softDelete(request.user, service)
     }
-
     NoContent
   }
 
