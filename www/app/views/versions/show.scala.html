@@ -102,16 +102,21 @@
     }
 
     <h2>Models</h2>
-    @service.modelsWithoutResources.map { model =>
-      <div id="model-@core.UrlKey.generate(model.name)"></div>
-      <a name="model-@core.UrlKey.generate(model.name)"></a>
-      <div class="version_model">
-        <h3>@model.name</h3>
+    @if(service.models.isEmpty) {
+      <em>None</em>
+    } else {
+      @service.modelsWithoutResources.map { model =>
+        <div id="model-@core.UrlKey.generate(model.name)"></div>
+        <a name="model-@core.UrlKey.generate(model.name)"></a>
+        <div class="version_model">
+          <h3>@model.name</h3>
 
-        @model.description.getOrElse("")
+          @model.description.getOrElse("")
 
-        @fields(tpl.org.get, tpl.service.get, tpl.version.get, service, model.fields)
-      </div>
-    }
-  </div>
+          @fields(tpl.org.get, tpl.service.get, tpl.version.get, service, model.fields)
+        </div>
+      }
+    </div>
+  }
+
 }
