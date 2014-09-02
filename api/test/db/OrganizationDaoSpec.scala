@@ -143,11 +143,10 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
 
     val publicUser = Util.createRandomUser()
     val publicOrg = Util.createOrganization(publicUser, Some("Public " + UUID.randomUUID().toString))
-    val publicService = ServiceDao.create(publicUser, publicOrg, ServiceForm(name = "svc", visibility = Visibility.Public))
+    OrganizationMetadataDao.create(Util.createdBy, publicOrg, OrganizationMetadataForm(visibility = Some(Visibility.Public.toString)))
 
     val privateUser = Util.createRandomUser()
     val privateOrg = Util.createOrganization(privateUser, Some("Private " + UUID.randomUUID().toString))
-    val privateService = ServiceDao.create(privateUser, privateOrg, ServiceForm(name = "svc", visibility = Visibility.Organization))
 
     describe("All") {
 

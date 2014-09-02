@@ -75,6 +75,7 @@
         "organization_metadata": {
             "description": "Supplemental (non-required) information about an organization",
             "fields": [
+                { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "required": false, "default": "organization" },
                 { "name": "package_name", "type": "string", "description": "The package name when used by code generators (e.g. scala package name for the clients)", "required": false }
             ]
         },

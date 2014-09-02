@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.json._
-import com.gilt.apidoc.models.{Organization, OrganizationMetadata, User, Version}
+import com.gilt.apidoc.models.{Organization, OrganizationMetadata, User, Version, Visibility}
 import core.Text
 import lib.{Validation, ValidationError}
 import anorm._
@@ -11,6 +11,7 @@ import play.api.libs.json._
 import java.util.UUID
 
 case class OrganizationMetadataForm(
+  visibility: Option[String] = None,
   package_name: Option[String] = None
 )
 
@@ -32,6 +33,10 @@ object OrganizationMetadataForm {
     }
   }
 
+  /**
+   * A valid package name consists of a dot separated list of strings,
+   * each of which is a valid name.
+   */
   private[db] def isValidPackageName(name: String): Boolean = {
     name.split("\\.").find(!Text.isValidName(_)) match {
       case None => true
@@ -43,7 +48,7 @@ object OrganizationMetadataForm {
 object OrganizationMetadataDao {
 
   private val BaseQuery = """
-    select guid::varchar, organization_guid::varchar, package_name
+    select guid::varchar, organization_guid::varchar, visibility, package_name
       from organization_metadata
      where deleted_at is null
        and organization_guid = {organization_guid}::uuid
@@ -51,9 +56,9 @@ object OrganizationMetadataDao {
 
   private val InsertQuery = """
     insert into organization_metadata
-    (guid, organization_guid, package_name, created_by_guid)
+    (guid, organization_guid, visibility, package_name, created_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {package_name}, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {package_name}, {created_by_guid}::uuid)
   """
 
   private val SoftDeleteQuery = """
@@ -80,6 +85,7 @@ object OrganizationMetadataDao {
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: User, org: Organization, form: OrganizationMetadataForm): OrganizationMetadata = {
     val metadata = OrganizationMetadata(
+      visibility = form.visibility.map(Visibility(_)),
       packageName = form.package_name
     )
     val guid = UUID.randomUUID.toString
@@ -87,6 +93,7 @@ object OrganizationMetadataDao {
     SQL(InsertQuery).on(
       'guid -> guid,
       'organization_guid -> org.guid,
+      'visibility -> metadata.visibility.map(_.toString),
       'package_name -> metadata.packageName,
       'created_by_guid -> createdBy.guid
     ).execute()
@@ -108,6 +115,7 @@ object OrganizationMetadataDao {
     DB.withConnection { implicit c =>
       SQL(BaseQuery).on('organization_guid -> organizationGuid.toString)().toList.map { row =>
         OrganizationMetadata(
+          visibility = row[Option[String]]("visibility").map(Visibility(_)),
           packageName = row[Option[String]]("package_name")
         )
       }.toSeq.headOption

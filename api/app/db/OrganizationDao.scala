@@ -24,8 +24,6 @@ object OrganizationDao {
 
   private val MinNameLength = 4
 
-  private val PublicOrgClause = s"select distinct organization_guid from services where deleted_at is null and visibility = '${Visibility.Public.toString}'"
-
   private val BaseQuery = """
     select organizations.guid, organizations.name, organizations.key,
            organization_metadata.package_name as metadata_package_name,
@@ -178,14 +176,13 @@ object OrganizationDao {
       Some(BaseQuery.trim),
       authorization match {
         case Authorization.All => None
-        case Authorization.PublicOnly => Some(s"and organizations.guid in ($PublicOrgClause)")
+        case Authorization.PublicOnly => Some(s"and organization_metadata.visibility = '${Visibility.Public.toString}'")
         case Authorization.User(userGuid) => {
           Some(
-            "and organizations.guid in (" +
+            s"and (organization_metadata.visibility = '${Visibility.Public.toString}'" +
+            "      or organizations.guid in (" +
             "select organization_guid from memberships where deleted_at is null and user_guid = {authorization_user_guid}::uuid" +
-            " UNION ALL " +
-            PublicOrgClause +
-            ")"
+            "))"
           )
         }
       },

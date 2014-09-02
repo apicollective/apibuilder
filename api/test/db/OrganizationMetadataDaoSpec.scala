@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, OrganizationMetadata}
+import com.gilt.apidoc.models.{Organization, OrganizationMetadata, Visibility}
 import lib.Validation
 import org.scalatest.{ FunSpec, Matchers }
 import org.junit.Assert._
@@ -9,16 +9,56 @@ import org.postgresql.util.PSQLException
 
 class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
 
-  def createOrganizationMetadata(org: Organization): OrganizationMetadata = {
+  def upsertOrganizationMetadata(org: Organization): OrganizationMetadata = {
     val form = OrganizationMetadataForm(
-      package_name = Some("com.gilt")
+      visibility = None,
+      package_name = None
     )
-    OrganizationMetadataDao.create(Util.createdBy, org, form)
+    OrganizationMetadataDao.upsert(Util.createdBy, org, form)
   }
 
-  it("create") {
-    val org = Util.createOrganization()
-    createOrganizationMetadata(org).packageName should be(Some("com.gilt"))
+  describe("create") {
+
+    val form = OrganizationMetadataForm(
+      visibility = None,
+      package_name = None
+    )
+
+    describe("package_name") {
+
+      it("defaults to None") {
+        val org = Util.createOrganization()
+        OrganizationMetadataDao.create(Util.createdBy, org, form)
+        OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(None)
+      }
+
+      it("can set") {
+        val org = Util.createOrganization()
+        OrganizationMetadataDao.create(Util.createdBy, org, form.copy(package_name = Some("com.gilt")))
+        OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.gilt"))
+      }
+    }
+
+    describe("visibility") {
+
+      it ("defaults to none") {
+        val org = Util.createOrganization()
+        OrganizationMetadataDao.create(Util.createdBy, org, form)
+        upsertOrganizationMetadata(org).visibility should be(None)
+      }
+
+      it("can set") {
+        val org = Util.createOrganization()
+
+        OrganizationMetadataDao.create(Util.createdBy, org, form.copy(visibility = Some(Visibility.Public.toString)))
+        OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.visibility should be(Some(Visibility.Public))
+
+        OrganizationMetadataDao.upsert(Util.createdBy, org, form.copy(visibility = Some(Visibility.Organization.toString)))
+        OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.visibility should be(Some(Visibility.Organization))
+      }
+
+    }
+
   }
 
   it("upsert") {
@@ -36,51 +76,57 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
 
   it("raises error on duplicate") {
     val org = Util.createOrganization()
-    createOrganizationMetadata(org)
+    upsertOrganizationMetadata(org)
 
     intercept[PSQLException] {
-      createOrganizationMetadata(org)
+      OrganizationMetadataDao.create(Util.createdBy, org, OrganizationMetadataForm())
     }
 
     // Now verify we can re-create after deleting
     OrganizationMetadataDao.softDelete(Util.createdBy, org)
-    createOrganizationMetadata(org)
+    OrganizationMetadataDao.create(Util.createdBy, org, OrganizationMetadataForm())
   }
 
   it("softDelete") {
     val org = Util.createOrganization()
-    createOrganizationMetadata(org)
-    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.gilt"))
+    upsertOrganizationMetadata(org)
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).isEmpty should be(false)
     OrganizationMetadataDao.softDelete(Util.createdBy, org)
-    OrganizationMetadataDao.findByOrganizationGuid(org.guid) should be(None)
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).isEmpty should be(true)
   }
 
   it("findByOrganizationGuid") {
     val org = Util.createOrganization()
     OrganizationMetadataDao.findByOrganizationGuid(org.guid) should be(None)
-    createOrganizationMetadata(org)
-    OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.gilt"))
+    upsertOrganizationMetadata(org)
+    OrganizationMetadataDao.findByOrganizationGuid(org.guid).isEmpty should be(false)
   }
 
   describe("OrganizationMetadataForm") {
     val form = OrganizationMetadataForm(
+      visibility = None,
       package_name = None
     )
 
-    it("no package name") {
-      OrganizationMetadataForm.validate(form) should be(Seq.empty)
+    describe("package_name") {
+
+      it("no package name") {
+        OrganizationMetadataForm.validate(form) should be(Seq.empty)
+      }
+
+      it("valid package name") {
+        OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt"))) should be(Seq.empty)
+        OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt.foo"))) should be(Seq.empty)
+        OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt.foo.bar"))) should be(Seq.empty)
+        OrganizationMetadataForm.validate(form.copy(package_name = Some("me.apidoc"))) should be(Seq.empty)
+      }
+
+      it("invalid package name") {
+        OrganizationMetadataForm.validate(form.copy(package_name = Some("com gilt"))) should be(Validation.invalidName())
+      }
+
     }
 
-    it("valid package name") {
-      OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt"))) should be(Seq.empty)
-      OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt.foo"))) should be(Seq.empty)
-      OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt.foo.bar"))) should be(Seq.empty)
-      OrganizationMetadataForm.validate(form.copy(package_name = Some("me.apidoc"))) should be(Seq.empty)
-    }
-
-    it("invalid package name") {
-      OrganizationMetadataForm.validate(form.copy(package_name = Some("com gilt"))) should be(Validation.invalidName())
-    }
   }
 
 }

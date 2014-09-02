@@ -67,6 +67,7 @@ package com.gilt.apidoc.models {
    * Supplemental (non-required) information about an organization
    */
   case class OrganizationMetadata(
+    visibility: scala.Option[Visibility] = None,
     packageName: scala.Option[String] = None
   )
 
@@ -343,13 +344,17 @@ package com.gilt.apidoc.models {
     }
 
     implicit def jsonReadsApiDocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
-      (__ \ "package_name").readNullable[String].map { x => new OrganizationMetadata(packageName = x) }
+      (
+        (__ \ "visibility").readNullable[Visibility] and
+        (__ \ "package_name").readNullable[String]
+      )(OrganizationMetadata.apply _)
     }
 
-    implicit def jsonWritesApiDocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] = new play.api.libs.json.Writes[OrganizationMetadata] {
-      def writes(x: OrganizationMetadata) = play.api.libs.json.Json.obj(
-        "package_name" -> play.api.libs.json.Json.toJson(x.packageName)
-      )
+    implicit def jsonWritesApiDocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] = {
+      (
+        (__ \ "visibility").write[scala.Option[Visibility]] and
+        (__ \ "package_name").write[scala.Option[String]]
+      )(unlift(OrganizationMetadata.unapply _))
     }
 
     implicit def jsonReadsApiDocService: play.api.libs.json.Reads[Service] = {
