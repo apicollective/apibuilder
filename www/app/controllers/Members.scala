@@ -29,10 +29,8 @@ object Members extends Controller {
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
         case Some(o: Organization) => {
-          Ok(views.html.members.show(MainTemplate(title = o.name,
-                                                  org = Some(o),
-                                                  user = Some(request.user),
-                                                  settings = Some(SettingsMenu(section = Some(SettingSection.Members)))),
+          val tpl = request.mainTemplate("Members").copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
+          Ok(views.html.members.show(tpl, 
                                      members = PaginatedCollection(page, members),
                                      isAdmin = request.isAdmin))
         }
@@ -44,17 +42,13 @@ object Members extends Controller {
     request.requireAdmin
     val filledForm = addMemberForm.fill(AddMemberData(role = Role.Member.key, email = ""))
 
-    Ok(views.html.members.add(MainTemplate(title = s"#{request.org.name}: Add member",
-                                           org = Some(request.org),
-                                           user = Some(request.user)),
+    Ok(views.html.members.add(request.mainTemplate("Add member"),
                               filledForm))
   }
 
   def addPost(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireAdmin
-    val tpl = MainTemplate(title = "#{request.org.name}: Add member",
-                           org = Some(request.org),
-                           user = Some(request.user))
+    val tpl = request.mainTemplate("Add member")
 
     addMemberForm.bindFromRequest.fold (
 

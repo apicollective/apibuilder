@@ -8,10 +8,6 @@
     <div class="pull-right">
       <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Versions.create(tpl.org.get.key)">Add service</a>
     </div>
-
-    <div class="pull-right">
-      <br/><a href="@routes.Domains.index(orgKey = tpl.org.get.key)">Settings</a>
-    </div>
   } else {
     <div class="pull-right">
       <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.requestMembership(tpl.org.get.key)">Join this org</a>

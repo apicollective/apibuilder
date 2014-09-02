@@ -6,7 +6,7 @@
 @import helper._
 
 
-@main(models.MainTemplate(title = "Add Organization")) {
+@main(tpl) {
   <div class="container">
 
     @helper.form(action = routes.Members.addPost(tpl.org.get.key)) {

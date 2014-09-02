@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  form: Form[com.gilt.apidoc.models.OrganizationMetadata],
+  form: Form[controllers.Metadata.Metadata],
   errors: Seq[String] = Seq.empty
 )(implicit flash: Flash)
 
@@ -14,6 +14,14 @@
               @errors.map { msg => <li><span class="error">@msg</span></li> }
             </ul>
           }
+
+          @helper.select(
+              form("visibility"),
+              Seq( ("" -> "-- select --") ) ++ com.gilt.apidoc.models.Visibility.all.map( v => (v.toString -> v.toString) ),
+              '_label -> "Visibility",
+              '_error -> form.error("visibility"),
+              '_help -> "Determines whether or not this organizations shows up in the public directory."
+          )
 
           @helper.inputText(
               form("package_name"),
