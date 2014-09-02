@@ -10,7 +10,18 @@ if service_uri.to_s.strip == "" || token.to_s.strip == ""
 end
 
 orgs = ['gilt']
-services = ['api-doc']
+services = []  # ['api-doc']
+
+if !orgs.empty? || !services.empty?
+  puts "Confirm you would like to limit tests to:"
+  puts "  Organization: " + (orgs.empty? ? "All" : orgs.join(", "))
+  puts "      Services: " + (services.empty? ? "All" : services.join(", "))
+  print "Continue? (y/n): "
+  response = gets
+  if !response.strip.downcase.match(/^y/)
+    exit(0)
+  end
+end
 
 class RubyTester
 
@@ -95,9 +106,9 @@ targets.each do |target|
   puts "--------------------------------------------------"
   target.tester.clean!(target.platform)
   client.organizations.get.each do |org|
-    next unless orgs.include?(org.key)
+    next if !orgs.empty? && !orgs.include?(org.key)
     client.services.get_by_org_key(org.key).each do |service|
-      next unless services.include?(service.key)
+      next if !services.empty? && !services.include?(service.key)
       puts "  %s/%s" % [org.key, service.key]
       target.names.each do |target_name|
         t = ApiDoc::Models::Target.send(target_name)
