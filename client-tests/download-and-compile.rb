@@ -9,7 +9,7 @@ if service_uri.to_s.strip == "" || token.to_s.strip == ""
   raise "service uri and token required"
 end
 
-orgs = ['gilt']
+orgs = [] # ['gilt']
 services = []  # ['api-doc']
 
 if !orgs.empty? || !services.empty?
@@ -55,7 +55,7 @@ end
 
 class ScalaTester
 
-  CLIENT_DIR = "src/main/scala/clients"
+  CLIENT_DIR = "app/models"
 
   def test
     system("sbt compile")
@@ -101,13 +101,39 @@ end
 
 client = ApiDoc::Client.new(service_uri, :authorization => ApiDoc::HttpClient::Authorization.basic(token))
 
+def get_orgs_in_batches(client)
+  offset = 0
+  limit = 100
+  records = nil
+  while records.nil? || !records.empty?
+    records = client.organizations.send(:get, :limit => limit, :offset => offset)
+    records.each do |rec|
+      yield rec
+    end
+    offset += limit
+  end
+end
+
+def get_services_in_batches(client, org)
+  offset = 0
+  limit = 100
+  records = nil
+  while records.nil? || !records.empty?
+    records = client.services.get_by_org_key(org.key, :limit => limit, :offset => offset)
+    records.each do |rec|
+      yield rec
+    end
+    offset += limit
+  end
+end
+
 targets.each do |target|
   puts "Platform: #{target.platform}"
   puts "--------------------------------------------------"
   target.tester.clean!(target.platform)
-  client.organizations.get.each do |org|
+  get_orgs_in_batches(client) do |org|
     next if !orgs.empty? && !orgs.include?(org.key)
-    client.services.get_by_org_key(org.key).each do |service|
+    get_services_in_batches(client, org) do |service|
       next if !services.empty? && !services.include?(service.key)
       puts "  %s/%s" % [org.key, service.key]
       target.names.each do |target_name|
