@@ -12,6 +12,8 @@ object Metadata extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
+  val DefaultVisibility = Visibility.Organization
+
   def show(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireMember
     val tpl = request.mainTemplate("Metadata")
@@ -45,6 +47,9 @@ object Metadata extends Controller {
           visibility = valid.visibility.map(Visibility(_)),
           packageName = valid.package_name
         )
+
+        println("VALID: " + valid)
+        println("METADATA: " + metadata)
         request.api.organizationMetadata.put(metadata, request.org.key).map { m =>
           Redirect(routes.Metadata.show(request.org.key)).flashing("success" -> s"Metadata updated")
         }.recover {
@@ -63,13 +68,16 @@ object Metadata extends Controller {
     md match {
       case None => {
         Metadata(
-          visibility = None,
+          visibility = Some(DefaultVisibility.toString),
           package_name = None
         )
       }
       case Some(m) => {
         Metadata(
-          visibility = m.visibility.map(_.toString),
+          visibility = m.visibility match {
+            case None => Some(DefaultVisibility.toString)
+            case Some(v) => Some(v.toString)
+          },
           package_name = m.packageName
         )
       }

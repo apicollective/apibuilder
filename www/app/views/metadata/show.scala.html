@@ -11,6 +11,7 @@
     </div>
 
     <ul>
+      <li>Visibility: @metadata.visibility.getOrElse(controllers.Metadata.DefaultVisibility.toString)</li>
       <li>Package name: @metadata.packageName.getOrElse("N/A")</li>
     </ul>
   }
