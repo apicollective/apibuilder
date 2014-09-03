@@ -122,7 +122,7 @@ targets.each do |target|
     target.tester.clean!(target.platform)
     get_in_batches("organizations", lambda { |limit, offset| client.organizations.send(:get, :limit => limit, :offset => offset) }) do |org|
       next if !orgs.empty? && !orgs.include?(org.key)
-      get_in_batches("services", lambda { |limit, offset| client.services.get_by_org_key(org.key, :limit => limit, :offset => offset) }) do |service|
+      get_in_batches("services:#{org.key}", lambda { |limit, offset| client.services.get_by_org_key(org.key, :limit => limit, :offset => offset) }) do |service|
         next if !services.empty? && !services.include?(service.key)
         puts "  %s/%s" % [org.key, service.key]
         t = ApiDoc::Models::Target.send(target_name)
