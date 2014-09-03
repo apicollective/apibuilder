@@ -44,9 +44,7 @@ class RubyTester
   def write(platform, org_key, service_key, target_name, code)
     filename = File.join(platform, CLIENT_DIR, [org_key, service_key, "#{target_name}.downloaded.rb"].join("."))
     File.open(filename, "w") do |out|
-      out << "module Clienttests_#{target_name}\n\n"
       out << code
-      out << "\n\nend"
     end
     filename
   end
@@ -70,9 +68,7 @@ class ScalaTester
   def write(platform, org_key, service_key, target_name, code)
     filename = File.join(platform, CLIENT_DIR, [org_key, service_key, "#{target_name}.downloaded.scala"].join("."))
     File.open(filename, "w") do |out|
-      out << "package clienttests_#{target_name} {\n\n"
       out << code
-      out << "\n\n}"
     end
     filename
   end
@@ -101,25 +97,16 @@ end
 
 client = ApiDoc::Client.new(service_uri, :authorization => ApiDoc::HttpClient::Authorization.basic(token))
 
-def get_orgs_in_batches(client)
-  offset = 0
-  limit = 100
-  records = nil
-  while records.nil? || !records.empty?
-    records = client.organizations.send(:get, :limit => limit, :offset => offset)
-    records.each do |rec|
-      yield rec
-    end
-    offset += limit
-  end
-end
+CACHE = {}
 
-def get_services_in_batches(client, org)
+def get_in_batches(cache_key, fetcher)
   offset = 0
   limit = 100
   records = nil
-  while records.nil? || !records.empty?
-    records = client.services.get_by_org_key(org.key, :limit => limit, :offset => offset)
+  while records.nil? || records.size >= limit
+    cache_key = "%s?limit=%s&offset=%s" % [cache_key, limit, offset]
+    CACHE[cache_key] ||= fetcher.call(limit, offset)
+    records = CACHE[cache_key]
     records.each do |rec|
       yield rec
     end
@@ -128,32 +115,32 @@ def get_services_in_batches(client, org)
 end
 
 targets.each do |target|
-  puts "Platform: #{target.platform}"
-  puts "--------------------------------------------------"
-  target.tester.clean!(target.platform)
-  get_orgs_in_batches(client) do |org|
-    next if !orgs.empty? && !orgs.include?(org.key)
-    get_services_in_batches(client, org) do |service|
-      next if !services.empty? && !services.include?(service.key)
-      puts "  %s/%s" % [org.key, service.key]
-      target.names.each do |target_name|
+  target.names.each do |target_name|
+    puts "Platform: %s, target: %s" % [target.platform, target_name]
+    puts "--------------------------------------------------"
+
+    target.tester.clean!(target.platform)
+    get_in_batches("organizations", lambda { |limit, offset| client.organizations.send(:get, :limit => limit, :offset => offset) }) do |org|
+      next if !orgs.empty? && !orgs.include?(org.key)
+      get_in_batches("services", lambda { |limit, offset| client.services.get_by_org_key(org.key, :limit => limit, :offset => offset) }) do |service|
+        next if !services.empty? && !services.include?(service.key)
+        puts "  %s/%s" % [org.key, service.key]
         t = ApiDoc::Models::Target.send(target_name)
         if code = get_code(client, org, service, t)
           filename = target.tester.write(target.platform, org.key, service.key, t.value, code.source)
-          puts "    #{t.value}: #{filename}"
         end
       end
     end
-  end
 
-  puts ""
-  puts "  Testing in ./#{target.platform}"
-  Dir.chdir(target.platform) do
-    if target.tester.test
-      puts "  - Client tests passed\n\n"
-    else
-      puts "  - Client tests failed\n\n"
-      exit 1
+    puts ""
+    puts "  Testing in ./#{target.platform}"
+    Dir.chdir(target.platform) do
+      if target.tester.test
+        puts "  - %s: Client tests passed\n\n" % target_name
+      else
+        puts "  - %s: Client tests failed\n\n" % target_name
+        exit 1
+      end
     end
   end
 end
