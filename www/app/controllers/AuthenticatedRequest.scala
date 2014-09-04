@@ -8,6 +8,26 @@ import scala.concurrent.duration._
 import play.api.Play.current
 import java.util.UUID
 
+class AnonymousRequest[A](val user: Option[User], request: Request[A]) extends WrappedRequest[A](request) {
+
+  lazy val api = Authenticated.api(user)
+
+}
+
+object AnonymousRequest extends ActionBuilder[AnonymousRequest] {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def invokeBlock[A](request: Request[A], block: (AnonymousRequest[A]) => Future[Result]) = {
+    val user = request.session.get("user_guid").flatMap { guid =>
+      Await.result(Authenticated.api().Users.getByGuid(UUID.fromString(guid)), 5000.millis)
+    }
+
+    block(new AnonymousRequest(user, request))
+  }
+
+}
+
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
   lazy val api = Authenticated.api(Some(user))

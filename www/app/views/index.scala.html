@@ -1,65 +1,71 @@
-@(user: com.gilt.apidoc.models.User,
+@(tpl: models.MainTemplate,
   organizations: lib.PaginatedCollection[com.gilt.apidoc.models.Organization],
   membershipRequests: lib.PaginatedCollection[com.gilt.apidoc.models.MembershipRequest],
   publicOrganizations: lib.PaginatedCollection[com.gilt.apidoc.models.Organization])(implicit flash: Flash)
 
-@main(models.MainTemplate(user = Some(user), title = "Your Organizations")) {
+@main(tpl) {
 
-  <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.create">Add organization</a>
-  </div>
+  @if(!tpl.user.isEmpty) {
 
-  @if(organizations.isEmpty) {
-    <em>You currently do not belong to any organizations</em>
-  } else {
-    <table class="table table-hover table-condensed">
-      <tbody>
-        @organizations.items.map { organization =>
-         <tr>
-           <td><a href="@routes.Organizations.show(organization.key)">@organization.name</a></td>
-         </tr>
-       }
-      </tbody>
-    </table>
+    <div class="pull-right">
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.create">Add organization</a>
+    </div>
 
-    @if(organizations.hasPrevious || organizations.hasNext) {
-      <ul class="pager">
-        @if(organizations.hasPrevious) {
-          <li><a href="@routes.Application.index(organizations.page - 1, membershipRequests.page, publicOrganizations.page)">Previous</a></li>
-        }
-        @if(organizations.hasNext) {
-          <li><a href="@routes.Application.index(organizations.page + 1, membershipRequests.page, publicOrganizations.page)">Next</a></li>
-        }
-      </ul>
+    @if(organizations.isEmpty) {
+      <em>You currently do not belong to any organizations</em>
+    } else {
+      <table class="table table-hover table-condensed">
+        <tbody>
+          @organizations.items.map { organization =>
+           <tr>
+             <td><a href="@routes.Organizations.show(organization.key)">@organization.name</a></td>
+           </tr>
+         }
+        </tbody>
+      </table>
+
+      @if(organizations.hasPrevious || organizations.hasNext) {
+        <ul class="pager">
+          @if(organizations.hasPrevious) {
+            <li><a href="@routes.Application.index(organizations.page - 1, membershipRequests.page, publicOrganizations.page)">Previous</a></li>
+          }
+          @if(organizations.hasNext) {
+            <li><a href="@routes.Application.index(organizations.page + 1, membershipRequests.page, publicOrganizations.page)">Next</a></li>
+          }
+        </ul>
+      }
     }
-  }
 
-  @if(!membershipRequests.isEmpty) {
-    <h2>Your pending membership requests</h2>
-    <table class="table table-hover table-condensed">
-      <tbody>
-        @membershipRequests.items.map { mr =>
-         <tr>
-           <td>@mr.organization.name</td>
-         </tr>
-       }
-      </tbody>
-    </table>
+    @if(!membershipRequests.isEmpty) {
+      <h2>Your pending membership requests</h2>
+      <table class="table table-hover table-condensed">
+        <tbody>
+          @membershipRequests.items.map { mr =>
+           <tr>
+             <td>@mr.organization.name</td>
+           </tr>
+         }
+        </tbody>
+      </table>
 
-    @if(membershipRequests.hasPrevious || membershipRequests.hasNext) {
-      <ul class="pager">
-        @if(membershipRequests.hasPrevious) {
-          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page - 1, publicOrganizations.page)">Previous</a></li>
-        }
-        @if(membershipRequests.hasNext) {
-          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page + 1, publicOrganizations.page)">Next</a></li>
-        }
-      </ul>
+      @if(membershipRequests.hasPrevious || membershipRequests.hasNext) {
+        <ul class="pager">
+          @if(membershipRequests.hasPrevious) {
+            <li><a href="@routes.Application.index(organizations.page, membershipRequests.page - 1, publicOrganizations.page)">Previous</a></li>
+          }
+          @if(membershipRequests.hasNext) {
+            <li><a href="@routes.Application.index(organizations.page, membershipRequests.page + 1, publicOrganizations.page)">Next</a></li>
+          }
+        </ul>
+      }
     }
   }
 
   @if(!publicOrganizations.isEmpty) {
-    <h2>Public Organizations</h2>
+    @tpl.user.map { u =>
+      <h2>Public Organizations</h2>
+    }
+
     <table class="table table-hover table-condensed">
       <tbody>
         @publicOrganizations.items.map { organization =>
