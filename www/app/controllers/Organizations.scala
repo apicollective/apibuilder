@@ -15,7 +15,7 @@ object Organizations extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
+  def show(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
     for {
       services <- request.api.Services.getByOrgKey(
         orgKey = orgKey,

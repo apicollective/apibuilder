@@ -12,19 +12,21 @@ import java.util.UUID
 
 class AnonymousRequest[A](
   resources: RequestResources,
-  request: Request[A]
+  val request: Request[A]
 ) extends WrappedRequest[A](request) {
 
   val user = resources.user
   val org = resources.org
+  val isAdmin = resources.isAdmin
+  val isMember = resources.isMember
 
   lazy val api = Authenticated.api(user)
 
   def mainTemplate(title: String): MainTemplate = {
     MainTemplate(
       title = title,
-      user = resources.user,
-      org = resources.org
+      user = user,
+      org = org
     )
   }
 
@@ -36,6 +38,26 @@ class AnonymousRequest[A](
     resources.requireOrg()
   }
 }
+
+class AnonymousOrgRequest[A](
+  anon: AnonymousRequest[A]
+) extends WrappedRequest[A](anon.request) {
+
+  val user = anon.user
+  val org = anon.org.get
+  val isAdmin = anon.isAdmin
+  val isMember = anon.isMember
+
+  lazy val api = anon.api
+
+  def mainTemplate(title: String = org.name): MainTemplate = anon.mainTemplate(title)
+
+  def requireAdmin() {
+    anon.requireAdmin()
+  }
+
+}
+
 
 case class RequestResources(
   user: Option[User],
@@ -107,5 +129,16 @@ object Anonymous extends ActionBuilder[AnonymousRequest] {
   def invokeBlock[A](request: Request[A], block: (AnonymousRequest[A]) => Future[Result]) = {
     val resources = AnonymousRequest.resources(request.path, request.session.get("user_guid"))
     block(new AnonymousRequest(resources, request))
+  }
+}
+
+object AnonymousOrg extends ActionBuilder[AnonymousOrgRequest] {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  def invokeBlock[A](request: Request[A], block: (AnonymousOrgRequest[A]) => Future[Result]) = {
+    val resources = AnonymousRequest.resources(request.path, request.session.get("user_guid"))
+    val anon = new AnonymousRequest(resources, request)
+    block(new AnonymousOrgRequest(anon))
   }
 }
