@@ -10,8 +10,8 @@ import play.api.libs.json._
 
 object Versions extends Controller {
 
-  def getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 25, offset: Int = 0) = Authenticated { request =>
-    val versions = ServiceDao.findByOrganizationKeyAndServiceKey(Authorization.User(request.user.guid), orgKey, serviceKey).map { service =>
+  def getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 25, offset: Int = 0) = ApiRequest { request =>
+    val versions = ServiceDao.findByOrganizationKeyAndServiceKey(Authorization(request.user), orgKey, serviceKey).map { service =>
       VersionDao.findAll(
         service_guid = Some(service.guid),
         limit = limit,
@@ -21,8 +21,8 @@ object Versions extends Controller {
     Ok(Json.toJson(versions))
   }
 
-  def getByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String) = Authenticated { request =>
-    VersionDao.findVersion(request.user, orgKey, serviceKey, version) match {
+  def getByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String) = ApiRequest { request =>
+    VersionDao.findVersion(Authorization(request.user), orgKey, serviceKey, version) match {
       case None => NotFound
       case Some(v: Version) => Ok(Json.toJson(v))
     }
@@ -81,8 +81,12 @@ object Versions extends Controller {
   }
 
   def deleteByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String) = Authenticated { request =>
-    VersionDao.findVersion(request.user, orgKey, serviceKey, version).map { version =>
-      VersionDao.softDelete(request.user, version)
+    val auth = Authorization.User(request.user.guid)
+    OrganizationDao.findByKey(auth, orgKey) map { org =>
+      request.requireAdmin(org)
+      VersionDao.findVersion(auth, orgKey, serviceKey, version).map { version =>
+        VersionDao.softDelete(request.user, version)
+      }
     }
     NoContent
   }

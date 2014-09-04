@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.apidoc.models.{OrganizationMetadata, Version}
 import core.ServiceDescription
-import db.{OrganizationDao, VersionDao}
+import db.{Authorization, OrganizationDao, VersionDao}
 import lib.Validation
 import core.generator.Target
 
@@ -28,8 +28,9 @@ object Code extends Controller {
 
   }
 
-  def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetName: String) = Authenticated { request =>
-    OrganizationDao.findByUserAndKey(request.user, orgKey) match {
+  def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetName: String) = ApiRequest { request =>
+    val auth = Authorization(request.user)
+    OrganizationDao.findByKey(auth, orgKey) match {
       case None => NotFound
       case Some(org) => {
         Target.findByKey(targetName) match {
@@ -37,7 +38,7 @@ object Code extends Controller {
             Conflict(Json.toJson(Validation.error(s"Invalid target[$targetName]. Must be one of: ${Target.Implemented.mkString(" ")}")))
           }
           case Some(target: Target) => {
-            VersionDao.findVersion(request.user, orgKey, serviceKey, version) match {
+            VersionDao.findVersion(auth, orgKey, serviceKey, version) match {
               case None => Conflict(Json.toJson(Validation.error(s"Invalid service[$serviceKey] or version[$version]")))
               case Some(v: Version) => {
                 val code = Code(
