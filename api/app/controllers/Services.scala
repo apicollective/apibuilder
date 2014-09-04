@@ -8,9 +8,9 @@ import play.api.libs.json._
 
 object Services extends Controller {
 
-  def getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int = 25, offset: Int = 0) = Authenticated { request =>
+  def getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int = 25, offset: Int = 0) = ApiRequest { request =>
     val services = ServiceDao.findAll(
-      Authorization.User(request.user.guid),
+      Authorization(request.user),
       orgKey = orgKey,
       name = name,
       key = key,
@@ -24,6 +24,8 @@ object Services extends Controller {
     OrganizationDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
+        request.requireAdmin(org)
+
         request.body.validate[ServiceForm] match {
           case e: JsError => {
             Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
@@ -54,8 +56,11 @@ object Services extends Controller {
   }
 
   def deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String) = Authenticated { request =>
-    ServiceDao.findByOrganizationKeyAndServiceKey(Authorization.User(request.user.guid), orgKey, serviceKey).map { service =>
-      ServiceDao.softDelete(request.user, service)
+    OrganizationDao.findByKey(Authorization.User(request.user.guid), orgKey) map { org =>
+      request.requireAdmin(org)
+      ServiceDao.findByOrganizationKeyAndServiceKey(Authorization.User(request.user.guid), orgKey, serviceKey).map { service =>
+        ServiceDao.softDelete(request.user, service)
+      }
     }
     NoContent
   }
