@@ -156,11 +156,19 @@ object OrganizationDao {
   }
 
   def findByUserAndGuid(user: User, guid: UUID): Option[Organization] = {
-    findAll(Authorization.User(user.guid), guid = Some(guid), limit = 1).headOption
+    findByGuid(Authorization.User(user.guid), guid)
+  }
+
+  def findByKey(authorization: Authorization, guid: UUID): Option[Organization] = {
+    findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
   def findByUserAndKey(user: User, orgKey: String): Option[Organization] = {
-    findAll(Authorization.User(user.guid), key = Some(orgKey), limit = 1).headOption
+    findByKey(Authorization.User(user.guid), orgKey)
+  }
+
+  def findByKey(authorization: Authorization, orgKey: String): Option[Organization] = {
+    findAll(authorization, key = Some(orgKey), limit = 1).headOption
   }
 
   def findAll(

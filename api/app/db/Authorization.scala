@@ -10,4 +10,11 @@ case object Authorization {
   private[db] case object All extends Authorization
   case class User(userGuid: UUID) extends Authorization
 
+  def apply(user: Option[com.gilt.apidoc.models.User]): Authorization = {
+    user match {
+      case None => PublicOnly
+      case Some(u) => User(u.guid)
+    }
+  }
+
 }

@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.models.User
-import db.UserDao
+import com.gilt.apidoc.models.{Organization, User}
+import db.{Membership, UserDao}
 import play.api.mvc._
 import play.api.mvc.Results.Unauthorized
 import scala.concurrent.Future
@@ -81,7 +81,13 @@ object ApiRequest extends ActionBuilder[ApiRequest] {
 
 }
 
-class AuthenticatedRequest[A](val tokenUser: User, val user: User, request: Request[A]) extends WrappedRequest[A](request)
+class AuthenticatedRequest[A](val tokenUser: User, val user: User, request: Request[A]) extends WrappedRequest[A](request) {
+
+  def requireAdmin(org: Organization) {
+    require(Membership.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
+  }
+
+}
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 

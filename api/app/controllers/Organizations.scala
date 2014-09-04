@@ -10,10 +10,10 @@ import java.util.UUID
 
 object Organizations extends Controller {
 
-  def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
+  def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = ApiRequest { request =>
 
     val orgs = OrganizationDao.findAll(
-      Authorization.User(request.user.guid),
+      Authorization(request.user),
       userGuid = userGuid,
       guid = guid,
       key = key,
@@ -25,8 +25,8 @@ object Organizations extends Controller {
     Ok(Json.toJson(orgs))
   }
 
-  def getByKey(key: String) = Authenticated { request =>
-    OrganizationDao.findByUserAndKey(request.user, key) match {
+  def getByKey(key: String) = ApiRequest { request =>
+    OrganizationDao.findByKey(Authorization(request.user), key) match {
       case None => NotFound
       case Some(org) => Ok(Json.toJson(org))
     }
@@ -52,6 +52,7 @@ object Organizations extends Controller {
 
   def deleteByKey(key: String) = Authenticated { request =>
     OrganizationDao.findByUserAndKey(request.user, key).map { organization =>
+      request.requireAdmin(organization)
       OrganizationDao.softDelete(request.user, organization)
     }
     NoContent
