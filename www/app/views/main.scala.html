@@ -26,10 +26,14 @@
             <li><a href="@routes.DocController.index()">Documentation</a></li>
             <li><a href="https://github.com/gilt/apidoc">github</a></li>
           </ul>
-          @metadata.user.map { user =>
+	  @if(metadata.user.isEmpty) {
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="/login">Login/Register</a></li>
+            </ul>
+          } else {
             <ul class="nav navbar-nav navbar-right">
               <li class="dropdown">
-                <a href="/account" class="dropdown-toggle" data-toggle="dropdown">@user.name.getOrElse(user.email) <b class="caret"></b></a>
+                <a href="/account" class="dropdown-toggle" data-toggle="dropdown">@metadata.user.get.name.getOrElse(metadata.user.get.email) <b class="caret"></b></a>
                 <ul class="dropdown-menu">
                   <li><a href="/logout">Logout</a></li>
                 </ul>
