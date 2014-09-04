@@ -7,47 +7,99 @@ import play.api.mvc.Results.Unauthorized
 import scala.concurrent.Future
 import util.BasicAuthorization
 
-class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request)
+private[controllers] case class UserAuth(
 
-object Authenticated extends ActionBuilder[AuthenticatedRequest] {
+  /**
+    * The user as identified by the api token
+    */
+  tokenUser: Option[User],
 
-  private val UserGuidHeader = "X-User-Guid"
+  /**
+    * The user as identified by the UserGuidHeader
+    */
+  user: Option[User]
+)
 
-  def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
-    BasicAuthorization.get(request.headers.get("Authorization")) match {
+private[controllers] object RequestHelper {
+
+  val UserGuidHeader = "X-User-Guid"
+  val AuthorizationHeader = "Authorization"
+
+  def userAuth(
+    authorizationHeader: Option[String],
+    userGuidHeader: Option[String]
+  ): UserAuth = {
+
+    BasicAuthorization.get(authorizationHeader) match {
 
       case Some(auth: BasicAuthorization.Token) => {
         UserDao.findByToken(auth.token) match {
 
-          case Some(u: User) => {
-            // We have a valid token. Now check for a user guid header
-            request.headers.get(UserGuidHeader) match {
-              case None => {
-                block(new AuthenticatedRequest(u, request))
-              }
-
-              case Some(guid: String) => {
-                UserDao.findByGuid(guid) match {
-                  case None => {
-                    Future.successful(Unauthorized(s"Invalid $UserGuidHeader[$guid]"))
-                  }
-                  case Some(userFromHeader: User) => {
-                    block(new AuthenticatedRequest(userFromHeader, request))
-                  }
-                }
-              }
-            }
+          case None => {
+            UserAuth(tokenUser = None, user = None)
           }
 
-          case None => Future.successful(Unauthorized("Invalid token"))
+          case Some(tokenUser: User) => {
+            UserAuth(
+              tokenUser = Some(tokenUser),
+              user = userGuidHeader.flatMap(UserDao.findByGuid(_))
+            )
+          }
+
         }
       }
 
-      case _ => Future.successful(Unauthorized("Missing authorization token"))
+      case _ => {
+        UserAuth(tokenUser = None, user = None)
+      }
 
     }
 
+  }
+
+}
+
+class ApiRequest[A](val tokenUser: Option[User], val user: Option[User], request: Request[A]) extends WrappedRequest[A](request)
+
+object ApiRequest extends ActionBuilder[ApiRequest] {
+
+  def invokeBlock[A](request: Request[A], block: (ApiRequest[A]) => Future[Result]) = {
+    val userAuth = RequestHelper.userAuth(
+      request.headers.get(RequestHelper.AuthorizationHeader),
+      request.headers.get(RequestHelper.UserGuidHeader)
+    )
+
+    block(
+      new ApiRequest(
+        tokenUser = userAuth.tokenUser,
+        user = userAuth.user,
+        request = request
+      )
+    )
+  }
+
+}
+
+class AuthenticatedRequest[A](val tokenUser: User, val user: User, request: Request[A]) extends WrappedRequest[A](request)
+
+object Authenticated extends ActionBuilder[AuthenticatedRequest] {
+
+  def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
+    val userAuth = RequestHelper.userAuth(
+      request.headers.get(RequestHelper.AuthorizationHeader),
+      request.headers.get(RequestHelper.UserGuidHeader)
+    )
+
+    userAuth.user match {
+      case None => {
+        Future.successful(Unauthorized(s"Failed basic authorization or missing ${RequestHelper.UserGuidHeader} header"))
+      }
+
+      case Some(user) => {
+        block(new AuthenticatedRequest(userAuth.tokenUser.get, user, request))
+      }
+    }
   }
 
 }
