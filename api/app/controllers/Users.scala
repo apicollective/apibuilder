@@ -15,14 +15,16 @@ object Users extends Controller {
     implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
   }
 
-  def get(guid: Option[UUID], email: Option[String], token: Option[String]) = Authenticated { request =>
+  def get(guid: Option[UUID], email: Option[String], token: Option[String]) = ApiRequest { request =>
+    require(!request.tokenUser.isEmpty, "Missing API Token")
     val users = UserDao.findAll(guid = guid.map(_.toString),
                                 email = email,
                                 token = token)
     Ok(Json.toJson(users))
   }
 
-  def getByGuid(guid: UUID) = Authenticated { request =>
+  def getByGuid(guid: UUID) = ApiRequest { request =>
+    require(!request.tokenUser.isEmpty, "Missing API Token")
     UserDao.findByGuid(guid) match {
       case None => NotFound
       case Some(user: User) => Ok(Json.toJson(user))
@@ -77,7 +79,9 @@ object Users extends Controller {
     }
   }
 
-  def postAuthenticate() = Action(parse.json) { request =>
+  def postAuthenticate() = ApiRequest(parse.json) { request =>
+    require(!request.tokenUser.isEmpty, "Missing API Token")
+
     request.body.validate[UserAuthenticationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
