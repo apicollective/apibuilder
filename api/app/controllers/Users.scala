@@ -15,7 +15,7 @@ object Users extends Controller {
     implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
   }
 
-  def get(guid: Option[UUID], email: Option[String], token: Option[String]) = ApiRequest { request =>
+  def get(guid: Option[UUID], email: Option[String], token: Option[String]) = AnonymousRequest { request =>
     require(!request.tokenUser.isEmpty, "Missing API Token")
     val users = UserDao.findAll(guid = guid.map(_.toString),
                                 email = email,
@@ -23,7 +23,7 @@ object Users extends Controller {
     Ok(Json.toJson(users))
   }
 
-  def getByGuid(guid: UUID) = ApiRequest { request =>
+  def getByGuid(guid: UUID) = AnonymousRequest { request =>
     require(!request.tokenUser.isEmpty, "Missing API Token")
     UserDao.findByGuid(guid) match {
       case None => NotFound
@@ -79,7 +79,7 @@ object Users extends Controller {
     }
   }
 
-  def postAuthenticate() = ApiRequest(parse.json) { request =>
+  def postAuthenticate() = AnonymousRequest(parse.json) { request =>
     require(!request.tokenUser.isEmpty, "Missing API Token")
 
     request.body.validate[UserAuthenticationForm] match {

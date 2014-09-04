@@ -60,18 +60,18 @@ private[controllers] object RequestHelper {
 
 }
 
-class ApiRequest[A](val tokenUser: Option[User], val user: Option[User], request: Request[A]) extends WrappedRequest[A](request)
+class AnonymousRequest[A](val tokenUser: Option[User], val user: Option[User], request: Request[A]) extends WrappedRequest[A](request)
 
-object ApiRequest extends ActionBuilder[ApiRequest] {
+object AnonymousRequest extends ActionBuilder[AnonymousRequest] {
 
-  def invokeBlock[A](request: Request[A], block: (ApiRequest[A]) => Future[Result]) = {
+  def invokeBlock[A](request: Request[A], block: (AnonymousRequest[A]) => Future[Result]) = {
     val userAuth = RequestHelper.userAuth(
       request.headers.get(RequestHelper.AuthorizationHeader),
       request.headers.get(RequestHelper.UserGuidHeader)
     )
 
     block(
-      new ApiRequest(
+      new AnonymousRequest(
         tokenUser = userAuth.tokenUser,
         user = userAuth.user,
         request = request

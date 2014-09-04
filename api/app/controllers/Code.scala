@@ -28,7 +28,7 @@ object Code extends Controller {
 
   }
 
-  def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetName: String) = ApiRequest { request =>
+  def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetName: String) = AnonymousRequest { request =>
     val auth = Authorization(request.user)
     OrganizationDao.findByKey(auth, orgKey) match {
       case None => NotFound

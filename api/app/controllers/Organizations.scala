@@ -10,7 +10,7 @@ import java.util.UUID
 
 object Organizations extends Controller {
 
-  def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = ApiRequest { request =>
+  def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = AnonymousRequest { request =>
 
     val orgs = OrganizationDao.findAll(
       Authorization(request.user),
@@ -25,7 +25,7 @@ object Organizations extends Controller {
     Ok(Json.toJson(orgs))
   }
 
-  def getByKey(key: String) = ApiRequest { request =>
+  def getByKey(key: String) = AnonymousRequest { request =>
     OrganizationDao.findByKey(Authorization(request.user), key) match {
       case None => NotFound
       case Some(org) => Ok(Json.toJson(org))

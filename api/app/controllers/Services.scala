@@ -8,7 +8,7 @@ import play.api.libs.json._
 
 object Services extends Controller {
 
-  def getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int = 25, offset: Int = 0) = ApiRequest { request =>
+  def getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int = 25, offset: Int = 0) = AnonymousRequest { request =>
     val services = ServiceDao.findAll(
       Authorization(request.user),
       orgKey = orgKey,
