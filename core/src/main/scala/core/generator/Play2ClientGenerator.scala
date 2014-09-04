@@ -273,7 +273,7 @@ ${modelClients().indent(2)}
         }
       }
 
-      val hasOptionResult = op.responses.find { _.isOption } match {
+      val hasOptionResult = op.responses.filter(_.isSuccess).find(_.isOption) match {
         case None => ""
         case Some(r) => {
           if (r.isMultiple) {
@@ -283,6 +283,7 @@ ${modelClients().indent(2)}
           }
         }
       }
+
       val matchResponse: String = {
         op.responses.flatMap { response =>
           if (response.isSuccess) {
