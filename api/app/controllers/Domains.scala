@@ -19,6 +19,7 @@ object Domains extends Controller {
         OrganizationDao.findByUserAndKey(request.user, orgKey) match {
           case None => NotFound
           case Some(org) => {
+            request.requireAdmin(org)
             OrganizationDomainDao.findAll(organizationGuid = Some(org.guid), domain = Some(form.name)).headOption match {
               case None => {
                 val od = OrganizationDomainDao.create(request.user, org, form.name)
@@ -36,6 +37,7 @@ object Domains extends Controller {
 
   def deleteByName(orgKey: String, name: String) = Authenticated { request =>
     OrganizationDao.findByUserAndKey(request.user, orgKey).map { org =>
+      request.requireAdmin(org)
       org.domains.find(_.name == name).map { domain =>
         OrganizationDomainDao.findAll(organizationGuid = Some(org.guid), domain = Some(domain.name)).map { orgDomain =>
           OrganizationDomainDao.softDelete(request.user, orgDomain)

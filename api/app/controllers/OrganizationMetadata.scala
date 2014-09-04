@@ -18,6 +18,7 @@ object OrganizationMetadataController extends Controller {
         OrganizationDao.findByUserAndKey(request.user, key) match {
           case None => NotFound
           case Some(org) => {
+            request.requireAdmin(org)
             OrganizationMetadataForm.validate(form) match {
               case Nil => {
                 val metadata = OrganizationMetadataDao.upsert(request.user, org, form)
