@@ -144,7 +144,6 @@ object AnonymousOrg extends ActionBuilder[AnonymousOrgRequest] {
       val anon = new AnonymousRequest(resources, request)
       val anonRequest = new AnonymousOrgRequest(anon)
 
-      println("V: " + resources.org.get.metadata)
       if (resources.isMember) {
         block(anonRequest)
       } else if (resources.org.get.metadata.flatMap(_.visibility) == Some(Visibility.Public)) {

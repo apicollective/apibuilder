@@ -8,7 +8,7 @@ import scala.concurrent.Future
 
 object Code extends Controller {
 
-  def generate(orgKey: String, serviceKey: String, version: String, target: String) = AuthenticatedOrg.async { request =>
+  def generate(orgKey: String, serviceKey: String, version: String, target: String) = AnonymousOrg.async { request =>
     Target.fromString(target) match {
       case None => Future {
         Redirect(routes.Versions.show(orgKey, serviceKey, version)).flashing("warning" -> "Invalid target for code generation")
