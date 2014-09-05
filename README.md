@@ -52,7 +52,9 @@ One way to do this is to run a screen session, and in one screen do:
 
   $ sbt
   sbt> project www
-  sbt> run 9002
+  sbt> run
+
+Goto http://localhost:9000 in your browser
 
 Now both should be running and able to talk to each other, and should recompile
 in situ for a nice development experience.
