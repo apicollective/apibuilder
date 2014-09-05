@@ -17,6 +17,7 @@ object Validation {
   private val InvalidNameCode = "invalid_name"
   private val UserAuthorizationFailedCode = "user_authorization_failed"
   private val ErrorCode = "validation_error"
+  private val ServerError = "server_error"
 
   def invalidJson(errors: JsError): Seq[ValidationError] = {
     Seq(ValidationError(InvalidJsonCode, errors.toString))
@@ -36,6 +37,10 @@ object Validation {
 
   def errors(messages: Seq[String]): Seq[ValidationError] = {
     messages.map { msg => ValidationError(ErrorCode, msg) }
+  }
+
+  def serverError(error: String = "Internal Server Error"): Seq[ValidationError] = {
+    Seq(ValidationError(ServerError, error))
   }
 
 }

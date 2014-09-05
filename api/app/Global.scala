@@ -1,7 +1,9 @@
 import play.api._
 import play.api.mvc._
+import play.api.libs.json._
 import play.api.mvc.Results._
 import scala.concurrent.Future
+import lib.Validation
 
 object Global extends WithFilters(LoggingFilter) {
 
@@ -10,12 +12,12 @@ object Global extends WithFilters(LoggingFilter) {
   }
 
   override def onBadRequest(request: RequestHeader, error: String) = {
-    Future.successful(BadRequest("Bad Request: " + error))
+    Future.successful(BadRequest(Json.toJson(Validation.serverError("Bad Request"))))
   }
 
   override def onError(request: RequestHeader, ex: Throwable) = {
     Logger.error(ex.toString, ex)
-    Future.successful(InternalServerError(ex.toString))
+    Future.successful(InternalServerError(Json.toJson(Validation.serverError())))
   }
 
 }
