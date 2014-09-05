@@ -14,7 +14,7 @@ module ApiDoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.5.6 http://www.apidoc.me/gilt/code/api-doc/0.0.1-dev/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.5.22 http://www.apidoc.me/gilt/code/api-doc/0.5.23/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -287,6 +287,15 @@ module ApiDoc
         @client.request("/#{orgKey}").with_query(query).get.map { |hash| ApiDoc::Models::Service.new(hash) }
       end
 
+      # Updates a service.
+      def put_by_org_key_and_service_key(orgKey, serviceKey, hash)
+        HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
+        HttpClient::Preconditions.assert_class('serviceKey', serviceKey, String)
+        HttpClient::Preconditions.assert_class('hash', hash, Hash)
+        @client.request("/#{orgKey}/#{serviceKey}").with_json(hash.to_json).put
+        nil
+      end
+
       # Deletes a specific service and its associated versions.
       def delete_by_org_key_and_service_key(orgKey, serviceKey)
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
@@ -469,6 +478,46 @@ module ApiDoc
 
     end
 
+    class Visibility
+
+      attr_reader :value
+
+      def initialize(value)
+        @value = HttpClient::Preconditions.assert_class('value', value, String)
+      end
+
+      # Returns the instance of Visibility for this value, creating a new instance for an unknown value
+      def Visibility.apply(value)
+        if value.instance_of?(Visibility)
+          value
+        else
+          HttpClient::Preconditions.assert_class_or_nil('value', value, String)
+          value.nil? ? nil : (from_string(value) || Visibility.new(value))
+        end
+      end
+
+      # Returns the instance of Visibility for this value, or nil if not found
+      def Visibility.from_string(value)
+        HttpClient::Preconditions.assert_class('value', value, String)
+        Visibility.ALL.find { |v| v.value == value }
+      end
+
+      def Visibility.ALL
+        @@all ||= [Visibility.organization, Visibility.public]
+      end
+
+      # Any member of the organization can view this service
+      def Visibility.organization
+        @@_organization ||= Visibility.new('organization')
+      end
+
+      # Anybody, including non logged in users, can view this service
+      def Visibility.public
+        @@_public ||= Visibility.new('public')
+      end
+
+    end
+
     # Generated source code.
     class Code
 
@@ -490,7 +539,7 @@ module ApiDoc
     end
 
     # Represents a single domain name (e.g. www.apidoc.me). When a new user
-    # registers and confirms their email, we automatically associated that user
+    # registers and confirms their email, we automatically associate that user
     # with a member of the organization associated with their domain. For
     # example, if you confirm your account with an email address of
     # foo@gilt.com, we will automatically add you as a member to the
@@ -630,15 +679,17 @@ module ApiDoc
     # Supplemental (non-required) information about an organization
     class OrganizationMetadata
 
-      attr_reader :package_name
+      attr_reader :visibility, :package_name
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
+        @visibility = HttpClient::Helper.to_klass('visibility', ApiDoc::Models::Visibility.apply(opts.delete(:visibility)), ApiDoc::Models::Visibility, :required => false, :multiple => false)
         @package_name = HttpClient::Helper.to_klass('package_name', opts.delete(:package_name), String, :required => false, :multiple => false)
       end
 
       def to_hash
         {
+            :visibility => visibility.value,
             :package_name => package_name
         }
       end
@@ -648,13 +699,14 @@ module ApiDoc
     # A service has a name and multiple versions of an API (Interface).
     class Service
 
-      attr_reader :guid, :name, :key, :description
+      attr_reader :guid, :name, :key, :visibility, :description
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
         @name = HttpClient::Helper.to_klass('name', opts.delete(:name), String, :required => true, :multiple => false)
         @key = HttpClient::Helper.to_klass('key', opts.delete(:key), String, :required => true, :multiple => false)
+        @visibility = HttpClient::Helper.to_klass('visibility', ApiDoc::Models::Visibility.apply(opts.delete(:visibility)), ApiDoc::Models::Visibility, :required => true, :multiple => false)
         @description = HttpClient::Helper.to_klass('description', opts.delete(:description), String, :required => false, :multiple => false)
       end
 
@@ -663,6 +715,7 @@ module ApiDoc
             :guid => guid,
             :name => name,
             :key => key,
+            :visibility => visibility.value,
             :description => description
         }
       end
@@ -877,7 +930,7 @@ module ApiDoc
         http = Net::HTTP.new(@uri.host, @uri.port)
         if @uri.scheme == "https"
           http.use_ssl = true
-          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+          http.verify_mode = OpenSSL::SSL::VERIFY_PEER
         end
         response = http.request(request)
 
