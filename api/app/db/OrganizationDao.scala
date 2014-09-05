@@ -26,6 +26,7 @@ object OrganizationDao {
 
   private val BaseQuery = """
     select organizations.guid, organizations.name, organizations.key,
+           organization_metadata.visibility as metadata_visibility,
            organization_metadata.package_name as metadata_package_name,
            (select array_to_string(array_agg(domain), ' ') 
               from organization_domains
@@ -227,6 +228,7 @@ object OrganizationDao {
           domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_)),
           metadata = Some(
             OrganizationMetadata(
+              visibility = row[Option[String]]("metadata_visibility").map(Visibility(_)),
               packageName = row[Option[String]]("metadata_package_name")
             )
           )

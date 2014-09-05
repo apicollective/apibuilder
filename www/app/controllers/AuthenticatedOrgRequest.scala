@@ -61,7 +61,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             sys.error(s"No org key for request path[${request.path}]")
           }
 
-          val orgOption = Await.result(Authenticated.api(Some(u)).Organizations.get(key = Some(orgKey)), 1000.millis).headOption
+          val orgOption = Await.result(Authenticated.api(Some(u)).Organizations.getByKey(orgKey), 1000.millis).headOption
           val memberships = Await.result(Authenticated.api(Some(u)).Memberships.get(orgKey = Some(orgKey), userGuid = Some(u.guid)), 1000.millis)
           orgOption match {
             case None => {

@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.models.{ Membership, Organization, User }
+import com.gilt.apidoc.models.{ Membership, Organization, User, Visibility }
 import models.MainTemplate
 import core.Role
 import play.api.mvc._
@@ -104,7 +104,7 @@ object AnonymousRequest {
     }
 
     val org = requestPath.split("/").drop(1).headOption.flatMap { possibleOrgKey =>
-      Await.result(Authenticated.api(user).Organizations.get(key = Some(possibleOrgKey)), 1000.millis).headOption
+      Await.result(Authenticated.api(user).Organizations.getByKey(possibleOrgKey), 1000.millis).headOption
     }
 
     val memberships = if (user.isEmpty || org.isEmpty) {
@@ -138,7 +138,20 @@ object AnonymousOrg extends ActionBuilder[AnonymousOrgRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AnonymousOrgRequest[A]) => Future[Result]) = {
     val resources = AnonymousRequest.resources(request.path, request.session.get("user_guid"))
-    val anon = new AnonymousRequest(resources, request)
-    block(new AnonymousOrgRequest(anon))
+    if (resources.org.isEmpty) {
+      Future.successful(Redirect("/").flashing("warning" -> "Org not found or access denied"))
+    } else {
+      val anon = new AnonymousRequest(resources, request)
+      val anonRequest = new AnonymousOrgRequest(anon)
+
+      println("V: " + resources.org.get.metadata)
+      if (resources.isMember) {
+        block(anonRequest)
+      } else if (resources.org.get.metadata.flatMap(_.visibility) == Some(Visibility.Public)) {
+        block(anonRequest)
+      } else {
+        Future.successful(Redirect("/").flashing("warning" -> "Org not found or access denied"))
+      }
+    }
   }
 }
