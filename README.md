@@ -57,6 +57,12 @@ One way to do this is to run a screen session, and in one screen do:
 Now both should be running and able to talk to each other, and should recompile
 in situ for a nice development experience.
 
+Updating generated code
+=======================
+curl http://www.apidoc.me/gilt/code/api-doc/latest/ruby_client > client-tests/ruby_client.rb
+curl http://www.apidoc.me/gilt/code/api-doc/latest/play_2_3_client > www/app/client/GeneratedClient.scala
+curl http://www.apidoc.me/gilt/code/api-doc/latest/play_2_x_json > core/src/main/scala/core/Generated.scala
+
 Releasing code
 ==============
 
