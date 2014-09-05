@@ -31,32 +31,21 @@ private[controllers] object RequestHelper {
     userGuidHeader: Option[String]
   ): UserAuth = {
 
-    BasicAuthorization.get(authorizationHeader) match {
-
+    val tokenUser: Option[User] = BasicAuthorization.get(authorizationHeader) match {
       case Some(auth: BasicAuthorization.Token) => {
-        UserDao.findByToken(auth.token) match {
-
-          case None => {
-            UserAuth(tokenUser = None, user = None)
-          }
-
-          case Some(tokenUser: User) => {
-            UserAuth(
-              tokenUser = Some(tokenUser),
-              user = userGuidHeader.flatMap(UserDao.findByGuid(_))
-            )
-          }
-
-        }
+        UserDao.findByToken(auth.token)
       }
-
-      case _ => {
-        UserAuth(tokenUser = None, user = None)
-      }
-
+      case _ => None
     }
 
+    val userFromHeader = userGuidHeader.flatMap(UserDao.findByGuid(_)) match {
+      case None => tokenUser
+      case Some(user) => Some(user)
+    }
+    UserAuth(tokenUser, userFromHeader)
+
   }
+
 
 }
 
