@@ -1189,7 +1189,7 @@ package com.gilt.apidoc {
       }
     }
 
-    private val UserAgent = "apidoc:0.5.13 http://www.apidoc.me/gilt/code/api-doc/0.5.14-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.5.22 http://www.apidoc.me/gilt/code/api-doc/0.5.23/play_2_3_client"
 
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
