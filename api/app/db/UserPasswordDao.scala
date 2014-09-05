@@ -11,7 +11,7 @@ import java.sql.Connection
 import org.mindrot.jbcrypt.BCrypt
 import org.apache.commons.codec.binary.Base64
 
-private[db] case class HashedPassword(hash: String, salt: String)
+private[db] case class HashedPassword(hash: String)
 
 sealed trait PasswordAlgorithm {
 
@@ -38,10 +38,7 @@ case class BcryptPasswordAlgorithm(override val key: String) extends PasswordAlg
 
   override def hash(password: String): HashedPassword = {
     val salt = BCrypt.gensalt(LogRounds)
-    HashedPassword(
-      salt = salt,
-      hash = BCrypt.hashpw(password, salt)
-    )
+    HashedPassword(BCrypt.hashpw(password, salt))
   }
 
   override def check(candidate: String, hashed: String): Boolean = {
