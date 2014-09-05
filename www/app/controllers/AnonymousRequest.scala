@@ -26,7 +26,9 @@ class AnonymousRequest[A](
     MainTemplate(
       title = title,
       user = user,
-      org = org
+      org = org,
+      isOrgMember = isMember,
+      isOrgAdmin = isAdmin
     )
   }
 
