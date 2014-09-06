@@ -6,7 +6,7 @@ import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
 
-object OrganizationMetadataController extends Controller {
+object OrganizationMetadata extends Controller {
 
   def put(key: String) = Authenticated(parse.json) { request =>
     request.body.validate[OrganizationMetadataForm] match {

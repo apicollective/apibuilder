@@ -64,6 +64,7 @@ Updating generated code
 curl http://www.apidoc.me/gilt/code/api-doc/latest/ruby_client > client-tests/ruby_client.rb
 curl http://www.apidoc.me/gilt/code/api-doc/latest/play_2_3_client > www/app/client/GeneratedClient.scala
 curl http://www.apidoc.me/gilt/code/api-doc/latest/play_2_x_json > core/src/main/scala/core/Generated.scala
+curl http://www.apidoc.me/gilt/code/api-doc/latest/play_2_x_routes > api/conf/routes
 
 Releasing code
 ==============
