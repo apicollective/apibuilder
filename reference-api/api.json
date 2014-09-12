@@ -110,9 +110,12 @@
 	},
 
         "organization": {
+	    "path": "",
+
             "operations": [
                 {
                     "method": "POST",
+		    "path": "/organizations",
                     "parameters": [
                         { "name": "organization", "type": "organization" }
                     ],
@@ -123,6 +126,7 @@
                 },
                 {
                     "method": "GET",
+		    "path": "/organizations",
                     "parameters": [
                         { "name": "guid", "type": "uuid", "required": false },
                         { "name": "name", "type": "string", "required": false }
@@ -132,11 +136,8 @@
                     }
                 },
                 {
+		    "path": "/:guid",
                     "method": "GET",
-                    "path": "/:guid",
-                    "parameters": [
-                      { "name": "guid", "type": "uuid" }
-                    ],
                     "responses": {
                         "200": { "type": "organization" }
                     }

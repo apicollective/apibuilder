@@ -96,6 +96,13 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
   describe("with reference-api service") {
     lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
 
+    it("normalizes explicit paths that match resource name") {
+      val resource = getResource(service, "organization")
+      val op = getMethod(service, "organization", "GET", "/organizations")
+      val r = Play2Route(op, resource)
+      r.method should be("controllers.Organizations.get")
+    }
+
     it("supports multiple query parameters") {
       val echoResource = getResource(service, "echo")
       val op = getMethod(service, "echo", "GET", "/echoes")

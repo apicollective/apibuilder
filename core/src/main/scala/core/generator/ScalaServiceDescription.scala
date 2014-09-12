@@ -156,7 +156,7 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
 
   lazy val formParameters = parameters.filter { _.location == ParameterLocation.Form }
 
-  val name: String = GeneratorUtil.urlToMethodName(resource.path, operation.method, operation.path)
+  val name: String = GeneratorUtil.urlToMethodName(resource.model.plural, resource.path, operation.method, operation.path)
 
   val argList: Option[String] = operation.body match {
     case None => ScalaUtil.fieldsToArgList(parameters.map(_.definition))

@@ -7,7 +7,12 @@ private[generator] object GeneratorUtil {
   /**
    * Turns a URL path to a camelcased method name.
    */
-  def urlToMethodName(resourcePath: String, httpMethod: String, url: String): String = {
+  def urlToMethodName(
+    resourcePlural: String,
+    resourcePath: String,
+    httpMethod: String,
+    url: String
+  ): String = {
     val pieces = (if (resourcePath.startsWith("/:")) {
       url
     } else {
@@ -15,7 +20,10 @@ private[generator] object GeneratorUtil {
     }).split("/").filter { !_.isEmpty }
 
     val named = pieces.filter { _.startsWith(":") }.map { name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name.slice(1, name.length)))) }
-    val notNamed = pieces.filter { !_.startsWith(":") }.map( name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name))) )
+    val notNamed = pieces.
+      filter { !_.startsWith(":") }.
+      filter { _ != resourcePlural }.
+      map( name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name))) )
 
     if (named.isEmpty && notNamed.isEmpty) {
       httpMethod.toLowerCase
