@@ -17,7 +17,7 @@ object Members extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
-    request.requireAdmin
+    request.requireMember
     for {
       orgs <- request.api.Organizations.get(key = Some(orgKey))
       members <- request.api.Memberships.get(orgKey = Some(orgKey),
@@ -39,7 +39,7 @@ object Members extends Controller {
   }
 
   def add(orgKey: String) = AuthenticatedOrg { implicit request =>
-    request.requireAdmin
+    request.requireMember
     val filledForm = addMemberForm.fill(AddMemberData(role = Role.Member.key, email = ""))
 
     Ok(views.html.members.add(request.mainTemplate("Add member"),
@@ -47,7 +47,7 @@ object Members extends Controller {
   }
 
   def addPost(orgKey: String) = AuthenticatedOrg { implicit request =>
-    request.requireAdmin
+    request.requireMember
     val tpl = request.mainTemplate("Add member")
 
     addMemberForm.bindFromRequest.fold (

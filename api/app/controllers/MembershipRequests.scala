@@ -45,8 +45,6 @@ object MembershipRequests extends Controller {
           }
 
           case Some(org: Organization) => {
-            request.requireAdmin(org)
-
             UserDao.findByGuid(form.user_guid) match {
 
               case None => {
