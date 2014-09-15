@@ -9,9 +9,9 @@
   <tbody>
    <tr>
      <td>@{operation.body.get match {
-           case pt: core.PrimitiveBody => datatype(pt.datatype, false)
-           case mt: core.ModelBody => modelTypeByName(org, service, version, sd, mt.name, false)
-           case et: core.EnumBody => enumType(org, service, version, et.name, false)
+           case pt: core.PrimitiveBody => datatype(pt.datatype, pt.multiple)
+           case mt: core.ModelBody => modelTypeByName(org, service, version, sd, mt.name, mt.multiple)
+           case et: core.EnumBody => enumType(org, service, version, et.name, et.multiple)
          }}
      </td>
    </tr>

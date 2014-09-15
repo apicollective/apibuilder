@@ -131,17 +131,17 @@ object Operation {
     // Capture any path parameters that were not explicitly annotated
     val pathParameters = internal.namedPathParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(model, _) }
 
-    val body: Option[Body] = internal.body.map { name =>
-      Datatype.findByName(name) match {
-        case Some(dt) => PrimitiveBody(dt)
+    val body: Option[Body] = internal.body.map { ib =>
+      Datatype.findByName(ib.name) match {
+        case Some(dt) => PrimitiveBody(dt, ib.multiple)
         case None => {
-          models.find(_.name == name) match {
-            case Some(model) => ModelBody(model.name)
+          models.find(_.name == ib.name) match {
+            case Some(model) => ModelBody(model.name, ib.multiple)
             case None => {
-              enums.find(_.name == name) match {
-                case Some(enum) => EnumBody(enum.name)
+              enums.find(_.name == ib.name) match {
+                case Some(enum) => EnumBody(enum.name, ib.multiple)
                 case None => {
-                  sys.error(s"Operation specifies body[$name] which references an undefined model")
+                  sys.error(s"Operation specifies body[$ib.name] which references an undefined datatype, model or enum")
                 }
               }
             }
@@ -172,9 +172,9 @@ case class Field(name: String,
                  maximum: Option[Long] = None)
 
 sealed trait Body
-case class PrimitiveBody(datatype: Datatype) extends Body
-case class ModelBody(name: String) extends Body
-case class EnumBody(name: String) extends Body
+case class PrimitiveBody(datatype: Datatype, multiple: Boolean) extends Body
+case class ModelBody(name: String, multiple: Boolean) extends Body
+case class EnumBody(name: String, multiple: Boolean) extends Body
 
 sealed trait FieldType
 case class PrimitiveFieldType(datatype: Datatype) extends FieldType
