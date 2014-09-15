@@ -22,7 +22,7 @@ private[generator] object GeneratorUtil {
     val named = pieces.filter { _.startsWith(":") }.map { name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name.slice(1, name.length)))) }
     val notNamed = pieces.
       filter { !_.startsWith(":") }.
-      filter { _ != resourcePlural }.
+      filter { _ != resourcePlural.toLowerCase }.
       map( name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name))) )
 
     if (named.isEmpty && notNamed.isEmpty) {
