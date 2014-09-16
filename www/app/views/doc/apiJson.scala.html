@@ -149,7 +149,7 @@
 
     where
     <ul>
-      <li><em>type</em> the type of the body. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>).</li>
+      <li><em>type</em> the type of this body. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
     </ul>
   </p>
 
