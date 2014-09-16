@@ -10,19 +10,14 @@ object RubyUtil {
     name: String,
     multiple: Boolean = false
   ): String = {
-    val className = Text.underscoreToInitCap(name)
-    if (multiple) {
-      Text.pluralize(className)
-    } else {
-      className
-    }
+    ScalaUtil.toClassName(name, multiple)
   }
 
   def toVariable(
     name: String,
     multiple: Boolean = false
   ): String = {
-    Text.camelCaseToUnderscore(toClassName(name, multiple))
+    Text.initLowerCase(Text.camelCaseToUnderscore(toClassName(name, multiple)))
   }
 
 }
@@ -204,7 +199,11 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
         }
       }.mkString("/")
 
-      val methodName = Text.camelCaseToUnderscore(GeneratorUtil.urlToMethodName(resource.model.plural, resource.path, op.method, op.path)).toLowerCase
+      val methodName = Text.camelCaseToUnderscore(
+        GeneratorUtil.urlToMethodName(
+          resource.model.plural, resource.path, op.method, op.path
+        )
+      ).toLowerCase
 
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(n) }
@@ -277,24 +276,24 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
           }
           case Some(ModelBody(name, false)) => {
             val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_class('name', $name, $klass)")
+            sb.append(s"        HttpClient::Preconditions.assert_class('$name', $name, $klass)")
             requestBuilder.append(s".with_json($name.to_hash.to_json)")
           }
           case Some(ModelBody(name, true)) => {
             val plural = RubyUtil.toVariable(name, true)
             val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('plural', $plural, $klass)")
+            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
             requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
           }
           case Some(EnumBody(name, false)) => {
             val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_class('name', $name, $klass)")
+            sb.append(s"        HttpClient::Preconditions.assert_class('$name', $name, $klass)")
             requestBuilder.append(s".with_json($name.to_hash.to_json)")
           }
           case Some(EnumBody(name, true)) => {
             val plural = RubyUtil.toVariable(name, true)
             val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('plural', $plural, $klass)")
+            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
             requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
           }
         }
