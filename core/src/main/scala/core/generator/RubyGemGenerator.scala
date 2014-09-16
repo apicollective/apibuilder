@@ -4,6 +4,29 @@ import core._
 import Text._
 import scala.collection.mutable.ListBuffer
 
+object RubyUtil {
+
+  def toClassName(
+    name: String,
+    multiple: Boolean = false
+  ): String = {
+    val className = Text.underscoreToInitCap(name)
+    if (multiple) {
+      Text.pluralize(className)
+    } else {
+      className
+    }
+  }
+
+  def toVariable(
+    name: String,
+    multiple: Boolean = false
+  ): String = {
+    Text.camelCaseToUnderscore(toClassName(name, multiple))
+  }
+
+}
+
 object RubyGemGenerator {
 
   def generate(sd: ServiceDescription, userAgent: String): String = {
@@ -189,9 +212,9 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
       if (Util.isJsonDocumentMethod(op.method)) {
         op.body match {
           case None => paramStrings.append("hash")
-          case Some(PrimitiveBody(dt)) => paramStrings.append("value")
-          case Some(ModelBody(name)) => paramStrings.append(name)
-          case Some(EnumBody(name)) => paramStrings.append(name)
+          case Some(PrimitiveBody(dt, multiple)) => paramStrings.append(RubyUtil.toVariable("value", multiple))
+          case Some(ModelBody(name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
+          case Some(EnumBody(name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
         }
       }
 
@@ -244,19 +267,35 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
             sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
             requestBuilder.append(".with_json(hash.to_json)")
           }
-          case Some(PrimitiveBody(dt)) => {
+          case Some(PrimitiveBody(dt, false)) => {
             sb.append(s"        HttpClient::Preconditions.assert_class('value', value, ${rubyClass(dt)})")
             requestBuilder.append(".with_body(value)")
           }
-          case Some(ModelBody(name)) => {
-            val klass = s"$moduleName::Models::${Text.underscoreToInitCap(name)}"
+          case Some(PrimitiveBody(dt, true)) => {
+            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('values', values, ${rubyClass(dt)})")
+            requestBuilder.append(".with_body(value)")
+          }
+          case Some(ModelBody(name, false)) => {
+            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
             sb.append(s"        HttpClient::Preconditions.assert_class('name', $name, $klass)")
             requestBuilder.append(s".with_json($name.to_hash.to_json)")
           }
-          case Some(EnumBody(name)) => {
-            val klass = s"$moduleName::Models::${Text.underscoreToInitCap(name)}"
+          case Some(ModelBody(name, true)) => {
+            val plural = RubyUtil.toVariable(name, true)
+            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
+            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('plural', $plural, $klass)")
+            requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
+          }
+          case Some(EnumBody(name, false)) => {
+            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
             sb.append(s"        HttpClient::Preconditions.assert_class('name', $name, $klass)")
             requestBuilder.append(s".with_json($name.to_hash.to_json)")
+          }
+          case Some(EnumBody(name, true)) => {
+            val plural = RubyUtil.toVariable(name, true)
+            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
+            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('plural', $plural, $klass)")
+            requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
           }
         }
       }
@@ -364,10 +403,12 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     }
   }
 
-  private def qualifiedClassName(name: String): String = {
+  private def qualifiedClassName(
+    name: String
+  ): String = {
     "%s::Models::%s".format(
       moduleName,
-      Text.underscoreToInitCap(name)
+      RubyUtil.toClassName(name)
     )
   }
 

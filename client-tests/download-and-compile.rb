@@ -3,14 +3,17 @@
 load 'ruby_client.rb'
 
 service_uri = ARGV.shift
-
 token = ARGV.shift
-if service_uri.to_s.strip == "" || token.to_s.strip == ""
-  raise "service uri and token required"
+user_guid = ARGV.shift
+if service_uri.to_s.strip == "" || token.to_s.strip == "" || user_guid.to_s == ""
+  raise "service uri, token and user_guid required"
 end
 
 orgs = [] # ['gilt']
 services = []  # ['api-doc']
+services_to_skip_by_org = {
+  "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
+}
 
 if !orgs.empty? || !services.empty?
   puts "Confirm you would like to limit tests to:"
@@ -95,7 +98,21 @@ def get_code(client, org, service, target)
   client.code.get_by_org_key_and_service_key_and_version_and_target(org.key, service.key, "latest", target)
 end
 
-client = ApiDoc::Client.new(service_uri, :authorization => ApiDoc::HttpClient::Authorization.basic(token))
+class MyClient < ApiDoc::Client
+
+  def initialize(url, user_guid, opts={})
+    super(url, opts)
+    @user_guid = user_guid
+  end
+
+  def request(*args)
+    super.with_header("X-User-Guid", @user_guid)
+  end
+
+end
+
+
+client = MyClient.new(service_uri, user_guid, :authorization => ApiDoc::HttpClient::Authorization.basic(token))
 
 CACHE = {}
 
@@ -122,8 +139,12 @@ targets.each do |target|
     target.tester.clean!(target.platform)
     get_in_batches("organizations", lambda { |limit, offset| client.organizations.send(:get, :limit => limit, :offset => offset) }) do |org|
       next if !orgs.empty? && !orgs.include?(org.key)
+      services_to_skip = services_to_skip_by_org[org.key] || []
+
       get_in_batches("services:#{org.key}", lambda { |limit, offset| client.services.get_by_org_key(org.key, :limit => limit, :offset => offset) }) do |service|
         next if !services.empty? && !services.include?(service.key)
+        next if services_to_skip.include?(service.key)
+
         puts "  %s/%s" % [org.key, service.key]
         t = ApiDoc::Models::Target.send(target_name)
         if code = get_code(client, org, service, t)

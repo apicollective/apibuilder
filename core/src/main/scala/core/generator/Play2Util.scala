@@ -73,9 +73,9 @@ object Play2Util {
 
     } else if (!op.body.isEmpty) {
       val payload = op.body.get.body match {
-        case PrimitiveBody(dt) => ScalaDataType.asString(ScalaUtil.toVariable(op.body.get.name), ScalaDataType(dt))
-        case ModelBody(name) => ScalaUtil.toVariable(op.body.get.name)
-        case EnumBody(name) => s"${ScalaUtil.toVariable(op.body.get.name)}.toString"
+        case PrimitiveBody(dt, multiple) => ScalaDataType.asString(ScalaUtil.toVariable(op.body.get.name, multiple), ScalaDataType(dt))
+        case ModelBody(name, multiple) => ScalaUtil.toVariable(op.body.get.name, multiple)
+        case EnumBody(name, multiple) => s"${ScalaUtil.toVariable(op.body.get.name, multiple)}.map(_.toString)"
       }
 
       Some(s"val payload = play.api.libs.json.Json.toJson($payload)")

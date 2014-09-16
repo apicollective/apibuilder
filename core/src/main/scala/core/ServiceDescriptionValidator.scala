@@ -420,8 +420,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val enumNames = internalServiceDescription.get.enums.map(_.name).toSet
 
     val typesNotFound = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(op => !op.body.isEmpty && !modelNames.contains(op.body.get) && !enumNames.contains(op.body.get) && Datatype.findByName(op.body.get).isEmpty).map { op =>
-        s"Resource[${resource.modelName.getOrElse("")}] ${op.label} body: Model named[${op.body.get}] not found"
+      resource.operations.filter(op => !op.body.isEmpty && !modelNames.contains(op.body.get.name) && !enumNames.contains(op.body.get.name) && Datatype.findByName(op.body.get.name).isEmpty).map { op =>
+        s"Resource[${resource.modelName.getOrElse("")}] ${op.label} body: Model named[${op.body.get.name}] not found"
       }
     }
 

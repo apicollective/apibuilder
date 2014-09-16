@@ -138,7 +138,7 @@ case class InternalOperation(method: Option[String],
                              description: Option[String],
                              namedPathParameters: Seq[String],
                              parameters: Seq[InternalParameter],
-                             body: Option[String],
+                             body: Option[InternalParsedDatatype],
                              responses: Seq[InternalResponse],
                              warnings: Seq[String] = Seq.empty) {
 
@@ -302,14 +302,14 @@ object InternalOperation {
       case o: JsObject => (o \ "type").asOpt[String]
       case u: JsUndefined => None
       case v: JsValue => {
-        warnings = Seq(s"""body declaration must be an object, e.g. { "type": ${v} }""")
+        warnings = Seq(s"""body declaration must be an object, e.g. { "type": $v }""")
         None
       }
     }
 
     InternalOperation(method = (json \ "method").asOpt[String].map(_.toUpperCase),
                       path = path,
-                      body = body,
+                      body = body.map( InternalParsedDatatype(_) ),
                       description = (json \ "description").asOpt[String],
                       responses = responses,
                       namedPathParameters = namedPathParameters,

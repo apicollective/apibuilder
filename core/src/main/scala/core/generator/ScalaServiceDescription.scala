@@ -45,20 +45,33 @@ object ScalaUtil {
     Text.safeName(serviceName).toLowerCase
   }
 
-  def toClassName(name: String) = {
-    ScalaUtil.quoteNameIfKeyword(
-      Text.safeName(
-        if (name == name.toUpperCase) {
-          Text.initCap(name.split("_").map(_.toLowerCase)).mkString("")
-        } else {
-          Text.initCap(snakeToCamelCase(name))
-        }
-      )
+  def toClassName(
+    name: String,
+    multiple: Boolean = false
+  ) = {
+    val baseName = Text.safeName(
+      if (name == name.toUpperCase) {
+        Text.initCap(name.split("_").map(_.toLowerCase)).mkString("")
+      } else {
+        Text.initCap(snakeToCamelCase(name))
+      }
     )
+
+    ScalaUtil.quoteNameIfKeyword(
+      if (multiple) {
+        Text.pluralize(baseName)
+      } else {
+        baseName
+      }
+    )
+
   }
 
-  def toVariable(name: String): String = {
-    Text.initLowerCase(toClassName(name))
+  def toVariable(
+    name: String,
+    multiple: Boolean = false
+  ): String = {
+    Text.initLowerCase(toClassName(name, multiple))
   }
 
 }
@@ -99,9 +112,9 @@ class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 class ScalaBody(val body: Body) {
 
   val name: String = body match {
-    case PrimitiveBody(dt) => "value"
-    case ModelBody(name) => ScalaUtil.toClassName(name)
-    case EnumBody(name) => ScalaUtil.toClassName(name)
+    case PrimitiveBody(dt, multiple) => ScalaUtil.toClassName("value", multiple)
+    case ModelBody(name, multiple) => ScalaUtil.toClassName(name, multiple)
+    case EnumBody(name, multiple) => ScalaUtil.toClassName(name, multiple)
   }
 
 }
@@ -160,23 +173,41 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
 
   val argList: Option[String] = operation.body match {
     case None => ScalaUtil.fieldsToArgList(parameters.map(_.definition))
-    case Some(PrimitiveBody(dt)) => {
-      val typeName = ScalaDataType(dt).name
+    case Some(PrimitiveBody(dt, multiple)) => {
+      val baseTypeName = ScalaDataType(dt).name
+
+      val typeName: String = {
+        if (multiple) {
+          s"scala.collection.Seq[$baseTypeName]"
+        } else {
+          baseTypeName
+        }
+      }
+
       Some(
         Seq(
-          Some(s"value: $typeName"),
+          Some(s"%s: %s".format(ScalaUtil.toVariable("value", multiple), typeName)),
           ScalaUtil.fieldsToArgList(parameters.map(_.definition))
         ).flatten.mkString(", ")
       )
     }
-    case Some(ModelBody(name)) => Some(bodyClassArg(name))
-    case Some(EnumBody(name)) => Some(bodyClassArg(name))
+    case Some(ModelBody(name, multiple)) => Some(bodyClassArg(name, multiple))
+    case Some(EnumBody(name, multiple)) => Some(bodyClassArg(name, multiple))
   }
 
-  private def bodyClassArg(name: String): String = {
-    val className = ScalaUtil.toClassName(name)
+  private def bodyClassArg(
+    name: String,
+    multiple: Boolean
+  ): String = {
+    val baseClassName = s"${resource.packageName}.models." + ScalaUtil.toClassName(name)
+    val className = if (multiple) {
+      s"scala.collection.Seq[$baseClassName]"
+    } else {
+      baseClassName
+    }
+
     Seq(
-      Some(s"${ScalaUtil.toVariable(name)}: ${resource.packageName}.models.${className}"),
+      Some(s"${ScalaUtil.toVariable(name, multiple)}: $className"),
       ScalaUtil.fieldsToArgList(parameters.map(_.definition))
     ).flatten.mkString(", ")
   }

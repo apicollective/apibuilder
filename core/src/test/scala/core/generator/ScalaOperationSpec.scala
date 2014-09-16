@@ -15,7 +15,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
     None, false, false, None, None, None, None)
 
   it("models as a parameter in the body should use capitalize") {
-    val body = new ModelBody("model")
+    val body = new ModelBody("model", false)
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
@@ -27,11 +27,25 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
       new ScalaResource(service, "test", resource))
 
     scalaOperation.argList shouldEqual Some("model: test.models.Model, \n  q1: scala.Option[Double] = None\n")
+  }
 
+  it("array of models as a parameter in the body should use capitalize") {
+    val body = new ModelBody("model", true)
+    val model = new Model("model", "models", None, Nil)
+    val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
+    val resource = new Resource(model, "models", Seq(operation))
+
+    val scalaOperation = new ScalaOperation(
+      service,
+      new ScalaModel(service, model),
+      operation,
+      new ScalaResource(service, "test", resource))
+
+    scalaOperation.argList shouldEqual Some("models: scala.collection.Seq[test.models.Model], \n  q1: scala.Option[Double] = None\n")
   }
 
   it("primitive type as a parameter in the body should not use capitalize") {
-    val body = new PrimitiveBody(IntegerType)
+    val body = new PrimitiveBody(IntegerType, false)
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
@@ -43,6 +57,21 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
       new ScalaResource(service, "test", resource))
 
     scalaOperation.argList shouldEqual Some("value: Int, \n  q1: scala.Option[Double] = None\n")
+  }
+
+  it("array of primitive types as a parameter in the body should not use capitalize") {
+    val body = new PrimitiveBody(IntegerType, true)
+    val model = new Model("model", "models", None, Nil)
+    val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
+    val resource = new Resource(model, "models", Seq(operation))
+
+    val scalaOperation = new ScalaOperation(
+      service,
+      new ScalaModel(service, model),
+      operation,
+      new ScalaResource(service, "test", resource))
+
+    scalaOperation.argList shouldEqual Some("values: scala.collection.Seq[Int], \n  q1: scala.Option[Double] = None\n")
 
   }
 
