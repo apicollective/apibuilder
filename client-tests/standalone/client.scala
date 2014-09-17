@@ -50,9 +50,10 @@ object Foo {
     }
 
     def GET(
-      url: String,
+      path: String,
       q: Seq[(String, String)] = Seq.empty
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response] = {
+      val url = apiUrl + path
       _logRequest("GET", url, q)
       // TODO: Query parameters
 
@@ -71,9 +72,8 @@ object Foo {
       override def get()(implicit ec: scala.concurrent.ExecutionContext):
           scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]] =
       {
-        val url = s"$apiUrl/_internal_/healthcheck"
-        GET(url).map { r =>
-          case r if r.status == 200 => {
+        GET("/_internal_/healthcheck").map {
+          case r if r.getStatusCode == 200 => {
             play.api.libs.json.Json.parse(r.getResponseBody("UTF-8")).validate[com.gilt.quality.models.Healthcheck] match {
               case play.api.libs.json.JsSuccess(x, _) => Some(x)
               case play.api.libs.json.JsError(errors) => {
@@ -81,7 +81,7 @@ object Foo {
               }
             }
           }
-          case r if r.status == 404 => None
+          case r if r.getStatusCode == 404 => None
           case r => throw new FailedRequest(r)
         }
       }
