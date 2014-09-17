@@ -38,12 +38,27 @@ files.each do |path|
 
 end
 
+# Now update docs
+`find www/app/views -type f -name "*.scala.html"`.strip.split.each do |path|
+  found = false
+  tmp = "#{path}.tmp"
+  begin
+    File.open(tmp, "w") do |out|
+      IO.readlines(path).each do |l|
+        out << l.gsub(/\<\!\-\-\s*NEXT_TAG\s*\-\-\>/, tag)
+      end
+    end
+    system("mv #{tmp} #{path}")
+  end
+
+end
+
 def run(command)
   puts command
   system(command)
 end
 
-run("git commit -m 'Update configuration to record apidoc version #{tag}' " + files.join(" "))
-run("git tag -a -m #{tag} #{tag}")
-run("git push --tags origin")
-run("git push origin master")
+#run("git commit -m 'Update configuration to record apidoc version #{tag}' " + files.join(" "))
+#run("git tag -a -m #{tag} #{tag}")
+#run("git push --tags origin")
+#run("git push origin master")
