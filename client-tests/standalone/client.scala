@@ -8,7 +8,6 @@ object Main extends App {
 
   val client = new Foo.Client("http://localhost:8001")
   try {
-    println("client: " + client)
     val result = Await.result(client.healthchecks.get(), 5 seconds)
     println("RESULT: " + result)
   } finally {
@@ -29,10 +28,12 @@ object Foo {
           scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]] =
       {
         val result = Promise[scala.Option[com.gilt.quality.models.Healthcheck]]()
-        asyncHttpClient.prepareGet("http://localhost:8001/healthchecks").execute(
+        asyncHttpClient.prepareGet(s"$apiUrl/_internal_/healthcheck").execute(
           new AsyncCompletionHandler[Unit]() {
             override def onCompleted(r: Response) = {
-              println("Completed: " + r)
+              println("     code: " + r.getStatusCode())
+              val body = r.getResponseBody("UTF-8")
+              println("     Body: " + body)
               val item: scala.Option[com.gilt.quality.models.Healthcheck] = Some(com.gilt.quality.models.Healthcheck("Healthy"))
               result.success(item)
               ()
