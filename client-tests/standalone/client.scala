@@ -66,39 +66,32 @@ object Foo {
     }
 
     object Healthchecks extends Healthchecks {
+      import com.gilt.quality.models.json.jsonReadsQualityHealthcheck
 
       override def get()(implicit ec: scala.concurrent.ExecutionContext):
           scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]] =
       {
         val url = s"$apiUrl/_internal_/healthcheck"
         GET(url).map { r =>
-          import com.gilt.quality.models.json.jsonReadsQualityHealthcheck
-          val body = r.getResponseBody("UTF-8")
-
-          if (r.getStatusCode() == 200) {
-            play.api.libs.json.Json.parse(body).validate[com.gilt.quality.models.Healthcheck] match {
+          case r if r.status == 200 => {
+            play.api.libs.json.Json.parse(r.getResponseBody("UTF-8")).validate[com.gilt.quality.models.Healthcheck] match {
               case play.api.libs.json.JsSuccess(x, _) => Some(x)
               case play.api.libs.json.JsError(errors) => {
-                throw new FailedRequest(url, r, Some("Invalid json for com.gilt.quality.models.Healthcheck: " + errors.mkString(" ")))
+                throw new FailedRequest(r, Some("Invalid json for com.gilt.quality.models.Healthcheck: " + errors.mkString(" ")))
               }
             }
-
-          } else if (r.getStatusCode() == 404) {
-            None
-
-          } else {
-            throw new FailedRequest(url, r)
           }
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
         }
       }
     }
   }
 
   case class FailedRequest(
-    url: String,
     response: Response,
     message: Option[String] = None
-  ) extends Exception(message.getOrElse(response.getStatusCode() + s" for url[$url]: " + response.getResponseBody("UTF-8")))
+  ) extends Exception(message.getOrElse(response.getStatusCode() + ": " + response.getResponseBody("UTF-8")))
 
   trait Healthchecks {
     def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]]
