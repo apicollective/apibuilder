@@ -4,16 +4,6 @@
 
   <ul>
 
-    <li>Play client: Move Traits out of client so they can be accessed
-    directly. See <a href='https://github.com/gilt/apidoc/issues/158'>Issue
-    158</a></li>
-
-  </ul>
-
-<h3>0.5.27</h3>
-
-  <ul>
-
     <li>Operation body now supports Arrays as a type.</li>
 
     <li>Organizations now have a visibility setting which controls
