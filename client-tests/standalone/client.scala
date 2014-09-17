@@ -16,56 +16,80 @@ object Main extends App {
 
 }
 
+class Logger() {
+
+  def info(message: String) {
+    println(message)
+  }
+
+}
+
 object Foo {
-  class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
+  class Client(
+    apiUrl: String,
+    apiToken: scala.Option[String] = None
+  ) {
     val asyncHttpClient = new AsyncHttpClient()
+    val logger = new Logger()
 
     def healthchecks: Healthchecks = Healthchecks
+
+    def _logRequest(
+      method: String,
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    ) {
+      val queryComponents = for {
+        (name, values) <- q
+        value <- values
+      } yield name -> value
+      val url = s"${apiUrl}${path}${queryComponents.mkString("?", "&", "")}"
+      apiToken.fold(logger.info(s"curl -X $method $url")) { _ =>
+        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
+      }
+    }
+
+    def GET(
+      url: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response] = {
+      _logRequest("GET", url, q)
+      // TODO: Query parameters
+
+      val result = Promise[Response]()
+      asyncHttpClient.prepareGet(url).execute(
+        new AsyncCompletionHandler[Unit]() {
+          override def onCompleted(r: Response) = result.success(r)
+        }
+      )
+      result.future
+    }
 
     object Healthchecks extends Healthchecks {
 
       override def get()(implicit ec: scala.concurrent.ExecutionContext):
           scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]] =
       {
-        val result = Promise[scala.Option[com.gilt.quality.models.Healthcheck]]()
         val url = s"$apiUrl/_internal_/healthcheck"
-        asyncHttpClient.prepareGet(url).execute(
-          new AsyncCompletionHandler[Unit]() {
-            override def onCompleted(r: Response) = {
-              import com.gilt.quality.models.json.jsonReadsQualityHealthcheck
-              val body = r.getResponseBody("UTF-8")
+        GET(url).map { r =>
+          import com.gilt.quality.models.json.jsonReadsQualityHealthcheck
+          val body = r.getResponseBody("UTF-8")
 
-              if (r.getStatusCode() == 200) {
-                try {
-                  play.api.libs.json.Json.parse(body).validate[com.gilt.quality.models.Healthcheck] match {
-                    case play.api.libs.json.JsSuccess(x, _) => result.success(Some(x))
-                    case play.api.libs.json.JsError(errors) => {
-                      result.failure(
-                        new FailedRequest(
-                          url,
-                          r,
-                          Some("Invalid json for com.gilt.quality.models.Healthcheck: " + errors.mkString(" "))
-                        )
-                      )
-                    }
-                  }
-                } catch {
-                  case t: Throwable => result.failure(t)
-                }
-
-              } else if (r.getStatusCode() == 404) {
-                result.success(None)
-
-              } else {
-                result.failure(new FailedRequest(url, r))
+          if (r.getStatusCode() == 200) {
+            play.api.libs.json.Json.parse(body).validate[com.gilt.quality.models.Healthcheck] match {
+              case play.api.libs.json.JsSuccess(x, _) => Some(x)
+              case play.api.libs.json.JsError(errors) => {
+                throw new FailedRequest(url, r, Some("Invalid json for com.gilt.quality.models.Healthcheck: " + errors.mkString(" ")))
               }
-
-              ()
             }
-          }
-        )
 
-        result.future
+          } else if (r.getStatusCode() == 404) {
+            None
+
+          } else {
+            throw new FailedRequest(url, r)
+          }
+        }
       }
     }
   }
