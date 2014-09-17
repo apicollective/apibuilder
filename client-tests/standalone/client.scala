@@ -28,26 +28,36 @@ object Foo {
           scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]] =
       {
         val result = Promise[scala.Option[com.gilt.quality.models.Healthcheck]]()
-        asyncHttpClient.prepareGet(s"$apiUrl/_internal_/healthcheck").execute(
+        val url = s"$apiUrl/_internal_/healthcheck"
+        asyncHttpClient.prepareGet(url).execute(
           new AsyncCompletionHandler[Unit]() {
             override def onCompleted(r: Response) = {
               import com.gilt.quality.models.json.jsonReadsQualityHealthcheck
+              val body = r.getResponseBody("UTF-8")
 
               if (r.getStatusCode() == 200) {
-                val body = r.getResponseBody("UTF-8")
                 try {
-                  val jsValue = play.api.libs.json.Json.parse(body)
-                
-                  jsValue.validate[com.gilt.quality.models.Healthcheck] match {
+                  play.api.libs.json.Json.parse(body).validate[com.gilt.quality.models.Healthcheck] match {
                     case play.api.libs.json.JsSuccess(x, _) => result.success(Some(x))
-                    case play.api.libs.json.JsError(errors) => sys.error("Error parsing json: " + errors.mkString(" "))
+                    case play.api.libs.json.JsError(errors) => {
+                      result.failure(
+                        new FailedRequest(
+                          url,
+                          r,
+                          Some("Invalid json for com.gilt.quality.models.Healthcheck: " + errors.mkString(" "))
+                        )
+                      )
+                    }
                   }
                 } catch {
                   case t: Throwable => result.failure(t)
                 }
+
+              } else if (r.getStatusCode() == 404) {
+                result.success(None)
+
               } else {
-                println("     code: " + r.getStatusCode())
-                sys.error("TODO: code = " + r.getStatusCode())
+                result.failure(new FailedRequest(url, r))
               }
 
               ()
@@ -60,7 +70,11 @@ object Foo {
     }
   }
 
-  case class FailedRequest(e: Throwable) extends Exception(e.toString)
+  case class FailedRequest(
+    url: String,
+    response: Response,
+    message: Option[String] = None
+  ) extends Exception(message.getOrElse(response.getStatusCode() + s" for url[$url]: " + response.getResponseBody("UTF-8")))
 
   trait Healthchecks {
     def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]]
