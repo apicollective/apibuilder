@@ -31,11 +31,25 @@ object Foo {
         asyncHttpClient.prepareGet(s"$apiUrl/_internal_/healthcheck").execute(
           new AsyncCompletionHandler[Unit]() {
             override def onCompleted(r: Response) = {
-              println("     code: " + r.getStatusCode())
-              val body = r.getResponseBody("UTF-8")
-              println("     Body: " + body)
-              val item: scala.Option[com.gilt.quality.models.Healthcheck] = Some(com.gilt.quality.models.Healthcheck("Healthy"))
-              result.success(item)
+              import com.gilt.quality.models.json.jsonReadsQualityHealthcheck
+
+              if (r.getStatusCode() == 200) {
+                val body = r.getResponseBody("UTF-8")
+                try {
+                  val jsValue = play.api.libs.json.Json.parse(body)
+                
+                  jsValue.validate[com.gilt.quality.models.Healthcheck] match {
+                    case play.api.libs.json.JsSuccess(x, _) => result.success(Some(x))
+                    case play.api.libs.json.JsError(errors) => sys.error("Error parsing json: " + errors.mkString(" "))
+                  }
+                } catch {
+                  case t: Throwable => result.failure(t)
+                }
+              } else {
+                println("     code: " + r.getStatusCode())
+                sys.error("TODO: code = " + r.getStatusCode())
+              }
+
               ()
             }
           }
