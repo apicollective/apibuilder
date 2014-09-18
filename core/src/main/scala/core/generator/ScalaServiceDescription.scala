@@ -93,7 +93,15 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription, metada
 
   val resources = serviceDescription.resources.map { new ScalaResource(serviceDescription, packageName, _) }
 
+  val defaultHeaders: Seq[Header] = {
+    serviceDescription.headers.filter(!_.default.isEmpty).map { h =>
+      Header(h.name, s""""${h.default.get}"""")
+    }
+  }
+
 }
+
+case class Header(name: String, value: String)
 
 class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
@@ -250,14 +258,17 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
     }
   }
 
-  private val underscore = Text.camelCaseToUnderscore(scalaType)
-  val errorVariableName = if (isMultiple) {
-    Text.snakeToCamelCase(Text.pluralize(underscore.toLowerCase))
-  } else {
-    Text.snakeToCamelCase(underscore.toLowerCase)
-  }
+  val errorVariableName = ScalaUtil.toVariable(scalaType, isMultiple)
 
   val errorClassName = Text.initCap(errorVariableName) + "Response"
+
+  val errorResponseType = if (isOption) {
+    // In the case of errors, ignore the option wrapper as we only
+    // trigger the error response when we have an actual error.
+    qualifiedScalaType
+  } else {
+    resultType
+  }
 
 }
 

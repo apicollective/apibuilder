@@ -56,20 +56,12 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
   private[generator] def errorTypeClass(response: ScalaResponse): String = {
     require(!response.isSuccess)
 
-    val responseType = if (response.isOption) {
-      // In the case of errors, ignore the option wrapper as we only
-      // trigger the error response when we have an actual error.
-      response.qualifiedScalaType
-    } else {
-      response.resultType
-    }
-
     // pass in status and UNPARSED body so that there is still a useful error
     // message even when the body is malformed and cannot be parsed
     Seq(
       s"""case class ${response.errorClassName}(response: ${version.responseClass}) extends Exception(response.status + ": " + response.body) {""",
       "",
-      s"  lazy val ${response.errorVariableName} = response.json.as[$responseType]",
+      s"  lazy val ${response.errorVariableName} = response.json.as[${response.errorResponseType}]",
       "",
       "}"
     ).mkString("\n")
@@ -94,14 +86,6 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     }
   }
 
-  case class Header(name: String, value: String)
-
-  private def headers(): Seq[Header] = {
-    ssd.serviceDescription.headers.filter(!_.default.isEmpty).map { h =>
-      Header(h.name, s""""${h.default.get}"""")
-    } ++ Seq(Header("User-Agent", "UserAgent"))
-  }
-
   private def client(): String = {
     val errorsString = errors() match {
       case None => ""
@@ -119,7 +103,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     }
 
     val headerString = ".withHeaders(" +
-    headers.map { h =>
+    (ssd.defaultHeaders ++ Seq(Header("User-Agent", "UserAgent"))).map { h =>
       s""""${h.name}" -> ${h.value}"""
     }.mkString(", ") + ")"
 
