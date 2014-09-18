@@ -22,6 +22,17 @@ object Main extends App {
     ), 5 seconds)
 
     println("Incident Created: " + incident)
+
+    println("Updating")
+    Await.result(client.incidents.putById(
+      incident.id,
+      teamKey = None,
+      severity = com.gilt.quality.models.Severity.Low.toString,
+      summary = "Test from ning client",
+      description = Some("desc"),
+      tags = Seq("updated")
+    ), 5 seconds)
+
     println("Incident getById: " + Await.result(client.incidents.getById(incident.id), 5 seconds))
     println("Deleting...")
     Await.result(client.incidents.deleteById(incident.id), 5 seconds)
@@ -275,7 +286,6 @@ object Foo {
       /**
        * Updates an incident.
        */
-
       def putById(
         id: Long,
         teamKey: scala.Option[String] = None,
