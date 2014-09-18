@@ -229,14 +229,14 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
   }
 
   val responses: Seq[ScalaResponse] = {
-    operation.responses.toList.map { new ScalaResponse(resource.packageName, method, _) } 
+    operation.responses.toList.map { new ScalaResponse(ssd, method, _) } 
   }
 
   lazy val resultType = responses.find(_.isSuccess).map(_.resultType).getOrElse("Unit")
 
 }
 
-class ScalaResponse(packageName: String, method: String, response: Response) {
+class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Response) {
 
   val scalaType: String = underscoreAndDashToInitCap(response.datatype)
   val isUnit = scalaType == "Unit"
@@ -251,8 +251,13 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
     scalaType
   } else {
     Datatype.findByName(response.datatype) match {
-      case None => packageName + ".models." + scalaType
       case Some(dt) => ScalaDataType(dt).name
+      case None => {
+        ssd.models.find(_.name == response.datatype) match {
+          case Some(model) => new ScalaDataType.ScalaModelType(ssd.modelPackageName, response.datatype).name
+          case None => new ScalaDataType.ScalaEnumType(ssd.enumPackageName, response.datatype).name
+        }
+      }
     }
   }
 

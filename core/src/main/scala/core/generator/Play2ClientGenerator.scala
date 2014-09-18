@@ -77,7 +77,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
         Seq(
           "package error {",
           "",
-          s"  import ${ssd.packageName}.models.json._",
+          s"  import ${ssd.modelPackageName}.json._",
           "",
           errorTypes.map { t => errorTypeClass(t) }.distinct.sorted.mkString("\n\n").indent(2),
           "}"
@@ -123,7 +123,7 @@ ${ScalaHelpers.dateTime}
   }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
-    import ${ssd.packageName}.models.json._
+    import ${ssd.modelPackageName}.json._
 
     private val logger = play.api.Logger("${ssd.packageName}.client")
 
