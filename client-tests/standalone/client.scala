@@ -45,6 +45,7 @@ object Main extends App {
 }
 
 object Foo {
+
   class Client(
     apiUrl: String,
     apiToken: scala.Option[String] = None
@@ -57,6 +58,10 @@ object Foo {
     def healthchecks: Healthchecks = Healthchecks
 
     def incidents: Incidents = Incidents
+
+    def _logRequest(request: Request) {
+      println("_logRequest: " + request)
+    }
 
     def _requestBuilder(method: String, path: String): RequestBuilder = {
       val builder = new RequestBuilder(method)
@@ -71,10 +76,6 @@ object Foo {
             .build()
         )
       }
-    }
-
-    def _logRequest(request: Request) {
-      println("_logRequest: " + request)
     }
 
     def _executeRequest(
@@ -185,7 +186,7 @@ object Foo {
 
         _executeRequest("POST", s"/incidents", body = Some(payload)).map {
           case r if r.getStatusCode == 201 => _parseJson(r, _.validate[com.gilt.quality.models.Incident] )
-          // TODO case r if r.getStatusCode == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r if r.getStatusCode == 409 => throw new Foo.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -208,7 +209,7 @@ object Foo {
 
         _executeRequest("PUT", s"/incidents/${id}", body = Some(payload)).map {
           case r if r.getStatusCode == 201 => _parseJson(r, _.validate[com.gilt.quality.models.Incident] )
-          // TODO case r if r.getStatusCode == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+          case r if r.getStatusCode == 409 => throw new Foo.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -272,6 +273,18 @@ object Foo {
       def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+    }
+
+  }
+
+  case class ErrorsResponse(response: Response) extends Exception(response.getStatusCode() + ": " + response.getResponseBody("UTF-8")) {
+    import com.gilt.quality.models.json._
+
+    lazy val errors = play.api.libs.json.Json.parse(response.getResponseBody("UTF-8")).validate[Seq[com.gilt.quality.models.Error]] match {
+      case play.api.libs.json.JsSuccess(x, _) => x
+      case play.api.libs.json.JsError(errors) => {
+        sys.error("Invalid json: " + errors.mkString(" "))
+      }
     }
 
   }
