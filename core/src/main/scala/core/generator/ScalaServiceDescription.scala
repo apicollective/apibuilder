@@ -80,7 +80,7 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription, metada
 
   val name = safeName(serviceDescription.name)
 
-  val models = serviceDescription.models.map { new ScalaModel(serviceDescription, _) }
+  val models = serviceDescription.models.map { new ScalaModel(this, _) }
 
   val enums = serviceDescription.enums.map { new ScalaEnum(_) }
 
@@ -91,13 +91,13 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription, metada
 
   val packageNamePrivate = packageName.split("\\.").last
 
-  val resources = serviceDescription.resources.map { new ScalaResource(serviceDescription, packageName, _) }
-
   val defaultHeaders: Seq[ScalaHeader] = {
     serviceDescription.headers.filter(!_.default.isEmpty).map { h =>
       ScalaHeader(h.name, h.default.get)
     }
   }
+
+  val resources = serviceDescription.resources.map { new ScalaResource(this, _) }
 
 }
 
@@ -106,7 +106,7 @@ case class ScalaHeader(name: String, value: String) {
 }
 
 
-class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
+class ScalaModel(val ssd: ScalaServiceDescription, val model: Model) {
 
   val name: String = ScalaUtil.toClassName(model.name)
 
@@ -150,17 +150,19 @@ class ScalaEnumValue(value: EnumValue) {
 
 }
 
-class ScalaResource(serviceDescription: ServiceDescription, val packageName: String, resource: Resource) {
-  val model = new ScalaModel(serviceDescription, resource.model)
+class ScalaResource(ssd: ScalaServiceDescription, resource: Resource) {
+  val model = new ScalaModel(ssd, resource.model)
+
+  val packageName: String = ssd.packageName
 
   val path = resource.path
 
   val operations = resource.operations.map { op =>
-    new ScalaOperation(serviceDescription, model, op, this)
+    new ScalaOperation(ssd, model, op, this)
   }
 }
 
-class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, operation: Operation, resource: ScalaResource) {
+class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation: Operation, resource: ScalaResource) {
 
   val method: String = operation.method
 
