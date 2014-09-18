@@ -90,7 +90,7 @@
         },
 
         "membership_request": {
-            "description": "A membership request represents a user requesting to join an organization with a specificed role (e.g. as a member or an admin). Membership requests can be reviewed by any current admin of the organization who can either accept or decline the request.",
+            "description": "A membership request represents a user requesting to join an organization with a specific role (e.g. as a member or an admin). Membership requests can be reviewed by any current admin of the organization who can either accept or decline the request.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this membership request." },
                 { "name": "user", "type": "user" },
