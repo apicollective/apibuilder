@@ -123,7 +123,6 @@ ${ScalaHelpers.dateTime}
   }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
-    import ${ssd.packageName}.models._
     import ${ssd.packageName}.models.json._
 
     private val UserAgent = "$userAgent"
