@@ -111,19 +111,21 @@ object Foo {
       result.future
     }
 
+    def _parseJson[T](r: Response, f: (play.api.libs.json.JsValue => play.api.libs.json.JsResult[T])): T = {
+      f(play.api.libs.json.Json.parse(r.getResponseBody("UTF-8"))) match {
+        case play.api.libs.json.JsSuccess(x, _) => x
+        case play.api.libs.json.JsError(errors) => {
+          throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
+        }
+      }
+    }
+
     object Healthchecks extends Healthchecks {
       override def get()(implicit ec: scala.concurrent.ExecutionContext):
           scala.concurrent.Future[scala.Option[com.gilt.quality.models.Healthcheck]] =
       {
         _executeRequest("GET", "/_internal_/healthcheck").map {
-          case r if r.getStatusCode == 200 => {
-            play.api.libs.json.Json.parse(r.getResponseBody("UTF-8")).validate[com.gilt.quality.models.Healthcheck] match {
-              case play.api.libs.json.JsSuccess(x, _) => Some(x)
-              case play.api.libs.json.JsError(errors) => {
-                throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
-              }
-            }
-          }
+          case r if r.getStatusCode == 200 => Some(_parseJson(r, _.validate[com.gilt.quality.models.Healthcheck] ))
           case r if r.getStatusCode == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -151,14 +153,7 @@ object Foo {
         ).flatten
 
         _executeRequest("GET", s"/incidents", query).map {
-          case r if r.getStatusCode == 200 => {
-            play.api.libs.json.Json.parse(r.getResponseBody("UTF-8")).validate[scala.collection.Seq[com.gilt.quality.models.Incident]] match {
-              case play.api.libs.json.JsSuccess(x, _) => x
-              case play.api.libs.json.JsError(errors) => {
-                throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
-              }
-            }
-          }
+          case r if r.getStatusCode == 200 => _parseJson(r, _.validate[scala.collection.Seq[com.gilt.quality.models.Incident]] )
           case r => throw new FailedRequest(r)
         }
       }
@@ -167,14 +162,7 @@ object Foo {
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.quality.models.Incident]] = {
         _executeRequest("GET", s"/incidents/${id}").map {
-          case r if r.getStatusCode == 200 => {
-            play.api.libs.json.Json.parse(r.getResponseBody("UTF-8")).validate[com.gilt.quality.models.Incident] match {
-              case play.api.libs.json.JsSuccess(x, _) => Some(x)
-              case play.api.libs.json.JsError(errors) => {
-                throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
-              }
-            }
-          }
+          case r if r.getStatusCode == 200 => Some(_parseJson(r, _.validate[com.gilt.quality.models.Incident] ))
           case r if r.getStatusCode == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -196,14 +184,7 @@ object Foo {
         )
 
         _executeRequest("POST", s"/incidents", body = Some(payload)).map {
-          case r if r.getStatusCode == 201 => {
-            play.api.libs.json.Json.parse(r.getResponseBody("UTF-8")).validate[com.gilt.quality.models.Incident] match {
-              case play.api.libs.json.JsSuccess(x, _) => x
-              case play.api.libs.json.JsError(errors) => {
-                throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
-              }
-            }
-          }
+          case r if r.getStatusCode == 201 => _parseJson(r, _.validate[com.gilt.quality.models.Incident] )
           // TODO case r if r.getStatusCode == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
@@ -226,14 +207,7 @@ object Foo {
         )
 
         _executeRequest("PUT", s"/incidents/${id}", body = Some(payload)).map {
-          case r if r.getStatusCode == 201 => {
-            play.api.libs.json.Json.parse(r.getResponseBody("UTF-8")).validate[com.gilt.quality.models.Incident] match {
-              case play.api.libs.json.JsSuccess(x, _) => x
-              case play.api.libs.json.JsError(errors) => {
-                throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
-              }
-            }
-          }
+          case r if r.getStatusCode == 201 => _parseJson(r, _.validate[com.gilt.quality.models.Incident] )
           // TODO case r if r.getStatusCode == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
