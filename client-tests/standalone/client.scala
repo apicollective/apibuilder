@@ -21,7 +21,11 @@ object Main extends App {
       tags = Seq("a", "b")
     ), 5 seconds)
 
-    println("Incident: " + incident)
+    println("Incident Created: " + incident)
+    println("Incident getById: " + Await.result(client.incidents.getById(incident.id), 5 seconds))
+    println("Deleting...")
+    Await.result(client.incidents.deleteById(incident.id), 5 seconds)
+    println("Incident getById: " + Await.result(client.incidents.getById(incident.id), 5 seconds))
 
   } finally {
     client.asyncHttpClient.close()
@@ -67,7 +71,7 @@ object Foo {
       path: String,
       queryParameters: Seq[(String, String)] = Seq.empty,
       formParameters: Seq[(String, String)] = Seq.empty,
-      body: Option[play.api.libs.json.JsValue] = None
+      body: Option[play.api.libs.json.JsObject] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response] = {
       val request = _requestBuilder(method, path)
 
@@ -194,7 +198,6 @@ object Foo {
         }
       }
 
-/*
       override def putById(
         id: Long,
         teamKey: scala.Option[String] = None,
@@ -211,9 +214,16 @@ object Foo {
           "tags" -> play.api.libs.json.Json.toJson(tags)
         )
 
-        PUT(s"/incidents/${id}", payload).map {
-          case r if r.getStatusCode == 201 => r.json.as[com.gilt.quality.models.Incident]
-          case r if r.getStatusCode == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
+        _executeRequest("PUT", s"/incidents/${id}", body = Some(payload)).map {
+          case r if r.getStatusCode == 201 => {
+            play.api.libs.json.Json.parse(r.getResponseBody("UTF-8")).validate[com.gilt.quality.models.Incident] match {
+              case play.api.libs.json.JsSuccess(x, _) => x
+              case play.api.libs.json.JsError(errors) => {
+                throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
+              }
+            }
+          }
+          // TODO case r if r.getStatusCode == 409 => throw new com.gilt.quality.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -221,13 +231,13 @@ object Foo {
       override def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
-        DELETE(s"/incidents/${id}").map {
+        _executeRequest("DELETE", s"/incidents/${id}").map {
           case r if r.getStatusCode == 204 => Some(Unit)
           case r if r.getStatusCode == 404 => None
           case r => throw new FailedRequest(r)
         }
       }
- */
+
     }
 
     trait Incidents {
@@ -265,7 +275,7 @@ object Foo {
       /**
        * Updates an incident.
        */
-/*
+
       def putById(
         id: Long,
         teamKey: scala.Option[String] = None,
@@ -278,7 +288,6 @@ object Foo {
       def deleteById(
         id: Long
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
- */
     }
 
   }
