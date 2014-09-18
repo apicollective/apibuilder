@@ -1,10 +1,9 @@
-import com.ning.http.client._
-import scala.concurrent._
-import scala.concurrent.duration._
+import com.ning.http.client.{AsyncCompletionHandler, AsyncHttpClient, Realm, Request, RequestBuilder, Response}
 
 object Main extends App {
-
-  import ExecutionContext.Implicits.global
+  import scala.concurrent.Await
+  import scala.concurrent.duration._
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val client = new Foo.Client("http://localhost:8001")
   try {
@@ -103,7 +102,7 @@ object Foo {
       val finalRequest = requestWithParamsAndBody.build()
       _logRequest(finalRequest)
 
-      val result = Promise[Response]()
+      val result = scala.concurrent.Promise[Response]()
       asyncHttpClient.executeRequest(finalRequest,
         new AsyncCompletionHandler[Unit]() {
           override def onCompleted(r: Response) = result.success(r)
