@@ -103,27 +103,15 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     }
 
     val headerString = ".withHeaders(" +
-    (ssd.defaultHeaders ++ Seq(Header("User-Agent", "UserAgent"))).map { h =>
-      s""""${h.name}" -> ${h.value}"""
-    }.mkString(", ") + ")"
+      (ssd.defaultHeaders ++ Seq(ScalaHeader("User-Agent", "UserAgent"))).map { h =>
+        s""""${h.name}" -> ${h.quotedValue}"""
+      }.mkString(", ") + ")"
 
     s"""package ${ssd.packageName} {
   object helpers {
-    import org.joda.time.DateTime
-    import org.joda.time.format.ISODateTimeFormat
+
     import play.api.mvc.QueryStringBindable
-
-    import scala.util.{ Failure, Success, Try }
-
-    private[helpers] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
-    private[helpers] val dateTimeISOFormatter = ISODateTimeFormat.dateTime()
-
-    private[helpers] def parseDateTimeISO(s: String): Either[String, DateTime] = {
-      Try(dateTimeISOParser.parseDateTime(s)) match {
-        case Success(dt) => Right(dt)
-        case Failure(f) => Left("Could not parse DateTime: " + f.getMessage)
-      }
-    }
+${ScalaHelpers.dateTime}
 
     implicit object DateTimeISOQueryStringBinder extends QueryStringBindable[DateTime] {
       override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
