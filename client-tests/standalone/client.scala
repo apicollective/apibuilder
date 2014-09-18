@@ -10,11 +10,18 @@ object Main extends App {
   try {
     println("healthcheck: " + Await.result(client.healthchecks.get(), 5 seconds).get)
 
-    val incidents = Await.result(client.incidents.get(limit = Some(5)), 5 seconds)
+    val incidents = Await.result(client.incidents.get(limit = Some(500)), 5 seconds)
     println("incidents: " + incidents.size)
-    incidents.foreach { i =>
-      println(" - " + i.id.toString)
-    }
+
+    val incident = Await.result(client.incidents.post(
+      teamKey = Some("architecture"),
+      severity = com.gilt.quality.models.Severity.Low.toString,
+      summary = "Test from ning client",
+      description = Some("desc"),
+      tags = Seq("a", "b")
+    ), 5 seconds)
+
+    println("Incident: " + incident)
 
   } finally {
     client.asyncHttpClient.close()
