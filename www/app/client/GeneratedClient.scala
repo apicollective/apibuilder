@@ -41,7 +41,7 @@ package com.gilt.apidoc.models {
 
   /**
    * A membership request represents a user requesting to join an organization with a
-   * specificed role (e.g. as a member or an admin). Membership requests can be
+   * specific role (e.g. as a member or an admin). Membership requests can be
    * reviewed by any current admin of the organization who can either accept or
    * decline the request.
    */
@@ -117,9 +117,9 @@ package com.gilt.apidoc.models {
   object Target {
 
     /**
-     * Generates an avro JSON schema
+     * Generates a client based on https://sonatype.github.io/async-http-client v 1.8
      */
-    case object AvroSchema extends Target { override def toString = "avro_schema" }
+    case object Ning18Client extends Target { override def toString = "ning_1_8_client" }
     /**
      * Generates a client w/ no dependencies external to play framework 2.2
      */
@@ -149,7 +149,7 @@ package com.gilt.apidoc.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(AvroSchema, Play22Client, Play23Client, Play2XJson, Play2XRoutes, RubyClient, ScalaModels)
+    val all = Seq(Ning18Client, Play22Client, Play23Client, Play2XJson, Play2XRoutes, RubyClient, ScalaModels)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap
