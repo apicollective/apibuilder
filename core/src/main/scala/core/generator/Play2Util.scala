@@ -3,7 +3,7 @@ package core.generator
 import core._
 import Text._
 
-object Play2Util {
+case class Play2Util(config: ScalaClientMethodConfig) {
   import ScalaDataType._
 
   def queryParams(op: ScalaOperation): Option[String] = {
@@ -95,11 +95,14 @@ object Play2Util {
   }
 
   private object PathParamHelper {
-    def urlEncode(name: String, d: ScalaDataType): String = {
+    def urlEncode(
+      name: String,
+      d: ScalaDataType
+    ): String = {
       d match {
-        case ScalaStringType => s"""play.utils.UriEncoding.encodePathSegment($name, "UTF-8")"""
+        case ScalaStringType => s"""${config.pathEncodingMethod}($name, "UTF-8")"""
         case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
-        case ScalaEnumType(_) => s"""play.utils.UriEncoding.encodePathSegment($name.toString, "UTF-8")"""
+        case ScalaEnumType(_) => s"""${config.pathEncodingMethod}($name.toString, "UTF-8")"""
         case t => {
           sys.error(s"Cannot encode params of type[$t] as path parameters (name: $name)")
         }
