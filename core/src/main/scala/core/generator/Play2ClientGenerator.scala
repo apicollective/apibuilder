@@ -157,15 +157,14 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     import ${ssd.packageName}.models._
     import ${ssd.packageName}.models.json._
 
+    private val UserAgent = "$userAgent"
     private val logger = play.api.Logger("${ssd.packageName}.client")
 
     logger.info(s"Initializing ${ssd.packageName}.client for url $$apiUrl")
 
 ${accessors.indent(4)}
 
-${modelClients().indent(2)}
-
-    private val UserAgent = "$userAgent"
+${modelClientObjects().indent(4)}
 
     def _requestHolder(path: String): ${version.requestHolderClass} = {
       import play.api.Play.current
@@ -228,19 +227,26 @@ ${modelClients().indent(2)}
 
   }
 
+${modelClientTraits().indent(2)}
+
   case class FailedRequest(response: ${version.responseClass}) extends Exception(response.status + ": " + response.body)$errorsString
 
 }"""
   }
 
-  private def modelClients(): String = {
+  private def modelClientTraits(): String = {
     ssd.resources.groupBy(_.model.plural).toSeq.sortBy(_._1).map { case (plural, resources) =>
-      s"  trait $plural {\n" +
-      clientMethods(resources).map(_.interface).mkString("\n\n").indent(4) +
-      "\n  }\n\n" +
-      s"  object $plural extends $plural {\n" +
-      clientMethods(resources).map(_.code).mkString("\n\n").indent(4) +
-      "\n  }"
+      s"trait $plural {\n" +
+      clientMethods(resources).map(_.interface).mkString("\n\n").indent(2) +
+      "\n}"
+    }.mkString("\n\n")
+  }
+
+  private def modelClientObjects(): String = {
+    ssd.resources.groupBy(_.model.plural).toSeq.sortBy(_._1).map { case (plural, resources) =>
+      s"object $plural extends $plural {\n" +
+      clientMethods(resources).map(_.code).mkString("\n\n").indent(2) +
+      "\n}"
     }.mkString("\n\n")
   }
 
