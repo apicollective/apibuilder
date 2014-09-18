@@ -10,7 +10,7 @@ object ScalaCaseClasses {
 
   def generate(ssd: ScalaServiceDescription): String = {
     Seq(
-      s"package ${ssd.packageName}.models {",
+      s"package ${ssd.modelPackageName} {",
       ssd.models.map { model =>
         model.description.map { desc => ScalaUtil.textToComment(desc) + "\n" }.getOrElse("") +
         s"case class ${model.name}(${model.argList.getOrElse("")})"

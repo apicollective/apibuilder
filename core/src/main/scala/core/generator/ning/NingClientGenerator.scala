@@ -61,7 +61,7 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
     Seq(
       s"""case class ${response.errorClassName}(response: com.ning.http.client.Response) extends Exception(response.status + ": " + response.body) {""",
       "",
-      s"  import ${ssd.packageName}.models.json._",
+      s"  import ${ssd.modelPackageName}.json._",
       "",
       s"lazy val ${response.errorVariableName} = ${toJson(response.errorResponseType)}",
       ""
@@ -78,7 +78,7 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
         Seq(
           "package error {",
           "",
-          s"  import ${ssd.packageName}.models.json._",
+          s"  import ${ssd.modelPackageName}.json._",
           "",
           errorTypes.map { t => errorTypeClass(t) }.distinct.sorted.mkString("\n\n").indent(2),
           "}"
@@ -109,7 +109,7 @@ ${ScalaHelpers.dateTime}
   }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
-    import ${ssd.packageName}.models.json._
+    import ${ssd.modelPackageName}.json._
 
     val asyncHttpClient = new AsyncHttpClient()
     private val UserAgent = "$userAgent"
