@@ -93,15 +93,18 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription, metada
 
   val resources = serviceDescription.resources.map { new ScalaResource(serviceDescription, packageName, _) }
 
-  val defaultHeaders: Seq[Header] = {
+  val defaultHeaders: Seq[ScalaHeader] = {
     serviceDescription.headers.filter(!_.default.isEmpty).map { h =>
-      Header(h.name, s""""${h.default.get}"""")
+      ScalaHeader(h.name, h.default.get)
     }
   }
 
 }
 
-case class Header(name: String, value: String)
+case class ScalaHeader(name: String, value: String) {
+  val quotedValue = s""""$value""""
+}
+
 
 class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
