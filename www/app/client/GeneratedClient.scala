@@ -3,7 +3,7 @@ package com.gilt.apidoc.models {
    * Generated source code.
    */
   case class Code(
-    target: Target,
+    target: com.gilt.apidoc.models.Target,
     source: String
   )
 
@@ -34,8 +34,8 @@ package com.gilt.apidoc.models {
    */
   case class Membership(
     guid: java.util.UUID,
-    user: User,
-    organization: Organization,
+    user: com.gilt.apidoc.models.User,
+    organization: com.gilt.apidoc.models.Organization,
     role: String
   )
 
@@ -47,8 +47,8 @@ package com.gilt.apidoc.models {
    */
   case class MembershipRequest(
     guid: java.util.UUID,
-    user: User,
-    organization: Organization,
+    user: com.gilt.apidoc.models.User,
+    organization: com.gilt.apidoc.models.Organization,
     role: String
   )
 
@@ -59,15 +59,15 @@ package com.gilt.apidoc.models {
     guid: java.util.UUID,
     key: String,
     name: String,
-    domains: scala.collection.Seq[Domain] = Nil,
-    metadata: scala.Option[OrganizationMetadata] = None
+    domains: scala.collection.Seq[com.gilt.apidoc.models.Domain] = Nil,
+    metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadata] = None
   )
 
   /**
    * Supplemental (non-required) information about an organization
    */
   case class OrganizationMetadata(
-    visibility: scala.Option[Visibility] = None,
+    visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
     packageName: scala.Option[String] = None
   )
 
@@ -78,7 +78,7 @@ package com.gilt.apidoc.models {
     guid: java.util.UUID,
     name: String,
     key: String,
-    visibility: Visibility,
+    visibility: com.gilt.apidoc.models.Visibility,
     description: scala.Option[String] = None
   )
 
@@ -241,14 +241,14 @@ package com.gilt.apidoc.models {
     }
     implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] = {
       (
-        (__ \ "target").read[Target] and
+        (__ \ "target").read[com.gilt.apidoc.models.Target] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApiDocCode: play.api.libs.json.Writes[Code] = {
       (
-        (__ \ "target").write[Target] and
+        (__ \ "target").write[com.gilt.apidoc.models.Target] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
@@ -290,8 +290,8 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApiDocMembership: play.api.libs.json.Reads[Membership] = {
       (
         (__ \ "guid").read[java.util.UUID] and
-        (__ \ "user").read[User] and
-        (__ \ "organization").read[Organization] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Organization] and
         (__ \ "role").read[String]
       )(Membership.apply _)
     }
@@ -299,8 +299,8 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApiDocMembership: play.api.libs.json.Writes[Membership] = {
       (
         (__ \ "guid").write[java.util.UUID] and
-        (__ \ "user").write[User] and
-        (__ \ "organization").write[Organization] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Organization] and
         (__ \ "role").write[String]
       )(unlift(Membership.unapply _))
     }
@@ -308,8 +308,8 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApiDocMembershipRequest: play.api.libs.json.Reads[MembershipRequest] = {
       (
         (__ \ "guid").read[java.util.UUID] and
-        (__ \ "user").read[User] and
-        (__ \ "organization").read[Organization] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Organization] and
         (__ \ "role").read[String]
       )(MembershipRequest.apply _)
     }
@@ -317,8 +317,8 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApiDocMembershipRequest: play.api.libs.json.Writes[MembershipRequest] = {
       (
         (__ \ "guid").write[java.util.UUID] and
-        (__ \ "user").write[User] and
-        (__ \ "organization").write[Organization] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Organization] and
         (__ \ "role").write[String]
       )(unlift(MembershipRequest.unapply _))
     }
@@ -328,8 +328,8 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "key").read[String] and
         (__ \ "name").read[String] and
-        (__ \ "domains").readNullable[scala.collection.Seq[Domain]].map(_.getOrElse(Nil)) and
-        (__ \ "metadata").readNullable[OrganizationMetadata]
+        (__ \ "domains").readNullable[scala.collection.Seq[com.gilt.apidoc.models.Domain]].map(_.getOrElse(Nil)) and
+        (__ \ "metadata").readNullable[com.gilt.apidoc.models.OrganizationMetadata]
       )(Organization.apply _)
     }
 
@@ -338,21 +338,21 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "key").write[String] and
         (__ \ "name").write[String] and
-        (__ \ "domains").write[scala.collection.Seq[Domain]] and
-        (__ \ "metadata").write[scala.Option[OrganizationMetadata]]
+        (__ \ "domains").write[scala.collection.Seq[com.gilt.apidoc.models.Domain]] and
+        (__ \ "metadata").write[scala.Option[com.gilt.apidoc.models.OrganizationMetadata]]
       )(unlift(Organization.unapply _))
     }
 
     implicit def jsonReadsApiDocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
       (
-        (__ \ "visibility").readNullable[Visibility] and
+        (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
         (__ \ "package_name").readNullable[String]
       )(OrganizationMetadata.apply _)
     }
 
     implicit def jsonWritesApiDocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] = {
       (
-        (__ \ "visibility").write[scala.Option[Visibility]] and
+        (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
         (__ \ "package_name").write[scala.Option[String]]
       )(unlift(OrganizationMetadata.unapply _))
     }
@@ -362,7 +362,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "name").read[String] and
         (__ \ "key").read[String] and
-        (__ \ "visibility").read[Visibility] and
+        (__ \ "visibility").read[com.gilt.apidoc.models.Visibility] and
         (__ \ "description").readNullable[String]
       )(Service.apply _)
     }
@@ -372,7 +372,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "name").write[String] and
         (__ \ "key").write[String] and
-        (__ \ "visibility").write[Visibility] and
+        (__ \ "visibility").write[com.gilt.apidoc.models.Visibility] and
         (__ \ "description").write[scala.Option[String]]
       )(unlift(Service.unapply _))
     }
@@ -427,9 +427,11 @@ package com.gilt.apidoc.models {
 
 package com.gilt.apidoc {
   object helpers {
+
+    import play.api.mvc.QueryStringBindable
+
     import org.joda.time.DateTime
     import org.joda.time.format.ISODateTimeFormat
-    import play.api.mvc.QueryStringBindable
 
     import scala.util.{ Failure, Success, Try }
 
@@ -442,6 +444,7 @@ package com.gilt.apidoc {
         case Failure(f) => Left("Could not parse DateTime: " + f.getMessage)
       }
     }
+  
 
     implicit object DateTimeISOQueryStringBinder extends QueryStringBindable[DateTime] {
       override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
@@ -456,7 +459,6 @@ package com.gilt.apidoc {
   }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
-    import com.gilt.apidoc.models._
     import com.gilt.apidoc.models.json._
 
     private val logger = play.api.Logger("com.gilt.apidoc.client")
@@ -485,24 +487,12 @@ package com.gilt.apidoc {
 
     def versions: Versions = Versions
 
-    trait Code {
-      /**
-       * Generate code for a specific version of a service.
-       */
-      def getByOrgKeyAndServiceKeyAndVersionAndTarget(
-        orgKey: String,
-        serviceKey: String,
-        version: String,
-        target: Target
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]]
-    }
-
     object Code extends Code {
       override def getByOrgKeyAndServiceKeyAndVersionAndTarget(
         orgKey: String,
         serviceKey: String,
         version: String,
-        target: Target
+        target: com.gilt.apidoc.models.Target
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]] = {
         GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(target.toString, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Code])
@@ -513,30 +503,13 @@ package com.gilt.apidoc {
       }
     }
 
-    trait Domains {
-      /**
-       * Add a domain to this organization
-       */
-      def post(domain: com.gilt.apidoc.models.Domain, 
-        orgKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain]
-
-      /**
-       * Remove this domain from this organization
-       */
-      def deleteByName(
-        orgKey: String,
-        name: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
-    }
-
     object Domains extends Domains {
       override def post(domain: com.gilt.apidoc.models.Domain, 
         orgKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
         val payload = play.api.libs.json.Json.toJson(domain)
 
-        POST(s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", payload).map {
+        POST(s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = payload).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Domain]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
@@ -555,10 +528,6 @@ package com.gilt.apidoc {
       }
     }
 
-    trait Healthchecks {
-      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Healthcheck]]
-    }
-
     object Healthchecks extends Healthchecks {
       override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Healthcheck]] = {
         GET(s"/_internal_/healthcheck").map {
@@ -567,45 +536,6 @@ package com.gilt.apidoc {
           case r => throw new FailedRequest(r)
         }
       }
-    }
-
-    trait MembershipRequests {
-      /**
-       * Search all membership requests. Results are always paginated.
-       */
-      def get(
-        orgGuid: scala.Option[java.util.UUID] = None,
-        orgKey: scala.Option[String] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
-        role: scala.Option[String] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.MembershipRequest]]
-
-      /**
-       * Create a membership request
-       */
-      def post(
-        orgGuid: java.util.UUID,
-        userGuid: java.util.UUID,
-        role: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.MembershipRequest]
-
-      /**
-       * Accepts this membership request. User will become a member of the specified
-       * organization.
-       */
-      def postAcceptByGuid(
-        guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
-
-      /**
-       * Declines this membership request. User will NOT become a member of the specified
-       * organization.
-       */
-      def postDeclineByGuid(
-        guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
     }
 
     object MembershipRequests extends MembershipRequests {
@@ -643,7 +573,7 @@ package com.gilt.apidoc {
           "role" -> play.api.libs.json.Json.toJson(role)
         )
 
-        POST(s"/membership_requests", payload).map {
+        POST(s"/membership_requests", body = payload).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.MembershipRequest]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
@@ -669,28 +599,6 @@ package com.gilt.apidoc {
           case r => throw new FailedRequest(r)
         }
       }
-    }
-
-    trait Memberships {
-      /**
-       * Search all memberships. Results are always paginated.
-       */
-      def get(
-        orgGuid: scala.Option[java.util.UUID] = None,
-        orgKey: scala.Option[String] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
-        role: scala.Option[String] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Membership]]
-
-      def getByGuid(
-        guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Membership]]
-
-      def deleteByGuid(
-        guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
 
     object Memberships extends Memberships {
@@ -738,62 +646,18 @@ package com.gilt.apidoc {
       }
     }
 
-    trait OrganizationMetadata {
-      /**
-       * Update metadata for this organization
-       */
-      def put(organizationMetadata: com.gilt.apidoc.models.OrganizationMetadata, 
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.OrganizationMetadata]
-    }
-
     object OrganizationMetadata extends OrganizationMetadata {
       override def put(organizationMetadata: com.gilt.apidoc.models.OrganizationMetadata, 
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.OrganizationMetadata] = {
         val payload = play.api.libs.json.Json.toJson(organizationMetadata)
 
-        PUT(s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/metadata", payload).map {
+        PUT(s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/metadata", body = payload).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.OrganizationMetadata]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
-    }
-
-    trait Organizations {
-      /**
-       * Search all organizations. Results are always paginated.
-       */
-      def get(
-        guid: scala.Option[java.util.UUID] = None,
-        userGuid: scala.Option[java.util.UUID] = None,
-        key: scala.Option[String] = None,
-        name: scala.Option[String] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Organization]]
-
-      /**
-       * Returns the organization with this key.
-       */
-      def getByKey(
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Organization]]
-
-      /**
-       * Create a new organization.
-       */
-      def post(
-        name: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization]
-
-      /**
-       * Deletes an organization and all of its associated services.
-       */
-      def deleteByKey(
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
 
     object Organizations extends Organizations {
@@ -837,7 +701,7 @@ package com.gilt.apidoc {
           "name" -> play.api.libs.json.Json.toJson(name)
         )
 
-        POST(s"/organizations", payload).map {
+        POST(s"/organizations", body = payload).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Organization]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
@@ -853,38 +717,6 @@ package com.gilt.apidoc {
           case r => throw new FailedRequest(r)
         }
       }
-    }
-
-    trait Services {
-      /**
-       * Search all services. Results are always paginated.
-       */
-      def getByOrgKey(
-        orgKey: String,
-        name: scala.Option[String] = None,
-        key: scala.Option[String] = None,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Service]]
-
-      /**
-       * Updates a service.
-       */
-      def putByOrgKeyAndServiceKey(
-        orgKey: String,
-        serviceKey: String,
-        name: String,
-        description: scala.Option[String] = None,
-        visibility: Visibility
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
-
-      /**
-       * Deletes a specific service and its associated versions.
-       */
-      def deleteByOrgKeyAndServiceKey(
-        orgKey: String,
-        serviceKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
 
     object Services extends Services {
@@ -913,7 +745,7 @@ package com.gilt.apidoc {
         serviceKey: String,
         name: String,
         description: scala.Option[String] = None,
-        visibility: Visibility
+        visibility: com.gilt.apidoc.models.Visibility
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         val payload = play.api.libs.json.Json.obj(
           "name" -> play.api.libs.json.Json.toJson(name),
@@ -921,7 +753,7 @@ package com.gilt.apidoc {
           "visibility" -> play.api.libs.json.Json.toJson(visibility)
         )
 
-        PUT(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}", payload).map {
+        PUT(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}", body = payload).map {
           case r if r.status == 204 => Unit
           case r => throw new FailedRequest(r)
         }
@@ -937,6 +769,395 @@ package com.gilt.apidoc {
           case r => throw new FailedRequest(r)
         }
       }
+    }
+
+    object Users extends Users {
+      override def get(
+        guid: scala.Option[java.util.UUID] = None,
+        email: scala.Option[String] = None,
+        token: scala.Option[String] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.User]] = {
+        val query = Seq(
+          guid.map("guid" -> _.toString),
+          email.map("email" -> _),
+          token.map("token" -> _)
+        ).flatten
+
+        GET(s"/users", query).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.User]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getByGuid(
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.User]] = {
+        GET(s"/users/${guid}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.User])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def postAuthenticate(
+        email: String,
+        password: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
+        val payload = play.api.libs.json.Json.obj(
+          "email" -> play.api.libs.json.Json.toJson(email),
+          "password" -> play.api.libs.json.Json.toJson(password)
+        )
+
+        POST(s"/users/authenticate", body = payload).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post(
+        email: String,
+        name: scala.Option[String] = None,
+        password: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
+        val payload = play.api.libs.json.Json.obj(
+          "email" -> play.api.libs.json.Json.toJson(email),
+          "name" -> play.api.libs.json.Json.toJson(name),
+          "password" -> play.api.libs.json.Json.toJson(password)
+        )
+
+        POST(s"/users", body = payload).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def putByGuid(
+        guid: java.util.UUID,
+        email: String,
+        name: scala.Option[String] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
+        val payload = play.api.libs.json.Json.obj(
+          "email" -> play.api.libs.json.Json.toJson(email),
+          "name" -> play.api.libs.json.Json.toJson(name)
+        )
+
+        PUT(s"/users/${guid}", body = payload).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    object Validations extends Validations {
+      override def post(
+        json: scala.Option[String] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
+        val payload = play.api.libs.json.Json.obj(
+          "json" -> play.api.libs.json.Json.toJson(json)
+        )
+
+        POST(s"/validations", body = payload).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Validation]
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    object Versions extends Versions {
+      override def getByOrgKeyAndServiceKey(
+        orgKey: String,
+        serviceKey: String,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Version]] = {
+        val query = Seq(
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}", query).map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Version]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getByOrgKeyAndServiceKeyAndVersion(
+        orgKey: String,
+        serviceKey: String,
+        version: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Version]] = {
+        GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Version])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def putByOrgKeyAndServiceKeyAndVersion(
+        orgKey: String,
+        serviceKey: String,
+        version: String,
+        json: String,
+        visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version] = {
+        val payload = play.api.libs.json.Json.obj(
+          "json" -> play.api.libs.json.Json.toJson(json),
+          "visibility" -> play.api.libs.json.Json.toJson(visibility)
+        )
+
+        PUT(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", body = payload).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Version]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteByOrgKeyAndServiceKeyAndVersion(
+        orgKey: String,
+        serviceKey: String,
+        version: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        DELETE(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    private val UserAgent = "apidoc:0.5.29 http://www.apidoc.me/gilt/code/api-doc/0.5.14-dev/play_2_3_client"
+
+    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
+      import play.api.Play.current
+
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> "UserAgent")
+      apiToken.fold(holder) { token =>
+        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
+      }
+    }
+
+    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+      val queryComponents = for {
+        (name, values) <- req.queryString
+        value <- values
+      } yield name -> value
+      val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
+      apiToken.fold(logger.info(s"curl -X $method $url")) { _ =>
+        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
+      }
+      req
+    }
+
+    def POST(
+      path: String,
+      body: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).post(body)
+    }
+
+    def GET(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
+    }
+
+    def PUT(
+      path: String,
+      body: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(body)
+    }
+
+    def PATCH(
+      path: String,
+      body: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(body)
+    }
+
+    def DELETE(
+      path: String,
+      q: Seq[(String, String)] = Seq.empty
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
+      _logRequest("DELETE", _requestHolder(path).withQueryString(q:_*)).delete()
+    }
+
+  }
+
+      trait Code {
+      /**
+       * Generate code for a specific version of a service.
+       */
+      def getByOrgKeyAndServiceKeyAndVersionAndTarget(
+        orgKey: String,
+        serviceKey: String,
+        version: String,
+        target: com.gilt.apidoc.models.Target
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]]
+    }
+
+    trait Domains {
+      /**
+       * Add a domain to this organization
+       */
+      def post(domain: com.gilt.apidoc.models.Domain, 
+        orgKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain]
+
+      /**
+       * Remove this domain from this organization
+       */
+      def deleteByName(
+        orgKey: String,
+        name: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+    }
+
+    trait Healthchecks {
+      def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Healthcheck]]
+    }
+
+    trait MembershipRequests {
+      /**
+       * Search all membership requests. Results are always paginated.
+       */
+      def get(
+        orgGuid: scala.Option[java.util.UUID] = None,
+        orgKey: scala.Option[String] = None,
+        userGuid: scala.Option[java.util.UUID] = None,
+        role: scala.Option[String] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.MembershipRequest]]
+
+      /**
+       * Create a membership request
+       */
+      def post(
+        orgGuid: java.util.UUID,
+        userGuid: java.util.UUID,
+        role: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.MembershipRequest]
+
+      /**
+       * Accepts this membership request. User will become a member of the specified
+       * organization.
+       */
+      def postAcceptByGuid(
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+
+      /**
+       * Declines this membership request. User will NOT become a member of the specified
+       * organization.
+       */
+      def postDeclineByGuid(
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+    }
+
+    trait Memberships {
+      /**
+       * Search all memberships. Results are always paginated.
+       */
+      def get(
+        orgGuid: scala.Option[java.util.UUID] = None,
+        orgKey: scala.Option[String] = None,
+        userGuid: scala.Option[java.util.UUID] = None,
+        role: scala.Option[String] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Membership]]
+
+      def getByGuid(
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Membership]]
+
+      def deleteByGuid(
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+    }
+
+    trait OrganizationMetadata {
+      /**
+       * Update metadata for this organization
+       */
+      def put(organizationMetadata: com.gilt.apidoc.models.OrganizationMetadata, 
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.OrganizationMetadata]
+    }
+
+    trait Organizations {
+      /**
+       * Search all organizations. Results are always paginated.
+       */
+      def get(
+        guid: scala.Option[java.util.UUID] = None,
+        userGuid: scala.Option[java.util.UUID] = None,
+        key: scala.Option[String] = None,
+        name: scala.Option[String] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Organization]]
+
+      /**
+       * Returns the organization with this key.
+       */
+      def getByKey(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Organization]]
+
+      /**
+       * Create a new organization.
+       */
+      def post(
+        name: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization]
+
+      /**
+       * Deletes an organization and all of its associated services.
+       */
+      def deleteByKey(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+    }
+
+    trait Services {
+      /**
+       * Search all services. Results are always paginated.
+       */
+      def getByOrgKey(
+        orgKey: String,
+        name: scala.Option[String] = None,
+        key: scala.Option[String] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Service]]
+
+      /**
+       * Updates a service.
+       */
+      def putByOrgKeyAndServiceKey(
+        orgKey: String,
+        serviceKey: String,
+        name: String,
+        description: scala.Option[String] = None,
+        visibility: com.gilt.apidoc.models.Visibility
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+
+      /**
+       * Deletes a specific service and its associated versions.
+       */
+      def deleteByOrgKeyAndServiceKey(
+        orgKey: String,
+        serviceKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
 
     trait Users {
@@ -986,105 +1207,10 @@ package com.gilt.apidoc {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User]
     }
 
-    object Users extends Users {
-      override def get(
-        guid: scala.Option[java.util.UUID] = None,
-        email: scala.Option[String] = None,
-        token: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.User]] = {
-        val query = Seq(
-          guid.map("guid" -> _.toString),
-          email.map("email" -> _),
-          token.map("token" -> _)
-        ).flatten
-
-        GET(s"/users", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.User]]
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def getByGuid(
-        guid: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.User]] = {
-        GET(s"/users/${guid}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.User])
-          case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def postAuthenticate(
-        email: String,
-        password: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
-        val payload = play.api.libs.json.Json.obj(
-          "email" -> play.api.libs.json.Json.toJson(email),
-          "password" -> play.api.libs.json.Json.toJson(password)
-        )
-
-        POST(s"/users/authenticate", payload).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
-          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def post(
-        email: String,
-        name: scala.Option[String] = None,
-        password: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
-        val payload = play.api.libs.json.Json.obj(
-          "email" -> play.api.libs.json.Json.toJson(email),
-          "name" -> play.api.libs.json.Json.toJson(name),
-          "password" -> play.api.libs.json.Json.toJson(password)
-        )
-
-        POST(s"/users", payload).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
-          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def putByGuid(
-        guid: java.util.UUID,
-        email: String,
-        name: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.User] = {
-        val payload = play.api.libs.json.Json.obj(
-          "email" -> play.api.libs.json.Json.toJson(email),
-          "name" -> play.api.libs.json.Json.toJson(name)
-        )
-
-        PUT(s"/users/${guid}", payload).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.User]
-          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
-        }
-      }
-    }
-
     trait Validations {
       def post(
         json: scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation]
-    }
-
-    object Validations extends Validations {
-      override def post(
-        json: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
-        val payload = play.api.libs.json.Json.obj(
-          "json" -> play.api.libs.json.Json.toJson(json)
-        )
-
-        POST(s"/validations", payload).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Validation]
-          case r => throw new FailedRequest(r)
-        }
-      }
     }
 
     trait Versions {
@@ -1115,7 +1241,7 @@ package com.gilt.apidoc {
         serviceKey: String,
         version: String,
         json: String,
-        visibility: scala.Option[Visibility] = None
+        visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version]
 
       /**
@@ -1127,130 +1253,6 @@ package com.gilt.apidoc {
         version: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
-
-    object Versions extends Versions {
-      override def getByOrgKeyAndServiceKey(
-        orgKey: String,
-        serviceKey: String,
-        limit: scala.Option[Int] = None,
-        offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Version]] = {
-        val query = Seq(
-          limit.map("limit" -> _.toString),
-          offset.map("offset" -> _.toString)
-        ).flatten
-
-        GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Version]]
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def getByOrgKeyAndServiceKeyAndVersion(
-        orgKey: String,
-        serviceKey: String,
-        version: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Version]] = {
-        GET(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Version])
-          case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def putByOrgKeyAndServiceKeyAndVersion(
-        orgKey: String,
-        serviceKey: String,
-        version: String,
-        json: String,
-        visibility: scala.Option[Visibility] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version] = {
-        val payload = play.api.libs.json.Json.obj(
-          "json" -> play.api.libs.json.Json.toJson(json),
-          "visibility" -> play.api.libs.json.Json.toJson(visibility)
-        )
-
-        PUT(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", payload).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Version]
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def deleteByOrgKeyAndServiceKeyAndVersion(
-        orgKey: String,
-        serviceKey: String,
-        version: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
-        DELETE(s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
-          case r if r.status == 204 => Some(Unit)
-          case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
-        }
-      }
-    }
-
-    private val UserAgent = "apidoc:0.5.22 http://www.apidoc.me/gilt/code/api-doc/0.5.23/play_2_3_client"
-
-    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
-      import play.api.Play.current
-
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> UserAgent)
-      apiToken.fold(holder) { token =>
-        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
-      }
-    }
-
-    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
-      val queryComponents = for {
-        (name, values) <- req.queryString
-        value <- values
-      } yield name -> value
-      val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
-      apiToken.fold(logger.info(s"curl -X $method $url")) { _ =>
-        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
-      }
-      req
-    }
-
-    def POST(
-      path: String,
-      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).post(data)
-    }
-
-    def GET(
-      path: String,
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
-    }
-
-    def PUT(
-      path: String,
-      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(data)
-    }
-
-    def PATCH(
-      path: String,
-      data: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(data)
-    }
-
-    def DELETE(
-      path: String,
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
-      _logRequest("DELETE", _requestHolder(path).withQueryString(q:_*)).delete()
-    }
-
-  }
 
   case class FailedRequest(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body)
 
