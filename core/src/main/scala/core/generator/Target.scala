@@ -30,6 +30,12 @@ object Target {
       status = Status.Beta
     ),
     Target(
+      key = "ning_1_8_client",
+      name = "Ning Async Http Client 1.8",
+      description = "Ning Async Http v.18 Client - see https://sonatype.github.io/async-http-client",
+      status = Status.Alpha
+    ),
+    Target(
       key = "play_2_2_client",
       name = "Play 2.2 client",
       description = "Play Framework 2.2 client based on <a href='http://www.playframework.com/documentation/2.2.x/ScalaWS''>WS API</a>.",
@@ -80,6 +86,7 @@ object Target {
     lazy val ssd = new ScalaServiceDescription(sd, metadata)
     target.key match {
       case "ruby_client" => RubyGemGenerator.generate(sd, userAgent)
+      case "ning_1_8_client" => ning.NingClientGenerator.generate(ning.NingVersions.V1_8_x, ssd, userAgent)
       case "play_2_2_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, ssd, userAgent)
       case "play_2_3_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, ssd, userAgent)
       case "play_2_x_routes" => Play2RouteGenerator.generate(sd)
