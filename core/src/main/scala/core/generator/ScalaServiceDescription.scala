@@ -80,14 +80,17 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription, metada
 
   val name = safeName(serviceDescription.name)
 
-  val models = serviceDescription.models.map { new ScalaModel(this, _) }
-
-  val enums = serviceDescription.enums.map { new ScalaEnum(_) }
-
   val packageName: String = metadata.flatMap(_.packageName) match {
     case None => ScalaUtil.packageName(serviceDescription.name)
     case Some(name) => name + "." + ScalaUtil.packageName(serviceDescription.name)
   }
+
+  val modelPackageName = s"$packageName.models"
+  val enumPackageName = modelPackageName
+
+  val models = serviceDescription.models.map { new ScalaModel(this, _) }
+
+  val enums = serviceDescription.enums.map { new ScalaEnum(_) }
 
   val packageNamePrivate = packageName.split("\\.").last
 
@@ -173,7 +176,7 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
   val body: Option[ScalaBody] = operation.body.map(new ScalaBody(_))
 
   val parameters: List[ScalaParameter] = {
-    operation.parameters.toList.map { new ScalaParameter(_) }
+    operation.parameters.toList.map { new ScalaParameter(ssd, _) }
   }
 
   lazy val pathParameters = parameters.filter { _.location == ParameterLocation.Path }
@@ -286,8 +289,8 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
   import ScalaDataType._
   val baseType: ScalaDataType = field.fieldtype match {
     case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-    case m: ModelFieldType => new ScalaModelType(s"${ssd.packageName}.${m.modelName}")
-    case e: EnumFieldType => new ScalaEnumType(s"${ssd.packageName}.${e.enum.name}")
+    case m: ModelFieldType => new ScalaModelType(ssd.modelPackageName, m.modelName)
+    case e: EnumFieldType => new ScalaEnumType(ssd.enumPackageName, e.enum.name)
   }
 
   def datatype: ScalaDataType = {
@@ -326,7 +329,7 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
   }
 }
 
-class ScalaParameter(param: Parameter) {
+class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
 
   def name: String = ScalaUtil.toVariable(param.name)
 
@@ -336,8 +339,8 @@ class ScalaParameter(param: Parameter) {
     import ScalaDataType._
     param.paramtype match {
       case t: PrimitiveParameterType => ScalaDataType(t.datatype)
-      case m: ModelParameterType => new ScalaModelType(m.model.name)
-      case e: EnumParameterType => new ScalaEnumType(e.enum.name)
+      case m: ModelParameterType => new ScalaModelType(ssd.modelPackageName, m.model.name)
+      case e: EnumParameterType => new ScalaEnumType(ssd.enumPackageName, e.enum.name)
     }
   }
 
@@ -397,8 +400,8 @@ object ScalaDataType {
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
-  case class ScalaModelType(modelName: String) extends ScalaDataType(ScalaUtil.toClassName(modelName))
-  case class ScalaEnumType(enumName: String) extends ScalaDataType(ScalaUtil.toClassName(enumName))
+  case class ScalaModelType(packageName: String, modelName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(modelName)}")
+  case class ScalaEnumType(packageName: String, enumName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(enumName)}")
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {
@@ -425,7 +428,7 @@ object ScalaDataType {
     case ScalaDateTimeIso8601Type => {
       s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
-    case ScalaEnumType(_) => s"$varName.toString"
+    case ScalaEnumType(_, _) => s"$varName.toString"
     case _ => throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
   }
 }

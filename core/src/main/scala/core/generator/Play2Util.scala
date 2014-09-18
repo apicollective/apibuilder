@@ -102,7 +102,7 @@ case class Play2Util(config: ScalaClientMethodConfig) {
       d match {
         case ScalaStringType => s"""${config.pathEncodingMethod}($name, "UTF-8")"""
         case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
-        case ScalaEnumType(_) => s"""${config.pathEncodingMethod}($name.toString, "UTF-8")"""
+        case ScalaEnumType(_, _) => s"""${config.pathEncodingMethod}($name.toString, "UTF-8")"""
         case t => {
           sys.error(s"Cannot encode params of type[$t] as path parameters (name: $name)")
         }
