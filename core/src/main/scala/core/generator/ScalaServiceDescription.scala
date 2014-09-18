@@ -114,7 +114,7 @@ class ScalaModel(val ssd: ScalaServiceDescription, val model: Model) {
 
   val description: Option[String] = model.description
 
-  val fields = model.fields.map { f => new ScalaField(this.name, f) }.toList
+  val fields = model.fields.map { f => new ScalaField(ssd, this.name, f) }.toList
 
   val argList: Option[String] = ScalaUtil.fieldsToArgList(fields.map(_.definition))
 
@@ -277,7 +277,7 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
 
 }
 
-class ScalaField(modelName: String, field: Field) {
+class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) {
 
   def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(field.name))
 
@@ -286,8 +286,8 @@ class ScalaField(modelName: String, field: Field) {
   import ScalaDataType._
   val baseType: ScalaDataType = field.fieldtype match {
     case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-    case m: ModelFieldType => new ScalaModelType(m.modelName)
-    case e: EnumFieldType => new ScalaEnumType(e.enum.name)
+    case m: ModelFieldType => new ScalaModelType(s"${ssd.packageName}.${m.modelName}")
+    case e: EnumFieldType => new ScalaEnumType(s"${ssd.packageName}.${e.enum.name}")
   }
 
   def datatype: ScalaDataType = {
