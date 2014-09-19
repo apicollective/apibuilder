@@ -1,29 +1,41 @@
 package core.generator
 
-case class ScalaClientMethodConfig(
+trait ScalaClientMethodConfig {
 
   /**
     * The name of the method to call to encode a variable into a path.
     */
-  pathEncodingMethod: String,
+  def pathEncodingMethod: String
 
   /**
     * The name of the method on the response providing the status code.
     */
-  responseStatusMethod: String
+  def responseStatusMethod: String
 
-)
+  /**
+    * Given a response and a class name, returns code to create an
+    * instance of the specified class.
+    */
+  def toJson(responseName: String, className: String): String
+
+}
 
 object ScalaClientMethodConfigs {
 
-  val Play = ScalaClientMethodConfig(
-    pathEncodingMethod = "play.utils.UriEncoding.encodePathSegment",
-    responseStatusMethod = "status"
-  )
+  val Play = new ScalaClientMethodConfig() {
+    override def pathEncodingMethod = "play.utils.UriEncoding.encodePathSegment"
+    override def responseStatusMethod = "status"
+    override def toJson(responseName: String, className: String) = {
+      s"$responseName.json.as[$className]"
+    }
+  }
 
-  val Ning = ScalaClientMethodConfig(
-    pathEncodingMethod = "String.toString", // TODO
-    responseStatusMethod = "getStatusCode"
-  )
+  val Ning = new ScalaClientMethodConfig() {
+    override def pathEncodingMethod = "_encodePathParameter"
+    override def responseStatusMethod = "getStatusCode"
+    override def toJson(responseName: String, className: String) = {
+      s"_parseJson($responseName, _.validate[$className])"
+    }
+  }
 
 }
