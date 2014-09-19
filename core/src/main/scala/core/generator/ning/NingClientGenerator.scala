@@ -58,7 +58,10 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
       s""".addHeader("${h.name}", ${h.quotedValue}"""
     }.mkString("\n")
 
-    val methodGenerator = ScalaClientMethodGenerator(ScalaClientMethodConfigs.Ning, ssd)
+    val methodConfig = new ScalaClientMethodConfigs.Ning {
+      override def packageName = ssd.packageName
+    }
+    val methodGenerator = ScalaClientMethodGenerator(methodConfig, ssd)
 
     s"""package ${ssd.packageName} {
   import com.ning.http.client.{AsyncCompletionHandler, AsyncHttpClient, Realm, Request, RequestBuilder, Response}

@@ -47,12 +47,7 @@ case class ScalaClientMethodGenerator(
     * capture errors in the client.
     */
   def failedRequestClass(): String = {
-    Seq(
-      s"case class FailedRequest(",
-      s"  response: ${config.responseClass},",
-      s"  message: Option[String] = None",
-      s""") extends Exception(message.getOrElse(response.${config.responseStatusMethod} + ": " + response.${config.responseBodyMethod}))"""
-    ).mkString("\n")
+    exceptionClass("FailedRequest")
   }
 
   /**
@@ -79,18 +74,30 @@ case class ScalaClientMethodGenerator(
     require(!response.isSuccess)
 
     val json = config.toJson("response", response.errorResponseType)
+    exceptionClass(response.errorClassName,
+      Seq(
+        s"import ${ssd.modelPackageName}.json._",
+        s"lazy val ${response.errorVariableName} = ${json.indent(2).trim}"
+      )
+    )
+  }
 
-    // pass in status and UNPARSED body so that there is still a useful error
-    // message even when the body is malformed and cannot be parsed
+  private[this] def exceptionClass(
+    className: String,
+    body: Seq[String] = Seq.empty
+  ): String = {
+    val bodyString = body match {
+      case Nil => ""
+      case b => "{\n" + body.mkString("\n").indent(2) + "\n}"
+    }
+
     Seq(
-      s"case class ${response.errorClassName}(",
+      s"case class $className(",
       s"  response: ${config.responseClass},",
       s"  message: Option[String] = None",
-      s""") extends Exception(message.getOrElse(response.${config.responseStatusMethod} + ": " + response.${config.responseBodyMethod})) {""",
-      s"  import ${ssd.modelPackageName}.json._",
-      s"  lazy val ${response.errorVariableName} = ${json.indent(2).trim}",
-      "}"
+      s""") extends Exception(message.getOrElse(response.${config.responseStatusMethod} + ": " + response.${config.responseBodyMethod}))$bodyString"""
     ).mkString("\n")
+
   }
 
   private[this] def methods(resources: Seq[ScalaResource]): Seq[ClientMethod] = {
