@@ -4,6 +4,24 @@
 
   <ul>
 
+    <li>Support for clients using Ning HTTP Async library and Play
+    Json: This release introduces support for a new client library
+    based
+    on <a href="https://github.com/AsyncHttpClient/async-http-client">ning's
+    http async library</a>. The only dependencies you will need are
+    play-ws and com.ning.async-http-client version
+    1.8.x. See <a href="https://github.com/gilt/apidoc/tree/master/client-tests/ning_1_8">ning
+    1 8 sample project</a> for an example SBT project setup to use the
+    ning clients.</li>
+
+    <li>Refactor of play client libraries. Main change was to remove
+    the GET, POST, PUT, etc. methods and replace with a single
+    _executeRequest method that takes the method as its first
+    parameter. We think this is a more readable implementation and
+    more concise in the client. If you previously directly accessed
+    these methods, you will need to update your code to call
+    _executeRequest instead.</li>
+
     <li>Operation body now supports Arrays as a type.</li>
 
     <li>Organizations now have a visibility setting which controls
