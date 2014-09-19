@@ -56,14 +56,16 @@ end
 
 class ScalaTester
 
-  CLIENT_DIR = "app/models"
-
+  def initialize(client_dir)
+    @client_dir = client_dir
+  end
+  
   def test
     system("sbt compile")
   end
 
   def clean!(platform)
-    cmd = "rm -f #{platform}/#{CLIENT_DIR}/*.downloaded.scala"
+    cmd = "rm -f #{platform}/#{@client_dir}/*.downloaded.scala"
     puts cmd
     system(cmd)
   end
@@ -77,7 +79,7 @@ class ScalaTester
   end
 
   def write(platform, org_key, service_key, target_name, code)
-    filename = File.join(platform, CLIENT_DIR, [org_key, service_key, "#{target_name}.downloaded.scala"].join("."))
+    filename = File.join(platform, @client_dir, [org_key, service_key, "#{target_name}.downloaded.scala"].join("."))
     ensure_dir!(File.dirname(filename))
 
     File.open(filename, "w") do |out|
@@ -100,10 +102,10 @@ class Target
 
 end
 
-targets = [Target.new('ning_1_8', ScalaTester.new, ['ning_1_8_client', 'play_2_x_json', 'scala_models']),
+targets = [Target.new('ning_1_8', ScalaTester.new("src/main/scala"), ['ning_1_8_client', 'play_2_x_json', 'scala_models']),
            Target.new('ruby', RubyTester.new, ['ruby_client']),
-           Target.new('play_2_2', ScalaTester.new, ['play_2_2_client', 'play_2_x_json', 'scala_models']),
-           Target.new('play_2_3', ScalaTester.new, ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
+           Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client', 'play_2_x_json', 'scala_models']),
+           Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
 
 def get_code(client, org, service, target)
   client.code.get_by_org_key_and_service_key_and_version_and_target(org.key, service.key, "latest", target)

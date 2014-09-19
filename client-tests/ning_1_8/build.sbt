@@ -3,6 +3,6 @@ name := "apidoc-standalone"
 scalaVersion := "2.10.4"
 
 libraryDependencies ++= Seq(
-  json,
+  "com.typesafe.play" %% "play-json" % "2.3.4",
   "com.ning" % "async-http-client" % "1.8.13"
 )
