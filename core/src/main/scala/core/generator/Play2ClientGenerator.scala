@@ -92,7 +92,11 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
       case Some(s: String) => s"\n\n$s\n"
     }
 
-    val methodGenerator = ScalaClientMethodGenerator(ScalaClientMethodConfigs.Play, ssd)
+    val clientMethodConfig = new ScalaClientMethodConfigs.Play {
+      override def responseClass = version.responseClass
+    }
+
+    val methodGenerator = ScalaClientMethodGenerator(clientMethodConfig, ssd)
 
     val patchMethod = version.supportsHttpPatch match {
       case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))"""
@@ -189,7 +193,7 @@ ${methodGenerator.objects().indent(4)}
 
   ${methodGenerator.traits().indent(4)}
 
-  case class FailedRequest(response: ${version.responseClass}) extends Exception(response.status + ": " + response.body)$errorsString
+${methodGenerator.failedRequestClass.indent(2)}$errorsString
 
 }"""
   }

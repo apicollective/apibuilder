@@ -13,6 +13,16 @@ trait ScalaClientMethodConfig {
   def responseStatusMethod: String
 
   /**
+    * The name of the method on the response providing the body.
+    */
+  def responseBodyMethod: String
+
+  /**
+    * The class name for the Response object.
+    */
+  def responseClass: String
+
+  /**
     * Given a response and a class name, returns code to create an
     * instance of the specified class.
     */
@@ -22,9 +32,10 @@ trait ScalaClientMethodConfig {
 
 object ScalaClientMethodConfigs {
 
-  val Play = new ScalaClientMethodConfig() {
+  trait Play extends ScalaClientMethodConfig {
     override def pathEncodingMethod = "play.utils.UriEncoding.encodePathSegment"
     override def responseStatusMethod = "status"
+    override def responseBodyMethod = "body"
     override def toJson(responseName: String, className: String) = {
       s"$responseName.json.as[$className]"
     }
@@ -33,6 +44,8 @@ object ScalaClientMethodConfigs {
   val Ning = new ScalaClientMethodConfig() {
     override def pathEncodingMethod = "_encodePathParameter"
     override def responseStatusMethod = "getStatusCode"
+    override def responseBodyMethod = """getResponseBody("UTF-8")"""
+    override def responseClass = "com.ning.http.client.Response"
     override def toJson(responseName: String, className: String) = {
       s"_parseJson($responseName, _.validate[$className])"
     }

@@ -185,10 +185,7 @@ ${methodGenerator.objects().indent(4)}
 
   ${methodGenerator.traits().indent(2)}
 
-  case class FailedRequest(
-    response: com.ning.http.client.Response,
-    message: Option[String] = None
-  ) extends Exception(message.getOrElse(response.getStatusCode + ": " + response.getResponseBody("UTF-8")))$errorsString
+${methodGenerator.failedRequestClass.indent(2)}$errorsString
 
 }"""
   }

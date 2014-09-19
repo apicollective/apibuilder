@@ -36,6 +36,14 @@ case class ScalaClientMethodGenerator(
     }.mkString("\n\n")
   }
 
+  def failedRequestClass(): String = {
+    Seq(
+      s"case class FailedRequest(",
+      s"  response: ${config.responseClass},",
+      s"  message: Option[String] = None",
+      s""") extends Exception(message.getOrElse(response.${config.responseStatusMethod} + ": " + response.${config.responseBodyMethod}))"""
+    ).mkString("\n")
+  }
 
   private[this] def methods(resources: Seq[ScalaResource]): Seq[ClientMethod] = {
 
