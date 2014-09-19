@@ -58,7 +58,7 @@ def run(command)
   system(command)
 end
 
-#run("git commit -m 'Update configuration to record apidoc version #{tag}' " + files.join(" "))
-#run("git tag -a -m #{tag} #{tag}")
-#run("git push --tags origin")
-#run("git push origin master")
+run("git commit -m 'Update configuration to record apidoc version #{tag}' " + files.join(" "))
+run("git tag -a -m #{tag} #{tag}")
+run("git push --tags origin")
+run("git push origin master")
