@@ -136,6 +136,7 @@ ${methodGenerator.objects().indent(4)}
       asyncHttpClient.executeRequest(finalRequest,
         new AsyncCompletionHandler[Unit]() {
           override def onCompleted(r: com.ning.http.client.Response) = result.success(r)
+          override def onThrowable(t: Throwable) = result.failure(t)
         }
       )
       result.future
