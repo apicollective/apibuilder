@@ -13,6 +13,12 @@ case class ScalaClientMethodGenerator(
 
   private val sortedResources = ssd.resources.groupBy(_.model.plural).toSeq.sortBy(_._1)
 
+  def traitsAndErrors(
+    ssd: ScalaServiceDescription
+  ): String = {
+    (traits() + "\n\n" + failedRequestClass() + "\n\n" + errorPackage(ssd)).trim
+  }
+
   def accessors(): String = {
     sortedResources.map { case (plural, resources) =>
       val methodName = Text.snakeToCamelCase(Text.camelCaseToUnderscore(plural).toLowerCase)
@@ -36,12 +42,54 @@ case class ScalaClientMethodGenerator(
     }.mkString("\n\n")
   }
 
+  /**
+    * Returns an implementation of FailedRequest class that is used to
+    * capture errors in the client.
+    */
   def failedRequestClass(): String = {
     Seq(
       s"case class FailedRequest(",
       s"  response: ${config.responseClass},",
       s"  message: Option[String] = None",
       s""") extends Exception(message.getOrElse(response.${config.responseStatusMethod} + ": " + response.${config.responseBodyMethod}))"""
+    ).mkString("\n")
+  }
+
+  /**
+    * Returns custom case classes based on the service description for
+    * all errors return types. e.g. a 409 that returns Seq[Error] is
+    * handled via these classes.
+    */
+  def errorPackage(ssd: ScalaServiceDescription): String = {
+    ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(r => !(r.isSuccess || r.isUnit)).map { response =>
+      val etc = errorTypeClass(response).distinct.sorted.mkString("\n\n").indent(2)
+      println(etc)
+      Seq(
+        "package error {",
+        "",
+        s"  import ${ssd.modelPackageName}.json._",
+        "",
+        errorTypeClass(response).indent(2),
+        "}"
+      ).mkString("\n")
+    }.distinct.sorted.mkString("\n\n")
+  }
+
+  private[this] def errorTypeClass(response: ScalaResponse): String = {
+    require(!response.isSuccess)
+
+    val json = config.toJson("response", response.errorResponseType)
+
+    // pass in status and UNPARSED body so that there is still a useful error
+    // message even when the body is malformed and cannot be parsed
+    Seq(
+      s"case class ${response.errorClassName}(",
+      s"  response: ${config.responseClass},",
+      s"  message: Option[String] = None",
+      s""") extends Exception(message.getOrElse(response.${config.responseStatusMethod} + ": " + response.${config.responseBodyMethod})) {""",
+      s"  import ${ssd.modelPackageName}.json._",
+      s"  lazy val ${response.errorVariableName} = ${json.indent(2).trim}",
+      "}"
     ).mkString("\n")
   }
 

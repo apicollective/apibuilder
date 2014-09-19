@@ -47,7 +47,7 @@ object ScalaClientMethodConfigs {
     override def responseBodyMethod = """getResponseBody("UTF-8")"""
     override def responseClass = "com.ning.http.client.Response"
     override def toJson(responseName: String, className: String) = {
-      s"_parseJson($responseName, _.validate[$className])"
+      s"Client.parseJson($responseName, _.validate[$className])"
     }
   }
 

@@ -53,44 +53,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     ).mkString("\n\n")
   }
 
-  private[generator] def errorTypeClass(response: ScalaResponse): String = {
-    require(!response.isSuccess)
-
-    // pass in status and UNPARSED body so that there is still a useful error
-    // message even when the body is malformed and cannot be parsed
-    Seq(
-      s"""case class ${response.errorClassName}(response: ${version.responseClass}) extends Exception(response.status + ": " + response.body) {""",
-      "",
-      s"  lazy val ${response.errorVariableName} = response.json.as[${response.errorResponseType}]",
-      "",
-      "}"
-    ).mkString("\n")
-  }
-
-  private[generator] def errors(): Option[String] = {
-    val errorTypes = ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(r => !(r.isSuccess || r.isUnit))
-
-    if (errorTypes.isEmpty) {
-      None
-    } else {
-      Some(
-        Seq(
-          "package error {",
-          "",
-          s"  import ${ssd.modelPackageName}.json._",
-          "",
-          errorTypes.map { t => errorTypeClass(t) }.distinct.sorted.mkString("\n\n").indent(2),
-          "}"
-        ).mkString("\n").indent(2)
-      )
-    }
-  }
-
   private def client(): String = {
-    val errorsString = errors() match {
-      case None => ""
-      case Some(s: String) => s"\n\n$s\n"
-    }
 
     val clientMethodConfig = new ScalaClientMethodConfigs.Play {
       override def responseClass = version.responseClass
@@ -191,9 +154,7 @@ ${methodGenerator.objects().indent(4)}
 
   }
 
-  ${methodGenerator.traits().indent(4)}
-
-${methodGenerator.failedRequestClass.indent(2)}$errorsString
+${methodGenerator.traitsAndErrors(ssd).indent(2)}
 
 }"""
   }
