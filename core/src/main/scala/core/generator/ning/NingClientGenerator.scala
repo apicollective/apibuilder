@@ -53,47 +53,7 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
     ).mkString("\n")
   }
 
-  private[ning] def errorTypeClass(response: ScalaResponse): String = {
-    require(!response.isSuccess)
-
-    // pass in status and UNPARSED body so that there is still a useful error
-    // message even when the body is malformed and cannot be parsed
-    Seq(
-      s"""case class ${response.errorClassName}(response: com.ning.http.client.Response) extends Exception(response.getStatusCode + ": " + response.getResponseBody("UTF-8")) {""",
-      "",
-      s"  import ${ssd.modelPackageName}.json._",
-      "",
-      s"  lazy val ${response.errorVariableName} = ${toJson(response.errorResponseType).indent(2).trim}",
-      "",
-      "}"
-    ).mkString("\n")
-  }
-
-  private[ning] def errors(): Option[String] = {
-    val errorTypes = ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(r => !(r.isSuccess || r.isUnit))
-
-    if (errorTypes.isEmpty) {
-      None
-    } else {
-      Some(
-        Seq(
-          "package error {",
-          "",
-          s"  import ${ssd.modelPackageName}.json._",
-          "",
-          errorTypes.map { t => errorTypeClass(t) }.distinct.sorted.mkString("\n\n").indent(2),
-          "}"
-        ).mkString("\n").indent(2)
-      )
-    }
-  }
-
   private def client(): String = {
-    val errorsString = errors() match {
-      case None => ""
-      case Some(s: String) => s"\n\n$s\n"
-    }
-
     val headerString = (ssd.defaultHeaders ++ Seq(ScalaHeader("User-Agent", "UserAgent"))).map { h =>
       s""".addHeader("${h.name}", ${h.quotedValue}"""
     }.mkString("\n")
@@ -107,6 +67,17 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
 
 ${ScalaHelpers.dateTime}
 
+  }
+
+  object Client {
+    def parseJson[T](r: com.ning.http.client.Response, f: (play.api.libs.json.JsValue => play.api.libs.json.JsResult[T])): T = {
+      f(play.api.libs.json.Json.parse(r.getResponseBody("UTF-8"))) match {
+        case play.api.libs.json.JsSuccess(x, _) => x
+        case play.api.libs.json.JsError(errors) => {
+          throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
+        }
+      }
+    }
   }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
@@ -167,15 +138,6 @@ ${methodGenerator.objects().indent(4)}
       result.future
     }
 
-    def _parseJson[T](r: com.ning.http.client.Response, f: (play.api.libs.json.JsValue => play.api.libs.json.JsResult[T])): T = {
-      f(play.api.libs.json.Json.parse(r.getResponseBody("UTF-8"))) match {
-        case play.api.libs.json.JsSuccess(x, _) => x
-        case play.api.libs.json.JsError(errors) => {
-          throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
-        }
-      }
-    }
-
     def _encodePathParameter(value: String, encoding: String): String = {
       // TODO
       value
@@ -183,10 +145,7 @@ ${methodGenerator.objects().indent(4)}
 
   }
 
-  ${methodGenerator.traits().indent(2)}
-
-${methodGenerator.failedRequestClass.indent(2)}$errorsString
-
+${methodGenerator.traitsAndErrors(ssd).indent(2)}
 }"""
   }
 
