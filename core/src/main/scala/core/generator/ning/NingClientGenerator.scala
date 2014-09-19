@@ -59,12 +59,13 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
     // pass in status and UNPARSED body so that there is still a useful error
     // message even when the body is malformed and cannot be parsed
     Seq(
-      s"""case class ${response.errorClassName}(response: com.ning.http.client.Response) extends Exception(response.status + ": " + response.body) {""",
+      s"""case class ${response.errorClassName}(response: com.ning.http.client.Response) extends Exception(response.getStatusCode + ": " + response.getResponseBody("UTF-8")) {""",
       "",
       s"  import ${ssd.modelPackageName}.json._",
       "",
-      s"lazy val ${response.errorVariableName} = ${toJson(response.errorResponseType)}",
-      ""
+      s"  lazy val ${response.errorVariableName} = ${toJson(response.errorResponseType).indent(2).trim}",
+      "",
+      "}"
     ).mkString("\n")
   }
 
@@ -175,6 +176,11 @@ ${methodGenerator.objects().indent(4)}
       }
     }
 
+    def _encodePathParameter(value: String, encoding: String): String = {
+      // TODO
+      value
+    }
+
   }
 
   ${methodGenerator.traits().indent(2)}
@@ -182,7 +188,7 @@ ${methodGenerator.objects().indent(4)}
   case class FailedRequest(
     response: com.ning.http.client.Response,
     message: Option[String] = None
-  ) extends Exception(message.getOrElse(response.getStatusCode() + ": " + response.getResponseBody("UTF-8")))
+  ) extends Exception(message.getOrElse(response.getStatusCode + ": " + response.getResponseBody("UTF-8")))$errorsString
 
 }"""
   }
