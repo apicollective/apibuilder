@@ -13,10 +13,8 @@ case class ScalaClientMethodGenerator(
 
   private val sortedResources = ssd.resources.groupBy(_.model.plural).toSeq.sortBy(_._1)
 
-  def traitsAndErrors(
-    ssd: ScalaServiceDescription
-  ): String = {
-    (traits() + "\n\n" + failedRequestClass() + "\n\n" + errorPackage(ssd)).trim
+  def traitsAndErrors(): String = {
+    (traits() + "\n\n" + failedRequestClass() + "\n\n" + errorPackage()).trim
   }
 
   def accessors(): String = {
@@ -55,7 +53,7 @@ case class ScalaClientMethodGenerator(
     * all errors return types. e.g. a 409 that returns Seq[Error] is
     * handled via these classes.
     */
-  def errorPackage(ssd: ScalaServiceDescription): String = {
+  def errorPackage(): String = {
     ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(r => !(r.isSuccess || r.isUnit)).map { response =>
       val etc = errorTypeClass(response).distinct.sorted.mkString("\n\n").indent(2)
       println(etc)
