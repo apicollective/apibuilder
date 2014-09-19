@@ -46,7 +46,7 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
 
   private[ning] def toJson(klass: String): String = {
     Seq(
-      s"play.api.libs.json.Json.parse(response.getResponseBody(Encoding)).validate[${klass}] match {",
+      s"""play.api.libs.json.Json.parse(response.getResponseBody("UTF-8")).validate[${klass}] match {""",
       s"""  case play.api.libs.json.JsSuccess(x, _) => x""",
       s"""  case play.api.libs.json.JsError(errors) => sys.error("Invalid json: " + errors.mkString(" "))""",
       s"}"
@@ -113,7 +113,6 @@ ${ScalaHelpers.dateTime}
 
     val asyncHttpClient = new AsyncHttpClient()
     private val UserAgent = "$userAgent"
-    val Encoding = "UTF-8"
 
 ${methodGenerator.accessors().indent(4)}
 
@@ -141,12 +140,12 @@ ${methodGenerator.objects().indent(4)}
     def _executeRequest(
       method: String,
       path: String,
-      q: Seq[(String, String)] = Seq.empty,
+      queryParameters: Seq[(String, String)] = Seq.empty,
       body: Option[play.api.libs.json.JsObject] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.ning.http.client.Response] = {
       val request = _requestBuilder(method, path)
 
-      q.foreach { pair =>
+      queryParameters.foreach { pair =>
         request.addQueryParameter(pair._1, pair._2)
       }
 
@@ -168,7 +167,7 @@ ${methodGenerator.objects().indent(4)}
     }
 
     def _parseJson[T](r: com.ning.http.client.Response, f: (play.api.libs.json.JsValue => play.api.libs.json.JsResult[T])): T = {
-      f(play.api.libs.json.Json.parse(r.getResponseBody(Encoding))) match {
+      f(play.api.libs.json.Json.parse(r.getResponseBody("UTF-8"))) match {
         case play.api.libs.json.JsSuccess(x, _) => x
         case play.api.libs.json.JsError(errors) => {
           throw new FailedRequest(r, Some("Invalid json: " + errors.mkString(" ")))
@@ -183,7 +182,7 @@ ${methodGenerator.objects().indent(4)}
   case class FailedRequest(
     response: com.ning.http.client.Response,
     message: Option[String] = None
-  ) extends Exception(message.getOrElse(response.getStatusCode() + ": " + response.getResponseBody(Encoding)))
+  ) extends Exception(message.getOrElse(response.getStatusCode() + ": " + response.getResponseBody("UTF-8")))
 
 }"""
   }
