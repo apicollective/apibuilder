@@ -66,9 +66,9 @@ case class ScalaClientMethodGenerator(
         case None => ""
         case Some(r) => {
           if (r.isMultiple) {
-            s"\ncase r if r.status == 404 => Nil"
+            s"\ncase r if r.${config.responseStatusMethod} == 404 => Nil"
           } else {
-            s"\ncase r if r.status == 404 => None"
+            s"\ncase r if r.${config.responseStatusMethod} == 404 => None"
           }
         }
       }
@@ -78,19 +78,19 @@ case class ScalaClientMethodGenerator(
           if (response.isSuccess) {
             if (response.isOption) {
               if (response.isUnit) {
-                Some(s"case r if r.status == ${response.code} => Some(Unit)")
+                Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => Some(Unit)")
               } else {
-                Some(s"case r if r.status == ${response.code} => Some(r.json.as[${response.qualifiedScalaType}])")
+                Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => Some(r.json.as[${response.qualifiedScalaType}])")
               }
 
             } else if (response.isMultiple) {
-              Some(s"case r if r.status == ${response.code} => r.json.as[scala.collection.Seq[${response.qualifiedScalaType}]]")
+              Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => r.json.as[scala.collection.Seq[${response.qualifiedScalaType}]]")
 
             } else if (response.isUnit) {
-              Some(s"case r if r.status == ${response.code} => ${response.qualifiedScalaType}")
+              Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => ${response.qualifiedScalaType}")
 
             } else {
-              Some(s"case r if r.status == ${response.code} => r.json.as[${response.qualifiedScalaType}]")
+              Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => r.json.as[${response.qualifiedScalaType}]")
             }
 
           } else if (response.isNotFound && response.isOption) {
@@ -98,7 +98,7 @@ case class ScalaClientMethodGenerator(
             None
 
           } else {
-            Some(s"case r if r.status == ${response.code} => throw new ${ssd.packageName}.error.${response.errorClassName}(r)")
+            Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => throw new ${ssd.packageName}.error.${response.errorClassName}(r)")
           }
         }.mkString("\n")
       } + hasOptionResult + "\ncase r => throw new FailedRequest(r)\n"
