@@ -68,8 +68,18 @@ class ScalaTester
     system(cmd)
   end
 
+  def ensure_dir!(dir)
+    if !File.directory?(dir)
+      cmd = "mkdir -p #{dir}"
+      puts cmd
+      system(cmd)
+    end
+  end
+
   def write(platform, org_key, service_key, target_name, code)
     filename = File.join(platform, CLIENT_DIR, [org_key, service_key, "#{target_name}.downloaded.scala"].join("."))
+    ensure_dir!(File.dirname(filename))
+
     File.open(filename, "w") do |out|
       out << code
     end
@@ -90,7 +100,8 @@ class Target
 
 end
 
-targets = [Target.new('ruby', RubyTester.new, ['ruby_client']),
+targets = [Target.new('ning_1_8', ScalaTester.new, ['ning_1_8_client', 'play_2_x_json', 'scala_models']),
+           Target.new('ruby', RubyTester.new, ['ruby_client']),
            Target.new('play_2_2', ScalaTester.new, ['play_2_2_client', 'play_2_x_json', 'scala_models']),
            Target.new('play_2_3', ScalaTester.new, ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
 
