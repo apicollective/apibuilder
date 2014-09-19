@@ -14,7 +14,7 @@ module ApiDoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.5.22 http://www.apidoc.me/gilt/code/api-doc/latest/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.5.29 http://www.apidoc.me/gilt/code/api-doc/latest/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -107,7 +107,7 @@ module ApiDoc
       # Add a domain to this organization
       def post(orgKey, domain)
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
-        HttpClient::Preconditions.assert_class('name', domain, ApiDoc::Models::Domain)
+        HttpClient::Preconditions.assert_class('domain', domain, ApiDoc::Models::Domain)
         @client.request("/domains/#{orgKey}").with_json(domain.to_hash.to_json).post { |hash| ApiDoc::Models::Domain.new(hash) }
       end
 
@@ -219,9 +219,9 @@ module ApiDoc
       end
 
       # Update metadata for this organization
-      def put(key, organization_metadata)
+      def put(key, organization_Metadata)
         HttpClient::Preconditions.assert_class('key', key, String)
-        HttpClient::Preconditions.assert_class('name', organization_metadata, ApiDoc::Models::OrganizationMetadata)
+        HttpClient::Preconditions.assert_class('organization_metadata', organization_metadata, ApiDoc::Models::OrganizationMetadata)
         @client.request("/organizations/#{key}/metadata").with_json(organization_metadata.to_hash.to_json).put { |hash| ApiDoc::Models::OrganizationMetadata.new(hash) }
       end
 
@@ -442,12 +442,12 @@ module ApiDoc
       end
 
       def Target.ALL
-        @@all ||= [Target.avro_schema, Target.play_2_2_client, Target.play_2_3_client, Target.play_2_x_json, Target.play_2_x_routes, Target.ruby_client, Target.scala_models]
+        @@all ||= [Target.ning_1_8_client, Target.play_2_2_client, Target.play_2_3_client, Target.play_2_x_json, Target.play_2_x_routes, Target.ruby_client, Target.scala_models]
       end
 
-      # Generates an avro JSON schema
-      def Target.avro_schema
-        @@_avro_schema ||= Target.new('avro_schema')
+      # Generates a client based on https://sonatype.github.io/async-http-client v 1.8
+      def Target.ning_1_8_client
+        @@_ning_1_8_client ||= Target.new('ning_1_8_client')
       end
 
       # Generates a client w/ no dependencies external to play framework 2.2
@@ -624,7 +624,7 @@ module ApiDoc
     end
 
     # A membership request represents a user requesting to join an organization
-    # with a specificed role (e.g. as a member or an admin). Membership requests
+    # with a specific role (e.g. as a member or an admin). Membership requests
     # can be reviewed by any current admin of the organization who can either
     # accept or decline the request.
     class MembershipRequest

@@ -80,22 +80,36 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription, metada
 
   val name = safeName(serviceDescription.name)
 
-  val models = serviceDescription.models.map { new ScalaModel(serviceDescription, _) }
-
-  val enums = serviceDescription.enums.map { new ScalaEnum(_) }
-
   val packageName: String = metadata.flatMap(_.packageName) match {
     case None => ScalaUtil.packageName(serviceDescription.name)
     case Some(name) => name + "." + ScalaUtil.packageName(serviceDescription.name)
   }
 
+  val modelPackageName = s"$packageName.models"
+  val enumPackageName = modelPackageName
+
+  val models = serviceDescription.models.map { new ScalaModel(this, _) }
+
+  val enums = serviceDescription.enums.map { new ScalaEnum(_) }
+
   val packageNamePrivate = packageName.split("\\.").last
 
-  val resources = serviceDescription.resources.map { new ScalaResource(serviceDescription, packageName, _) }
+  val defaultHeaders: Seq[ScalaHeader] = {
+    serviceDescription.headers.filter(!_.default.isEmpty).map { h =>
+      ScalaHeader(h.name, h.default.get)
+    }
+  }
+
+  val resources = serviceDescription.resources.map { new ScalaResource(this, _) }
 
 }
 
-class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
+case class ScalaHeader(name: String, value: String) {
+  val quotedValue = s""""$value""""
+}
+
+
+class ScalaModel(val ssd: ScalaServiceDescription, val model: Model) {
 
   val name: String = ScalaUtil.toClassName(model.name)
 
@@ -103,7 +117,7 @@ class ScalaModel(val serviceDescription: ServiceDescription, val model: Model) {
 
   val description: Option[String] = model.description
 
-  val fields = model.fields.map { f => new ScalaField(this.name, f) }.toList
+  val fields = model.fields.map { f => new ScalaField(ssd, this.name, f) }.toList
 
   val argList: Option[String] = ScalaUtil.fieldsToArgList(fields.map(_.definition))
 
@@ -139,17 +153,19 @@ class ScalaEnumValue(value: EnumValue) {
 
 }
 
-class ScalaResource(serviceDescription: ServiceDescription, val packageName: String, resource: Resource) {
-  val model = new ScalaModel(serviceDescription, resource.model)
+class ScalaResource(ssd: ScalaServiceDescription, resource: Resource) {
+  val model = new ScalaModel(ssd, resource.model)
+
+  val packageName: String = ssd.packageName
 
   val path = resource.path
 
   val operations = resource.operations.map { op =>
-    new ScalaOperation(serviceDescription, model, op, this)
+    new ScalaOperation(ssd, model, op, this)
   }
 }
 
-class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, operation: Operation, resource: ScalaResource) {
+class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation: Operation, resource: ScalaResource) {
 
   val method: String = operation.method
 
@@ -160,7 +176,7 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
   val body: Option[ScalaBody] = operation.body.map(new ScalaBody(_))
 
   val parameters: List[ScalaParameter] = {
-    operation.parameters.toList.map { new ScalaParameter(_) }
+    operation.parameters.toList.map { new ScalaParameter(ssd, _) }
   }
 
   lazy val pathParameters = parameters.filter { _.location == ParameterLocation.Path }
@@ -213,14 +229,14 @@ class ScalaOperation(serviceDescription: ServiceDescription, model: ScalaModel, 
   }
 
   val responses: Seq[ScalaResponse] = {
-    operation.responses.toList.map { new ScalaResponse(resource.packageName, method, _) } 
+    operation.responses.toList.map { new ScalaResponse(ssd, method, _) } 
   }
 
   lazy val resultType = responses.find(_.isSuccess).map(_.resultType).getOrElse("Unit")
 
 }
 
-class ScalaResponse(packageName: String, method: String, response: Response) {
+class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Response) {
 
   val scalaType: String = underscoreAndDashToInitCap(response.datatype)
   val isUnit = scalaType == "Unit"
@@ -235,8 +251,13 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
     scalaType
   } else {
     Datatype.findByName(response.datatype) match {
-      case None => packageName + ".models." + scalaType
       case Some(dt) => ScalaDataType(dt).name
+      case None => {
+        ssd.models.find(_.name == response.datatype) match {
+          case Some(model) => new ScalaDataType.ScalaModelType(ssd.modelPackageName, response.datatype).name
+          case None => new ScalaDataType.ScalaEnumType(ssd.enumPackageName, response.datatype).name
+        }
+      }
     }
   }
 
@@ -250,18 +271,21 @@ class ScalaResponse(packageName: String, method: String, response: Response) {
     }
   }
 
-  private val underscore = Text.camelCaseToUnderscore(scalaType)
-  val errorVariableName = if (isMultiple) {
-    Text.snakeToCamelCase(Text.pluralize(underscore.toLowerCase))
-  } else {
-    Text.snakeToCamelCase(underscore.toLowerCase)
-  }
+  val errorVariableName = ScalaUtil.toVariable(scalaType, isMultiple)
 
   val errorClassName = Text.initCap(errorVariableName) + "Response"
 
+  val errorResponseType = if (isOption) {
+    // In the case of errors, ignore the option wrapper as we only
+    // trigger the error response when we have an actual error.
+    qualifiedScalaType
+  } else {
+    resultType
+  }
+
 }
 
-class ScalaField(modelName: String, field: Field) {
+class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) {
 
   def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(field.name))
 
@@ -270,8 +294,8 @@ class ScalaField(modelName: String, field: Field) {
   import ScalaDataType._
   val baseType: ScalaDataType = field.fieldtype match {
     case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-    case m: ModelFieldType => new ScalaModelType(m.modelName)
-    case e: EnumFieldType => new ScalaEnumType(e.enum.name)
+    case m: ModelFieldType => new ScalaModelType(ssd.modelPackageName, m.modelName)
+    case e: EnumFieldType => new ScalaEnumType(ssd.enumPackageName, e.enum.name)
   }
 
   def datatype: ScalaDataType = {
@@ -310,7 +334,7 @@ class ScalaField(modelName: String, field: Field) {
   }
 }
 
-class ScalaParameter(param: Parameter) {
+class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
 
   def name: String = ScalaUtil.toVariable(param.name)
 
@@ -320,8 +344,8 @@ class ScalaParameter(param: Parameter) {
     import ScalaDataType._
     param.paramtype match {
       case t: PrimitiveParameterType => ScalaDataType(t.datatype)
-      case m: ModelParameterType => new ScalaModelType(m.model.name)
-      case e: EnumParameterType => new ScalaEnumType(e.enum.name)
+      case m: ModelParameterType => new ScalaModelType(ssd.modelPackageName, m.model.name)
+      case e: EnumParameterType => new ScalaEnumType(ssd.enumPackageName, e.enum.name)
     }
   }
 
@@ -381,8 +405,8 @@ object ScalaDataType {
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
-  case class ScalaModelType(modelName: String) extends ScalaDataType(ScalaUtil.toClassName(modelName))
-  case class ScalaEnumType(enumName: String) extends ScalaDataType(ScalaUtil.toClassName(enumName))
+  case class ScalaModelType(packageName: String, modelName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(modelName)}")
+  case class ScalaEnumType(packageName: String, enumName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(enumName)}")
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(datatype: Datatype): ScalaDataType = datatype match {
@@ -409,7 +433,7 @@ object ScalaDataType {
     case ScalaDateTimeIso8601Type => {
       s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
-    case ScalaEnumType(_) => s"$varName.toString"
+    case ScalaEnumType(_, _) => s"$varName.toString"
     case _ => throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
   }
 }

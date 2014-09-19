@@ -3,14 +3,17 @@ package core.generator
 import core._
 import Text._
 
-object Play2Util {
+case class Play2Util(config: ScalaClientMethodConfig) {
   import ScalaDataType._
 
-  def queryParams(op: ScalaOperation): Option[String] = {
-    if (op.queryParameters.isEmpty) {
+  def params(
+    fieldName: String,
+    params: Seq[ScalaParameter]
+  ): Option[String] = {
+    if (params.isEmpty) {
       None
     } else {
-      val arrayParams = op.queryParameters.filter(_.multiple) match {
+      val arrayParams = params.filter(_.multiple) match {
         case Nil => Seq.empty
         case params => {
           params.map { p =>
@@ -20,11 +23,11 @@ object Play2Util {
       }
       val arrayParamString = arrayParams.mkString(" ++\n")
 
-      val singleParams = op.queryParameters.filter(!_.multiple) match {
+      val singleParams = params.filter(!_.multiple) match {
         case Nil => Seq.empty
         case params => {
           Seq(
-            "val query = Seq(",
+            s"val $fieldName = Seq(",
             params.map { p =>
               if (p.isOption) {
                 s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
@@ -40,7 +43,7 @@ object Play2Util {
 
       Some(
         if (singleParams.isEmpty) {
-          "val query = " + arrayParamString.trim
+          s"val $fieldName = " + arrayParamString.trim
         } else if (arrayParams.isEmpty) {
           singleParamString
         } else {
@@ -95,11 +98,14 @@ object Play2Util {
   }
 
   private object PathParamHelper {
-    def urlEncode(name: String, d: ScalaDataType): String = {
+    def urlEncode(
+      name: String,
+      d: ScalaDataType
+    ): String = {
       d match {
-        case ScalaStringType => s"""play.utils.UriEncoding.encodePathSegment($name, "UTF-8")"""
+        case ScalaStringType => s"""${config.pathEncodingMethod}($name, "UTF-8")"""
         case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
-        case ScalaEnumType(_) => s"""play.utils.UriEncoding.encodePathSegment($name.toString, "UTF-8")"""
+        case ScalaEnumType(_, _) => s"""${config.pathEncodingMethod}($name.toString, "UTF-8")"""
         case t => {
           sys.error(s"Cannot encode params of type[$t] as path parameters (name: $name)")
         }

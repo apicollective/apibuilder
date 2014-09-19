@@ -17,7 +17,7 @@ object Play2Models {
 
 s"""$caseClasses
 
-package ${ssd.packageName}.models {
+package ${ssd.modelPackageName} {
   package object json {
     import play.api.libs.json.__
     import play.api.libs.json.JsString

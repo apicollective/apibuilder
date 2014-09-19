@@ -1,4 +1,4 @@
-val query = Seq(
+val queryParameters = Seq(
   guid.map("guid" -> _.toString),
   email.map("email" -> _),
   active.map("active" -> _.toString)

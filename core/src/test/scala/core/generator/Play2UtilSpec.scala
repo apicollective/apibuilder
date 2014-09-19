@@ -6,8 +6,13 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 class Play2UtilSpec extends FunSpec with ShouldMatchers {
 
   private lazy val service = TestHelper.parseFile("reference-api/api.json").serviceDescription.get
+  private lazy val ssd = new ScalaServiceDescription(service)
 
-  describe("queryParams") {
+  private val play2Util = Play2Util(new ScalaClientMethodConfigs.Play {
+    override def responseClass = PlayFrameworkVersions.V2_2_x.responseClass
+  })
+
+  describe("params") {
     val model = new Model("model", "models", None, Nil)
     val q1 = new Parameter(
       "q1",
@@ -25,15 +30,16 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
     val resource = new Resource(model, "models", Seq(operation))
 
     it("should handle required and non-required params") {
-      val code = Play2Util.queryParams(
+      val code = play2Util.params(
+        "queryParameters",
         new ScalaOperation(
-          service,
-          new ScalaModel(service, model),
+          ssd,
+          new ScalaModel(ssd, model),
           operation,
-          new ScalaResource(service, "test", resource)
-        )
+          new ScalaResource(ssd, resource)
+        ).queryParameters
       )
-      code.get should equal("""val query = Seq(
+      code.get should equal("""val queryParameters = Seq(
   Some("q1" -> q1.toString),
   q2.map("q2" -> _.toString)
 ).flatten""")
@@ -41,11 +47,10 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
   }
 
   it("supports query parameters that contain lists") {
-    val ssd = new ScalaServiceDescription(service)
     val operation = ssd.resources.find(_.model.name == "Echo").get.operations.head
-    val code = Play2Util.queryParams(operation).get
+    val code = play2Util.params("queryParameters", operation.queryParameters).get
     code should be("""
-val query = Seq(
+val queryParameters = Seq(
   foo.map("foo" -> _)
 ).flatten ++
   optionalMessages.map("optional_messages" -> _) ++
@@ -54,11 +59,10 @@ val query = Seq(
   }
 
   it("supports query parameters that ONLY have lists") {
-    val ssd = new ScalaServiceDescription(service)
     val operation = ssd.resources.find(_.model.name == "Echo").get.operations.find(_.path == "/echoes/arrays-only").get
-    val code = Play2Util.queryParams(operation).get
+    val code = play2Util.params("queryParameters", operation.queryParameters).get
     code should be("""
-val query = optionalMessages.map("optional_messages" -> _) ++
+val queryParameters = optionalMessages.map("optional_messages" -> _) ++
   requiredMessages.map("required_messages" -> _)
 """.trim)
   }
@@ -67,12 +71,11 @@ val query = optionalMessages.map("optional_messages" -> _) ++
     lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
 
     it("supports optional seq  query parameters") {
-      val ssd = new ScalaServiceDescription(service)
       val operation = ssd.resources.find(_.model.name == "User").get.operations.find(op => op.method == "GET" && op.path == "/users").get
 
       TestHelper.assertEqualsFile(
         "core/src/test/resources/generators/play-2-route-util-reference-get-users.txt",
-        Play2Util.queryParams(operation).get
+        play2Util.params("queryParameters", operation.queryParameters).get
       )
     }
 

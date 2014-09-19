@@ -11,6 +11,7 @@
 	"target": {
 	    "description": "The target platform for code generation.",
 	    "values": [
+		{ "name": "ning_1_8_client", "description": "Generates a client based on https://sonatype.github.io/async-http-client v 1.8" },
 		{ "name": "play_2_2_client", "description": "Generates a client w/ no dependencies external to play framework 2.2" },
 		{ "name": "play_2_3_client", "description": "Generates a client w/ no dependencies external to play framework 2.3" },
 		{ "name": "play_2_x_json" },
@@ -90,7 +91,7 @@
         },
 
         "membership_request": {
-            "description": "A membership request represents a user requesting to join an organization with a specificed role (e.g. as a member or an admin). Membership requests can be reviewed by any current admin of the organization who can either accept or decline the request.",
+            "description": "A membership request represents a user requesting to join an organization with a specific role (e.g. as a member or an admin). Membership requests can be reviewed by any current admin of the organization who can either accept or decline the request.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this membership request." },
                 { "name": "user", "type": "user" },

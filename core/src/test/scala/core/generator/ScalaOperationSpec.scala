@@ -7,6 +7,7 @@ import org.scalatest._
 class ScalaOperationSpec extends FunSpec with ShouldMatchers {
 
   private lazy val service = TestHelper.parseFile("reference-api/api.json").serviceDescription.get
+  private lazy val ssd = new ScalaServiceDescription(service)
 
   val q1 = new Parameter(
     "q1",
@@ -21,12 +22,12 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
     val resource = new Resource(model, "models", Seq(operation))
 
     val scalaOperation = new ScalaOperation(
-      service,
-      new ScalaModel(service, model),
+      ssd,
+      new ScalaModel(ssd, model),
       operation,
-      new ScalaResource(service, "test", resource))
+      new ScalaResource(ssd, resource))
 
-    scalaOperation.argList shouldEqual Some("model: test.models.Model, \n  q1: scala.Option[Double] = None\n")
+    scalaOperation.argList shouldEqual Some("model: referenceapi.models.Model, \n  q1: scala.Option[Double] = None\n")
   }
 
   it("array of models as a parameter in the body should use capitalize") {
@@ -36,12 +37,12 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
     val resource = new Resource(model, "models", Seq(operation))
 
     val scalaOperation = new ScalaOperation(
-      service,
-      new ScalaModel(service, model),
+      ssd,
+      new ScalaModel(ssd, model),
       operation,
-      new ScalaResource(service, "test", resource))
+      new ScalaResource(ssd, resource))
 
-    scalaOperation.argList shouldEqual Some("models: scala.collection.Seq[test.models.Model], \n  q1: scala.Option[Double] = None\n")
+    scalaOperation.argList shouldEqual Some("models: scala.collection.Seq[referenceapi.models.Model], \n  q1: scala.Option[Double] = None\n")
   }
 
   it("primitive type as a parameter in the body should not use capitalize") {
@@ -51,10 +52,10 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
     val resource = new Resource(model, "models", Seq(operation))
 
     val scalaOperation = new ScalaOperation(
-      service,
-      new ScalaModel(service, model),
+      ssd,
+      new ScalaModel(ssd, model),
       operation,
-      new ScalaResource(service, "test", resource))
+      new ScalaResource(ssd, resource))
 
     scalaOperation.argList shouldEqual Some("value: Int, \n  q1: scala.Option[Double] = None\n")
   }
@@ -66,10 +67,11 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
     val resource = new Resource(model, "models", Seq(operation))
 
     val scalaOperation = new ScalaOperation(
-      service,
-      new ScalaModel(service, model),
+      ssd,
+      new ScalaModel(ssd, model),
       operation,
-      new ScalaResource(service, "test", resource))
+      new ScalaResource(ssd, resource)
+    )
 
     scalaOperation.argList shouldEqual Some("values: scala.collection.Seq[Int], \n  q1: scala.Option[Double] = None\n")
 
