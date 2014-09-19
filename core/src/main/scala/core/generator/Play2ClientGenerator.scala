@@ -160,7 +160,7 @@ ${methodGenerator.objects().indent(4)}
       method: String,
       path: String,
       queryParameters: Seq[(String, String)] = Seq.empty,
-      body: Option[play.api.libs.json.JsObject] = None
+      body: Option[play.api.libs.json.JsValue] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
       method.toUpperCase match {
         case "GET" => {
