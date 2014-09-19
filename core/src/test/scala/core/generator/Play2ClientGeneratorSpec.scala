@@ -5,6 +5,10 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
 
+  val clientMethodConfig = new ScalaClientMethodConfigs.Play {
+    override def responseClass = PlayFrameworkVersions.V2_2_x.responseClass
+  }
+
   it("errorTypeClass") {
     val service = TestHelper.parseFile("api/api.json").serviceDescription.get
     val ssd = new ScalaServiceDescription(service)
@@ -13,14 +17,8 @@ class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
     val errorResponse = operation.responses.find(_.code == 409).get
     errorResponse.isMultiple should be(true)
 
-    val target = """
-case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body) {
-
-  lazy val errors = response.json.as[scala.collection.Seq[apidoc.models.Error]]
-
-}
-""".trim
-    Play2ClientGenerator(PlayFrameworkVersions.V2_3_x, ssd, "test").errorTypeClass(errorResponse).trim should be(target)
+    val contents = ScalaClientMethodGenerator(clientMethodConfig, ssd).errorPackage()
+    TestHelper.assertEqualsFile("core/src/test/resources/generators/play2-client-generator-spec-errors-package.txt", contents)
   }
 
   it("only generates error wrappers for model classes (not primitives)") {
@@ -56,7 +54,7 @@ case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Excepti
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ssd = new ScalaServiceDescription(validator.serviceDescription.get)
-    Play2ClientGenerator(PlayFrameworkVersions.V2_3_x, ssd, "test").errors() should be(None)
+    ScalaClientMethodGenerator(clientMethodConfig, ssd).errorPackage() should be("")
   }
 
 }

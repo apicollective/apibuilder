@@ -8,7 +8,9 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
   private lazy val service = TestHelper.parseFile("reference-api/api.json").serviceDescription.get
   private lazy val ssd = new ScalaServiceDescription(service)
 
-  private val play2Util = Play2Util(ScalaClientMethodConfigs.Play)
+  private val play2Util = Play2Util(new ScalaClientMethodConfigs.Play {
+    override def responseClass = PlayFrameworkVersions.V2_2_x.responseClass
+  })
 
   describe("params") {
     val model = new Model("model", "models", None, Nil)

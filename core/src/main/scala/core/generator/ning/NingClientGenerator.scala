@@ -149,7 +149,7 @@ ${methodGenerator.objects().indent(4)}
 
   }
 
-${methodGenerator.traitsAndErrors(ssd).indent(2)}
+${methodGenerator.traitsAndErrors().indent(2)}
 }"""
   }
 

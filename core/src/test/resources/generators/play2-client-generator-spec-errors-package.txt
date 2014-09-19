@@ -1,0 +1,12 @@
+package error {
+
+  import apidoc.models.json._
+
+  case class ErrorsResponse(
+    response: play.api.libs.ws.Response,
+    message: Option[String] = None
+  ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
+    import apidoc.models.json._
+    lazy val errors = response.json.as[scala.collection.Seq[apidoc.models.Error]]
+  }
+}
