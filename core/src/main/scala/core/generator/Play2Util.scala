@@ -6,11 +6,14 @@ import Text._
 case class Play2Util(config: ScalaClientMethodConfig) {
   import ScalaDataType._
 
-  def queryParams(op: ScalaOperation): Option[String] = {
-    if (op.queryParameters.isEmpty) {
+  def params(
+    fieldName: String,
+    params: Seq[ScalaParameter]
+  ): Option[String] = {
+    if (params.isEmpty) {
       None
     } else {
-      val arrayParams = op.queryParameters.filter(_.multiple) match {
+      val arrayParams = params.filter(_.multiple) match {
         case Nil => Seq.empty
         case params => {
           params.map { p =>
@@ -20,11 +23,11 @@ case class Play2Util(config: ScalaClientMethodConfig) {
       }
       val arrayParamString = arrayParams.mkString(" ++\n")
 
-      val singleParams = op.queryParameters.filter(!_.multiple) match {
+      val singleParams = params.filter(!_.multiple) match {
         case Nil => Seq.empty
         case params => {
           Seq(
-            "val query = Seq(",
+            s"val $fieldName = Seq(",
             params.map { p =>
               if (p.isOption) {
                 s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
@@ -40,7 +43,7 @@ case class Play2Util(config: ScalaClientMethodConfig) {
 
       Some(
         if (singleParams.isEmpty) {
-          "val query = " + arrayParamString.trim
+          s"val $fieldName = " + arrayParamString.trim
         } else if (arrayParams.isEmpty) {
           singleParamString
         } else {

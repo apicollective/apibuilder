@@ -95,7 +95,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     val methodGenerator = ScalaClientMethodGenerator(ScalaClientMethodConfigs.Play, ssd)
 
     val patchMethod = version.supportsHttpPatch match {
-      case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(q:_*)).patch(body)"""
+      case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))"""
       case false => s"""sys.error("PATCH method is not supported in Play Framework Version ${version.name}")"""
     }
 
@@ -155,42 +155,33 @@ ${methodGenerator.objects().indent(4)}
       req
     }
 
-    def POST(
+    def _executeRequest(
+      method: String,
       path: String,
-      body: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
-      q: Seq[(String, String)] = Seq.empty
+      queryParameters: Seq[(String, String)] = Seq.empty,
+      body: Option[play.api.libs.json.JsObject] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
-      _logRequest("POST", _requestHolder(path).withQueryString(q:_*)).post(body)
-    }
-
-    def GET(
-      path: String,
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
-      _logRequest("GET", _requestHolder(path).withQueryString(q:_*)).get()
-    }
-
-    def PUT(
-      path: String,
-      body: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
-      _logRequest("PUT", _requestHolder(path).withQueryString(q:_*)).put(body)
-    }
-
-    def PATCH(
-      path: String,
-      body: play.api.libs.json.JsValue = play.api.libs.json.Json.obj(),
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
-      $patchMethod
-    }
-
-    def DELETE(
-      path: String,
-      q: Seq[(String, String)] = Seq.empty
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
-      _logRequest("DELETE", _requestHolder(path).withQueryString(q:_*)).delete()
+      method.toUpperCase match {
+        case "GET" => {
+          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()      
+        }
+        case "POST" => {
+          _logRequest("POST", _requestHolder(path).withQueryString(queryParameters:_*)).post(body.getOrElse(play.api.libs.json.Json.obj()))
+        }
+        case "PUT" => {
+          _logRequest("PUT", _requestHolder(path).withQueryString(queryParameters:_*)).put(body.getOrElse(play.api.libs.json.Json.obj()))
+        }
+        case "PATCH" => {
+          $patchMethod
+        }
+        case "DELETE" => {
+          _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
+        }
+        case _ => {
+          _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))
+          sys.error("Unsupported method[%s]".format(method))
+        }
+      }
     }
 
   }

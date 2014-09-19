@@ -42,29 +42,24 @@ case class ScalaClientMethodGenerator(
     resources.flatMap(_.operations).map { op =>
       val path = playUtil.pathParams(op)
 
-      val methodCall = if (Util.isJsonDocumentMethod(op.method)) {
-        val payload = playUtil.formBody(op)
-        val query = playUtil.queryParams(op)
+      val payload = playUtil.formBody(op)
+      val queryParameters = playUtil.params("queryParameters", op.queryParameters)
 
-        if (payload.isEmpty && query.isEmpty) {
-          s"${op.method}($path)"
+      val code = new scala.collection.mutable.ListBuffer[String]()
+      val args = new scala.collection.mutable.ListBuffer[String]()
+      payload.foreach { v =>
+        code.append(v)
+        args.append("body = Some(payload)")
+      }
 
-        } else if (!payload.isEmpty && !query.isEmpty) {
-          s"${payload.get}\n\n${query.get}\n\n${op.method}($path, body = payload, q = query)"
+      queryParameters.foreach { v =>
+        code.append(v)
+        args.append("queryParameters = queryParameters")
+      }
 
-        } else if (payload.isEmpty) {
-          s"${query.get}\n\n${op.method}(path = $path, q = query)"
-
-        } else {
-          s"${payload.get}\n\n${op.method}($path, body = payload)"
-
-        }
-
-      } else {
-        playUtil.queryParams(op) match {
-          case None => s"${op.method}($path)"
-          case Some(query) => s"${query}\n\n${op.method}($path, query)"
-        }
+      val methodCall = code.toList match {
+        case Nil => s"""_executeRequest("${op.method}", $path)"""
+        case v => s"""${v.mkString("\n\n")}\n\n_executeRequest("${op.method}", $path, ${args.mkString(", ")})"""
       }
 
       val hasOptionResult = op.responses.filter(_.isSuccess).find(_.isOption) match {
