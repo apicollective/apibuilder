@@ -79,19 +79,46 @@ class TextSpec extends FunSpec with Matchers {
   describe("pluralize") {
 
     it("pluralizes standard words") {
-      Text.pluralize("user") should be("users")
-      Text.pluralize("address") should be("addresses")
-      Text.pluralize("prices") should be("prices")
-      Text.pluralize("metadata") should be("metadata")
-      Text.pluralize("family") should be("families")
+      // see http://www.oxforddictionaries.com/us/words/plurals-of-nouns
+      val actuals = Map(
+        "berry" -> "berries",
+        "activity" -> "activities",
+        "daisy" -> "daisies",
+        "church" -> "churches",
+        "bus" -> "buses",
+        "fox" -> "foxes",
+        "day" -> "days",
+        "stomach" -> "stomachs",
+        "epoch" -> "epochs",
+        "knife" -> "knives",
+        "half" -> "halves",
+        "scarf" -> "scarves",
+        "chief" -> "chiefs",
+        "spoof" -> "spoofs",
+        "solo" -> "solos",
+        "zero" -> "zeros",
+        "avocado" -> "avocados",
+        "studio" -> "studios",
+        "zoo" -> "zoos",
+        "embryo" -> "embryos",
+        "buffalo" -> "buffaloes",
+        "domino" -> "dominoes",
+        "echo" -> "echoes",
+        "embargo" -> "embarchoes",
+        "user" -> "users",
+        "address" -> "addresses",
+        "price" -> "prices",
+        "metadata" -> "metadata",
+        "family" -> "families",
+        "datum" -> "data",
+        "person" -> "people",
+        "species" -> "species"
+      )
 
-      Text.pluralize("datum") should be("data")
-      Text.pluralize("data") should be("data")
-
-      Text.pluralize("person") should be("people")
-      Text.pluralize("people") should be("people")
-
-      Text.pluralize("species") should be("species")
+      actuals.foreach { case (singular, plural) =>
+        Text.pluralize(singular) should be(plural)
+        Text.pluralize(plural) should be(plural)
+      }
     }
 
   }
