@@ -29,7 +29,7 @@ object RubyGemGenerator {
   }
 
   def generateEnum(enum: Enum): String = {
-    val className = Text.underscoreToInitCap(enum.name)
+    val className = RubyUtil.toClassName(enum.name)
     val lines = ListBuffer[String]()
     lines.append(s"class $className")
 
@@ -95,7 +95,7 @@ object RubyGemGenerator {
  */
 case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
 
-  private val moduleName = Text.safeName(service.name)
+  private val moduleName = RubyUtil.toClassName(service.name)
 
   def generate(): String = {
     RubyHttpClient.require +
@@ -156,7 +156,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
 
     sb.append(service.resources.map { resource =>
       val modelPlural = resource.model.plural
-      val className = Text.underscoreToInitCap(modelPlural)
+      val className = RubyUtil.toClassName(modelPlural)
 
       s"    def ${modelPlural}\n" +
       s"      @${modelPlural} ||= ${moduleName}::Clients::${className}.new(self)\n" +
@@ -169,7 +169,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
   }
 
   def generateClientForResource(resource: Resource): String = {
-    val className = Text.underscoreToInitCap(resource.model.plural)
+    val className = RubyUtil.toClassName(resource.model.plural)
 
     val sb = ListBuffer[String]()
     sb.append(s"    class ${className}")
@@ -313,7 +313,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
             if (op.responses.head.multiple) {
               responseBuilder.append(".map")
             }
-            responseBuilder.append(s" { |hash| ${moduleName}::Models::${Text.underscoreToInitCap(resourceName)}.new(hash) }")
+            responseBuilder.append(s" { |hash| ${moduleName}::Models::${RubyUtil.toClassName(resourceName)}.new(hash) }")
           }
         }
       }
@@ -329,7 +329,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
   }
 
   def generateModel(model: core.Model): String = {
-    val className = Text.underscoreToInitCap(model.name)
+    val className = RubyUtil.toClassName(model.name)
 
     val sb = ListBuffer[String]()
 
