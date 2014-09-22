@@ -80,7 +80,7 @@
               <b>Resources</b>
               <ul class="nav nav-sidebar">
                 @sd.resources.map { resource =>
-                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.plural</a></li>
+                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@core.UrlKey.generate(resource.model.name)">@resource.model.plural</a></li>
                 }
               </ul>
             }
@@ -97,7 +97,7 @@
             @if(!sd.models.isEmpty) {
               <b>Models</b>
               <ul class="nav nav-sidebar">
-                @sd.modelsWithoutResources.map { model =>
+                @sd.models.map { model =>
                   <li><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
                 }
               </ul>

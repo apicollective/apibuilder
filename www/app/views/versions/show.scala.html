@@ -20,15 +20,12 @@
 
     <h2>Resources</h2>
     @service.resources.map { resource =>
-      <div id="model-@core.UrlKey.generate(resource.model.name)"></div>
-      <a name="model-@core.UrlKey.generate(resource.model.name)"></a>
+      <div id="resource-@core.UrlKey.generate(resource.model.name)"></div>
+      <a name="resource-@core.UrlKey.generate(resource.model.name)"></a>
       <div class="version_resource">
-        <h3>@resource.model.name</h3>
+        <h3><a href="model-@core.UrlKey.generate(resource.model.name)">@resource.model.name</a></h3>
 
         @resource.model.description.getOrElse("")
-
-        <h4>Fields</h4>
-        @fields(tpl.org.get, tpl.service.get, tpl.version.get, service, resource.model.fields)
 
         <h4>Operations</h4>
         @if(resource.operations.isEmpty) {
@@ -105,7 +102,7 @@
     @if(service.models.isEmpty) {
       <em>None</em>
     } else {
-      @service.modelsWithoutResources.map { model =>
+      @service.models.map { model =>
         <div id="model-@core.UrlKey.generate(model.name)"></div>
         <a name="model-@core.UrlKey.generate(model.name)"></a>
         <div class="version_model">

@@ -63,11 +63,4 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
      }
   }
 
-  it("modelsWithoutResources") {
-    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
-    val noResources = service.modelsWithoutResources.map(_.name)
-    noResources.contains("error") should be(true)
-    noResources.contains("vendor") should be(false)
-  }
-
 }
