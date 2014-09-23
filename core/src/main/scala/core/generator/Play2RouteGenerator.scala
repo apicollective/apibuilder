@@ -87,7 +87,27 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
     params.map { param =>
       Seq(
         Some(parameterWithType(param)),
-        param.default.map( d => s"?= ${d}" )
+        param.default.map( d =>
+          param.paramtype match {
+            case PrimitiveParameterType(datatype) => datatype match {
+              case Datatype.StringType | Datatype.UnitType | Datatype.DateIso8601Type | Datatype.DateTimeIso8601Type | Datatype.UuidType => {
+                s"""?= "$d""""
+              }
+              case Datatype.IntegerType | Datatype.DoubleType | Datatype.LongType | Datatype.BooleanType | Datatype.DecimalType => {
+                s"?= ${d}"
+              }
+              case Datatype.UnitType | Datatype.MapType => {
+                sys.error(s"Unsupported type[${datatype}] for default values")
+              }
+            }
+            case ModelParameterType(model) => {
+              sys.error(s"Models cannot be defaults in path parameters")
+            }
+            case EnumParameterType(enum) => {
+              s"""?= "${d}""""
+            }
+          }
+        )
       ).flatten.mkString(" ")
     }
   }
