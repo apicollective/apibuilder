@@ -43,7 +43,7 @@ object Code extends Controller {
               case Some(v: Version) => {
                 val code = Code(
                   target = targetName,
-                  source = Target.generate(target, apidocVersion, org.key, org.metadata, ServiceDescription(v.json), serviceKey, version)
+                  source = Target.generate(target, apidocVersion, org.key, org.metadata, ServiceDescription(v.json), serviceKey, v.version)
                 )
                 Ok(Json.toJson(code))
               }
