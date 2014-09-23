@@ -6,13 +6,13 @@ import core._
 import core.ServiceDescription
 import org.scalatest.{ FunSpec, Matchers }
 
-class RubyGemGeneratorSpec extends FunSpec with Matchers {
+class RubyClientGeneratorSpec extends FunSpec with Matchers {
 
   it("enumName") {
-    RubyGemGenerator.enumName("CANCEL_REQUEST") should be("cancel_request")
-    RubyGemGenerator.enumName("cancel_request") should be("cancel_request")
-    RubyGemGenerator.enumName("cancelRequest") should be("cancel_request")
-    RubyGemGenerator.enumName("CancelRequest") should be("cancel_request")
+    RubyClientGenerator.enumName("CANCEL_REQUEST") should be("cancel_request")
+    RubyClientGenerator.enumName("cancel_request") should be("cancel_request")
+    RubyClientGenerator.enumName("cancelRequest") should be("cancel_request")
+    RubyClientGenerator.enumName("CancelRequest") should be("cancel_request")
   }
 
   describe("generateEnumClass") {
@@ -33,7 +33,7 @@ class RubyGemGeneratorSpec extends FunSpec with Matchers {
         )
       )
             
-      val enums = RubyGemGenerator.generateEnum(enum)
+      val enums = RubyClientGenerator.generateEnum(enum)
       enums.trim should be(TestHelper.readFile("core/src/test/resources/ruby-gem-enums.txt").trim)
     }
 
@@ -41,7 +41,7 @@ class RubyGemGeneratorSpec extends FunSpec with Matchers {
 
   it("generate ruby") {
     val json = io.Source.fromFile(new File("reference-api/api.json")).getLines.mkString("\n")
-    val generator = RubyGemGenerator(ServiceDescription(json), "gilt 0.0.1-test")
+    val generator = RubyClientGenerator(ServiceDescription(json), "gilt 0.0.1-test")
     //println(generator.generate())
   }
 }

@@ -85,7 +85,7 @@ object Target {
     val userAgent = target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
     lazy val ssd = new ScalaServiceDescription(sd, metadata)
     target.key match {
-      case "ruby_client" => RubyGemGenerator.generate(sd, userAgent)
+      case "ruby_client" => RubyClientGenerator.generate(sd, userAgent)
       case "ning_1_8_client" => ning.NingClientGenerator.generate(ning.NingVersions.V1_8_x, ssd, userAgent)
       case "play_2_2_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, ssd, userAgent)
       case "play_2_3_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, ssd, userAgent)

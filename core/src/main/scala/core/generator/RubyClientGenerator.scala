@@ -22,10 +22,10 @@ object RubyUtil {
 
 }
 
-object RubyGemGenerator {
+object RubyClientGenerator {
 
   def generate(sd: ServiceDescription, userAgent: String): String = {
-    new RubyGemGenerator(sd, userAgent).generate
+    new RubyClientGenerator(sd, userAgent).generate
   }
 
   def generateEnum(enum: Enum): String = {
@@ -90,10 +90,13 @@ object RubyGemGenerator {
 }
 
 /**
- * Generates a Ruby Gem file based on the service description
+ * Generates a Ruby Client file based on the service description
  * from api.json
  */
-case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
+case class RubyClientGenerator(
+  service: ServiceDescription,
+  userAgent: String
+) {
 
   private val moduleName = RubyUtil.toClassName(service.name)
 
@@ -107,7 +110,7 @@ case class RubyGemGenerator(service: ServiceDescription, userAgent: String) {
     service.resources.map { res => generateClientForResource(res) }.mkString("\n\n") +
     "\n\n  end" +
     "\n\n  module Models\n" +
-    service.enums.map { RubyGemGenerator.generateEnum(_) }.mkString("\n\n").indent(4) + "\n\n" +
+    service.enums.map { RubyClientGenerator.generateEnum(_) }.mkString("\n\n").indent(4) + "\n\n" +
     service.models.map { generateModel(_) }.mkString("\n\n") +
     "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +

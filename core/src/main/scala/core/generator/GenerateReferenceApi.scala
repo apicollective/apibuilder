@@ -36,7 +36,7 @@ object GenerateReferenceApi extends App {
   )
   genCode(Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, validator.serviceDescription.get, "apidoc gilt 0.0.1-reference"), "app/Play2Client.scala")
   genCode(
-    RubyGemGenerator(validator.serviceDescription.get, "apidoc gilt 0.0.1-reference").generate,
+    RubyClientGenerator(validator.serviceDescription.get, "apidoc gilt 0.0.1-reference").generate,
     "ruby/client.rb"
   )
 }
