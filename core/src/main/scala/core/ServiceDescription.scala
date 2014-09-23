@@ -290,6 +290,10 @@ object Datatype {
                                        example = """{ "foo": "bar" }""",
                                        description = "A javascript object. The keys must be strings per JSON object spec. Apidoc requires the values to also be strings - while debatable, this encourages use of real models in APIs vs. maps, keeping use of maps to simpler use cases. The choice of string for value as enables JSON serialization in all languages for all values of Maps - i.e. we can guarantee nice client interfaces. In typed languages (e.g. Scala), equivalent to Map[String, String]")
 
+  case object DateIso8601Type extends Datatype(name = "date-iso8601",
+                                               example = "2014-04-29",
+                                               description = "Date format in ISO 8601")
+
   case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
                                                    example = "2014-04-29T11:56:52Z",
                                                    description = "Date time format in ISO 8601")
@@ -302,7 +306,7 @@ object Datatype {
                                         example = "N/A",
                                         description = "Internal type used to represent things like an HTTP NoContent response. Maps to void in Java, Unit in Scala, nil in ruby, etc.")
 
-  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, MapType, UuidType, DateTimeIso8601Type)
+  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, MapType, UuidType, DateIso8601Type, DateTimeIso8601Type)
 
   val QueryParameterTypes = All.filter(_ != MapType)
 
@@ -444,6 +448,9 @@ object Field {
     }
   }
 
+  private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
+  private[this] val dateTimeISOFormatter = ISODateTimeFormat.dateTime()
+
   def assertValidDefault(datatype: Datatype, value: String) {
     datatype match {
       case Datatype.BooleanType => {
@@ -482,7 +489,11 @@ object Field {
       }
 
       case Datatype.DateTimeIso8601Type => {
-        ISODateTimeFormat.basicDateTime.parseDateTime(value)
+        dateTimeISOParser.parseDateTime(value)
+      }
+
+      case Datatype.DateIso8601Type => {
+        dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
       }
 
       case Datatype.StringType => ()

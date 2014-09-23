@@ -402,6 +402,7 @@ object ScalaDataType {
   case object ScalaMapType extends ScalaDataType("Map[String, String]")
   case object ScalaUnitType extends ScalaDataType("Unit")
   case object ScalaUuidType extends ScalaDataType("java.util.UUID")
+  case object ScalaDateIso8601Type extends ScalaDataType("org.joda.time.LocalDate")
   case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
@@ -419,6 +420,7 @@ object ScalaDataType {
     case Datatype.MapType => ScalaMapType
     case Datatype.UnitType => ScalaUnitType
     case Datatype.UuidType => ScalaUuidType
+    case Datatype.DateIso8601Type => ScalaDateIso8601Type
     case Datatype.DateTimeIso8601Type => ScalaDateTimeIso8601Type
   }
 
@@ -430,10 +432,12 @@ object ScalaDataType {
     case ScalaBooleanType => s"$varName.toString"
     case ScalaDecimalType => s"$varName.toString"
     case ScalaUuidType => s"$varName.toString"
+    case ScalaDateIso8601Type => s"$varName.toString"
     case ScalaDateTimeIso8601Type => {
-      s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
+      s"org.joda.time.format.ISODateFormat.dateTime.print($varName)"
     }
     case ScalaEnumType(_, _) => s"$varName.toString"
     case _ => throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
   }
+
 }

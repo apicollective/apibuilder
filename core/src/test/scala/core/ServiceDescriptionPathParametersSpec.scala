@@ -31,7 +31,8 @@ class ServiceDescriptionPathParametersSpec extends FunSpec with Matchers {
           "fields": [
             { "name": "id", "type": "long" },
             { "name": "name", "type": "string" },
-            { "name": "created_at", "type": "date-time-iso8601" },
+            { "name": "created_at_date", "type": "date-iso8601" },
+            { "name": "created_at_date_time", "type": "date-time-iso8601" },
             { "name": "tag", "type": "tag" },
             { "name": "tags", "type": "map" },
             { "name": "age_group", "type": "age_group" }
@@ -71,9 +72,14 @@ class ServiceDescriptionPathParametersSpec extends FunSpec with Matchers {
     ServiceDescriptionValidator(json).errors.mkString("") should be("")
   }
 
-  it("dates cannot be path parameters") {
-    val json = baseJson.format("GET", "/:created_at")
-    ServiceDescriptionValidator(json).errors.mkString("") should be("Resource[user] GET path parameter[created_at] has an invalid type[date-time-iso8601]. Only numbers and strings can be specified as path parameters")
+  it("dates can be path parameters") {
+    val json = baseJson.format("GET", "/:created_at_date")
+    ServiceDescriptionValidator(json).errors.mkString("") should be("")
+  }
+
+  it("date-time can be path parameters") {
+    val json = baseJson.format("GET", "/:created_at_date_time")
+    ServiceDescriptionValidator(json).errors.mkString("") should be("")
   }
 
   it("other models cannot be path parameters") {

@@ -346,6 +346,15 @@ require 'bigdecimal'
         end
       end
 
+      def Helper.to_date_iso8601(field_name, value, opts={})
+        if value.is_a?(Date)
+          Helper.parse_args(field_name, value, opts) { |v| v }
+        else
+          Preconditions.assert_class_or_nil(field_name, value, String)
+          Helper.parse_args(field_name, value, opts) { |v| Date.parse(v) }
+        end
+      end
+
       def Helper.to_date_time_iso8601(field_name, value, opts={})
         if value.is_a?(DateTime)
           Helper.parse_args(field_name, value, opts) { |v| v }

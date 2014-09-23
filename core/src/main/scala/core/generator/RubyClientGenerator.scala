@@ -441,20 +441,35 @@ case class RubyClientGenerator(
     val assertMethod = if (hasValue) { "assert_class" } else { "assert_class_or_nil" }
     val klass = rubyClass(datatype)
 
-    if (datatype == Datatype.DecimalType) {
-      s"HttpClient::Helper.to_big_decimal('$name', $value, :required => ${required}, :multiple => ${multiple})"
+    datatype match {
+      case Datatype.DecimalType => {
+        s"HttpClient::Helper.to_big_decimal('$name', $value, :required => ${required}, :multiple => ${multiple})"
+      }
 
-    } else if (datatype == Datatype.UuidType) {
-      s"HttpClient::Helper.to_uuid('$name', $value, :required => ${required}, :multiple => ${multiple})"
+      case Datatype.UuidType => {
+        s"HttpClient::Helper.to_uuid('$name', $value, :required => ${required}, :multiple => ${multiple})"
+      }
 
-    } else if (datatype == Datatype.DateTimeIso8601Type) {
-      s"HttpClient::Helper.to_date_time_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
+      case Datatype.DateIso8601Type => {
+        s"HttpClient::Helper.to_date_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
+      }
 
-    } else if (datatype == Datatype.BooleanType) {
-      s"HttpClient::Helper.to_boolean('$name', $value, :required => ${required}, :multiple => ${multiple})"
+      case Datatype.DateTimeIso8601Type => {
+        s"HttpClient::Helper.to_date_time_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
+      }
 
-    } else {
-      s"HttpClient::Helper.to_klass('$name', $value, $klass, :required => ${required}, :multiple => ${multiple})"
+      case Datatype.BooleanType => {
+        s"HttpClient::Helper.to_boolean('$name', $value, :required => ${required}, :multiple => ${multiple})"
+      }
+
+      case Datatype.DoubleType | Datatype.IntegerType | Datatype.LongType | Datatype.MapType | Datatype.StringType => {
+        s"HttpClient::Helper.to_klass('$name', $value, $klass, :required => ${required}, :multiple => ${multiple})"
+      }
+
+      case Datatype.UnitType => {
+        sys.error("Cannot have a unit type as a parameter")
+      }
+
     }
 
   }

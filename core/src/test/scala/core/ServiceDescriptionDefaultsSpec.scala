@@ -5,6 +5,27 @@ import org.scalatest.Matchers
 
 class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
 
+  it("accepts defaults for date-iso8601") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "created_at", "type": "date-iso8601", "default": "2014-01-01" }
+          ]
+        }
+      }
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("")
+
+    val createdAt = validator.serviceDescription.get.models.head.fields.find { _.name == "created_at" }.get
+    createdAt.default should be(Some("2014-01-01"))
+  }
+
   it("accepts strings and values as defaults for booleans") {
     val json = """
     {
