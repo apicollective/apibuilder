@@ -1,4 +1,4 @@
-name := "apidoc-standalone"
+name := "apidoc-ning"
 
 scalaVersion := "2.10.4"
 
