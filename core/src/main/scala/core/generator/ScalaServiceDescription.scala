@@ -434,7 +434,7 @@ object ScalaDataType {
     case ScalaUuidType => s"$varName.toString"
     case ScalaDateIso8601Type => s"$varName.toString"
     case ScalaDateTimeIso8601Type => {
-      s"org.joda.time.format.ISODateFormat.dateTime.print($varName)"
+      s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
     case ScalaEnumType(_, _) => s"$varName.toString"
     case _ => throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
