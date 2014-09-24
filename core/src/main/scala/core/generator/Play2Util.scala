@@ -103,7 +103,7 @@ case class Play2Util(config: ScalaClientMethodConfig) {
       d: ScalaDataType
     ): String = {
       d match {
-        case ScalaStringType => s"""${config.pathEncodingMethod}($name, "UTF-8")"""
+        case ScalaStringType | ScalaDateTimeIso8601Type | ScalaDateIso8601Type => s"""${config.pathEncodingMethod}($name, "UTF-8")"""
         case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
         case ScalaEnumType(_, _) => s"""${config.pathEncodingMethod}($name.toString, "UTF-8")"""
         case t => {
