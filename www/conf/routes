@@ -14,7 +14,7 @@ GET     /doc                                                      controllers.Do
 GET     /doc/                                                     controllers.DocController.index
 GET     /doc/apiJson                                              controllers.DocController.apiJson
 GET     /doc/types                                                controllers.DocController.types
-GET     /doc/codeGeneration                                       controllers.DocController.codeGeneration
+GET     /doc/clients                                              controllers.DocController.clients
 GET     /doc/examples                                             controllers.DocController.examples
 GET     /doc/history                                              controllers.DocController.history
 GET     /doc/releaseNotes                                         controllers.DocController.releaseNotes

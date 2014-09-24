@@ -1,0 +1,67 @@
+@import core.generator.Target
+
+@doc.main("Code Generation") {
+
+  <p>
+
+    Code generation of high quality client libraries to access
+    services described in apidoc is one of our primary goals. Apidoc
+    supports client generation in mulitple languages, and more can be
+    added/contributed over time based on community interest.
+
+  </p>
+
+  <p>
+
+    We spend a lot of time designing exactly how we want developers to
+    interact with the client libraries, and our proud of how simple
+    the current client libraries are to use and to read. A few
+    specific goals:
+
+    <ol>
+
+      <li> <b>Minimal Dependencies</b>: Where possible, we prefer
+      client libraries using native dependencies of web frameworks
+      (e.g. clients for play framework that require zero additional
+      dependencies). Where not possible, we take extra care to
+      minimize the dependencies needed, and where needed, to use the
+      most standard dependencies possible.</li>
+
+      <li> <b>Readability</b>: Each client library is first written by
+      hand. We then automate the generation of that hand written
+      client. The goal is to make the generated client
+      indistinguishable from a generated one. We will never reach
+      100%, but today we believe we are already close.</li>
+
+      <li> <b>Single File</b>: When you download a client from apidoc,
+      you will download a single fully contained, fully functional
+      file. This makes it simple to either drop the file directly into
+      your project or to build a library with standard tooling to
+      share the client.</li>
+
+    </ol>
+
+  </p>
+
+  <table class="table table-hover table-condensed">
+    <tmain>
+       <tr>
+         <th>Status</th>
+         <th>Platform</th>
+         <th>Notes</th>
+       </tr>
+    </tmain>
+
+    <tbody>
+
+      @core.generator.Target.All.map { target =>
+        <tr>
+          <td>@target.status</td>
+          <td>@target.key</td>
+          <td>@Html(target.description)</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+}

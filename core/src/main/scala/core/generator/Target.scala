@@ -26,7 +26,7 @@ object Target {
     Target(
       key = "ruby_client",
       name = "Ruby client",
-      description = "A pure ruby library to consume api.json web services. From apidoc, you can download a single file that provides a complete client to a service. The ruby client has minimal dependencies and does not require any additional gems.",
+      description = "A pure ruby library to consume api.json web services. The ruby client has minimal dependencies and does not require any additional gems.",
       status = Status.Beta
     ),
     Target(
@@ -38,7 +38,7 @@ object Target {
     Target(
       key = "play_2_2_client",
       name = "Play 2.2 client",
-      description = "Play Framework 2.2 client based on <a href='http://www.playframework.com/documentation/2.2.x/ScalaWS''>WS API</a>.",
+      description = "Play Framework 2.2 client based on <a href='http://www.playframework.com/documentation/2.2.x/ScalaWS''>WS API</a>. Note this client does NOT support HTTP PATCH.",
       status = Status.Beta
     ),
     Target(
@@ -56,7 +56,7 @@ object Target {
     Target(
       key = "play_2_x_routes",
       name = "Play 2.x routes",
-      description = "Apidoc can generate a routes file for the play 2.x framework. One workflow here is to write the service description in apidoc, upload, copy the routes file, then implement the controllers in play. By code generating the routes file, the compiler tells you if you are missing any operations defined by api.json. While this does not provide full testing (e.g. does not validate the responses), we have found it very pragmatic to ensure services match specifications.",
+      description = "Generate a routes file for play 2.x framework.",
       status = Status.Beta
     ),
     Target(
@@ -68,13 +68,13 @@ object Target {
     Target(
       key = "swagger_json",
       name = "Swagger JSON",
-      description = "We have a prototype to convert api.json to swagger-json. This enables access to all of the great tooling already built on swagger. We specifically made sure the conversion was straight forward as we built api.json and hope to soon have the time to productize the swagger-json generation. Currently we are waiting for the swagger version 2 working group to produce its final recommendation as the 2nd version of the specification is very close in spirit to how apidoc works.",
+      description = "Generate a valid swagger 2.0 json description of a service.",
       status = Status.Proposal
     ),
     Target(
       key = "javascript",
       name = "Javascript client",
-      description = "A few teams have expressed interest in a javascript client to api.json, though we are not yet aware of any work in progress.",
+      description = "Generate a simple to use wrapper to access a service from javascript.",
       status = Status.Proposal
     )
   )

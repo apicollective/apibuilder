@@ -21,8 +21,8 @@ object DocController extends Controller {
     Ok(views.html.doc.types())
   }
 
-  def codeGeneration = Action { implicit request =>
-    Ok(views.html.doc.codeGeneration())
+  def clients = Action { implicit request =>
+    Ok(views.html.doc.clients())
   }
 
   def examples = Action { implicit request =>
