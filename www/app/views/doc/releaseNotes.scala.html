@@ -1,5 +1,36 @@
 @doc.main("Release notes") {
 
+<h3>0.5.33</h3>
+
+  <ul>
+
+    <li>Date Type: New '@core.Datatype.DateIso8601Type.name' type
+    introduced. In ruby clients, maps to a Date instance. In JVM
+    clients, maps to an <code>org.joda.time.LocalDate</code>
+    instance. See <a href='https://github.com/gilt/apidoc/issues/161'>Issue
+    161</a></li>
+
+    <li>Dates now Supported in paths. When specifing an API, instances
+    of type date are now allowed in the HTTP Path. Previously, we
+    restricted this particular type from path parameters as
+    serialization is unclear; Serialization remains the responsibility
+    of the service itself and thus apidoc will just document that the
+    type is a
+    date. See <a href='https://github.com/gilt/apidoc/issues/161'>Issue
+    161</a></li>
+
+    <li>UI refactored so that resources are hyperlinked to their
+    underlying model; All models, even if mapped to resources, are now
+    listed in the Models section of the UI of
+    apidoc. See <a href='https://github.com/gilt/apidoc/issues/152'>Issue
+    152</a></li>
+
+    <li>When downloading a client for the 'latest' version of a
+    service, the user agent will reflect the actual version downloaded
+    (instead of 'latest')</li>
+
+  </ul>
+
 <h3>0.5.29</h3>
 
   <ul>
