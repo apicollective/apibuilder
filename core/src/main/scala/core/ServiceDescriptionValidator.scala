@@ -559,6 +559,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
                 case Some(Datatype.LongType) => None
                 case Some(Datatype.StringType) => None
                 case Some(Datatype.UuidType) => None
+                case Some(Datatype.DateIso8601Type) => None
+                case Some(Datatype.DateTimeIso8601Type) => None
                 case _ => {
                   if (enums.contains(typeName)) {
                     // Enums are treated as strings here
