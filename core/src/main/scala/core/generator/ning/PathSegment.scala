@@ -1,5 +1,16 @@
 package core.generator.ning
 
+/**
+  * This file has been modified from https://github.com/playframework/playframework/blob/2.3.x/framework/src/play/src/main/scala/play/utils/UriEncoding.scala
+  * 
+  * This file is subject to the Apache 2 license.
+  *  
+  *  This software is licensed under the Apache 2 license, quoted below.
+  *
+  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with
+  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with
+  *  the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
+  */
 object PathSegment {
 
   val definition = """
