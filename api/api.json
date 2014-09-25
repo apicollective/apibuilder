@@ -11,14 +11,14 @@
 	"target": {
 	    "description": "The target platform for code generation.",
 	    "values": [
+		{ "name": "commons_6_client" },
 		{ "name": "ning_1_8_client", "description": "Generates a client based on https://sonatype.github.io/async-http-client v 1.8" },
 		{ "name": "play_2_2_client", "description": "Generates a client w/ no dependencies external to play framework 2.2" },
 		{ "name": "play_2_3_client", "description": "Generates a client w/ no dependencies external to play framework 2.3" },
 		{ "name": "play_2_x_json" },
 		{ "name": "play_2_x_routes" },
 		{ "name": "ruby_client" },
-		{ "name": "scala_models" },
-		{ "name": "commons_6_client" }
+		{ "name": "scala_models" }
 	    ]
 	},
 	"visibility": {
