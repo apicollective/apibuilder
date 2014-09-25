@@ -132,6 +132,7 @@ package com.gilt.apidoc.models {
     case object Play2XRoutes extends Target { override def toString = "play_2_x_routes" }
     case object RubyClient extends Target { override def toString = "ruby_client" }
     case object ScalaModels extends Target { override def toString = "scala_models" }
+    case object Commons6Client extends Target { override def toString = "commons_6_client" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -149,7 +150,7 @@ package com.gilt.apidoc.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(AvroSchema, Play22Client, Play23Client, Play2XJson, Play2XRoutes, RubyClient, ScalaModels)
+    val all = Seq(AvroSchema, Play22Client, Play23Client, Play2XJson, Play2XRoutes, RubyClient, ScalaModels, Commons6Client)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap

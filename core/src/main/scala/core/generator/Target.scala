@@ -76,6 +76,12 @@ object Target {
       name = "Javascript client",
       description = "Generate a simple to use wrapper to access a service from javascript.",
       status = Status.Proposal
+    ),
+    Target(
+      key = "commons_6_client",
+      name = "Commons 6 client",
+      description = "Gilt internal client based on commons 6",
+      status = Status.Beta
     )
   )
 
@@ -92,6 +98,7 @@ object Target {
       case "play_2_x_routes" => Play2RouteGenerator.generate(sd)
       case "play_2_x_json" => Play2Models.apply(ssd)
       case "scala_models" => ScalaCaseClasses.generate(ssd)
+      case "commons_6_client" => Commons6ClientGenerator.generate(ssd, userAgent)
       case (other) => {
         sys.error(s"unsupported code generation for target[$other]")
       }

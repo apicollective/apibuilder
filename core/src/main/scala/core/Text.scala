@@ -128,7 +128,7 @@ object Text {
   }
 
   def initCap(word: String): String = {
-    new StringOps(word).capitalize
+    word.capitalize
   }
 
   def initCap(parts: Seq[String]): String = {

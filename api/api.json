@@ -17,7 +17,8 @@
 		{ "name": "play_2_x_json" },
 		{ "name": "play_2_x_routes" },
 		{ "name": "ruby_client" },
-		{ "name": "scala_models" }
+		{ "name": "scala_models" },
+		{ "name": "commons_6_client" }
 	    ]
 	},
 	"visibility": {
