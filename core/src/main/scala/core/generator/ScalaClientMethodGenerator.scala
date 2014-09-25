@@ -63,12 +63,12 @@ case class ScalaClientMethodGenerator(
       } else {
         Seq.empty
       }
-      Seq("package error {") ++
+      (Seq("package error {") ++
           jsonImport ++
       Seq(
           errorTypeClass(response).indent(2),
           "}"
-      ).mkString("\n")
+      )).mkString("\n")
     }.distinct.sorted.mkString("\n\n")
   }
 
