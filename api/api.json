@@ -11,7 +11,7 @@
 	"target": {
 	    "description": "The target platform for code generation.",
 	    "values": [
-		{ "name": "commons_6_client" },
+		{ "name": "commons_6_client", "description": "Generates a Gilt Commons 6 client" },
 		{ "name": "ning_1_8_client", "description": "Generates a client based on https://sonatype.github.io/async-http-client v 1.8" },
 		{ "name": "play_2_2_client", "description": "Generates a client w/ no dependencies external to play framework 2.2" },
 		{ "name": "play_2_3_client", "description": "Generates a client w/ no dependencies external to play framework 2.3" },
@@ -458,7 +458,7 @@
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" },
                         { "name": "serviceKey", "type": "string", "description": "The service key for which to search versions" },
                         { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
-			{ "name": "target", "type": "target" }
+                        { "name": "target", "type": "target" }
 		    ],
                     "responses": {
                         "200": { "type": "code" },
