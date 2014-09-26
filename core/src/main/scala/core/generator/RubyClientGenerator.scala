@@ -22,10 +22,10 @@ object RubyUtil {
 
 }
 
-object RubyClientGenerator {
+object RubyClientGenerator extends CodeGenerator {
 
-  def generate(sd: ServiceDescription, userAgent: String): String = {
-    new RubyClientGenerator(sd, userAgent).generate
+  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
+    new RubyClientGenerator(ssd, userAgent).generate
   }
 
   def generateEnum(enum: Enum): String = {
@@ -94,9 +94,10 @@ object RubyClientGenerator {
  * from api.json
  */
 case class RubyClientGenerator(
-  service: ServiceDescription,
+  scalaService: ScalaServiceDescription,
   userAgent: String
 ) {
+  private val service = scalaService.serviceDescription
 
   private val moduleName = RubyUtil.toClassName(service.name)
 

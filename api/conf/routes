@@ -19,7 +19,7 @@ POST       /users/authenticate                       controllers.Users.postAuthe
 POST       /users                                    controllers.Users.post()
 PUT        /users/:guid                              controllers.Users.putByGuid(guid: java.util.UUID)
 POST       /validations                              controllers.Validations.post()
-GET        /:orgKey/:serviceKey/:version/:target     controllers.Code.getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, target: String)
+GET        /:orgKey/:serviceKey/:version/:targetKey  controllers.Code.getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetKey: String)
 GET        /:orgKey                                  controllers.Services.getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 PUT        /:orgKey/:serviceKey                      controllers.Services.putByOrgKeyAndServiceKey(orgKey: String, serviceKey: String)
 DELETE     /:orgKey/:serviceKey                      controllers.Services.deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String)
@@ -27,3 +27,4 @@ GET        /:orgKey/:serviceKey                      controllers.Versions.getByO
 GET        /:orgKey/:serviceKey/:version             controllers.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String)
 PUT        /:orgKey/:serviceKey/:version             controllers.Versions.putByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String)
 DELETE     /:orgKey/:serviceKey/:version             controllers.Versions.deleteByOrgKeyAndServiceKeyAndVersion(orgKey: String, serviceKey: String, version: String)
+GET        /targets/:orgKey                          controllers.Targets.getByOrgKey(orgKey: String)

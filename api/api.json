@@ -8,18 +8,6 @@
     ],
 
     "enums": {
-	"target": {
-	    "description": "The target platform for code generation.",
-	    "values": [
-		{ "name": "ning_1_8_client", "description": "Generates a client based on https://sonatype.github.io/async-http-client v 1.8" },
-		{ "name": "play_2_2_client", "description": "Generates a client w/ no dependencies external to play framework 2.2" },
-		{ "name": "play_2_3_client", "description": "Generates a client w/ no dependencies external to play framework 2.3" },
-		{ "name": "play_2_x_json" },
-		{ "name": "play_2_x_routes" },
-		{ "name": "ruby_client" },
-		{ "name": "scala_models" }
-	    ]
-	},
 	"visibility": {
 	    "description": "Controls who is able to view this version",
 	    "values": [
@@ -120,11 +108,19 @@
             ]
         },
 
+        "target": {
+            "description": "The target platform for code generation.",
+            "fields": [
+                { "name": "key", "type": "string" },
+                { "name": "description", "type": "string", "required": false }
+            ]
+        },
+
         "code": {
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "target", "type": "target" },
+                { "name": "target", "type": "string" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -447,21 +443,38 @@
         },
 
         "code": {
-	    "path": "/:orgKey/:serviceKey/:version/:target",
+	    "path": "/:orgKey/:serviceKey/:version/:targetKey",
 
             "operations": [
                 {
                     "method": "GET",
                     "description": "Generate code for a specific version of a service.",
                     "parameters": [
-                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" },
-                        { "name": "serviceKey", "type": "string", "description": "The service key for which to search versions" },
+                        { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
+                        { "name": "serviceKey", "type": "string", "description": "The service key for which to generate code" },
                         { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
-			{ "name": "target", "type": "target" }
+                        { "name": "targetKey", "type": "string", "description": "The target key for which to generate code" }
 		    ],
                     "responses": {
                         "200": { "type": "code" },
                         "409": { "type": "[error]", "description": "If the target or version are invalid." }
+                    }
+                }
+            ]
+        },
+
+        "target": {
+            "path": "/targets/:orgKey",
+
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "List all targets of this org.",
+                    "parameters": [
+                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" }
+                    ],
+                    "responses": {
+                        "200": { "type": "[target]" }
                     }
                 }
             ]

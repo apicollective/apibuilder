@@ -31,6 +31,18 @@ object PlayFrameworkVersions {
   )
 }
 
+object Play22ClientGenerator extends CodeGenerator {
+  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
+    Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, ssd, userAgent)
+  }
+}
+
+object Play23ClientGenerator extends CodeGenerator {
+  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
+    Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, ssd, userAgent)
+  }
+}
+
 object Play2ClientGenerator {
 
   def generate(version: PlayFrameworkVersion, sd: ServiceDescription, userAgent: String): String = {

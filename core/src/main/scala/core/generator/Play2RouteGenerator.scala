@@ -3,14 +3,23 @@ package core.generator
 import core._
 import io.Source
 
-object Play2RouteGenerator {
+object Play2RouteGenerator extends CodeGenerator {
 
   def apply(json: String): String = {
     generate(ServiceDescription(json))
   }
 
+  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
+    generate(ssd)
+  }
+
   def generate(sd: ServiceDescription): String = {
-    new Play2RouteGenerator(sd).generate.getOrElse("")
+    val ssd = new ScalaServiceDescription(sd)
+    generate(ssd)
+  }
+
+  def generate(ssd: ScalaServiceDescription): String = {
+    new Play2RouteGenerator(ssd).generate.getOrElse("")
   }
 }
 
@@ -19,9 +28,11 @@ object Play2RouteGenerator {
  * Generates a Play routes file based on the service description
  * from api.json
  */
-case class Play2RouteGenerator(service: ServiceDescription) {
+case class Play2RouteGenerator(scalaService: ScalaServiceDescription) {
 
   private val GlobalPad = 5
+
+  private val service = scalaService.serviceDescription
 
   def generate(): Option[String] = {
     val all = service.resources.flatMap { resource =>

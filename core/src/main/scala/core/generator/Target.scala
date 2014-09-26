@@ -11,93 +11,93 @@ object Status {
   case object Proposal extends Status
 }
 
-case class Target(key: String, name: String, description: String, status: Status) {
+case class CodeGenTarget(key: String, name: String, description: Option[String], status: Status, generator: Option[CodeGenerator]) {
  
  def userAgent(apidocVersion: String, orgKey: String, serviceKey: String, serviceVersion: String): String = {
     // USER_AGENT = "apidoc:0.4.64 http://www.apidoc.me/gilt/code/mercury-generic-warehouse-api/0.0.3-dev/ruby_client"
     s"apidoc:$apidocVersion http://www.apidoc.me/$orgKey/code/$serviceKey/$serviceVersion/$key"
   }
 
+  def supportsOrganization(org: String): Boolean = true
+
 }
 
-object Target {
+object CodeGenTarget {
 
   val All = Seq(
-    Target(
+    CodeGenTarget(
       key = "ruby_client",
       name = "Ruby client",
-      description = "A pure ruby library to consume api.json web services. The ruby client has minimal dependencies and does not require any additional gems.",
-      status = Status.Beta
+      description = Some("A pure ruby library to consume api.json web services. The ruby client has minimal dependencies and does not require any additional gems."),
+      status = Status.Beta,
+      generator = Some(core.generator.RubyClientGenerator)
     ),
-    Target(
+    CodeGenTarget(
       key = "ning_1_8_client",
       name = "Ning Async Http Client 1.8",
-      description = "Ning Async Http v.18 Client - see https://sonatype.github.io/async-http-client",
-      status = Status.Alpha
+      description = Some("Ning Async Http v.18 Client - see https://sonatype.github.io/async-http-client"),
+      status = Status.Alpha,
+      generator = Some(core.generator.ning.Ning18ClientGenerator)
     ),
-    Target(
+    CodeGenTarget(
       key = "play_2_2_client",
       name = "Play 2.2 client",
-      description = "Play Framework 2.2 client based on <a href='http://www.playframework.com/documentation/2.2.x/ScalaWS''>WS API</a>. Note this client does NOT support HTTP PATCH.",
-      status = Status.Beta
+      description = Some("Play Framework 2.2 client based on <a href='http://www.playframework.com/documentation/2.2.x/ScalaWS''>WS API</a>. Note this client does NOT support HTTP PATCH."),
+      status = Status.Beta,
+      generator = Some(core.generator.Play22ClientGenerator)
     ),
-    Target(
+    CodeGenTarget(
       key = "play_2_3_client",
       name = "Play 2.3 client",
-      description = "Play Framework 2.3 client based on  <a href='http://www.playframework.com/documentation/2.3.x/ScalaWS'>WS API</a>.",
-      status = Status.Beta
+      description = Some("Play Framework 2.3 client based on  <a href='http://www.playframework.com/documentation/2.3.x/ScalaWS'>WS API</a>."),
+      status = Status.Beta,
+      generator = Some(core.generator.Play23ClientGenerator)
     ),
-    Target(
+    CodeGenTarget(
       key = "play_2_x_json",
       name = "Play 2.x json",
-      description = "Generate play 2.x case classes with json serialization based on <a href='http://www.playframework.com/documentation/2.3.x/ScalaJsonCombinators'>Scala Json combinators</a>. No need to use this target if you are already using the Play Client target.",
-      status = Status.Beta
+      description = Some("Generate play 2.x case classes with json serialization based on <a href='http://www.playframework.com/documentation/2.3.x/ScalaJsonCombinators'>Scala Json combinators</a>. No need to use this target if you are already using the Play Client target."),
+      status = Status.Beta,
+      generator = Some(core.generator.Play2Models)
     ),
-    Target(
+    CodeGenTarget(
       key = "play_2_x_routes",
       name = "Play 2.x routes",
-      description = "Generate a routes file for play 2.x framework.",
-      status = Status.Beta
+      description = Some("Generate a routes file for play 2.x framework."),
+      status = Status.Beta,
+      generator = Some(core.generator.Play2RouteGenerator)
     ),
-    Target(
+    CodeGenTarget(
       key = "scala_models",
       name = "Scala models",
-      description = "Generate scala models from the API description.",
-      status = Status.Beta
+      description = Some("Generate scala models from the API description."),
+      status = Status.Beta,
+      generator = Some(core.generator.ScalaCaseClasses)
     ),
-    Target(
+    CodeGenTarget(
       key = "swagger_json",
       name = "Swagger JSON",
-      description = "Generate a valid swagger 2.0 json description of a service.",
-      status = Status.Proposal
+      description = Some("Generate a valid swagger 2.0 json description of a service."),
+      status = Status.Proposal,
+      generator = None
     ),
-    Target(
+    CodeGenTarget(
       key = "javascript",
       name = "Javascript client",
-      description = "Generate a simple to use wrapper to access a service from javascript.",
-      status = Status.Proposal
+      description = Some("Generate a simple to use wrapper to access a service from javascript."),
+      status = Status.Proposal,
+      generator = None
     )
   )
 
-  val Implemented = All.filter(_.status != Status.Proposal)
+  val Implemented = All.filter(target => target.status != Status.Proposal && target.generator.isDefined)
 
-  def generate(target: Target, apidocVersion: String, orgKey: String, metadata: Option[OrganizationMetadata], sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
+  def generate(target: CodeGenTarget, apidocVersion: String, orgKey: String, metadata: Option[OrganizationMetadata], sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
     val userAgent = target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
     lazy val ssd = new ScalaServiceDescription(sd, metadata)
-    target.key match {
-      case "ruby_client" => RubyClientGenerator.generate(sd, userAgent)
-      case "ning_1_8_client" => ning.NingClientGenerator.generate(ning.NingVersions.V1_8_x, ssd, userAgent)
-      case "play_2_2_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, ssd, userAgent)
-      case "play_2_3_client" => Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, ssd, userAgent)
-      case "play_2_x_routes" => Play2RouteGenerator.generate(sd)
-      case "play_2_x_json" => Play2Models.apply(ssd)
-      case "scala_models" => ScalaCaseClasses.generate(ssd)
-      case (other) => {
-        sys.error(s"unsupported code generation for target[$other]")
-      }
-    }
+    target.generator.fold(sys.error(s"unsupported code generation for target[$target.key]"))(_.generate(ssd, userAgent))
   }
 
-  def findByKey(key: String): Option[Target] = All.find(_.key == key)
+  def findByKey(key: String): Option[CodeGenTarget] = All.find(_.key == key)
 
 }
