@@ -58,7 +58,7 @@
         <tr>
           <td>@target.status</td>
           <td>@target.key</td>
-          <td>@Html(target.description)</td>
+          <td>@Html(target.description.getOrElse(""))</td>
         </tr>
       }
     </tbody>

@@ -87,6 +87,8 @@ object RubyClientGenerator extends CodeGenerator {
     }
   }
 
+  def apply(sd: ServiceDescription, userAgent: String): RubyClientGenerator = RubyClientGenerator(new ScalaServiceDescription(sd), userAgent)
+
 }
 
 /**

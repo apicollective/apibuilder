@@ -88,7 +88,7 @@ object CodeGenTarget {
       status = Status.Proposal,
       generator = None
     )
-  )
+  ).sortBy(_.key)
 
   val Implemented = All.filter(target => target.status != Status.Proposal && target.generator.isDefined)
 

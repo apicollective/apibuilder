@@ -9,6 +9,10 @@ object Play2RouteGenerator extends CodeGenerator {
     generate(ServiceDescription(json))
   }
 
+  def apply(sd: ServiceDescription): Play2RouteGenerator = {
+    Play2RouteGenerator(new ScalaServiceDescription(sd))
+  }
+
   override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
     generate(ssd)
   }
