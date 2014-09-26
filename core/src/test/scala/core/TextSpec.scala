@@ -78,16 +78,68 @@ class TextSpec extends FunSpec with Matchers {
 
   describe("pluralize") {
 
+    it("KnownPlurals are handled (e.g. fish -> fish)") {
+      Text.KnownPlurals.foreach { word =>
+        Text.pluralize(word) should be(word)
+      }
+    }
+
     it("pluralizes standard words") {
+      // see https://en.wikipedia.org/wiki/English_plurals
       // see http://www.oxforddictionaries.com/us/words/plurals-of-nouns
       val actuals = Map(
+        // Where a singular noun ends in a sibilant sound —/s/, /z/,
+        // /ʃ/, /ʒ/, /tʃ/ or /dʒ/— the plural is formed by adding
+        // /ɨz/. The spelling adds -es, or -s if the singular already
+        // ends in -e:
+        "kiss" -> "kisses",
+        "phase" -> "phases",
+
+        // When the singular form ends in a voiceless consonant (other
+        // than a sibilant) —/p/, /t/, /k/, /f/ (sometimes) or /θ/—
+        // the plural is formed by adding /s/. The spelling adds -s:
+        "lap" -> "laps",
+        "cat" -> "cats",
+
+        // For all other words (i.e. words ending in vowels or voiced
+        // non-sibilants) the regular plural adds /z/, represented
+        // orthographically by -s:
+        "boy" -> "boys",
+        "gilt" -> "girls",
+        "chair" -> "chairs",
+
+        // With nouns ending in o preceded by a consonant, the plural
+        // in many cases is spelled by adding -es (pronounced /z/):
+        "hero" -> "heroes",
+        "potato" -> "potatoes",
+
+        // However many nouns of foreign origin, including almost all
+        // Italian loanwords, add only -s:
+        "piano" -> "pianoes",
+        "pro" -> "pros",
+        "quarto" -> "quartos",
+
+        // Nouns ending in a y preceded by a consonant usually drop
+        // the y and add -ies (pronounced /iz/, or /aiz/ in words
+        // where the y is pronounced /ai/):
+        "cherry" -> "cherries",
+        "lady" -> "ladies",
+        "sky" -> "skies",
+
+        // Words ending in quy also follow this pattern:
+        "soliloquy" -> "soliloquies",
+
+        // Words ending in a y preceded by a vowel form their plurals by adding -s:
+        "day" -> "days",
+        "monkey" -> "monkey",
+
         "berry" -> "berries",
         "activity" -> "activities",
         "daisy" -> "daisies",
         "church" -> "churches",
+        "commit" -> "commits",
         "bus" -> "buses",
         "fox" -> "foxes",
-        "day" -> "days",
         "stomach" -> "stomachs",
         "epoch" -> "epochs",
         "knife" -> "knives",
@@ -101,10 +153,9 @@ class TextSpec extends FunSpec with Matchers {
         "studio" -> "studios",
         "zoo" -> "zoos",
         "embryo" -> "embryos",
-        "buffalo" -> "buffaloes",
         "domino" -> "dominoes",
         "echo" -> "echoes",
-        "embargo" -> "embarchoes",
+        "embargo" -> "embargoes",
         "user" -> "users",
         "address" -> "addresses",
         "price" -> "prices",
@@ -115,10 +166,18 @@ class TextSpec extends FunSpec with Matchers {
         "species" -> "species"
       )
 
-      actuals.foreach { case (singular, plural) =>
-        Text.pluralize(singular) should be(plural)
-        Text.pluralize(plural) should be(plural)
+      val errors = actuals.flatMap { case (singular, plural) =>
+        if (Text.pluralize(singular) != plural) {
+          Some("a: %s should have been %s but was %s".format(singular, plural, Text.pluralize(singular)))
+        } else if (Text.pluralize(plural) != plural) {
+          Some("a: %s should have been %s but was %s".format(plural, plural, Text.pluralize(plural)))
+          None // TODO
+        } else {
+          None
+        }
       }
+
+      errors.toSeq.sorted.mkString("\n", "\n", "\n") should be("")
     }
 
   }

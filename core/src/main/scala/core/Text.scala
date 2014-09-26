@@ -79,7 +79,21 @@ object Text {
   private val Plurals = Map("datum" -> "data",
                             "person" -> "people",
                             "species" -> "species")
-  private val KnownPlurals = Plurals.values.toSet
+  private[core] val KnownPlurals = (Plurals.values ++ Seq(
+    "bison",
+    "buffalo",
+    "deer",
+    "duck",
+    "fish",
+    "moose",
+    "pike",
+    "plankton",
+    "salmon",
+    "sheep",
+    "squid",
+    "swine",
+    "trout"
+  )).toSet
 
   /**
    * Handle only base cases for pluralization. User can specify own plural
@@ -92,15 +106,26 @@ object Text {
     } else if (Plurals.contains(value)) {
       Plurals(value)
 
-    } else if (value.endsWith("ss")) {
+    } else if (value.endsWith("ss") || value.endsWith("us") || value.endsWith("ch")) {
       value + "es"
+
+    } else if (value.endsWith("os") || value.endsWith("ys")) {
+      value
 
     } else if (value.endsWith("es") || value.endsWith("data")) {
       value
 
     } else if (value.endsWith("y")) {
-      val letters = value.split("")
-      letters.slice(0, letters.size - 1).mkString("") + "ies"
+      if (value.endsWith("ay") || value.endsWith("ey") || value.endsWith("iy") || value.endsWith("oy") || value.endsWith("uy")) {
+        value + "s"
+      } else {
+        val letters = value.split("")
+        letters.slice(0, letters.size - 1).mkString("") + "ies"
+      }
+
+    } else if (value.endsWith("o")) {
+      // TODO - e.c. echo / avocado
+      value + "s"
 
     } else {
       value + "s"
