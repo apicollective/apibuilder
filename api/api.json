@@ -120,7 +120,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "target", "type": "string" },
+                { "name": "targetKey", "type": "string" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -471,7 +471,7 @@
                     "method": "GET",
                     "description": "List all targets of this org.",
                     "parameters": [
-                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" }
+                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search targets" }
                     ],
                     "responses": {
                         "200": { "type": "[target]" }

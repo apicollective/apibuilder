@@ -3,13 +3,6 @@ package core.generator
 import com.gilt.apidoc.models.OrganizationMetadata
 import core.{ServiceDescription, Text}
 
-sealed trait Status
-
-object Status {
-  case object Alpha extends Status
-  case object Beta extends Status
-  case object Proposal extends Status
-}
 
 case class CodeGenTarget(key: String, name: String, description: Option[String], status: Status, generator: Option[CodeGenerator]) {
  

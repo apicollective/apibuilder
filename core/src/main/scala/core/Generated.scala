@@ -3,7 +3,7 @@ package com.gilt.apidoc.models {
    * Generated source code.
    */
   case class Code(
-    target: String,
+    targetKey: String,
     source: String
   )
 
