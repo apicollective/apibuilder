@@ -193,7 +193,7 @@ case class RubyClientGenerator(
             sys.error(s"Could not find path parameter named[$varName]")
           }
           param.paramtype match {
-            case t: PrimitiveParameterType => s"#{${param.name}}"
+            case t: PrimitiveParameterType => s"#{${asString(varName, t.datatype)}}"
             case m: ModelParameterType => sys.error("Models cannot be in the path")
             case e: EnumParameterType => s"#{${param.name}.value}"
           }
@@ -483,14 +483,20 @@ case class RubyClientGenerator(
       case Datatype.BooleanType => "String"
       case Datatype.DecimalType => "BigDecimal"
       case Datatype.UuidType => "String"
+      case Datatype.DateIso8601Type => "Date"
       case Datatype.DateTimeIso8601Type => "DateTime"
       case Datatype.MapType => "Hash"
       case Datatype.UnitType => "nil"
-      case _ => {
-        sys.error(s"Cannot map data type[${datatype}] to ruby class")
-      }
     }
   }
 
+  private def asString(varName: String, d: Datatype): String = d match {
+    case Datatype.StringType | Datatype.IntegerType | Datatype.DoubleType | Datatype.LongType | Datatype.BooleanType | Datatype.DecimalType | Datatype.UuidType => varName
+    case Datatype.DateIso8601Type => s"$varName.strftime('%Y-%m-%d')"
+    case Datatype.DateTimeIso8601Type => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
+    case Datatype.MapType | Datatype.UnitType => {
+      sys.error(s"Unsupported type[$d] for string formatting - name[$varName]")
+    }
+  }
 
 }
