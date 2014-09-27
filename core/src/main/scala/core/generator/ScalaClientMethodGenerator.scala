@@ -56,7 +56,6 @@ case class ScalaClientMethodGenerator(
   def errorPackage(): String = {
     ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(r => !(r.isSuccess || r.isUnit)).map { response =>
       val etc = errorTypeClass(response).distinct.sorted.mkString("\n\n").indent(2)
-      println(etc)
       Seq(
         "package error {",
         "",
