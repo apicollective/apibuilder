@@ -1,6 +1,6 @@
 name := "apidoc"
 
-scalaVersion in ThisBuild := "2.11.1"
+scalaVersion in ThisBuild := "2.11.2"
 
 lazy val core = project
   .in(file("core"))
@@ -8,7 +8,7 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.3.0"
+      "com.typesafe.play" %% "play-json" % "2.3.4"
     )
   )
 
