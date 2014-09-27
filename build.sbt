@@ -1,6 +1,6 @@
 name := "apidoc"
 
-scalaVersion in ThisBuild := "2.11.1"
+scalaVersion in ThisBuild := "2.11.2"
 
 lazy val core = project
   .in(file("core"))
