@@ -8,8 +8,7 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.3.0",
-      "org.atteo" % "evo-inflector" % "1.2.1"
+      "com.typesafe.play" %% "play-json" % "2.3.0"
     )
   )
 
@@ -43,6 +42,7 @@ lazy val www = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
   libraryDependencies ++= Seq(
+    "org.atteo" % "evo-inflector" % "1.2.1",
     "org.scalatest" %% "scalatest" % "2.2.0" % "test"
   ),
   scalacOptions += "-feature"
