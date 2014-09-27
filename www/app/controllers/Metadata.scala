@@ -48,8 +48,6 @@ object Metadata extends Controller {
           packageName = valid.package_name
         )
 
-        println("VALID: " + valid)
-        println("METADATA: " + metadata)
         request.api.organizationMetadata.put(metadata, request.org.key).map { m =>
           Redirect(routes.Metadata.show(request.org.key)).flashing("success" -> s"Metadata updated")
         }.recover {
