@@ -76,10 +76,28 @@ object Text {
     }
   }
 
-  private val Plurals = Map("datum" -> "data",
-                            "person" -> "people",
-                            "species" -> "species")
-  private val KnownPlurals = Plurals.values.toSet
+  private val Plurals = Map(
+    "metadatum" -> "metadata",
+    "datum" -> "data",
+    "person" -> "people",
+    "species" -> "species",
+    "epoch" -> "epochs"
+  )
+  private[core] val KnownPlurals = (Plurals.values ++ Seq(
+    "bison",
+    "buffalo",
+    "deer",
+    "duck",
+    "fish",
+    "moose",
+    "pike",
+    "plankton",
+    "salmon",
+    "sheep",
+    "squid",
+    "swine",
+    "trout"
+  )).toSet
 
   /**
    * Handle only base cases for pluralization. User can specify own plural
@@ -92,18 +110,8 @@ object Text {
     } else if (Plurals.contains(value)) {
       Plurals(value)
 
-    } else if (value.endsWith("ss")) {
-      value + "es"
-
-    } else if (value.endsWith("es") || value.endsWith("data")) {
-      value
-
-    } else if (value.endsWith("y")) {
-      val letters = value.split("")
-      letters.slice(0, letters.size - 1).mkString("") + "ies"
-
     } else {
-      value + "s"
+      org.atteo.evo.inflector.English.plural(value)
     }
   }
 
