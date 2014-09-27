@@ -155,7 +155,13 @@ class TextSpec extends FunSpec with Matchers {
         "family" -> "families",
         "datum" -> "data",
         "person" -> "people",
-        "species" -> "species"
+        "species" -> "species",
+
+        // Camelcare, snake case
+        "error_message" -> "error_messages",
+        "error_messages" -> "error_messages",
+        "errorMessage" -> "errorMessages",
+        "errorMessages" -> "errorMessages"
       )
 
       val errors = actuals.flatMap { case (singular, plural) =>

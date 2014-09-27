@@ -110,6 +110,9 @@ object Text {
     } else if (Plurals.contains(value)) {
       Plurals(value)
 
+    } else if (value.endsWith("es") || value.endsWith("data")) {
+      value
+
     } else {
       org.atteo.evo.inflector.English.plural(value)
     }
