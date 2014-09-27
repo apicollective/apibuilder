@@ -445,7 +445,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
     val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(!_.method.isEmpty).flatMap { op =>
-        val types = if (Util.isJsonDocumentMethod(op.method.get)) { 
+        val types = if (op.body.isEmpty && Util.isJsonDocumentMethod(op.method.get)) { 
           ValidDatatypes ++
           internalServiceDescription.get.models.filter(!_.name.isEmpty).map(_.name) ++
           internalServiceDescription.get.enums.filter(!_.name.isEmpty).map(_.name)
