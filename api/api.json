@@ -112,6 +112,7 @@
             "description": "The target platform for code generation.",
             "fields": [
                 { "name": "key", "type": "string" },
+                { "name": "name", "type": "string" },
                 { "name": "description", "type": "string", "required": false }
             ]
         },

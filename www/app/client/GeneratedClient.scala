@@ -3,7 +3,7 @@ package com.gilt.apidoc.models {
    * Generated source code.
    */
   case class Code(
-    target: com.gilt.apidoc.models.Target,
+    targetKey: String,
     source: String
   )
 
@@ -83,6 +83,15 @@ package com.gilt.apidoc.models {
   )
 
   /**
+   * The target platform for code generation.
+   */
+  case class Target(
+    key: String,
+    name: String,
+    description: scala.Option[String] = None
+  )
+
+  /**
    * A user is a top level person interacting with the api doc server.
    */
   case class User(
@@ -108,57 +117,6 @@ package com.gilt.apidoc.models {
     version: String,
     json: String
   )
-
-  /**
-   * The target platform for code generation.
-   */
-  sealed trait Target
-
-  object Target {
-
-    /**
-     * Generates a client based on https://sonatype.github.io/async-http-client v 1.8
-     */
-    case object Ning18Client extends Target { override def toString = "ning_1_8_client" }
-    /**
-     * Generates a client w/ no dependencies external to play framework 2.2
-     */
-    case object Play22Client extends Target { override def toString = "play_2_2_client" }
-    /**
-     * Generates a client w/ no dependencies external to play framework 2.3
-     */
-    case object Play23Client extends Target { override def toString = "play_2_3_client" }
-    case object Play2XJson extends Target { override def toString = "play_2_x_json" }
-    case object Play2XRoutes extends Target { override def toString = "play_2_x_routes" }
-    case object RubyClient extends Target { override def toString = "ruby_client" }
-    case object ScalaModels extends Target { override def toString = "scala_models" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends Target
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Ning18Client, Play22Client, Play23Client, Play2XJson, Play2XRoutes, RubyClient, ScalaModels)
-
-    private[this]
-    val byName = all.map(x => x.toString -> x).toMap
-
-    def apply(value: String): Target = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): scala.Option[Target] = byName.get(value)
-
-  }
 
   /**
    * Controls who is able to view this version
@@ -230,25 +188,20 @@ package com.gilt.apidoc.models {
       }
     }
 
-    implicit val jsonReadsApiDocEnum_Target = __.read[String].map(Target.apply)
-    implicit val jsonWritesApiDocEnum_Target = new Writes[Target] {
-      def writes(x: Target) = JsString(x.toString)
-    }
-
     implicit val jsonReadsApiDocEnum_Visibility = __.read[String].map(Visibility.apply)
     implicit val jsonWritesApiDocEnum_Visibility = new Writes[Visibility] {
       def writes(x: Visibility) = JsString(x.toString)
     }
     implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] = {
       (
-        (__ \ "target").read[com.gilt.apidoc.models.Target] and
+        (__ \ "targetKey").read[String] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApiDocCode: play.api.libs.json.Writes[Code] = {
       (
-        (__ \ "target").write[com.gilt.apidoc.models.Target] and
+        (__ \ "targetKey").write[String] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
@@ -377,6 +330,22 @@ package com.gilt.apidoc.models {
       )(unlift(Service.unapply _))
     }
 
+    implicit def jsonReadsApiDocTarget: play.api.libs.json.Reads[Target] = {
+      (
+        (__ \ "key").read[String] and
+        (__ \ "name").read[String] and
+        (__ \ "description").readNullable[String]
+      )(Target.apply _)
+    }
+
+    implicit def jsonWritesApiDocTarget: play.api.libs.json.Writes[Target] = {
+      (
+        (__ \ "key").write[String] and
+        (__ \ "name").write[String] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(Target.unapply _))
+    }
+
     implicit def jsonReadsApiDocUser: play.api.libs.json.Reads[User] = {
       (
         (__ \ "guid").read[java.util.UUID] and
@@ -482,6 +451,8 @@ package com.gilt.apidoc {
 
     def services: Services = Services
 
+    def targets: Targets = Targets
+
     def users: Users = Users
 
     def validations: Validations = Validations
@@ -489,13 +460,13 @@ package com.gilt.apidoc {
     def versions: Versions = Versions
 
     object Code extends Code {
-      override def getByOrgKeyAndServiceKeyAndVersionAndTarget(
+      override def getByOrgKeyAndServiceKeyAndVersionAndTargetKey(
         orgKey: String,
         serviceKey: String,
         version: String,
-        target: com.gilt.apidoc.models.Target
+        targetKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(target.toString, "UTF-8")}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(targetKey, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Code])
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r if r.status == 404 => None
@@ -772,6 +743,17 @@ package com.gilt.apidoc {
       }
     }
 
+    object Targets extends Targets {
+      override def get(
+        orgKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Target]] = {
+        _executeRequest("GET", s"/targets/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}").map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Target]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
     object Users extends Users {
       override def get(
         guid: scala.Option[java.util.UUID] = None,
@@ -984,11 +966,11 @@ package com.gilt.apidoc {
     /**
      * Generate code for a specific version of a service.
      */
-    def getByOrgKeyAndServiceKeyAndVersionAndTarget(
+    def getByOrgKeyAndServiceKeyAndVersionAndTargetKey(
       orgKey: String,
       serviceKey: String,
       version: String,
-      target: com.gilt.apidoc.models.Target
+      targetKey: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]]
   }
 
@@ -1148,6 +1130,15 @@ package com.gilt.apidoc {
       orgKey: String,
       serviceKey: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+  }
+
+  trait Targets {
+    /**
+     * List all targets of this org.
+     */
+    def get(
+      orgKey: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Target]]
   }
 
   trait Users {

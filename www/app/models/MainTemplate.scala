@@ -1,7 +1,7 @@
 package models
 
 import core.{ Enum, Model, Resource, ServiceDescription }
-import com.gilt.apidoc.models.{ Organization, Service, User }
+import com.gilt.apidoc.models.{ Organization, Service, User, Target }
 import play.api.Play.current
 
 case class MainTemplate(
@@ -14,6 +14,7 @@ case class MainTemplate(
   user: Option[User] = None,
   resource: Option[Resource] = None,
   settings: Option[SettingsMenu] = None,
+  targets: Seq[Target] = Seq.empty,
   isOrgAdmin: Boolean = false,
   isOrgMember: Boolean = false
 )

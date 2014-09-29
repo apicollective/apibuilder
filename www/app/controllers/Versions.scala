@@ -24,6 +24,7 @@ object Versions extends Controller {
       serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
       versionsResponse <- request.api.Versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
       versionOption <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+      targets <- request.api.Targets.get(orgKey = orgKey)
     } yield {
       versionOption match {
 
@@ -46,7 +47,8 @@ object Versions extends Controller {
             service = Some(service),
             version = Some(v.version),
             allServiceVersions = versionsResponse.map(_.version),
-            serviceDescription = Some(sd)
+            serviceDescription = Some(sd),
+            targets = targets
           )
           Ok(views.html.versions.show(tpl, sd))
         }

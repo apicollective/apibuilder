@@ -87,6 +87,7 @@ package com.gilt.apidoc.models {
    */
   case class Target(
     key: String,
+    name: String,
     description: scala.Option[String] = None
   )
 
@@ -332,6 +333,7 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApiDocTarget: play.api.libs.json.Reads[Target] = {
       (
         (__ \ "key").read[String] and
+        (__ \ "name").read[String] and
         (__ \ "description").readNullable[String]
       )(Target.apply _)
     }
@@ -339,6 +341,7 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApiDocTarget: play.api.libs.json.Writes[Target] = {
       (
         (__ \ "key").write[String] and
+        (__ \ "name").write[String] and
         (__ \ "description").write[scala.Option[String]]
       )(unlift(Target.unapply _))
     }

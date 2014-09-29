@@ -105,7 +105,7 @@
 
             <b>Clients</b>
             <ul class="nav nav-sidebar">
-              @core.generator.CodeGenTarget.Implemented.map { target =>
+                @metadata.targets.map { target =>
                 <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, target.key)">@target.name</a>
               }
             </ul>
