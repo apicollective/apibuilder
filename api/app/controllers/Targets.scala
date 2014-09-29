@@ -10,7 +10,7 @@ object Targets extends Controller {
 
   def getByOrgKey(orgKey: String) = AnonymousRequest { request =>
     val targets = CodeGenTarget.Implemented.filter(_.supportsOrganization(orgKey)).map(cgt =>
-      Target(cgt.key, cgt.description)
+      Target(cgt.key, cgt.name, cgt.description)
     )
     Ok(Json.toJson(targets))
   }
