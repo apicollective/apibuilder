@@ -90,7 +90,7 @@ object MembershipRequest {
     }
   }
 
-  private def create(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
+  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
     val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
       SQL("""
@@ -114,7 +114,7 @@ object MembershipRequest {
     SoftDelete.delete("membership_requests", user, membershipRequest.guid)
   }
 
-  private def findByOrganizationAndUserAndRole(org: Organization, user: User, role: Role): Option[MembershipRequest] = {
+  private[db] def findByOrganizationAndUserAndRole(org: Organization, user: User, role: Role): Option[MembershipRequest] = {
     findAll(organizationGuid = Some(org.guid),
             userGuid = Some(user.guid),
             role = Some(role.key),

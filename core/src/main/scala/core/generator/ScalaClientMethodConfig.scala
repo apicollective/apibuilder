@@ -43,12 +43,12 @@ object ScalaClientMethodConfigs {
 
   trait Ning extends ScalaClientMethodConfig {
     def packageName: String
-    override def pathEncodingMethod = "_encodePathParameter"
+    override def pathEncodingMethod = s"_root_.${packageName}.PathSegment.encode"
     override def responseStatusMethod = "getStatusCode"
     override def responseBodyMethod = """getResponseBody("UTF-8")"""
-    override def responseClass = "com.ning.http.client.Response"
+    override def responseClass = "_root_.com.ning.http.client.Response"
     override def toJson(responseName: String, className: String) = {
-      s"${packageName}.Client.parseJson($responseName, _.validate[$className])"
+      s"_root_.${packageName}.Client.parseJson($responseName, _.validate[$className])"
     }
   }
 

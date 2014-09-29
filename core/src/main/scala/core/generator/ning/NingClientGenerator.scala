@@ -148,12 +148,9 @@ ${methodGenerator.objects().indent(4)}
       result.future
     }
 
-    def _encodePathParameter(value: String, encoding: String): String = {
-      // TODO
-      value
-    }
-
   }
+
+${PathSegment.definition.indent(2)}
 
 ${methodGenerator.traitsAndErrors().indent(2)}
 }"""

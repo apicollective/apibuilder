@@ -402,8 +402,8 @@ object ScalaDataType {
   case object ScalaMapType extends ScalaDataType("Map[String, String]")
   case object ScalaUnitType extends ScalaDataType("Unit")
   case object ScalaUuidType extends ScalaDataType("java.util.UUID")
-  case object ScalaDateIso8601Type extends ScalaDataType("org.joda.time.LocalDate")
-  case object ScalaDateTimeIso8601Type extends ScalaDataType("org.joda.time.DateTime")
+  case object ScalaDateIso8601Type extends ScalaDataType("_root_.org.joda.time.LocalDate")
+  case object ScalaDateTimeIso8601Type extends ScalaDataType("_root_.org.joda.time.DateTime")
 
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaModelType(packageName: String, modelName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(modelName)}")

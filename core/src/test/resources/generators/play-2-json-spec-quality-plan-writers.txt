@@ -4,6 +4,6 @@ implicit def jsonWritesQualityPlan: play.api.libs.json.Writes[Plan] = {
     (__ \ "incident_id").write[Long] and
     (__ \ "body").write[String] and
     (__ \ "grade").write[scala.Option[Int]] and
-    (__ \ "created_at").write[org.joda.time.DateTime]
+    (__ \ "created_at").write[_root_.org.joda.time.DateTime]
   )(unlift(Plan.unapply _))
 }

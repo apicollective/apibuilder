@@ -78,20 +78,104 @@ class TextSpec extends FunSpec with Matchers {
 
   describe("pluralize") {
 
+    it("KnownPlurals are handled (e.g. fish -> fish)") {
+      Seq("data", "people", "species").foreach { word =>
+        Text.pluralize(word) should be(word)
+      }
+    }
+
     it("pluralizes standard words") {
-      Text.pluralize("user") should be("users")
-      Text.pluralize("address") should be("addresses")
-      Text.pluralize("prices") should be("prices")
-      Text.pluralize("metadata") should be("metadata")
-      Text.pluralize("family") should be("families")
+      // see https://en.wikipedia.org/wiki/English_plurals
+      // see http://www.oxforddictionaries.com/us/words/plurals-of-nouns
+      val actuals = Map(
+        // Where a singular noun ends in a sibilant sound —/s/, /z/,
+        // /ʃ/, /ʒ/, /tʃ/ or /dʒ/— the plural is formed by adding
+        // /ɨz/. The spelling adds -es, or -s if the singular already
+        // ends in -e:
+        "kiss" -> "kisses",
+        "phase" -> "phases",
 
-      Text.pluralize("datum") should be("data")
-      Text.pluralize("data") should be("data")
+        // When the singular form ends in a voiceless consonant (other
+        // than a sibilant) —/p/, /t/, /k/, /f/ (sometimes) or /θ/—
+        // the plural is formed by adding /s/. The spelling adds -s:
+        "lap" -> "laps",
+        "cat" -> "cats",
 
-      Text.pluralize("person") should be("people")
-      Text.pluralize("people") should be("people")
+        // For all other words (i.e. words ending in vowels or voiced
+        // non-sibilants) the regular plural adds /z/, represented
+        // orthographically by -s:
+        "boy" -> "boys",
+        "gilt" -> "gilts",
+        "chair" -> "chairs",
 
-      Text.pluralize("species") should be("species")
+        // With nouns ending in o preceded by a consonant, the plural
+        // in many cases is spelled by adding -es (pronounced /z/):
+        "hero" -> "heroes",
+        "potato" -> "potatoes",
+
+        // Nouns ending in a y preceded by a consonant usually drop
+        // the y and add -ies (pronounced /iz/, or /aiz/ in words
+        // where the y is pronounced /ai/):
+        "cherry" -> "cherries",
+        "lady" -> "ladies",
+        "sky" -> "skies",
+
+        // Words ending in quy also follow this pattern:
+        "soliloquy" -> "soliloquies",
+
+        // Words ending in a y preceded by a vowel form their plurals by adding -s:
+        "day" -> "days",
+        "monkey" -> "monkeys",
+
+        "berry" -> "berries",
+        "activity" -> "activities",
+        "daisy" -> "daisies",
+        "church" -> "churches",
+        "commit" -> "commits",
+        "bus" -> "buses",
+        "fox" -> "foxes",
+        "epoch" -> "epochs",
+        "knife" -> "knives",
+        "half" -> "halves",
+        "scarf" -> "scarves",
+        "chief" -> "chiefs",
+        "spoof" -> "spoofs",
+        "solo" -> "solos",
+        "zero" -> "zeros",
+        "studio" -> "studios",
+        "zoo" -> "zoos",
+        "embryo" -> "embryos",
+        "domino" -> "dominoes",
+        "echo" -> "echoes",
+        "embargo" -> "embargoes",
+        "user" -> "users",
+        "address" -> "addresses",
+        "price" -> "prices",
+        "metadata" -> "metadata",
+        "family" -> "families",
+        "datum" -> "data",
+        "person" -> "people",
+        "species" -> "species",
+
+        // Camelcare, snake case
+        "error_message" -> "error_messages",
+        "error_messages" -> "error_messages",
+        "errorMessage" -> "errorMessages",
+        "errorMessages" -> "errorMessages"
+      )
+
+      val errors = actuals.flatMap { case (singular, plural) =>
+        if (Text.pluralize(singular) != plural) {
+          Some("a: %s should have been %s but was %s".format(singular, plural, Text.pluralize(singular)))
+        } else if (Text.pluralize(plural) != plural) {
+          Some("a: %s should have been %s but was %s".format(plural, plural, Text.pluralize(plural)))
+          None // TODO
+        } else {
+          None
+        }
+      }
+
+      errors.toSeq.sorted.mkString("\n") should be("")
     }
 
   }

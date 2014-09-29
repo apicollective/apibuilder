@@ -34,8 +34,8 @@ package com.gilt.apidoc.models {
    */
   case class Membership(
     guid: java.util.UUID,
-    user: User,
-    organization: Organization,
+    user: com.gilt.apidoc.models.User,
+    organization: com.gilt.apidoc.models.Organization,
     role: String
   )
 
@@ -47,8 +47,8 @@ package com.gilt.apidoc.models {
    */
   case class MembershipRequest(
     guid: java.util.UUID,
-    user: User,
-    organization: Organization,
+    user: com.gilt.apidoc.models.User,
+    organization: com.gilt.apidoc.models.Organization,
     role: String
   )
 
@@ -59,15 +59,15 @@ package com.gilt.apidoc.models {
     guid: java.util.UUID,
     key: String,
     name: String,
-    domains: scala.collection.Seq[Domain] = Nil,
-    metadata: scala.Option[OrganizationMetadata] = None
+    domains: scala.collection.Seq[com.gilt.apidoc.models.Domain] = Nil,
+    metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadata] = None
   )
 
   /**
    * Supplemental (non-required) information about an organization
    */
   case class OrganizationMetadata(
-    visibility: scala.Option[Visibility] = None,
+    visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
     packageName: scala.Option[String] = None
   )
 
@@ -78,7 +78,7 @@ package com.gilt.apidoc.models {
     guid: java.util.UUID,
     name: String,
     key: String,
-    visibility: Visibility,
+    visibility: com.gilt.apidoc.models.Visibility,
     description: scala.Option[String] = None
   )
 
@@ -242,8 +242,8 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApiDocMembership: play.api.libs.json.Reads[Membership] = {
       (
         (__ \ "guid").read[java.util.UUID] and
-        (__ \ "user").read[User] and
-        (__ \ "organization").read[Organization] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Organization] and
         (__ \ "role").read[String]
       )(Membership.apply _)
     }
@@ -251,8 +251,8 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApiDocMembership: play.api.libs.json.Writes[Membership] = {
       (
         (__ \ "guid").write[java.util.UUID] and
-        (__ \ "user").write[User] and
-        (__ \ "organization").write[Organization] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Organization] and
         (__ \ "role").write[String]
       )(unlift(Membership.unapply _))
     }
@@ -260,8 +260,8 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApiDocMembershipRequest: play.api.libs.json.Reads[MembershipRequest] = {
       (
         (__ \ "guid").read[java.util.UUID] and
-        (__ \ "user").read[User] and
-        (__ \ "organization").read[Organization] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Organization] and
         (__ \ "role").read[String]
       )(MembershipRequest.apply _)
     }
@@ -269,8 +269,8 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApiDocMembershipRequest: play.api.libs.json.Writes[MembershipRequest] = {
       (
         (__ \ "guid").write[java.util.UUID] and
-        (__ \ "user").write[User] and
-        (__ \ "organization").write[Organization] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Organization] and
         (__ \ "role").write[String]
       )(unlift(MembershipRequest.unapply _))
     }
@@ -280,8 +280,8 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "key").read[String] and
         (__ \ "name").read[String] and
-        (__ \ "domains").readNullable[scala.collection.Seq[Domain]].map(_.getOrElse(Nil)) and
-        (__ \ "metadata").readNullable[OrganizationMetadata]
+        (__ \ "domains").readNullable[scala.collection.Seq[com.gilt.apidoc.models.Domain]].map(_.getOrElse(Nil)) and
+        (__ \ "metadata").readNullable[com.gilt.apidoc.models.OrganizationMetadata]
       )(Organization.apply _)
     }
 
@@ -290,21 +290,21 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "key").write[String] and
         (__ \ "name").write[String] and
-        (__ \ "domains").write[scala.collection.Seq[Domain]] and
-        (__ \ "metadata").write[scala.Option[OrganizationMetadata]]
+        (__ \ "domains").write[scala.collection.Seq[com.gilt.apidoc.models.Domain]] and
+        (__ \ "metadata").write[scala.Option[com.gilt.apidoc.models.OrganizationMetadata]]
       )(unlift(Organization.unapply _))
     }
 
     implicit def jsonReadsApiDocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
       (
-        (__ \ "visibility").readNullable[Visibility] and
+        (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
         (__ \ "package_name").readNullable[String]
       )(OrganizationMetadata.apply _)
     }
 
     implicit def jsonWritesApiDocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] = {
       (
-        (__ \ "visibility").write[scala.Option[Visibility]] and
+        (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
         (__ \ "package_name").write[scala.Option[String]]
       )(unlift(OrganizationMetadata.unapply _))
     }
@@ -314,7 +314,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "name").read[String] and
         (__ \ "key").read[String] and
-        (__ \ "visibility").read[Visibility] and
+        (__ \ "visibility").read[com.gilt.apidoc.models.Visibility] and
         (__ \ "description").readNullable[String]
       )(Service.apply _)
     }
@@ -324,7 +324,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "name").write[String] and
         (__ \ "key").write[String] and
-        (__ \ "visibility").write[Visibility] and
+        (__ \ "visibility").write[com.gilt.apidoc.models.Visibility] and
         (__ \ "description").write[scala.Option[String]]
       )(unlift(Service.unapply _))
     }
