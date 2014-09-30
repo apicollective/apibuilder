@@ -194,14 +194,14 @@ package com.gilt.apidoc.models {
     }
     implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] = {
       (
-        (__ \ "target").read[String] and
+        (__ \ "targetKey").read[String] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApiDocCode: play.api.libs.json.Writes[Code] = {
       (
-        (__ \ "target").write[String] and
+        (__ \ "targetKey").write[String] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }

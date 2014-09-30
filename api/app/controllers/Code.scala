@@ -4,6 +4,8 @@ import com.gilt.apidoc.models.Version
 import core.ServiceDescription
 import db.{Authorization, OrganizationDao, VersionDao}
 import lib.Validation
+import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.models
 import core.generator.CodeGenTarget
 
 import play.api.mvc._
@@ -15,17 +17,6 @@ object Code extends Controller {
 
   val apidocVersion = current.configuration.getString("apidoc.version").getOrElse {
     sys.error("apidoc.version is required")
-  }
-
-  case class Code(
-    target: String,
-    source: String
-  )
-
-  object Code {
-
-    implicit val codeWrites = Json.writes[Code]
-
   }
 
   def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetKey: String) = AnonymousRequest { request =>
@@ -41,8 +32,8 @@ object Code extends Controller {
             VersionDao.findVersion(auth, orgKey, serviceKey, version) match {
               case None => Conflict(Json.toJson(Validation.error(s"Invalid service[$serviceKey] or version[$version]")))
               case Some(v: Version) => {
-                val code = Code(
-                  target = targetKey,
+                val code = models.Code(
+                  targetKey = targetKey,
                   source = CodeGenTarget.generate(target, apidocVersion, org.key, org.metadata, ServiceDescription(v.json), serviceKey, v.version)
                 )
                 Ok(Json.toJson(code))
