@@ -9,7 +9,7 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
   private lazy val ssd = new ScalaServiceDescription(service)
 
   private val play2Util = Play2Util(new ScalaClientMethodConfigs.Play {
-    override def responseClass = PlayFrameworkVersions.V2_2_x.responseClass
+    override def responseClass = PlayFrameworkVersions.V2_2_x.config.responseClass
   })
 
   describe("params") {

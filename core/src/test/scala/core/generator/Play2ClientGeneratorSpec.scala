@@ -6,7 +6,7 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
 
   val clientMethodConfig = new ScalaClientMethodConfigs.Play {
-    override def responseClass = PlayFrameworkVersions.V2_2_x.responseClass
+    override def responseClass = PlayFrameworkVersions.V2_2_x.config.responseClass
   }
 
   it("errorTypeClass") {
