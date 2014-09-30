@@ -22,6 +22,12 @@ object NingVersions {
  * serialization/deserialization. Otherwise only depends on ning async
  * http client.
  */
+object Ning18ClientGenerator extends CodeGenerator {
+  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
+    NingClientGenerator.generate(NingVersions.V1_8_x, ssd, userAgent)
+  }
+}
+
 object NingClientGenerator {
 
   def generate(version: NingVersion, sd: ServiceDescription, userAgent: String): String = {

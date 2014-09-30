@@ -1,4 +1,4 @@
-@import core.generator.Target
+@import core.generator.CodeGenTarget
 
 @doc.main("Code Generation") {
 
@@ -54,11 +54,11 @@
 
     <tbody>
 
-      @core.generator.Target.All.map { target =>
+      @core.generator.CodeGenTarget.All.map { target =>
         <tr>
           <td>@target.status</td>
           <td>@target.key</td>
-          <td>@Html(target.description)</td>
+          <td>@Html(target.description.getOrElse(""))</td>
         </tr>
       }
     </tbody>

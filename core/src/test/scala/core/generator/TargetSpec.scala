@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ EnumFieldType, TestHelper }
+import core.{PrimitiveFieldType, EnumFieldType, TestHelper}
 import org.scalatest.{ FunSpec, Matchers }
 
 class TargetSpec extends FunSpec with Matchers {
@@ -13,24 +13,18 @@ class TargetSpec extends FunSpec with Matchers {
     sys.error("Cannot find code.target field")
   }
 
-  it("api.json target lists all implemented keys in sort order") {
-    val keys = target.fieldtype.asInstanceOf[EnumFieldType].enum.values.map(_.name)
+  it("CodeGenTarget target lists all implemented keys in sort order") {
+    val keys = CodeGenTarget.Implemented.map(_.key)
     keys.sorted should be(keys)
   }
 
-  it("api.json target lists all implemented targets") {
-    val keys = target.fieldtype.asInstanceOf[EnumFieldType].enum.values.map(_.name)
-    val implementedKeys = Target.Implemented.map(_.key).sorted
-    keys should be(implementedKeys)
-  }
-
   it("findByKey") {
-    Target.findByKey("ADSFADSF") should be(None)
-    Target.findByKey("ruby_client").get.key should be("ruby_client")
+    CodeGenTarget.findByKey("ADSFADSF") should be(None)
+    CodeGenTarget.findByKey("ruby_client").get.key should be("ruby_client")
   }
 
   it("userAgent") {
-    Target.findByKey("ruby_client").get.userAgent(
+    CodeGenTarget.findByKey("ruby_client").get.userAgent(
       apidocVersion = "0.0.1",
       orgKey = "gilt",
       serviceKey = "user",

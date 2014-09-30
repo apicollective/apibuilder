@@ -4,7 +4,7 @@ import com.gilt.apidoc.models.Version
 import core.ServiceDescription
 import db.{Authorization, OrganizationDao, VersionDao}
 import lib.Validation
-import core.generator.Target
+import core.generator.CodeGenTarget
 
 import play.api.mvc._
 import play.api.libs.json._
@@ -28,22 +28,22 @@ object Code extends Controller {
 
   }
 
-  def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetName: String) = AnonymousRequest { request =>
+  def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetKey: String) = AnonymousRequest { request =>
     val auth = Authorization(request.user)
     OrganizationDao.findByKey(auth, orgKey) match {
       case None => NotFound
       case Some(org) => {
-        Target.findByKey(targetName) match {
+        CodeGenTarget.findByKey(targetKey) match {
           case None => {
-            Conflict(Json.toJson(Validation.error(s"Invalid target[$targetName]. Must be one of: ${Target.Implemented.mkString(" ")}")))
+            Conflict(Json.toJson(Validation.error(s"Invalid target key[$targetKey]. Must be one of: ${CodeGenTarget.Implemented.mkString(" ")}")))
           }
-          case Some(target: Target) => {
+          case Some(target: CodeGenTarget) => {
             VersionDao.findVersion(auth, orgKey, serviceKey, version) match {
               case None => Conflict(Json.toJson(Validation.error(s"Invalid service[$serviceKey] or version[$version]")))
               case Some(v: Version) => {
                 val code = Code(
-                  target = targetName,
-                  source = Target.generate(target, apidocVersion, org.key, org.metadata, ServiceDescription(v.json), serviceKey, v.version)
+                  target = targetKey,
+                  source = CodeGenTarget.generate(target, apidocVersion, org.key, org.metadata, ServiceDescription(v.json), serviceKey, v.version)
                 )
                 Ok(Json.toJson(code))
               }

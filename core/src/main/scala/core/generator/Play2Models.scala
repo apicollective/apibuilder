@@ -3,7 +3,11 @@ package core.generator
 import core._
 import Text._
 
-object Play2Models {
+object Play2Models extends CodeGenerator {
+
+  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
+    apply(ssd)
+  }
 
   def apply(sd: ServiceDescription): String = {
     apply(new ScalaServiceDescription(sd))

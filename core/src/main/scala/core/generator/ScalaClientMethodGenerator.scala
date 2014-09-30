@@ -20,7 +20,7 @@ case class ScalaClientMethodGenerator(
   def accessors(): String = {
     sortedResources.map { case (plural, resources) =>
       val methodName = Text.snakeToCamelCase(Text.camelCaseToUnderscore(plural).toLowerCase)
-      s"def ${methodName}: ${plural} = ${plural}"
+      config.accessor(methodName, plural)
     }.mkString("\n\n")
   }
 
@@ -56,13 +56,17 @@ case class ScalaClientMethodGenerator(
   def errorPackage(): String = {
     ssd.resources.flatMap(_.operations).flatMap(_.responses).filter(r => !(r.isSuccess || r.isUnit)).map { response =>
       val etc = errorTypeClass(response).distinct.sorted.mkString("\n\n").indent(2)
-      Seq(
-        "package error {",
-        "",
-        s"  import ${ssd.modelPackageName}.json._",
-        "",
-        errorTypeClass(response).indent(2),
-        "}"
+      val jsonImport = if (config.hasModelJsonPackage) {
+        Seq("",
+            s"  import ${ssd.modelPackageName}.json._",
+            "")
+      } else {
+        Seq.empty
+      }
+      (Seq("package error {") ++
+       jsonImport ++
+       Seq(errorTypeClass(response).indent(2),
+           "}")
       ).mkString("\n")
     }.distinct.sorted.mkString("\n\n")
   }
@@ -71,11 +75,9 @@ case class ScalaClientMethodGenerator(
     require(!response.isSuccess)
 
     val json = config.toJson("response", response.errorResponseType)
+    val jsonImport = if (config.hasModelJsonPackage) Seq(s"import ${ssd.modelPackageName}.json._") else Seq.empty
     exceptionClass(response.errorClassName,
-      Seq(
-        s"import ${ssd.modelPackageName}.json._",
-        s"lazy val ${response.errorVariableName} = ${json.indent(2).trim}"
-      )
+                   jsonImport :+ s"lazy val ${response.errorVariableName} = ${json.indent(2).trim}"
     )
   }
 

@@ -2,11 +2,10 @@ package core.generator
 
 import core._
 import Text._
-import ScalaUtil._
 
 case class PlayFrameworkVersion(
   name: String,
-  responseClass: String,
+  config: ScalaClientMethodConfig,
   requestHolderClass: String,
   authSchemeClass: String,
   supportsHttpPatch: Boolean
@@ -16,7 +15,7 @@ object PlayFrameworkVersions {
 
   val V2_2_x = PlayFrameworkVersion(
     name = "2.2.x",
-    responseClass = "play.api.libs.ws.Response",
+    config = ScalaClientMethodConfigs.Play22,
     requestHolderClass = "play.api.libs.ws.WS.WSRequestHolder",
     authSchemeClass = "com.ning.http.client.Realm.AuthScheme",
     supportsHttpPatch = false
@@ -24,11 +23,23 @@ object PlayFrameworkVersions {
 
   val V2_3_x = PlayFrameworkVersion(
     name = "2.3.x",
-    responseClass = "play.api.libs.ws.WSResponse",
+    config = ScalaClientMethodConfigs.Play23,
     requestHolderClass = "play.api.libs.ws.WSRequestHolder",
     authSchemeClass = "play.api.libs.ws.WSAuthScheme",
     supportsHttpPatch = true
   )
+}
+
+object Play22ClientGenerator extends CodeGenerator {
+  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
+    Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, ssd, userAgent)
+  }
+}
+
+object Play23ClientGenerator extends CodeGenerator {
+  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
+    Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, ssd, userAgent)
+  }
 }
 
 object Play2ClientGenerator {
@@ -55,11 +66,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
 
   private def client(): String = {
 
-    val clientMethodConfig = new ScalaClientMethodConfigs.Play {
-      override def responseClass = version.responseClass
-    }
-
-    val methodGenerator = ScalaClientMethodGenerator(clientMethodConfig, ssd)
+    val methodGenerator = ScalaClientMethodGenerator(version.config, ssd)
 
     val patchMethod = version.supportsHttpPatch match {
       case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))"""
@@ -127,7 +134,7 @@ ${methodGenerator.objects().indent(4)}
       path: String,
       queryParameters: Seq[(String, String)] = Seq.empty,
       body: Option[play.api.libs.json.JsValue] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.responseClass}] = {
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.config.responseClass}] = {
       method.toUpperCase match {
         case "GET" => {
           _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()      
