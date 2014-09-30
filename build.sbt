@@ -1,5 +1,7 @@
 name := "apidoc"
 
+organization := "com.gilt.apidoc"
+
 scalaVersion in ThisBuild := "2.11.2"
 
 lazy val core = project
@@ -41,12 +43,26 @@ lazy val www = project
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
+  organization := "com.gilt.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.1",
     "org.scalatest" %% "scalatest" % "2.2.0" % "test"
   ),
-  scalacOptions += "-feature"
-) ++ instrumentSettings ++ Seq(ScoverageKeys.highlighting := true)
+  scalacOptions += "-feature",
+  ScoverageKeys.highlighting := true
+) ++ instrumentSettings ++ publishSettings
 
+lazy val publishSettings: Seq[Setting[_]] = Seq(
+  publishMavenStyle := true,
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+  },
+  publishArtifact in Test := false,
+  pomIncludeRepository := { _ => false }
+)
 
-
+publishSettings
