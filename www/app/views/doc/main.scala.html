@@ -1,19 +1,11 @@
 @(
   user: Option[com.gilt.apidoc.models.User] = None,
-  title: Option[String] = None,
-  headerTitle: Option[String] = None
+  title: Option[String] = None
 )(content: Html)
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@headerTitle.getOrElse(title.getOrElse("Apidoc"))</title>
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.1.1/css/bootstrap.min.css")">
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
-  </head>
+  @mainHead(title.getOrElse("apidoc"))
 
   <body>
 
