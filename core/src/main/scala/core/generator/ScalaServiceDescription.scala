@@ -78,7 +78,7 @@ object ScalaUtil {
 
 class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
 
-  val name = safeName(serviceDescription.name)
+  val name = ScalaUtil.toClassName(serviceDescription.name)
 
   val packageName: String = serviceDescription.packageName match {
     case None => ScalaUtil.packageName(serviceDescription.name)
