@@ -13,8 +13,6 @@ object GenerateReferenceApi extends App {
   lazy val json = io.Source.fromFile(new File(referenceApi, "api.json"))
     .getLines.mkString("\n")
 
-//  lazy val serviceDescription = ServiceDescriptionValidator(json).serviceDescription.get
-
   def genCode(code: => String, path: String): Unit = {
     val file = new File(referenceApi, path)
     file.getParentFile.mkdirs
