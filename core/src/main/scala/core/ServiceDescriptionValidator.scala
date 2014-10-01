@@ -1,6 +1,10 @@
 package core
 
-import play.api.libs.json.JsValue
+import java.util.UUID
+
+import codegenerator.models.{Field, ServiceDescription}
+import org.joda.time.format.ISODateTimeFormat
+import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
 
@@ -11,10 +15,18 @@ case class ServiceDescriptionValidator(apiJson: String) {
   private var parseError: Option[String] = None
 
   lazy val serviceDescription: Option[ServiceDescription] = {
-    internalServiceDescription.map { ServiceDescription(_) }
+    internalServiceDescription.map { ServiceDescriptionBuilder(_) }
   }
 
-  lazy val internalServiceDescription: Option[InternalServiceDescription] = {
+  def validate(): Either[Seq[String], ServiceDescription] = {
+    if (isValid) {
+      Right(serviceDescription.get)
+    } else {
+      Left(errors)
+    }
+  }
+
+  private lazy val internalServiceDescription: Option[InternalServiceDescription] = {
     try {
       Some(InternalServiceDescription(apiJson))
     } catch {
@@ -80,15 +92,17 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
 
   private def validateName(): Seq[String] = {
-    if (Text.startsWithLetter(serviceDescription.get.name)) {
+    val name = internalServiceDescription.get.name.getOrElse(sys.error("Missing name"))
+    if (Text.startsWithLetter(name)) {
       Seq.empty
     } else {
-      Seq(s"Name[${serviceDescription.get.name}] must start with a letter")
+      Seq(s"Name[${name}] must start with a letter")
     }
   }
 
   private def validateBaseUrl(): Seq[String] = {
-    serviceDescription.get.baseUrl match {
+    val baseUrl = internalServiceDescription.get.baseUrl
+    baseUrl match {
       case Some(url) => { 
         if(url.endsWith("/")){
           Seq(s"base_url[$url] must not end with a '/'")  
@@ -171,7 +185,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
           }
 
           case Some(dt) => {
-            if (Field.isValid(dt, field.default.get)) {
+            if (isValid(dt, field.default.get)) {
               None
             } else {
               Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid for datatype[$name]")
@@ -179,6 +193,73 @@ case class ServiceDescriptionValidator(apiJson: String) {
           }
         }
       }
+    }
+  }
+
+  private def isValid(datatype: Datatype, value: String): Boolean = {
+    try {
+      assertValidDefault(datatype: Datatype, value: String)
+      true
+    } catch {
+      case e: Throwable => {
+        false
+      }
+    }
+  }
+
+  private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
+
+  private val BooleanValues = Seq("true", "false")
+
+  private def assertValidDefault(datatype: Datatype, value: String) {
+    datatype match {
+      case Datatype.BooleanType => {
+        if (!BooleanValues.contains(value)) {
+          sys.error(s"Invalid default[${value}] for boolean. Must be one of: ${BooleanValues.mkString(" ")}")
+        }
+      }
+
+      case Datatype.MapType => {
+        Json.parse(value).asOpt[JsObject] match {
+          case None => {
+            sys.error(s"Invalid default[${value}] for type object. Must be a valid JSON Object")
+          }
+          case Some(o) => {}
+        }
+      }
+
+      case Datatype.IntegerType => {
+        value.toInt
+      }
+
+      case Datatype.LongType => {
+        value.toLong
+      }
+
+      case Datatype.DecimalType => {
+        BigDecimal(value)
+      }
+
+      case Datatype.UnitType => {
+        value == ""
+      }
+
+      case Datatype.UuidType => {
+        UUID.fromString(value)
+      }
+
+      case Datatype.DateTimeIso8601Type => {
+        dateTimeISOParser.parseDateTime(value)
+      }
+
+      case Datatype.DateIso8601Type => {
+        dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
+      }
+
+      case Datatype.StringType => ()
+
+      case Datatype.DoubleType => value.toDouble
+
     }
   }
 

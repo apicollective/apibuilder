@@ -1,7 +1,6 @@
 package core.generator
 
 import core.Text._
-import core.Model
 
 case class Play2Json(serviceName: String) {
 

@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{PrimitiveFieldType, EnumFieldType, TestHelper}
+import core.TestHelper
 import org.scalatest.{ FunSpec, Matchers }
 
 class TargetSpec extends FunSpec with Matchers {

@@ -1,9 +1,9 @@
 package core.generator
 
 import java.io.File
+import codegenerator.models.{Enum, EnumValue}
 import core._
 
-import core.ServiceDescription
 import org.scalatest.{ FunSpec, Matchers }
 
 class RubyClientGeneratorSpec extends FunSpec with Matchers {
@@ -41,7 +41,7 @@ class RubyClientGeneratorSpec extends FunSpec with Matchers {
 
   it("generate ruby") {
     val json = io.Source.fromFile(new File("reference-api/api.json")).getLines.mkString("\n")
-    val generator = RubyClientGenerator(ServiceDescription(json), "gilt 0.0.1-test")
+    val generator = RubyClientGenerator(ServiceDescriptionBuilder(json), "gilt 0.0.1-test")
     //println(generator.generate())
   }
 }

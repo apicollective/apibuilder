@@ -1,8 +1,8 @@
 package core.generator.ning
 
+import codegenerator.models.ServiceDescription
 import core._
 import core.generator._
-import core.generator.ScalaUtil._
 import Text._
 
 case class NingVersion(

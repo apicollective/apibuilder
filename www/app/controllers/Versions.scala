@@ -1,7 +1,7 @@
 package controllers
 
 import models.MainTemplate
-import core.{ServiceDescription, ServiceDescriptionValidator, UrlKey}
+import core.{ServiceDescriptionBuilder, ServiceDescriptionValidator, UrlKey}
 import lib.Util
 import com.gilt.apidoc.models.{Organization, Version, Visibility}
 import play.api._
@@ -42,7 +42,7 @@ object Versions extends Controller {
             sys.error(s"Could not find service for orgKey[$orgKey] and key[$serviceKey]")
           }
 
-          val sd = ServiceDescription(v.json)
+          val sd = ServiceDescriptionBuilder(v.json)
           val tpl = request.mainTemplate(service.name + " " + v.version).copy(
             service = Some(service),
             version = Some(v.version),

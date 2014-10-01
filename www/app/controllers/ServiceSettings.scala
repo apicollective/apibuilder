@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models.{Organization, Service, User, Visibility}
-import core.ServiceDescription
+import core.ServiceDescriptionBuilder
 import models._
 import play.api._
 import play.api.mvc._
@@ -26,7 +26,7 @@ object ServiceSettings extends Controller {
       val service = serviceResponse.headOption.getOrElse {
         sys.error("Service not found")
       }
-      val sd = ServiceDescription(versionOption.get.json)
+      val sd = ServiceDescriptionBuilder(versionOption.get.json)
       base.copy(
         title = service.name + " Settings",
         service = Some(service),

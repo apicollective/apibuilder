@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models.Version
-import core.ServiceDescription
+import core.ServiceDescriptionBuilder
 import db.{Authorization, OrganizationDao, VersionDao}
 import lib.Validation
 import com.gilt.apidoc.models.json._
@@ -34,7 +34,7 @@ object Code extends Controller {
               case Some(v: Version) => {
                 val code = models.Code(
                   targetKey = targetKey,
-                  source = CodeGenTarget.generate(target, apidocVersion, org.key, org.metadata, ServiceDescription(v.json), serviceKey, v.version)
+                  source = CodeGenTarget.generate(target, apidocVersion, org.key, ServiceDescriptionBuilder(v.json, org.metadata.flatMap(_.packageName)), serviceKey, v.version)
                 )
                 Ok(Json.toJson(code))
               }

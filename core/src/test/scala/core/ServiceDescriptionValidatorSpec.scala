@@ -1,5 +1,6 @@
 package core
 
+import codegenerator.models.{Type, TypeKind}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -178,7 +179,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
-    guid.paramtype should be(PrimitiveParameterType(Datatype.UuidType))
+    guid.paramtype should be(Type(TypeKind.Primitive, Datatype.UuidType.name, false))
   }
 
   it("path parameters cannot be optional") {
@@ -244,7 +245,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.head.operations.head
     val idParam = op.parameters.head
     idParam.name should be("id")
-    idParam.paramtype.asInstanceOf[PrimitiveParameterType].datatype.name should be("long")
+    idParam.paramtype should be(Type(TypeKind.Primitive, "long", false))
   }
 
 }

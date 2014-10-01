@@ -1,5 +1,6 @@
 package core.generator
 
+import codegenerator.models.ServiceDescription
 import core._
 import Text._
 

@@ -1,12 +1,12 @@
 package core.generator
 
+import codegenerator.models._
 import core._
-import io.Source
 
 object Play2RouteGenerator extends CodeGenerator {
 
   def apply(json: String): String = {
-    generate(ServiceDescription(json))
+    generate(ServiceDescriptionBuilder(json))
   }
 
   def apply(sd: ServiceDescription): Play2RouteGenerator = {
@@ -85,7 +85,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
   } else {
     Some(
       Seq(
-        s"# Additional parameters to ${op.label}",
+        s"# Additional parameters to ${op.method} ${op.path}",
         parametersToComment.map { p =>
           "#   - " + parameterWithType(p)
         }.mkString("\n")
@@ -104,21 +104,23 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
         Some(parameterWithType(param)),
         param.default.map( d =>
           param.paramtype match {
-            case PrimitiveParameterType(datatype) => datatype match {
-              case Datatype.StringType | Datatype.UnitType | Datatype.DateIso8601Type | Datatype.DateTimeIso8601Type | Datatype.UuidType => {
-                s"""?= "$d""""
-              }
-              case Datatype.IntegerType | Datatype.DoubleType | Datatype.LongType | Datatype.BooleanType | Datatype.DecimalType => {
-                s"?= ${d}"
-              }
-              case Datatype.UnitType | Datatype.MapType => {
-                sys.error(s"Unsupported type[${datatype}] for default values")
-              }
+            case Type(TypeKind.Primitive, name, _) =>
+              val datatype = Datatype.forceByName(name)
+              datatype match {
+                case Datatype.StringType | Datatype.UnitType | Datatype.DateIso8601Type | Datatype.DateTimeIso8601Type | Datatype.UuidType => {
+                  s"""?= "$d""""
+                }
+                case Datatype.IntegerType | Datatype.DoubleType | Datatype.LongType | Datatype.BooleanType | Datatype.DecimalType => {
+                  s"?= ${d}"
+                }
+                case Datatype.UnitType | Datatype.MapType => {
+                  sys.error(s"Unsupported type[${datatype}] for default values")
+                }
             }
-            case ModelParameterType(model) => {
+            case Type(TypeKind.Model, _, _) => {
               sys.error(s"Models cannot be defaults in path parameters")
             }
-            case EnumParameterType(enum) => {
+            case Type(TypeKind.Enum, _, _) => {
               s"""?= "${d}""""
             }
           }
@@ -133,15 +135,16 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
 
   private def scalaDataType(param: Parameter): String = {
     param.paramtype match {
-      case dt: ModelParameterType => {
+      case Type(TypeKind.Model, _, _) => {
         sys.error("Model parameter types not supported in play routes")
       }
-      case et: EnumParameterType => {
+      case Type(TypeKind.Enum, _, _) => {
         // TODO: Should we use the real class here or leave to user to convert?
         qualifyParam(ScalaDataType.ScalaStringType.name, param.required, param.multiple)
       }
-      case dt: PrimitiveParameterType => {
-        val name = ScalaDataType(dt.datatype).name
+      case Type(TypeKind.Primitive, n, _) => {
+        val dt = Datatype.forceByName(n)
+        val name = ScalaDataType(dt).name
         qualifyParam(name, param.required, param.multiple)
       }
     }

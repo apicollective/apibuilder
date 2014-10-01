@@ -1,6 +1,7 @@
 package core.generator
 
-import core.{ TestHelper, ServiceDescription }
+import codegenerator.models.ServiceDescription
+import core.{ServiceDescriptionBuilder, TestHelper}
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2EnumsSpec extends FunSpec with ShouldMatchers {
@@ -37,7 +38,7 @@ class Play2EnumsSpec extends FunSpec with ShouldMatchers {
     }
     """
 
-    val ssd = new ScalaServiceDescription(ServiceDescription(json))
+    val ssd = new ScalaServiceDescription(ServiceDescriptionBuilder(json))
 
     it("generates valid models") {
       val enums = ssd.enums.map(Play2Enums.build(_)).mkString("\n\n")

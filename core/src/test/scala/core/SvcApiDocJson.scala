@@ -1,5 +1,6 @@
 package core
 
+import codegenerator.models.{Parameter, TypeKind, Type}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -23,8 +24,8 @@ class SvcApiDocJson extends FunSpec with Matchers {
     models.contains("organization") should be(true)
 
     val user = service.models.find(_.name == "user").get
-    user.fields.find(_.name == "guid").get.fieldtype.asInstanceOf[PrimitiveFieldType].datatype.name should be("uuid")
-    user.fields.find(_.name == "email").get.fieldtype.asInstanceOf[PrimitiveFieldType].datatype.name should be("string")
+    user.fields.find(_.name == "guid").get.fieldtype should be(Type(TypeKind.Primitive, "uuid", false))
+    user.fields.find(_.name == "email").get.fieldtype should be(Type(TypeKind.Primitive, "string", false))
   }
 
   it("parses resources") {

@@ -1,5 +1,6 @@
 package core.generator
 
+import codegenerator.models._
 import core._
 import Text._
 import scala.collection.mutable.ListBuffer
@@ -196,9 +197,11 @@ case class RubyClientGenerator(
             sys.error(s"Could not find path parameter named[$varName]")
           }
           param.paramtype match {
-            case t: PrimitiveParameterType => s"#{${asString(varName, t.datatype)}}"
-            case m: ModelParameterType => sys.error("Models cannot be in the path")
-            case e: EnumParameterType => s"#{${param.name}.value}"
+            case Type(TypeKind.Primitive, name, _) =>
+              val datatype = Datatype.forceByName(name)
+              s"#{${asString(varName, datatype)}}"
+            case Type(TypeKind.Model, _, _) => sys.error("Models cannot be in the path")
+            case Type(TypeKind.Enum, _, _) => s"#{${param.name}.value}"
           }
         } else {
           name
@@ -217,9 +220,9 @@ case class RubyClientGenerator(
       if (Util.isJsonDocumentMethod(op.method)) {
         op.body match {
           case None => paramStrings.append("hash")
-          case Some(PrimitiveBody(dt, multiple)) => paramStrings.append(RubyUtil.toVariable("value", multiple))
-          case Some(ModelBody(name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
-          case Some(EnumBody(name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
+          case Some(Type(TypeKind.Primitive, _, multiple)) => paramStrings.append(RubyUtil.toVariable("value", multiple))
+          case Some(Type(TypeKind.Model, name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
+          case Some(Type(TypeKind.Enum, name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
         }
       }
 
@@ -238,9 +241,11 @@ case class RubyClientGenerator(
       pathParams.foreach { param =>
 
         val klass = param.paramtype match {
-          case t: PrimitiveParameterType => rubyClass(t.datatype)
-          case m: ModelParameterType => qualifiedClassName(m.model.name)
-          case e: EnumParameterType => qualifiedClassName(e.enum.name)
+          case Type(TypeKind.Primitive, name, _) =>
+            val datatype = Datatype.forceByName(name)
+            rubyClass(datatype)
+          case Type(TypeKind.Model, name, _) => qualifiedClassName(name)
+          case Type(TypeKind.Enum, name, _) => qualifiedClassName(name)
         }
 
         sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
@@ -272,31 +277,33 @@ case class RubyClientGenerator(
             sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
             requestBuilder.append(".with_json(hash.to_json)")
           }
-          case Some(PrimitiveBody(dt, false)) => {
+          case Some(Type(TypeKind.Primitive, name, false)) => {
+            val dt = Datatype.forceByName(name)
             sb.append(s"        HttpClient::Preconditions.assert_class('value', value, ${rubyClass(dt)})")
             requestBuilder.append(".with_body(value)")
           }
-          case Some(PrimitiveBody(dt, true)) => {
+          case Some(Type(TypeKind.Primitive, name, true)) => {
+            val dt = Datatype.forceByName(name)
             sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('values', values, ${rubyClass(dt)})")
             requestBuilder.append(".with_body(value)")
           }
-          case Some(ModelBody(name, false)) => {
+          case Some(Type(TypeKind.Model, name, false)) => {
             val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
             sb.append(s"        HttpClient::Preconditions.assert_class('$name', $name, $klass)")
             requestBuilder.append(s".with_json($name.to_hash.to_json)")
           }
-          case Some(ModelBody(name, true)) => {
+          case Some(Type(TypeKind.Model, name, true)) => {
             val plural = RubyUtil.toVariable(name, true)
             val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
             sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
             requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
           }
-          case Some(EnumBody(name, false)) => {
+          case Some(Type(TypeKind.Enum, name, false)) => {
             val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
             sb.append(s"        HttpClient::Preconditions.assert_class('$name', $name, $klass)")
             requestBuilder.append(s".with_json($name.to_hash.to_json)")
           }
-          case Some(EnumBody(name, true)) => {
+          case Some(Type(TypeKind.Enum, name, true)) => {
             val plural = RubyUtil.toVariable(name, true)
             val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
             sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
@@ -334,7 +341,7 @@ case class RubyClientGenerator(
     sb.mkString("\n")
   }
 
-  def generateModel(model: core.Model): String = {
+  def generateModel(model: Model): String = {
     val className = RubyUtil.toClassName(model.name)
 
     val sb = ListBuffer[String]()
@@ -359,15 +366,15 @@ case class RubyClientGenerator(
     sb.append(
       model.fields.map { field =>
         field.fieldtype match {
-          case PrimitiveFieldType(datatype) => s":${field.name} => ${field.name}"
-          case ModelFieldType(model) => {
+          case Type(TypeKind.Primitive, _, _) => s":${field.name} => ${field.name}"
+          case Type(TypeKind.Model, _, _) => {
             if (field.multiple) {
               s":${field.name} => ${field.name}.map(&:to_hash)"
             } else {
               s":${field.name} => ${field.name}.to_hash"
             }
           }
-          case EnumFieldType(enum) => s":${field.name} => ${field.name}.value"
+          case Type(TypeKind.Enum, _, _) => s":${field.name} => ${field.name}.value"
         }
       }.mkString("            ", ",\n            ", "")
     )
@@ -381,14 +388,15 @@ case class RubyClientGenerator(
 
   private def parseArgument(field: Field): String = {
     field.fieldtype match {
-      case PrimitiveFieldType(datatype: Datatype) => {
+      case Type(TypeKind.Primitive, name, _) => {
+        val datatype = Datatype.forceByName(name)
         parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.multiple)
       }
-      case ModelFieldType(modelName: String) => {
-        parseModelArgument(field.name, modelName, field.required, field.multiple)
+      case  Type(TypeKind.Model, name, _) => {
+        parseModelArgument(field.name, name, field.required, field.multiple)
       }
-      case EnumFieldType(enum: Enum) => {
-        parseEnumArgument(field.name, enum.name, field.required, field.multiple)
+      case Type(TypeKind.Enum, name, _) => {
+        parseEnumArgument(field.name, name, field.required, field.multiple)
       }
     }
 
@@ -396,14 +404,15 @@ case class RubyClientGenerator(
 
   private def parseArgument(param: Parameter): String = {
     param.paramtype match {
-      case dt: PrimitiveParameterType => {
-        parsePrimitiveArgument(param.name, dt.datatype, param.required, param.default, param.multiple)
+      case Type(TypeKind.Primitive, name, _) => {
+        val datatype = Datatype.forceByName(name)
+        parsePrimitiveArgument(param.name, datatype, param.required, param.default, param.multiple)
       }
-      case mt: ModelParameterType => {
-        parseModelArgument(param.name, mt.model.name, param.required, param.multiple)
+      case Type(TypeKind.Model, name, _) => {
+        parseModelArgument(param.name, name, param.required, param.multiple)
       }
-      case et: EnumParameterType => {
-        parseEnumArgument(param.name, et.enum.name, param.required, param.multiple)
+      case Type(TypeKind.Enum, name, _) => {
+        parseEnumArgument(param.name, name, param.required, param.multiple)
       }
     }
   }

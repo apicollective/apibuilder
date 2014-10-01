@@ -13,8 +13,6 @@ object GenerateReferenceApi extends App {
   lazy val json = io.Source.fromFile(new File(referenceApi, "api.json"))
     .getLines.mkString("\n")
 
-  lazy val serviceDescription = ServiceDescriptionValidator(json).serviceDescription.get
-
   def genCode(code: => String, path: String): Unit = {
     val file = new File(referenceApi, path)
     file.getParentFile.mkdirs
@@ -24,20 +22,23 @@ object GenerateReferenceApi extends App {
   }
 
   val validator = ServiceDescriptionValidator(json)
-  if (!validator.isValid) {
-    println("====== Begin Reference API validation errors:")
-    validator.errors.foreach(println)
-    println("====== End Reference API validation errors:")
-    sys.error("refrence api.json is invalid!")
+
+  validator.validate() match {
+    case Left(errors) =>
+      println("====== Begin Reference API validation errors:")
+      errors.foreach(println)
+      println("====== End Reference API validation errors:")
+      sys.error("refrence api.json is invalid!")
+    case Right(serviceDescription) =>
+      val ssd = new ScalaServiceDescription(serviceDescription)
+      genCode(
+        Play2RouteGenerator(ssd).generate.get,
+        "conf/routes"
+      )
+      genCode(Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, serviceDescription, "apidoc gilt 0.0.1-reference"), "app/Play2Client.scala")
+      genCode(
+        RubyClientGenerator(ssd, "apidoc gilt 0.0.1-reference").generate,
+        "ruby/client.rb"
+      )
   }
-  val ssd = new ScalaServiceDescription(validator.serviceDescription.get)
-  genCode(
-    Play2RouteGenerator(ssd).generate.get,
-    "conf/routes"
-  )
-  genCode(Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, validator.serviceDescription.get, "apidoc gilt 0.0.1-reference"), "app/Play2Client.scala")
-  genCode(
-    RubyClientGenerator(ssd, "apidoc gilt 0.0.1-reference").generate,
-    "ruby/client.rb"
-  )
 }

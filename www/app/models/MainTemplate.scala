@@ -1,6 +1,6 @@
 package models
 
-import core.{ Enum, Model, Resource, ServiceDescription }
+import codegenerator.models.{Resource, ServiceDescription}
 import com.gilt.apidoc.models.{ Organization, Service, User, Target }
 import play.api.Play.current
 
