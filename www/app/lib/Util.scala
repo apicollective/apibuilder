@@ -5,6 +5,7 @@ import core.VersionTag
 object Util {
 
   val AddServiceText = "Add Service"
+  val OrgSettingsText = "Org Settings"
   val ApiDocExampleUrl = "/gilt/docs/apidoc/latest"
   val ApiDocExampleApiJsonUrl = "/gilt/api.json/apidoc/latest"
   val GitHubUrl = "https://github.com/gilt/apidoc"
