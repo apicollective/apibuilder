@@ -1,4 +1,4 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: core.ServiceDescription, fields: Iterable[core.Field])
+@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: codegenerator.models.ServiceDescription, fields: Iterable[codegenerator.models.Field])
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -15,9 +15,9 @@
      <tr>
        <td>@field.name</td>
        <td>@{field.fieldtype match {
-             case pt: core.PrimitiveFieldType => datatype(pt.datatype, field.multiple)
-             case mt: core.ModelFieldType => modelTypeByName(org, service, version, sd, mt.modelName, field.multiple)
-             case et: core.EnumFieldType => enumType(org, service, version, et.enum.name, field.multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), field.multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, field.multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, field.multiple)
            }}
        </td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
@@ -25,7 +25,7 @@
        <td>@field.description.getOrElse("")
            <p>
              @{field.fieldtype match {
-               case et: core.EnumFieldType => s"Acceptable values: ${et.enum.values.map(_.name).mkString(", ")}"
+               case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, _) => s"Acceptable values: ${sd.enums.find(_.name == name).get.values.map(_.name).mkString(", ")}"
                case _ => ""
              }}
 

@@ -1,4 +1,4 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: core.ServiceDescription, paramTypeName: String, isMultiple: Boolean)
+@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: codegenerator.models.ServiceDescription, paramTypeName: String, isMultiple: Boolean)
 
 @{core.Datatype.findByName(paramTypeName) match {
   case Some(dt: core.Datatype) => datatype(dt, isMultiple)

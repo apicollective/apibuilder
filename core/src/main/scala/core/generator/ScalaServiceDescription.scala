@@ -1,6 +1,6 @@
 package core.generator
 
-import com.gilt.apidoc.models.OrganizationMetadata
+import codegenerator.models._
 import core._
 import Text._
 
@@ -76,11 +76,11 @@ object ScalaUtil {
 
 }
 
-class ScalaServiceDescription(val serviceDescription: ServiceDescription, metadata: Option[OrganizationMetadata] = None) {
+class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
 
   val name = safeName(serviceDescription.name)
 
-  val packageName: String = metadata.flatMap(_.packageName) match {
+  val packageName: String = serviceDescription.packageName match {
     case None => ScalaUtil.packageName(serviceDescription.name)
     case Some(name) => name + "." + ScalaUtil.packageName(serviceDescription.name)
   }
@@ -123,12 +123,12 @@ class ScalaModel(val ssd: ScalaServiceDescription, val model: Model) {
 
 }
 
-class ScalaBody(val body: Body) {
+class ScalaBody(val body: Type) {
 
   val name: String = body match {
-    case PrimitiveBody(dt, multiple) => ScalaUtil.toClassName("value", multiple)
-    case ModelBody(name, multiple) => ScalaUtil.toClassName(name, multiple)
-    case EnumBody(name, multiple) => ScalaUtil.toClassName(name, multiple)
+    case Type(TypeKind.Primitive, name, multiple) => ScalaUtil.toClassName("value", multiple)
+    case Type(TypeKind.Model, name, multiple) => ScalaUtil.toClassName(name, multiple)
+    case Type(TypeKind.Enum, name, multiple) => ScalaUtil.toClassName(name, multiple)
   }
 
 }
@@ -189,8 +189,8 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
 
   val argList: Option[String] = operation.body match {
     case None => ScalaUtil.fieldsToArgList(parameters.map(_.definition))
-    case Some(PrimitiveBody(dt, multiple)) => {
-      val baseTypeName = ScalaDataType(dt).name
+    case Some(Type(TypeKind.Primitive, name, multiple)) => {
+      val baseTypeName = ScalaDataType(Datatype.forceByName(name)).name
 
       val typeName: String = {
         if (multiple) {
@@ -207,8 +207,8 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
         ).flatten.mkString(", ")
       )
     }
-    case Some(ModelBody(name, multiple)) => Some(bodyClassArg(name, multiple))
-    case Some(EnumBody(name, multiple)) => Some(bodyClassArg(name, multiple))
+    case Some(Type(TypeKind.Model, name, multiple)) => Some(bodyClassArg(name, multiple))
+    case Some(Type(TypeKind.Enum, name, multiple)) => Some(bodyClassArg(name, multiple))
   }
 
   private def bodyClassArg(
@@ -293,9 +293,9 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
 
   import ScalaDataType._
   val baseType: ScalaDataType = field.fieldtype match {
-    case t: PrimitiveFieldType => ScalaDataType(t.datatype)
-    case m: ModelFieldType => new ScalaModelType(ssd.modelPackageName, m.modelName)
-    case e: EnumFieldType => new ScalaEnumType(ssd.enumPackageName, e.enum.name)
+    case Type(TypeKind.Primitive, name, _) => ScalaDataType(Datatype.forceByName(name))
+    case Type(TypeKind.Model, name, _) => new ScalaModelType(ssd.modelPackageName, name)
+    case Type(TypeKind.Enum, name, _) => new ScalaEnumType(ssd.enumPackageName, name)
   }
 
   def datatype: ScalaDataType = {
@@ -343,9 +343,9 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
   def baseType: ScalaDataType = {
     import ScalaDataType._
     param.paramtype match {
-      case t: PrimitiveParameterType => ScalaDataType(t.datatype)
-      case m: ModelParameterType => new ScalaModelType(ssd.modelPackageName, m.model.name)
-      case e: EnumParameterType => new ScalaEnumType(ssd.enumPackageName, e.enum.name)
+      case Type(TypeKind.Primitive, name, _) => ScalaDataType(Datatype.forceByName(name))
+      case Type(TypeKind.Model, name, _) => new ScalaModelType(ssd.modelPackageName, name)
+      case Type(TypeKind.Enum, name, _) => new ScalaEnumType(ssd.enumPackageName, name)
     }
   }
 

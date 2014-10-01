@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{ Enum, EnumValue, ServiceDescription, Text }
+import core.Text
 
 object Play2Enums {
 

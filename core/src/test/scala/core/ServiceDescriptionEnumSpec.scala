@@ -1,5 +1,6 @@
 package core
 
+import codegenerator.models.{TypeKind, Type}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -65,9 +66,8 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
     ageGroup.fieldtype match {
-      case et: EnumFieldType => {
-        et.enum.name should be("age_group")
-        et.enum.values.map(_.name) should be(Seq("Twenties", "Thirties"))
+      case Type(TypeKind.Enum, name, _) => {
+        name should be("age_group")
       }
       case ft => {
         fail(s"Invalid field type[${ft}] for age_group - should have been an enumeration")

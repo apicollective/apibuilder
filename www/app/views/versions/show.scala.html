@@ -1,4 +1,4 @@
-@(tpl: models.MainTemplate, service: core.ServiceDescription)(implicit flash: Flash)
+@(tpl: models.MainTemplate, service: codegenerator.models.ServiceDescription)(implicit flash: Flash)
 
 @main(tpl) {
 
@@ -59,7 +59,7 @@
                    @if(operation.parameters.isEmpty) {
                      <em>No parameters</em>
                    } else {
-                     @parameters(tpl.org.get, tpl.service.get, tpl.version.get, operation)
+                     @parameters(tpl.org.get, tpl.service.get, tpl.version.get, service, operation)
                    }
 
                    <h4>Response</h4>

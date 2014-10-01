@@ -1,5 +1,6 @@
 package core.generator
 
+import codegenerator.models._
 import core._
 import Text._
 
@@ -76,9 +77,9 @@ case class Play2Util(config: ScalaClientMethodConfig) {
 
     } else if (!op.body.isEmpty) {
       val payload = op.body.get.body match {
-        case PrimitiveBody(dt, multiple) => ScalaDataType.asString(ScalaUtil.toVariable(op.body.get.name, multiple), ScalaDataType(dt))
-        case ModelBody(name, multiple) => ScalaUtil.toVariable(op.body.get.name, multiple)
-        case EnumBody(name, multiple) => s"${ScalaUtil.toVariable(op.body.get.name, multiple)}.map(_.toString)"
+        case Type(TypeKind.Primitive, name, multiple) => ScalaDataType.asString(ScalaUtil.toVariable(op.body.get.name, multiple), ScalaDataType(Datatype.forceByName(name)))
+        case Type(TypeKind.Model, name, multiple) => ScalaUtil.toVariable(op.body.get.name, multiple)
+        case Type(TypeKind.Enum, name, multiple) => s"${ScalaUtil.toVariable(op.body.get.name, multiple)}.map(_.toString)"
       }
 
       Some(s"val payload = play.api.libs.json.Json.toJson($payload)")

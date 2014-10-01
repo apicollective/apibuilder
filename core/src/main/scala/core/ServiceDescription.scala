@@ -1,99 +1,49 @@
 package core
 
+import codegenerator.models._
 import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
 
-object ServiceDescription {
+object ServiceDescriptionBuilder {
 
   def apply(apiJson: String): ServiceDescription = {
+    apply(apiJson, None)
+  }
+
+  def apply(apiJson: String, packageName: Option[String]): ServiceDescription = {
     val jsValue = Json.parse(apiJson)
-    ServiceDescription(jsValue)
+    ServiceDescriptionBuilder(jsValue, packageName)
   }
 
   def apply(json: JsValue): ServiceDescription = {
+    apply(json, None)
+  }
+
+  def apply(json: JsValue, packageName: Option[String]): ServiceDescription = {
     val internal = InternalServiceDescription(json)
-    ServiceDescription(internal)
+    ServiceDescriptionBuilder(internal, packageName)
   }
 
-}
-
-case class ServiceDescription(internal: InternalServiceDescription) {
-
-  lazy val enums: Seq[Enum] = internal.enums.map { Enum(_) }.sortBy(_.name.toLowerCase)
-  lazy val models: Seq[Model] = internal.models.map { Model(this, _) }.sortBy(_.name.toLowerCase)
-  lazy val headers: Seq[Header] = internal.headers.map { Header(enums, _) }
-  lazy val resources: Seq[Resource] = internal.resources.map { Resource(enums, models, _) }.sorted
-  lazy val baseUrl: Option[String] = internal.baseUrl
-  lazy val name: String = internal.name.getOrElse { sys.error("Missing name") }
-  lazy val description: Option[String] = internal.description
-
-  def model(name: String): Option[Model] = {
-    models.find(_.name == name)
+  def apply(internal: InternalServiceDescription, packageName: Option[String] = None): ServiceDescription = {
+    val enums = internal.enums.map(EnumBuilder(_)).sortBy(_.name.toLowerCase)
+    val models = internal.models.map(ModelBuilder(enums, _)).sortBy(_.name.toLowerCase)
+    val headers = internal.headers.map(HeaderBuilder(enums, _))
+    val resources = internal.resources.map(ResourceBuilder(enums, models, _)).sortBy(_.model.plural.toLowerCase)
+    ServiceDescription(
+      enums,
+      models,
+      headers,
+      resources,
+      internal.baseUrl,
+      internal.name.getOrElse(sys.error("Missing name")),
+      packageName,
+      internal.description
+    )
   }
-
 }
 
-case class Enum(
-  name: String,
-  description: Option[String],
-  values: Seq[EnumValue]
-) {
-  require(Text.isValidName(name), s"Enum name[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
-}
-
-case class EnumValue(
-  name: String,
-  description: Option[String]
-) {
-  require(Text.startsWithLetter(name), s"Enum value[$name] is invalid - must start with a letter")
-}
-
-case class Header(
-  name: String,
-  headertype: HeaderType,
-  multiple: Boolean,
-  required: Boolean,
-  description: Option[String],
-  default: Option[String]
-)
-
-case class Model(name: String,
-                 plural: String,
-                 description: Option[String],
-                 fields: Seq[Field]) extends Ordered[Model] {
-  require(Text.isValidName(name), s"Model name[$name] is invalid - can only contain alphanumerics and underscores and must start with a letter")
-
-  def compare(that: Model): Int = {
-    name.toLowerCase.compare(that.name.toLowerCase)
-  }
-
-}
-
-case class Resource(model: Model,
-                    path: String,
-                    operations: Seq[Operation]) extends Ordered[Resource] {
-
-  def compare(that: Resource): Int = {
-    model.plural.toLowerCase.compare(that.model.plural.toLowerCase)
-  }
-
-}
-
-
-case class Operation(model: Model,
-                     method: String,
-                     path: String,
-                     description: Option[String],
-                     body: Option[Body],
-                     parameters: Seq[Parameter],
-                     responses: Seq[Response]) {
-
-  lazy val label = "%s %s".format(method, path)
-
-}
-
-object Resource {
+object ResourceBuilder {
 
   def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResource): Resource = {
     val model = models.find { _.name == internal.modelName.get }.getOrElse {
@@ -101,37 +51,37 @@ object Resource {
     }
     Resource(model = model,
              path = internal.path,
-             operations = internal.operations.map(op => Operation(enums, models, model, op)))
+             operations = internal.operations.map(op => OperationBuilder(enums, models, model, op)))
   }
 
 }
 
-object Operation {
+object OperationBuilder {
 
   def apply(enums: Seq[Enum], models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
     val internalParams = internal.parameters.map { p =>
       if (internal.namedPathParameters.contains(p.name.get)) {
-        Parameter(enums, models, p, ParameterLocation.Path)
+        ParameterBuilder(enums, models, p, ParameterLocation.Path)
       } else {
-        Parameter(enums, models, p, location)
+        ParameterBuilder(enums, models, p, location)
       }
      }
     val internalParamNames: Set[String] = internalParams.map(_.name).toSet
 
     // Capture any path parameters that were not explicitly annotated
-    val pathParameters = internal.namedPathParameters.filter { name => !internalParamNames.contains(name) }.map { Parameter.fromPath(model, _) }
+    val pathParameters = internal.namedPathParameters.filter { name => !internalParamNames.contains(name) }.map { ParameterBuilder.fromPath(model, _) }
 
-    val body: Option[Body] = internal.body.map { ib =>
+    val body: Option[Type] = internal.body.map { ib =>
       Datatype.findByName(ib.name) match {
-        case Some(dt) => PrimitiveBody(dt, ib.multiple)
+        case Some(dt) => Type(TypeKind.Primitive, dt.name, ib.multiple)
         case None => {
           models.find(_.name == ib.name) match {
-            case Some(model) => ModelBody(model.name, ib.multiple)
+            case Some(model) => Type(TypeKind.Model, model.name, ib.multiple)
             case None => {
               enums.find(_.name == ib.name) match {
-                case Some(enum) => EnumBody(enum.name, ib.multiple)
+                case Some(enum) => Type(TypeKind.Enum, enum.name, ib.multiple)
                 case None => {
                   sys.error(s"Operation specifies body[$ib.name] which references an undefined datatype, model or enum")
                 }
@@ -148,57 +98,12 @@ object Operation {
               description = internal.description,
               body = body,
               parameters = pathParameters ++ internalParams,
-              responses = internal.responses.map { Response(_) })
+              responses = internal.responses.map { ResponseBuilder(_) })
   }
 
 }
 
-case class Field(name: String,
-                 fieldtype: FieldType,
-                 description: Option[String] = None,
-                 required: Boolean = true,
-                 multiple: Boolean = false,
-                 default: Option[String] = None,
-                 example: Option[String] = None,
-                 minimum: Option[Long] = None,
-                 maximum: Option[Long] = None)
-
-sealed trait Body
-case class PrimitiveBody(datatype: Datatype, multiple: Boolean) extends Body
-case class ModelBody(name: String, multiple: Boolean) extends Body
-case class EnumBody(name: String, multiple: Boolean) extends Body
-
-sealed trait FieldType
-case class PrimitiveFieldType(datatype: Datatype) extends FieldType
-case class ModelFieldType(modelName: String) extends FieldType
-case class EnumFieldType(enum: Enum) extends FieldType
-
-sealed trait HeaderType
-case object StringHeaderType extends HeaderType
-case class EnumHeaderType(enum: Enum) extends HeaderType
-
-sealed trait ParameterType
-case class PrimitiveParameterType(datatype: Datatype) extends ParameterType
-case class ModelParameterType(model: Model) extends ParameterType
-case class EnumParameterType(enum: Enum) extends ParameterType
-
-case class Parameter(name: String,
-                     paramtype: ParameterType,
-                     location: ParameterLocation,
-                     description: Option[String] = None,
-                     required: Boolean = true,
-                     multiple: Boolean = false,
-                     default: Option[String] = None,
-                     example: Option[String] = None,
-                     minimum: Option[Long] = None,
-                     maximum: Option[Long] = None)
-
-
-case class Response(code: Int,
-                    datatype: String,
-                    multiple: Boolean = false)
-
-object Enum {
+object EnumBuilder {
 
   def apply(ie: InternalEnum): Enum = {
     Enum(
@@ -210,21 +115,22 @@ object Enum {
 
 }
 
-object Header {
+object HeaderBuilder {
 
   def apply(enums: Seq[Enum], ih: InternalHeader): Header = {
-    val headertype = if (ih.headertype.get == Datatype.StringType.name) {
-      StringHeaderType
+    val (headertype, headervalue) = if (ih.headertype.get == Datatype.StringType.name) {
+      HeaderType.String -> None
     } else {
       val enum = enums.find(_.name == ih.headertype.get).getOrElse {
         sys.error(s"Invalid header type[${ih.headertype.get}]")
       }
-      EnumHeaderType(enum)
+      HeaderType.Enum -> Some(enum.name)
     }
 
     Header(
       name = ih.name.get,
       headertype = headertype,
+      headertypeValue = headervalue,
       multiple = ih.multiple,
       required = ih.required,
       description = ih.description,
@@ -234,18 +140,18 @@ object Header {
 
 }
 
-object Model {
+object ModelBuilder {
 
-  def apply(sd: ServiceDescription, im: InternalModel): Model = {
+  def apply(enums: Seq[Enum], im: InternalModel): Model = {
     Model(name = im.name,
           plural = im.plural,
           description = im.description,
-          fields = im.fields.map { Field(sd.enums, im, _) })
+          fields = im.fields.map { FieldBuilder(enums, im, _) })
   }
 
 }
 
-object Response {
+object ResponseBuilder {
 
   def apply(ir: InternalResponse): Response = {
     val dt = ir.datatype.getOrElse {
@@ -258,97 +164,98 @@ object Response {
 
 }
 
-sealed abstract class Datatype(val name: String, val example: String, val description: String)
+//sealed abstract class Datatype(val name: String, val example: String, val description: String)
+//
+//object Datatype {
+//
+//  case object BooleanType extends Datatype(name = "boolean",
+//                                           example = "'true' or 'false'",
+//                                           description = "Represents a boolean value")
+//
+//  case object DecimalType extends Datatype(name = "decimal",
+//                                           example = "10.12",
+//                                           description = "Commonly used to represent things like currency values. Maps to a BigDecimal in most languages.")
+//
+//  case object IntegerType extends Datatype(name = "integer",
+//                                           example = "10",
+//                                           description = "32-bit signed integer")
+//
+//  case object DoubleType extends Datatype(name = "double",
+//                                          example = "10.12",
+//                                          description = "double precision (64-bit) IEEE 754 floating-point number")
+//
+//  case object LongType extends Datatype(name = "long",
+//                                        example = "10",
+//                                        description = "64-bit signed integer")
+//
+//  case object StringType extends Datatype(name = "string",
+//                                          example = "This is a fox.",
+//                                          description = "unicode character sequence")
+//
+//  case object MapType extends Datatype(name = "map",
+//                                       example = """{ "foo": "bar" }""",
+//                                       description = "A javascript object. The keys must be strings per JSON object spec. Apidoc requires the values to also be strings - while debatable, this encourages use of real models in APIs vs. maps, keeping use of maps to simpler use cases. The choice of string for value enables JSON serialization in all languages for all values of Maps - i.e. we can guarantee nice client interfaces. In typed languages (e.g. Scala), equivalent to Map[String, String]")
+//
+//  case object DateIso8601Type extends Datatype(name = "date-iso8601",
+//                                               example = "2014-04-29",
+//                                               description = "Date format in ISO 8601")
+//
+//  case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
+//                                                   example = "2014-04-29T11:56:52Z",
+//                                                   description = "Date time format in ISO 8601")
+//
+//  case object UuidType extends Datatype(name = "uuid",
+//                                        example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
+//                                        description = "String representation of a universally unique identifier (UUID)")
+//
+//  case object UnitType extends Datatype(name = "unit",
+//                                        example = "N/A",
+//                                        description = "Internal type used to represent things like an HTTP NoContent response. Maps to void in Java, Unit in Scala, nil in ruby, etc.")
+//
+//  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, MapType, UuidType, DateIso8601Type, DateTimeIso8601Type)
+//
+//  val QueryParameterTypes = All.filter(_ != MapType)
+//
+//  def findByName(name: String): Option[Datatype] = {
+//    // TODO: This is weird. If we include UnitType in All - it ends up
+//    // being a NPE in the all loop. For now pull out unit explicitly
+//    if (name == UnitType.name) {
+//      Some(UnitType)
+//    } else {
+//      All.find { dt => dt.name == name }
+//    }
+//  }
+//
+//}
 
-object Datatype {
+//sealed abstract class ParameterLocation(val name: String)
+//
+//object ParameterLocation {
+//
+//  case object Path extends ParameterLocation("path")
+//  case object Query extends ParameterLocation("query")
+//  case object Form extends ParameterLocation("form")
+//
+//}
 
-  case object BooleanType extends Datatype(name = "boolean",
-                                           example = "'true' or 'false'",
-                                           description = "Represents a boolean value")
-
-  case object DecimalType extends Datatype(name = "decimal",
-                                           example = "10.12",
-                                           description = "Commonly used to represent things like currency values. Maps to a BigDecimal in most languages.")
-
-  case object IntegerType extends Datatype(name = "integer",
-                                           example = "10",
-                                           description = "32-bit signed integer")
-
-  case object DoubleType extends Datatype(name = "double",
-                                          example = "10.12",
-                                          description = "double precision (64-bit) IEEE 754 floating-point number")
-
-  case object LongType extends Datatype(name = "long",
-                                        example = "10",
-                                        description = "64-bit signed integer")
-
-  case object StringType extends Datatype(name = "string",
-                                          example = "This is a fox.",
-                                          description = "unicode character sequence")
-
-  case object MapType extends Datatype(name = "map",
-                                       example = """{ "foo": "bar" }""",
-                                       description = "A javascript object. The keys must be strings per JSON object spec. Apidoc requires the values to also be strings - while debatable, this encourages use of real models in APIs vs. maps, keeping use of maps to simpler use cases. The choice of string for value enables JSON serialization in all languages for all values of Maps - i.e. we can guarantee nice client interfaces. In typed languages (e.g. Scala), equivalent to Map[String, String]")
-
-  case object DateIso8601Type extends Datatype(name = "date-iso8601",
-                                               example = "2014-04-29",
-                                               description = "Date format in ISO 8601")
-
-  case object DateTimeIso8601Type extends Datatype(name = "date-time-iso8601",
-                                                   example = "2014-04-29T11:56:52Z",
-                                                   description = "Date time format in ISO 8601")
-
-  case object UuidType extends Datatype(name = "uuid",
-                                        example = "5ecf6502-e532-4738-aad5-7ac9701251dd",
-                                        description = "String representation of a universally unique identifier (UUID)")
-
-  case object UnitType extends Datatype(name = "unit",
-                                        example = "N/A",
-                                        description = "Internal type used to represent things like an HTTP NoContent response. Maps to void in Java, Unit in Scala, nil in ruby, etc.")
-
-  val All: Seq[Datatype] = Seq(BooleanType, DecimalType, DoubleType, IntegerType, LongType, StringType, MapType, UuidType, DateIso8601Type, DateTimeIso8601Type)
-
-  val QueryParameterTypes = All.filter(_ != MapType)
-
-  def findByName(name: String): Option[Datatype] = {
-    // TODO: This is weird. If we include UnitType in All - it ends up
-    // being a NPE in the all loop. For now pull out unit explicitly
-    if (name == UnitType.name) {
-      Some(UnitType)
-    } else {
-      All.find { dt => dt.name == name }
-    }
-  }
-
-}
-
-sealed abstract class ParameterLocation(val name: String)
-
-object ParameterLocation {
-
-  case object Path extends ParameterLocation("path")
-  case object Query extends ParameterLocation("query")
-  case object Form extends ParameterLocation("form")
-
-}
-
-object Parameter {
+object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val datatype = model.fields.find(_.name == name) match {
-      case None => Datatype.StringType
+      case None => Datatype.StringType.name
       case Some(f: Field) => {
         f.fieldtype match {
-          case ft: PrimitiveFieldType => ft.datatype
-          case _ => Datatype.StringType
+          case Type(TypeKind.Primitive, name, _) => name
+          case _ => Datatype.StringType.name
         }
       }
     }
 
     Parameter(name = name,
-              paramtype = PrimitiveParameterType(datatype),
+              paramtype = Type(TypeKind.Primitive, datatype, false),
               location = ParameterLocation.Path,
-              required = true)
+              required = true,
+              multiple = false)
   }
 
   def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
@@ -360,22 +267,22 @@ object Parameter {
       case None => {
         enums.find(_.name == typeName) match {
           case Some(enum) => {
-            internal.default.map { v => Field.assertValidDefault(Datatype.StringType, v) }
-            EnumParameterType(enum)
+            internal.default.map { v => FieldBuilder.assertValidDefault(Datatype.StringType, v) }
+            Type(TypeKind.Enum, enum.name, false)
           }
 
           case None => {
             assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
-            ModelParameterType(models.find(_.name == typeName).getOrElse {
+            Type(TypeKind.Model, models.find(_.name == typeName).map(_.name).getOrElse {
               sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
-            })
+            }, false)
           }
         }
       }
 
       case Some(dt: Datatype) => {
-        internal.default.map { v => Field.assertValidDefault(dt, v) }
-        PrimitiveParameterType(dt)
+        internal.default.map { v => FieldBuilder.assertValidDefault(dt, v) }
+        Type(TypeKind.Primitive, dt.name, false)
       }
     }
 
@@ -386,14 +293,14 @@ object Parameter {
               required = internal.required,
               multiple = internal.multiple,
               default = internal.default,
-              minimum = internal.minimum.map(_.toLong),
-              maximum = internal.maximum.map(_.toLong),
+              minimum = internal.minimum,
+              maximum = internal.maximum,
               example = internal.example)
   }
 
 }
 
-object Field {
+object FieldBuilder {
 
   def apply(enums: Seq[Enum], im: InternalModel, internal: InternalField): Field = {
     val fieldTypeName = internal.fieldtype.getOrElse {
@@ -403,18 +310,18 @@ object Field {
     val fieldtype = Datatype.findByName(fieldTypeName) match {
       case Some(dt: Datatype) => {
         internal.default.map { v => assertValidDefault(dt, v) }
-        PrimitiveFieldType(dt)
+        Type(TypeKind.Primitive, dt.name, false)
       }
 
       case None => {
         enums.find(_.name == fieldTypeName) match {
           case Some(e: Enum) => {
             internal.default.map { v => assertValidDefault(Datatype.StringType, v) }
-            EnumFieldType(e)
+            Type(TypeKind.Enum, e.name, false)
           }
           case None => {
             require(internal.default.isEmpty, s"Cannot have a default for a field of type[$fieldTypeName]")
-            ModelFieldType(fieldTypeName)
+            Type(TypeKind.Model, fieldTypeName, false)
           }
         }
       }
@@ -426,8 +333,8 @@ object Field {
           required = internal.required,
           multiple = internal.multiple,
           default = internal.default,
-          minimum = internal.minimum.map(_.toLong),
-          maximum = internal.maximum.map(_.toLong),
+          minimum = internal.minimum,
+          maximum = internal.maximum,
           example = internal.example)
   }
 

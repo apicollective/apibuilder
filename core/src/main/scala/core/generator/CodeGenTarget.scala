@@ -1,8 +1,7 @@
 package core.generator
 
-import com.gilt.apidoc.models.OrganizationMetadata
+import codegenerator.models.ServiceDescription
 import core.plugin.PluginLoader
-import core.{ServiceDescription, Text}
 
 
 case class CodeGenTarget(key: String, name: String, description: Option[String], status: Status, generator: Option[CodeGenerator]) {
@@ -92,9 +91,9 @@ object CodeGenTarget {
 
   lazy val Implemented = All.filter(target => target.status != Status.Proposal && target.generator.isDefined)
 
-  def generate(target: CodeGenTarget, apidocVersion: String, orgKey: String, metadata: Option[OrganizationMetadata], sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
+  def generate(target: CodeGenTarget, apidocVersion: String, orgKey: String, sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
     val userAgent = target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
-    lazy val ssd = new ScalaServiceDescription(sd, metadata)
+    lazy val ssd = new ScalaServiceDescription(sd)
     target.generator.fold(sys.error(s"unsupported code generation for target[$target.key]"))(_.generate(ssd, userAgent))
   }
 

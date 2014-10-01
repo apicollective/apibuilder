@@ -1,5 +1,6 @@
 package core
 
+import codegenerator.models.{TypeKind, Type}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -26,7 +27,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
     val item = service.models.find(_.name == "item").get
     item.fields.map(_.name).mkString(" ") should be("guid vendor_guid number quantity prices attributes return_policy metadata identifiers dimensions content images videos")
-    item.fields.find(_.name == "number").get.fieldtype.asInstanceOf[PrimitiveFieldType].datatype.name should be("string")
+    item.fields.find(_.name == "number").get.fieldtype should be(Type(TypeKind.Primitive, "string", false))
   }
 
   it("parses operations") {

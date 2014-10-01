@@ -1,8 +1,6 @@
 package controllers
 
-import lib.{Validation, ValidationError}
-import core.{ServiceDescription, ServiceDescriptionValidator}
-import db.VersionForm
+import core.ServiceDescriptionValidator
 import play.api.mvc._
 import play.api.libs.json._
 

@@ -1,4 +1,4 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: core.ServiceDescription, operation: core.Operation)
+@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: codegenerator.models.ServiceDescription, operation: codegenerator.models.Operation)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -9,9 +9,9 @@
   <tbody>
    <tr>
      <td>@{operation.body.get match {
-           case pt: core.PrimitiveBody => datatype(pt.datatype, pt.multiple)
-           case mt: core.ModelBody => modelTypeByName(org, service, version, sd, mt.name, mt.multiple)
-           case et: core.EnumBody => enumType(org, service, version, et.name, et.multiple)
+           case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), multiple)
+           case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, multiple)
+           case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, multiple)
          }}
      </td>
    </tr>

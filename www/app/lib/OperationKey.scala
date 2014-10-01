@@ -1,6 +1,7 @@
 package lib
 
-import core.{ Operation, ServiceDescription, UrlKey }
+import codegenerator.models.{Operation, ServiceDescription}
+import core.UrlKey
 
 object OperationKey {
 
@@ -14,6 +15,6 @@ object OperationKey {
 
 case class OperationKey(op: Operation) {
 
-  lazy val key = UrlKey.generate(s"${op.model.name} ${op.label}")
+  lazy val key = UrlKey.generate(s"${op.model.name} ${op.method} ${op.path}")
 
 }

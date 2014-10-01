@@ -1,5 +1,6 @@
 package core
 
+import codegenerator.models.{Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
@@ -26,12 +27,12 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
 
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
-    validator.serviceDescription.get.model("foo").get.fields.find(_.name == "bar").get.fieldtype match {
-      case ModelFieldType(name) => name should be("bar")
+    validator.serviceDescription.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get.fieldtype match {
+      case Type(TypeKind.Model, name, _) => name should be("bar")
       case other => fail("Expected field to be of type bar but was: " + other)
     }
-    validator.serviceDescription.get.model("bar").get.fields.find(_.name == "foo").get.fieldtype match {
-      case ModelFieldType(name) => name should be("foo")
+    validator.serviceDescription.get.models.find(_.name == "bar").get.fields.find(_.name == "foo").get.fieldtype match {
+      case Type(TypeKind.Model, name, _) => name should be("foo")
       case other => fail("Expected field to be of type foo but was: " + other)
     }
   }
@@ -62,10 +63,10 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
 
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
-    val model = validator.serviceDescription.get.model("userVariant").get
+    val model = validator.serviceDescription.get.models.find(_.name == "userVariant").get
     val parentField = model.fields.find(_.name == "parent").get
     parentField.fieldtype match {
-      case ModelFieldType(name) => {
+      case Type(TypeKind.Model, name, _) => {
         name should be("userVariant")
       }
       case other => {

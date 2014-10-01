@@ -1,5 +1,6 @@
 package core.generator
 
+import codegenerator.models.{Parameter, Model, Type, TypeKind, ParameterLocation, Operation, Resource}
 import core._
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
@@ -16,13 +17,13 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
     val model = new Model("model", "models", None, Nil)
     val q1 = new Parameter(
       "q1",
-      new PrimitiveParameterType(Datatype.DoubleType),
+      Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
       ParameterLocation.Query,
       None, true, false, None, None, None, None
     )
     val q2 = new Parameter(
       "q2",
-      new PrimitiveParameterType(Datatype.DoubleType),
+      Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
       ParameterLocation.Query,
       None, false, false, None, None, None, None
     )
