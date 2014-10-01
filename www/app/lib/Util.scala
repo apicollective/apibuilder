@@ -7,6 +7,7 @@ object Util {
   val AddServiceText = "Add Service"
   val ApiDocExampleUrl = "/gilt/docs/apidoc/latest"
   val ApiDocExampleApiJsonUrl = "/gilt/api.json/apidoc/latest"
+  val GitHubUrl = "https://github.com/gilt/apidoc"
 
   def calculateNextVersion(version: String): String = {
     version.split(VersionTag.Dash).size match {

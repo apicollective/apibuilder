@@ -5,7 +5,22 @@
 
 @main(tpl) {
 
-  @if(!tpl.user.isEmpty) {
+  @if(tpl.user.isEmpty) {
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">New to apidoc?</h3>
+      </div>
+      <div class="panel-body">
+
+        <div>
+          <a type="button" class="btn btn-primary" href="@routes.DocController.index">Start Here</a></button>
+        </div>
+
+      </div>
+    </div>
+
+  } else {
 
     <div class="pull-right">
       <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.create">Add organization</a>

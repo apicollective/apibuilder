@@ -9,20 +9,19 @@
     <li>Code refactoring in apidoc itself - project is mature enough
     now that we were able to replace the internal models used to
     bootstrap apidoc with the apidoc generated models! Thanks
-    gheine. See <a href='https://github.com/gilt/apidoc/pull/176'>PR
+    gheine. See <a href='@lib.Util.GitHubUrl/pull/176'>PR
     176</a></li>
 
     <li>Better pluralization using org.atteo.evo-inflector
     library. Model pluralization can always be explicitly specified in
     the api.json file, but this change expands the number of cases
     covered
-    automatically. See <a href='https://github.com/gilt/apidoc/pull/174'>PR
-    174</a></li>
+    automatically. See </li>
 
     <li>Code generation targets are extensible internally. First step
     towards opening up a simple way for anybody to contribute
     generators based on the apidoc
-    model. See <a href='https://github.com/gilt/apidoc/pull/171'>PR
+    model. See <a href='@lib.Util.GitHubUrl/pull/171'>PR
     171</a></li>
 
     <li>Number of smaller bug fixes</li>
@@ -36,7 +35,7 @@
     <li>Date Type: New '@core.Datatype.DateIso8601Type.name' type
     introduced. In ruby clients, maps to a Date instance. In JVM
     clients, maps to an <code>org.joda.time.LocalDate</code>
-    instance. See <a href='https://github.com/gilt/apidoc/issues/161'>Issue
+    instance. See <a href='@lib.Util.GitHubUrl/issues/161'>Issue
     161</a></li>
 
     <li>Dates now Supported in paths. When specifing an API, instances
@@ -45,13 +44,13 @@
     serialization is unclear; Serialization remains the responsibility
     of the service itself and thus apidoc will just document that the
     type is a
-    date. See <a href='https://github.com/gilt/apidoc/issues/161'>Issue
+    date. See <a href='@lib.Util.GitHubUrl/issues/161'>Issue
     161</a></li>
 
     <li>UI refactored so that resources are hyperlinked to their
     underlying model; All models, even if mapped to resources, are now
     listed in the Models section of the UI of
-    apidoc. See <a href='https://github.com/gilt/apidoc/issues/152'>Issue
+    apidoc. See <a href='@lib.Util.GitHubUrl/issues/152'>Issue
     152</a></li>
 
     <li>When downloading a client for the 'latest' version of a
@@ -65,7 +64,7 @@
   <ul>
 
     <li>Play client: Move Traits out of client so they can be accessed
-    directly. See <a href='https://github.com/gilt/apidoc/issues/158'>Issue
+    directly. See <a href='@lib.Util.GitHubUrl/issues/158'>Issue
     158</a></li>
 
   </ul>
@@ -80,7 +79,7 @@
     on <a href="https://github.com/AsyncHttpClient/async-http-client">ning's
     http async library</a>. The only dependencies you will need are
     play-ws and com.ning.async-http-client version
-    1.8.x. See <a href="https://github.com/gilt/apidoc/tree/master/client-tests/ning_1_8">ning
+    1.8.x. See <a href="@lib.Util.GitHubUrl/tree/master/client-tests/ning_1_8">ning
     1 8 sample project</a> for an example SBT project setup to use the
     ning clients.</li>
 
@@ -141,7 +140,7 @@
     to describe what headers the service understands, including
     setting default values which will be automatically included in all
     requests made via the generated clients.
-    See <a href='https://github.com/gilt/apidoc/pull/131'>PR
+    See <a href='@lib.Util.GitHubUrl/pull/131'>PR
     131</a></li>
 
     <li>Improved documentation of api.json format -
@@ -165,16 +164,16 @@
     which is the package name to use for JVM based clients. This
     allows you to specify explicitly the package name for all
     generated clients.
-    See <a href='https://github.com/gilt/apidoc/issues/86'>Issue
+    See <a href='@lib.Util.GitHubUrl/issues/86'>Issue
     86</a></li>
 
     <li> Expand support for body to include primitive types and enums.
-    See <a href='https://github.com/gilt/apidoc/issues/139'>Issue
+    See <a href='@lib.Util.GitHubUrl/issues/139'>Issue
     139</a></li>
 
     <li> Play and ruby clients now use strong types for all parameters
     of type enum. Previously these were sent as Strings.
-    See <a href='https://github.com/gilt/apidoc/issues/127'>Issue
+    See <a href='@lib.Util.GitHubUrl/issues/127'>Issue
     127</a></li>
 
     <li> Add support to play and ruby clients for GET parameters that
@@ -185,19 +184,19 @@
     parameters are explicitly excluded from the generated routes file
     - instead you will see a comment describing the additional
     parameter.
-    See <a href='https://github.com/gilt/apidoc/issues/139'>Issue
+    See <a href='@lib.Util.GitHubUrl/issues/139'>Issue
     139</a></li>
 
     <li> Better JSON validation around requiring JsObjects for things
     like models, enum, body, etc.
-    See <a href='https://github.com/gilt/apidoc/issues/138'>Issue 138</a>
-    and <a href='https://github.com/gilt/apidoc/issues/134'>Issue 134</a>
+    See <a href='@lib.Util.GitHubUrl/issues/138'>Issue 138</a>
+    and <a href='@lib.Util.GitHubUrl/issues/134'>Issue 134</a>
     for examples.
     </li>
 
     <li> Better error messages when explicitly speciying a 404
     response w/ a type.
-    See <a href='https://github.com/gilt/apidoc/issues/135'>Issue
+    See <a href='@lib.Util.GitHubUrl/issues/135'>Issue
     135</a>.
     </li>
 
@@ -214,7 +213,7 @@
     will get a validation error message to help with
     migration. See <a href="/doc/apiJson">apiJson documentation</a>
     for notes on the new enum support.
-    See <a href='https://github.com/gilt/apidoc/pull/131'>PR 131</a>
+    See <a href='@lib.Util.GitHubUrl/pull/131'>PR 131</a>
     </li>
 
   </ul>
@@ -229,11 +228,11 @@
     (play 2.2 does not support patch natively). If you need to access
     a service using patch, you can override the PATCH method in the
     generated client to implement your own PATCH method.
-    See <a href='https://github.com/gilt/apidoc/pull/122'>PR 122</a>
+    See <a href='@lib.Util.GitHubUrl/pull/122'>PR 122</a>
     </li>
 
     <li>Bug fixed in encoding of path parameters - thanks Gary!
-    See <a href='https://github.com/gilt/apidoc/pull/120'>PR 120</a>
+    See <a href='@lib.Util.GitHubUrl/pull/120'>PR 120</a>
     </li>
 
     <li>Play client: FailedResponse class renamed to FailedRequest as
@@ -243,15 +242,15 @@
     default user agent to identify the version of apidoc that
     generated the client as well as the specific org, service, and
     version of the service description used to generate the client.
-    See <a href='https://github.com/gilt/apidoc/pull/116'>PR 116</a>
+    See <a href='@lib.Util.GitHubUrl/pull/116'>PR 116</a>
     </li>
 
     <li>Few bug fixes to make enum values more readable and to enable
     using the ruby client library both with objects as well as hashes (from
     json).
-    See <a href='https://github.com/gilt/apidoc/issues/114'>Issue 114</a>,
-    <a href='https://github.com/gilt/apidoc/issues/117'>Issue 117</a>,
-    and <a href='https://github.com/gilt/apidoc/issues/118'>Issue 118</a>
+    See <a href='@lib.Util.GitHubUrl/issues/114'>Issue 114</a>,
+    <a href='@lib.Util.GitHubUrl/issues/117'>Issue 117</a>,
+    and <a href='@lib.Util.GitHubUrl/issues/118'>Issue 118</a>
     </li>
 
 </li>
@@ -266,17 +265,17 @@
     possible to list org domains (e.g. gilt.com, giltcity.com) for
     auto association with org when new users
     register.
-    See <a href='https://github.com/gilt/apidoc/pull/102'>PR 102</a>
+    See <a href='@lib.Util.GitHubUrl/pull/102'>PR 102</a>
     </li>
 
     <li>Ruby client: Improved support for date time objects (able to
     instantiate models with date times using Ruby's Time or DateTime
     classes, in addition to existing string support.
-    See <a href='https://github.com/gilt/apidoc/pull/105'>PR 105</a>
+    See <a href='@lib.Util.GitHubUrl/pull/105'>PR 105</a>
     </li>
 
     <li>Avro: Add support for DataTime.
-    See <a href='https://github.com/gilt/apidoc/pull/106'>PR 106</a>
+    See <a href='@lib.Util.GitHubUrl/pull/106'>PR 106</a>
     </li>
 
   </ul>
@@ -345,7 +344,7 @@
 
     <li>Added date time helper for parsing date time query parameters
     in play framework routes file. Thanks to Gary Coady - see
-    https://github.com/gilt/apidoc/pull/62</li>
+    @lib.Util.GitHubUrl/pull/62</li>
 
     <li>Update ruby client to ensure enums are fully supported.</li>
 
