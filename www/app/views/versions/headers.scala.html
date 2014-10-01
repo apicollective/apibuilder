@@ -17,6 +17,7 @@
        <td>@{header.headertype match {
              case codegenerator.models.HeaderType.String => datatype(core.Datatype.StringType, header.multiple)
              case codegenerator.models.HeaderType.Enum => enumType(org, service, version, header.headertypeValue.get, header.multiple)
+             case codegenerator.models.HeaderType.UNDEFINED(name) => name
            }}
        </td>
        <td>@if(header.required && header.default.isEmpty) { Yes } else { No }</td>
