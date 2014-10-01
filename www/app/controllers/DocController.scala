@@ -9,40 +9,40 @@ object DocController extends Controller {
     Redirect(routes.DocController.index)
   }
 
-  def index = Action { implicit request =>
-    Ok(views.html.doc.index())
+  def index = Anonymous { implicit request =>
+    Ok(views.html.doc.index(request.user))
   }
 
-  def gettingStarted = Action { implicit request =>
-    Ok(views.html.doc.gettingStarted())
+  def gettingStarted = Anonymous { implicit request =>
+    Ok(views.html.doc.gettingStarted(request.user))
   }
 
-  def apiJson = Action { implicit request =>
-    Ok(views.html.doc.apiJson())
+  def apiJson = Anonymous { implicit request =>
+    Ok(views.html.doc.apiJson(request.user))
   }
 
-  def types = Action { implicit request =>
-    Ok(views.html.doc.types())
+  def types = Anonymous { implicit request =>
+    Ok(views.html.doc.types(request.user))
   }
 
-  def clients = Action { implicit request =>
-    Ok(views.html.doc.clients())
+  def clients = Anonymous { implicit request =>
+    Ok(views.html.doc.clients(request.user))
   }
 
-  def examples = Action { implicit request =>
-    Ok(views.html.doc.examples())
+  def examples = Anonymous { implicit request =>
+    Ok(views.html.doc.examples(request.user))
   }
 
-  def history = Action { implicit request =>
-    Ok(views.html.doc.history())
+  def history = Anonymous { implicit request =>
+    Ok(views.html.doc.history(request.user))
   }
 
-  def releaseNotes = Action { implicit request =>
-    Ok(views.html.doc.releaseNotes())
+  def releaseNotes = Anonymous { implicit request =>
+    Ok(views.html.doc.releaseNotes(request.user))
   }
 
-  def todo = Action { implicit request =>
-    Ok(views.html.doc.todo())
+  def todo = Anonymous { implicit request =>
+    Ok(views.html.doc.todo(request.user))
   }
 
 }

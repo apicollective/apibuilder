@@ -1,6 +1,8 @@
+@(user: Option[com.gilt.apidoc.models.User])
+
 @import core.generator.CodeGenTarget
 
-@doc.main(Some("Clients")) {
+@doc.main(user, Some("Clients")) {
 
   <p>
 

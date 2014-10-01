@@ -1,4 +1,6 @@
-@doc.main(Some("Todo")) {
+@(user: Option[com.gilt.apidoc.models.User])
+
+@doc.main(user, Some("Todo")) {
 
   <ul>
 
