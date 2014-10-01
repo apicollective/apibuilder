@@ -4,6 +4,10 @@ import core.VersionTag
 
 object Util {
 
+  val AddServiceText = "Add Service"
+  val ApiDocExampleUrl = "/gilt/docs/api-doc/latest"
+  val ApiDocExampleApiJsonUrl = "/gilt/api.json/api-doc/latest"
+
   def calculateNextVersion(version: String): String = {
     version.split(VersionTag.Dash).size match {
       case 1 => {

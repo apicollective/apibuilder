@@ -78,7 +78,7 @@ object Versions extends Controller {
     serviceKey match {
 
       case None => Future {
-        val tpl = request.mainTemplate("Add service")
+        val tpl = request.mainTemplate(Util.AddServiceText)
         val filledForm = uploadForm.fill(
           UploadData(
             version = DefaultVersion,

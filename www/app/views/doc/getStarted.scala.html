@@ -1,22 +1,41 @@
 @doc.main(Some("Get Started")) {
 
-<div class="jumbotron">
-  <h1>apidoc</h1>
-  <p>Beautiful documentation for REST services.</p>
-  <p>Simple native client libraries with no dependencies.</p>
-  <p>Better REST services - written by hand with love.</p>
-</div>
-
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">Step 1: Create your organization</h3>
   </div>
   <div class="panel-body">
 
-    <p>Apidoc is organized in the spirit of github. First you create
-    an organization which will be a container for all of your
-    services. If you are not logged in - you will be prompted to first
-    login or register.</p>
+    <p>The first step is to create an organization which will be a
+    container for all of your services. If you are not logged in - you
+    will be prompted to first login or register.</p>
+
+    <p><a href="@routes.Organizations.create">Create an organization</a> then continue.</p>
+
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Step 2: Create your first service</h3>
+  </div>
+  <div class="panel-body">
+
+    <p>A service in apidoc represents a full REST service. Each
+    service is fully described in a single file. By convention, we
+    name these files 'api.json' and store them in the root of the
+    project that defines the server that implements the service
+    (e.g. the root directory of your source repository).</p>
+
+    <p>
+      The easiest way to get started is download an example api.json
+      file and then edit it -
+      this <a href="@lib.Util.ApiDocExampleApiJsonUrl">api.json</a> file
+      is the description of the REST API for apidoc itself.
+    </p>
+
+    <p>
+      When you are ready - Click &quot;@lib.Util.AddServiceText&quot;
 
     <p><a href="@routes.Organizations.create">Create an organization</a> then continue.</p>
 
