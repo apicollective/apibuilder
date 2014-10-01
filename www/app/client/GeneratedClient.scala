@@ -430,7 +430,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.5.37 http://www.apidoc.me/gilt/code/api-doc/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.5.37 http://www.apidoc.me/gilt/code/apidoc/0.0.1-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -913,7 +913,7 @@ package com.gilt.apidoc {
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> "UserAgent")
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-apidoc" -> "www.apidoc.me", "User-Agent" -> "UserAgent")
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
