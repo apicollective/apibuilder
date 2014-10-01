@@ -10,7 +10,7 @@ if service_uri.to_s.strip == "" || token.to_s.strip == "" || user_guid.to_s == "
 end
 
 orgs = [] # ['gilt']
-services = []  # ['api-doc']
+services = []  # ['apidoc']
 services_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }

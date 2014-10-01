@@ -1,5 +1,5 @@
 {
-    "name": "Api Doc",
+    "name": "apidoc",
     "description": "Host API documentation for REST services, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
 

@@ -14,7 +14,7 @@ module ApiDoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.5.29 http://www.apidoc.me/gilt/code/api-doc/latest/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.5.29 http://www.apidoc.me/gilt/code/apidoc/latest/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -25,7 +25,7 @@ module ApiDoc
 
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil('path', path, String)
-      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('X-Api-Doc', 'www.apidoc.me').with_header('User-Agent', USER_AGENT)
+      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('X-apidoc', 'www.apidoc.me').with_header('User-Agent', USER_AGENT)
 
       if @authorization
         request.with_auth(@authorization)
