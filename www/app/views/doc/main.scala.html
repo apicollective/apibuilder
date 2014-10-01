@@ -31,8 +31,8 @@
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
             <li@if(title == None) { class="active" }><a href="@routes.DocController.index">Introduction</a></li>
-            <li@if(title == Some("Get Started")) { class="active" }><a href="@routes.DocController.getStarted">Get Started</a></li>
-            <li@if(title == Some("api.json")) { class="active" }><a href="@routes.DocController.apiJson">api.json format</a></li>
+            <li@if(title == Some("Getting Started")) { class="active" }><a href="@routes.DocController.gettingStarted">Getting Started</a></li>
+            <li@if(title == Some("api.json format")) { class="active" }><a href="@routes.DocController.apiJson">api.json format</a></li>
             <li@if(title == Some("types.json")) { class="active" }><a href="@routes.DocController.types">Types</a></li>
             <li@if(title == Some("Clients")) { class="active" }><a href="@routes.DocController.clients">Clients</a></li>
             <li@if(title == Some("Examples")) { class="active" }><a href="@routes.DocController.examples">Examples</a></li>

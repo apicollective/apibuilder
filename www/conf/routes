@@ -12,7 +12,7 @@ GET     /logged_out                                               controllers.Lo
 
 GET     /doc                                                      controllers.DocController.redirect
 GET     /doc/                                                     controllers.DocController.index
-GET     /doc/getStarted                                           controllers.DocController.getStarted
+GET     /doc/gettingStarted                                       controllers.DocController.gettingStarted
 GET     /doc/apiJson                                              controllers.DocController.apiJson
 GET     /doc/types                                                controllers.DocController.types
 GET     /doc/clients                                              controllers.DocController.clients
