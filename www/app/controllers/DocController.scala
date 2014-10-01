@@ -13,6 +13,10 @@ object DocController extends Controller {
     Ok(views.html.doc.index())
   }
 
+  def getStarted = Action { implicit request =>
+    Ok(views.html.doc.getStarted())
+  }
+
   def apiJson = Action { implicit request =>
     Ok(views.html.doc.apiJson())
   }

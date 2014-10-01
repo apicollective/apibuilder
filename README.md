@@ -27,6 +27,12 @@ sbt-apigen
 SBT plugin which can generate client APIs from an API description, where
 the JSON files are stored in src/main/api.
 
+SBT
+==========
+Memory settings for SBT:
+
+  exec java -Xms512M -Xmx2048M -XX:MaxPermSize=1G -Xss1M -XX:+CMSClassUnloadingEnabled ${SBT_OPTS} -jar /usr/local/Cellar/sbt/0.13.5/libexec/sbt-launch.jar "$@"
+
 Developing
 ==========
 
