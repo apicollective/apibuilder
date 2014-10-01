@@ -188,59 +188,59 @@ package com.gilt.apidoc.models {
       }
     }
 
-    implicit val jsonReadsApiDocEnum_Visibility = __.read[String].map(Visibility.apply)
-    implicit val jsonWritesApiDocEnum_Visibility = new Writes[Visibility] {
+    implicit val jsonReadsApidocEnum_Visibility = __.read[String].map(Visibility.apply)
+    implicit val jsonWritesApidocEnum_Visibility = new Writes[Visibility] {
       def writes(x: Visibility) = JsString(x.toString)
     }
-    implicit def jsonReadsApiDocCode: play.api.libs.json.Reads[Code] = {
+    implicit def jsonReadsApidocCode: play.api.libs.json.Reads[Code] = {
       (
         (__ \ "targetKey").read[String] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
-    implicit def jsonWritesApiDocCode: play.api.libs.json.Writes[Code] = {
+    implicit def jsonWritesApidocCode: play.api.libs.json.Writes[Code] = {
       (
         (__ \ "targetKey").write[String] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
 
-    implicit def jsonReadsApiDocDomain: play.api.libs.json.Reads[Domain] = {
+    implicit def jsonReadsApidocDomain: play.api.libs.json.Reads[Domain] = {
       (__ \ "name").read[String].map { x => new Domain(name = x) }
     }
 
-    implicit def jsonWritesApiDocDomain: play.api.libs.json.Writes[Domain] = new play.api.libs.json.Writes[Domain] {
+    implicit def jsonWritesApidocDomain: play.api.libs.json.Writes[Domain] = new play.api.libs.json.Writes[Domain] {
       def writes(x: Domain) = play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.Json.toJson(x.name)
       )
     }
 
-    implicit def jsonReadsApiDocError: play.api.libs.json.Reads[Error] = {
+    implicit def jsonReadsApidocError: play.api.libs.json.Reads[Error] = {
       (
         (__ \ "code").read[String] and
         (__ \ "message").read[String]
       )(Error.apply _)
     }
 
-    implicit def jsonWritesApiDocError: play.api.libs.json.Writes[Error] = {
+    implicit def jsonWritesApidocError: play.api.libs.json.Writes[Error] = {
       (
         (__ \ "code").write[String] and
         (__ \ "message").write[String]
       )(unlift(Error.unapply _))
     }
 
-    implicit def jsonReadsApiDocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
+    implicit def jsonReadsApidocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
       (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
     }
 
-    implicit def jsonWritesApiDocHealthcheck: play.api.libs.json.Writes[Healthcheck] = new play.api.libs.json.Writes[Healthcheck] {
+    implicit def jsonWritesApidocHealthcheck: play.api.libs.json.Writes[Healthcheck] = new play.api.libs.json.Writes[Healthcheck] {
       def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
         "status" -> play.api.libs.json.Json.toJson(x.status)
       )
     }
 
-    implicit def jsonReadsApiDocMembership: play.api.libs.json.Reads[Membership] = {
+    implicit def jsonReadsApidocMembership: play.api.libs.json.Reads[Membership] = {
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "user").read[com.gilt.apidoc.models.User] and
@@ -249,7 +249,7 @@ package com.gilt.apidoc.models {
       )(Membership.apply _)
     }
 
-    implicit def jsonWritesApiDocMembership: play.api.libs.json.Writes[Membership] = {
+    implicit def jsonWritesApidocMembership: play.api.libs.json.Writes[Membership] = {
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "user").write[com.gilt.apidoc.models.User] and
@@ -258,7 +258,7 @@ package com.gilt.apidoc.models {
       )(unlift(Membership.unapply _))
     }
 
-    implicit def jsonReadsApiDocMembershipRequest: play.api.libs.json.Reads[MembershipRequest] = {
+    implicit def jsonReadsApidocMembershipRequest: play.api.libs.json.Reads[MembershipRequest] = {
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "user").read[com.gilt.apidoc.models.User] and
@@ -267,7 +267,7 @@ package com.gilt.apidoc.models {
       )(MembershipRequest.apply _)
     }
 
-    implicit def jsonWritesApiDocMembershipRequest: play.api.libs.json.Writes[MembershipRequest] = {
+    implicit def jsonWritesApidocMembershipRequest: play.api.libs.json.Writes[MembershipRequest] = {
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "user").write[com.gilt.apidoc.models.User] and
@@ -276,7 +276,7 @@ package com.gilt.apidoc.models {
       )(unlift(MembershipRequest.unapply _))
     }
 
-    implicit def jsonReadsApiDocOrganization: play.api.libs.json.Reads[Organization] = {
+    implicit def jsonReadsApidocOrganization: play.api.libs.json.Reads[Organization] = {
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "key").read[String] and
@@ -286,7 +286,7 @@ package com.gilt.apidoc.models {
       )(Organization.apply _)
     }
 
-    implicit def jsonWritesApiDocOrganization: play.api.libs.json.Writes[Organization] = {
+    implicit def jsonWritesApidocOrganization: play.api.libs.json.Writes[Organization] = {
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "key").write[String] and
@@ -296,21 +296,21 @@ package com.gilt.apidoc.models {
       )(unlift(Organization.unapply _))
     }
 
-    implicit def jsonReadsApiDocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
+    implicit def jsonReadsApidocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
       (
         (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
         (__ \ "package_name").readNullable[String]
       )(OrganizationMetadata.apply _)
     }
 
-    implicit def jsonWritesApiDocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] = {
+    implicit def jsonWritesApidocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] = {
       (
         (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
         (__ \ "package_name").write[scala.Option[String]]
       )(unlift(OrganizationMetadata.unapply _))
     }
 
-    implicit def jsonReadsApiDocService: play.api.libs.json.Reads[Service] = {
+    implicit def jsonReadsApidocService: play.api.libs.json.Reads[Service] = {
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "name").read[String] and
@@ -320,7 +320,7 @@ package com.gilt.apidoc.models {
       )(Service.apply _)
     }
 
-    implicit def jsonWritesApiDocService: play.api.libs.json.Writes[Service] = {
+    implicit def jsonWritesApidocService: play.api.libs.json.Writes[Service] = {
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "name").write[String] and
@@ -330,7 +330,7 @@ package com.gilt.apidoc.models {
       )(unlift(Service.unapply _))
     }
 
-    implicit def jsonReadsApiDocTarget: play.api.libs.json.Reads[Target] = {
+    implicit def jsonReadsApidocTarget: play.api.libs.json.Reads[Target] = {
       (
         (__ \ "key").read[String] and
         (__ \ "name").read[String] and
@@ -338,7 +338,7 @@ package com.gilt.apidoc.models {
       )(Target.apply _)
     }
 
-    implicit def jsonWritesApiDocTarget: play.api.libs.json.Writes[Target] = {
+    implicit def jsonWritesApidocTarget: play.api.libs.json.Writes[Target] = {
       (
         (__ \ "key").write[String] and
         (__ \ "name").write[String] and
@@ -346,7 +346,7 @@ package com.gilt.apidoc.models {
       )(unlift(Target.unapply _))
     }
 
-    implicit def jsonReadsApiDocUser: play.api.libs.json.Reads[User] = {
+    implicit def jsonReadsApidocUser: play.api.libs.json.Reads[User] = {
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "email").read[String] and
@@ -354,7 +354,7 @@ package com.gilt.apidoc.models {
       )(User.apply _)
     }
 
-    implicit def jsonWritesApiDocUser: play.api.libs.json.Writes[User] = {
+    implicit def jsonWritesApidocUser: play.api.libs.json.Writes[User] = {
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "email").write[String] and
@@ -362,21 +362,21 @@ package com.gilt.apidoc.models {
       )(unlift(User.unapply _))
     }
 
-    implicit def jsonReadsApiDocValidation: play.api.libs.json.Reads[Validation] = {
+    implicit def jsonReadsApidocValidation: play.api.libs.json.Reads[Validation] = {
       (
         (__ \ "valid").read[Boolean] and
         (__ \ "errors").readNullable[scala.collection.Seq[String]].map(_.getOrElse(Nil))
       )(Validation.apply _)
     }
 
-    implicit def jsonWritesApiDocValidation: play.api.libs.json.Writes[Validation] = {
+    implicit def jsonWritesApidocValidation: play.api.libs.json.Writes[Validation] = {
       (
         (__ \ "valid").write[Boolean] and
         (__ \ "errors").write[scala.collection.Seq[String]]
       )(unlift(Validation.unapply _))
     }
 
-    implicit def jsonReadsApiDocVersion: play.api.libs.json.Reads[Version] = {
+    implicit def jsonReadsApidocVersion: play.api.libs.json.Reads[Version] = {
       (
         (__ \ "guid").read[java.util.UUID] and
         (__ \ "version").read[String] and
@@ -384,7 +384,7 @@ package com.gilt.apidoc.models {
       )(Version.apply _)
     }
 
-    implicit def jsonWritesApiDocVersion: play.api.libs.json.Writes[Version] = {
+    implicit def jsonWritesApidocVersion: play.api.libs.json.Writes[Version] = {
       (
         (__ \ "guid").write[java.util.UUID] and
         (__ \ "version").write[String] and
@@ -430,7 +430,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.5.37 http://www.apidoc.me/gilt/code/apidoc/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.5.41 http://www.apidoc.me/gilt/code/apidoc/0.0.1-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -913,7 +913,7 @@ package com.gilt.apidoc {
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-apidoc" -> "www.apidoc.me", "User-Agent" -> "UserAgent")
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> "UserAgent")
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
