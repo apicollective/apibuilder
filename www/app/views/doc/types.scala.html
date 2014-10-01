@@ -1,6 +1,15 @@
-@doc.main("types") {
+@doc.main(Some("Types")) {
 
-  <h2>Supported Datatypes</h2>
+  <p>
+
+    apidoc supports types that are common on the web - and useful for
+    many web applications. For example, many applications work with
+    dates and date times - by explicitly supporting these types, we
+    can simplify working with these types in all web applications, and
+    for type safe languages, we can map to the appropriate classes in
+    each language.
+
+  </p>
 
   <p>
     @core.Datatype.All.map(_.name).sorted.map { name =>

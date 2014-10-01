@@ -1,4 +1,33 @@
-@doc.main("Release notes") {
+@doc.main(Some("Release notes")) {
+
+<h3><!-- NEXT_TAG --></h3>
+
+  <ul>
+
+    <li><a href="@routes.DocController.index">Improved documentation</a>, especially for new users!</li>
+
+    <li>Code refactoring in apidoc itself - project is mature enough
+    now that we were able to replace the internal models used to
+    bootstrap apidoc with the apidoc generated models! Thanks
+    gheine. See <a href='https://github.com/gilt/apidoc/pull/176'>PR
+    176</a></li>
+
+    <li>Better pluralization using org.atteo.evo-inflector
+    library. Model pluralization can always be explicitly specified in
+    the api.json file, but this change expands the number of cases
+    covered
+    automatically. See <a href='https://github.com/gilt/apidoc/pull/174'>PR
+    174</a></li>
+
+    <li>Code generation targets are extensible internally. First step
+    towards opening up a simple way for anybody to contribute
+    generators based on the apidoc
+    model. See <a href='https://github.com/gilt/apidoc/pull/171'>PR
+    171</a></li>
+
+    <li>Number of smaller bug fixes</li>
+
+  </ul>
 
 <h3>0.5.33</h3>
 

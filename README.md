@@ -27,6 +27,12 @@ sbt-apigen
 SBT plugin which can generate client APIs from an API description, where
 the JSON files are stored in src/main/api.
 
+SBT
+==========
+Memory settings for SBT:
+
+  exec java -Xms512M -Xmx2048M -XX:MaxPermSize=1G -Xss1M -XX:+CMSClassUnloadingEnabled ${SBT_OPTS} -jar /usr/local/Cellar/sbt/0.13.5/libexec/sbt-launch.jar "$@"
+
 Developing
 ==========
 
@@ -61,10 +67,10 @@ in situ for a nice development experience.
 
 Updating generated code
 =======================
-curl http://www.apidoc.me/gilt/code/api-doc/latest/ruby_client > client-tests/ruby_client.rb
-curl http://www.apidoc.me/gilt/code/api-doc/latest/play_2_3_client > www/app/client/GeneratedClient.scala
-curl http://www.apidoc.me/gilt/code/api-doc/latest/play_2_x_json > core/src/main/scala/core/Generated.scala
-curl http://www.apidoc.me/gilt/code/api-doc/latest/play_2_x_routes > api/conf/routes
+curl http://www.apidoc.me/gilt/code/apidoc/latest/ruby_client > client-tests/ruby_client.rb
+curl http://www.apidoc.me/gilt/code/apidoc/latest/play_2_3_client > www/app/client/GeneratedClient.scala
+curl http://www.apidoc.me/gilt/code/apidoc/latest/play_2_x_json > core/src/main/scala/core/Generated.scala
+curl http://www.apidoc.me/gilt/code/apidoc/latest/play_2_x_routes > api/conf/routes
 
 Releasing code
 ==============

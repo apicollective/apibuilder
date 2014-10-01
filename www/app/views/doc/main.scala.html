@@ -1,11 +1,14 @@
-@(title: String)(content: Html)
+@(
+  title: Option[String] = None,
+  headerTitle: Option[String] = None
+)(content: Html)
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@title</title>
+    <title>@headerTitle.getOrElse(title.getOrElse("Apidoc"))</title>
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.1.1/css/bootstrap.min.css")">
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
     <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
@@ -17,7 +20,7 @@
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand" href="/">Api doc</a>
+          <a class="navbar-brand" href="/">apidoc</a>
         </div>
         </div>
       </div>
@@ -27,18 +30,19 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li@if(title == "Introduction") { class="active" }><a href="@routes.DocController.index">Introduction</a></li>
-            <li@if(title == "api.json") { class="active" }><a href="@routes.DocController.apiJson">api.json format</a></li>
-            <li@if(title == "types.json") { class="active" }><a href="@routes.DocController.types">Types</a></li>
-            <li@if(title == "Clients") { class="active" }><a href="@routes.DocController.clients">Clients</a></li>
-            <li@if(title == "Examples") { class="active" }><a href="@routes.DocController.examples">Examples</a></li>
-            <li@if(title == "Todo") { class="active" }><a href="@routes.DocController.todo">Todo</a></li>
-            <li@if(title == "History") { class="active" }><a href="@routes.DocController.history">History</a></li>
-            <li@if(title == "Release notes") { class="active" }><a href="@routes.DocController.releaseNotes">Release notes</a></li>
+            <li@if(title == None) { class="active" }><a href="@routes.DocController.index">Introduction</a></li>
+            <li@if(title == Some("Getting Started")) { class="active" }><a href="@routes.DocController.gettingStarted">Getting Started</a></li>
+            <li@if(title == Some("api.json format")) { class="active" }><a href="@routes.DocController.apiJson">api.json format</a></li>
+            <li@if(title == Some("types.json")) { class="active" }><a href="@routes.DocController.types">Types</a></li>
+            <li@if(title == Some("Clients")) { class="active" }><a href="@routes.DocController.clients">Clients</a></li>
+            <li@if(title == Some("Examples")) { class="active" }><a href="@routes.DocController.examples">Examples</a></li>
+            <li@if(title == Some("Todo")) { class="active" }><a href="@routes.DocController.todo">Todo</a></li>
+            <li@if(title == Some("History")) { class="active" }><a href="@routes.DocController.history">History</a></li>
+            <li@if(title == Some("Release notes")) { class="active" }><a href="@routes.DocController.releaseNotes">Release notes</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <h2>@title</h2>
+          @title.map { t => <h2>@t</h2> }
           <p>@content</p>
         </div>
       </div>

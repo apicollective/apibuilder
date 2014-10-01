@@ -1,6 +1,4 @@
-@doc.main("api.json") {
-
-  <h2>Schema declaration</h2>
+@doc.main(Some("api.json format")) {
 
   <p>
     A schema is represented in JSON as a JSON object of the form:
@@ -267,7 +265,7 @@
     where
     <ul>
       <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
-      <li><em>type</em> the datatype of this response. The value must be the name of a model. To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of users (assuming there is a model with name user), use "[user]".</li>
+      <li><em>type</em> the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
     </ul>
 
     There are a few conventions enforced:
