@@ -17,15 +17,15 @@
     }
     </pre>
 
-    where
+    where:
     <ul>
-      <li><em>name</em> specifies the human readable name of this service - used for display and as the basis for generating a unique key for URL</li>
-      <li><em>baseUrl</em> specifies the base URL where this service is hosted. Must start with http.</li>
-      <li><em>description</em> optional description for what this service provides.</li>
-      <li><em>headers</em> a JSON array defining any HTTP Headers that the service understands or expects.See <a href="#enum">Enum</a></li>
-      <li><em>enums</em> a JSON object defining all of the enums in this API. The key of each object is the enum name.See <a href="#header">Header</a></li>
-      <li><em>models</em> a JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
-      <li><em>resources</em> a JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the models object. See <a href="#resource">Resource</a></li>
+      <li><em>name</em> specifies the human readable name of this service. It is used for display, and as the basis for generating a unique key for a URL</li>
+      <li><em>baseUrl</em> specifies the base URL where this service is hosted. Must start with "http"</li>
+      <li><em>description</em> specifies an optional description for what this service provides.</li>
+      <li><em>headers</em> specifies a JSON array defining any HTTP Headers that the service understands or expects. See <a href="#enum">Enum</a></li>
+      <li><em>enums</em> specifies a JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#header">Header</a></li>
+      <li><em>models</em> specifies a JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
+      <li><em>resources</em> specifies a JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the Models object. See <a href="#resource">Resource</a></li>
     </ul>
 
   </p>
@@ -46,12 +46,12 @@
     }
     </pre>
 
-    where
+    where:
     <ul>
-      <li><em>name</em> the name of the model. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>plural</em> optional plural form of the name of this model. By default, we will pluralize the name of the model to create the plural. The plural is used as a default whereever more natural in speciying web services. For example, the default path for a resource will be the plural.</li>
-      <li><em>description</em> optional longer description for what this model represents.</li>
-      <li><em>fields</em> one or more fields is required. See <a href="#field">Fields</a>.</li>
+      <li><em>name</em> specifies the name of the model. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>plural</em> specifies the optional, plural form of the name of this model. By default, we will pluralize the name of the model to create the plural. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
+      <li><em>description</em> specifies an optional, longer description for what this model represents.</li>
+      <li><em>fields</em> indicates that one or more fields is required. See <a href="#field">Field</a>.</li>
     </ul>
   </p>
 
@@ -66,18 +66,18 @@
       "name": <em>name</em>,
       "type": <em>type</em>,
       "description": <em>string (optional)</em>,
-      "required": <em>boolean (optional, true by default)</em>,
+      "required": <em>Boolean (optional, true by default)</em>,
       "default": <em>type (optional)</em>,
       "example": <em>string (optional)</em>
     }
     </pre>
 
-    where
+    where:
     <ul>
-      <li><em>name</em> the name of the field. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>name</em> specifies the name of the field. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>type</em> specifies the datatype of this field. Acceptable values include the name of either an enum, a model, or a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>description</em> optional longer description for this field.</li>
-      <li><em>required</em> boolean: true|false. By default all fields are considered required. To make a field optional, set "required" to false.</li>
+      <li><em>required</em> specifies a Boolean: true|false. By default, all fields are considered required. To make a field optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
     </ul>
