@@ -8,20 +8,19 @@
 
     <li><a href="@routes.DocController.index">Improved documentation</a>, especially for new users!</li>
 
-    <li>Code refactoring in apidoc itself - project is mature enough
+    <li>Code refactoring in apidoc itself. The project is mature enough
     now that we were able to replace the internal models used to
-    bootstrap apidoc with the apidoc generated models! Thanks
+    bootstrap apidoc with the apidoc-generated models! Thanks,
     gheine. See <a href='@lib.Util.GitHubUrl/pull/176'>PR
     176</a></li>
 
     <li>Better pluralization using org.atteo.evo-inflector
     library. Model pluralization can always be explicitly specified in
     the api.json file, but this change expands the number of cases
-    covered
-    automatically. See </li>
+    covered automatically. See // NEEDS EXAMPLE HERE </li>
 
-    <li>Code generation targets are extensible internally. First step
-    towards opening up a simple way for anybody to contribute
+    <li>Code generation targets are extensible internally. This is the first step
+    towards opening up a simple way for anyone to contribute
     generators based on the apidoc
     model. See <a href='@lib.Util.GitHubUrl/pull/171'>PR
     171</a></li>
@@ -35,24 +34,22 @@
   <ul>
 
     <li>Date Type: New '@core.Datatype.DateIso8601Type.name' type
-    introduced. In ruby clients, maps to a Date instance. In JVM
-    clients, maps to an <code>org.joda.time.LocalDate</code>
+    introduced. In Ruby clients, this maps to a Date instance. In JVM
+    clients, it maps to an <code>org.joda.time.LocalDate</code>
     instance. See <a href='@lib.Util.GitHubUrl/issues/161'>Issue
     161</a></li>
 
-    <li>Dates now Supported in paths. When specifing an API, instances
+    <li>Dates are now Supported in paths. When specifing an API, instances
     of type date are now allowed in the HTTP Path. Previously, we
-    restricted this particular type from path parameters as
-    serialization is unclear; Serialization remains the responsibility
-    of the service itself and thus apidoc will just document that the
-    type is a
-    date. See <a href='@lib.Util.GitHubUrl/issues/161'>Issue
+    restricted this particular type from path parameters because of unclear
+    serialization. Serialization remains the responsibility
+    of the service itself, and so apidoc will just document that the
+    type is a date. See <a href='@lib.Util.GitHubUrl/issues/161'>Issue
     161</a></li>
 
     <li>UI refactored so that resources are hyperlinked to their
-    underlying model; All models, even if mapped to resources, are now
-    listed in the Models section of the UI of
-    apidoc. See <a href='@lib.Util.GitHubUrl/issues/152'>Issue
+    underlying model. All models, even if mapped to resources, are now
+    listed in the Models section of apidoc's UI. See <a href='@lib.Util.GitHubUrl/issues/152'>Issue
     152</a></li>
 
     <li>When downloading a client for the 'latest' version of a
@@ -65,7 +62,7 @@
 
   <ul>
 
-    <li>Play client: Move Traits out of client so they can be accessed
+    <li>Play client: Move Traits out of the client so they can be accessed
     directly. See <a href='@lib.Util.GitHubUrl/issues/158'>Issue
     158</a></li>
 
@@ -75,33 +72,33 @@
 
   <ul>
 
-    <li>Support for clients using Ning HTTP Async library and Play
-    Json: This release introduces support for a new client library
+    <li>Support for clients using the Ning HTTP Async library and Play
+    JSON. This release introduces support for a new client library
     based
-    on <a href="https://github.com/AsyncHttpClient/async-http-client">ning's
-    http async library</a>. The only dependencies you will need are
+    on <a href="https://github.com/AsyncHttpClient/async-http-client">Ning's
+   HTTP Async library</a>. The only dependencies you will need are
     play-ws and com.ning.async-http-client version
     1.8.x. See <a href="@lib.Util.GitHubUrl/tree/master/client-tests/ning_1_8">ning
     1 8 sample project</a> for an example SBT project setup to use the
-    ning clients.</li>
+    Ning clients.</li>
 
-    <li>Refactor of play client libraries. Main change was to remove
-    the GET, POST, PUT, etc. methods and replace with a single
+    <li>Refactoring of Play client libraries. The main change here was to remove
+    the GET, POST, PUT, etc. methods and replace them with a single
     _executeRequest method that takes the method as its first
-    parameter. We think this is a more readable implementation and
-    more concise in the client. If you previously directly accessed
-    these methods, you will need to update your code to call
+    parameter. We think this is a more readable implementation, and
+    more concise in the client. If you directly accessed
+    the earlier group of methods, you will need to update your code to call
     _executeRequest instead.</li>
 
     <li>Operation body now supports Arrays as a type.</li>
 
-    <li>Organizations now have a visibility setting which controls
+    <li>Organizations now have a visibility setting that controls
     whether or not the organization shows up in the public
-    directory. Public services can still be accessed by direct URL
+    directory. Public services can still be accessed by direct URL,
     regardless of the org setting.</li>
 
-    <li>Removed experimental support for avro schemas (event based use
-    case too different from REST services).</li>
+    <li>Removed experimental support for Avro schemas (the event-based use
+    case was too different from REST services).</li>
 
   </ul>
 
@@ -109,26 +106,25 @@
 
   <ul>
 
-    <li>Support for public services. Each service now has a settings
-    section to allow you to control the visibility of a service. The
+    <li>Support for public services. Each service now features a Settings
+    section that enables you to control a service's visibility. The
     options are: "Organization" (available only to members of your
-    org) or "Public" (available to anybody). Public services are
-    visible to all users - but still can only be modified by members
-    of your organizaetion. The default for all existing services is
-    unchanged (restricted to organization). When creating new services
+    org) or "Public" (available to anyong). Although public services are
+    visible to all users, they can only be modified by members
+    of your organization. The default for all existing services is
+    unchanged (restricted to organization). When creating new services,
     you can specify the visibility you desire. To change the
     visibility of a service, click 'Settings' in the left menu bar
-    when viewing the service..</li>
+    when viewing the service.</li>
 
-    <li>Services can now be deleted - when viewing a service, click
-    Settings in left menu then 'Delete this service' if you would like
-    to remove a service.</li>
+    <li>Services can now be deleted. When viewing a service, click
+    'Settings' in the left menu bar, then choose 'Delete this service'. The service will be removed.</li>
 
-    <li>New test harness to be able to download accessible clients
+    <li>New test harness to enable downloading of accessible clients
     from production to ensure they continue to compile across
     different target platforms.</li>
 
-    <li>Numerous small bug fixes and improvements</li>
+    <li>Numerous small bug fixes and improvements.</li>
 
   </ul>
 
@@ -139,13 +135,13 @@
 
     <li>Headers are now supported in spec and generated clients via a
     top level 'headers' declaration. This enables the service author
-    to describe what headers the service understands, including
-    setting default values which will be automatically included in all
+    to describe headers that the service understands--including
+    setting default values that will be automatically included in all
     requests made via the generated clients.
     See <a href='@lib.Util.GitHubUrl/pull/131'>PR
     131</a></li>
 
-    <li>Improved documentation of api.json format -
+    <li>Improved documentation of api.json format.
     See <a href='/doc/apiJson'>apiJson</a></li>
 
   </ul>
@@ -160,10 +156,9 @@
     <pre>curl -XPOST -d @@./api.json http://api.apidoc.me/validations</pre>
     </li>
 
-    <li> Organization metadata now part of settings - To access, visit
+    <li> Organization metadata now part of Settings. To access, visit
     http://www.apidoc.me, click on your organization, click on
-    settings, then click on Metadata. Currently we have one setting
-    which is the package name to use for JVM based clients. This
+    'Settings', then click on 'Metadata'. One setting is the package name to use for JVM-based clients. This
     allows you to specify explicitly the package name for all
     generated clients.
     See <a href='@lib.Util.GitHubUrl/issues/86'>Issue
@@ -173,19 +168,18 @@
     See <a href='@lib.Util.GitHubUrl/issues/139'>Issue
     139</a></li>
 
-    <li> Play and ruby clients now use strong types for all parameters
-    of type enum. Previously these were sent as Strings.
+    <li> Play and Ruby clients now use strong types for all parameters
+    of type enum. Previously these were sent as strings.
     See <a href='@lib.Util.GitHubUrl/issues/127'>Issue
     127</a></li>
 
-    <li> Add support to play and ruby clients for GET parameters that
-    are lists - parameters are now sent as proper HTTP parameters. For
+    <li> Add support to Play and Ruby clients for GET parameters that
+    are lists. Parameters are now sent as proper HTTP parameters. For
     example, a GET method with type "[id]" will now generate HTTP
-    requests like /foo?id=1&id=2&... Note that as Play framework does
-    not have native support for collections in its routes file, these
-    parameters are explicitly excluded from the generated routes file
-    - instead you will see a comment describing the additional
-    parameter.
+    requests like /foo?id=1&id=2&... Note that, because Play Framework does
+    not offer native support for collections in its routes file, these
+    parameters are explicitly excluded from the generated routes file. Instead,
+    you will see a comment describing the additional parameter.
     See <a href='@lib.Util.GitHubUrl/issues/139'>Issue
     139</a></li>
 
@@ -197,7 +191,7 @@
     </li>
 
     <li> Better error messages when explicitly speciying a 404
-    response w/ a type.
+    response with a type.
     See <a href='@lib.Util.GitHubUrl/issues/135'>Issue
     135</a>.
     </li>
@@ -209,11 +203,11 @@
 
   <ul>
 
-    <li> Enums are now supported as first class elements in
-    apidoc. This is a breaking change as the prior implementation
+    <li> Enums are now supported as first-class elements in
+    apidoc. This is a breaking change, as the prior implementation
     (using an enum attribute on fields) is no longer supported. You
     will get a validation error message to help with
-    migration. See <a href="/doc/apiJson">apiJson documentation</a>
+    migration. See <a href="/doc/apiJson">api.json documentation</a>
     for notes on the new enum support.
     See <a href='@lib.Util.GitHubUrl/pull/131'>PR 131</a>
     </li>
@@ -224,32 +218,32 @@
 
   <ul>
 
-    <li>Play 2.2 client support (currently alpha). Main differences
-    with Play 2.3 client related to a few package names that changed
-    in play 2.3 and a runtime error if you attempt to use HTTP PATCH
-    (play 2.2 does not support patch natively). If you need to access
+    <li>Play 2.2 client support (currently alpha). The main differences
+    from a Play 2.3 client are related to a few package names that changed
+    in Play 2.3 and a runtime error if you attempt to use HTTP PATCH
+    (Play 2.2 does not support patch natively). If you need to access
     a service using patch, you can override the PATCH method in the
     generated client to implement your own PATCH method.
     See <a href='@lib.Util.GitHubUrl/pull/122'>PR 122</a>
     </li>
 
-    <li>Bug fixed in encoding of path parameters - thanks Gary!
+    <li>Bug fixed in encoding of path parameters. Thanks, Gary!
     See <a href='@lib.Util.GitHubUrl/pull/120'>PR 120</a>
     </li>
 
-    <li>Play client: FailedResponse class renamed to FailedRequest as
+    <li>Play client: FailedResponse class renamed to FailedRequest, because
     it is actually the request that failed.</li>
 
-    <li>User agents in client: All generated clients now provide a
+    <li>User agents in client. All generated clients now provide a
     default user agent to identify the version of apidoc that
     generated the client as well as the specific org, service, and
     version of the service description used to generate the client.
     See <a href='@lib.Util.GitHubUrl/pull/116'>PR 116</a>
     </li>
 
-    <li>Few bug fixes to make enum values more readable and to enable
-    using the ruby client library both with objects as well as hashes (from
-    json).
+    <li>Bug fixes to make enum values more readable and to enable
+    using the Ruby client library both with objects as well as hashes (from
+    JSON).
     See <a href='@lib.Util.GitHubUrl/issues/114'>Issue 114</a>,
     <a href='@lib.Util.GitHubUrl/issues/117'>Issue 117</a>,
     and <a href='@lib.Util.GitHubUrl/issues/118'>Issue 118</a>
@@ -263,9 +257,9 @@
 
   <ul>
 
-    <li>First class support for organization domains. Makes it
+    <li>First-class support for organization domains. Makes it
     possible to list org domains (e.g. gilt.com, giltcity.com) for
-    auto association with org when new users
+    auto-association with the org when new users
     register.
     See <a href='@lib.Util.GitHubUrl/pull/102'>PR 102</a>
     </li>
@@ -286,27 +280,27 @@
 
   <ul>
 
-    <li>Introduce support to generate Avro Schemas (thanks
+    <li>Introduce support to generate Avro Schemas (thanks,
     kscaldef!). There is a new code generation
     target <code>avro_schema</code> that generates AVRO JSON from the
     model definitions.</li>
 
-    <li>Add support for domains in the API for organizations - this
+    <li>Add support for domains in the API for organizations. This
     can be used to associate a new user with an organization
-    automatically based on email domain. Currently only available in
-    API - UI is coming in a future release.</li>
+    automatically based on an email domain. Currently available only in
+    API; UI will become available in a future release.</li>
 
     <li>Add support for metadata in the API for organizations, with
     the first attribute of <code>package_name</code> that becomes
-    available to code generators that need a fully qualified package
-    name. Currently only available in API - UI is coming in a future
+    available to code generators needing a fully qualified package
+    name. Currently only available in API. UI to come in a future
     release.</li>
 
-    <li>API route added to GET /organizations/:guid</li>
+    <li>API route added to GET/organizations/:guid</li>
 
     <li>Add 'body' information to online documentation.</li>
 
-    <li>Expanded unit tests based on scala coverage plugin.</li>
+    <li>Expanded unit tests based on Scala coverage plugin.</li>
 
   </ul>
 
@@ -317,7 +311,7 @@
     <li>Introduce 'body' on operations. For operations that support
     posting data, you can now specify a 'body' for the JSON document
     instead of explicit parameters. The body parameter takes a single
-    attribute - type - specifying the name of a model. Example:
+    attribute, type, that specifies the name of a Model. Example:
     <pre>
   "resources": {
     "message": {
@@ -331,8 +325,8 @@
   }
     </pre>
 
-    Bodies and query parameters are now fully supported in the play
-    2.3 client and the ruby client.
+    Bodies and query parameters are now fully supported in the Play
+    2.3 client and the Ruby client.
     </li>
 
     <li>Query parameter support for operations. When specifying a
@@ -345,43 +339,43 @@
     without specifying a location.</li>
 
     <li>Added date time helper for parsing date time query parameters
-    in play framework routes file. Thanks to Gary Coady - see
+    in Play Framework routes file. Thanks, Gary Coady! See
     @lib.Util.GitHubUrl/pull/62</li>
 
-    <li>Update ruby client to ensure enums are fully supported.</li>
+    <li>Update Ruby client to ensure enums are fully supported.</li>
 
 <h3>0.4.47</h3>
 
   <ul>
 
     <li>Validation added to verify that any path parameters refer to
-    fields that are required (not possible to specify an optional path
+    required fields (not possible to specify an optional path
     parameter).</li>
 
-    <li>Path parameters now must be a string, uuid, or number -
-    previously we accepted any datatype.</li>
+    <li>Path parameters now must be a string, uuid, or number.
+    Previously, we accepted any datatype.</li>
 
-    <li>Responses of type 204 and 304 cannot return a type - must be
-    unit - datatypes do not make sense for these response types.</li>
+    <li>Responses of type 204 and 304 cannot return a type; they must be
+    a unit. Datatypes do not make sense for these response types.</li>
 
-    <li>We no longer accept response codes 404 or 5xx in any json
+    <li>We no longer accept response codes 404 or 5xx in any JSON
     specification. We found inconsistencies across different services
     with these types, making it difficult / impossible to create clean
     clients that behaved consistently. A 404 will automatically be
-    handled in the play client for all GET requests, returning either
+    handled in the Play client for all GET requests, returning either
     None or Nil depending on whether the method returns a single
     instance or an array.</li>
 
-    <li>Play 2.3 Client: Few implicits made private / renamed to avoid
-    name conflicts when a user imports json implicits for multiple
+    <li>Play 2.3 client: Few implicits made private / renamed to avoid
+    name conflicts when a user imports JSON implicits for multiple
     services.</li>
 
-    <li>Fixed bug where ruby client was incorrectly dropping path
+    <li>Fixed bug where Ruby client was incorrectly dropping path
     after domain.</li>
 
     <li>Ruby client breaking change: Removed authorize method as
     signature only supported a single user. Preferred method is to
-    instantiate the client direclty:
+    instantiate the client directly:
     <pre>
       Client.new(url, :authorization => Xyz::HttpClient::Authorization.basic(username, password=nil))
     </pre></li>
@@ -401,9 +395,9 @@
 
   <ul>
 
-    <li>Validate that if a response explicitly specifies a 404, that
-    its type is Unit. This ensures that we can build friently clients
-    in scala which can turn a 2xx/404 response into an Option which is
+    <li>Validate that, if a response explicitly specifies a 404, its type is Unit. 
+    This ensures that we can build friendly clients
+    in Scala, which can turn a 2xx/404 response into an Option 
     much nicer to use when building apps with the client.</li>
 
   </ul>
@@ -411,21 +405,21 @@
 <h3>0.4.41</h3>
   <ul>
 
-    <li>Validate that if a response explicitly specifies a 204, that
-    its type is Unit. Previously we accepted api specifications that
+    <li>Validate that, if a response explicitly specifies a 204, 
+    its type is Unit. Previously, we accepted API specifications that
     incorrectly specified a type.</li>
 
-    <li> Add validation for path parameters - only strings, UUID, and
-    number types are now supported in path parameters which keeps
+    <li> Add validation for path parameters. Only strings, UUID, and
+    number types are now supported in path parameters, which keeps
     serialization simpler.</li>
 
-    <li> Major refactoring of the play client. Highlights include:
+    <li> Major refactoring of the Play client. Highlights include:
 
     <ul>
 
       <li>Methods that can return a 404 are now handled as returning
       an Option. This means you do not need to catch errors to handle
-      404s, instead matching on the response leading to much nicer
+      404s, but can instead match on the response--which leads to much nicer
       client code.</li>
 
       <li>Introduced traits for all resource clients and methods to
@@ -433,10 +427,10 @@
       simple to mock the clients in tests.</li>
 
       <li>Nicer internal implementation of a number of helpers
-      (e.g. generating query parameters, path parameters, etc.). Helps
-      improve readability of the client code.</li>
+      (e.g. generating query parameters, path parameters, etc.). This helps
+      to improve the readability of the client code.</li>
 
-      <li>Fix bug to fully specify package of DateTime class.</li>
+      <li>Fixed bug to fully specify package of DateTime class.</li>
 
     </ul>
 
@@ -448,9 +442,9 @@
   <ul>
 
     <li>Introduce support for new datatype map. For the initial release,
-    both the keys and the values of the map must be String which we
-    believe enables most of the necessary use-cases while minimizing
-    complexity. Strings will natively serialize / deserialize from JSON
+    both the keys and the values of the map must be String; this, we
+    believe, enables most of the necessary use-cases while minimizing
+    complexity. Strings will natively serialize / deserialize from JSON,
     making the generated clients much simpler to use.
 
     <pre>
@@ -487,19 +481,19 @@
 
     There are a few constraints on enums:
     <ul>
-        <li>The field type must be string</li>
-        <li>The enum values must be valid names - Names must be alphanumeric and must
-	start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. Main
+        <li>The field type must be a string</li>
+        <li>The enum values must be valid names. Names must be alphanumeric and
+	start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. The main
         reason to restrict character space is to enable code generation tools to produce
 	nice enum classes w/ valid symbols for each value.</li>
     </ul>
 
     </li>
 
-    <li> Validation for path parameters - only strings, UUID, and
-    number types are now supported in path parameters which keeps
-    serialization simpler. Previously we were allowing specification
-    of, for examples, dates as path parameters which we do not intend
+    <li> Validation for path parameters. Only strings, UUID, and
+    number types are now supported in path parameters, which keeps
+    serialization simpler. Previously, we were allowing specification
+    of, for example, dates as path parameters, which we do not intend
     to support.
     </li>
 
