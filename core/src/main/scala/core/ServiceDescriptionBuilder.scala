@@ -180,8 +180,7 @@ object ParameterBuilder {
     Parameter(name = name,
               paramtype = Type(TypeKind.Primitive, datatype, false),
               location = ParameterLocation.Path,
-              required = true,
-              multiple = false)
+              required = true)
   }
 
   def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
@@ -194,21 +193,21 @@ object ParameterBuilder {
         enums.find(_.name == typeName) match {
           case Some(enum) => {
             internal.default.map { v => FieldBuilder.assertValidDefault(Datatype.StringType, v) }
-            Type(TypeKind.Enum, enum.name, false)
+            Type(TypeKind.Enum, enum.name, internal.multiple)
           }
 
           case None => {
             assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
             Type(TypeKind.Model, models.find(_.name == typeName).map(_.name).getOrElse {
               sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
-            }, false)
+            }, internal.multiple)
           }
         }
       }
 
       case Some(dt: Datatype) => {
         internal.default.map { v => FieldBuilder.assertValidDefault(dt, v) }
-        Type(TypeKind.Primitive, dt.name, false)
+        Type(TypeKind.Primitive, dt.name, internal.multiple)
       }
     }
 
@@ -217,7 +216,6 @@ object ParameterBuilder {
               location = location,
               description = internal.description,
               required = internal.required,
-              multiple = internal.multiple,
               default = internal.default,
               minimum = internal.minimum,
               maximum = internal.maximum,
@@ -236,18 +234,18 @@ object FieldBuilder {
     val fieldtype = Datatype.findByName(fieldTypeName) match {
       case Some(dt: Datatype) => {
         internal.default.map { v => assertValidDefault(dt, v) }
-        Type(TypeKind.Primitive, dt.name, false)
+        Type(TypeKind.Primitive, dt.name, internal.multiple)
       }
 
       case None => {
         enums.find(_.name == fieldTypeName) match {
           case Some(e: Enum) => {
             internal.default.map { v => assertValidDefault(Datatype.StringType, v) }
-            Type(TypeKind.Enum, e.name, false)
+            Type(TypeKind.Enum, e.name, internal.multiple)
           }
           case None => {
             require(internal.default.isEmpty, s"Cannot have a default for a field of type[$fieldTypeName]")
-            Type(TypeKind.Model, fieldTypeName, false)
+            Type(TypeKind.Model, fieldTypeName, internal.multiple)
           }
         }
       }
@@ -257,7 +255,6 @@ object FieldBuilder {
           fieldtype = fieldtype,
           description = internal.description,
           required = internal.required,
-          multiple = internal.multiple,
           default = internal.default,
           minimum = internal.minimum,
           maximum = internal.maximum,

@@ -23,8 +23,8 @@ class BrokenSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString should be("")
     val fields = validator.serviceDescription.get.models.head.fields
-    fields.find { _.name == "guid" }.get.multiple should be(false)
-    fields.find { _.name == "tags" }.get.multiple should be(true)
+    fields.find { _.name == "guid" }.get.fieldtype.multiple should be(false)
+    fields.find { _.name == "tags" }.get.fieldtype.multiple should be(true)
   }
 
 
@@ -64,14 +64,14 @@ class BrokenSpec extends FunSpec with Matchers {
 
     val operation = validator.serviceDescription.get.resources.head.operations.head
     operation.method should be("POST")
-    operation.parameters.find { _.name == "guid" }.get.multiple should be(false)
+    operation.parameters.find { _.name == "guid" }.get.paramtype.multiple should be(false)
 
     val guid = operation.parameters.find { _.name == "guid" }.get
-    guid.multiple should be(false)
+    guid.paramtype.multiple should be(false)
     guid.required should be(true)
 
     val tag = operation.parameters.find { _.name == "tag" }.get
-    tag.multiple should be(true)
+    tag.paramtype.multiple should be(true)
     tag.required should be(false)
   }
 

@@ -15,9 +15,9 @@
      <tr>
        <td>@field.name</td>
        <td>@{field.fieldtype match {
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), field.multiple)
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, field.multiple)
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, field.multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, multiple)
            }}
        </td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>

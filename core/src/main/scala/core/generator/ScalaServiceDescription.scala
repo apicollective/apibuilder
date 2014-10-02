@@ -310,7 +310,7 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
 
   def description: Option[String] = field.description
 
-  def multiple: Boolean = field.multiple
+  def multiple: Boolean = field.fieldtype.multiple
 
   def typeName: String = datatype.name
 
@@ -362,7 +362,7 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
 
   def description: String = param.description.getOrElse(name)
 
-  def multiple: Boolean = param.multiple
+  def multiple: Boolean = param.paramtype.multiple
 
   def typeName: String = datatype.name
 

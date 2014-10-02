@@ -16,9 +16,9 @@
      <tr>
        <td>@param.name</td>
        <td>@{param.paramtype match {
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), param.multiple)
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, param.multiple)
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, param.multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, multiple)
+             case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, multiple)
            }}
        </td>
        <td>@param.location</td>

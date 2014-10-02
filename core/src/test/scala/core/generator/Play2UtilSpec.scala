@@ -19,13 +19,13 @@ class Play2UtilSpec extends FunSpec with ShouldMatchers {
       "q1",
       Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
       ParameterLocation.Query,
-      None, true, false, None, None, None, None
+      None, true, None, None, None, None
     )
     val q2 = new Parameter(
       "q2",
       Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
       ParameterLocation.Query,
-      None, false, false, None, None, None, None
+      None, false, None, None, None, None
     )
     val operation = new Operation(model, "GET", "models", None, None, Seq(q1, q2), Nil)
     val resource = new Resource(model, "models", Seq(operation))

@@ -368,7 +368,7 @@ case class RubyClientGenerator(
         field.fieldtype match {
           case Type(TypeKind.Primitive, _, _) => s":${field.name} => ${field.name}"
           case Type(TypeKind.Model, _, _) => {
-            if (field.multiple) {
+            if (field.fieldtype.multiple) {
               s":${field.name} => ${field.name}.map(&:to_hash)"
             } else {
               s":${field.name} => ${field.name}.to_hash"
@@ -390,13 +390,13 @@ case class RubyClientGenerator(
     field.fieldtype match {
       case Type(TypeKind.Primitive, name, _) => {
         val datatype = Datatype.forceByName(name)
-        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.multiple)
+        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.fieldtype.multiple)
       }
       case  Type(TypeKind.Model, name, _) => {
-        parseModelArgument(field.name, name, field.required, field.multiple)
+        parseModelArgument(field.name, name, field.required, field.fieldtype.multiple)
       }
       case Type(TypeKind.Enum, name, _) => {
-        parseEnumArgument(field.name, name, field.required, field.multiple)
+        parseEnumArgument(field.name, name, field.required, field.fieldtype.multiple)
       }
     }
 
@@ -406,13 +406,13 @@ case class RubyClientGenerator(
     param.paramtype match {
       case Type(TypeKind.Primitive, name, _) => {
         val datatype = Datatype.forceByName(name)
-        parsePrimitiveArgument(param.name, datatype, param.required, param.default, param.multiple)
+        parsePrimitiveArgument(param.name, datatype, param.required, param.default, param.paramtype.multiple)
       }
       case Type(TypeKind.Model, name, _) => {
-        parseModelArgument(param.name, name, param.required, param.multiple)
+        parseModelArgument(param.name, name, param.required, param.paramtype.multiple)
       }
       case Type(TypeKind.Enum, name, _) => {
-        parseEnumArgument(param.name, name, param.required, param.multiple)
+        parseEnumArgument(param.name, name, param.required, param.paramtype.multiple)
       }
     }
   }

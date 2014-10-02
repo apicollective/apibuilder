@@ -14,7 +14,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
     "q1",
     new Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
     ParameterLocation.Query,
-    None, false, false, None, None, None, None)
+    None, false, None, None, None, None)
 
   it("models as a parameter in the body should use capitalize") {
     val body = Type(TypeKind.Model, "model", false)
