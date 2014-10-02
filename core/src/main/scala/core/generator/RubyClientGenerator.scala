@@ -223,6 +223,7 @@ case class RubyClientGenerator(
           case Some(Type(TypeKind.Primitive, _, multiple)) => paramStrings.append(RubyUtil.toVariable("value", multiple))
           case Some(Type(TypeKind.Model, name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
           case Some(Type(TypeKind.Enum, name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
+          case _ => sys.error(s"Invalid body [${op.body}]")
         }
       }
 
@@ -309,6 +310,7 @@ case class RubyClientGenerator(
             sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
             requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
           }
+          case _ => sys.error(s"Invalid body [${op.body}]")
         }
       }
       requestBuilder.append(s".${op.method.toLowerCase}")

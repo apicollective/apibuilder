@@ -209,6 +209,7 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
     }
     case Some(Type(TypeKind.Model, name, multiple)) => Some(bodyClassArg(name, multiple))
     case Some(Type(TypeKind.Enum, name, multiple)) => Some(bodyClassArg(name, multiple))
+    case _ => sys.error(s"Invalid body [${operation.body}]")
   }
 
   private def bodyClassArg(
