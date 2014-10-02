@@ -23,25 +23,25 @@ object NingVersions {
  * http client.
  */
 object Ning18ClientGenerator extends CodeGenerator {
-  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
-    NingClientGenerator.generate(NingVersions.V1_8_x, ssd, userAgent)
+  override def generate(sd: ServiceDescription): String = {
+    NingClientGenerator.generate(NingVersions.V1_8_x, sd)
   }
 }
 
 object NingClientGenerator {
 
-  def generate(version: NingVersion, sd: ServiceDescription, userAgent: String): String = {
+  def generate(version: NingVersion, sd: ServiceDescription): String = {
     val ssd = new ScalaServiceDescription(sd)
-    generate(version, ssd, userAgent)
+    generate(version, ssd)
   }
 
-  def generate(version: NingVersion, ssd: ScalaServiceDescription, userAgent: String): String = {
-    NingClientGenerator(version, ssd, userAgent).generate()
+  def generate(version: NingVersion, ssd: ScalaServiceDescription): String = {
+    NingClientGenerator(version, ssd).generate()
   }
 
 }
 
-case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescription, userAgent: String) {
+case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescription) {
 
   def generate(): String = {
     Seq(
@@ -93,7 +93,7 @@ ${ScalaHelpers.dateTime}
     import ${ssd.modelPackageName}.json._
 
     val asyncHttpClient = new AsyncHttpClient()
-    private val UserAgent = "$userAgent"
+    private val UserAgent = "${ssd.serviceDescription.userAgent.getOrElse("unknown")}"
 
 ${methodGenerator.accessors().indent(4)}
 

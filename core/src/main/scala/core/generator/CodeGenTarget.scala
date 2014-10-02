@@ -1,19 +1,8 @@
 package core.generator
 
-import codegenerator.models.ServiceDescription
 import core.plugin.PluginLoader
 
-
-case class CodeGenTarget(key: String, name: String, description: Option[String], status: Status, generator: Option[CodeGenerator]) {
- 
- def userAgent(apidocVersion: String, orgKey: String, serviceKey: String, serviceVersion: String): String = {
-    // USER_AGENT = "apidoc:0.4.64 http://www.apidoc.me/gilt/code/mercury-generic-warehouse-api/0.0.3-dev/ruby_client"
-    s"apidoc:$apidocVersion http://www.apidoc.me/$orgKey/code/$serviceKey/$serviceVersion/$key"
-  }
-
-  def supportsOrganization(org: String): Boolean = true
-
-}
+case class CodeGenTarget(key: String, name: String, description: Option[String], status: Status, generator: Option[CodeGenerator])
 
 object CodeGenTarget {
 
@@ -97,12 +86,6 @@ object CodeGenTarget {
   }
 
   lazy val Implemented = All.filter(target => target.status != Status.Proposal && target.generator.isDefined)
-
-  def generate(target: CodeGenTarget, apidocVersion: String, orgKey: String, sd: ServiceDescription, serviceKey: String, serviceVersion: String): String = {
-    val userAgent = target.userAgent(apidocVersion, orgKey, serviceKey, serviceVersion)
-    lazy val ssd = new ScalaServiceDescription(sd)
-    target.generator.fold(sys.error(s"unsupported code generation for target[$target.key]"))(_.generate(ssd, userAgent))
-  }
 
   def findByKey(key: String): Option[CodeGenTarget] = All.find(_.key == key)
 

@@ -22,13 +22,4 @@ class TargetSpec extends FunSpec with Matchers {
     CodeGenTarget.findByKey("ADSFADSF") should be(None)
     CodeGenTarget.findByKey("ruby_client").get.key should be("ruby_client")
   }
-
-  it("userAgent") {
-    CodeGenTarget.findByKey("ruby_client").get.userAgent(
-      apidocVersion = "0.0.1",
-      orgKey = "gilt",
-      serviceKey = "user",
-      serviceVersion = "1.0.5"
-    ) should be("apidoc:0.0.1 http://www.apidoc.me/gilt/code/user/1.0.5/ruby_client")
-  }
 }

@@ -92,7 +92,8 @@ package codegenerator.models {
     baseUrl: scala.Option[String] = None,
     name: String,
     packageName: scala.Option[String] = None,
-    description: scala.Option[String] = None
+    description: scala.Option[String] = None,
+    userAgent: scala.Option[String] = None
   )
 
   /**

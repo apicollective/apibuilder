@@ -30,14 +30,14 @@ object GenerateReferenceApi extends App {
       println("====== End Reference API validation errors:")
       sys.error("refrence api.json is invalid!")
     case Right(serviceDescription) =>
-      val ssd = new ScalaServiceDescription(serviceDescription)
+      val serviceDescriptionWithUserAgent = serviceDescription.copy(userAgent = Some("apidoc gilt 0.0.1-reference"))
       genCode(
-        Play2RouteGenerator(ssd).generate.get,
+        Play2RouteGenerator(serviceDescriptionWithUserAgent).generate.get,
         "conf/routes"
       )
-      genCode(Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, serviceDescription, "apidoc gilt 0.0.1-reference"), "app/Play2Client.scala")
+      genCode(Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, serviceDescriptionWithUserAgent), "app/Play2Client.scala")
       genCode(
-        RubyClientGenerator(ssd, "apidoc gilt 0.0.1-reference").generate,
+        RubyClientGenerator(serviceDescriptionWithUserAgent).generate,
         "ruby/client.rb"
       )
   }

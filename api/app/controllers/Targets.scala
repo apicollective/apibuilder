@@ -9,7 +9,7 @@ import play.api.libs.json._
 object Targets extends Controller {
 
   def getByOrgKey(orgKey: String) = AnonymousRequest { request =>
-    val targets = CodeGenTarget.Implemented.filter(_.supportsOrganization(orgKey)).map(cgt =>
+    val targets = CodeGenTarget.Implemented.map(cgt =>
       Target(cgt.key, cgt.name, cgt.description)
     )
     Ok(Json.toJson(targets))

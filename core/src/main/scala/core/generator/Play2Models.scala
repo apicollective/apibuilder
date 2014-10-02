@@ -6,8 +6,8 @@ import Text._
 
 object Play2Models extends CodeGenerator {
 
-  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
-    apply(ssd)
+  override def generate(sd: ServiceDescription): String = {
+    apply(sd)
   }
 
   def apply(sd: ServiceDescription): String = {

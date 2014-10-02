@@ -8,24 +8,24 @@ import org.joda.time.format.ISODateTimeFormat
 object ServiceDescriptionBuilder {
 
   def apply(apiJson: String): ServiceDescription = {
-    apply(apiJson, None)
+    apply(apiJson, None, None)
   }
 
-  def apply(apiJson: String, packageName: Option[String]): ServiceDescription = {
+  def apply(apiJson: String, packageName: Option[String], userAgent: Option[String]): ServiceDescription = {
     val jsValue = Json.parse(apiJson)
-    ServiceDescriptionBuilder(jsValue, packageName)
+    ServiceDescriptionBuilder(jsValue, packageName, userAgent)
   }
 
   def apply(json: JsValue): ServiceDescription = {
-    apply(json, None)
+    apply(json, None, None)
   }
 
-  def apply(json: JsValue, packageName: Option[String]): ServiceDescription = {
+  def apply(json: JsValue, packageName: Option[String], userAgent: Option[String]): ServiceDescription = {
     val internal = InternalServiceDescription(json)
-    ServiceDescriptionBuilder(internal, packageName)
+    ServiceDescriptionBuilder(internal, packageName, userAgent)
   }
 
-  def apply(internal: InternalServiceDescription, packageName: Option[String] = None): ServiceDescription = {
+  def apply(internal: InternalServiceDescription, packageName: Option[String] = None, userAgent: Option[String] = None): ServiceDescription = {
     val enums = internal.enums.map(EnumBuilder(_)).sortBy(_.name.toLowerCase)
     val models = internal.models.map(ModelBuilder(enums, _)).sortBy(_.name.toLowerCase)
     val headers = internal.headers.map(HeaderBuilder(enums, _))
@@ -38,7 +38,8 @@ object ServiceDescriptionBuilder {
       internal.baseUrl,
       internal.name.getOrElse(sys.error("Missing name")),
       packageName,
-      internal.description
+      internal.description,
+      userAgent
     )
   }
 }

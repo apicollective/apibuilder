@@ -13,11 +13,7 @@ object Play2RouteGenerator extends CodeGenerator {
     Play2RouteGenerator(new ScalaServiceDescription(sd))
   }
 
-  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
-    generate(ssd)
-  }
-
-  def generate(sd: ServiceDescription): String = {
+  override def generate(sd: ServiceDescription): String = {
     val ssd = new ScalaServiceDescription(sd)
     generate(ssd)
   }

@@ -5,10 +5,6 @@ import core._
 import Text._
 
 object ScalaCaseClasses extends CodeGenerator {
-  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
-    generate(ssd)
-  }
-
   def generate(sd: ServiceDescription): String = {
     generate(new ScalaServiceDescription(sd))
   }

@@ -32,31 +32,31 @@ object PlayFrameworkVersions {
 }
 
 object Play22ClientGenerator extends CodeGenerator {
-  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
-    Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, ssd, userAgent)
+  override def generate(sd: ServiceDescription): String = {
+    Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, sd)
   }
 }
 
 object Play23ClientGenerator extends CodeGenerator {
-  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
-    Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, ssd, userAgent)
+  override def generate(sd: ServiceDescription): String = {
+    Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, sd)
   }
 }
 
 object Play2ClientGenerator {
 
-  def generate(version: PlayFrameworkVersion, sd: ServiceDescription, userAgent: String): String = {
+  def generate(version: PlayFrameworkVersion, sd: ServiceDescription): String = {
     val ssd = new ScalaServiceDescription(sd)
-    generate(version, ssd, userAgent)
+    generate(version, ssd)
   }
 
-  def generate(version: PlayFrameworkVersion, ssd: ScalaServiceDescription, userAgent: String): String = {
-    Play2ClientGenerator(version, ssd, userAgent).generate()
+  def generate(version: PlayFrameworkVersion, ssd: ScalaServiceDescription): String = {
+    Play2ClientGenerator(version, ssd).generate()
   }
 
 }
 
-case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaServiceDescription, userAgent: String) {
+case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaServiceDescription) {
 
   def generate(): String = {
     Seq(
@@ -75,9 +75,9 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
     }
 
     val headerString = ".withHeaders(" +
-      (ssd.defaultHeaders ++ Seq(ScalaHeader("User-Agent", "UserAgent"))).map { h =>
+      (ssd.defaultHeaders.map { h =>
         s""""${h.name}" -> ${h.quotedValue}"""
-      }.mkString(", ") + ")"
+      } ++  Seq(""""User-Agent" -> UserAgent""")).mkString(", ") + ")"
 
     s"""package ${ssd.packageName} {
   object helpers {
@@ -100,7 +100,7 @@ ${ScalaHelpers.dateTime}
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import ${ssd.modelPackageName}.json._
 
-    private val UserAgent = "$userAgent"
+    private val UserAgent = "${ssd.serviceDescription.userAgent.getOrElse("unknown")}"
     private val logger = play.api.Logger("${ssd.packageName}.client")
 
     logger.info(s"Initializing ${ssd.packageName}.client for url $$apiUrl")

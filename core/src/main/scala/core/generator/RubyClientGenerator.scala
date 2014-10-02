@@ -25,8 +25,8 @@ object RubyUtil {
 
 object RubyClientGenerator extends CodeGenerator {
 
-  override def generate(ssd: ScalaServiceDescription, userAgent: String): String = {
-    new RubyClientGenerator(ssd, userAgent).generate
+  override def generate(sd: ServiceDescription): String = {
+    new RubyClientGenerator(sd).generate
   }
 
   def generateEnum(enum: Enum): String = {
@@ -88,7 +88,7 @@ object RubyClientGenerator extends CodeGenerator {
     }
   }
 
-  def apply(sd: ServiceDescription, userAgent: String): RubyClientGenerator = RubyClientGenerator(new ScalaServiceDescription(sd), userAgent)
+  def apply(sd: ServiceDescription, userAgent: String): RubyClientGenerator = RubyClientGenerator(sd)
 
 }
 
@@ -96,12 +96,7 @@ object RubyClientGenerator extends CodeGenerator {
  * Generates a Ruby Client file based on the service description
  * from api.json
  */
-case class RubyClientGenerator(
-  scalaService: ScalaServiceDescription,
-  userAgent: String
-) {
-  private val service = scalaService.serviceDescription
-
+case class RubyClientGenerator(service: ServiceDescription) {
   private val moduleName = RubyUtil.toClassName(service.name)
 
   def generate(): String = {
@@ -140,7 +135,7 @@ case class RubyClientGenerator(
     sb.append(s"""
   class Client
 
-    USER_AGENT = '$userAgent' unless defined?(USER_AGENT)
+    USER_AGENT = '${service.userAgent.getOrElse("unknown")}' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)

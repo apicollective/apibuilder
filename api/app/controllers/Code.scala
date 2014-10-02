@@ -32,11 +32,10 @@ object Code extends Controller {
             VersionDao.findVersion(auth, orgKey, serviceKey, version) match {
               case None => Conflict(Json.toJson(Validation.error(s"Invalid service[$serviceKey] or version[$version]")))
               case Some(v: Version) => {
-                val code = models.Code(
-                  targetKey = targetKey,
-                  source = CodeGenTarget.generate(target, apidocVersion, org.key, ServiceDescriptionBuilder(v.json, org.metadata.flatMap(_.packageName)), serviceKey, v.version)
-                )
-                Ok(Json.toJson(code))
+                val userAgent = s"apidoc:$apidocVersion http://www.apidoc.me/${org.key}/code/${serviceKey}/${v.version}/${target.key}"
+                val serviceDescription = ServiceDescriptionBuilder(v.json, org.metadata.flatMap(_.packageName), Some(userAgent))
+                val source = target.generator.fold(sys.error(s"unsupported code generation for target[$target.key]"))(_.generate(serviceDescription))
+                Ok(Json.toJson(models.Code(target.key, source)))
               }
             }
           }
