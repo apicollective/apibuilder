@@ -4,74 +4,63 @@
 
   <p>
 
-   This project is based on practical learnings from scaling the Gilt
-   technology organization across code, people, teams, and
-   practices. At the time we started on this project, Gilt had over
-   100 active committers, a distributed micro services architecture
-   with over 300 independent applications, and significant revenue and
-   traffic.
+   apidoc is informed by the practical knowledge we've gained from scaling the Gilt
+   technology organization across code, coding practices, people and teams. At the time we started 
+   this project, the Gilt tech team included more than 100 active committers--each contributing 
+   to a distributed micro-services architecture with +300 independent applications. This organization
+   supports Gilt--a global online shopping destination that generates significant revenue and traffic.
+
+  </p>
+
+  <p>
+   The idea for apidoc stems from our team's realization that, in order to continue iterating and growing, 
+   we needed a new approach to handling the complexity of software development. We were about to reach 
+   a new growth milepost, and needed to pivot.
 
   </p>
 
   <p>
 
-   We were reaching another pivot in our growth that required a new
-   approach to handling the complexity of software development in
-   order to continue to iterate and grow.
-
-  </p>
-
-  <p>
-
-   One of the core principles that emerged is the notion of Schema
-   First development; namely, that if the interface is truly critical,
-   it is actually helpful in practice to define your API by hand as a
-   first class artifact of software development.
-
-  </p>
-
-  <p>
-
-   From this point, we started to explore what was available on the
-   market, hand writing interfaces for a few systems we were actively
-   building. We looked at protobufs, thrift, avro, swagger, apiary
+   One of the core ideas that emerged from our discussions is "Schema-First" 
+   development. If interface design is truly critical, then it is actually helpful 
+   in practice to define your API by hand as a first-class artifact of software development. 
+   With this principle in mind, we began exploring what was already available on the
+   market--including handwriting interfaces for systems we were actively
+   building. We looked at protobufs, Thrift, Avro, Swagger, Apiary
    and others before identifying our key requirements:
 
    <ul>
 
-    <li> JSON: HTTP/JSON is everywhere. By focusing on this standard,
-    we can ensure that the tooling we provide is available to all web
-    developers - seamlessly including native application, web, and
-    backend developers.</li>
+    <li> <em>JSON</em>. HTTP/JSON is everywhere. By focusing on this standard,
+    we can ensure that all web developers--native application, web, 
+    and back-end--can use the tooling we provide without facing any friction.</li>
 
-    <li> REST first: Specifically api.json starts with a list of
-    resources instead of operations as we want to encourage the
+    <li> <em>REST first</em>. api.json begins with a list of
+    resources instead of operations. We want to encourage the
     identification of REST resources as early as possible in the
     development process.</li>
 
-    <li> Simple documentation: Upload a JSON file and you have
-    documentation. We want documentation to be first class, simple and
-    immediate. Using apidoc just for documentation is one of our core
-    intended use cases.</li>
+    <li> <em>Simple documentation</em>. With apidoc, all you have to do is upload a JSON file
+    to generate first-class, simple and beautiful documentation. Using apidoc just for 
+    documentation is one of our core intended use cases.</li>
 
-    <li> Simple and terse schema: We wanted a web developer to be able
-    to learn the schema by looking at a few simple examples. We also
-    are writing the JSON by hand and need it to be terse and
+    <li> <em>Simple and terse schema</em>. We wanted a web developer to be able
+    to learn the schema just by looking at a few simple examples. Also,
+  we are writing the JSON by hand and need it to be terse and
     clear.</li>
 
-    <li> No code annotations: we found that too many annotations made
-    it difficult to see the code. Especially in a micro-services
-    environment, we want to keep our applications simple and
-    pure.</li>
+    <li> <em>No code annotations</em>. Too many annotations make
+    it difficult to see the code. This is especially problematic if, like us, you're also working in a micro-services
+    environment.</li>
 
-    <li> Compatibility with existing tools: We borrowed everything we
-    could from other projects and thus where possible we adopted
+    <li> <em>Compatibility with existing tools</em>. We borrowed everything we
+    could from other projects and, where possible, adopted
     standards from existing work. We were heavily inspired by
-    <a href="http://swagger.wordnik.com">swagger</a> in particular.</li>
+    <a href="http://swagger.wordnik.com">Swagger</a> in particular.</li>
 
-    <li> Incredibly nice clients w/ no dependencies - the developer
-    experience using apidoc clients is amazing - we want developers to
-    love apidoc clients so much they no longer want to write their own
+    <li> <em>Incredibly nice clients with no dependencies</em>. The developer
+    experience using apidoc clients is amazing. We want developers to
+    love apidoc clients so much, that they no longer want to write their own
     client libraries.</li>
 
    </ul>
