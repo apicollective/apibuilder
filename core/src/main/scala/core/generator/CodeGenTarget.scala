@@ -66,8 +66,8 @@ object CodeGenTarget {
       ),
       CodeGenTarget(
         key = "angular",
-        name = "Angular client",
-        description = Some("Generate a simple to use wrapper to access a service from angular."),
+        name = "AngularJS client",
+        description = Some("Generate a simple to use wrapper to access a service from AngularJS"),
         status = Status.InDevelopment,
         generator = None
       ),
