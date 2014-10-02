@@ -6,7 +6,7 @@
   <h1>apidoc</h1>
   <p>Beautiful documentation for REST services.</p>
   <p>Simple native client libraries with no dependencies.</p>
-  <p>Better REST services - written by hand with love.</p>
+  <p>Better REST services, written by hand with love.</p>
 </div>
 
 <div class="panel panel-default">
@@ -15,13 +15,11 @@
   </div>
   <div class="panel-body">
 
-    <p>Fully describe your REST service in an intuitive json format -
-    start by creating a service below or downloading
-    an <a href="@lib.Util.ApiDocExampleApiJsonUrl">example</a>.</p>
-
-    <p>Very intuitive format that is simple to pick up - either from
-    <a href="@routes.DocController.apiJson">online docs</a> or from user
-    contributed <a href="@routes.Application.index()">public services</a>.</p>
+    <p>Fully describe your REST service in an intuitive, easy-to-use JSON format.
+    Start by creating a service below, or by downloading
+    an <a href="@lib.Util.ApiDocExampleApiJsonUrl">example</a>. Learn more about how it works by 
+    checking out these <a href="@routes.DocController.apiJson">online docs</a> and 
+    user-contributed <a href="@routes.Application.index()">public services</a>.</p>
 
   </div>
 </div>
@@ -33,17 +31,17 @@
   <div class="panel-body">
 
     <p>
-      Start by describing your models, and then map your models to
-      resources exposing the specific operations you would like to
+      Start by describing your models, then map your models to
+      resources that expose the specific operations you want to
       make available.
     </p>
 
     <p>
       api.json is designed to guide developers to think carefully
-      about their APIs, making it simple to create services that align
+      about their APIs, while making it easy to create services that align
       to the REST standard. By favoring convention over configuration
-      in a few key places - developers are more likely to create great
-      REST APIs.
+      in a few key places, it enables developers to create great
+      REST APIs. //I'd put this paragraph before the previous one
     </p>
 
   </div>
@@ -57,11 +55,11 @@
 
     <p>
       Download native client libraries with no (or almost no)
-      dependencies. We take special care to make sure the client
+      dependencies. We take special care to make sure that client
       libraries are a pleasure to use.
     </p>
 
-    <p><b>Example from ruby:</b></p>
+    <p><b>Example from Ruby:</b></p>
     <pre>
       client = MyService::Client.new("http://localhost:8000")
 
@@ -74,7 +72,7 @@
       puts "Created new org named %s" % neworg.name
     </pre>
 
-    <p><b>Example from scala:</b></p>
+    <p><b>Example from Scala:</b></p>
     <pre>
       val client = com.gilt.apidoc.Client.new("http://localhost:8000")
 
