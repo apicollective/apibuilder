@@ -62,7 +62,22 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false }
+  pomIncludeRepository := { _ => false },
+  licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/mit-license.html")),
+  homepage := Some(url("https://github.com/gilt/apidoc")),
+  pomExtra := (
+  <scm>
+    <url>https://github.com/gilt/apidoc.git</url>
+    <connection>scm:git:git@github.com:gilt/apidoc.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>mbryzek</id>
+      <name>Michael Bryzek</name>
+      <url>https://github.com/mbryzek</url>
+    </developer>
+  </developers>
+  )
 )
 
 publishSettings
