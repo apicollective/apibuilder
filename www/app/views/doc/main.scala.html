@@ -18,7 +18,7 @@
             <li@if(title == None) { class="active" }><a href="@routes.DocController.index">Introduction</a></li>
             <li@if(title == Some("Getting Started")) { class="active" }><a href="@routes.DocController.gettingStarted">Getting Started</a></li>
             <li@if(title == Some("api.json format")) { class="active" }><a href="@routes.DocController.apiJson">api.json format</a></li>
-            <li@if(title == Some("types.json")) { class="active" }><a href="@routes.DocController.types">Types</a></li>
+            <li@if(title == Some("Types")) { class="active" }><a href="@routes.DocController.types">Types</a></li>
             <li@if(title == Some("Clients")) { class="active" }><a href="@routes.DocController.clients">Clients</a></li>
             <li@if(title == Some("Examples")) { class="active" }><a href="@routes.DocController.examples">Examples</a></li>
             <li@if(title == Some("Todo")) { class="active" }><a href="@routes.DocController.todo">Todo</a></li>
