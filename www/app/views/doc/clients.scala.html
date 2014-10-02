@@ -6,40 +6,40 @@
 
   <p>
 
-    Code generation of high quality client libraries to access
+    Generating code for high-quality client libraries to access
     services described in apidoc is one of our primary goals. Apidoc
-    supports client generation in mulitple languages, and more can be
-    added/contributed over time based on community interest.
+    supports client generation in multiple languages, and depending on community interest additional languages
+    can be contributed over time.
 
   </p>
 
   <p>
 
     We spend a lot of time designing exactly how we want developers to
-    interact with the client libraries, and our proud of how simple
+    interact with the client libraries, and are proud of how simple
     the current client libraries are to use and to read. A few
-    specific goals:
+    specific principles guiding our work:
 
     <ol>
 
-      <li> <b>Minimal Dependencies</b>: Where possible, we prefer
-      client libraries using native dependencies of web frameworks
-      (e.g. clients for play framework that require zero additional
-      dependencies). Where not possible, we take extra care to
-      minimize the dependencies needed, and where needed, to use the
-      most standard dependencies possible.</li>
+      <li> <b>Minimal Dependencies</b>: Where possible, we prefer client libraries that use 
+      native dependencies of web frameworks
+      (e.g. clients for Play Framework that require zero additional
+      dependencies). Where impossible, we strive to
+      minimize needed dependencies and use the
+      most standard dependencies available.</li>
 
       <li> <b>Readability</b>: Each client library is first written by
-      hand. We then automate the generation of that hand written
+      hand. We then automate the generation of that hand-written
       client. The goal is to make the generated client
-      indistinguishable from a generated one. We will never reach
-      100%, but today we believe we are already close.</li>
+      indistinguishable from a hand-written one. We will never reach
+      100%, but we believe we are close.</li>
 
       <li> <b>Single File</b>: When you download a client from apidoc,
-      you will download a single fully contained, fully functional
+      you download a single fully contained, fully functional
       file. This makes it simple to either drop the file directly into
-      your project or to build a library with standard tooling to
-      share the client.</li>
+      your project or to build a library that features the standard tooling necessary to
+      share it with the client.</li>
 
     </ol>
 
