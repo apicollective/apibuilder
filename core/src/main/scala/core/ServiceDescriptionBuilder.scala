@@ -98,7 +98,7 @@ object OperationBuilder {
               description = internal.description,
               body = body,
               parameters = pathParameters ++ internalParams,
-              responses = internal.responses.map { ResponseBuilder(_) })
+              responses = internal.responses.map { ResponseBuilder(enums, models, _) })
   }
 
 }
@@ -153,13 +153,32 @@ object ModelBuilder {
 
 object ResponseBuilder {
 
-  def apply(ir: InternalResponse): Response = {
-    val dt = ir.datatype.getOrElse {
-      sys.error("No datatype for response: " + ir)
+  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResponse): Response = {
+    val typeName = internal.datatype.getOrElse {
+      sys.error("No datatype for response: " + internal)
     }
-    Response(code = ir.code.toInt,
-             datatype = dt,
-             multiple = ir.multiple)
+    val responseType = Datatype.findByName(typeName) match {
+      case None => {
+        enums.find(_.name == typeName) match {
+          case Some(enum) => {
+            Type(TypeKind.Enum, enum.name, internal.multiple)
+          }
+
+          case None => {
+            Type(TypeKind.Model, models.find(_.name == typeName).map(_.name).getOrElse {
+              sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
+            }, internal.multiple)
+          }
+        }
+      }
+
+      case Some(dt: Datatype) => {
+        Type(TypeKind.Primitive, dt.name, internal.multiple)
+      }
+    }
+
+    Response(code = internal.code.toInt,
+             datatype = responseType)
   }
 
 }
@@ -170,7 +189,7 @@ object ParameterBuilder {
     val datatype = model.fields.find(_.name == name) match {
       case None => Datatype.StringType.name
       case Some(f: Field) => {
-        f.fieldtype match {
+        f.datatype match {
           case Type(TypeKind.Primitive, name, _) => name
           case _ => Datatype.StringType.name
         }
@@ -178,7 +197,7 @@ object ParameterBuilder {
     }
 
     Parameter(name = name,
-              paramtype = Type(TypeKind.Primitive, datatype, false),
+              datatype = Type(TypeKind.Primitive, datatype, false),
               location = ParameterLocation.Path,
               required = true)
   }
@@ -212,7 +231,7 @@ object ParameterBuilder {
     }
 
     Parameter(name = internal.name.get,
-              paramtype = paramtype,
+              datatype = paramtype,
               location = location,
               description = internal.description,
               required = internal.required,
@@ -252,7 +271,7 @@ object FieldBuilder {
     }
 
     Field(name = internal.name.get,
-          fieldtype = fieldtype,
+          datatype = fieldtype,
           description = internal.description,
           required = internal.required,
           default = internal.default,

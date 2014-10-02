@@ -196,7 +196,7 @@ case class RubyClientGenerator(
           val param = pathParams.find(_.name == varName).getOrElse {
             sys.error(s"Could not find path parameter named[$varName]")
           }
-          param.paramtype match {
+          param.datatype match {
             case Type(TypeKind.Primitive, name, _) =>
               val datatype = Datatype.forceByName(name)
               s"#{${asString(varName, datatype)}}"
@@ -240,7 +240,7 @@ case class RubyClientGenerator(
 
       pathParams.foreach { param =>
 
-        val klass = param.paramtype match {
+        val klass = param.datatype match {
           case Type(TypeKind.Primitive, name, _) =>
             val datatype = Datatype.forceByName(name)
             rubyClass(datatype)
@@ -317,13 +317,13 @@ case class RubyClientGenerator(
 
       // TODO: match on all response codes
       op.responses.headOption.map { response =>
-        response.datatype match {
+        response.datatype.name match {
           case Datatype.UnitType.name => {
             responseBuilder.append("\n        nil")
           }
 
           case resourceName: String => {
-            if (op.responses.head.multiple) {
+            if (op.responses.head.datatype.multiple) {
               responseBuilder.append(".map")
             }
             responseBuilder.append(s" { |hash| ${moduleName}::Models::${RubyUtil.toClassName(resourceName)}.new(hash) }")
@@ -365,10 +365,10 @@ case class RubyClientGenerator(
     sb.append("        {")
     sb.append(
       model.fields.map { field =>
-        field.fieldtype match {
+        field.datatype match {
           case Type(TypeKind.Primitive, _, _) => s":${field.name} => ${field.name}"
           case Type(TypeKind.Model, _, _) => {
-            if (field.fieldtype.multiple) {
+            if (field.datatype.multiple) {
               s":${field.name} => ${field.name}.map(&:to_hash)"
             } else {
               s":${field.name} => ${field.name}.to_hash"
@@ -387,32 +387,32 @@ case class RubyClientGenerator(
   }
 
   private def parseArgument(field: Field): String = {
-    field.fieldtype match {
+    field.datatype match {
       case Type(TypeKind.Primitive, name, _) => {
         val datatype = Datatype.forceByName(name)
-        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.fieldtype.multiple)
+        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.datatype.multiple)
       }
       case  Type(TypeKind.Model, name, _) => {
-        parseModelArgument(field.name, name, field.required, field.fieldtype.multiple)
+        parseModelArgument(field.name, name, field.required, field.datatype.multiple)
       }
       case Type(TypeKind.Enum, name, _) => {
-        parseEnumArgument(field.name, name, field.required, field.fieldtype.multiple)
+        parseEnumArgument(field.name, name, field.required, field.datatype.multiple)
       }
     }
 
   }
 
   private def parseArgument(param: Parameter): String = {
-    param.paramtype match {
+    param.datatype match {
       case Type(TypeKind.Primitive, name, _) => {
         val datatype = Datatype.forceByName(name)
-        parsePrimitiveArgument(param.name, datatype, param.required, param.default, param.paramtype.multiple)
+        parsePrimitiveArgument(param.name, datatype, param.required, param.default, param.datatype.multiple)
       }
       case Type(TypeKind.Model, name, _) => {
-        parseModelArgument(param.name, name, param.required, param.paramtype.multiple)
+        parseModelArgument(param.name, name, param.required, param.datatype.multiple)
       }
       case Type(TypeKind.Enum, name, _) => {
-        parseEnumArgument(param.name, name, param.required, param.paramtype.multiple)
+        parseEnumArgument(param.name, name, param.required, param.datatype.multiple)
       }
     }
   }

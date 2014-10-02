@@ -65,7 +65,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
-    ageGroup.fieldtype match {
+    ageGroup.datatype match {
       case Type(TypeKind.Enum, name, _) => {
         name should be("age_group")
       }

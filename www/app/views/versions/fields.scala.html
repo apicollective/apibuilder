@@ -14,7 +14,7 @@
    @fields.map { field =>
      <tr>
        <td>@field.name</td>
-       <td>@{field.fieldtype match {
+       <td>@{field.datatype match {
              case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), multiple)
              case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, multiple)
              case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, multiple)
@@ -24,7 +24,7 @@
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
            <p>
-             @{field.fieldtype match {
+             @{field.datatype match {
                case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, _) => s"Acceptable values: ${sd.enums.find(_.name == name).get.values.map(_.name).mkString(", ")}"
                case _ => ""
              }}

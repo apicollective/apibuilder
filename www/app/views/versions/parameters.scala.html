@@ -15,7 +15,7 @@
    @operation.parameters.map { param =>
      <tr>
        <td>@param.name</td>
-       <td>@{param.paramtype match {
+       <td>@{param.datatype match {
              case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), multiple)
              case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, multiple)
              case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, multiple)

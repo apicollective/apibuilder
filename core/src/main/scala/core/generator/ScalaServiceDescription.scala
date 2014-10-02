@@ -238,9 +238,9 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
 
 class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Response) {
 
-  val scalaType: String = underscoreAndDashToInitCap(response.datatype)
+  val scalaType: String = underscoreAndDashToInitCap(response.datatype.name)
   val isUnit = scalaType == "Unit"
-  val isMultiple = response.multiple
+  val isMultiple = response.datatype.multiple
   val isOption = !isMultiple && !Util.isJsonDocumentMethod(method)
 
   val code = response.code
@@ -250,19 +250,19 @@ class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Resp
   val qualifiedScalaType: String = if (isUnit) {
     scalaType
   } else {
-    Datatype.findByName(response.datatype) match {
+    Datatype.findByName(response.datatype.name) match {
       case Some(dt) => ScalaDataType(dt).name
       case None => {
         ssd.models.find(_.name == response.datatype) match {
-          case Some(model) => new ScalaDataType.ScalaModelType(ssd.modelPackageName, response.datatype).name
-          case None => new ScalaDataType.ScalaEnumType(ssd.enumPackageName, response.datatype).name
+          case Some(model) => new ScalaDataType.ScalaModelType(ssd.modelPackageName, response.datatype.name).name
+          case None => new ScalaDataType.ScalaEnumType(ssd.enumPackageName, response.datatype.name).name
         }
       }
     }
   }
 
   val resultType: String = {
-    if (response.multiple) {
+    if (response.datatype.multiple) {
       s"scala.collection.Seq[${qualifiedScalaType}]"
     } else if (isOption) {
       s"scala.Option[$qualifiedScalaType]"
@@ -292,7 +292,7 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
   def originalName: String = field.name
 
   import ScalaDataType._
-  val baseType: ScalaDataType = field.fieldtype match {
+  val baseType: ScalaDataType = field.datatype match {
     case Type(TypeKind.Primitive, name, _) => ScalaDataType(Datatype.forceByName(name))
     case Type(TypeKind.Model, name, _) => new ScalaModelType(ssd.modelPackageName, name)
     case Type(TypeKind.Enum, name, _) => new ScalaEnumType(ssd.enumPackageName, name)
@@ -310,7 +310,7 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
 
   def description: Option[String] = field.description
 
-  def multiple: Boolean = field.fieldtype.multiple
+  def multiple: Boolean = field.datatype.multiple
 
   def typeName: String = datatype.name
 
@@ -342,7 +342,7 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
 
   def baseType: ScalaDataType = {
     import ScalaDataType._
-    param.paramtype match {
+    param.datatype match {
       case Type(TypeKind.Primitive, name, _) => ScalaDataType(Datatype.forceByName(name))
       case Type(TypeKind.Model, name, _) => new ScalaModelType(ssd.modelPackageName, name)
       case Type(TypeKind.Enum, name, _) => new ScalaEnumType(ssd.enumPackageName, name)
@@ -362,7 +362,7 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
 
   def description: String = param.description.getOrElse(name)
 
-  def multiple: Boolean = param.paramtype.multiple
+  def multiple: Boolean = param.datatype.multiple
 
   def typeName: String = datatype.name
 

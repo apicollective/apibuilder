@@ -179,7 +179,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
-    guid.paramtype should be(Type(TypeKind.Primitive, Datatype.UuidType.name, false))
+    guid.datatype should be(Type(TypeKind.Primitive, Datatype.UuidType.name, false))
   }
 
   it("path parameters cannot be optional") {
@@ -245,7 +245,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.head.operations.head
     val idParam = op.parameters.head
     idParam.name should be("id")
-    idParam.paramtype should be(Type(TypeKind.Primitive, "long", false))
+    idParam.datatype should be(Type(TypeKind.Primitive, "long", false))
   }
 
 }

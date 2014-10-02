@@ -24,8 +24,8 @@ class SvcApiDocJson extends FunSpec with Matchers {
     models.contains("organization") should be(true)
 
     val user = service.models.find(_.name == "user").get
-    user.fields.find(_.name == "guid").get.fieldtype should be(Type(TypeKind.Primitive, "uuid", false))
-    user.fields.find(_.name == "email").get.fieldtype should be(Type(TypeKind.Primitive, "string", false))
+    user.fields.find(_.name == "guid").get.datatype should be(Type(TypeKind.Primitive, "uuid", false))
+    user.fields.find(_.name == "email").get.datatype should be(Type(TypeKind.Primitive, "string", false))
   }
 
   it("parses resources") {

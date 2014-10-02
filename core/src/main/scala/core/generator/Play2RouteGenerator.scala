@@ -72,14 +72,14 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
 
   val verb = op.method
   val url = op.path
-  val params = parametersWithTypesAndDefaults(op.parameters.filter(!_.paramtype.multiple).filter(_.location != ParameterLocation.Form))
+  val params = parametersWithTypesAndDefaults(op.parameters.filter(!_.datatype.multiple).filter(_.location != ParameterLocation.Form))
 
   /**
     * Play does not have native support for providing a list as a
     * query parameter. Document these query parameters in the routes
     * file - but do not implement.
     */
-  private val parametersToComment = op.parameters.filter(_.paramtype.multiple).filter(_.location != ParameterLocation.Form)
+  private val parametersToComment = op.parameters.filter(_.datatype.multiple).filter(_.location != ParameterLocation.Form)
   val paramComments = if (parametersToComment.isEmpty) {
     None
   } else {
@@ -103,7 +103,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
       Seq(
         Some(parameterWithType(param)),
         param.default.map( d =>
-          param.paramtype match {
+          param.datatype match {
             case Type(TypeKind.Primitive, name, _) =>
               val datatype = Datatype.forceByName(name)
               datatype match {
@@ -134,18 +134,18 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
   }
 
   private def scalaDataType(param: Parameter): String = {
-    param.paramtype match {
+    param.datatype match {
       case Type(TypeKind.Model, _, _) => {
         sys.error("Model parameter types not supported in play routes")
       }
       case Type(TypeKind.Enum, _, _) => {
         // TODO: Should we use the real class here or leave to user to convert?
-        qualifyParam(ScalaDataType.ScalaStringType.name, param.required, param.paramtype.multiple)
+        qualifyParam(ScalaDataType.ScalaStringType.name, param.required, param.datatype.multiple)
       }
       case Type(TypeKind.Primitive, n, _) => {
         val dt = Datatype.forceByName(n)
         val name = ScalaDataType(dt).name
-        qualifyParam(name, param.required, param.paramtype.multiple)
+        qualifyParam(name, param.required, param.datatype.multiple)
       }
     }
   }

@@ -27,11 +27,11 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
 
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
-    validator.serviceDescription.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get.fieldtype match {
+    validator.serviceDescription.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get.datatype match {
       case Type(TypeKind.Model, name, _) => name should be("bar")
       case other => fail("Expected field to be of type bar but was: " + other)
     }
-    validator.serviceDescription.get.models.find(_.name == "bar").get.fields.find(_.name == "foo").get.fieldtype match {
+    validator.serviceDescription.get.models.find(_.name == "bar").get.fields.find(_.name == "foo").get.datatype match {
       case Type(TypeKind.Model, name, _) => name should be("foo")
       case other => fail("Expected field to be of type foo but was: " + other)
     }
@@ -65,7 +65,7 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "userVariant").get
     val parentField = model.fields.find(_.name == "parent").get
-    parentField.fieldtype match {
+    parentField.datatype match {
       case Type(TypeKind.Model, name, _) => {
         name should be("userVariant")
       }

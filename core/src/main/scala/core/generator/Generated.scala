@@ -1,4 +1,9 @@
 package codegenerator.models {
+  case class Code(
+    targetKey: String,
+    source: String
+  )
+
   case class Enum(
     name: String,
     description: scala.Option[String] = None,
@@ -10,19 +15,20 @@ package codegenerator.models {
     description: scala.Option[String] = None
   )
 
+  case class Error(
+    code: String,
+    message: String
+  )
+
   case class Field(
     name: String,
-    fieldtype: codegenerator.models.Type,
+    datatype: codegenerator.models.Type,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
     example: scala.Option[String] = None,
     minimum: scala.Option[Long] = None,
     maximum: scala.Option[Long] = None
-  )
-
-  case class Gen(
-    code: scala.Option[String] = None
   )
 
   case class Header(
@@ -54,7 +60,7 @@ package codegenerator.models {
 
   case class Parameter(
     name: String,
-    paramtype: codegenerator.models.Type,
+    datatype: codegenerator.models.Type,
     location: codegenerator.models.ParameterLocation,
     description: scala.Option[String] = None,
     required: Boolean,
@@ -72,8 +78,7 @@ package codegenerator.models {
 
   case class Response(
     code: Int,
-    datatype: String,
-    multiple: Boolean
+    datatype: codegenerator.models.Type
   )
 
   /**
@@ -87,6 +92,15 @@ package codegenerator.models {
     baseUrl: scala.Option[String] = None,
     name: String,
     packageName: scala.Option[String] = None,
+    description: scala.Option[String] = None
+  )
+
+  /**
+   * The target platform for code generation.
+   */
+  case class Target(
+    key: String,
+    name: String,
     description: scala.Option[String] = None
   )
 
