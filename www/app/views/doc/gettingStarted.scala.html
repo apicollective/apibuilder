@@ -8,12 +8,9 @@
   </div>
   <div class="panel-body">
 
-    <p>The first step is to create an organization which will be a
-    container for all of your services. If you are not logged in - you
-    will be prompted to first login or register.</p>
-
-    <p><a href="@routes.Organizations.create">Create an
-    organization</a> then continue with Step 2.</p>
+    <p>After logging in, <a href="@routes.Organizations.create">Create an
+    organization</a>. The organization will serve as a
+    container for all of your services.</p>
 
   </div>
 </div>
@@ -24,28 +21,27 @@
   </div>
   <div class="panel-body">
 
-    <p>A service in apidoc represents a full REST service. Each
+    <p>In apidoc, a service represents a full REST service. Each
     service is fully described in a single file. By convention, we
     name these files 'api.json' and store them in the root of the
-    project that defines the server that implements the service
+    project that defines the server implementing the service
     (e.g. the root directory of your source repository).</p>
 
     <p>
-      The easiest way to get started is download an example api.json
-      file and then edit it -
-      this <a href="@lib.Util.ApiDocExampleApiJsonUrl">api.json</a> file
+      The easiest way to get started is to download a sample api.json
+      file and edit it. This <a href="@lib.Util.ApiDocExampleApiJsonUrl">api.json</a> file
       is the description of the REST API for apidoc itself.
     </p>
 
     <p>
-      When you are ready - Click &quot;@lib.Util.AddServiceText&quot;
-      from the upper right corner of your organization's screen to
+      When you are ready, click &quot;@lib.Util.AddServiceText&quot;
+      (located in the upper-right corner of your organization's screen) and
       upload your api.json file.
     </p>
 
     <p>
       View the <a href="@routes.DocController.apiJson">specification
-      of api.json</a> for detailed information on how to describe
+      of api.json</a> to find detailed information on how to describe
       your service.
     </p>
 
@@ -58,9 +54,8 @@
   </div>
   <div class="panel-body">
 
-    <p>For many users you are now done - apidoc will present beautiful
-    documentation for your REST service. If you distribute the URL
-    with the version number 'latest' - you will always have a link to
+    <p>You should now see documentation for your REST service. If you distribute the URL
+    with the version number 'latest', you will always have a link to
     the most current version of your service.</p>
 
   </div>
@@ -72,11 +67,11 @@
   </div>
   <div class="panel-body">
 
-    <p>When viewing your service, The left hand nav bar will have a
-    section titled Clients. Take a look at the Ning Async Http Client
+    <p>When viewing your service, notice that the left-hand nav bar has a
+    section titled "Clients". Take a look at the Ning Async Http Client
     1.8 and the Ruby client, for example, to see how they look.</p>
 
-    <p>Each client is presented as a standalone single file which
+    <p>Each client is presented as a stand-alone single file, which
     should make it easy to drop directly into your project or to
     publish an artifact to a server for sharing.</p>
 
@@ -90,11 +85,11 @@
   <div class="panel-body">
 
     <p>From your organization, explore the settings to define your
-    package name for generated clients and to consider marking your
-    organization public.</p>
+    package name for generated clients and to mark your
+    organization "public."</p>
 
-    <p>To access the settings, when viewing your organization, click
-    on &quot;@lib.Util.OrgSettingsText&quot; in the left nav.</p>
+    <p>To access the settings, click on &quot;@lib.Util.OrgSettingsText&quot; in the left nav
+    when viewing your organization.</p>
 
   </div>
 </div>
@@ -105,12 +100,11 @@
   </div>
   <div class="panel-body">
 
-    <p><a href="https://github.com/gilt/apidoc">Follow the apidoc project on Github</a></p>
+    <p><a href="https://github.com/gilt/apidoc">Follow the apidoc project on GitHub</a></p>
     <p><a href="https://github.com/gilt/apidoc/issues">Ask questions / report bugs</a></p>
 
     <p>Contribute! View <a href="@routes.DocController.todo">our Todo
-    list</a> and
-    open <a href="https://github.com/gilt/apidoc/issues">issues/feature
+    list</a> and open <a href="https://github.com/gilt/apidoc/issues">issues/feature
     requests</a>. Or create api.json specifications for common
     services and upload them as public services for all.</p>
 
