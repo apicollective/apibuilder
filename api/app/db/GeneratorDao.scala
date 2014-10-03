@@ -7,10 +7,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-case class GeneratorForm(
-                             name: String,
-                             uri: String
-                             )
+case class GeneratorForm(name: String, uri: String)
 
 object GeneratorForm {
   implicit val generatorFormReads = Json.reads[GeneratorForm]
@@ -23,7 +20,7 @@ object GeneratorDao {
     select guid, organization_guid, name, uri
       from generators
      where deleted_at is null
-     and organization_guid organization_guid = {organization_guid}::uuid
+     and organization_guid = {organization_guid}::uuid
   """
 
   def create(createdBy: User, org: Organization, name: String, uri: String): Generator = {

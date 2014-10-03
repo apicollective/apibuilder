@@ -41,4 +41,5 @@ object SettingSection {
   val Domains = SettingSection("domains")
   val Members = SettingSection("members")
   val Metadata = SettingSection("metadata")
+  val Generators = SettingSection("generators")
 }

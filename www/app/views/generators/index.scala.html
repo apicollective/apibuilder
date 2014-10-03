@@ -1,0 +1,40 @@
+@(tpl: models.MainTemplate,
+  generators: Seq[com.gilt.apidoc.models.Generator]
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  <p>
+    Organizations can provide one or more generators to add additional code generation targets.
+  </p>
+
+  @tpl.org.map { org =>
+    <div class="pull-right">
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Generators.create(org.key)">Add generator</a>
+    </div>
+
+    @if(generators.isEmpty) {
+      <em>No generators</em>
+
+    } else {
+
+      <table class="table table-hover table-condensed">
+          <tbody>
+          <tr>
+              <th>Name</th>
+              <th>URI</th>
+              <th/>
+          </tr>
+      @generators.map { generator =>
+        <tr>
+            <td>@generator.name</td>
+            <td>@generator.uri</td>
+            <td><a href="@routes.Generators.postRemove(org.key, generator.guid)" class="delete" data-confirm="Are you sure?">Remove</a></td>
+        </tr>
+      }
+          </tbody>
+      </table>
+    }
+  }
+
+}

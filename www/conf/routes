@@ -36,6 +36,11 @@ POST    /:orgKey/domains/:domain/remove                           controllers.Do
 GET     /:orgKey/domains/create                                   controllers.Domains.create(orgKey: String)
 POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
 
+GET     /:orgKey/generators                                       controllers.Generators.list(orgKey: String)
+POST    /:orgKey/generators/:guid/remove                          controllers.Generators.postRemove(orgKey: String, guid: java.util.UUID)
+GET     /:orgKey/generators/create                                controllers.Generators.create(orgKey: String)
+POST    /:orgKey/generators/postCreate                            controllers.Generators.postCreate(orgKey: String)
+
 GET     /:orgKey/metadata                                         controllers.Metadata.show(orgKey: String)
 GET     /:orgKey/metadata/edit                                    controllers.Metadata.edit(orgKey: String)
 POST    /:orgKey/metadata/postEdit                                controllers.Metadata.postEdit(orgKey: String)
