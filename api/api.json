@@ -126,6 +126,15 @@
             ]
         },
 
+        "generator": {
+          "description": "An apidoc generator",
+          "fields": [
+            { "name": "guid", "type": "uuid" },
+            { "name": "name", "type": "string" },
+            { "name": "uri", "type": "string", "description": "The uri of the generator service" }
+          ]
+        },
+
         "error": {
             "fields": [
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
@@ -528,6 +537,47 @@
                 }
 
             ]
+        },
+
+        "generator": {
+          "path": "/generators/:orgKey",
+          "operations": [
+            {
+              "method": "GET",
+              "description": "List all generators of an organization",
+              "responses": {
+                "200": { "type": "[generator]" }
+              }
+            },
+
+            {
+              "method": "GET",
+              "path": "/:guid",
+              "description": "Returns the generator with this guid.",
+              "responses": {
+                "200": { "type": "generator" }
+              }
+            },
+
+            {
+              "method": "POST",
+              "description": "Create a new generator.",
+              "parameters": [
+                { "name": "name", "type": "string" },
+                { "name": "uri", "type": "string" }
+              ],
+              "responses": {
+                "200": { "type": "generator" },
+                "409": { "type": "[error]" }
+              }
+            },
+
+            {
+              "method": "DELETE",
+              "path": "/:guid",
+              "description": "Deletes a generator."
+            }
+          ]
         }
 
     }
