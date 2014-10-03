@@ -1,4 +1,4 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: codegenerator.models.ServiceDescription, operation: codegenerator.models.Operation)
+@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: com.gilt.apidocgenerator.models.ServiceDescription, operation: com.gilt.apidocgenerator.models.Operation)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -16,9 +16,9 @@
      <tr>
        <td>@param.name</td>
        <td>@{param.datatype match {
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), multiple)
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, multiple)
-             case codegenerator.models.Type(codegenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, multiple)
+             case com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), multiple)
+             case com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, multiple)
+             case com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, multiple)
            }}
        </td>
        <td>@param.location</td>

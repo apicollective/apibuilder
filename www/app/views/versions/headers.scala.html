@@ -1,4 +1,4 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: codegenerator.models.ServiceDescription, headers: Seq[codegenerator.models.Header])
+@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: com.gilt.apidocgenerator.models.ServiceDescription, headers: Seq[com.gilt.apidocgenerator.models.Header])
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -15,9 +15,9 @@
      <tr>
        <td>@header.name</td>
        <td>@{header.headertype match {
-             case codegenerator.models.HeaderType.String => datatype(core.Datatype.StringType, header.multiple)
-             case codegenerator.models.HeaderType.Enum => enumType(org, service, version, header.headertypeValue.get, header.multiple)
-             case codegenerator.models.HeaderType.UNDEFINED(name) => name
+             case com.gilt.apidocgenerator.models.HeaderType.String => datatype(core.Datatype.StringType, header.multiple)
+             case com.gilt.apidocgenerator.models.HeaderType.Enum => enumType(org, service, version, header.headertypeValue.get, header.multiple)
+             case com.gilt.apidocgenerator.models.HeaderType.UNDEFINED(name) => name
            }}
        </td>
        <td>@if(header.required && header.default.isEmpty) { Yes } else { No }</td>

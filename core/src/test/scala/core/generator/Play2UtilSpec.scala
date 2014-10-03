@@ -1,6 +1,6 @@
 package core.generator
 
-import codegenerator.models.{Parameter, Model, Type, TypeKind, ParameterLocation, Operation, Resource}
+import com.gilt.apidocgenerator.models.{Parameter, Model, Type, TypeKind, ParameterLocation, Operation, Resource}
 import core._
 import org.scalatest.{ ShouldMatchers, FunSpec }
 

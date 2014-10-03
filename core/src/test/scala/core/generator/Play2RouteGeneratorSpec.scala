@@ -1,7 +1,7 @@
 package core.generator
 
 
-import codegenerator.models.{Operation, Resource, ServiceDescription}
+import com.gilt.apidocgenerator.models.{Operation, Resource, ServiceDescription}
 import core.TestHelper
 import org.scalatest.{ ShouldMatchers, FunSpec }
 

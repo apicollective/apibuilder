@@ -1,6 +1,6 @@
 package models
 
-import codegenerator.models.{Resource, ServiceDescription}
+import com.gilt.apidocgenerator.models.{Resource, ServiceDescription}
 import com.gilt.apidoc.models.{ Organization, Service, User, Target }
 import play.api.Play.current
 

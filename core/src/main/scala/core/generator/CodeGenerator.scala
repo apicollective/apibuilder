@@ -1,6 +1,6 @@
 package core.generator
 
-import codegenerator.models.ServiceDescription
+import com.gilt.apidocgenerator.models.ServiceDescription
 
 trait CodeGenerator {
   def generate(sd: ServiceDescription): String

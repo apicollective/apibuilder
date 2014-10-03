@@ -1,6 +1,6 @@
 package core
 
-import codegenerator.models.{Parameter, TypeKind, Type}
+import com.gilt.apidocgenerator.models.{Parameter, TypeKind, Type}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
