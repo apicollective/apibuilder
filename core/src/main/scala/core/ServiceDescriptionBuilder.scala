@@ -188,17 +188,17 @@ object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val datatype = model.fields.find(_.name == name) match {
-      case None => Datatype.StringType.name
+      case None => {
+        Type(TypeKind.Primitive, Datatype.StringType.name, false)
+      }
+        
       case Some(f: Field) => {
-        f.datatype match {
-          case Type(TypeKind.Primitive, name, _) => name
-          case _ => Datatype.StringType.name
-        }
+        f.datatype
       }
     }
 
     Parameter(name = name,
-              datatype = Type(TypeKind.Primitive, datatype, false),
+              datatype = datatype,
               location = ParameterLocation.Path,
               required = true)
   }
