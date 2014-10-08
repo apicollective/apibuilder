@@ -85,22 +85,6 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
       } ++  Seq(""""User-Agent" -> UserAgent""")).mkString(", ") + ")"
 
     s"""package ${ssd.packageName} {
-  object helpers {
-
-    import play.api.mvc.QueryStringBindable
-${ScalaHelpers.dateTime}
-
-    implicit object DateTimeISOQueryStringBinder extends QueryStringBindable[DateTime] {
-      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
-        for {
-          values <- params.get(key)
-          s <- values.headOption
-        } yield parseDateTimeISO(s)
-      }
-
-      override def unbind(key: String, time: DateTime): String = key + "=" + dateTimeISOFormatter.print(time)
-    }
-  }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import ${ssd.modelPackageName}.json._
