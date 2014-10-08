@@ -1,3 +1,4 @@
+// Enum: AgeGroup
 private val enumAgeGroupNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${AgeGroup.all.mkString(", ")}"
 
 implicit val pathBindableEnumAgeGroup = new PathBindable.Parsing[AgeGroup] (

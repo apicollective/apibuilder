@@ -1,6 +1,6 @@
 object Bindables {
-  import play.api.mvc.QueryStringBindable
-  import play.api.mvc.PathBindable
+
+  import play.api.mvc.{PathBindable, QueryStringBindable}
   import org.joda.time.{DateTime, LocalDate}
   import org.joda.time.format.ISODateTimeFormat
   import apidocreferenceapi.models._
