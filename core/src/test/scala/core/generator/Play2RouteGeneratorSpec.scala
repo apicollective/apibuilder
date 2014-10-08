@@ -103,6 +103,14 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       r.method should be("controllers.Organizations.get")
     }
 
+    it("enums are strongly typed") {
+      val resource = getResource(service, "user")
+      val op = getMethod(service, "user", "GET", "/users/:age_group")
+      val r = Play2Route(op, resource)
+      r.method should be("controllers.Users.getByAgeGroup")
+      r.params should be("age_group: [apidocreferenceapi.AgeGroup]")
+    }
+
     it("supports multiple query parameters") {
       val echoResource = getResource(service, "echo")
       val op = getMethod(service, "echo", "GET", "/echoes")

@@ -1,0 +1,16 @@
+object Bindables {
+  import play.api.mvc.QueryStringBindable
+  import play.api.mvc.PathBindable
+  import apidocreferenceapi.models._
+
+  private val enumAgeGroupNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${AgeGroup.all.mkString(", ")}"
+
+  implicit val pathBindableEnumAgeGroup = new PathBindable.Parsing[AgeGroup] (
+    AgeGroup.fromString(_).get, _.toString, enumAgeGroupNotFound
+  )
+
+  implicit val queryStringBindableEnumAgeGroup = new QueryStringBindable.Parsing[AgeGroup](
+    AgeGroup.fromString(_).get, _.toString, enumAgeGroupNotFound
+  )
+
+}
