@@ -23,12 +23,33 @@
 
   <ol>
 
+    <li> Import play keys:
+
+      <pre>
+      import play.PlayImport.PlayKeys._
+      </pre>
+
+    </li>
+
+    <li>   
+      <pre>
+      enablePlugins(PlayScala)
+      </pre>
+
+    </li>
+
     <li> Update your build.sbt file to include the bindabables:
 
-    <pre>
-      routesImport += "<packageName>.<serviceName>.Bindables._"
-    </pre>
+      <pre>
+        routesImport += "&lt;packageName&gt;.&lt;serviceName&gt;.Bindables._"
+      </pre>
+
+    </li>
 
   </ol>
+
+  <p>
+  For a real life example, view <a href="https://github.com/gilt/apidoc/blob/master/build.sbt">apidoc's build.sbt file</a>
+  </p>
 
 }  
