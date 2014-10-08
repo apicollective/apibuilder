@@ -395,42 +395,11 @@ package com.gilt.apidoc.models {
 }
 
 package com.gilt.apidoc {
-  object helpers {
-
-    import play.api.mvc.QueryStringBindable
-
-    import org.joda.time.DateTime
-    import org.joda.time.format.ISODateTimeFormat
-
-    import scala.util.{ Failure, Success, Try }
-
-    private[helpers] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
-    private[helpers] val dateTimeISOFormatter = ISODateTimeFormat.dateTime()
-
-    private[helpers] def parseDateTimeISO(s: String): Either[String, DateTime] = {
-      Try(dateTimeISOParser.parseDateTime(s)) match {
-        case Success(dt) => Right(dt)
-        case Failure(f) => Left("Could not parse DateTime: " + f.getMessage)
-      }
-    }
-  
-
-    implicit object DateTimeISOQueryStringBinder extends QueryStringBindable[DateTime] {
-      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
-        for {
-          values <- params.get(key)
-          s <- values.headOption
-        } yield parseDateTimeISO(s)
-      }
-
-      override def unbind(key: String, time: DateTime): String = key + "=" + dateTimeISOFormatter.print(time)
-    }
-  }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.5.41 http://www.apidoc.me/gilt/code/apidoc/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.2 http://www.apidoc.me/gilt/code/apidoc/0.6.2/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -913,7 +882,7 @@ package com.gilt.apidoc {
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> "UserAgent")
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> UserAgent)
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
@@ -1251,6 +1220,36 @@ package com.gilt.apidoc {
       import com.gilt.apidoc.models.json._
       lazy val errors = response.json.as[scala.collection.Seq[com.gilt.apidoc.models.Error]]
     }
+  }
+
+  object Bindables {
+
+    import play.api.mvc.{PathBindable, QueryStringBindable}
+    import org.joda.time.{DateTime, LocalDate}
+    import org.joda.time.format.ISODateTimeFormat
+    import com.gilt.apidoc.models._
+
+    // Type: date-time-iso8601
+    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
+    // Type: date-iso8601
+    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29"
+    )
+
+    // Enum: Visibility
+    private val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Visibility.all.mkString(", ")}"
+
+    implicit val pathBindableEnumVisibility = new PathBindable.Parsing[Visibility] (
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
+    )
+
+    implicit val queryStringBindableEnumVisibility = new QueryStringBindable.Parsing[Visibility](
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
+    )
+
   }
 
 }
