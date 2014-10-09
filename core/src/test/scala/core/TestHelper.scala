@@ -28,7 +28,7 @@ object TestHelper {
     if (contents.trim != readFile(filename).trim) {
       val tmpPath = "/tmp/apidoc.tmp." + Text.safeName(filename)
       TestHelper.writeToFile(tmpPath, contents.trim)
-      sys.error(s"Test output did not match. diff $filename $tmpPath")
+      sys.error(s"Test output did not match. diff $tmpPath $filename")
     }
   }
 

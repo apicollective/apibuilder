@@ -1,3 +1,5 @@
+import play.PlayImport.PlayKeys._
+
 name := "apidoc"
 
 organization := "com.gilt.apidoc"
@@ -14,10 +16,23 @@ lazy val core = project
     )
   )
 
-lazy val api = project
-  .in(file("api"))
+lazy val generated = project
+  .in(file("generated"))
   .dependsOn(core)
   .aggregate(core)
+  .enablePlugins(PlayScala)
+  .settings(commonSettings: _*)
+  .settings(
+    routesImport += "com.gilt.apidoc.Bindables._",
+    libraryDependencies ++= Seq(
+      ws
+    )
+  )
+
+lazy val api = project
+  .in(file("api"))
+  .dependsOn(generated)
+  .aggregate(generated)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
@@ -31,15 +46,10 @@ lazy val api = project
 
 lazy val www = project
   .in(file("www"))
-  .dependsOn(core)
-  .aggregate(core)
+  .dependsOn(generated)
+  .aggregate(generated)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
-  .settings(
-    libraryDependencies ++= Seq(
-      ws
-    )
-  )
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),

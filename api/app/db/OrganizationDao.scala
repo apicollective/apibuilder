@@ -185,10 +185,10 @@ object OrganizationDao {
       Some(BaseQuery.trim),
       authorization match {
         case Authorization.All => None
-        case Authorization.PublicOnly => Some(s"and organization_metadata.visibility = '${Visibility.Public.toString}'")
+        case Authorization.PublicOnly => Some(s"and organization_metadata.visibility = '${Visibility.Public}'")
         case Authorization.User(userGuid) => {
           Some(
-            s"and (organization_metadata.visibility = '${Visibility.Public.toString}'" +
+            s"and (organization_metadata.visibility = '${Visibility.Public}'" +
             "      or organizations.guid in (" +
             "select organization_guid from memberships where deleted_at is null and user_guid = {authorization_user_guid}::uuid" +
             "))"
@@ -202,7 +202,7 @@ object OrganizationDao {
       },
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       key.map { v => "and organizations.key = lower(trim({key}))" },
-      name.map { v => "and lower(organizations.name) = lower(trim({name}))" },
+      name.map { v => "and lower(trim(organizations.name)) = lower(trim({name}))" },
       Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

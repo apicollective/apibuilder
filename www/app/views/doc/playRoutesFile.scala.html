@@ -1,0 +1,55 @@
+@(user: Option[com.gilt.apidoc.models.User])
+
+@doc.main(user, Some("Play Routes")) {
+
+  <p>
+    apidoc generates a play routes file to help ensure that a service
+    written using the <a href="http://playframework.com/">Play
+    Framework</a> actually implements all of the methods defined by
+    the API.
+  </p>
+
+  <p>
+    Within Play, their are a few features we take advantage for type
+    safety of routes:
+  </p>
+
+  <h2>Enums as First Class in Routes</h2>
+
+  <p>
+    enums are represented as first class objects in routes. In
+    order to use this feature, you must use the appropriate imports.
+  </p>
+
+  <ol>
+
+    <li> Import play keys:
+
+      <pre>
+      import play.PlayImport.PlayKeys._
+      </pre>
+
+    </li>
+
+    <li>   
+      <pre>
+      enablePlugins(PlayScala)
+      </pre>
+
+    </li>
+
+    <li> Update your build.sbt file to include the bindabables:
+
+      <pre>
+        routesImport += "&lt;packageName&gt;.&lt;serviceName&gt;.Bindables._"
+      </pre>
+
+    </li>
+
+  </ol>
+
+  <p>
+  For a real life example, view <a href="https://github.com/gilt/apidoc/blob/master/build.sbt">apidoc's build.sbt file</a>
+  </p>
+
+}  
