@@ -108,10 +108,10 @@ targets = [Target.new('ning_1_8', ScalaTester.new("src/main/scala"), ['ning_1_8_
            Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
 
 def get_code(client, org, service, target)
-  client.code.get_by_org_key_and_service_key_and_version_and_target(org.key, service.key, "latest", target)
+  client.code.get_by_org_key_and_service_key_and_version_and_target_key(org.key, service.key, "latest", target)
 end
 
-class MyClient < ApiDoc::Client
+class MyClient < Apidoc::Client
 
   def initialize(url, user_guid, opts={})
     super(url, opts)
@@ -125,7 +125,7 @@ class MyClient < ApiDoc::Client
 end
 
 
-client = MyClient.new(service_uri, user_guid, :authorization => ApiDoc::HttpClient::Authorization.basic(token))
+client = MyClient.new(service_uri, user_guid, :authorization => Apidoc::HttpClient::Authorization.basic(token))
 
 CACHE = {}
 
@@ -159,9 +159,8 @@ targets.each do |target|
         next if services_to_skip.include?(service.key)
 
         puts "  %s/%s" % [org.key, service.key]
-        t = ApiDoc::Models::Target.send(target_name)
-        if code = get_code(client, org, service, t)
-          filename = target.tester.write(target.platform, org.key, service.key, t.value, code.source)
+        if code = get_code(client, org, service, target_name)
+          filename = target.tester.write(target.platform, org.key, service.key, target_name, code.source)
         end
       end
     end
