@@ -19,7 +19,7 @@ object Code extends Controller {
     sys.error("apidoc.version is required")
   }
 
-  def getByOrgKeyAndServiceKeyAndVersionAndTarget(orgKey: String, serviceKey: String, version: String, targetKey: String) = AnonymousRequest { request =>
+  def getByOrgKeyAndServiceKeyAndVersionAndTargetKey(orgKey: String, serviceKey: String, version: String, targetKey: String) = AnonymousRequest { request =>
     val auth = Authorization(request.user)
     OrganizationDao.findByKey(auth, orgKey) match {
       case None => NotFound

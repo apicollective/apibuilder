@@ -23,6 +23,15 @@ package com.gilt.apidoc.models {
     message: String
   )
 
+  /**
+   * An apidoc generator
+   */
+  case class Generator(
+    guid: java.util.UUID,
+    name: String,
+    uri: String
+  )
+
   case class Healthcheck(
     status: String
   )
@@ -230,6 +239,22 @@ package com.gilt.apidoc.models {
       )(unlift(Error.unapply _))
     }
 
+    implicit def jsonReadsApidocGenerator: play.api.libs.json.Reads[Generator] = {
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "name").read[String] and
+        (__ \ "uri").read[String]
+      )(Generator.apply _)
+    }
+
+    implicit def jsonWritesApidocGenerator: play.api.libs.json.Writes[Generator] = {
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "name").write[String] and
+        (__ \ "uri").write[String]
+      )(unlift(Generator.unapply _))
+    }
+
     implicit def jsonReadsApidocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
       (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
     }
@@ -399,7 +424,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.6.2 http://www.apidoc.me/gilt/code/apidoc/0.6.2/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.3 http://www.apidoc.me/gilt/code/apidoc/0.5.23-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -407,6 +432,8 @@ package com.gilt.apidoc {
     def code: Code = Code
 
     def domains: Domains = Domains
+
+    def generators: Generators = Generators
 
     def healthchecks: Healthchecks = Healthchecks
 
@@ -462,6 +489,56 @@ package com.gilt.apidoc {
         name: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         _executeRequest("DELETE", s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    object Generators extends Generators {
+      override def get(
+        orgKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Generator]] = {
+        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}").map {
+          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Generator]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getByGuid(
+        orgKey: String,
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Generator]] = {
+        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${guid}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Generator])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post(
+        orgKey: String,
+        name: String,
+        uri: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
+        val payload = play.api.libs.json.Json.obj(
+          "name" -> play.api.libs.json.Json.toJson(name),
+          "uri" -> play.api.libs.json.Json.toJson(uri)
+        )
+
+        _executeRequest("POST", s"/generators/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteByGuid(
+        orgKey: String,
+        guid: java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/generators/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
@@ -957,6 +1034,40 @@ package com.gilt.apidoc {
     def deleteByName(
       orgKey: String,
       name: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+  }
+
+  trait Generators {
+    /**
+     * List all generators of an organization
+     */
+    def get(
+      orgKey: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Generator]]
+
+    /**
+     * Returns the generator with this guid.
+     */
+    def getByGuid(
+      orgKey: String,
+      guid: java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Generator]]
+
+    /**
+     * Create a new generator.
+     */
+    def post(
+      orgKey: String,
+      name: String,
+      uri: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
+
+    /**
+     * Deletes a generator.
+     */
+    def deleteByGuid(
+      orgKey: String,
+      guid: java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 
