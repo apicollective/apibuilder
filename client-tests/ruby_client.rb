@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.6.3 http://www.apidoc.me/gilt/code/apidoc/0.5.23-dev/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.6.4 http://www.apidoc.me/gilt/code/apidoc/0.6.4/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -40,10 +40,6 @@ module Apidoc
 
     def domains
       @domains ||= Apidoc::Clients::Domains.new(self)
-    end
-
-    def generators
-      @generators ||= Apidoc::Clients::Generators.new(self)
     end
 
     def healthchecks
@@ -124,42 +120,6 @@ module Apidoc
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
         HttpClient::Preconditions.assert_class('name', name, String)
         @client.request("/domains/#{orgKey}/#{name}").delete
-        nil
-      end
-
-    end
-
-    class Generators
-
-      def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
-      end
-
-      # List all generators of an organization
-      def get(orgKey)
-        HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
-        @client.request("/generators/#{orgKey}").get.map { |hash| Apidoc::Models::Generator.new(hash) }
-      end
-
-      # Returns the generator with this guid.
-      def get_by_guid(orgKey, guid)
-        HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
-        HttpClient::Preconditions.assert_class('guid', guid, String)
-        @client.request("/generators/#{orgKey}/#{guid}").get { |hash| Apidoc::Models::Generator.new(hash) }
-      end
-
-      # Create a new generator.
-      def post(orgKey, hash)
-        HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
-        HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/generators/#{orgKey}").with_json(hash.to_json).post { |hash| Apidoc::Models::Generator.new(hash) }
-      end
-
-      # Deletes a generator.
-      def delete_by_guid(orgKey, guid)
-        HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
-        HttpClient::Preconditions.assert_class('guid', guid, String)
-        @client.request("/generators/#{orgKey}/#{guid}").delete
         nil
       end
 
@@ -572,28 +532,6 @@ module Apidoc
         {
             :code => code,
             :message => message
-        }
-      end
-
-    end
-
-    # An apidoc generator
-    class Generator
-
-      attr_reader :guid, :name, :uri
-
-      def initialize(incoming={})
-        opts = HttpClient::Helper.symbolize_keys(incoming)
-        @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
-        @name = HttpClient::Helper.to_klass('name', opts.delete(:name), String, :required => true, :multiple => false)
-        @uri = HttpClient::Helper.to_klass('uri', opts.delete(:uri), String, :required => true, :multiple => false)
-      end
-
-      def to_hash
-        {
-            :guid => guid,
-            :name => name,
-            :uri => uri
         }
       end
 

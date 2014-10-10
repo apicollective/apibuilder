@@ -1,6 +1,5 @@
 package controllers
 
-import com.gilt.apidoc.models.Generator
 import com.gilt.apidoc.models.json._
 import lib.Validation
 import play.api.mvc._

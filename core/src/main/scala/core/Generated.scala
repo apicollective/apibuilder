@@ -23,15 +23,6 @@ package com.gilt.apidoc.models {
     message: String
   )
 
-  /**
-   * An apidoc generator
-   */
-  case class Generator(
-    guid: java.util.UUID,
-    name: String,
-    uri: String
-  )
-
   case class Healthcheck(
     status: String
   )
@@ -237,22 +228,6 @@ package com.gilt.apidoc.models {
         (__ \ "code").write[String] and
         (__ \ "message").write[String]
       )(unlift(Error.unapply _))
-    }
-
-    implicit def jsonReadsApidocGenerator: play.api.libs.json.Reads[Generator] = {
-      (
-        (__ \ "guid").read[java.util.UUID] and
-        (__ \ "name").read[String] and
-        (__ \ "uri").read[String]
-      )(Generator.apply _)
-    }
-
-    implicit def jsonWritesApidocGenerator: play.api.libs.json.Writes[Generator] = {
-      (
-        (__ \ "guid").write[java.util.UUID] and
-        (__ \ "name").write[String] and
-        (__ \ "uri").write[String]
-      )(unlift(Generator.unapply _))
     }
 
     implicit def jsonReadsApidocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
