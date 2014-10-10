@@ -1,6 +1,14 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 
-curl http://www.apidoc.me/gilt/code/apidoc/latest/ruby_client > client-tests/ruby_client.rb
-curl http://www.apidoc.me/gilt/code/apidoc/latest/play_2_3_client > generated/app/GeneratedClient.scala
-curl http://www.apidoc.me/gilt/code/apidoc/latest/play_2_x_json > core/src/main/scala/core/Generated.scala
-curl http://www.apidoc.me/gilt/code/apidoc/latest/play_2_x_routes > api/conf/routes
+data = {
+    "ruby_client" => "client-tests/ruby_client.rb",
+    "play_2_3_client" => "generated/app/GeneratedClient.scala",
+    "play_2_x_json" => "core/src/main/scala/core/Generated.scala",
+    "play_2_x_routes" => "api/conf/routes"
+}
+
+data.each do |target, path|
+    cmd = "curl --silent http://www.apidoc.me/gilt/code/apidoc/latest/#{target} > #{path}"
+    puts cmd
+    system(cmd)
+end
