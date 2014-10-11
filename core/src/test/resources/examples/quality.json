@@ -14,11 +14,11 @@
 	},
 
 	"action": {
-	    "description": "The action that occurred to this model",
+	    "description": "Used in the event system to indicate what happened.",
 	    "values": [
-		{ "name": "created" },
-		{ "name": "updated" },
-		{ "name": "deleted" }
+		{ "name": "created", "description": "Indicates that an instance of this model was created" },
+		{ "name": "updated", "description": "Indicates that an instance of this model was updated" },
+		{ "name": "deleted", "description": "Indicates that an instance of this model was deleted" }
 	    ]
 	},
 
@@ -26,6 +26,14 @@
 	    "values": [
 		{ "name": "low" },
 		{ "name": "high" }
+	    ]
+	},
+
+	"task": {
+	    "description": "Describes what needs to be reviewed about a specific incident",
+	    "values": [
+		{ "name": "review_team", "description": "Used in meetings to indicate that a team should be assigned to the incident or that the group should review the team assignment to make sure it is correct." },
+		{ "name": "review_plan", "description": "Indicates that the incident plan should be reviewed and rated" }
 	    ]
 	}
 
@@ -50,16 +58,38 @@
 	"event": {
             "description": "Represents something that has happened - e.g. a team was created, an incident created, a plan updated, etc.",
             "fields": [
-                { "name": "model", "type": "model" },
-		{ "name": "action", "type": "action" },
+                { "name": "model", "type": "model", "description": "The name of the model that was the subject of the event" },
+		{ "name": "action", "type": "action", "description": "The action that occurred to this model" },
 		{ "name": "timestamp", "type": "date-time-iso8601", "description": "The timestamp on which this event occurred" },
                 { "name": "url", "type": "string", "description": "The location to fetch more information about this resource, if applicable. URL will be empty in the case of events that delete a model instance (as one example)", "required": false },
                 { "name": "data", "type": "event_data", "description": "Basic summary information about the object and the event. The intent is to use this data to quickly summarize the event - for detailed informations, callers should issue an HTTP GET to the URL" }
             ]
 	},
 
+        "organization": {
+            "description": "Top level organization for which we are managing quality. Key entities like teams and meetings are scoped to the organization.",
+            "fields": [
+                { "name": "key", "type": "string", "description": "Used as a unique key for this organization that is URL safe." },
+                { "name": "name", "type": "string", "description": "The name of this organization." }
+            ]
+        },
+
+        "organization_form": {
+            "fields": [
+                { "name": "name", "type": "string" },
+                { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" }
+            ]
+        },
+
         "team": {
             "description": "A team is the main actor in the system. Teams have a unique key and own incidents",
+            "fields": [
+                { "name": "organization", "type": "organization", "description": "Organization to which this team belongs" },
+                { "name": "key", "type": "string", "description": "Unique identifier for this team" }
+            ]
+        },
+
+        "team_form": {
             "fields": [
                 { "name": "key", "type": "string", "description": "Unique identifier for this team" }
             ]
@@ -82,6 +112,7 @@
             "description": "A bug or error that affected public or internal users in a negative way",
             "fields": [
                 { "name": "id", "type": "long", "description": "Internal unique identifier for this incident." },
+                { "name": "organization", "type": "organization", "description": "Organization to which this incident belongs" },
                 { "name": "summary", "type": "string", "description": "Summary of the incident." },
                 { "name": "description", "type": "string", "description": "Full description of the incident", "required": false },
                 { "name": "team", "type": "team", "description": "Team responsible for resolution of this incident", "required": false },
@@ -108,7 +139,46 @@
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
                 { "name": "message", "type": "string", "description": "Description of the error" }
             ]
-        }
+        },
+
+	"meeting": {
+	    "description": "Meetings happen on a regular schedule (e.g. thursdays from 11-12 EST). As incidents are created, they are automatically assigned to the next meeting. Incidents can then be reviewed from the context of a meeting, facilitating online navigation. Incidents within a meeting can require one of two actions - team assignment or plan review.",
+	    "fields": [
+		{ "name": "id", "type": "long", "description": "Internal unique identifier for this meeting." },
+		{ "name": "scheduled_at", "type": "date-time-iso8601", "description": "The date and time for which this meeting is scheduled." }
+	    ]
+	},
+
+	"meeting_form": {
+	    "fields": [
+		{ "name": "scheduled_at", "type": "date-time-iso8601" }
+	    ]
+	},
+
+	"agenda_item": {
+	    "description": "Describe an agenda item for a meeting. Currently the only agenda items we have are that a particular incident needs to be reviewed.",
+	    "fields": [
+		{ "name": "id", "type": "long", "description": "Internal unique identifier for this record." },
+		{ "name": "incident", "type": "incident_summary", "description": "Summary of the incident to review." },
+		{ "name": "task", "type": "task", "description": "What needs to be reviewed at this meeting for this incident." }
+	    ]
+	},
+
+	"incident_summary": {
+	    "fields": [
+		{ "name": "id", "type": "long" },
+		{ "name": "severity", "type": "severity" },
+                { "name": "summary", "type": "string" }
+	    ]
+	},
+
+	"agenda_item_form": {
+	    "fields": [
+		{ "name": "incident_id", "type": "long" },
+		{ "name": "task", "type": "task" }
+	    ]
+	}
+
 
     },
 
@@ -126,14 +196,55 @@
 	    ]
 	},
 
+	"organization": {
+	    "operations": [
+		{
+		    "method": "GET",
+		    "description": "Search all organizations. Results are always paginated.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find organization with this id", "required": false },
+                        { "name": "key", "type": "string", "description": "Find organization with this key", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[organization]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:key",
+                    "responses": {
+                        "200": { "type": "organization" }
+                    }
+                },
+
+
+		{
+		    "method": "POST",
+                    "body": { "type": "organization_form" },
+                    "responses": {
+                        "201": { "type": "organization" }
+                    }
+                },
+
+		{
+		    "method": "DELETE",
+		    "path": "/:key"
+                }
+
+	    ]
+	},
+
 	"event": {
             "operations": [
 		{
 		    "method": "GET",
 		    "description": "Search all events. Results are always paginated. Events are sorted in time order - the first record is the most recent event.",
                     "parameters": [
-                        { "name": "model", "type": "string", "description": "Find events on this model", "required": false },
-                        { "name": "action", "type": "string", "description": "Find events with this action", "required": false },
+                        { "name": "model", "type": "model", "description": "Find events on this model", "required": false },
+                        { "name": "action", "type": "action", "description": "Find events with this action", "required": false },
                         { "name": "number_hours", "type": "integer", "description": "Filter to events created in the last n hours", "required": false },
                         { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
@@ -172,9 +283,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new team.",
-                    "parameters": [
-                        { "name": "key", "type": "string" }
-		    ],
+                    "body": { "type": "team_form" },
                     "responses": {
                         "201": { "type": "team" },
                         "409": { "type": "[error]" }
@@ -350,7 +459,103 @@
                 }
 
 	    ]
+	},
+
+	"meeting": {
+	    "operations": [
+		{
+		    "method": "GET",
+                    "description": "Search all meetings. Results are always paginated.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find meeting with this id. Exact match", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[meeting]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:id",
+                    "responses": {
+                        "200": { "type": "meeting" }
+                    }
+                },
+
+
+		{
+		    "description": "Creates a meeting. In general meetings are created automatically",
+		    "method": "POST",
+		    "body": { "type": "meeting_form" },
+                    "responses": {
+                        "201": { "type": "meeting" }
+                    }
+                },
+
+		{
+		    "path": "/:id",
+		    "method": "DELETE"
+                }
+
+	    ]
+	},
+
+	"agenda_item": {
+	    "path": "/meetings/:meeting_id/agenda_items",
+
+	    "operations": [
+		{
+		    "method": "GET",
+                    "description": "Search agenda items for a given meeting. Results are always paginated.",
+                    "parameters": [
+                        { "name": "meeting_id", "type": "long" },
+                        { "name": "id", "type": "long", "description": "Find agenda items with this id", "required": false },
+                        { "name": "task", "type": "task", "description": "Find agenda items with this task", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[agenda_item]" }
+                    }
+                },
+
+		{
+		    "method": "GET",
+		    "path": "/:id",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ],
+                    "responses": {
+                        "200": { "type": "agenda_item" }
+                    }
+                },
+
+
+		{
+		    "description": "Creates an agenda item for this meeting.",
+		    "method": "POST",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ],
+		    "body": { "type": "agenda_item_form" },
+                    "responses": {
+                        "201": { "type": "agenda_item" }
+                    }
+                },
+
+		{
+		    "path": "/:id",
+		    "method": "DELETE",
+		    "parameters": [
+                        { "name": "meeting_id", "type": "long" }
+		    ]
+                }
+
+	    ]
 	}
+
 
     }
 }
