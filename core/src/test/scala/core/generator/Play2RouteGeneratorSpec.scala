@@ -1,8 +1,7 @@
 package core.generator
 
-
 import codegenerator.models.{Operation, Resource, ServiceDescription}
-import core.TestHelper
+import core.{Datatype, TestHelper}
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
@@ -136,6 +135,18 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       val op = getMethod(service, "echo", "GET", "/echoes/arrays-only")
       val r = Play2Route(ssd, op, echoResource)
       r.method should be("controllers.Echoes.getArraysOnly")
+    }
+
+  }
+
+  describe("with quality service example") {
+
+    lazy val quality = TestHelper.parseFile("core/src/test/resources/examples/quality.json").serviceDescription.get
+
+    it("correctly orders parameters defined in path and parameters") {
+      val op = getMethod(quality, "agenda_item", "DELETE", "/meetings/:meeting_id/agenda_items/:id")
+      op.parameters.map(_.name) should be(Seq("meeting_id", "id"))
+      op.parameters.head.datatype.name should be(Datatype.LongType.name)
     }
 
   }
