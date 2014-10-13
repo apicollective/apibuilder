@@ -15,8 +15,8 @@ import play.api.Play.current
 
 object Code extends Controller {
 
-  val apidocVersion = current.configuration.getString("apidoc.version").getOrElse {
-    sys.error("apidoc.version is required")
+  val apidocVersion = current.configuration.getString("git.version").getOrElse {
+    sys.error("git.version is required")
   }
 
   def getByOrgKeyAndServiceKeyAndVersionAndTargetKey(orgKey: String, serviceKey: String, version: String, targetKey: String) = AnonymousRequest { request =>
