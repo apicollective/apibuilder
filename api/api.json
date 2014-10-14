@@ -155,11 +155,9 @@
 	"validation": {
 	    "description": "Public resource that can accept JSON input and returns a validation object describing any validation errors.",
 	    "operations": [
-		{ 
+		{
 		    "method": "POST",
-                    "parameters": [
-                        { "name": "json", "type": "string", "required": false }
-		    ],
+		    "body": { "type": "string" },
                     "responses": {
                         "200": { "type": "validation" }
                     }
