@@ -74,12 +74,12 @@
 
     where
     <ul>
-      <li><em>name</em> the name of the field. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
-      <li><em>description</em> optional longer description for this field.</li>
-      <li><em>required</em> boolean: true|false. By default all fields are considered required. To make a field optional, set "required" to false.</li>
-      <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
-      <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
+      <li><em>name</em>: the name of the field. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>type</em>: the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>description</em>: optional longer description for this field.</li>
+      <li><em>required</em> boolean: true|false. By default, all fields are considered required. To make a field optional, set "required" to false.</li>
+      <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10.</li>
+      <li><em>example</em>: optional. An example value for this field used only in the produced documentation.</li>
     </ul>
 
   </p>
@@ -126,12 +126,12 @@
 
     where
     <ul>
-      <li><em>method</em> the HTTP method for this operation</li>
-      <li><em>path</em> optional path for this particular operation. If not provided, defaults to no additional path. Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that this operation is available at /resource_path/:guid. Path parameter types are inferred by looking for a field with that name on the model associated with this resource. If not found, the datatype of any path parameter will be string.</li>
-      <li><em>description</em> optional longer description for this operation.</li>
-      <li><em>body</em> optional specification for the type of the body of this request. For all operations that support bodies (e.g. POST, PUT, PATCH), allows you to specify the type of the body. See <a href="#body">Body</a>.</li>
-      <li><em>parameters</em> optional JSON Array of the parameters to this method. By default, for @core.Util.MethodsNotAcceptingBodies.mkString(" and ") methods, parameters are assumed to be in the path or in the query. For other methods, parameters are assumed to be in the path or form body, unless you have explicitly specified a body in which case parameters can be provided in the path or the query. See <a href="#parameter">Parameter</a>.</li>
-      <li><em>responses</em> optional JSON Object of HTTP Response Code => Response. See <a name="#response"Response></a>. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented.</li>
+      <li><em>method</em>: the HTTP method for this operation.</li>
+      <li><em>path</em>: optional path for this particular operation. If not provided, defaults to no additional path. Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that this operation is available at /resource_path/:guid. Path parameter types are inferred by looking for a field with that name on the model associated with this resource. If not found, the datatype of any path parameter will be string.</li>
+      <li><em>description</em>: optional longer description for this operation.</li>
+      <li><em>body</em>: optional specification for the type of the body of this request. For all operations that support bodies (e.g. POST, PUT, PATCH), allows you to specify the type of the body. See <a href="#body">Body</a>.</li>
+      <li><em>parameters</em>: optional JSON Array of the parameters to this method. By default, for @core.Util.MethodsNotAcceptingBodies.mkString(" and ") methods, parameters are assumed to be in the path or in the query. For other methods, parameters are assumed to be in the path or form body, unless you have explicitly specified a body in which case parameters can be provided in the path or the query. See <a href="#parameter">Parameter</a>.</li>
+      <li><em>responses</em>: optional JSON Object of HTTP Response Code => Response. See <a name="#response"Response></a>. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented.</li>
     </ul>
   </p>
 
