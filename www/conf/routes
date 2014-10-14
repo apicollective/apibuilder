@@ -20,6 +20,7 @@ GET     /doc/examples                                             controllers.Do
 GET     /doc/history                                              controllers.DocController.history
 GET     /doc/releaseNotes                                         controllers.DocController.releaseNotes
 GET     /doc/todo                                                 controllers.DocController.todo
+GET     /doc/playRoutesFile                                       controllers.DocController.playRoutesFile
 
 GET     /org/create                                               controllers.Organizations.create
 POST    /org/createPost                                           controllers.Organizations.createPost

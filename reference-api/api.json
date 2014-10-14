@@ -1,6 +1,6 @@
 {
     "base_url": "http://localhost:9000",
-    "name": "Reference Api",
+    "name": "Apidoc Reference Api",
 
     "enums": {
 	"age_group": {
@@ -159,11 +159,13 @@
                         "409": { "type": "[error]" }
                     }
                 },
+
                 {
                     "method": "GET",
                     "parameters": [
                         { "name": "guid", "type": "uuid", "required": false },
-                        { "name": "organization_guids", "type": "[long]", "description": "Limits employees to the specified organizations.", "required": false },
+                        { "name": "organization_guids", "type": "[long]", "description": "Limits users to the specified organizations.", "required": false },
+			{ "name": "age_group", "type": "age_group", "required": false, "description": "Limit to users in this age group" },
                         { "name": "email", "type": "string", "required": false },
                         { "name": "active", "type": "boolean", "default": true }
                     ],
@@ -171,6 +173,15 @@
                         "200": { "type": "[user]" }
                     }
                 },
+
+                {
+                    "method": "GET",
+		    "path": "/:age_group",
+                    "responses": {
+                        "200": { "type": "[user]" }
+                    }
+                },
+
                 {
                     "method": "POST",
                     "path": "/noop",

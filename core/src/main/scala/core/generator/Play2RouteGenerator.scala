@@ -37,7 +37,7 @@ case class Play2RouteGenerator(scalaService: ScalaServiceDescription) {
   def generate(): Option[String] = {
     val all = service.resources.flatMap { resource =>
       resource.operations.map { op =>
-        Play2Route(op, resource)
+        Play2Route(scalaService, op, resource)
       }
     }
     if (all.isEmpty) {
@@ -64,7 +64,7 @@ case class Play2RouteGenerator(scalaService: ScalaServiceDescription) {
   }
 }
 
-private[generator] case class Play2Route(op: Operation, resource: Resource) {
+private[generator] case class Play2Route(ssd: ScalaServiceDescription, op: Operation, resource: Resource) {
 
   val verb = op.method
   val url = op.path
@@ -83,7 +83,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
       Seq(
         s"# Additional parameters to ${op.method} ${op.path}",
         parametersToComment.map { p =>
-          "#   - " + parameterWithType(p)
+          "#   - " + parameterWithType(ssd, p)
         }.mkString("\n")
       ).mkString("\n")
     )
@@ -97,7 +97,7 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
   private def parametersWithTypesAndDefaults(params: Seq[Parameter]): Seq[String] = {
     params.map { param =>
       Seq(
-        Some(parameterWithType(param)),
+        Some(parameterWithType(ssd, param)),
         param.default.map( d =>
           param.datatype match {
             case Type(TypeKind.Primitive, name, _) =>
@@ -125,18 +125,17 @@ private[generator] case class Play2Route(op: Operation, resource: Resource) {
     }
   }
 
-  private def parameterWithType(param: Parameter): String = {
-    s"${param.name}: ${scalaDataType(param)}"
+  private def parameterWithType(ssd: ScalaServiceDescription, param: Parameter): String = {
+    s"${param.name}: ${scalaDataType(ssd, param)}"
   }
 
-  private def scalaDataType(param: Parameter): String = {
+  private def scalaDataType(ssd: ScalaServiceDescription, param: Parameter): String = {
     param.datatype match {
       case Type(TypeKind.Model, _, _) => {
         sys.error("Model parameter types not supported in play routes")
       }
-      case Type(TypeKind.Enum, _, _) => {
-        // TODO: Should we use the real class here or leave to user to convert?
-        qualifyParam(ScalaDataType.ScalaStringType.name, param.required, param.datatype.multiple)
+      case Type(TypeKind.Enum, enumName, _) => {
+        qualifyParam(ssd.enumClassName(enumName), param.required, param.datatype.multiple)
       }
       case Type(TypeKind.Primitive, n, _) => {
         val dt = Datatype.forceByName(n)

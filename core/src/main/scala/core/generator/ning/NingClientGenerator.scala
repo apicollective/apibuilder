@@ -72,12 +72,6 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
     s"""package ${ssd.packageName} {
   import com.ning.http.client.{AsyncCompletionHandler, AsyncHttpClient, Realm, Request, RequestBuilder, Response}
 
-  object helpers {
-
-${ScalaHelpers.dateTime}
-
-  }
-
   object Client {
     def parseJson[T](r: com.ning.http.client.Response, f: (play.api.libs.json.JsValue => play.api.libs.json.JsResult[T])): T = {
       f(play.api.libs.json.Json.parse(r.getResponseBody("UTF-8"))) match {

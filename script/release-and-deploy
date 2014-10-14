@@ -61,7 +61,7 @@ project_name = `pwd`.strip.split("/").last
 commands = Deployer::Commands.new(project_name, tag)
 
 if new_tag
-  commands.add("script/tag")
+  commands.add(File.dirname(__FILE__) + "/tag")
 end
 
 commands.add("DOCKER_HOST=#{DOCKER_HOST} docker login --email=#{Deployer::Util.env('DOCKER_INDEX_EMAIL')} --username #{Deployer::Util.env('DOCKER_INDEX_USERNAME')} --password #{Deployer::Util.env('DOCKER_INDEX_PASSWORD')}",

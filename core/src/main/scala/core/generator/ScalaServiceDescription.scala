@@ -88,6 +88,9 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
   val modelPackageName = s"$packageName.models"
   val enumPackageName = modelPackageName
 
+  def modelClassName(name: String) = modelPackageName + "." + ScalaUtil.toClassName(name)
+  def enumClassName(name: String) = enumPackageName + "." + ScalaUtil.toClassName(name)
+
   val models = serviceDescription.models.map { new ScalaModel(this, _) }
 
   val enums = serviceDescription.enums.map { new ScalaEnum(_) }
@@ -216,7 +219,7 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
     name: String,
     multiple: Boolean
   ): String = {
-    val baseClassName = s"${resource.packageName}.models." + ScalaUtil.toClassName(name)
+    val baseClassName = ssd.modelClassName(name)
     val className = if (multiple) {
       s"scala.collection.Seq[$baseClassName]"
     } else {

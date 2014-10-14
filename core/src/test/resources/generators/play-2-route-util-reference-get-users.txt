@@ -1,5 +1,6 @@
 val queryParameters = Seq(
   guid.map("guid" -> _.toString),
+  ageGroup.map("age_group" -> _.toString),
   email.map("email" -> _),
   active.map("active" -> _.toString)
 ).flatten ++

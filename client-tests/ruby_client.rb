@@ -10,11 +10,11 @@ require 'bigdecimal'
 
 # Host API documentation for REST services, facilitating the design of good
 # resource first APIs.
-module ApiDoc
+module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.5.29 http://www.apidoc.me/gilt/code/apidoc/latest/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.6.4 http://www.apidoc.me/gilt/code/apidoc/0.6.4/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -25,7 +25,7 @@ module ApiDoc
 
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil('path', path, String)
-      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('X-apidoc', 'www.apidoc.me').with_header('User-Agent', USER_AGENT)
+      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('X-Api-Doc', 'www.apidoc.me').with_header('User-Agent', USER_AGENT)
 
       if @authorization
         request.with_auth(@authorization)
@@ -35,47 +35,51 @@ module ApiDoc
     end
 
     def code
-      @code ||= ApiDoc::Clients::Code.new(self)
+      @code ||= Apidoc::Clients::Code.new(self)
     end
 
     def domains
-      @domains ||= ApiDoc::Clients::Domains.new(self)
+      @domains ||= Apidoc::Clients::Domains.new(self)
     end
 
     def healthchecks
-      @healthchecks ||= ApiDoc::Clients::Healthchecks.new(self)
+      @healthchecks ||= Apidoc::Clients::Healthchecks.new(self)
     end
 
     def membership_requests
-      @membership_requests ||= ApiDoc::Clients::MembershipRequests.new(self)
+      @membership_requests ||= Apidoc::Clients::MembershipRequests.new(self)
     end
 
     def memberships
-      @memberships ||= ApiDoc::Clients::Memberships.new(self)
+      @memberships ||= Apidoc::Clients::Memberships.new(self)
     end
 
     def organization_metadata
-      @organization_metadata ||= ApiDoc::Clients::OrganizationMetadata.new(self)
+      @organization_metadata ||= Apidoc::Clients::OrganizationMetadata.new(self)
     end
 
     def organizations
-      @organizations ||= ApiDoc::Clients::Organizations.new(self)
+      @organizations ||= Apidoc::Clients::Organizations.new(self)
     end
 
     def services
-      @services ||= ApiDoc::Clients::Services.new(self)
+      @services ||= Apidoc::Clients::Services.new(self)
+    end
+
+    def targets
+      @targets ||= Apidoc::Clients::Targets.new(self)
     end
 
     def users
-      @users ||= ApiDoc::Clients::Users.new(self)
+      @users ||= Apidoc::Clients::Users.new(self)
     end
 
     def validations
-      @validations ||= ApiDoc::Clients::Validations.new(self)
+      @validations ||= Apidoc::Clients::Validations.new(self)
     end
 
     def versions
-      @versions ||= ApiDoc::Clients::Versions.new(self)
+      @versions ||= Apidoc::Clients::Versions.new(self)
     end
   end
 
@@ -84,16 +88,16 @@ module ApiDoc
     class Code
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Generate code for a specific version of a service.
-      def get_by_org_key_and_service_key_and_version_and_target(orgKey, serviceKey, version, target)
+      def get_by_org_key_and_service_key_and_version_and_target_key(orgKey, serviceKey, version, targetKey)
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
         HttpClient::Preconditions.assert_class('serviceKey', serviceKey, String)
         HttpClient::Preconditions.assert_class('version', version, String)
-        HttpClient::Preconditions.assert_class('target', target, ApiDoc::Models::Target)
-        @client.request("/#{orgKey}/#{serviceKey}/#{version}/#{target.value}").get { |hash| ApiDoc::Models::Code.new(hash) }
+        HttpClient::Preconditions.assert_class('targetKey', targetKey, String)
+        @client.request("/#{orgKey}/#{serviceKey}/#{version}/#{targetKey}").get { |hash| Apidoc::Models::Code.new(hash) }
       end
 
     end
@@ -101,14 +105,14 @@ module ApiDoc
     class Domains
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Add a domain to this organization
       def post(orgKey, domain)
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
-        HttpClient::Preconditions.assert_class('domain', domain, ApiDoc::Models::Domain)
-        @client.request("/domains/#{orgKey}").with_json(domain.to_hash.to_json).post { |hash| ApiDoc::Models::Domain.new(hash) }
+        HttpClient::Preconditions.assert_class('domain', domain, Apidoc::Models::Domain)
+        @client.request("/domains/#{orgKey}").with_json(domain.to_hash.to_json).post { |hash| Apidoc::Models::Domain.new(hash) }
       end
 
       # Remove this domain from this organization
@@ -124,11 +128,11 @@ module ApiDoc
     class Healthchecks
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       def get
-        @client.request("/_internal_/healthcheck").get { |hash| ApiDoc::Models::Healthcheck.new(hash) }
+        @client.request("/_internal_/healthcheck").get { |hash| Apidoc::Models::Healthcheck.new(hash) }
       end
 
     end
@@ -136,7 +140,7 @@ module ApiDoc
     class MembershipRequests
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Search all membership requests. Results are always paginated.
@@ -150,13 +154,13 @@ module ApiDoc
           :limit => HttpClient::Helper.to_klass('limit', opts.delete(:limit) || 25, Integer, :required => true, :multiple => false),
           :offset => HttpClient::Helper.to_klass('offset', opts.delete(:offset) || 0, Integer, :required => true, :multiple => false)
         }.delete_if { |k, v| v.nil? }
-        @client.request("/membership_requests").with_query(query).get.map { |hash| ApiDoc::Models::MembershipRequest.new(hash) }
+        @client.request("/membership_requests").with_query(query).get.map { |hash| Apidoc::Models::MembershipRequest.new(hash) }
       end
 
       # Create a membership request
       def post(hash)
         HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/membership_requests").with_json(hash.to_json).post { |hash| ApiDoc::Models::MembershipRequest.new(hash) }
+        @client.request("/membership_requests").with_json(hash.to_json).post { |hash| Apidoc::Models::MembershipRequest.new(hash) }
       end
 
       # Accepts this membership request. User will become a member of the
@@ -182,7 +186,7 @@ module ApiDoc
     class Memberships
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Search all memberships. Results are always paginated.
@@ -196,12 +200,12 @@ module ApiDoc
           :limit => HttpClient::Helper.to_klass('limit', opts.delete(:limit) || 25, Integer, :required => true, :multiple => false),
           :offset => HttpClient::Helper.to_klass('offset', opts.delete(:offset) || 0, Integer, :required => true, :multiple => false)
         }.delete_if { |k, v| v.nil? }
-        @client.request("/memberships").with_query(query).get.map { |hash| ApiDoc::Models::Membership.new(hash) }
+        @client.request("/memberships").with_query(query).get.map { |hash| Apidoc::Models::Membership.new(hash) }
       end
 
       def get_by_guid(guid)
         HttpClient::Preconditions.assert_class('guid', guid, String)
-        @client.request("/memberships/#{guid}").get { |hash| ApiDoc::Models::Membership.new(hash) }
+        @client.request("/memberships/#{guid}").get { |hash| Apidoc::Models::Membership.new(hash) }
       end
 
       def delete_by_guid(guid)
@@ -215,14 +219,14 @@ module ApiDoc
     class OrganizationMetadata
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Update metadata for this organization
       def put(key, organization_Metadata)
         HttpClient::Preconditions.assert_class('key', key, String)
-        HttpClient::Preconditions.assert_class('organization_metadata', organization_metadata, ApiDoc::Models::OrganizationMetadata)
-        @client.request("/organizations/#{key}/metadata").with_json(organization_metadata.to_hash.to_json).put { |hash| ApiDoc::Models::OrganizationMetadata.new(hash) }
+        HttpClient::Preconditions.assert_class('organization_metadata', organization_metadata, Apidoc::Models::OrganizationMetadata)
+        @client.request("/organizations/#{key}/metadata").with_json(organization_metadata.to_hash.to_json).put { |hash| Apidoc::Models::OrganizationMetadata.new(hash) }
       end
 
     end
@@ -230,7 +234,7 @@ module ApiDoc
     class Organizations
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Search all organizations. Results are always paginated.
@@ -244,19 +248,19 @@ module ApiDoc
           :limit => HttpClient::Helper.to_klass('limit', opts.delete(:limit) || 25, Integer, :required => true, :multiple => false),
           :offset => HttpClient::Helper.to_klass('offset', opts.delete(:offset) || 0, Integer, :required => true, :multiple => false)
         }.delete_if { |k, v| v.nil? }
-        @client.request("/organizations").with_query(query).get.map { |hash| ApiDoc::Models::Organization.new(hash) }
+        @client.request("/organizations").with_query(query).get.map { |hash| Apidoc::Models::Organization.new(hash) }
       end
 
       # Returns the organization with this key.
       def get_by_key(key)
         HttpClient::Preconditions.assert_class('key', key, String)
-        @client.request("/organizations/#{key}").get { |hash| ApiDoc::Models::Organization.new(hash) }
+        @client.request("/organizations/#{key}").get { |hash| Apidoc::Models::Organization.new(hash) }
       end
 
       # Create a new organization.
       def post(hash)
         HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/organizations").with_json(hash.to_json).post { |hash| ApiDoc::Models::Organization.new(hash) }
+        @client.request("/organizations").with_json(hash.to_json).post { |hash| Apidoc::Models::Organization.new(hash) }
       end
 
       # Deletes an organization and all of its associated services.
@@ -271,7 +275,7 @@ module ApiDoc
     class Services
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Search all services. Results are always paginated.
@@ -284,7 +288,7 @@ module ApiDoc
           :limit => HttpClient::Helper.to_klass('limit', opts.delete(:limit) || 25, Integer, :required => true, :multiple => false),
           :offset => HttpClient::Helper.to_klass('offset', opts.delete(:offset) || 0, Integer, :required => true, :multiple => false)
         }.delete_if { |k, v| v.nil? }
-        @client.request("/#{orgKey}").with_query(query).get.map { |hash| ApiDoc::Models::Service.new(hash) }
+        @client.request("/#{orgKey}").with_query(query).get.map { |hash| Apidoc::Models::Service.new(hash) }
       end
 
       # Updates a service.
@@ -306,10 +310,24 @@ module ApiDoc
 
     end
 
+    class Targets
+
+      def initialize(client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
+      end
+
+      # List all targets of this org.
+      def get(orgKey)
+        HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
+        @client.request("/targets/#{orgKey}").get.map { |hash| Apidoc::Models::Target.new(hash) }
+      end
+
+    end
+
     class Users
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Search for a specific user. You must specify at least 1 parameter -
@@ -322,13 +340,13 @@ module ApiDoc
           :email => HttpClient::Helper.to_klass('email', opts.delete(:email), String, :required => false, :multiple => false),
           :token => HttpClient::Helper.to_klass('token', opts.delete(:token), String, :required => false, :multiple => false)
         }.delete_if { |k, v| v.nil? }
-        @client.request("/users").with_query(query).get.map { |hash| ApiDoc::Models::User.new(hash) }
+        @client.request("/users").with_query(query).get.map { |hash| Apidoc::Models::User.new(hash) }
       end
 
       # Returns information about the user with this guid.
       def get_by_guid(guid)
         HttpClient::Preconditions.assert_class('guid', guid, String)
-        @client.request("/users/#{guid}").get { |hash| ApiDoc::Models::User.new(hash) }
+        @client.request("/users/#{guid}").get { |hash| Apidoc::Models::User.new(hash) }
       end
 
       # Used to authenticate a user with an email address and password.
@@ -337,20 +355,20 @@ module ApiDoc
       # user_authorization_failed.
       def post_authenticate(hash)
         HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/users/authenticate").with_json(hash.to_json).post { |hash| ApiDoc::Models::User.new(hash) }
+        @client.request("/users/authenticate").with_json(hash.to_json).post { |hash| Apidoc::Models::User.new(hash) }
       end
 
       # Create a new user.
       def post(hash)
         HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/users").with_json(hash.to_json).post { |hash| ApiDoc::Models::User.new(hash) }
+        @client.request("/users").with_json(hash.to_json).post { |hash| Apidoc::Models::User.new(hash) }
       end
 
       # Updates information about the user with the specified guid.
       def put_by_guid(guid, hash)
         HttpClient::Preconditions.assert_class('guid', guid, String)
         HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/users/#{guid}").with_json(hash.to_json).put { |hash| ApiDoc::Models::User.new(hash) }
+        @client.request("/users/#{guid}").with_json(hash.to_json).put { |hash| Apidoc::Models::User.new(hash) }
       end
 
     end
@@ -358,12 +376,12 @@ module ApiDoc
     class Validations
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       def post(hash)
         HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/validations").with_json(hash.to_json).post { |hash| ApiDoc::Models::Validation.new(hash) }
+        @client.request("/validations").with_json(hash.to_json).post { |hash| Apidoc::Models::Validation.new(hash) }
       end
 
     end
@@ -371,7 +389,7 @@ module ApiDoc
     class Versions
 
       def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, ApiDoc::Client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
       end
 
       # Search all versions of this service. Results are always paginated.
@@ -383,7 +401,7 @@ module ApiDoc
           :limit => HttpClient::Helper.to_klass('limit', opts.delete(:limit) || 25, Integer, :required => true, :multiple => false),
           :offset => HttpClient::Helper.to_klass('offset', opts.delete(:offset) || 0, Integer, :required => true, :multiple => false)
         }.delete_if { |k, v| v.nil? }
-        @client.request("/#{orgKey}/#{serviceKey}").with_query(query).get.map { |hash| ApiDoc::Models::Version.new(hash) }
+        @client.request("/#{orgKey}/#{serviceKey}").with_query(query).get.map { |hash| Apidoc::Models::Version.new(hash) }
       end
 
       # Retrieve a specific version of a service.
@@ -391,7 +409,7 @@ module ApiDoc
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
         HttpClient::Preconditions.assert_class('serviceKey', serviceKey, String)
         HttpClient::Preconditions.assert_class('version', version, String)
-        @client.request("/#{orgKey}/#{serviceKey}/#{version}").get { |hash| ApiDoc::Models::Version.new(hash) }
+        @client.request("/#{orgKey}/#{serviceKey}/#{version}").get { |hash| Apidoc::Models::Version.new(hash) }
       end
 
       # Create or update the service with the specified version.
@@ -400,7 +418,7 @@ module ApiDoc
         HttpClient::Preconditions.assert_class('serviceKey', serviceKey, String)
         HttpClient::Preconditions.assert_class('version', version, String)
         HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/#{orgKey}/#{serviceKey}/#{version}").with_json(hash.to_json).put { |hash| ApiDoc::Models::Version.new(hash) }
+        @client.request("/#{orgKey}/#{serviceKey}/#{version}").with_json(hash.to_json).put { |hash| Apidoc::Models::Version.new(hash) }
       end
 
       # Deletes a specific version.
@@ -417,67 +435,6 @@ module ApiDoc
   end
 
   module Models
-    class Target
-
-      attr_reader :value
-
-      def initialize(value)
-        @value = HttpClient::Preconditions.assert_class('value', value, String)
-      end
-
-      # Returns the instance of Target for this value, creating a new instance for an unknown value
-      def Target.apply(value)
-        if value.instance_of?(Target)
-          value
-        else
-          HttpClient::Preconditions.assert_class_or_nil('value', value, String)
-          value.nil? ? nil : (from_string(value) || Target.new(value))
-        end
-      end
-
-      # Returns the instance of Target for this value, or nil if not found
-      def Target.from_string(value)
-        HttpClient::Preconditions.assert_class('value', value, String)
-        Target.ALL.find { |v| v.value == value }
-      end
-
-      def Target.ALL
-        @@all ||= [Target.ning_1_8_client, Target.play_2_2_client, Target.play_2_3_client, Target.play_2_x_json, Target.play_2_x_routes, Target.ruby_client, Target.scala_models]
-      end
-
-      # Generates a client based on https://sonatype.github.io/async-http-client v 1.8
-      def Target.ning_1_8_client
-        @@_ning_1_8_client ||= Target.new('ning_1_8_client')
-      end
-
-      # Generates a client w/ no dependencies external to play framework 2.2
-      def Target.play_2_2_client
-        @@_play_2_2_client ||= Target.new('play_2_2_client')
-      end
-
-      # Generates a client w/ no dependencies external to play framework 2.3
-      def Target.play_2_3_client
-        @@_play_2_3_client ||= Target.new('play_2_3_client')
-      end
-
-      def Target.play_2_x_json
-        @@_play_2_x_json ||= Target.new('play_2_x_json')
-      end
-
-      def Target.play_2_x_routes
-        @@_play_2_x_routes ||= Target.new('play_2_x_routes')
-      end
-
-      def Target.ruby_client
-        @@_ruby_client ||= Target.new('ruby_client')
-      end
-
-      def Target.scala_models
-        @@_scala_models ||= Target.new('scala_models')
-      end
-
-    end
-
     class Visibility
 
       attr_reader :value
@@ -521,17 +478,17 @@ module ApiDoc
     # Generated source code.
     class Code
 
-      attr_reader :target, :source
+      attr_reader :targetKey, :source
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
-        @target = HttpClient::Helper.to_klass('target', ApiDoc::Models::Target.apply(opts.delete(:target)), ApiDoc::Models::Target, :required => true, :multiple => false)
+        @targetKey = HttpClient::Helper.to_klass('targetKey', opts.delete(:targetKey), String, :required => true, :multiple => false)
         @source = HttpClient::Helper.to_klass('source', opts.delete(:source), String, :required => true, :multiple => false)
       end
 
       def to_hash
         {
-            :target => target.value,
+            :targetKey => targetKey,
             :source => source
         }
       end
@@ -607,8 +564,8 @@ module ApiDoc
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
-        @user = HttpClient::Helper.to_model_instance('user', ApiDoc::Models::User, opts.delete(:user), :required => true, :multiple => false)
-        @organization = HttpClient::Helper.to_model_instance('organization', ApiDoc::Models::Organization, opts.delete(:organization), :required => true, :multiple => false)
+        @user = HttpClient::Helper.to_model_instance('user', Apidoc::Models::User, opts.delete(:user), :required => true, :multiple => false)
+        @organization = HttpClient::Helper.to_model_instance('organization', Apidoc::Models::Organization, opts.delete(:organization), :required => true, :multiple => false)
         @role = HttpClient::Helper.to_klass('role', opts.delete(:role), String, :required => true, :multiple => false)
       end
 
@@ -634,8 +591,8 @@ module ApiDoc
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
-        @user = HttpClient::Helper.to_model_instance('user', ApiDoc::Models::User, opts.delete(:user), :required => true, :multiple => false)
-        @organization = HttpClient::Helper.to_model_instance('organization', ApiDoc::Models::Organization, opts.delete(:organization), :required => true, :multiple => false)
+        @user = HttpClient::Helper.to_model_instance('user', Apidoc::Models::User, opts.delete(:user), :required => true, :multiple => false)
+        @organization = HttpClient::Helper.to_model_instance('organization', Apidoc::Models::Organization, opts.delete(:organization), :required => true, :multiple => false)
         @role = HttpClient::Helper.to_klass('role', opts.delete(:role), String, :required => true, :multiple => false)
       end
 
@@ -660,8 +617,8 @@ module ApiDoc
         @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
         @key = HttpClient::Helper.to_klass('key', opts.delete(:key), String, :required => true, :multiple => false)
         @name = HttpClient::Helper.to_klass('name', opts.delete(:name), String, :required => true, :multiple => false)
-        @domains = HttpClient::Helper.to_model_instance('domains', ApiDoc::Models::Domain, opts.delete(:domains), :required => false, :multiple => true)
-        @metadata = HttpClient::Helper.to_model_instance('metadata', ApiDoc::Models::OrganizationMetadata, opts.delete(:metadata), :required => false, :multiple => false)
+        @domains = HttpClient::Helper.to_model_instance('domains', Apidoc::Models::Domain, opts.delete(:domains), :required => false, :multiple => true)
+        @metadata = HttpClient::Helper.to_model_instance('metadata', Apidoc::Models::OrganizationMetadata, opts.delete(:metadata), :required => false, :multiple => false)
       end
 
       def to_hash
@@ -683,7 +640,7 @@ module ApiDoc
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
-        @visibility = HttpClient::Helper.to_klass('visibility', ApiDoc::Models::Visibility.apply(opts.delete(:visibility)), ApiDoc::Models::Visibility, :required => false, :multiple => false)
+        @visibility = HttpClient::Helper.to_klass('visibility', Apidoc::Models::Visibility.apply(opts.delete(:visibility)), Apidoc::Models::Visibility, :required => false, :multiple => false)
         @package_name = HttpClient::Helper.to_klass('package_name', opts.delete(:package_name), String, :required => false, :multiple => false)
       end
 
@@ -706,7 +663,7 @@ module ApiDoc
         @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
         @name = HttpClient::Helper.to_klass('name', opts.delete(:name), String, :required => true, :multiple => false)
         @key = HttpClient::Helper.to_klass('key', opts.delete(:key), String, :required => true, :multiple => false)
-        @visibility = HttpClient::Helper.to_klass('visibility', ApiDoc::Models::Visibility.apply(opts.delete(:visibility)), ApiDoc::Models::Visibility, :required => true, :multiple => false)
+        @visibility = HttpClient::Helper.to_klass('visibility', Apidoc::Models::Visibility.apply(opts.delete(:visibility)), Apidoc::Models::Visibility, :required => true, :multiple => false)
         @description = HttpClient::Helper.to_klass('description', opts.delete(:description), String, :required => false, :multiple => false)
       end
 
@@ -716,6 +673,28 @@ module ApiDoc
             :name => name,
             :key => key,
             :visibility => visibility.value,
+            :description => description
+        }
+      end
+
+    end
+
+    # The target platform for code generation.
+    class Target
+
+      attr_reader :key, :name, :description
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @key = HttpClient::Helper.to_klass('key', opts.delete(:key), String, :required => true, :multiple => false)
+        @name = HttpClient::Helper.to_klass('name', opts.delete(:name), String, :required => true, :multiple => false)
+        @description = HttpClient::Helper.to_klass('description', opts.delete(:description), String, :required => false, :multiple => false)
+      end
+
+      def to_hash
+        {
+            :key => key,
+            :name => name,
             :description => description
         }
       end
@@ -1118,6 +1097,15 @@ module ApiDoc
           Preconditions.check_state(v.match(/^\w\w\w\w\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\w\w\w\w\w\w\w\w$/),
                                     "Invalid guid[%s]" % v)
           v
+        end
+      end
+
+      def Helper.to_date_iso8601(field_name, value, opts={})
+        if value.is_a?(Date)
+          Helper.parse_args(field_name, value, opts) { |v| v }
+        else
+          Preconditions.assert_class_or_nil(field_name, value, String)
+          Helper.parse_args(field_name, value, opts) { |v| Date.parse(v) }
         end
       end
 

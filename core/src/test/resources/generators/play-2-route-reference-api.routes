@@ -12,8 +12,9 @@ GET      /members/:organization     controllers.Members.getByOrganization(organi
 POST     /organizations             controllers.Organizations.post()
 GET      /organizations             controllers.Organizations.get(guid: Option[java.util.UUID], name: Option[String])
 POST     /users                     controllers.Users.post()
-GET      /users                     controllers.Users.get(guid: Option[java.util.UUID], email: Option[String], active: Boolean ?= true)
+GET      /users                     controllers.Users.get(guid: Option[java.util.UUID], age_group: Option[apidocreferenceapi.models.AgeGroup], email: Option[String], active: Boolean ?= true)
 # Additional parameters to GET /users
 #   - organization_guids: Option[Seq[Long]]
+GET      /users/:age_group          controllers.Users.getByAgeGroup(age_group: apidocreferenceapi.models.AgeGroup)
 POST     /users/noop                controllers.Users.postNoop()
 GET      /:guid                     controllers.Organizations.getByGuid(guid: java.util.UUID)

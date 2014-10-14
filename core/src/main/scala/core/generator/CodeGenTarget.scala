@@ -44,7 +44,7 @@ object CodeGenTarget {
       CodeGenTarget(
         key = "play_2_x_routes",
         name = "Play 2.x routes",
-        description = Some("Generate a routes file for play 2.x framework."),
+        description = Some("""Generate a routes file for play 2.x framework. See <a href="/doc/playRoutesFile">Play Routes File</a>."""),
         status = Status.Beta,
         generator = Some(core.generator.Play2RouteGenerator)
       ),

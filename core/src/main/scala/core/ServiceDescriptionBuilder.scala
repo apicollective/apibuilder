@@ -62,17 +62,24 @@ object OperationBuilder {
   def apply(enums: Seq[Enum], models: Seq[Model], model: Model, internal: InternalOperation): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
-    val internalParams = internal.parameters.map { p =>
-      if (internal.namedPathParameters.contains(p.name.get)) {
-        ParameterBuilder(enums, models, p, ParameterLocation.Path)
-      } else {
-        ParameterBuilder(enums, models, p, location)
-      }
-     }
-    val internalParamNames: Set[String] = internalParams.map(_.name).toSet
 
-    // Capture any path parameters that were not explicitly annotated
-    val pathParameters = internal.namedPathParameters.filter { name => !internalParamNames.contains(name) }.map { ParameterBuilder.fromPath(model, _) }
+    val pathParameters = internal.namedPathParameters.map { name =>
+      internal.parameters.find(_.name == Some(name)) match {
+        case None => {
+          ParameterBuilder.fromPath(model, name)
+        }
+        case Some(declared) => {
+          // Path parameter was declared in the parameters
+          // section. Use the explicit information provided in the
+          // specification
+          ParameterBuilder(enums, models, declared, ParameterLocation.Path)
+        }
+      }
+    }
+
+    val internalParams = internal.parameters.filter(p => pathParameters.find(_.name == p.name.get).isEmpty).map { p =>
+      ParameterBuilder(enums, models, p, location)
+    }
 
     val body: Option[Type] = internal.body.map { ib =>
       Datatype.findByName(ib.name) match {
@@ -188,17 +195,17 @@ object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val datatype = model.fields.find(_.name == name) match {
-      case None => Datatype.StringType.name
+      case None => {
+        Type(TypeKind.Primitive, Datatype.StringType.name, false)
+      }
+        
       case Some(f: Field) => {
-        f.datatype match {
-          case Type(TypeKind.Primitive, name, _) => name
-          case _ => Datatype.StringType.name
-        }
+        f.datatype
       }
     }
 
     Parameter(name = name,
-              datatype = Type(TypeKind.Primitive, datatype, false),
+              datatype = datatype,
               location = ParameterLocation.Path,
               required = true)
   }

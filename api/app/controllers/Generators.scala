@@ -105,5 +105,4 @@ object Generators extends Controller {
         NotFound
     }
   }
-
 }

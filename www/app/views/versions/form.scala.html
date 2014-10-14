@@ -50,7 +50,11 @@
 
       <div class="actions">
         <button class="btn btn-large btn-primary" type="submit">Submit</button>
-        <a href="@routes.Organizations.show(tpl.org.get.key)" class="btn">Cancel</a>
+        @if(tpl.service.isEmpty) {
+          <a href="@routes.Organizations.show(tpl.org.get.key)" class="btn">Cancel</a>
+        } else {
+          <a href="@routes.Versions.show(tpl.org.get.key, tpl.service.get.key, "latest")" class="btn">Cancel</a>
+        }
       </div>
 
 
