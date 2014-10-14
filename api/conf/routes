@@ -19,7 +19,6 @@ GET        /organizations                               controllers.Organization
 GET        /organizations/:key                          controllers.Organizations.getByKey(key: String)
 POST       /organizations                               controllers.Organizations.post()
 DELETE     /organizations/:key                          controllers.Organizations.deleteByKey(key: String)
-GET        /targets/:orgKey                             controllers.Targets.get(orgKey: String)
 GET        /users                                       controllers.Users.get(guid: Option[java.util.UUID], email: Option[String], token: Option[String])
 GET        /users/:guid                                 controllers.Users.getByGuid(guid: java.util.UUID)
 POST       /users/authenticate                          controllers.Users.postAuthenticate()
