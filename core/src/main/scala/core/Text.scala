@@ -110,7 +110,7 @@ object Text {
     } else if (Plurals.contains(value)) {
       Plurals(value)
 
-    } else if (value.endsWith("es") || value.endsWith("data")) {
+    } else if (value.endsWith("es") || value.endsWith("ts") || value.endsWith("data")) {
       value
 
     } else {
