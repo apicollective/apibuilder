@@ -22,6 +22,7 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
+      ws,
       jdbc,
       anorm,
       "org.postgresql" % "postgresql" % "9.3-1101-jdbc4",

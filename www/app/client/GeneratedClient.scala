@@ -3,7 +3,7 @@ package com.gilt.apidoc.models {
    * Generated source code.
    */
   case class Code(
-    targetKey: String,
+    generatorGuid: java.util.UUID,
     source: String
   )
 
@@ -28,8 +28,14 @@ package com.gilt.apidoc.models {
    */
   case class Generator(
     guid: java.util.UUID,
+    key: String,
+    uri: String,
     name: String,
-    uri: String
+    language: scala.Option[String] = None,
+    description: scala.Option[String] = None,
+    visibility: com.gilt.apidoc.models.Visibility,
+    ownerGuid: java.util.UUID,
+    enabled: Boolean
   )
 
   case class Healthcheck(
@@ -92,15 +98,6 @@ package com.gilt.apidoc.models {
   )
 
   /**
-   * The target platform for code generation.
-   */
-  case class Target(
-    key: String,
-    name: String,
-    description: scala.Option[String] = None
-  )
-
-  /**
    * A user is a top level person interacting with the api doc server.
    */
   case class User(
@@ -135,6 +132,10 @@ package com.gilt.apidoc.models {
   object Visibility {
 
     /**
+     * Only the creator can view this service
+     */
+    case object User extends Visibility { override def toString = "user" }
+    /**
      * Any member of the organization can view this service
      */
     case object Organization extends Visibility { override def toString = "organization" }
@@ -159,7 +160,7 @@ package com.gilt.apidoc.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(Organization, Public)
+    val all = Seq(User, Organization, Public)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap
@@ -203,14 +204,14 @@ package com.gilt.apidoc.models {
     }
     implicit def jsonReadsApidocCode: play.api.libs.json.Reads[Code] = {
       (
-        (__ \ "targetKey").read[String] and
+        (__ \ "generatorGuid").read[java.util.UUID] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApidocCode: play.api.libs.json.Writes[Code] = {
       (
-        (__ \ "targetKey").write[String] and
+        (__ \ "generatorGuid").write[java.util.UUID] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
@@ -242,16 +243,28 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApidocGenerator: play.api.libs.json.Reads[Generator] = {
       (
         (__ \ "guid").read[java.util.UUID] and
+        (__ \ "key").read[String] and
+        (__ \ "uri").read[String] and
         (__ \ "name").read[String] and
-        (__ \ "uri").read[String]
+        (__ \ "language").readNullable[String] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "visibility").read[com.gilt.apidoc.models.Visibility] and
+        (__ \ "owner_guid").read[java.util.UUID] and
+        (__ \ "enabled").read[Boolean]
       )(Generator.apply _)
     }
 
     implicit def jsonWritesApidocGenerator: play.api.libs.json.Writes[Generator] = {
       (
         (__ \ "guid").write[java.util.UUID] and
+        (__ \ "key").write[String] and
+        (__ \ "uri").write[String] and
         (__ \ "name").write[String] and
-        (__ \ "uri").write[String]
+        (__ \ "language").write[scala.Option[String]] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "visibility").write[com.gilt.apidoc.models.Visibility] and
+        (__ \ "owner_guid").write[java.util.UUID] and
+        (__ \ "enabled").write[Boolean]
       )(unlift(Generator.unapply _))
     }
 
@@ -355,22 +368,6 @@ package com.gilt.apidoc.models {
       )(unlift(Service.unapply _))
     }
 
-    implicit def jsonReadsApidocTarget: play.api.libs.json.Reads[Target] = {
-      (
-        (__ \ "key").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "description").readNullable[String]
-      )(Target.apply _)
-    }
-
-    implicit def jsonWritesApidocTarget: play.api.libs.json.Writes[Target] = {
-      (
-        (__ \ "key").write[String] and
-        (__ \ "name").write[String] and
-        (__ \ "description").write[scala.Option[String]]
-      )(unlift(Target.unapply _))
-    }
-
     implicit def jsonReadsApidocUser: play.api.libs.json.Reads[User] = {
       (
         (__ \ "guid").read[java.util.UUID] and
@@ -420,42 +417,11 @@ package com.gilt.apidoc.models {
 }
 
 package com.gilt.apidoc {
-  object helpers {
-
-    import play.api.mvc.QueryStringBindable
-
-    import org.joda.time.DateTime
-    import org.joda.time.format.ISODateTimeFormat
-
-    import scala.util.{ Failure, Success, Try }
-
-    private[helpers] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
-    private[helpers] val dateTimeISOFormatter = ISODateTimeFormat.dateTime()
-
-    private[helpers] def parseDateTimeISO(s: String): Either[String, DateTime] = {
-      Try(dateTimeISOParser.parseDateTime(s)) match {
-        case Success(dt) => Right(dt)
-        case Failure(f) => Left("Could not parse DateTime: " + f.getMessage)
-      }
-    }
-
-
-    implicit object DateTimeISOQueryStringBinder extends QueryStringBindable[DateTime] {
-      override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, DateTime]] = {
-        for {
-          values <- params.get(key)
-          s <- values.headOption
-        } yield parseDateTimeISO(s)
-      }
-
-      override def unbind(key: String, time: DateTime): String = key + "=" + dateTimeISOFormatter.print(time)
-    }
-  }
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.6.0 http://www.apidoc.me/gheine/code/apidoc/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.4 http://www.apidoc.me/gheine/code/apidoc/0.0.1-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -478,8 +444,6 @@ package com.gilt.apidoc {
 
     def services: Services = Services
 
-    def targets: Targets = Targets
-
     def users: Users = Users
 
     def validations: Validations = Validations
@@ -487,13 +451,13 @@ package com.gilt.apidoc {
     def versions: Versions = Versions
 
     object Code extends Code {
-      override def getByOrgKeyAndServiceKeyAndVersionAndTargetKey(
+      override def getByOrgKeyAndServiceKeyAndVersionAndGeneratorGuid(
         orgKey: String,
         serviceKey: String,
         version: String,
-        targetKey: String
+        generatorGuid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(targetKey, "UTF-8")}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${generatorGuid}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Code])
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r if r.status == 404 => None
@@ -528,20 +492,17 @@ package com.gilt.apidoc {
     }
 
     object Generators extends Generators {
-      override def get(
-        orgKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Generator]] = {
-        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}").map {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Generator]] = {
+        _executeRequest("GET", s"/generators").map {
           case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Generator]]
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getByGuid(
-        orgKey: String,
         guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Generator]] = {
-        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${guid}").map {
+        _executeRequest("GET", s"/generators/${guid}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Generator])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
@@ -549,16 +510,50 @@ package com.gilt.apidoc {
       }
 
       override def post(
-        orgKey: String,
-        name: String,
-        uri: String
+        key: String,
+        uri: String,
+        visibility: com.gilt.apidoc.models.Visibility
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
         val payload = play.api.libs.json.Json.obj(
-          "name" -> play.api.libs.json.Json.toJson(name),
-          "uri" -> play.api.libs.json.Json.toJson(uri)
+          "key" -> play.api.libs.json.Json.toJson(key),
+          "uri" -> play.api.libs.json.Json.toJson(uri),
+          "visibility" -> play.api.libs.json.Json.toJson(visibility)
         )
 
-        _executeRequest("POST", s"/generators/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("POST", s"/generators", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def putByGuid(
+        guid: java.util.UUID,
+        visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
+        enabled: scala.Option[Boolean] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
+        val payload = play.api.libs.json.Json.obj(
+          "visibility" -> play.api.libs.json.Json.toJson(visibility),
+          "enabled" -> play.api.libs.json.Json.toJson(enabled)
+        )
+
+        _executeRequest("PUT", s"/generators/${guid}", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def putByGuidAndOrg(
+        guid: java.util.UUID,
+        org: String,
+        enabled: Boolean
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
+        val payload = play.api.libs.json.Json.obj(
+          "enabled" -> play.api.libs.json.Json.toJson(enabled)
+        )
+
+        _executeRequest("PUT", s"/generators/${guid}/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
@@ -566,10 +561,9 @@ package com.gilt.apidoc {
       }
 
       override def deleteByGuid(
-        orgKey: String,
         guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
-        _executeRequest("DELETE", s"/generators/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${guid}").map {
+        _executeRequest("DELETE", s"/generators/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
@@ -820,17 +814,6 @@ package com.gilt.apidoc {
       }
     }
 
-    object Targets extends Targets {
-      override def get(
-        orgKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Target]] = {
-        _executeRequest("GET", s"/targets/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}").map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidoc.models.Target]]
-          case r => throw new FailedRequest(r)
-        }
-      }
-    }
-
     object Users extends Users {
       override def get(
         guid: scala.Option[java.util.UUID] = None,
@@ -990,7 +973,7 @@ package com.gilt.apidoc {
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> "UserAgent")
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> UserAgent)
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
@@ -1043,11 +1026,11 @@ package com.gilt.apidoc {
     /**
      * Generate code for a specific version of a service.
      */
-    def getByOrgKeyAndServiceKeyAndVersionAndTargetKey(
+    def getByOrgKeyAndServiceKeyAndVersionAndGeneratorGuid(
       orgKey: String,
       serviceKey: String,
       version: String,
-      targetKey: String
+      generatorGuid: java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]]
   }
 
@@ -1070,17 +1053,14 @@ package com.gilt.apidoc {
 
   trait Generators {
     /**
-     * List all generators of an organization
+     * List all generators visible by this user
      */
-    def get(
-      orgKey: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Generator]]
+    def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Generator]]
 
     /**
      * Returns the generator with this guid.
      */
     def getByGuid(
-      orgKey: String,
       guid: java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Generator]]
 
@@ -1088,16 +1068,33 @@ package com.gilt.apidoc {
      * Create a new generator.
      */
     def post(
-      orgKey: String,
-      name: String,
-      uri: String
+      key: String,
+      uri: String,
+      visibility: com.gilt.apidoc.models.Visibility
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
+
+    /**
+     * Update a generator.
+     */
+    def putByGuid(
+      guid: java.util.UUID,
+      visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
+      enabled: scala.Option[Boolean] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
+
+    /**
+     * Update a generator.
+     */
+    def putByGuidAndOrg(
+      guid: java.util.UUID,
+      org: String,
+      enabled: Boolean
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
 
     /**
      * Deletes a generator.
      */
     def deleteByGuid(
-      orgKey: String,
       guid: java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
@@ -1243,15 +1240,6 @@ package com.gilt.apidoc {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 
-  trait Targets {
-    /**
-     * List all targets of this org.
-     */
-    def get(
-      orgKey: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidoc.models.Target]]
-  }
-
   trait Users {
     /**
      * Search for a specific user. You must specify at least 1 parameter - either a
@@ -1362,6 +1350,36 @@ package com.gilt.apidoc {
       import com.gilt.apidoc.models.json._
       lazy val errors = response.json.as[scala.collection.Seq[com.gilt.apidoc.models.Error]]
     }
+  }
+
+  object Bindables {
+
+    import play.api.mvc.{PathBindable, QueryStringBindable}
+    import org.joda.time.{DateTime, LocalDate}
+    import org.joda.time.format.ISODateTimeFormat
+    import com.gilt.apidoc.models._
+
+    // Type: date-time-iso8601
+    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
+    // Type: date-iso8601
+    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29"
+    )
+
+    // Enum: Visibility
+    private val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Visibility.all.mkString(", ")}"
+
+    implicit val pathBindableEnumVisibility = new PathBindable.Parsing[Visibility] (
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
+    )
+
+    implicit val queryStringBindableEnumVisibility = new QueryStringBindable.Parsing[Visibility](
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
+    )
+
   }
 
 }

@@ -11,6 +11,7 @@
 	"visibility": {
 	    "description": "Controls who is able to view this version",
 	    "values": [
+		{ "name": "user", "description": "Only the creator can view this service" },
 		{ "name": "organization", "description": "Any member of the organization can view this service" },
 		{ "name": "public", "description": "Anybody, including non logged in users, can view this service" }
 	    ]
@@ -108,20 +109,11 @@
             ]
         },
 
-        "target": {
-            "description": "The target platform for code generation.",
-            "fields": [
-                { "name": "key", "type": "string" },
-                { "name": "name", "type": "string" },
-                { "name": "description", "type": "string", "required": false }
-            ]
-        },
-
         "code": {
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "targetKey", "type": "string" },
+                { "name": "generatorGuid", "type": "uuid" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -129,9 +121,15 @@
         "generator": {
           "description": "An apidoc generator",
           "fields": [
-            { "name": "guid", "type": "uuid" },
+            { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this generator." },
+            { "name": "key", "type": "string", "description": "A unique key for the generator service" },
+            { "name": "uri", "type": "string", "description": "The uri of the generator service" },
             { "name": "name", "type": "string" },
-            { "name": "uri", "type": "string", "description": "The uri of the generator service" }
+            { "name": "language", "type": "string", "required": false },
+            { "name": "description", "type": "string", "required": false },
+            { "name": "visibility", "type": "visibility" },
+            { "name": "owner_guid", "type": "uuid" },
+            { "name": "enabled", "type": "boolean" }
           ]
         },
 
@@ -453,7 +451,7 @@
         },
 
         "code": {
-	    "path": "/:orgKey/:serviceKey/:version/:targetKey",
+	    "path": "/:orgKey/:serviceKey/:version/:generatorGuid",
 
             "operations": [
                 {
@@ -463,28 +461,11 @@
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
                         { "name": "serviceKey", "type": "string", "description": "The service key for which to generate code" },
                         { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
-                        { "name": "targetKey", "type": "string", "description": "The target key for which to generate code" }
+                        { "name": "generatorGuid", "type": "uuid", "description": "The target key for which to generate code" }
 		    ],
                     "responses": {
                         "200": { "type": "code" },
                         "409": { "type": "[error]", "description": "If the target or version are invalid." }
-                    }
-                }
-            ]
-        },
-
-        "target": {
-            "path": "/targets/:orgKey",
-
-            "operations": [
-                {
-                    "method": "GET",
-                    "description": "List all targets of this org.",
-                    "parameters": [
-                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search targets" }
-                    ],
-                    "responses": {
-                        "200": { "type": "[target]" }
                     }
                 }
             ]
@@ -540,11 +521,11 @@
         },
 
         "generator": {
-          "path": "/generators/:orgKey",
+          "path": "/generators",
           "operations": [
             {
               "method": "GET",
-              "description": "List all generators of an organization",
+              "description": "List all generators visible by this user",
               "responses": {
                 "200": { "type": "[generator]" }
               }
@@ -563,8 +544,36 @@
               "method": "POST",
               "description": "Create a new generator.",
               "parameters": [
-                { "name": "name", "type": "string" },
-                { "name": "uri", "type": "string" }
+                { "name": "key", "type": "string" },
+                { "name": "uri", "type": "string" },
+                { "name": "visibility", "type": "visibility" }
+              ],
+              "responses": {
+                "200": { "type": "generator" },
+                "409": { "type": "[error]" }
+              }
+            },
+
+            {
+              "method": "PUT",
+              "path": "/:guid",
+              "description": "Update a generator.",
+              "parameters": [
+                { "name": "visibility", "type": "visibility", "required": false },
+                { "name": "enabled", "type": "boolean", "required": false }
+              ],
+              "responses": {
+                "200": { "type": "generator" },
+                "409": { "type": "[error]" }
+              }
+            },
+
+            {
+              "method": "PUT",
+              "path": "/:guid/:org",
+              "description": "Update a generator.",
+              "parameters": [
+                { "name": "enabled", "type": "boolean" }
               ],
               "responses": {
                 "200": { "type": "generator" },

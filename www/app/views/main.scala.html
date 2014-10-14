@@ -36,7 +36,6 @@
                   <li><a@if(settings.section == Some(models.SettingSection.Domains)) { class="active" } href="@routes.Domains.index(orgKey = org.key)">Domains</a></li>
                   <li><a@if(settings.section == Some(models.SettingSection.Metadata)) { class="active" } href="@routes.Metadata.show(orgKey = org.key)">Metadata</a></li>
                   <li><a@if(settings.section == Some(models.SettingSection.Members)) { class="active" } href="@routes.Members.show(orgKey = org.key)">Members</a></li>
-                  <li><a@if(settings.section == Some(models.SettingSection.Generators)) { class="active" } href="@routes.Generators.list(orgKey = org.key)">Generators</a></li>
                 }
               }
             </ul>
@@ -72,8 +71,8 @@
 
             <b>Clients</b>
             <ul class="nav nav-sidebar">
-                @metadata.targets.map { target =>
-                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, target.key)">@target.name</a>
+                @metadata.generators.map { generator =>
+                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, generator.guid)">@generator.name</a>
               }
             </ul>
           }

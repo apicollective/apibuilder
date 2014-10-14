@@ -1,9 +1,4 @@
 package com.gilt.apidocgenerator.models {
-  case class Code(
-    targetKey: String,
-    source: String
-  )
-
   case class Enum(
     name: String,
     description: scala.Option[String] = None,
@@ -29,6 +24,16 @@ package com.gilt.apidocgenerator.models {
     example: scala.Option[String] = None,
     minimum: scala.Option[Long] = None,
     maximum: scala.Option[Long] = None
+  )
+
+  /**
+   * The generator metadata.
+   */
+  case class Generator(
+    key: String,
+    name: String,
+    language: scala.Option[String] = None,
+    description: scala.Option[String] = None
   )
 
   case class Header(
@@ -94,15 +99,6 @@ package com.gilt.apidocgenerator.models {
     packageName: scala.Option[String] = None,
     description: scala.Option[String] = None,
     userAgent: scala.Option[String] = None
-  )
-
-  /**
-   * The target platform for code generation.
-   */
-  case class Target(
-    key: String,
-    name: String,
-    description: scala.Option[String] = None
   )
 
   case class Type(
@@ -213,5 +209,303 @@ package com.gilt.apidocgenerator.models {
 
     def fromString(value: String): scala.Option[TypeKind] = byName.get(value)
 
+  }
+}
+
+package com.gilt.apidocgenerator.models {
+  package object json {
+    import play.api.libs.json.__
+    import play.api.libs.json.JsString
+    import play.api.libs.json.Writes
+    import play.api.libs.functional.syntax._
+
+    private[apidocgenerator] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
+
+    private[apidocgenerator] implicit val jsonWritesUUID = new Writes[java.util.UUID] {
+      def writes(x: java.util.UUID) = JsString(x.toString)
+    }
+
+    private[apidocgenerator] implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
+      import org.joda.time.format.ISODateTimeFormat.dateTimeParser
+      dateTimeParser.parseDateTime(str)
+    }
+
+    private[apidocgenerator] implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
+      def writes(x: org.joda.time.DateTime) = {
+        import org.joda.time.format.ISODateTimeFormat.dateTime
+        val str = dateTime.print(x)
+        JsString(str)
+      }
+    }
+
+    implicit val jsonReadsApidocGeneratorEnum_HeaderType = __.read[String].map(HeaderType.apply)
+    implicit val jsonWritesApidocGeneratorEnum_HeaderType = new Writes[HeaderType] {
+      def writes(x: HeaderType) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsApidocGeneratorEnum_ParameterLocation = __.read[String].map(ParameterLocation.apply)
+    implicit val jsonWritesApidocGeneratorEnum_ParameterLocation = new Writes[ParameterLocation] {
+      def writes(x: ParameterLocation) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsApidocGeneratorEnum_TypeKind = __.read[String].map(TypeKind.apply)
+    implicit val jsonWritesApidocGeneratorEnum_TypeKind = new Writes[TypeKind] {
+      def writes(x: TypeKind) = JsString(x.toString)
+    }
+    implicit def jsonReadsApidocGeneratorEnum: play.api.libs.json.Reads[Enum] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "values").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]].map(_.getOrElse(Nil))
+      )(Enum.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorEnum: play.api.libs.json.Writes[Enum] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "values").write[scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]]
+      )(unlift(Enum.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorEnumValue: play.api.libs.json.Reads[EnumValue] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "description").readNullable[String]
+      )(EnumValue.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorEnumValue: play.api.libs.json.Writes[EnumValue] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(EnumValue.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorError: play.api.libs.json.Reads[Error] = {
+      (
+        (__ \ "code").read[String] and
+        (__ \ "message").read[String]
+      )(Error.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorError: play.api.libs.json.Writes[Error] = {
+      (
+        (__ \ "code").write[String] and
+        (__ \ "message").write[String]
+      )(unlift(Error.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorField: play.api.libs.json.Reads[Field] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "datatype").read[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "required").read[Boolean] and
+        (__ \ "default").readNullable[String] and
+        (__ \ "example").readNullable[String] and
+        (__ \ "minimum").readNullable[Long] and
+        (__ \ "maximum").readNullable[Long]
+      )(Field.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorField: play.api.libs.json.Writes[Field] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "datatype").write[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "required").write[Boolean] and
+        (__ \ "default").write[scala.Option[String]] and
+        (__ \ "example").write[scala.Option[String]] and
+        (__ \ "minimum").write[scala.Option[Long]] and
+        (__ \ "maximum").write[scala.Option[Long]]
+      )(unlift(Field.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorGenerator: play.api.libs.json.Reads[Generator] = {
+      (
+        (__ \ "key").read[String] and
+        (__ \ "name").read[String] and
+        (__ \ "language").readNullable[String] and
+        (__ \ "description").readNullable[String]
+      )(Generator.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorGenerator: play.api.libs.json.Writes[Generator] = {
+      (
+        (__ \ "key").write[String] and
+        (__ \ "name").write[String] and
+        (__ \ "language").write[scala.Option[String]] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(Generator.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorHeader: play.api.libs.json.Reads[Header] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "headertype").read[com.gilt.apidocgenerator.models.HeaderType] and
+        (__ \ "headertype_value").readNullable[String] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "required").read[Boolean] and
+        (__ \ "multiple").read[Boolean] and
+        (__ \ "default").readNullable[String]
+      )(Header.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorHeader: play.api.libs.json.Writes[Header] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "headertype").write[com.gilt.apidocgenerator.models.HeaderType] and
+        (__ \ "headertype_value").write[scala.Option[String]] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "required").write[Boolean] and
+        (__ \ "multiple").write[Boolean] and
+        (__ \ "default").write[scala.Option[String]]
+      )(unlift(Header.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorModel: play.api.libs.json.Reads[Model] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "plural").read[String] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "fields").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Field]].map(_.getOrElse(Nil))
+      )(Model.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorModel: play.api.libs.json.Writes[Model] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "plural").write[String] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "fields").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Field]]
+      )(unlift(Model.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorOperation: play.api.libs.json.Reads[Operation] = {
+      (
+        (__ \ "model").read[com.gilt.apidocgenerator.models.Model] and
+        (__ \ "method").read[String] and
+        (__ \ "path").read[String] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "body").readNullable[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "parameters").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter]].map(_.getOrElse(Nil)) and
+        (__ \ "responses").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Response]].map(_.getOrElse(Nil))
+      )(Operation.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorOperation: play.api.libs.json.Writes[Operation] = {
+      (
+        (__ \ "model").write[com.gilt.apidocgenerator.models.Model] and
+        (__ \ "method").write[String] and
+        (__ \ "path").write[String] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "body").write[scala.Option[com.gilt.apidocgenerator.models.Type]] and
+        (__ \ "parameters").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter]] and
+        (__ \ "responses").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Response]]
+      )(unlift(Operation.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorParameter: play.api.libs.json.Reads[Parameter] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "datatype").read[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "location").read[com.gilt.apidocgenerator.models.ParameterLocation] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "required").read[Boolean] and
+        (__ \ "default").readNullable[String] and
+        (__ \ "example").readNullable[String] and
+        (__ \ "minimum").readNullable[Long] and
+        (__ \ "maximum").readNullable[Long]
+      )(Parameter.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorParameter: play.api.libs.json.Writes[Parameter] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "datatype").write[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "location").write[com.gilt.apidocgenerator.models.ParameterLocation] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "required").write[Boolean] and
+        (__ \ "default").write[scala.Option[String]] and
+        (__ \ "example").write[scala.Option[String]] and
+        (__ \ "minimum").write[scala.Option[Long]] and
+        (__ \ "maximum").write[scala.Option[Long]]
+      )(unlift(Parameter.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorResource: play.api.libs.json.Reads[Resource] = {
+      (
+        (__ \ "model").read[com.gilt.apidocgenerator.models.Model] and
+        (__ \ "path").read[String] and
+        (__ \ "operations").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]].map(_.getOrElse(Nil))
+      )(Resource.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorResource: play.api.libs.json.Writes[Resource] = {
+      (
+        (__ \ "model").write[com.gilt.apidocgenerator.models.Model] and
+        (__ \ "path").write[String] and
+        (__ \ "operations").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]]
+      )(unlift(Resource.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorResponse: play.api.libs.json.Reads[Response] = {
+      (
+        (__ \ "code").read[Int] and
+        (__ \ "datatype").read[com.gilt.apidocgenerator.models.Type]
+      )(Response.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorResponse: play.api.libs.json.Writes[Response] = {
+      (
+        (__ \ "code").write[Int] and
+        (__ \ "datatype").write[com.gilt.apidocgenerator.models.Type]
+      )(unlift(Response.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorServiceDescription: play.api.libs.json.Reads[ServiceDescription] = {
+      (
+        (__ \ "enums").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Enum]].map(_.getOrElse(Nil)) and
+        (__ \ "models").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Model]].map(_.getOrElse(Nil)) and
+        (__ \ "headers").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Header]].map(_.getOrElse(Nil)) and
+        (__ \ "resources").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Resource]].map(_.getOrElse(Nil)) and
+        (__ \ "baseUrl").readNullable[String] and
+        (__ \ "name").read[String] and
+        (__ \ "package_name").readNullable[String] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "user_agent").readNullable[String]
+      )(ServiceDescription.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorServiceDescription: play.api.libs.json.Writes[ServiceDescription] = {
+      (
+        (__ \ "enums").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Enum]] and
+        (__ \ "models").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Model]] and
+        (__ \ "headers").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Header]] and
+        (__ \ "resources").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Resource]] and
+        (__ \ "baseUrl").write[scala.Option[String]] and
+        (__ \ "name").write[String] and
+        (__ \ "package_name").write[scala.Option[String]] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "user_agent").write[scala.Option[String]]
+      )(unlift(ServiceDescription.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorType: play.api.libs.json.Reads[Type] = {
+      (
+        (__ \ "kind").read[com.gilt.apidocgenerator.models.TypeKind] and
+        (__ \ "name").read[String] and
+        (__ \ "multiple").read[Boolean]
+      )(Type.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorType: play.api.libs.json.Writes[Type] = {
+      (
+        (__ \ "kind").write[com.gilt.apidocgenerator.models.TypeKind] and
+        (__ \ "name").write[String] and
+        (__ \ "multiple").write[Boolean]
+      )(unlift(Type.unapply _))
+    }
   }
 }

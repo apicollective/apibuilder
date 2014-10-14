@@ -1,7 +1,7 @@
 package models
 
 import com.gilt.apidocgenerator.models.{Resource, ServiceDescription}
-import com.gilt.apidoc.models.{ Organization, Service, User, Target }
+import com.gilt.apidoc.models.{ Organization, Service, User, Generator }
 import play.api.Play.current
 
 case class MainTemplate(
@@ -14,7 +14,7 @@ case class MainTemplate(
   user: Option[User] = None,
   resource: Option[Resource] = None,
   settings: Option[SettingsMenu] = None,
-  targets: Seq[Target] = Seq.empty,
+  generators: Seq[Generator] = Seq.empty,
   isOrgAdmin: Boolean = false,
   isOrgMember: Boolean = false
 )

@@ -1,13 +1,11 @@
 package core.generator
 
-import core.plugin.PluginLoader
-
 case class CodeGenTarget(key: String, name: String, description: Option[String], status: Status, generator: Option[CodeGenerator])
 
 object CodeGenTarget {
 
   lazy val All = {
-    val staticGenerators = Seq(
+    Seq(
       CodeGenTarget(
         key = "ruby_client",
         name = "Ruby client",
@@ -78,11 +76,7 @@ object CodeGenTarget {
         status = Status.Proposal,
         generator = None
       )
-    )
-
-    val pluginGenerators = PluginLoader.loadPlugins[CodeGeneratorPlugin]("codegen").map(_.getTarget)
-
-    (staticGenerators ++ pluginGenerators).sortBy(_.key)
+    ).sortBy(_.key)
   }
 
   lazy val Implemented = All.filter(target => target.status != Status.Proposal && target.generator.isDefined)

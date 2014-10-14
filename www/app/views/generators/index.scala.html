@@ -1,6 +1,4 @@
-@(tpl: models.MainTemplate,
-  generators: Seq[com.gilt.apidoc.models.Generator]
-)(implicit flash: Flash)
+@(tpl: models.MainTemplate)(implicit flash: Flash)
 
 @main(tpl) {
 
@@ -8,12 +6,12 @@
     Organizations can provide one or more generators to add additional code generation targets.
   </p>
 
-  @tpl.org.map { org =>
+  @tpl.user.map { user =>
     <div class="pull-right">
-      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Generators.create(org.key)">Add generator</a>
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Generators.create()">Add generator</a>
     </div>
 
-    @if(generators.isEmpty) {
+    @if(tpl.generators.isEmpty) {
       <em>No generators</em>
 
     } else {
@@ -21,15 +19,30 @@
       <table class="table table-hover table-condensed">
           <tbody>
           <tr>
-              <th>Name</th>
+              <th>Key</th>
               <th>URI</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Language</th>
+              <th>Visibility</th>
+              <th>Enabled</th>
               <th/>
           </tr>
-      @generators.map { generator =>
+      @tpl.generators.map { generator =>
         <tr>
-            <td>@generator.name</td>
+            <td>@generator.key</td>
             <td>@generator.uri</td>
-            <td><a href="@routes.Generators.postRemove(org.key, generator.guid)" class="delete" data-confirm="Are you sure?">Remove</a></td>
+            <td>@generator.name</td>
+            <td>@generator.description.getOrElse("")</td>
+            <td>@generator.language.getOrElse("")</td>
+            <td>@generator.visibility</td>
+            <td><input type="checkbox" name="enabled" value="true" disabled="disabled"
+                @if(generator.enabled){
+                    checked="checked"
+                }/>
+            </td>
+            <td><a href="@routes.Generators.update(generator.guid, generator.visibility.toString, generator.enabled)" class="update">Update</a></td>
+            <td><a href="@routes.Generators.postRemove(generator.guid)" class="delete" data-confirm="Are you sure?">Remove</a></td>
         </tr>
       }
           </tbody>

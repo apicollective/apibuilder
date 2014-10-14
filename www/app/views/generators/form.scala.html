@@ -1,12 +1,13 @@
 @(tpl: models.MainTemplate,
-  form: Form[controllers.Generators.GeneratorData],
+  phase: Int,
+  form: Form[controllers.Generators.GeneratorCreateData],
   errors: Seq[String] = Seq.empty
 )(implicit flash: Flash)
 
 @main(tpl) {
   <div class="container">
 
-    @helper.form(action = routes.Generators.postCreate(tpl.org.get.key)) {
+    @helper.form(action = routes.Generators.postCreate()) {
 
       <fieldset>
           @if(!errors.isEmpty) {
@@ -15,23 +16,55 @@
             </ul>
           }
 
-          @helper.inputText(
-              form("name"),
-              '_label -> "Generator name",
-              '_error -> form.error("name")
-          )
+          @if(phase > 1) {
+              @helper.inputText(
+                  form("uri"),
+                  'style -> "display: none",
+                  '_label -> null
+              )
+              <table class="table table-hover table-condensed">
+              <tbody>
+              <tr>
+                  <th>Key</th>
+                  <th>Visibility</th>
+                  <th>Selected</th>
+                  <th/>
+              </tr>
 
-          @helper.inputText(
-          form("uri"),
-          '_label -> "Generator uri",
-          '_error -> form.error("uri")
-          )
-
+            @helper.repeat(form("details"), min = 1) { details =>
+              <tr>
+              <td>@helper.inputText(
+                  details("key"),
+                  'style -> "display: none",
+                  '_label -> details("key").value
+              )</td>
+              <td>@helper.select(
+                details("visibility"),
+                com.gilt.apidoc.models.Visibility.all.map( v => (v.toString -> v.toString) ),
+                '_error -> form.error("visibility"),
+                '_label -> null
+              )</td>
+              <td>@helper.checkbox(
+                details("selected"),
+                '_error -> form.error("selected"),
+                '_label -> null
+              )</td>
+              </tr>
+            }
+            </tbody>
+          </table>
+          } else {
+            @helper.inputText(
+              form("uri"),
+              '_label -> "Generator uri",
+              '_error -> form.error("uri")
+            )
+          }
       </fieldset>
 
       <div class="actions">
         <button class="btn btn-large btn-primary" type="submit">Submit</button>
-        <a href="@routes.Generators.list(tpl.org.get.key)" class="btn">Cancel</a>
+        <a href="@routes.Generators.list()" class="btn">Cancel</a>
       </div>
 
     }
