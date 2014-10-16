@@ -52,6 +52,13 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
 
+lazy val generator = project
+  .in(file("generator"))
+  .dependsOn(generated)
+  .aggregate(generated)
+  .enablePlugins(PlayScala)
+  .settings(commonSettings: _*)
+
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
   organization := "com.gilt.apidoc",

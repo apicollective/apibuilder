@@ -214,8 +214,8 @@ object GeneratorDao {
     // Query generators
     val sql = Seq(
       Some(BaseQuery.trim),
-      guid.map(_ => "and guid = {guid}"),
-      keyAndUri.map(_ => "and key = {key} and uri = {uri}")
+      guid.map(_ => "and generators.guid = {guid}::uuid"),
+      keyAndUri.map(_ => "and generators.key = {key} and generators.uri = {uri}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

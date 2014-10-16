@@ -3,6 +3,7 @@ package controllers
 import java.util.UUID
 
 import com.gilt.apidoc.models.{Generator, Version}
+import com.gilt.apidoc.models.json._
 import com.gilt.apidocgenerator.Client
 import core.ServiceDescriptionBuilder
 import db.{GeneratorDao, Authorization, OrganizationDao, VersionDao}
@@ -29,7 +30,7 @@ object Code extends Controller {
       case None =>
         Future.successful(NotFound)
       case Some(org) => {
-        GeneratorDao.findAll(user = request.user).headOption match {
+        GeneratorDao.findAll(user = request.user, guid = Some(generatorGuid)).headOption match {
           case None =>
             Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid generator guid[$generatorGuid]."))))
           case Some(generator: Generator) =>
@@ -39,7 +40,7 @@ object Code extends Controller {
                 val userAgent = s"apidoc:$apidocVersion http://www.apidoc.me/${org.key}/code/${serviceKey}/${v.version}/${generator.key}"
                 val serviceDescription = ServiceDescriptionBuilder(v.json, org.metadata.flatMap(_.packageName), Some(userAgent))
                 new Client(generator.uri).generators.postExecuteByKey(serviceDescription, generator.key).map { source =>
-                  Ok(Json.toJson(source))
+                  Ok(Json.toJson(com.gilt.apidoc.models.Code(generatorGuid, source)))
                 }
             }
         }
