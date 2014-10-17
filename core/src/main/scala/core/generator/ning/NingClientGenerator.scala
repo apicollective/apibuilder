@@ -106,6 +106,7 @@ ${methodGenerator.objects().indent(4)}
         builder.setRealm(
           new Realm.RealmBuilder()
             .setPrincipal(token)
+            .setUsePreemptiveAuth(true)
             .setScheme(Realm.AuthScheme.BASIC)
             .build()
         )
