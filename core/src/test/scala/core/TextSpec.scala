@@ -161,7 +161,10 @@ class TextSpec extends FunSpec with Matchers {
         "error_message" -> "error_messages",
         "error_messages" -> "error_messages",
         "errorMessage" -> "errorMessages",
-        "errorMessages" -> "errorMessages"
+        "errorMessages" -> "errorMessages",
+
+        // Random other cases we've seen
+        "variants" -> "variants"
       )
 
       val errors = actuals.flatMap { case (singular, plural) =>
