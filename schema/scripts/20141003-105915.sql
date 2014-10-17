@@ -7,9 +7,6 @@ create table generators (
   key                     text not null check (lower(btrim(key)) = key),
   user_guid               uuid not null references users,
   uri                     text,
-  name                    text not null,
-  description             text,
-  language                text,
   visibility              text not null check (visibility in ('public', 'organization', 'user'))
 );
 

@@ -36,9 +36,6 @@ object GeneratorDao {
            generators.user_guid,
            generators.uri,
            generators.visibility,
-           generators.name,
-           generators.description,
-           generators.language,
            memberships.organization_guid,
            generator_users.enabled
       from generators
@@ -233,9 +230,9 @@ object GeneratorDao {
           guid = genGuid,
           key = row[String]("key"),
           uri = row[String]("uri"),
-          name = row[String]("name"),
-          description = row[Option[String]]("description"),
-          language = row[Option[String]]("language"),
+          name = "",
+          description = None,
+          language = None,
           visibility = Visibility(row[String]("visibility")),
           ownerGuid = row[UUID]("user_guid"),
           enabled = row[Option[Boolean]]("enabled").getOrElse(orgEnabledGenerators.contains(genGuid))

@@ -16,21 +16,43 @@ object Generators extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def getByGuid(guid: UUID) = Authenticated { request =>
+  def getByGuid(guid: UUID) = Authenticated.async { request =>
     GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption match {
       case Some(g) =>
-        Ok(Json.toJson(g))
+        fillInGeneratorMeta(g).map {
+          case Right(g) => Ok(Json.toJson(g))
+          case Left(s) => s
+        }
       case _ =>
-        NotFound
+        Future.successful(NotFound)
     }
   }
 
-  def get() = Authenticated { request =>
-    Ok(Json.toJson(getGenerators(request.user)))
+  private def fillInGeneratorMeta(generator: Generator): Future[Either[Status, Generator]] = {
+    new Client(generator.uri).generators.getByKey(generator.key).map {
+      case Some(meta) => Right(generator.copy(name = meta.name, description = meta.description, language = meta.language))
+      case _ => Left(NotFound)
+    }.recover {
+      case ex: Exception => Left(ServiceUnavailable)
+    }
   }
 
-  def getGenerators(user: User): Seq[Generator] = {
-    GeneratorDao.findAll(user = user)
+  private def fillInGeneratorMeta(generators: Seq[Generator]): Future[Seq[Generator]] = {
+      val futures: Seq[Future[Option[Generator]]] = generators.map {
+        fillInGeneratorMeta(_).map {
+          case Right(g) => Some(g)
+          case _ => None
+        }
+      }
+      Future.sequence(futures).map(_.flatten)
+    }
+
+  private def getGenerators(user: User): Future[Seq[Generator]] = {
+    fillInGeneratorMeta(GeneratorDao.findAll(user = user))
+  }
+
+  def get() = Authenticated.async { request =>
+    getGenerators(request.user).map(generators => Ok(Json.toJson(generators)))
   }
 
   def post() = Authenticated.async(parse.json) { request =>
@@ -52,34 +74,39 @@ object Generators extends Controller {
                 NotFound("Generator uri invalid")
             }
           case Some(d) =>
-            Future.successful(Conflict(Json.toJson(Validation.error("generator uri already exists"))))
+            Future.successful(Conflict(Json.toJson(Validation.error("generator already exists"))))
         }
       }
     }
   }
 
-  def putByGuid(guid: UUID) = Authenticated(parse.json) { request =>
+  def putByGuid(guid: UUID) = Authenticated.async(parse.json) { request =>
     request.body.validate[GeneratorUpdateForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+        Future.successful(Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString))))
       }
       case s: JsSuccess[GeneratorUpdateForm] => {
         val form = s.get
         GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption match {
           case Some(g) =>
-            val generator = GeneratorDao.update(request.user, g, form)
-            Ok(Json.toJson(generator))
+            fillInGeneratorMeta(g).map {
+              case Right(g) =>
+                val generator = GeneratorDao.update(request.user, g, form)
+                Ok(Json.toJson(generator))
+              case Left(s) =>
+                s
+            }
           case _ =>
-            NotFound
+            Future.successful(NotFound)
         }
       }
     }
   }
 
-  def putByGuidAndOrg(guid: UUID, orgKey: String) = Authenticated(parse.json) { request =>
+  def putByGuidAndOrg(guid: UUID, orgKey: String) = Authenticated.async(parse.json) { request =>
     request.body.validate[GeneratorOrgUpdateForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+        Future.successful(Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString))))
       }
       case s: JsSuccess[GeneratorOrgUpdateForm] => {
         val form = s.get
@@ -87,10 +114,15 @@ object Generators extends Controller {
         val org = OrganizationDao.findAll(Authorization(Some(request.user)), key = Some(orgKey)).headOption
         (generator, org) match {
           case (Some(g), Some(o)) =>
-            GeneratorDao.orgUpdate(request.user, g.guid, o.guid, form.enabled)
-            NoContent
+            fillInGeneratorMeta(g).map {
+              case Right(g) =>
+                GeneratorDao.orgUpdate(request.user, g.guid, o.guid, form.enabled)
+                Ok(Json.toJson(g))
+              case Left(s) =>
+                s
+            }
           case _ =>
-            NotFound
+            Future.successful(NotFound)
         }
       }
     }

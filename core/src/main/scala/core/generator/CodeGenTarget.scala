@@ -1,4 +1,7 @@
 package core.generator
 
-case class CodeGenTarget(key: String, name: String, description: Option[String], status: Status, generator: Option[CodeGenerator])
+import com.gilt.apidocgenerator.models.Generator
+
+
+case class CodeGenTarget(metaData: Generator, status: Status, codeGenerator: Option[CodeGenerator])
 

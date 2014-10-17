@@ -16,9 +16,7 @@ object Generators extends Controller {
 
   def list() = Authenticated.async { implicit request =>
     request.api.Generators.get().recover {
-      case ex: Exception =>
-        ex.printStackTrace()
-        throw ex
+      case ex: Exception => Seq.empty
     }.map { generators =>
       Ok(views.html.generators.index(
         MainTemplate(
@@ -113,6 +111,10 @@ object Generators extends Controller {
           new com.gilt.apidocgenerator.Client(valid.uri).generators.get().map { gens =>
             val d = gens.toList.map(gen => GeneratorDetails(gen.key, Visibility.Public.toString, true))
             Ok(views.html.generators.form(tpl, 2, generatorCreateForm.fill(valid.copy(details = d))))
+          }.recover {
+            case response: com.gilt.apidoc.error.ErrorsResponse => {
+              Ok(views.html.generators.form(tpl, 1, boundForm, response.errors.map(_.message)))
+            }
           }
         }
       }
