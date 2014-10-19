@@ -3,3 +3,5 @@ logs/
 .ivy2
 *.downloaded.scala
 *.downloaded.rb
+*.swp
+*.swo
