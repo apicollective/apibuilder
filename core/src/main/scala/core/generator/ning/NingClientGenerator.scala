@@ -85,6 +85,10 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
 
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import ${ssd.modelPackageName}.json._
+    import org.slf4j.Logger
+    import org.slf4j.LoggerFactory
+
+    val logger = LoggerFactory.getLogger(getClass)
 
     val asyncHttpClient = new AsyncHttpClient()
     private val UserAgent = "${ssd.serviceDescription.userAgent.getOrElse("unknown")}"
@@ -94,7 +98,7 @@ ${methodGenerator.accessors().indent(4)}
 ${methodGenerator.objects().indent(4)}
 
     def _logRequest(request: Request) {
-      println("_logRequest: " + request)
+      logger.info("_logRequest: " + request)
     }
 
     def _requestBuilder(method: String, path: String): RequestBuilder = {
