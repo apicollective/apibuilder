@@ -153,9 +153,8 @@
             ]
         },
 
-        "code": {
-          "description": "Generated source code.",
-          "plural": "code",
+        "invocation": {
+          "description": "The result of invoking a generator.",
           "fields": [
             { "name": "source", "type": "string", "description": "The actual source code." }
           ]
@@ -187,14 +186,19 @@
                   "responses": {
                     "200": { "type": "generator" }
                   }
-                },
-                {
+                }
+	    ]
+	},
+
+	"invocation": {
+	    "operations": [
+		{
                     "method": "POST",
-                    "path": "/:key/execute",
-                    "description": "Invoke this generator",
+                    "path": "/:key",
+                    "description": "Invoke a generator",
                     "body": { "type": "service_description" },
                     "responses": {
-                        "200": { "type": "code" },
+                        "200": { "type": "invocation" },
                         "409": { "type": "[error]" }
                     }
                 }
