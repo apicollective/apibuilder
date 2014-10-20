@@ -6,7 +6,7 @@
 
 tag = `sem-info tag next #{ARGV.first}`.strip
 
-apidoc_version = "apidoc.version"
+git_version = "git.version"
 
 files = ['api/conf/base.conf', 'www/conf/base.conf']
 files.each do |path|
@@ -20,8 +20,8 @@ files.each do |path|
     File.open(tmp, "w") do |out|
       IO.readlines(path).each do |l|
         key,value = l.split("=", 2).map(&:strip)
-        if key == apidoc_version
-          out << "#{apidoc_version}=%s\n" % tag
+        if key == git_version
+          out << "#{git_version}=%s\n" % tag
           found = true
         else
           out << l
@@ -29,7 +29,7 @@ files.each do |path|
       end
 
       if !found
-        out << "\n#{apidoc_version}=%s\n" % tag
+        out << "\n#{git_version}=%s\n" % tag
       end
     end
 
