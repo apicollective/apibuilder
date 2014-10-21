@@ -1,11 +1,4 @@
 package com.gilt.apidocgenerator.models {
-  /**
-   * Generated source code.
-   */
-  case class Code(
-    source: String
-  )
-
   case class Enum(
     name: String,
     description: scala.Option[String] = None,
@@ -51,6 +44,13 @@ package com.gilt.apidocgenerator.models {
     required: Boolean,
     multiple: Boolean,
     default: scala.Option[String] = None
+  )
+
+  /**
+   * The result of invoking a generator.
+   */
+  case class Invocation(
+    source: String
   )
 
   case class Model(

@@ -46,6 +46,13 @@ package com.gilt.apidocgenerator.models {
     default: scala.Option[String] = None
   )
 
+  /**
+   * The result of invoking a generator.
+   */
+  case class Invocation(
+    source: String
+  )
+
   case class Model(
     name: String,
     plural: String,
@@ -364,6 +371,16 @@ package com.gilt.apidocgenerator.models {
       )(unlift(Header.unapply _))
     }
 
+    implicit def jsonReadsApidocGeneratorInvocation: play.api.libs.json.Reads[Invocation] = {
+      (__ \ "source").read[String].map { x => new Invocation(source = x) }
+    }
+
+    implicit def jsonWritesApidocGeneratorInvocation: play.api.libs.json.Writes[Invocation] = new play.api.libs.json.Writes[Invocation] {
+      def writes(x: Invocation) = play.api.libs.json.Json.obj(
+        "source" -> play.api.libs.json.Json.toJson(x.source)
+      )
+    }
+
     implicit def jsonReadsApidocGeneratorModel: play.api.libs.json.Reads[Model] = {
       (
         (__ \ "name").read[String] and
@@ -515,12 +532,14 @@ package com.gilt.apidocgenerator {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidocgenerator.models.json._
 
-    private val UserAgent = "apidoc:0.6.6 http://www.apidoc.me/gheine/code/apidoc-generator/0.0.3-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.8 http://www.apidoc.me/gilt/code/apidoc-generator/0.7.1-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidocgenerator.client")
 
     logger.info(s"Initializing com.gilt.apidocgenerator.client for url $apiUrl")
 
     def generators: Generators = Generators
+
+    def invocations: Invocations = Invocations
 
     object Generators extends Generators {
       override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidocgenerator.models.Generator]] = {
@@ -539,14 +558,16 @@ package com.gilt.apidocgenerator {
           case r => throw new FailedRequest(r)
         }
       }
+    }
 
-      override def postExecuteByKey(serviceDescription: com.gilt.apidocgenerator.models.ServiceDescription,
+    object Invocations extends Invocations {
+      override def postByKey(serviceDescription: com.gilt.apidocgenerator.models.ServiceDescription,
         key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidocgenerator.models.Invocation] = {
         val payload = play.api.libs.json.Json.toJson(serviceDescription)
 
-        _executeRequest("POST", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/execute", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[String]
+        _executeRequest("POST", s"/invocations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
+          case r if r.status == 200 => r.json.as[com.gilt.apidocgenerator.models.Invocation]
           case r if r.status == 409 => throw new com.gilt.apidocgenerator.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
@@ -617,13 +638,15 @@ package com.gilt.apidocgenerator {
     def getByKey(
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidocgenerator.models.Generator]]
+  }
 
+  trait Invocations {
     /**
-     * Invoke this generator
+     * Invoke a generator
      */
-    def postExecuteByKey(serviceDescription: com.gilt.apidocgenerator.models.ServiceDescription,
+    def postByKey(serviceDescription: com.gilt.apidocgenerator.models.ServiceDescription,
       key: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidocgenerator.models.Invocation]
   }
 
   case class FailedRequest(

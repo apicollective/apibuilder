@@ -39,8 +39,8 @@ object Code extends Controller {
               case Some(v: Version) =>
                 val userAgent = s"apidoc:$apidocVersion http://www.apidoc.me/${org.key}/code/${serviceKey}/${v.version}/${generator.key}"
                 val serviceDescription = ServiceDescriptionBuilder(v.json, org.metadata.flatMap(_.packageName), Some(userAgent))
-                new Client(generator.uri).generators.postExecuteByKey(serviceDescription, generator.key).map { source =>
-                  Ok(Json.toJson(com.gilt.apidoc.models.Code(generatorGuid, source)))
+                new Client(generator.uri).invocations.postByKey(serviceDescription, generator.key).map { invocation =>
+                  Ok(Json.toJson(com.gilt.apidoc.models.Code(generatorGuid, invocation.source)))
                 }
             }
         }

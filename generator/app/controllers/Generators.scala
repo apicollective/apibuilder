@@ -1,9 +1,7 @@
 package controllers
 
-import com.gilt.apidocgenerator.models.{ServiceDescription, Generator}
+import com.gilt.apidocgenerator.models.Generator
 import com.gilt.apidocgenerator.models.json._
-import com.gilt.apidocgenerator.Client
-import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
 import core.generator.{CodeGenerator, CodeGenTarget}
@@ -17,17 +15,6 @@ object Generators extends Controller {
   def getByKey(key: String) = Action { request: Request[AnyContent] =>
     findGenerator(key) match {
       case Some((target, _)) => Ok(Json.toJson(target.metaData))
-      case _ => NotFound
-    }
-  }
-
-  def postExecuteByKey(key: String) = Action(parse.json) { request: Request[JsValue] =>
-    findGenerator(key) match {
-      case Some((_, generator)) =>
-        request.body.validate[ServiceDescription] match {
-          case e: JsError => Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
-          case s: JsSuccess[ServiceDescription] => Ok(Json.toJson(generator.generate(s.get)))
-        }
       case _ => NotFound
     }
   }

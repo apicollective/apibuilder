@@ -38,6 +38,30 @@ package com.gilt.apidoc.models {
     enabled: Boolean
   )
 
+  /**
+   * Form to create a new generator
+   */
+  case class GeneratorCreateForm(
+    key: String,
+    uri: String,
+    visibility: com.gilt.apidoc.models.Visibility
+  )
+
+  /**
+   * Form to enable or disable a generator for an organization
+   */
+  case class GeneratorOrgForm(
+    enabled: Boolean
+  )
+
+  /**
+   * Form to update a generator
+   */
+  case class GeneratorUpdateForm(
+    visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
+    enabled: scala.Option[Boolean] = None
+  )
+
   case class Healthcheck(
     status: String
   )
@@ -204,14 +228,14 @@ package com.gilt.apidoc.models {
     }
     implicit def jsonReadsApidocCode: play.api.libs.json.Reads[Code] = {
       (
-        (__ \ "generatorGuid").read[java.util.UUID] and
+        (__ \ "generator_guid").read[java.util.UUID] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApidocCode: play.api.libs.json.Writes[Code] = {
       (
-        (__ \ "generatorGuid").write[java.util.UUID] and
+        (__ \ "generator_guid").write[java.util.UUID] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
@@ -266,6 +290,46 @@ package com.gilt.apidoc.models {
         (__ \ "owner_guid").write[java.util.UUID] and
         (__ \ "enabled").write[Boolean]
       )(unlift(Generator.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorCreateForm: play.api.libs.json.Reads[GeneratorCreateForm] = {
+      (
+        (__ \ "key").read[String] and
+        (__ \ "uri").read[String] and
+        (__ \ "visibility").read[com.gilt.apidoc.models.Visibility]
+      )(GeneratorCreateForm.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorCreateForm: play.api.libs.json.Writes[GeneratorCreateForm] = {
+      (
+        (__ \ "key").write[String] and
+        (__ \ "uri").write[String] and
+        (__ \ "visibility").write[com.gilt.apidoc.models.Visibility]
+      )(unlift(GeneratorCreateForm.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorOrgForm: play.api.libs.json.Reads[GeneratorOrgForm] = {
+      (__ \ "enabled").read[Boolean].map { x => new GeneratorOrgForm(enabled = x) }
+    }
+
+    implicit def jsonWritesApidocGeneratorOrgForm: play.api.libs.json.Writes[GeneratorOrgForm] = new play.api.libs.json.Writes[GeneratorOrgForm] {
+      def writes(x: GeneratorOrgForm) = play.api.libs.json.Json.obj(
+        "enabled" -> play.api.libs.json.Json.toJson(x.enabled)
+      )
+    }
+
+    implicit def jsonReadsApidocGeneratorUpdateForm: play.api.libs.json.Reads[GeneratorUpdateForm] = {
+      (
+        (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
+        (__ \ "enabled").readNullable[Boolean]
+      )(GeneratorUpdateForm.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorUpdateForm: play.api.libs.json.Writes[GeneratorUpdateForm] = {
+      (
+        (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
+        (__ \ "enabled").write[scala.Option[Boolean]]
+      )(unlift(GeneratorUpdateForm.unapply _))
     }
 
     implicit def jsonReadsApidocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
@@ -421,7 +485,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.6.4 http://www.apidoc.me/gilt/code/apidoc/0.6.4/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.8 http://www.apidoc.me/gheine/code/apidoc/0.0.1-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -509,16 +573,8 @@ package com.gilt.apidoc {
         }
       }
 
-      override def post(
-        key: String,
-        uri: String,
-        visibility: com.gilt.apidoc.models.Visibility
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
-        val payload = play.api.libs.json.Json.obj(
-          "key" -> play.api.libs.json.Json.toJson(key),
-          "uri" -> play.api.libs.json.Json.toJson(uri),
-          "visibility" -> play.api.libs.json.Json.toJson(visibility)
-        )
+      override def post(generatorCreateForm: com.gilt.apidoc.models.GeneratorCreateForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
+        val payload = play.api.libs.json.Json.toJson(generatorCreateForm)
 
         _executeRequest("POST", s"/generators", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
@@ -527,15 +583,10 @@ package com.gilt.apidoc {
         }
       }
 
-      override def putByGuid(
-        guid: java.util.UUID,
-        visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
-        enabled: scala.Option[Boolean] = None
+      override def putByGuid(generatorUpdateForm: com.gilt.apidoc.models.GeneratorUpdateForm,
+        guid: java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
-        val payload = play.api.libs.json.Json.obj(
-          "visibility" -> play.api.libs.json.Json.toJson(visibility),
-          "enabled" -> play.api.libs.json.Json.toJson(enabled)
-        )
+        val payload = play.api.libs.json.Json.toJson(generatorUpdateForm)
 
         _executeRequest("PUT", s"/generators/${guid}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
@@ -544,14 +595,11 @@ package com.gilt.apidoc {
         }
       }
 
-      override def putByGuidAndOrg(
+      override def putByGuidAndOrg(generatorOrgForm: com.gilt.apidoc.models.GeneratorOrgForm,
         guid: java.util.UUID,
-        org: String,
-        enabled: Boolean
+        org: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
-        val payload = play.api.libs.json.Json.obj(
-          "enabled" -> play.api.libs.json.Json.toJson(enabled)
-        )
+        val payload = play.api.libs.json.Json.toJson(generatorOrgForm)
 
         _executeRequest("PUT", s"/generators/${guid}/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
@@ -895,12 +943,8 @@ package com.gilt.apidoc {
     }
 
     object Validations extends Validations {
-      override def post(
-        json: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
-        val payload = play.api.libs.json.Json.obj(
-          "json" -> play.api.libs.json.Json.toJson(json)
-        )
+      override def post(value: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
+        val payload = play.api.libs.json.Json.toJson(value)
 
         _executeRequest("POST", s"/validations", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Validation]
@@ -1067,28 +1111,21 @@ package com.gilt.apidoc {
     /**
      * Create a new generator.
      */
-    def post(
-      key: String,
-      uri: String,
-      visibility: com.gilt.apidoc.models.Visibility
+    def post(generatorCreateForm: com.gilt.apidoc.models.GeneratorCreateForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
+
+    /**
+     * Update a generator.
+     */
+    def putByGuid(generatorUpdateForm: com.gilt.apidoc.models.GeneratorUpdateForm,
+      guid: java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
 
     /**
      * Update a generator.
      */
-    def putByGuid(
+    def putByGuidAndOrg(generatorOrgForm: com.gilt.apidoc.models.GeneratorOrgForm,
       guid: java.util.UUID,
-      visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
-      enabled: scala.Option[Boolean] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
-
-    /**
-     * Update a generator.
-     */
-    def putByGuidAndOrg(
-      guid: java.util.UUID,
-      org: String,
-      enabled: Boolean
+      org: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
 
     /**
@@ -1288,9 +1325,7 @@ package com.gilt.apidoc {
   }
 
   trait Validations {
-    def post(
-      json: scala.Option[String] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation]
+    def post(value: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation]
   }
 
   trait Versions {

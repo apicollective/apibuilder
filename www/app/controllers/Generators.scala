@@ -2,7 +2,7 @@ package controllers
 
 import java.util.UUID
 
-import com.gilt.apidoc.models.{Generator, Visibility, Domain}
+import com.gilt.apidoc.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, Domain}
 import models._
 import play.api.data.Forms._
 import play.api.data._
@@ -53,11 +53,10 @@ object Generators extends Controller {
       },
 
       valid => {
-        request.api.Generators.putByGuid(
-          guid = generatorGuid,
+        request.api.Generators.putByGuid(GeneratorUpdateForm(
           visibility = Some(Visibility(valid.visibility)),
           enabled = Some(valid.enabled)
-        ).map { d =>
+        ), generatorGuid).map { d =>
           Redirect(routes.Generators.list()).flashing("success" -> s"Generator updated")
         }.recover {
           case response: com.gilt.apidoc.error.ErrorsResponse => {
@@ -94,11 +93,11 @@ object Generators extends Controller {
       (valid: GeneratorCreateData) => {
         valid.details.headOption.map { _ =>
           val futures: List[Future[Generator]] = valid.details.filter(_.selected).map { detail =>
-            request.api.Generators.post(
+            request.api.Generators.post(GeneratorCreateForm(
               key = detail.key,
               uri = valid.uri,
               visibility = Visibility(detail.visibility)
-            )
+            ))
           }
           Future.sequence(futures).map { d =>
             Redirect(routes.Generators.list()).flashing("success" -> s"Generator(s) added")

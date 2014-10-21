@@ -2,7 +2,7 @@ package controllers
 
 import java.util.UUID
 
-import com.gilt.apidoc.models.{User, Generator}
+import com.gilt.apidoc.models.{GeneratorOrgForm, GeneratorUpdateForm, GeneratorCreateForm, User, Generator}
 import com.gilt.apidoc.models.json._
 import com.gilt.apidocgenerator.Client
 import db._
@@ -104,11 +104,11 @@ object Generators extends Controller {
   }
 
   def putByGuidAndOrg(guid: UUID, orgKey: String) = Authenticated.async(parse.json) { request =>
-    request.body.validate[GeneratorOrgUpdateForm] match {
+    request.body.validate[GeneratorOrgForm] match {
       case e: JsError => {
         Future.successful(Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString))))
       }
-      case s: JsSuccess[GeneratorOrgUpdateForm] => {
+      case s: JsSuccess[GeneratorOrgForm] => {
         val form = s.get
         val generator = GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption
         val org = OrganizationDao.findAll(Authorization(Some(request.user)), key = Some(orgKey)).headOption

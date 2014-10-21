@@ -1,31 +1,12 @@
 package db
 
-import com.gilt.apidoc.models.{Visibility, Generator, User}
+import com.gilt.apidoc.models.{GeneratorUpdateForm, Visibility, Generator, User}
 import com.gilt.apidoc.models.json._
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
-
-case class GeneratorCreateForm(key: String, uri: String, visibility: Visibility)
-
-
-object GeneratorCreateForm {
-  implicit val generatorCreateFormReads = Json.reads[GeneratorCreateForm]
-}
-
-case class GeneratorUpdateForm(visibility: Option[Visibility], enabled: Option[Boolean])
-
-object GeneratorUpdateForm {
-  implicit val generatorUpdateFormReads = Json.reads[GeneratorUpdateForm]
-}
-
-case class GeneratorOrgUpdateForm(enabled: Boolean)
-
-object GeneratorOrgUpdateForm {
-  implicit val generatorUpdateFormReads = Json.reads[GeneratorOrgUpdateForm]
-}
 
 object GeneratorDao {
 

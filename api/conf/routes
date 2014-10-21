@@ -25,7 +25,7 @@ POST       /users/authenticate                          controllers.Users.postAu
 POST       /users                                       controllers.Users.post()
 PUT        /users/:guid                                 controllers.Users.putByGuid(guid: java.util.UUID)
 POST       /validations                                 controllers.Validations.post()
-GET        /:orgKey/:serviceKey/:version/:generatorGuid     controllers.Code.getByOrgKeyAndServiceKeyAndVersionAndGeneratorGuid(orgKey: String, serviceKey: String, version: String, generatorGuid: java.util.UUID)
+GET        /:orgKey/:serviceKey/:version/:generatorGuid controllers.Code.getByOrgKeyAndServiceKeyAndVersionAndGeneratorGuid(orgKey: String, serviceKey: String, version: String, generatorGuid: java.util.UUID)
 GET        /:orgKey                                     controllers.Services.getByOrgKey(orgKey: String, name: Option[String], key: Option[String], limit: Int ?= 25, offset: Int ?= 0)
 PUT        /:orgKey/:serviceKey                         controllers.Services.putByOrgKeyAndServiceKey(orgKey: String, serviceKey: String)
 DELETE     /:orgKey/:serviceKey                         controllers.Services.deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String)

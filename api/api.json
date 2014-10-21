@@ -113,7 +113,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "generatorGuid", "type": "uuid" },
+                { "name": "generator_guid", "type": "uuid" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -129,6 +129,30 @@
             { "name": "description", "type": "string", "required": false },
             { "name": "visibility", "type": "visibility" },
             { "name": "owner_guid", "type": "uuid" },
+            { "name": "enabled", "type": "boolean" }
+          ]
+        },
+
+        "generator_create_form": {
+          "description": "Form to create a new generator",
+          "fields": [
+            { "name": "key", "type": "string" },
+            { "name": "uri", "type": "string" },
+            { "name": "visibility", "type": "visibility" }
+          ]
+        },
+
+        "generator_update_form": {
+          "description": "Form to update a generator",
+          "fields": [
+            { "name": "visibility", "type": "visibility", "required": false, "description": "Used to change the visibility of the generator. If present on the request, the visibility is set to the specified value." },
+            { "name": "enabled", "type": "boolean", "required": false, "description": "Used to enable or disable the generator for this user. If present on the request, the enabled flag is set to the specified value (true/false)." }
+          ]
+        },
+
+        "generator_org_form": {
+          "description": "Form to enable or disable a generator for an organization",
+          "fields": [
             { "name": "enabled", "type": "boolean" }
           ]
         },
@@ -519,7 +543,6 @@
         },
 
         "generator": {
-          "path": "/generators",
           "operations": [
             {
               "method": "GET",
@@ -541,11 +564,7 @@
             {
               "method": "POST",
               "description": "Create a new generator.",
-              "parameters": [
-                { "name": "key", "type": "string" },
-                { "name": "uri", "type": "string" },
-                { "name": "visibility", "type": "visibility" }
-              ],
+              "body": { "type": "generator_create_form" },
               "responses": {
                 "200": { "type": "generator" },
                 "409": { "type": "[error]" }
@@ -556,10 +575,7 @@
               "method": "PUT",
               "path": "/:guid",
               "description": "Update a generator.",
-              "parameters": [
-                { "name": "visibility", "type": "visibility", "required": false },
-                { "name": "enabled", "type": "boolean", "required": false }
-              ],
+              "body": { "type": "generator_update_form" },
               "responses": {
                 "200": { "type": "generator" },
                 "409": { "type": "[error]" }
@@ -570,9 +586,7 @@
               "method": "PUT",
               "path": "/:guid/:org",
               "description": "Update a generator.",
-              "parameters": [
-                { "name": "enabled", "type": "boolean" }
-              ],
+              "body": { "type": "generator_org_form" },
               "responses": {
                 "200": { "type": "generator" },
                 "409": { "type": "[error]" }
