@@ -20,8 +20,8 @@ object Code extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  val apidocVersion = current.configuration.getString("apidoc.version").getOrElse {
-    sys.error("apidoc.version is required")
+  val apidocVersion = current.configuration.getString("git.version").getOrElse {
+    sys.error("git.version is required")
   }
 
   def getByOrgKeyAndServiceKeyAndVersionAndGeneratorGuid(orgKey: String, serviceKey: String, version: String, generatorGuid: UUID) = Authenticated.async { request =>
