@@ -16,7 +16,7 @@ Installing Docker on mac
 Deploying
 ==============
 
-    /web/metadata-architecture/exec ./script/release-and-deploy api www
+    /web/metadata-architecture/exec ./script/release-and-deploy generator api www
 
 Metadata about your app EC2 Configuration
 =========================================
