@@ -141,6 +141,9 @@ ${methodGenerator.objects().indent(4)}
         case "DELETE" => {
           _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
         }
+         case "HEAD" => {
+          _logRequest("HEAD", _requestHolder(path).withQueryString(queryParameters:_*)).head()
+        }
         case _ => {
           _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))
           sys.error("Unsupported method[%s]".format(method))
