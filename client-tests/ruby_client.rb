@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.6.8 http://www.apidoc.me/gilt/code/apidoc/0.6.6/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.6.9 http://www.apidoc.me/gilt/code/apidoc/0.6.9/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
