@@ -13,6 +13,11 @@ class ScalaUtilSpec extends FunSpec with ShouldMatchers {
 
     ScalaUtil.toClassName("error_message") should be("ErrorMessage")
     ScalaUtil.toClassName("error_message", true) should be("ErrorMessages")
+
+    ScalaUtil.toClassName("incidents_create") should be("IncidentsCreate")
+    ScalaUtil.toClassName("incidents-create") should be("IncidentsCreate")
+    ScalaUtil.toClassName("incidents.create") should be("IncidentsCreate")
+    ScalaUtil.toClassName("incident.create") should be("IncidentCreate")
   }
 
   it("toVariable") {
