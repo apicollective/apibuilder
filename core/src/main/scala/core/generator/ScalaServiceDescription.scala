@@ -51,7 +51,7 @@ object ScalaUtil {
   ) = {
     val baseName = Text.safeName(
       if (name == name.toUpperCase) {
-        Text.initCap(name.split("_").map(_.toLowerCase)).mkString("")
+        Text.initCap(Text.splitIntoWords(name).map(_.toLowerCase)).mkString("")
       } else {
         Text.initCap(snakeToCamelCase(name))
       }
