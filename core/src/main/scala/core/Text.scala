@@ -131,7 +131,7 @@ object Text {
     initCap(splitIntoWords(value).flatMap(_.split("-")))
   }
 
-  private val WordDelimeterRx = "_|\\-|\\.".r
+  private val WordDelimeterRx = "_|\\-|\\.|:".r
 
   def splitIntoWords(value: String): Seq[String] = {
     WordDelimeterRx.split(value)
