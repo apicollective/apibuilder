@@ -399,7 +399,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.6.4 http://www.apidoc.me/gilt/code/apidoc/0.6.4/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.8 http://www.apidoc.me/gilt/code/apidoc/0.6.6/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -804,12 +804,8 @@ package com.gilt.apidoc {
     }
 
     object Validations extends Validations {
-      override def post(
-        json: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
-        val payload = play.api.libs.json.Json.obj(
-          "json" -> play.api.libs.json.Json.toJson(json)
-        )
+      override def post(value: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
+        val payload = play.api.libs.json.Json.toJson(value)
 
         _executeRequest("POST", s"/validations", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Validation]
@@ -1158,9 +1154,7 @@ package com.gilt.apidoc {
   }
 
   trait Validations {
-    def post(
-      json: scala.Option[String] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation]
+    def post(value: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation]
   }
 
   trait Versions {
