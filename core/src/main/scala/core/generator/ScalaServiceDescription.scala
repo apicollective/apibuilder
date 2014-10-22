@@ -15,7 +15,7 @@ object ScalaUtil {
                              "return", "sealed", "super", "this",
                              "throw", "trait", "try", "true",
                              "type", "val", "var", "while",
-                             "with", "yeild").toSet
+                             "with", "yield").toSet
 
   def textToComment(text: String) = {
     if (text.trim.isEmpty) {
