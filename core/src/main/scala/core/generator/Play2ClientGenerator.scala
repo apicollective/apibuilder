@@ -127,7 +127,7 @@ ${methodGenerator.objects().indent(4)}
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.config.responseClass}] = {
       method.toUpperCase match {
         case "GET" => {
-          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()      
+          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()
         }
         case "POST" => {
           _logRequest("POST", _requestHolder(path).withQueryString(queryParameters:_*)).post(body.getOrElse(play.api.libs.json.Json.obj()))
