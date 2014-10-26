@@ -34,7 +34,7 @@ implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[DateTime
 
 // Type: date-iso8601
 implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
-  ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29"
+  ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
 )
 """.trim
   }
