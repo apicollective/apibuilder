@@ -6,30 +6,23 @@ object Play2Bindables {
 
   def build(
     ssd: ScalaServiceDescription
-  ): Option[String] = {
+  ): String = {
     import Text._
 
-    ssd.enums match {
-      case Nil => None
-      case enums => {
-        Some(
-          Seq(
-            "object Bindables {",
-            "",
-            "  import play.api.mvc.{PathBindable, QueryStringBindable}",
-            "  import org.joda.time.{DateTime, LocalDate}",
-            "  import org.joda.time.format.ISODateTimeFormat",
-            s"  import ${ssd.packageName}.models._",
-            "",
-            buildDefaults().indent(2),
-            "",
-            enums.map( buildImplicit(_) ).mkString("\n\n").indent(2),
-            "",
-            "}"
-          ).mkString("\n")
-        )
-      }
-    }
+    Seq(
+      "object Bindables {",
+      "",
+      "  import play.api.mvc.{PathBindable, QueryStringBindable}",
+      "  import org.joda.time.{DateTime, LocalDate}",
+      "  import org.joda.time.format.ISODateTimeFormat",
+      s"  import ${ssd.packageName}.models._",
+      "",
+      buildDefaults().indent(2),
+      "",
+      ssd.enums.map( buildImplicit(_) ).mkString("\n\n").indent(2),
+      "",
+      "}"
+    ).mkString("\n")
   }
 
   private def buildDefaults(): String = {

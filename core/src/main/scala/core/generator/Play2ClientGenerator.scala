@@ -69,10 +69,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
 
     val methodGenerator = ScalaClientMethodGenerator(version.config, ssd)
 
-    val bindables = Play2Bindables.build(ssd) match {
-      case None => ""
-      case Some(b) => "\n\n" + b.indent(2)
-    }
+    val bindables = Play2Bindables.build(ssd).indent(2)
 
     val patchMethod = version.supportsHttpPatch match {
       case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))"""
@@ -153,7 +150,9 @@ ${methodGenerator.objects().indent(4)}
 
   }
 
-${methodGenerator.traitsAndErrors().indent(2)}$bindables
+${methodGenerator.traitsAndErrors().indent(2)}
+
+$bindables
 
 }"""
   }

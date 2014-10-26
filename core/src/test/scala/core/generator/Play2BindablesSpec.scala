@@ -22,12 +22,8 @@ class Play2BindablesSpec extends FunSpec with ShouldMatchers {
   it("generates bindable object") {
     TestHelper.assertEqualsFile(
       "core/src/test/resources/generators/play-2-bindable-reference-api-object.txt",
-      Play2Bindables.build(ssd).getOrElse("")
+      Play2Bindables.build(ssd)
     )
-  }
-
-  it("returns None for a service with no enums") {
-    // TODO
   }
 
 }
