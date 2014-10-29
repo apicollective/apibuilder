@@ -7,30 +7,23 @@ object Play2Bindables {
 
   def build(
     ssd: ScalaServiceDescription
-  ): Option[String] = {
+  ): String = {
     import Text._
 
-    ssd.enums match {
-      case Nil => None
-      case enums => {
-        Some(
-          Seq(
-            "object Bindables {",
-            "",
-            "  import play.api.mvc.{PathBindable, QueryStringBindable}",
-            "  import org.joda.time.{DateTime, LocalDate}",
-            "  import org.joda.time.format.ISODateTimeFormat",
-            s"  import ${ssd.packageName}.models._",
-            "",
-            buildDefaults().indent(2),
-            "",
-            enums.map( buildImplicit(_) ).mkString("\n\n").indent(2),
-            "",
-            "}"
-          ).mkString("\n")
-        )
-      }
-    }
+    Seq(
+      "object Bindables {",
+      "",
+      "  import play.api.mvc.{PathBindable, QueryStringBindable}",
+      "  import org.joda.time.{DateTime, LocalDate}",
+      "  import org.joda.time.format.ISODateTimeFormat",
+      s"  import ${ssd.packageName}.models._",
+      "",
+      buildDefaults().indent(2),
+      "",
+      ssd.enums.map( buildImplicit(_) ).mkString("\n\n").indent(2),
+      "",
+      "}"
+    ).mkString("\n")
   }
 
   private def buildDefaults(): String = {
@@ -42,7 +35,7 @@ implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[DateTime
 
 // Type: date-iso8601
 implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
-  ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29"
+  ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
 )
 """.trim
   }

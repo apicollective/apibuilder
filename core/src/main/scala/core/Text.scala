@@ -124,15 +124,21 @@ object Text {
   }
 
   def underscoreToInitCap(value: String): String = {
-    initCap(value.split("_"))
+    initCap(splitIntoWords(value))
   }
 
   def underscoreAndDashToInitCap(value: String): String = {
-    initCap(value.split("_").flatMap(_.split("-")))
+    initCap(splitIntoWords(value).flatMap(_.split("-")))
+  }
+
+  private val WordDelimeterRx = "_|\\-|\\.|:".r
+
+  def splitIntoWords(value: String): Seq[String] = {
+    WordDelimeterRx.split(value)
   }
 
   def snakeToCamelCase(value: String) = {
-    value.split("_").toList match {
+    splitIntoWords(value).toList match {
       case Nil => ""
       case part :: rest => part + initCap(rest)
     }

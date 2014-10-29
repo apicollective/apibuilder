@@ -485,7 +485,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.6.8 http://www.apidoc.me/gheine/code/apidoc/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.9 http://www.apidoc.me/gilt/code/apidoc/0.6.9/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -1056,6 +1056,9 @@ package com.gilt.apidoc {
         }
         case "DELETE" => {
           _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
+        }
+         case "HEAD" => {
+          _logRequest("HEAD", _requestHolder(path).withQueryString(queryParameters:_*)).head()
         }
         case _ => {
           _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))

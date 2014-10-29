@@ -70,10 +70,7 @@ case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService
 
     val methodGenerator = ScalaClientMethodGenerator(version.config, ssd)
 
-    val bindables = Play2Bindables.build(ssd) match {
-      case None => ""
-      case Some(b) => "\n\n" + b.indent(2)
-    }
+    val bindables = Play2Bindables.build(ssd).indent(2)
 
     val patchMethod = version.supportsHttpPatch match {
       case true => """_logRequest("PATCH", _requestHolder(path).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))"""
@@ -128,7 +125,7 @@ ${methodGenerator.objects().indent(4)}
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[${version.config.responseClass}] = {
       method.toUpperCase match {
         case "GET" => {
-          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()      
+          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()
         }
         case "POST" => {
           _logRequest("POST", _requestHolder(path).withQueryString(queryParameters:_*)).post(body.getOrElse(play.api.libs.json.Json.obj()))
@@ -142,6 +139,9 @@ ${methodGenerator.objects().indent(4)}
         case "DELETE" => {
           _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
         }
+         case "HEAD" => {
+          _logRequest("HEAD", _requestHolder(path).withQueryString(queryParameters:_*)).head()
+        }
         case _ => {
           _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))
           sys.error("Unsupported method[%s]".format(method))
@@ -151,7 +151,9 @@ ${methodGenerator.objects().indent(4)}
 
   }
 
-${methodGenerator.traitsAndErrors().indent(2)}$bindables
+${methodGenerator.traitsAndErrors().indent(2)}
+
+$bindables
 
 }"""
   }
