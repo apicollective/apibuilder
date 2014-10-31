@@ -101,6 +101,10 @@ private[core] case class InternalServiceDescription(json: JsValue) {
     }
   }
 
+  lazy val typeResolver = TypeResolver(
+    enumNames = enums.map(_.name),
+    modelNames = models.map(_.name)
+  )
 }
 
 case class InternalModel(name: String,

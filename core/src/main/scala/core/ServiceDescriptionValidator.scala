@@ -134,21 +134,10 @@ case class ServiceDescriptionValidator(apiJson: String) {
    */
   private def validateFieldTypes(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter { f => !f.fieldtype.isEmpty && !f.name.isEmpty }.flatMap { field =>
-        val name = field.fieldtype.get
-        Datatype.findByName(name) match {
-          case None => {
-            internalServiceDescription.get.models.find { _.name == name } match {
-              case None => {
-                internalServiceDescription.get.enums.find { _.name == name } match {
-                  case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[$name]")
-                  case Some(_) => None
-                }
-              }
-              case Some(_) => None
-            }
-          }
-          case Some(_) => None
+      model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).flatMap { field =>
+        internalServiceDescription.get.typeResolver.toType(field.datatype.get.name) match {
+          case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[${field.datatype.get.name}]")
+          case _ => None
         }
       }
     }
@@ -161,96 +150,9 @@ case class ServiceDescriptionValidator(apiJson: String) {
    */
   private def validateFieldDefaults(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter { f => !f.fieldtype.isEmpty && !f.name.isEmpty && !f.default.isEmpty }.flatMap { field =>
-        val name = field.fieldtype.get
-        Datatype.findByName(name) match {
-          case None => {
-            internalServiceDescription.get.enums.find(_.name == name) match {
-              case None => None
-              case Some(enum) => {
-                enum.values.filter(!_.name.isEmpty).map(_.name.get) match {
-                  case Nil => None
-                  case values => {
-                    if (values.contains(field.default.get)) {
-                      None
-                    } else {
-                      Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid. Must be one of: " + values.mkString(", "))
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          case Some(dt) => {
-            if (isValid(dt, field.default.get)) {
-              None
-            } else {
-              Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid for datatype[$name]")
-            }
-          }
-        }
+      model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).filter(!_.default.isEmpty).flatMap { field =>
+        internalServiceDescription.get.typeResolver.toType(field.datatype.get.name).flatMap { validate(_, field.default.get) }
       }
-    }
-  }
-
-  private def isValid(datatype: Datatype, value: String): Boolean = {
-    Try(assertValidDefault(datatype: Datatype, value: String)).isSuccess
-  }
-
-  private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
-
-  private val BooleanValues = Seq("true", "false")
-
-  private def assertValidDefault(datatype: Datatype, value: String) {
-    datatype match {
-      case Datatype.BooleanType => {
-        if (!BooleanValues.contains(value)) {
-          sys.error(s"Invalid default[${value}] for boolean. Must be one of: ${BooleanValues.mkString(" ")}")
-        }
-      }
-
-      case Datatype.MapType => {
-        Json.parse(value).asOpt[JsObject] match {
-          case None => {
-            sys.error(s"Invalid default[${value}] for type object. Must be a valid JSON Object")
-          }
-          case Some(o) => {}
-        }
-      }
-
-      case Datatype.IntegerType => {
-        value.toInt
-      }
-
-      case Datatype.LongType => {
-        value.toLong
-      }
-
-      case Datatype.DecimalType => {
-        BigDecimal(value)
-      }
-
-      case Datatype.UnitType => {
-        value == ""
-      }
-
-      case Datatype.UuidType => {
-        UUID.fromString(value)
-      }
-
-      case Datatype.DateTimeIso8601Type => {
-        dateTimeISOParser.parseDateTime(value)
-      }
-
-      case Datatype.DateIso8601Type => {
-        dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
-      }
-
-      case Datatype.StringType => ()
-
-      case Datatype.DoubleType => value.toDouble
-
     }
   }
 
