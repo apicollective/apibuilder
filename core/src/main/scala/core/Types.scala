@@ -23,28 +23,17 @@ object Type {
 
 }
 
-sealed trait TypeInstance
+sealed trait TypeContainer
 
-object TypeInstance {
+object TypeContainer {
 
-  case class Singleton(datatype: Type) extends TypeInstance { override def toString = s"$datatype" }
-  case class Optional(datatype: Type) extends TypeInstance { override def toString = s"option[$datatype]" }
-  case class List(datatype: Type) extends TypeInstance { override def toString = s"list[$datatype]" }
-  case class Map(datatype: Type) extends TypeInstance { override def toString = s"map[$datatype]" }
-
-  private val ImplicitListRx = "^\\[(.*)\\]$".r
-  private val ExplicitListRx = "^\\list[(.*)\\]$".r
-  private val MapRx = "^\\map[(.*)\\]$".r
-  private val OptionalRx = "^\\option[(.*)\\]$".r
-
-  def apply(value: String): Option[TypeInstance] = {
-    value match {
-      case ImplicitListRx(name) => Type(name).map(TypeInstance.List(_))
-      case ExplicitListRx(name) => Type(name).map(TypeInstance.List(_))
-      case MapRx(name) => Type(name).map(TypeInstance.Map(_))
-      case OptionalRx(name) => Type(name).map(TypeInstance.Optional(_))
-      case _ => Type(value).map(TypeInstance.Singleton(_))
-    }
-  }
+  case object Singleton extends TypeContainer { override def toString = s"singleton" }
+  case object List extends TypeContainer { override def toString = "list" }
+  case object Map extends TypeContainer { override def toString = "map" }
 
 }
+
+case class TypeInstance(
+  container: TypeContainer,
+  datatype: Type
+)

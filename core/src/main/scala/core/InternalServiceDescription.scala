@@ -55,13 +55,12 @@ private[core] case class InternalServiceDescription(json: JsValue) {
     (json \ "headers").asOpt[JsArray].map(_.value).getOrElse(Seq.empty).flatMap { el =>
       el match {
         case o: JsObject => {
-          val parsedDatatype = JsonUtil.asOptString(o, "type").map(InternalParsedDatatype(_))
+          val datatype = JsonUtil.asOptString(o, "type").map(InternalParsedDatatype(_))
 
           Some(
             InternalHeader(
               name = JsonUtil.asOptString(o, "name"),
-              headertype = parsedDatatype.map(_.name),
-              multiple = parsedDatatype.map(_.multiple).getOrElse(false),
+              datatype = datatype,
               required = JsonUtil.asOptBoolean(o \ "required").getOrElse(true),
               description = JsonUtil.asOptString(o, "description"),
               default = JsonUtil.asOptString(o, "default")
@@ -122,8 +121,7 @@ case class InternalEnumValue(
 
 case class InternalHeader(
   name: Option[String],
-  headertype: Option[String],
-  multiple: Boolean,
+  datatype: Option[InternalParsedDatatype],
   required: Boolean,
   description: Option[String],
   default: Option[String]
@@ -146,40 +144,41 @@ case class InternalOperation(method: Option[String],
 
 }
 
-case class InternalField(name: Option[String] = None,
-                         fieldtype: Option[String] = None,
-                         description: Option[String] = None,
-                         required: Boolean = true,
-                         multiple: Boolean = false,
-                         default: Option[String] = None,
-                         example: Option[String] = None,
-                         minimum: Option[Long] = None,
-                         maximum: Option[Long] = None,
-                         warnings: Seq[String] = Seq.empty)
+case class InternalField(
+  name: Option[String] = None,
+  datatype: Option[InternalParsedDatatype] = None,
+  description: Option[String] = None,
+  required: Boolean = true,
+  default: Option[String] = None,
+  example: Option[String] = None,
+  minimum: Option[Long] = None,
+  maximum: Option[Long] = None,
+  warnings: Seq[String] = Seq.empty
+)
 
-case class InternalParameter(name: Option[String] = None,
-                             paramtype: Option[String] = None,
-                             description: Option[String] = None,
-                             required: Boolean = true,
-                             multiple: Boolean = false,
-                             default: Option[String] = None,
-                             example: Option[String] = None,
-                             minimum: Option[Long] = None,
-                             maximum: Option[Long] = None)
+case class InternalParameter(
+  name: Option[String] = None,
+  datatype: Option[InternalParsedDatatype] = None,
+  description: Option[String] = None,
+  required: Boolean,
+  default: Option[String] = None,
+  example: Option[String] = None,
+  minimum: Option[Long] = None,
+  maximum: Option[Long] = None
+)
 
 
 case class InternalResponse(
-code: String,
-  datatype: Option[String] = None,
-  multiple: Boolean = false,
+  code: String,
+  datatype: Option[InternalParsedDatatype] = None,
   warnings: Seq[String] = Seq.empty
 ) {
 
   lazy val datatypeLabel: Option[String] = datatype.map { dt =>
-    if (multiple) {
-      s"[$dt]"
-    } else {
-      dt
+    dt match {
+      case InternalParsedDatatype(TypeContainer.List, name) => s"[$name]"
+      case InternalParsedDatatype(TypeContainer.Map, name) => s"map[$name]"
+      case InternalParsedDatatype(TypeContainer.Singleton, name) => name
     }
   }
 
@@ -260,7 +259,7 @@ object InternalResource {
 
 object InternalOperation {
 
-  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(Datatype.UnitType.name))
+  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(InternalParsedDatatype("unit")))
 
   def apply(resourcePath: String, json: JsObject): InternalOperation = {
     val path = resourcePath + (json \ "path").asOpt[String].getOrElse("")
@@ -322,10 +321,10 @@ object InternalOperation {
 object InternalResponse {
 
   def apply(code: String, json: JsObject): InternalResponse = {
-    val parsedDatatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
-    InternalResponse(code = code,
-                     datatype = parsedDatatype.map(_.name),
-                     multiple = parsedDatatype.map(_.multiple).getOrElse(false))
+    InternalResponse(
+      code = code,
+      datatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
+    )
   }
 }
 
@@ -342,10 +341,9 @@ object InternalField {
 
     InternalField(
       name = (json \ "name").asOpt[String],
-      fieldtype = parsedDatatype.map(_.name),
+      datatype = parsedDatatype,
       description = (json \ "description").asOpt[String],
       required = JsonUtil.asOptBoolean(json \ "required").getOrElse(true),
-      multiple = parsedDatatype.map(_.multiple).getOrElse(false),
       default = JsonUtil.asOptString(json, "default"),
       minimum = (json \ "minimum").asOpt[Long],
       maximum = (json \ "maximum").asOpt[Long],
@@ -359,13 +357,10 @@ object InternalField {
 object InternalParameter {
 
   def apply(json: JsObject): InternalParameter = {
-    val dt = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
-
     InternalParameter(name = (json \ "name").asOpt[String],
-                      paramtype = dt.map(_.name),
+                      datatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) ),
                       description = (json \ "description").asOpt[String],
                       required = JsonUtil.asOptBoolean(json \ "required").getOrElse(true),
-                      multiple = dt.map(_.multiple).getOrElse(false),
                       default = JsonUtil.asOptString(json, "default"),
                       minimum = (json \ "minimum").asOpt[Long],
                       maximum = (json \ "maximum").asOpt[Long],
@@ -404,16 +399,23 @@ private[core] object JsonUtil {
   }
 }
 
-private[core] case class InternalParsedDatatype(name: String, multiple: Boolean)
+private[core] case class InternalParsedDatatype(
+  container: TypeContainer,
+  name: String
+)
 
 private[core] object InternalParsedDatatype {
 
-  private val ArrayRx = "^\\[(.*)\\]$".r
+  private val ImplicitListRx = "^\\[(.*)\\]$".r
+  private val ExplicitListRx = "^\\list[(.*)\\]$".r
+  private val MapRx = "^\\map[(.*)\\]$".r
 
   def apply(value: String): InternalParsedDatatype = {
     value match {
-      case ArrayRx(word) => InternalParsedDatatype(word, true)
-      case _ => InternalParsedDatatype(value, false)
+      case ImplicitListRx(name) => InternalParsedDatatype(TypeContainer.List, name)
+      case ExplicitListRx(name) => InternalParsedDatatype(TypeContainer.List, name)
+      case MapRx(name) => InternalParsedDatatype(TypeContainer.Map, name)
+      case _ => InternalParsedDatatype(TypeContainer.Singleton, value)
     }
   }
 
