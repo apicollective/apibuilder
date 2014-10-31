@@ -105,6 +105,10 @@ private[core] case class InternalServiceDescription(json: JsValue) {
     enumNames = enums.map(_.name),
     modelNames = models.map(_.name)
   )
+
+  lazy val typeValidator = TypeValidator(
+    enums = enums.map(e => TypeValidatorEnums(e.name, e.values.filter(!_.name.isEmpty).map(_.name.get)))
+  )
 }
 
 case class InternalModel(name: String,
