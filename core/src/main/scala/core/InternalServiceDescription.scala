@@ -406,14 +406,12 @@ private[core] case class InternalParsedDatatype(
 
 private[core] object InternalParsedDatatype {
 
-  private val ImplicitListRx = "^\\[(.*)\\]$".r
-  private val ExplicitListRx = "^\\list[(.*)\\]$".r
+  private val ListRx = "^\\[(.*)\\]$".r
   private val MapRx = "^\\map[(.*)\\]$".r
 
   def apply(value: String): InternalParsedDatatype = {
     value match {
-      case ImplicitListRx(name) => InternalParsedDatatype(TypeContainer.List, name)
-      case ExplicitListRx(name) => InternalParsedDatatype(TypeContainer.List, name)
+      case ListRx(name) => InternalParsedDatatype(TypeContainer.List, name)
       case MapRx(name) => InternalParsedDatatype(TypeContainer.Map, name)
       case _ => InternalParsedDatatype(TypeContainer.Singleton, value)
     }
