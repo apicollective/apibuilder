@@ -192,12 +192,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
           val param = pathParams.find(_.name == varName).getOrElse {
             sys.error(s"Could not find path parameter named[$varName]")
           }
-          param.datatype match {
-            case Type(TypeKind.Primitive, name, _) =>
-              val datatype = Datatype.forceByName(name)
-              s"#{${asString(varName, datatype)}}"
-            case Type(TypeKind.Model, _, _) => sys.error("Models cannot be in the path")
-            case Type(TypeKind.Enum, _, _) => s"#{${param.name}.value}"
+          param.`type` match {
+            case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => asString(name, pt)
+            case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => sys.error("Models cannot be in the path")
+            case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => s"#{${param.name}.value}"
+            case TypeInstance(TypeContainer.List, _) => sys.error("Cannot have lists in the path")
+            case TypeInstance(TypeContainer.Map, _) => sys.error("Cannot have maps in the path")
           }
         } else {
           name
@@ -216,10 +216,15 @@ case class RubyClientGenerator(service: ServiceDescription) {
       if (Util.isJsonDocumentMethod(op.method)) {
         op.body match {
           case None => paramStrings.append("hash")
-          case Some(Type(TypeKind.Primitive, _, multiple)) => paramStrings.append(RubyUtil.toVariable("value", multiple))
-          case Some(Type(TypeKind.Model, name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
-          case Some(Type(TypeKind.Enum, name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
-          case _ => sys.error(s"Invalid body [${op.body}]")
+
+          case Some(TypeInstance(TypeContainer.Singleton, Type.Primitive(pt))) => paramStrings.append(RubyUtil.toVariable("value", false))
+          case Some(TypeInstance(_, Type.Primitive(pt))) => paramStrings.append(RubyUtil.toVariable("value", true))
+
+          case Some(TypeInstance(TypeContainer.Singleton, Type.Model(name))) => paramStrings.append(RubyUtil.toVariable(name, false))
+          case Some(TypeInstance(_, Type.Model(name))) => paramStrings.append(RubyUtil.toVariable(name, true))
+
+          case Some(TypeInstance(TypeContainer.Singleton, Type.Enum(name))) => paramStrings.append(RubyUtil.toVariable(name, false))
+          case Some(TypeInstance(_, Type.Enum(name))) => paramStrings.append(RubyUtil.toVariable(name, true))
         }
       }
 
@@ -504,12 +509,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
   }
 
-  private def asString(varName: String, d: Datatype): String = d match {
-    case Datatype.StringType | Datatype.IntegerType | Datatype.DoubleType | Datatype.LongType | Datatype.BooleanType | Datatype.DecimalType | Datatype.UuidType => varName
-    case Datatype.DateIso8601Type => s"$varName.strftime('%Y-%m-%d')"
-    case Datatype.DateTimeIso8601Type => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
-    case Datatype.MapType | Datatype.UnitType => {
-      sys.error(s"Unsupported type[$d] for string formatting - name[$varName]")
+  private def asString(varName: String, pt: Primitives): String = d match {
+    case Primitives.String | Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean | Primitives.Decimal | Primitives.Uuid => varName
+    case Primitives.DateIso8601 => s"$varName.strftime('%Y-%m-%d')"
+    case Primitives.DateTimeIso8601 => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
+    case Primitives.Unit => {
+      sys.error(s"Unsupported type[$pt] for string formatting - varName[$varName]")
     }
   }
 
