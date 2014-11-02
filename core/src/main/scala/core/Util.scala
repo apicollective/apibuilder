@@ -1,5 +1,7 @@
 package core
 
+import codegenerator.models.Enum
+
 object Util {
 
   val MethodsNotAcceptingBodies = Seq("GET", "DELETE")
@@ -17,6 +19,14 @@ object Util {
         None
       }
     }
+  }
+
+  def isValidEnumValue(enum: Enum, value: String): Boolean = {
+    enum.values.contains(value)
+  }
+
+  def assertValidEnumValue(enum: Enum, value: String) {
+    require(isValidEnumValue(enum, value), "Enum[%s] does not have a value[$value]. Valid values are: " + enum.values.mkString(" "))
   }
 
 }

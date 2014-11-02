@@ -17,7 +17,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Field(
     name: String,
-    datatype: com.gilt.apidocgenerator.models.Type,
+    `type`: core.TypeInstance,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
@@ -38,11 +38,9 @@ package com.gilt.apidocgenerator.models {
 
   case class Header(
     name: String,
-    headertype: com.gilt.apidocgenerator.models.HeaderType,
-    headertypeValue: scala.Option[String] = None,
+    `type`: core.TypeInstance,
     description: scala.Option[String] = None,
     required: Boolean,
-    multiple: Boolean,
     default: scala.Option[String] = None
   )
 
@@ -65,15 +63,15 @@ package com.gilt.apidocgenerator.models {
     method: String,
     path: String,
     description: scala.Option[String] = None,
-    body: scala.Option[com.gilt.apidocgenerator.models.Type] = None,
-    parameters: scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter],
-    responses: scala.collection.Seq[com.gilt.apidocgenerator.models.Response]
+    body: scala.Option[core.Type] = None,
+    parameters: scala.collection.Seq[codegenerator.models.Parameter],
+    responses: scala.collection.Seq[codegenerator.models.Response]
   )
 
   case class Parameter(
     name: String,
-    datatype: com.gilt.apidocgenerator.models.Type,
-    location: com.gilt.apidocgenerator.models.ParameterLocation,
+    `type`: core.TypeInstance,
+    location: codegenerator.models.ParameterLocation,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
@@ -90,7 +88,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Response(
     code: Int,
-    datatype: com.gilt.apidocgenerator.models.Type
+    `type`: core.TypeInstance
   )
 
   /**
@@ -108,45 +106,14 @@ package com.gilt.apidocgenerator.models {
     userAgent: scala.Option[String] = None
   )
 
-  case class Type(
-    kind: com.gilt.apidocgenerator.models.TypeKind,
+  /**
+   * The target platform for code generation.
+   */
+  case class Target(
+    key: String,
     name: String,
-    multiple: Boolean
+    description: scala.Option[String] = None
   )
-
-  sealed trait HeaderType
-
-  object HeaderType {
-
-    case object String extends HeaderType { override def toString = "string" }
-    case object Enum extends HeaderType { override def toString = "enum" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends HeaderType
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(String, Enum)
-
-    private[this]
-    val byName = all.map(x => x.toString -> x).toMap
-
-    def apply(value: String): HeaderType = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): scala.Option[HeaderType] = byName.get(value)
-
-  }
 
   sealed trait ParameterLocation
 
@@ -183,38 +150,4 @@ package com.gilt.apidocgenerator.models {
 
   }
 
-  sealed trait TypeKind
-
-  object TypeKind {
-
-    case object Primitive extends TypeKind { override def toString = "primitive" }
-    case object Model extends TypeKind { override def toString = "model" }
-    case object Enum extends TypeKind { override def toString = "enum" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends TypeKind
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Primitive, Model, Enum)
-
-    private[this]
-    val byName = all.map(x => x.toString -> x).toMap
-
-    def apply(value: String): TypeKind = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): scala.Option[TypeKind] = byName.get(value)
-
-  }
 }

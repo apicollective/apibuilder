@@ -7,6 +7,8 @@ import org.scalatest.Matchers
 
 class UtilSpec extends FunSpec with Matchers {
 
+  lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
+
   it("isJsonDocumentMethod") {
     Util.isJsonDocumentMethod("GET") should be(false)
     Util.isJsonDocumentMethod("get") should be(false)
@@ -25,6 +27,26 @@ class UtilSpec extends FunSpec with Matchers {
     Util.namedParametersInPath("/users/:guid") should be(Seq("guid"))
     Util.namedParametersInPath("/:org/docs/:version") should be(Seq("org", "version"))
     Util.namedParametersInPath("/:org/:service/:version") should be(Seq("org", "service", "version"))
+  }
+
+  it("isValidEnumValue") {
+    lazy val ageGroupEnum = ssd.enums.find(_.name == "AgeGroup").getOrElse {
+      sys.error("No age group enum found")
+    }
+    ageGroupEnum.isValidEnumValue("Youth") should be(true)
+    ageGroupEnum.isValidEnumValue("Adult") should be(true)
+    ageGroupEnum.isValidEnumValue("foobar") should be(false)
+  }
+
+  it("assertValidEnumValue") {
+    lazy val ageGroupEnum = ssd.enums.find(_.name == "AgeGroup").getOrElse {
+      sys.error("No age group enum found")
+    }
+    ageGroupEnum.assertValidEnumValue("Youth") should be(true)
+    ageGroupEnum.assertValidEnumValue("Adult") should be(true)
+    intercept[RuntimeError] {
+      ageGroupEnum.assertValidEnumValue("foobar")
+    }.toString should be("TODO")
   }
 
 }

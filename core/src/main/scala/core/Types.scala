@@ -1,5 +1,7 @@
 package core
 
+import codegenerator.models.Enum
+
 sealed trait Primitives
 
 object Primitives {
@@ -46,7 +48,13 @@ object TypeContainer {
 case class TypeInstance(
   container: TypeContainer,
   `type`: Type
-)
+) {
+
+  def assertValidDefault(enums: Seq[Enum], value: String) {
+    TypeValidator(enums.map(e => TypeValidatorEnums(e.name, e.values.map(_.name)))).assertValidDefault(`type`, value)
+  }
+
+}
 
 case class TypeResolver(
   enumNames: Seq[String] = Seq.empty,
@@ -68,6 +76,10 @@ case class TypeResolver(
         }
       }
     }
+  }
+
+  def toTypeInstance(internal: InternalParsedDatatype): Option[TypeInstance] = {
+    toType(internal.name).map { TypeInstance(internal.container, _) }
   }
 
 }
