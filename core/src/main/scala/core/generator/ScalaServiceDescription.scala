@@ -428,6 +428,20 @@ object ScalaDataType {
     case Datatype.DateTimeIso8601Type => ScalaDateTimeIso8601Type
   }
 
+  def apply(ptype: Primitives): ScalaDataType = datatype match {
+    case Primitives.String => ScalaStringType
+    case Primitives.Integer => ScalaIntegerType
+    case Primitives.Double => ScalaDoubleType
+    case Primitives.Long => ScalaLongType
+    case Primitives.Boolean => ScalaBooleanType
+    case Primitives.Decimal => ScalaDecimalType
+    case Primitives.Map => ScalaMapType
+    case Primitives.Unit => ScalaUnitType
+    case Primitives.Uuid => ScalaUuidType
+    case Primitives.DateIso8601 => ScalaDateIso8601Type
+    case Primitives.DateTimeIso8601 => ScalaDateTimeIso8601Type
+  }
+
   def asString(varName: String, d: ScalaDataType): String = d match {
     case ScalaStringType => s"$varName"
     case ScalaIntegerType => s"$varName.toString"

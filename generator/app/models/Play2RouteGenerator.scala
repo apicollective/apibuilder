@@ -69,25 +69,25 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
 
   val verb = op.method
   val url = op.path
-  val params = parametersWithTypesAndDefaults(op.parameters.filter(!_.datatype.multiple).filter(_.location != ParameterLocation.Form))
+  val params = parametersWithTypesAndDefaults(op.parameters.filter(_.location != ParameterLocation.Form).filter(_.`type`.container == TypeContainer.Singleton))
 
   /**
     * Play does not have native support for providing a list as a
     * query parameter. Document these query parameters in the routes
     * file - but do not implement.
     */
-  private val parametersToComment = op.parameters.filter(_.datatype.multiple).filter(_.location != ParameterLocation.Form)
-  val paramComments = if (parametersToComment.isEmpty) {
-    None
-  } else {
-    Some(
-      Seq(
-        s"# Additional parameters to ${op.method} ${op.path}",
-        parametersToComment.map { p =>
-          "#   - " + parameterWithType(ssd, p)
-        }.mkString("\n")
-      ).mkString("\n")
-    )
+  val paramComments: Option[String] = op.parameters.filter(_.location != ParameterLocation.Form).filter(_.`type`.container != TypeContainer.Singleton) match {
+    case Nil => None
+    case paramsToComment => {
+      Some(
+        Seq(
+          s"# Additional parameters to ${op.method} ${op.path}",
+          paramsToComment.map { p =>
+            "#   - " + parameterWithType(ssd, p)
+          }.mkString("\n")
+        ).mkString("\n")
+      )
+    }
   }
 
   val method = "%s.%s".format(
@@ -100,24 +100,30 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
       Seq(
         Some(parameterWithType(ssd, param)),
         param.default.map( d =>
-          param.datatype match {
-            case Type(TypeKind.Primitive, name, _) =>
-              val datatype = Datatype.forceByName(name)
-              datatype match {
-                case Datatype.StringType | Datatype.UnitType | Datatype.DateIso8601Type | Datatype.DateTimeIso8601Type | Datatype.UuidType => {
+          param.`type` match {
+            case TypeInstance(TypeContainer.List, _) => {
+              sys.error("Cannot set defaults for lists")
+            }
+            case TypeInstance(TypeContainer.Map, _) => {
+              sys.error("Cannot set defaults for maps")
+            }
+            case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => {
+              pt match {
+                case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
                   s"""?= "$d""""
                 }
-                case Datatype.IntegerType | Datatype.DoubleType | Datatype.LongType | Datatype.BooleanType | Datatype.DecimalType => {
+                case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean | Primitives.Decimal => {
                   s"?= ${d}"
                 }
-                case Datatype.UnitType | Datatype.MapType => {
-                  sys.error(s"Unsupported type[${datatype}] for default values")
+                case Primitives.Unit => {
+                  sys.error(s"Unsupported type[$pt] for default values")
                 }
+              }
             }
-            case Type(TypeKind.Model, _, _) => {
+            case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => {
               sys.error(s"Models cannot be defaults in path parameters")
             }
-            case Type(TypeKind.Enum, _, _) => {
+            case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => {
               s"""?= "${d}""""
             }
           }
@@ -131,30 +137,58 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
   }
 
   private def scalaDataType(ssd: ScalaServiceDescription, param: Parameter): String = {
-    param.datatype match {
-      case Type(TypeKind.Model, _, _) => {
+    param.`type` match {
+      case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => {
+        val name = ScalaDataType(pt).name
+        qualifyParam(TypeContainer.Singleton, name, param.required)
+      }
+      case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => {
+        qualifyParam(TypeContainer.Singleton, ssd.enumClassName(name), param.required)
+      }
+
+      case TypeInstance(TypeContainer.List, Type.Primitive(pt)) => {
+        val name = ScalaDataType(pt).name
+        qualifyParam(TypeContainer.List, name, param.required)
+      }
+      case TypeInstance(TypeContainer.List, Type.Enum(name)) => {
+        qualifyParam(TypeContainer.List, ssd.enumClassName(name), param.required)
+      }
+
+      case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => {
         sys.error("Model parameter types not supported in play routes")
       }
-      case Type(TypeKind.Enum, enumName, _) => {
-        qualifyParam(ssd.enumClassName(enumName), param.required, param.datatype.multiple)
-      }
-      case Type(TypeKind.Primitive, n, _) => {
-        val dt = Datatype.forceByName(n)
-        val name = ScalaDataType(dt).name
-        qualifyParam(name, param.required, param.datatype.multiple)
+      case TypeInstance(TypeContainer.Map, _) => {
+        sys.error("Map parameter defaults not supported in play routes")
       }
     }
   }
 
-  private def qualifyParam(name: String, required: Boolean, multiple: Boolean): String = {
-    if (!required && multiple) {
-      s"Option[Seq[$name]]"
-    } else if (!required) {
-      s"Option[$name]"
-    } else if (multiple) {
-      s"Seq[$name]"
-    } else {
-      name
+  private def qualifyParam(
+    container: TypeContainer,
+    name: String,
+    required: Boolean
+  ): String = {
+    container match {
+      case TypeContainer.Singleton => {
+        if (required) {
+          name
+        } else {
+          s"Option[$name]"
+        }
+      }
+
+      case TypeContainer.List => {
+        if (required) {
+          s"Seq[$name]"
+        } else {
+          s"Option[Seq[$name]]"
+        }
+      }
+
+      case TypeContainer.Map => {
+        sys.error("Parameters of type map not supported")
+      }
+
     }
   }
 
