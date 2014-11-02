@@ -126,12 +126,17 @@ class ScalaModel(val ssd: ScalaServiceDescription, val model: Model) {
 
 }
 
-class ScalaBody(val body: Type) {
+class ScalaBody(val body: TypeInstance) {
 
   val name: String = body match {
-    case Type(TypeKind.Primitive, name, multiple) => ScalaUtil.toClassName("value", multiple)
-    case Type(TypeKind.Model, name, multiple) => ScalaUtil.toClassName(name, multiple)
-    case Type(TypeKind.Enum, name, multiple) => ScalaUtil.toClassName(name, multiple)
+    case TypeInstance(TypeContainer.Singleton, Type.Primitive(_)) => ScalaUtil.toClassName("value")
+    case TypeInstance(TypeContainer.List | TypeContainer.Map, Type.Primitive(_)) => ScalaUtil.toClassName("values")
+
+    case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => ScalaUtil.toClassName(name)
+    case TypeInstance(TypeContainer.List | TypeContainer.Map, Type.Model(name)) => ScalaUtil.toClassName(name, true)
+
+    case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => ScalaUtil.toClassName(name)
+    case TypeInstance(TypeContainer.List | TypeContainer.Map, Type.Enum(name)) => ScalaUtil.toClassName(name, true)
   }
 
 }

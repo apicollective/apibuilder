@@ -85,13 +85,11 @@ object OperationBuilder {
       ParameterBuilder(enums, models, p, location)
     }
 
-    val typeResolver = TypeResolver(
-      enumNames = enums.map(_.name),
-      modelNames = models.map(_.name)
-    )
-
-    val body: Option[Type] = internal.body.map { ib =>
-      typeResolver.toType(ib.name).getOrElse {
+    val body: Option[TypeInstance] = internal.body.map { ib =>
+      TypeResolver(
+        enumNames = enums.map(_.name),
+        modelNames = models.map(_.name)
+      ).toTypeInstance(ib).getOrElse {
         sys.error(s"Operation specifies body[${ib.name}] which references an undefined datatype, model or enum")
       }
     }

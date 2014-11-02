@@ -150,10 +150,13 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
       None
 
     } else if (!op.body.isEmpty) {
-      val payload = op.body.get.body match {
-        case Type(TypeKind.Primitive, name, multiple) => ScalaDataType.asString(ScalaUtil.toVariable(op.body.get.name), ScalaDataType(Datatype.forceByName(name)))
-        case Type(TypeKind.Model, name, multiple) => ScalaUtil.toVariable(op.body.get.name)
-        case Type(TypeKind.Enum, name, multiple) => s"${ScalaUtil.toVariable(op.body.get.name)}.map(_.toString)"
+      val body = op.body.get.body
+      val name = op.body.get.name
+
+      val payload = body match {
+        case TypeInstance(_, Type.Primitive(pt)) => ScalaDataType.asString(name, ScalaDataType(pt))
+        case TypeInstance(_, Type.Model(name)) => ScalaUtil.toVariable(name)
+        case TypeInstance(_, Type.Enum(name)) => s"${ScalaUtil.toVariable(name)}.map(_.toString)"
       }
 
       Some(s"val payload = play.api.libs.json.Json.toJson($payload)")

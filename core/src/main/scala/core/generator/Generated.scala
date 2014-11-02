@@ -63,7 +63,7 @@ package com.gilt.apidocgenerator.models {
     method: String,
     path: String,
     description: scala.Option[String] = None,
-    body: scala.Option[core.Type] = None,
+    body: scala.Option[core.TypeInstance] = None,
     parameters: scala.collection.Seq[codegenerator.models.Parameter],
     responses: scala.collection.Seq[codegenerator.models.Response]
   )
