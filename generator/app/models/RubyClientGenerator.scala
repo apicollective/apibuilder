@@ -241,16 +241,8 @@ case class RubyClientGenerator(service: ServiceDescription) {
       sb.append(s"      def ${methodName}$paramCall")
 
       pathParams.foreach { param =>
-
-        val klass = param.datatype match {
-          case Type(TypeKind.Primitive, name, _) =>
-            val datatype = Datatype.forceByName(name)
-            rubyClass(datatype)
-          case Type(TypeKind.Model, name, _) => qualifiedClassName(name)
-          case Type(TypeKind.Enum, name, _) => qualifiedClassName(name)
-        }
-
-        sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
+        val ti = parseTypeInstance(param.`type`)
+        sb.append(s"        " + ti.assertMethod)
       }
 
       if (!queryParams.isEmpty) {
@@ -279,37 +271,35 @@ case class RubyClientGenerator(service: ServiceDescription) {
             sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
             requestBuilder.append(".with_json(hash.to_json)")
           }
-          case Some(Type(TypeKind.Primitive, name, false)) => {
-            val dt = Datatype.forceByName(name)
-            sb.append(s"        HttpClient::Preconditions.assert_class('value', value, ${rubyClass(dt)})")
-            requestBuilder.append(".with_body(value)")
-          }
-          case Some(Type(TypeKind.Primitive, name, true)) => {
-            val dt = Datatype.forceByName(name)
-            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('values', values, ${rubyClass(dt)})")
-            requestBuilder.append(".with_body(value)")
-          }
-          case Some(Type(TypeKind.Model, name, false)) => {
-            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_class('$name', $name, $klass)")
-            requestBuilder.append(s".with_json($name.to_hash.to_json)")
-          }
-          case Some(Type(TypeKind.Model, name, true)) => {
-            val plural = RubyUtil.toVariable(name, true)
-            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
-            requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
-          }
-          case Some(Type(TypeKind.Enum, name, false)) => {
-            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_class('$name', $name, $klass)")
-            requestBuilder.append(s".with_json($name.to_hash.to_json)")
-          }
-          case Some(Type(TypeKind.Enum, name, true)) => {
-            val plural = RubyUtil.toVariable(name, true)
-            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
-            requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
+          case Some(body) => {
+            val ti = parseTypeInstance(body)
+            sb.append("        " + ti.assertMethod)
+
+            body match {
+              case TypeInstance(_, Type.Primitive(pt)) => {
+                requestBuilder.append(".with_body(${ti.varName})")
+              }
+
+              case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.to_hash.to_json)")
+              }
+              case TypeInstance(TypeContainer.List, Type.Model(name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash.to_json })")
+              }
+              case TypeInstance(TypeContainer.Map, Type.Model(name)) => {
+                sys.error("Ruby client does not yet serialize maps to json")
+              }
+
+              case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.to_hash.to_json)")
+              }
+              case TypeInstance(TypeContainer.List, Type.Enum(name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash.to_json })")
+              }
+              case TypeInstance(TypeContainer.Map, Type.Enum(name)) => {
+                sys.error("Ruby client does not yet serialize maps to json")
+              }
+            }
           }
           case _ => sys.error(s"Invalid body [${op.body}]")
         }
@@ -493,19 +483,18 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
   }
 
-  private def rubyClass(datatype: Datatype): String = {
-    datatype match {
-      case Datatype.StringType => "String"
-      case Datatype.LongType => "Integer"
-      case Datatype.DoubleType => "Float"
-      case Datatype.IntegerType => "Integer"
-      case Datatype.BooleanType => "String"
-      case Datatype.DecimalType => "BigDecimal"
-      case Datatype.UuidType => "String"
-      case Datatype.DateIso8601Type => "Date"
-      case Datatype.DateTimeIso8601Type => "DateTime"
-      case Datatype.MapType => "Hash"
-      case Datatype.UnitType => "nil"
+  private def rubyClass(pt: Primitives): String = {
+    pt match {
+      case Primitives.String => "String"
+      case Primitives.Long => "Integer"
+      case Primitives.Double => "Float"
+      case Primitives.Integer => "Integer"
+      case Primitives.Boolean => "String"
+      case Primitives.Decimal => "BigDecimal"
+      case Primitives.Uuid => "String"
+      case Primitives.DateIso8601 => "Date"
+      case Primitives.DateTimeIso8601 => "DateTime"
+      case Primitives.Unit => "nil"
     }
   }
 
@@ -516,6 +505,48 @@ case class RubyClientGenerator(service: ServiceDescription) {
     case Primitives.Unit => {
       sys.error(s"Unsupported type[$pt] for string formatting - varName[$varName]")
     }
+  }
+
+  case class RubyTypeInfo(
+    varName: String,
+    klass: String,
+    assertMethod: String
+  )
+
+  private def parseTypeInstance(
+    instance: TypeInstance
+  ): RubyTypeInfo = {
+    val klass = param.`type` match {
+      case Type.Primitive(pt) => rubyClass(pt)
+      case Type.Model(name) => qualifiedClassName(name)
+      case Type.Enum(name) => qualifiedClassName(name)
+    }
+
+    val varName = instance match {
+      case Type(TypeContainer.Singleton, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = false)
+      case Type(TypeContainer.List, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
+      case Type(TypeContainer.Map, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
+
+      case Type(TypeContainer.Singleton, Type.Model(name)) => RubyUtil.toVariable(name, multiple = false)
+      case Type(TypeContainer.List, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
+      case Type(TypeContainer.Map, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
+
+      case Type(TypeContainer.Singleton, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = false)
+      case Type(TypeContainer.List, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
+      case Type(TypeContainer.Map, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
+    }
+
+    val assertStub = param.`type`.container match {
+      case TypeContainer.Singleton => "assert_class"
+      case TypeContainer.List => "assert_collection_of_class"
+      case TypeContainer.Singleton => "assert_hash_of_class"
+    }
+
+    RubyTypeInfo(
+      varName = varName,
+      klass = klass,
+      assertMethod = s"HttpClient::Preconditions.$assertStub('$varName', $varName, $klass)"
+    )
   }
 
 }

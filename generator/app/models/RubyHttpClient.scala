@@ -258,6 +258,11 @@ require 'bigdecimal'
         values.each { |v| Preconditions.assert_class(field_name, v, klass) }
       end
 
+      def Preconditions.assert_hash_of_class(field_name, hash, klass)
+        Preconditions.assert_class(field_name, hash, Hash)
+        values.each { |k, v| Preconditions.assert_class(field_name, v, klass) }
+      end
+
     end
 
     class AuthScheme
