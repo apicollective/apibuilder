@@ -197,20 +197,12 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
 
   val argList: Option[String] = operation.body match {
     case None => ScalaUtil.fieldsToArgList(parameters.map(_.definition))
-    case Some(Type(TypeKind.Primitive, name, multiple)) => {
-      val baseTypeName = ScalaDataType(Datatype.forceByName(name)).name
-
-      val typeName: String = {
-        if (multiple) {
-          s"scala.collection.Seq[$baseTypeName]"
-        } else {
-          baseTypeName
-        }
-      }
+    case Some(typeInstance) => {
+      val sdt = ScalaDataType(typeInstance)
 
       Some(
         Seq(
-          Some(s"%s: %s".format(ScalaUtil.toVariable("value", multiple), typeName)),
+          Some(s"%s: %s".format(std.varName, sdt.name)),
           ScalaUtil.fieldsToArgList(parameters.map(_.definition))
         ).flatten.mkString(", ")
       )
@@ -248,48 +240,33 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
 class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Response) {
 
   val scalaType: String = underscoreAndDashToInitCap(response.datatype.name)
-  val isUnit = scalaType == "Unit"
-  val isMultiple = response.datatype.multiple
-  val isOption = !isMultiple && !Util.isJsonDocumentMethod(method)
+  val isSingleton = response.`type`.container match {
+    case TypeContainer.Singleton => true
+    case TypeContainer.List | TypeContainer.Map => false
+  }
+  val isOption = isSingleton && !Util.isJsonDocumentMethod(method)
 
   val code = response.code
   val isSuccess = code >= 200 && code < 300
   val isNotFound = code == 404
 
-  val qualifiedScalaType: String = if (isUnit) {
-    scalaType
-  } else {
-    Datatype.findByName(response.datatype.name) match {
-      case Some(dt) => ScalaDataType(dt).name
-      case None => {
-        ssd.models.find(_.name == response.datatype) match {
-          case Some(model) => new ScalaDataType.ScalaModelType(ssd.modelPackageName, response.datatype.name).name
-          case None => new ScalaDataType.ScalaEnumType(ssd.enumPackageName, response.datatype.name).name
-        }
-      }
-    }
-  }
+  val datatype = ScalaDataType(response.`type`)
 
-  val resultType: String = {
-    if (response.datatype.multiple) {
-      s"scala.collection.Seq[${qualifiedScalaType}]"
-    } else if (isOption) {
-      s"scala.Option[$qualifiedScalaType]"
-    } else {
-      qualifiedScalaType
-    }
-  }
+  val isUnit = datatype == ScalaDataType(Primitives.Unit)
 
-  val errorVariableName = ScalaUtil.toVariable(scalaType, isMultiple)
+  val resultType: String = datatype.name
+
+  val errorVariableName = ScalaUtil.toVariable(scalaType, !isSingleton)
 
   val errorClassName = Text.initCap(errorVariableName) + "Response"
 
-  val errorResponseType = if (isOption) {
-    // In the case of errors, ignore the option wrapper as we only
-    // trigger the error response when we have an actual error.
-    qualifiedScalaType
-  } else {
-    resultType
+  val errorResponseType = datatype match {
+    case ScalaDataType(ScalaDataType.OptionType(name)) => {
+      // In the case of errors, ignore the option wrapper as we only
+      // trigger the error response when we have an actual error.
+      name
+    }
+    case _ => datatype.name
   }
 
 }
@@ -301,27 +278,18 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
   def originalName: String = field.name
 
   import ScalaDataType._
-  val baseType: ScalaDataType = field.datatype match {
+
+  /*
+  val baseType: ScalaDataType = field.`type` match {
     case Type(TypeKind.Primitive, name, _) => ScalaDataType(Datatype.forceByName(name))
     case Type(TypeKind.Model, name, _) => new ScalaModelType(ssd.modelPackageName, name)
     case Type(TypeKind.Enum, name, _) => new ScalaEnumType(ssd.enumPackageName, name)
   }
+   */
 
-  def datatype: ScalaDataType = {
-    if (multiple) {
-      new ScalaListType(baseType)
-    } else if (isOption) {
-      new ScalaOptionType(baseType)
-    } else {
-      baseType
-    }
-  }
+  def datatype = ScalaDataType(field.`type`)
 
   def description: Option[String] = field.description
-
-  def multiple: Boolean = field.datatype.multiple
-
-  def typeName: String = datatype.name
 
   /**
    * If there is a default, ensure it is only set server side otherwise
@@ -329,18 +297,7 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
    */
   def isOption: Boolean = !field.required || field.default.nonEmpty
 
-  def definition: String = {
-    val decl = s"$name: $typeName"
-    if (isOption) {
-      if (multiple) {
-        decl + " = Nil"
-      } else {
-        decl + " = None"
-      }
-    } else {
-      decl
-    }
-  }
+  def definition: String = datatype.definition(name, isOption)
 }
 
 class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
@@ -349,31 +306,8 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
 
   def originalName: String = param.name
 
-  def baseType: ScalaDataType = {
-    import ScalaDataType._
-    param.datatype match {
-      case Type(TypeKind.Primitive, name, _) => ScalaDataType(Datatype.forceByName(name))
-      case Type(TypeKind.Model, name, _) => new ScalaModelType(ssd.modelPackageName, name)
-      case Type(TypeKind.Enum, name, _) => new ScalaEnumType(ssd.enumPackageName, name)
-    }
-  }
-
-  def datatype: ScalaDataType = {
-    import ScalaDataType._
-    if (multiple) {
-      new ScalaListType(baseType)
-    } else if (isOption) {
-      new ScalaOptionType(baseType)
-    } else {
-      baseType
-    }
-  }
-
+  def datatype = ScalaDataType(param.`type`)
   def description: String = param.description.getOrElse(name)
-
-  def multiple: Boolean = param.datatype.multiple
-
-  def typeName: String = datatype.name
 
   /**
    * If there is a default, ensure it is only set server side otherwise
@@ -381,24 +315,30 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
    */
   def isOption: Boolean = !param.required || param.default.nonEmpty
 
-  def definition: String = {
-    val decl = s"$name: $typeName"
-    if (isOption) {
-      if (multiple) {
-        decl + " = Nil"
-      } else {
-        decl + " = None"
+  def definition: String = datatype.definition(name, isOption)
+
+  def location = param.location
+}
+
+sealed abstract class ScalaDataType(val name: String) {
+
+  def definition(
+    varName: String,
+    optional: Boolean
+  ): String = {
+    val decl = s"$varName: $name"
+    if (optional) {
+      field.`type`.container match {
+        case TypeContainer.Singleton => decl + " = None"
+        case TypeContainer.List => decl + " = Nil"
+        case TypeContainer.Map => decl + " = Map.Empty"
       }
     } else {
       decl
     }
   }
 
-  def location = param.location
-
 }
-
-sealed abstract class ScalaDataType(val name: String)
 
 object ScalaDataType {
 
@@ -408,43 +348,30 @@ object ScalaDataType {
   case object ScalaLongType extends ScalaDataType("Long")
   case object ScalaBooleanType extends ScalaDataType("Boolean")
   case object ScalaDecimalType extends ScalaDataType("BigDecimal")
-  case object ScalaMapType extends ScalaDataType("Map[String, String]")
   case object ScalaUnitType extends ScalaDataType("Unit")
-  case object ScalaUuidType extends ScalaDataType("java.util.UUID")
+
+  case object ScalaUuidType extends ScalaDataType("_root_.java.util.UUID")
   case object ScalaDateIso8601Type extends ScalaDataType("_root_.org.joda.time.LocalDate")
   case object ScalaDateTimeIso8601Type extends ScalaDataType("_root_.org.joda.time.DateTime")
 
-  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaModelType(packageName: String, modelName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(modelName)}")
   case class ScalaEnumType(packageName: String, enumName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(enumName)}")
+  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
+  case class ScalaMapType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Map[String, ${inner.name}]")
   case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
-  def apply(datatype: Datatype): ScalaDataType = datatype match {
-    case Datatype.StringType => ScalaStringType
-    case Datatype.IntegerType => ScalaIntegerType
-    case Datatype.DoubleType => ScalaDoubleType
-    case Datatype.LongType => ScalaLongType
-    case Datatype.BooleanType => ScalaBooleanType
-    case Datatype.DecimalType => ScalaDecimalType
-    case Datatype.MapType => ScalaMapType
-    case Datatype.UnitType => ScalaUnitType
-    case Datatype.UuidType => ScalaUuidType
-    case Datatype.DateIso8601Type => ScalaDateIso8601Type
-    case Datatype.DateTimeIso8601Type => ScalaDateTimeIso8601Type
-  }
+  def apply(typeInstance: TypeInstance): ScalaDataType = typeInstance match {
+    case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => ScalaDataType(pt)
+    case TypeInstance(TypeContainer.List, Type.Primitive(pt)) => ScalaListType(ScalaDataType(pt))
+    case TypeInstance(TypeContainer.Map, Type.Primitive(pt)) => ScalaMapType(ScalaDataType(pt))
 
-  def apply(ptype: Primitives): ScalaDataType = datatype match {
-    case Primitives.String => ScalaStringType
-    case Primitives.Integer => ScalaIntegerType
-    case Primitives.Double => ScalaDoubleType
-    case Primitives.Long => ScalaLongType
-    case Primitives.Boolean => ScalaBooleanType
-    case Primitives.Decimal => ScalaDecimalType
-    case Primitives.Map => ScalaMapType
-    case Primitives.Unit => ScalaUnitType
-    case Primitives.Uuid => ScalaUuidType
-    case Primitives.DateIso8601 => ScalaDateIso8601Type
-    case Primitives.DateTimeIso8601 => ScalaDateTimeIso8601Type
+    case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => ScalaModelType(name)
+    case TypeInstance(TypeContainer.List, Type.Model(name)) => ScalaListType(ScalaModelType(name))
+    case TypeInstance(TypeContainer.Map, Type.Model(name)) => ScalaMapType(ScalaModelType(name))
+
+    case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => ScalaEnumType(name)
+    case TypeInstance(TypeContainer.List, Type.Enum(name)) => ScalaListType(ScalaEnumType(name))
+    case TypeInstance(TypeContainer.Map, Type.Enum(name)) => ScalaMapType(ScalaEnumType(name))
   }
 
   def asString(varName: String, d: ScalaDataType): String = d match {
