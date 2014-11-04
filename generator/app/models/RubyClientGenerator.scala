@@ -310,16 +310,21 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       // TODO: match on all response codes
       op.responses.headOption.map { response =>
-        response.datatype.name match {
-          case Datatype.UnitType.name => {
+        response.`type` match {
+          case TypeInstance(_, Type.Primitive(Primitives.Unit)) => {
             responseBuilder.append("\n        nil")
           }
 
-          case resourceName: String => {
-            if (op.responses.head.datatype.multiple) {
-              responseBuilder.append(".map")
-            }
-            responseBuilder.append(s" { |hash| ${moduleName}::Models::${RubyUtil.toClassName(resourceName)}.new(hash) }")
+          case TypeInstance(container, Type.Primitive(pt)) => {
+            responseBuilder.append(buildResponse(container, "value"))
+          }
+
+          case TypeInstance(container, Type.Model(name)) => {
+            responseBuilder.append(buildResponse(container, name))
+          }
+
+          case TypeInstance(container, Type.Enum(name)) => {
+            responseBuilder.append(buildResponse(container, name))
           }
         }
       }
@@ -547,6 +552,18 @@ case class RubyClientGenerator(service: ServiceDescription) {
       klass = klass,
       assertMethod = s"HttpClient::Preconditions.$assertStub('$varName', $varName, $klass)"
     )
+  }
+
+  private def buildResponse(
+    container: TypeContainer,
+    name: String
+  ): String = {
+    val varName = qualifiedClassName(name)
+    val code = s" { |hash| $varName.new(hash) }"
+    container match {
+      case TypeContainer.Singleton => code
+      case TypeContainer.List => ".map" + code
+    }
   }
 
 }
