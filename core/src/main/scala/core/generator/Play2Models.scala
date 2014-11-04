@@ -29,18 +29,18 @@ package ${ssd.modelPackageName} {
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
 
-    private[${ssd.packageNamePrivate}] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
+    implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
-    private[${ssd.packageNamePrivate}] implicit val jsonWritesUUID = new Writes[java.util.UUID] {
+    implicit val jsonWritesUUID = new Writes[java.util.UUID] {
       def writes(x: java.util.UUID) = JsString(x.toString)
     }
 
-    private[${ssd.packageNamePrivate}] implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
+    implicit val jsonReadsJodaDateTime = __.read[String].map { str =>
       import org.joda.time.format.ISODateTimeFormat.dateTimeParser
       dateTimeParser.parseDateTime(str)
     }
 
-    private[${ssd.packageNamePrivate}] implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
+    implicit val jsonWritesJodaDateTime = new Writes[org.joda.time.DateTime] {
       def writes(x: org.joda.time.DateTime) = {
         import org.joda.time.format.ISODateTimeFormat.dateTime
         val str = dateTime.print(x)
