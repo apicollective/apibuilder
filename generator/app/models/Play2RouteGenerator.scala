@@ -137,7 +137,7 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
   }
 
   private def scalaDataType(ssd: ScalaServiceDescription, param: Parameter): String = {
-    val datatype = ScalaDataType(param.`type`)
+    val datatype = ssd.scalaDataType(param.`type`)
     param.`type`.container match {
       case TypeContainer.Singleton => {
         if (param.required) {

@@ -88,26 +88,26 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
     if (params.isEmpty) {
       None
     } else {
-      val arrayParams = params.filter(_.multiple) match {
+      val arrayParams = params.filter(!_.isSingleton) match {
         case Nil => Seq.empty
         case params => {
           params.map { p =>
-            s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
+            s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.datatype)})"""
           }
         }
       }
       val arrayParamString = arrayParams.mkString(" ++\n")
 
-      val singleParams = params.filter(!_.multiple) match {
+      val singleParams = params.filter(_.isSingleton) match {
         case Nil => Seq.empty
         case params => {
           Seq(
             s"val $fieldName = Seq(",
             params.map { p =>
               if (p.isOption) {
-                s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.baseType)})"""
+                s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.datatype)})"""
               } else {
-                s"""  Some("${p.originalName}" -> ${ScalaDataType.asString(p.name, p.baseType)})"""
+                s"""  Some("${p.originalName}" -> ${ScalaDataType.asString(p.name, p.datatype)})"""
               }
             }.mkString(",\n"),
             ").flatten"
@@ -130,7 +130,7 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
 
   def pathParams(op: ScalaOperation): String = {
     val pairs = op.pathParameters.map { p =>
-      require(!p.multiple, "Path parameters cannot be lists.")
+      require(p.isSingleton, "Only singletons can be path parameters.")
       p.originalName -> PathParamHelper.urlEncode(p.name, p.datatype)
     }
     val tmp: String = pairs.foldLeft(op.path) {
@@ -154,7 +154,7 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
       val name = op.body.get.name
 
       val payload = body match {
-        case TypeInstance(_, Type.Primitive(pt)) => ScalaDataType.asString(name, ScalaDataType(pt))
+        case TypeInstance(_, Type.Primitive(pt)) => ScalaDataType.asString(name, op.ssd.scalaDataType(body))
         case TypeInstance(_, Type.Model(name)) => ScalaUtil.toVariable(name)
         case TypeInstance(_, Type.Enum(name)) => s"${ScalaUtil.toVariable(name)}.map(_.toString)"
       }
@@ -186,7 +186,7 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
         case ScalaEnumType(_, _) => s"""${config.pathEncodingMethod}($name.toString, "UTF-8")"""
         case ScalaDateIso8601Type => s"$name.toString"
         case ScalaDateTimeIso8601Type => s"$name.toString" // TODO
-        case ScalaListType(_) | ScalaMapType | ScalaModelType(_, _) | ScalaOptionType(_) | ScalaUnitType => {
+        case ScalaListType(_) | ScalaMapType(_) | ScalaModelType(_, _) | ScalaOptionType(_) | ScalaUnitType => {
           sys.error(s"Cannot encode params of type[$d] as path parameters (name: $name)")
         }
       }

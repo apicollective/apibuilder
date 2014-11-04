@@ -589,7 +589,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
     val assertStub = instance.container match {
       case TypeContainer.Singleton => "assert_class"
       case TypeContainer.List => "assert_collection_of_class"
-      case TypeContainer.Singleton => "assert_hash_of_class"
+      case TypeContainer.Map => "assert_hash_of_class"
     }
 
     RubyTypeInfo(
@@ -608,6 +608,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
     container match {
       case TypeContainer.Singleton => code
       case TypeContainer.List => ".map" + code
+      // TODO: Finish map
     }
   }
 

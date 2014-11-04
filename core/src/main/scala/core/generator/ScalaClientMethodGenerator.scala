@@ -125,10 +125,10 @@ case class ScalaClientMethodGenerator(
       val hasOptionResult = op.responses.filter(_.isSuccess).find(_.isOption) match {
         case None => ""
         case Some(r) => {
-          if (r.isMultiple) {
-            s"\ncase r if r.${config.responseStatusMethod} == 404 => Nil"
-          } else {
+          if (r.isSingleton) {
             s"\ncase r if r.${config.responseStatusMethod} == 404 => None"
+          } else {
+            s"\ncase r if r.${config.responseStatusMethod} == 404 => Nil"
           }
         }
       }
@@ -140,19 +140,15 @@ case class ScalaClientMethodGenerator(
               if (response.isUnit) {
                 Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => Some(Unit)")
               } else {
-                val json = config.toJson("r", response.qualifiedScalaType)
+                val json = config.toJson("r", response.datatype.name)
                 Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => Some($json)")
               }
 
-            } else if (response.isMultiple) {
-              val json = config.toJson("r", s"scala.collection.Seq[${response.qualifiedScalaType}]")
-              Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => $json")
-
             } else if (response.isUnit) {
-              Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => ${response.qualifiedScalaType}")
+              Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => ${response.datatype.name}")
 
             } else {
-              val json = config.toJson("r", response.qualifiedScalaType)
+              val json = config.toJson("r", response.datatype.name)
               Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => $json")
             }
 
