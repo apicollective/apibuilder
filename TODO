@@ -2,3 +2,5 @@ remove headertypevalue
 remove Header.headertype (has to be a string per spec)
 remove ScalaDataType.apply(datatype)
 remove datatype
+
+TODO: Finish map

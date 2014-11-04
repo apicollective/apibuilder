@@ -305,6 +305,24 @@ require 'bigdecimal'
         new_hash
       end
 
+      def Helper.to_klass_singleton(field_name, value, klass, opts={})
+        required = opts.has_key?(:required) ? opts.delete(:required) : false
+        HttpClient::Preconditions.assert_empty_opts(opts)
+        Helper.to_klass(field_name, value, klass, :required => required, :multiple => false)
+      end
+
+      def Helper.to_klass_list(field_name, value, klass, opts={})
+        required = opts.has_key?(:required) ? opts.delete(:required) : false
+        HttpClient::Preconditions.assert_empty_opts(opts)
+        Helper.to_klass(field_name, value, klass, :required => required, :multiple => true)
+      end
+
+      def Helper.to_klass_map(field_name, value, klass, opts={})
+        required = opts.has_key?(:required) ? opts.delete(:required) : false
+        HttpClient::Preconditions.assert_empty_opts(opts)
+        raise "TODO: Finish map"
+      end
+
       def Helper.to_klass(field_name, value, klass, opts={})
         HttpClient::Preconditions.assert_class('field_name', field_name, String)
         HttpClient::Preconditions.assert_class('klass', klass, Class)
@@ -325,6 +343,24 @@ require 'bigdecimal'
         else
           HttpClient::Preconditions.assert_class_or_nil(field_name, value, klass)
         end
+      end
+
+      def Helper.to_instance_singleton(field_name, klass, value, opts={})
+        required = opts.has_key?(:required) ? opts.delete(:required) : false
+        HttpClient::Preconditions.assert_empty_opts(opts)
+        Helper.to_model_instance(field_name, klass, value, :required => required, :multiple => false)
+      end
+
+      def Helper.to_instance_list(field_name, klass, value, opts={})
+        required = opts.has_key?(:required) ? opts.delete(:required) : false
+        HttpClient::Preconditions.assert_empty_opts(opts)
+        Helper.to_model_instance(field_name, klass, value, :required => required, :multiple => true)
+      end
+
+      def Helper.to_instance_map(field_name, klass, value, opts={})
+        required = opts.has_key?(:required) ? opts.delete(:required) : false
+        HttpClient::Preconditions.assert_empty_opts(opts)
+        raise "TODO: Finish map"
       end
 
       def Helper.to_model_instance(field_name, klass, value, opts={})

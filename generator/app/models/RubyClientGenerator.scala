@@ -363,19 +363,34 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.append("        {")
     sb.append(
       model.fields.map { field =>
-        val nullable = field.datatype match {
-          case Type(TypeKind.Primitive, _, _) => field.name
-          case Type(TypeKind.Model, _, _) => {
-            if (field.datatype.multiple) {
-              s"${field.name}.map(&:to_hash)"
-            } else {
-              s"${field.name}.to_hash"
-            }
+        val nullable = field.`type` match {
+          case TypeInstance(_, Type.Primitive(pt)) => {
+            s":${field.name} => ${field.name}"
           }
-          case Type(TypeKind.Enum, _, _) => s":${field.name} => ${field.name}.value"
+
+          case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => {
+            s":${field.name} => ${field.name}.to_hash"
+          }
+          case TypeInstance(TypeContainer.List, Type.Model(name)) => {
+            s":${field.name} => ${field.name}.map(&:to_hash)"
+          }
+          //case TypeInstance(TypeContainer.Map, Type.Model(name)) => {
+          //s":${field.name} => ${field.name}.map(&:to_hash)"
+          //  TODO: Finish map
+          //}
+
+          case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => {
+            s":${field.name} => ${field.name}.value"
+          }
+          case TypeInstance(TypeContainer.List, Type.Enum(name)) => {
+            s":${field.name} => ${field.name}.map(&:value)"
+          }
+          //case TypeInstance(TypeContainer.Map, Type.Enum(name)) => {
+          //  TODO: Finish map
+          //}
         }
 
-        val value = if (field.required) nullable else s"${field.name}.nil? ? nil : ${nullable}"
+        val value = if (field.required) { nullable } else { s"${field.name}.nil? ? nil : ${nullable}" }
 
         s":${field.name} => ${value}"
       }.mkString("            ", ",\n            ", "")
@@ -389,32 +404,29 @@ case class RubyClientGenerator(service: ServiceDescription) {
   }
 
   private def parseArgument(field: Field): String = {
-    field.datatype match {
-      case Type(TypeKind.Primitive, name, _) => {
-        val datatype = Datatype.forceByName(name)
-        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.datatype.multiple)
+    field.`type` match {
+      case TypeInstance(container, Type.Primitive(pt)) => {
+        parsePrimitiveArgument(field.name, container, pt, field.required, field.default)
       }
-      case  Type(TypeKind.Model, name, _) => {
-        parseModelArgument(field.name, name, field.required, field.datatype.multiple)
+      case TypeInstance(container, Type.Model(name)) => {
+        parseModelArgument(field.name, container, name, field.required)
       }
-      case Type(TypeKind.Enum, name, _) => {
-        parseEnumArgument(field.name, name, field.required, field.datatype.multiple)
+      case TypeInstance(container, Type.Enum(name)) => {
+        parseEnumArgument(field.name, container, name, field.required, field.default)
       }
     }
-
   }
 
   private def parseArgument(param: Parameter): String = {
-    param.datatype match {
-      case Type(TypeKind.Primitive, name, _) => {
-        val datatype = Datatype.forceByName(name)
-        parsePrimitiveArgument(param.name, datatype, param.required, param.default, param.datatype.multiple)
+    param.`type` match {
+      case TypeInstance(container, Type.Primitive(pt)) => {
+        parsePrimitiveArgument(param.name, container, pt, param.required, param.default)
       }
-      case Type(TypeKind.Model, name, _) => {
-        parseModelArgument(param.name, name, param.required, param.datatype.multiple)
+      case TypeInstance(container, Type.Model(name)) => {
+        parseModelArgument(param.name, container, name, param.required)
       }
-      case Type(TypeKind.Enum, name, _) => {
-        parseEnumArgument(param.name, name, param.required, param.datatype.multiple)
+      case TypeInstance(container, Type.Enum(name)) => {
+        parseEnumArgument(param.name, container, name, param.required, param.default)
       }
     }
   }
@@ -428,59 +440,92 @@ case class RubyClientGenerator(service: ServiceDescription) {
     )
   }
 
-  private def parseModelArgument(name: String, modelName: String, required: Boolean, multiple: Boolean): String = {
-    val value = s"opts.delete(:${name})"
+  private def parseModelArgument(name: String, container: TypeContainer, modelName: String, required: Boolean): String = {
+    val value = s"opts.delete(:$name)"
     val klass = qualifiedClassName(modelName)
-    s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => $required, :multiple => $multiple)"
-  }
 
-  private def parseEnumArgument(name: String, enumName: String, required: Boolean, multiple: Boolean): String = {
-    val value = s"opts.delete(:${name})"
-    val klass = qualifiedClassName(enumName)
-    s"HttpClient::Helper.to_klass('$name', $klass.apply($value), $klass, :required => $required, :multiple => $multiple)"
-  }
-
-  private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String], multiple: Boolean): String = {
-    val value = if (default.isEmpty) {
-      s"opts.delete(:${name})"
-    } else if (datatype == Datatype.StringType) {
-      s"opts.delete(:${name}) || \'${default.get}\'"
-    } else if (datatype == Datatype.BooleanType) {
-      s"opts.has_key?(:${name}) ? (opts.delete(:${name}) ? true : false) : ${default.get}"
-    } else {
-      s"opts.delete(:${name}) || ${default.get}"
+    val methodName = container match {
+      case TypeContainer.Singleton => "to_instance_singleton"
+      case TypeContainer.List => "to_instance_list"
+      case TypeContainer.Map => "to_instance_map"
     }
 
-    val hasValue = (required || !default.isEmpty)
-    val assertMethod = if (hasValue) { "assert_class" } else { "assert_class_or_nil" }
-    val klass = rubyClass(datatype)
+    s"HttpClient::Helper.$methodName('${name}', ${klass}, ${value}, :required => $required)"
+  }
 
-    datatype match {
-      case Datatype.DecimalType => {
+  private def parseEnumArgument(name: String, container: TypeContainer, enumName: String, required: Boolean, default: Option[String]): String = {
+    val value = default match {
+      case None => s"opts.delete(:${name})"
+      case Some(defaultValue) => s"opts.delete(:${name}) || \'$defaultValue\'"
+    }
+
+    val klass = qualifiedClassName(enumName)
+
+    val methodName = container match {
+      case TypeContainer.Singleton => "to_klass_singleton"
+      case TypeContainer.List => "to_klass_list"
+      case TypeContainer.Map => "to_klass_map"
+    }
+
+    s"HttpClient::Helper.$methodName('$name', $klass.apply($value), $klass, :required => $required)"
+  }
+
+  private def parsePrimitiveArgument(name: String, container: TypeContainer, pt: Primitives, required: Boolean, default: Option[String]): String = {
+    val value = default match {
+      case None => s"opts.delete(:${name})"
+      case Some(defaultValue) => {
+        pt match {
+          case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
+            s"opts.delete(:${name}) || \'$defaultValue\'"
+          }
+          case Primitives.Boolean => {
+            s"opts.has_key?(:${name}) ? (opts.delete(:${name}) ? true : false) : $defaultValue"
+          }
+          case Primitives.Decimal | Primitives.Integer | Primitives.Double | Primitives.Long => {
+            s"opts.delete(:${name}) || ${default.get}"
+          }
+          case Primitives.Unit => {
+            sys.error("Cannot have a unit argument")
+          }
+        }
+      }
+    }
+
+    val multiple = container match {
+      case TypeContainer.Singleton => false
+      case TypeContainer.List => true
+      case TypeContainer.Map => {
+        sys.error("TODO: Finish map")
+      }
+    }
+
+    pt match {
+      case Primitives.Decimal => {
         s"HttpClient::Helper.to_big_decimal('$name', $value, :required => ${required}, :multiple => ${multiple})"
       }
 
-      case Datatype.UuidType => {
+      case Primitives.Uuid => {
         s"HttpClient::Helper.to_uuid('$name', $value, :required => ${required}, :multiple => ${multiple})"
       }
 
-      case Datatype.DateIso8601Type => {
+      case Primitives.DateIso8601 => {
         s"HttpClient::Helper.to_date_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
       }
 
-      case Datatype.DateTimeIso8601Type => {
+      case Primitives.DateTimeIso8601 => {
         s"HttpClient::Helper.to_date_time_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
       }
 
-      case Datatype.BooleanType => {
+      case Primitives.Boolean => {
         s"HttpClient::Helper.to_boolean('$name', $value, :required => ${required}, :multiple => ${multiple})"
       }
 
-      case Datatype.DoubleType | Datatype.IntegerType | Datatype.LongType | Datatype.MapType | Datatype.StringType => {
+      case Primitives.Double | Primitives.Integer | Primitives.Long | Primitives.String => {
+        val klass = rubyClass(pt)
         s"HttpClient::Helper.to_klass('$name', $value, $klass, :required => ${required}, :multiple => ${multiple})"
       }
 
-      case Datatype.UnitType => {
+      case Primitives.Unit => {
         sys.error("Cannot have a unit type as a parameter")
       }
 
@@ -503,7 +548,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
   }
 
-  private def asString(varName: String, pt: Primitives): String = d match {
+  private def asString(varName: String, pt: Primitives): String = pt match {
     case Primitives.String | Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean | Primitives.Decimal | Primitives.Uuid => varName
     case Primitives.DateIso8601 => s"$varName.strftime('%Y-%m-%d')"
     case Primitives.DateTimeIso8601 => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
@@ -521,27 +566,27 @@ case class RubyClientGenerator(service: ServiceDescription) {
   private def parseTypeInstance(
     instance: TypeInstance
   ): RubyTypeInfo = {
-    val klass = param.`type` match {
+    val klass = instance.`type` match {
       case Type.Primitive(pt) => rubyClass(pt)
       case Type.Model(name) => qualifiedClassName(name)
       case Type.Enum(name) => qualifiedClassName(name)
     }
 
     val varName = instance match {
-      case Type(TypeContainer.Singleton, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = false)
-      case Type(TypeContainer.List, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
-      case Type(TypeContainer.Map, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
+      case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = false)
+      case TypeInstance(TypeContainer.List, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
+      case TypeInstance(TypeContainer.Map, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
 
-      case Type(TypeContainer.Singleton, Type.Model(name)) => RubyUtil.toVariable(name, multiple = false)
-      case Type(TypeContainer.List, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
-      case Type(TypeContainer.Map, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => RubyUtil.toVariable(name, multiple = false)
+      case TypeInstance(TypeContainer.List, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(TypeContainer.Map, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
 
-      case Type(TypeContainer.Singleton, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = false)
-      case Type(TypeContainer.List, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
-      case Type(TypeContainer.Map, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = false)
+      case TypeInstance(TypeContainer.List, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(TypeContainer.Map, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
     }
 
-    val assertStub = param.`type`.container match {
+    val assertStub = instance.container match {
       case TypeContainer.Singleton => "assert_class"
       case TypeContainer.List => "assert_collection_of_class"
       case TypeContainer.Singleton => "assert_hash_of_class"
