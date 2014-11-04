@@ -207,9 +207,6 @@ class ScalaOperation(ssd: ScalaServiceDescription, model: ScalaModel, operation:
         ).flatten.mkString(", ")
       )
     }
-    case Some(Type(TypeKind.Model, name, multiple)) => Some(bodyClassArg(name, multiple))
-    case Some(Type(TypeKind.Enum, name, multiple)) => Some(bodyClassArg(name, multiple))
-    case _ => sys.error(s"Invalid body [${operation.body}]")
   }
 
   private def bodyClassArg(
@@ -252,7 +249,7 @@ class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Resp
 
   val datatype = ScalaDataType(response.`type`)
 
-  val isUnit = datatype == ScalaDataType(Primitives.Unit)
+  val isUnit = datatype == ScalaDataType.ScalaUnitType
 
   val resultType: String = datatype.name
 
@@ -261,7 +258,7 @@ class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Resp
   val errorClassName = Text.initCap(errorVariableName) + "Response"
 
   val errorResponseType = datatype match {
-    case ScalaDataType(ScalaDataType.OptionType(name)) => {
+    case ScalaDataType.OptionType(name) => {
       // In the case of errors, ignore the option wrapper as we only
       // trigger the error response when we have an actual error.
       name
@@ -277,15 +274,7 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
 
   def originalName: String = field.name
 
-  import ScalaDataType._
-
-  /*
-  val baseType: ScalaDataType = field.`type` match {
-    case Type(TypeKind.Primitive, name, _) => ScalaDataType(Datatype.forceByName(name))
-    case Type(TypeKind.Model, name, _) => new ScalaModelType(ssd.modelPackageName, name)
-    case Type(TypeKind.Enum, name, _) => new ScalaEnumType(ssd.enumPackageName, name)
-  }
-   */
+  val `type` = field.`type`
 
   def datatype = ScalaDataType(field.`type`)
 

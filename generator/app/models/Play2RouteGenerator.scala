@@ -137,58 +137,18 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
   }
 
   private def scalaDataType(ssd: ScalaServiceDescription, param: Parameter): String = {
-    param.`type` match {
-      case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => {
-        val name = ScalaDataType(pt).name
-        qualifyParam(TypeContainer.Singleton, name, param.required)
-      }
-      case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => {
-        qualifyParam(TypeContainer.Singleton, ssd.enumClassName(name), param.required)
-      }
-
-      case TypeInstance(TypeContainer.List, Type.Primitive(pt)) => {
-        val name = ScalaDataType(pt).name
-        qualifyParam(TypeContainer.List, name, param.required)
-      }
-      case TypeInstance(TypeContainer.List, Type.Enum(name)) => {
-        qualifyParam(TypeContainer.List, ssd.enumClassName(name), param.required)
-      }
-
-      case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => {
-        sys.error("Model parameter types not supported in play routes")
-      }
-      case TypeInstance(TypeContainer.Map, _) => {
-        sys.error("Map parameter defaults not supported in play routes")
-      }
-    }
-  }
-
-  private def qualifyParam(
-    container: TypeContainer,
-    name: String,
-    required: Boolean
-  ): String = {
-    container match {
+    val datatype = ScalaDataType(param.`type`)
+    param.`type`.container match {
       case TypeContainer.Singleton => {
-        if (required) {
-          name
+        if (param.required) {
+          datatype.name
         } else {
-          s"Option[$name]"
+          s"scala.Option[${datatype.name}]"
         }
       }
 
-      case TypeContainer.List => {
-        if (required) {
-          s"Seq[$name]"
-        } else {
-          s"Option[Seq[$name]]"
-        }
-      }
-
-      case TypeContainer.Map => {
-        sys.error("Parameters of type map not supported")
-      }
-
+      case TypeContainer.List => datatype.name
+      case TypeContainer.Map => datatype.name
     }
   }
 
