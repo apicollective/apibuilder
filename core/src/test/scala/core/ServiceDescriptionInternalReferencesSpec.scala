@@ -1,6 +1,9 @@
 package core
 
+<<<<<<< HEAD
 import com.gilt.apidocgenerator.models.{Type, TypeKind}
+=======
+>>>>>>> Update tests per API changes. Tests now compile with change to TestInstance
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
@@ -27,14 +30,12 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
 
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
-    validator.serviceDescription.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get.datatype match {
-      case Type(TypeKind.Model, name, _) => name should be("bar")
-      case other => fail("Expected field to be of type bar but was: " + other)
-    }
-    validator.serviceDescription.get.models.find(_.name == "bar").get.fields.find(_.name == "foo").get.datatype match {
-      case Type(TypeKind.Model, name, _) => name should be("foo")
-      case other => fail("Expected field to be of type foo but was: " + other)
-    }
+
+    val barField = validator.serviceDescription.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get
+    barField.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Model("bar")))
+
+    val fooField = validator.serviceDescription.get.models.find(_.name == "bar").get.fields.find(_.name == "foo").get
+    fooField.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Model("foo")))
   }
 
   it("Is able to parse self reference") {
@@ -65,14 +66,7 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "userVariant").get
     val parentField = model.fields.find(_.name == "parent").get
-    parentField.datatype match {
-      case Type(TypeKind.Model, name, _) => {
-        name should be("userVariant")
-      }
-      case other => {
-        fail("Expected field to be of type userVariant but was: " + other)
-      }
-    }
+    parentField.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Model("userVariant")))
   }
 
 }

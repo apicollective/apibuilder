@@ -1,6 +1,5 @@
 package core
 
-import com.gilt.apidocgenerator.models.{Type, TypeKind}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -20,12 +19,12 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
     }
   """
 
-  it("accepts type: map") {
+  it("accepts type: map, defaulting to element type of string for backwards compatibility") {
     val json = baseJson.format("""{ "name": "tags", "type": "map" }""")
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val tags = validator.serviceDescription.get.models.head.fields.head
-    tags.datatype should be(Type(TypeKind.Primitive, Datatype.MapType.name, false))
+    tags.`type` should be(TypeInstance(TypeContainer.Map, Type.Primitive(Primitives.String)))
   }
 
   it("accept defaults for maps") {

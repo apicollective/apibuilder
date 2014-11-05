@@ -43,8 +43,7 @@ class ServiceDescriptionResponsesSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val response = validator.serviceDescription.get.resources.head.operations.head.responses.head
     response.code should be(204)
-    response.datatype.name should be("unit")
-    response.datatype.multiple should be(false)
+    response.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Unit)))
   }
 
   it("does not allow explicit definition of 404, 5xx status codes") {

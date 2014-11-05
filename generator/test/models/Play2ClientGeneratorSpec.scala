@@ -16,7 +16,7 @@ class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
     val resource = ssd.resources.find(_.model.name == "Organization").get
     val operation = resource.operations.find(_.method == "POST").get
     val errorResponse = operation.responses.find(_.code == 409).get
-    errorResponse.isMultiple should be(true)
+    errorResponse.datatype should be(ScalaDataType.ScalaListType)
 
     val contents = ScalaClientMethodGenerator(clientMethodConfig, ssd).errorPackage()
     TestHelper.assertEqualsFile("test/resources/generators/play2-client-generator-spec-errors-package.txt", contents)

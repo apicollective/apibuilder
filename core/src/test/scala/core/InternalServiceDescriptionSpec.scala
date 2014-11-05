@@ -10,30 +10,42 @@ class InternalServiceDescriptionSpec extends FunSpec with Matchers {
     it("Parses a string") {
       val dt = InternalParsedDatatype("string")
       dt.name should be("string")
-      dt.multiple should be(false)
+      dt.container should be(TypeContainer.Singleton)
     }
 
     it("Parses an array") {
       val dt = InternalParsedDatatype("[string]")
       dt.name should be("string")
-      dt.multiple should be(true)
+      dt.container should be(TypeContainer.List)
+    }
+
+    it("Parses a map of strings") {
+      val dt = InternalParsedDatatype("map[string]")
+      dt.name should be("string")
+      dt.container should be(TypeContainer.Map)
+    }
+
+    it("Parses a map of Uuid") {
+      val dt = InternalParsedDatatype("map[uuid]")
+      dt.name should be("uuid")
+      dt.container should be(TypeContainer.Map)
     }
 
     it("handles malformed input") {
       val dt = InternalParsedDatatype("[")
       dt.name should be("[")
-      dt.multiple should be(false)
+      dt.container should be(TypeContainer.Singleton)
 
       val dt2 = InternalParsedDatatype("]")
       dt2.name should be("]")
-      dt2.multiple should be(false)
+      dt2.container should be(TypeContainer.Singleton)
 
       // Questionable how best to handle this. For now we allow empty
       // string - will get caught downstream when validating that the
       // name of the datatype is a valid name
       val dt3 = InternalParsedDatatype("[]")
       dt3.name should be("")
-      dt3.multiple should be(true)
+      dt3.container should be(TypeContainer.List)
     }
 
   }

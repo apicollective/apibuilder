@@ -23,8 +23,8 @@ class BrokenSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString should be("")
     val fields = validator.serviceDescription.get.models.head.fields
-    fields.find { _.name == "guid" }.get.datatype.multiple should be(false)
-    fields.find { _.name == "tags" }.get.datatype.multiple should be(true)
+    fields.find { _.name == "guid" }.get.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Uuid)))
+    fields.find { _.name == "tags" }.get.`type` should be(TypeInstance(TypeContainer.List, Type.Primitive(Primitives.String)))
   }
 
 
@@ -64,14 +64,14 @@ class BrokenSpec extends FunSpec with Matchers {
 
     val operation = validator.serviceDescription.get.resources.head.operations.head
     operation.method should be("POST")
-    operation.parameters.find { _.name == "guid" }.get.datatype.multiple should be(false)
+    operation.parameters.find { _.name == "guid" }.get.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Uuid)))
 
     val guid = operation.parameters.find { _.name == "guid" }.get
-    guid.datatype.multiple should be(false)
+    guid.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Uuid)))
     guid.required should be(true)
 
     val tag = operation.parameters.find { _.name == "tag" }.get
-    tag.datatype.multiple should be(true)
+    tag.`type` should be(TypeInstance(TypeContainer.List, Type.Primitive(Primitives.String)))
     tag.required should be(false)
   }
 

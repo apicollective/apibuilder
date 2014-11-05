@@ -1,6 +1,6 @@
 package models
 
-import com.gilt.apidocgenerator.models.{Parameter, Model, Type, TypeKind, ParameterLocation, Operation, Resource}
+import codegenerator.models.{Parameter, Model, ParameterLocation, Operation, Resource}
 import core._
 import core.generator._
 import org.scalatest.{ ShouldMatchers, FunSpec }
@@ -18,13 +18,13 @@ class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
     val model = new Model("model", "models", None, Nil)
     val q1 = new Parameter(
       "q1",
-      Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
+      TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Double)),
       ParameterLocation.Query,
       None, true, None, None, None, None
     )
     val q2 = new Parameter(
       "q2",
-      Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
+      TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Double)),
       ParameterLocation.Query,
       None, false, None, None, None, None
     )

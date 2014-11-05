@@ -1,6 +1,5 @@
 package core
 
-import com.gilt.apidocgenerator.models.{Parameter, TypeKind, Type}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -24,8 +23,8 @@ class SvcApiDocJson extends FunSpec with Matchers {
     models.contains("organization") should be(true)
 
     val user = service.models.find(_.name == "user").get
-    user.fields.find(_.name == "guid").get.datatype should be(Type(TypeKind.Primitive, "uuid", false))
-    user.fields.find(_.name == "email").get.datatype should be(Type(TypeKind.Primitive, "string", false))
+    user.fields.find(_.name == "guid").get.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Uuid)))
+    user.fields.find(_.name == "email").get.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.String)))
   }
 
   it("parses resources") {
@@ -38,18 +37,12 @@ class SvcApiDocJson extends FunSpec with Matchers {
   it("has defaults for all limit and offset parameters") {
     service.resources.flatMap(_.operations.filter(_.method == "GET")).foreach { op =>
 
-      op.parameters.find { _.name == "limit" } match {
-        case None => {}
-        case Some(p: Parameter) => {
-          p.default should be(Some("25"))
-        }
+      op.parameters.find { _.name == "limit" }.map { p =>
+        p.default should be(Some("25"))
       }
 
-      op.parameters.find { _.name == "offset" } match {
-        case None => {}
-        case Some(p: Parameter) => {
-          p.default should be(Some("0"))
-        }
+      op.parameters.find { _.name == "offset" }.map { p =>
+        p.default should be(Some("0"))
       }
 
     }

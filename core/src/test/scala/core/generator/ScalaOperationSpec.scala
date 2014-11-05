@@ -12,12 +12,12 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
 
   val q1 = new Parameter(
     "q1",
-    new Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
+    TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Double)),
     ParameterLocation.Query,
     None, false, None, None, None, None)
 
   it("models as a parameter in the body should use capitalize") {
-    val body = Type(TypeKind.Model, "model", false)
+    val body = TypeInstance(TypeContainer.Singleton, Type.Model("model"))
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
@@ -32,7 +32,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
   }
 
   it("array of models as a parameter in the body should use capitalize") {
-    val body = Type(TypeKind.Model, "model", true)
+    val body = TypeInstance(TypeContainer.List, Type.Model("model"))
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
@@ -47,7 +47,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
   }
 
   it("primitive type as a parameter in the body should not use capitalize") {
-    val body = Type(TypeKind.Primitive, IntegerType.name, false)
+    val body = TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Integer))
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
@@ -62,7 +62,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
   }
 
   it("array of primitive types as a parameter in the body should not use capitalize") {
-    val body = Type(TypeKind.Primitive, IntegerType.name, true)
+    val body = TypeInstance(TypeContainer.List, Type.Primitive(Primitives.Integer))
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))

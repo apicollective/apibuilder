@@ -1,6 +1,5 @@
 package core
 
-import com.gilt.apidocgenerator.models.{TypeKind, Type}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -65,14 +64,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
-    ageGroup.datatype match {
-      case Type(TypeKind.Enum, name, _) => {
-        name should be("age_group")
-      }
-      case ft => {
-        fail(s"Invalid field type[${ft}] for age_group - should have been an enumeration")
-      }
-    }
+    ageGroup.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Enum("age_group")))
   }
 
   it("validates that enum values do not start with numbers") {
