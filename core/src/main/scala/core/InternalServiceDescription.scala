@@ -415,7 +415,7 @@ private[core] case class InternalParsedDatatype(
 private[core] object InternalParsedDatatype {
 
   private val ListRx = "^\\[(.*)\\]$".r
-  private val MapRx = "^\\map[(.*)\\]$".r
+  private val MapRx = "^map\\[(.*)\\]$".r
 
   def apply(value: String): InternalParsedDatatype = {
     value match {
