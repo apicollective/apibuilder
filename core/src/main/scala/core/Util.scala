@@ -22,11 +22,11 @@ object Util {
   }
 
   def isValidEnumValue(enum: Enum, value: String): Boolean = {
-    enum.values.contains(value)
+    enum.values.map(_.name).contains(value)
   }
 
   def assertValidEnumValue(enum: Enum, value: String) {
-    require(isValidEnumValue(enum, value), "Enum[%s] does not have a value[$value]. Valid values are: " + enum.values.mkString(" "))
+    require(isValidEnumValue(enum, value), s"Enum[${enum.name}] does not have a value[${value}]. Valid values are: " + enum.values.map(_.name).mkString(", "))
   }
 
 }

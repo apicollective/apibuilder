@@ -149,7 +149,10 @@ object ResponseBuilder {
   def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResponse): Response = {
     Response(
       code = internal.code.toInt,
-      `type` = TypeResolver(enumNames = enums.map(_.name)).toTypeInstance(internal.datatype.get).getOrElse {
+      `type` = TypeResolver(
+        enumNames = enums.map(_.name),
+        modelNames = models.map(_.name)
+      ).toTypeInstance(internal.datatype.get).getOrElse {
         sys.error("No datatype for response: " + internal)
       }
     )
@@ -199,9 +202,8 @@ object FieldBuilder {
     val typeInstance = TypeResolver(
       enumNames = enums.map(_.name)
     ).toTypeInstance(internal.datatype.get).getOrElse {
-      sys.error("Could not resolve type for field: " + internal)
+      TypeInstance(internal.datatype.get.container, Type.Model(internal.datatype.get.name))
     }
-
 
     internal.default.map { typeInstance.assertValidDefault(enums, _) }
 

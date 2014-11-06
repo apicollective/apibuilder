@@ -41,9 +41,9 @@ class UtilSpec extends FunSpec with Matchers {
   it("assertValidEnumValue") {
     Util.assertValidEnumValue(ageGroupEnum, "Youth")
     Util.assertValidEnumValue(ageGroupEnum, "Adult")
-    intercept[RuntimeException] {
+    intercept[IllegalArgumentException] {
       Util.assertValidEnumValue(ageGroupEnum, "foobar")
-    }.toString should be("TODO")
+    }.getMessage should be("requirement failed: Enum[age_group] does not have a value[foobar]. Valid values are: Youth, Adult")
   }
 
 }
