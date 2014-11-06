@@ -1,5 +1,7 @@
 package core
 
+import scala.util.Try
+
 import java.util.UUID
 
 import com.gilt.apidocgenerator.models.{Field, ServiceDescription}
@@ -27,9 +29,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private lazy val internalServiceDescription: Option[InternalServiceDescription] = {
-    try {
-      Some(InternalServiceDescription(apiJson))
-    } catch {
+    val tryDescription = Try(Some(InternalServiceDescription(apiJson))) recover {
       case e: JsonParseException => {
         parseError = Some(e.getMessage)
         None
@@ -38,12 +38,10 @@ case class ServiceDescriptionValidator(apiJson: String) {
         parseError = Some(e.getMessage)
         None
       }
-      case e: JsonMappingException => {
-        parseError = Some(e.getMessage)
-        None
-      }
-      case e: Throwable => throw e
     }
+
+    // Throw any unhandled exceptions
+    tryDescription.get
   }
 
   lazy val errors: Seq[String] = {
@@ -197,14 +195,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def isValid(datatype: Datatype, value: String): Boolean = {
-    try {
-      assertValidDefault(datatype: Datatype, value: String)
-      true
-    } catch {
-      case e: Throwable => {
-        false
-      }
-    }
+    Try(assertValidDefault(datatype: Datatype, value: String)).isSuccess
   }
 
   private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
