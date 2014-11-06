@@ -13,7 +13,7 @@ class BrokenSpec extends FunSpec with Matchers {
       "models": {
         "vendor": {
           "fields": [
-            { "name": "guid", "type": "string" },
+            { "name": "guid", "type": "uuid" },
             { "name": "tags", "type": "[string]" }
           ]
         }
@@ -36,7 +36,7 @@ class BrokenSpec extends FunSpec with Matchers {
       "models": {
         "vendor": {
           "fields": [
-            { "name": "guid", "type": "string" }
+            { "name": "guid", "type": "uuid" }
           ]
         }
       },
@@ -47,7 +47,7 @@ class BrokenSpec extends FunSpec with Matchers {
             {
               "method": "POST",
               "parameters": [
-                { "name": "guid", "type": "string" },
+                { "name": "guid", "type": "uuid" },
                 { "name": "tag", "type": "[string]", "required": false }
               ],
               "responses": {
