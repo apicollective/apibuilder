@@ -18,6 +18,7 @@ object Primitives {
   case object Unit extends Primitives { override def toString = "unit" }
 
   val All = Seq(Boolean, Decimal, Integer, Double, Long, String, DateIso8601, DateTimeIso8601, Uuid, Unit)
+  val ValidInPath = All.filter(_ != Unit)
 
   def apply(value: String): Option[Primitives] = {
     All.find(_.toString == value.toLowerCase.trim)

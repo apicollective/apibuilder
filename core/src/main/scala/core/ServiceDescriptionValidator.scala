@@ -471,40 +471,46 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validatePathParameters(): Seq[String] = {
-    val enums = internalServiceDescription.get.enums.map(_.name).toSet
+    val typeResolver = TypeResolver(
+      enumNames = internalServiceDescription.get.enums.map(_.name),
+      modelNames = internalServiceDescription.get.models.map(_.name)
+    )
 
     internalServiceDescription.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
       internalServiceDescription.get.models.find(_.name == resource.modelName.get) match {
         case None => None
         case Some(model: InternalModel) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
-            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.name).isEmpty).map(f => (f.name.get -> f.datatype.get.name)).toMap
-            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.name).isEmpty).map(p => (p.name.get -> p.datatype.get.name)).toMap
+            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.name).isEmpty).map(f => (f.name.get -> f.datatype.get)).toMap
+            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.name).isEmpty).map(p => (p.name.get -> p.datatype.get)).toMap
 
             op.namedPathParameters.flatMap { name =>
-              val typeName = paramMap.get(name).getOrElse {
+              val parsedDatatype = paramMap.get(name).getOrElse {
                 fieldMap.get(name).getOrElse {
-                  Datatype.StringType.name
+                  InternalParsedDatatype(TypeContainer.Singleton, Datatype.StringType.name)
                 }
               }
+              val errorTemplate = s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
 
-              Datatype.findByName(typeName) match {
-                case Some(Datatype.BooleanType) => None
-                case Some(Datatype.DecimalType) => None
-                case Some(Datatype.IntegerType) => None
-                case Some(Datatype.DoubleType) => None
-                case Some(Datatype.LongType) => None
-                case Some(Datatype.StringType) => None
-                case Some(Datatype.UuidType) => None
-                case Some(Datatype.DateIso8601Type) => None
-                case Some(Datatype.DateTimeIso8601Type) => None
-                case _ => {
-                  if (enums.contains(typeName)) {
-                    // Enums are treated as strings here
+
+              typeResolver.toTypeInstance(parsedDatatype) match {
+                case None => Some(errorTemplate.format(name))
+
+                case Some(TypeInstance(TypeContainer.List, _)) => Some(errorTemplate.format("list"))
+                case Some(TypeInstance(TypeContainer.Map, _)) => Some(errorTemplate.format("map"))
+                case Some(TypeInstance(TypeContainer.Singleton, Type.Model(name))) => Some(errorTemplate.format(name))
+
+                case Some(TypeInstance(TypeContainer.Singleton, Type.Primitive(pt))) => {
+                  if (Primitives.ValidInPath.contains(pt)) {
                     None
                   } else {
-                    Some(s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[$typeName]. Only numbers and strings can be specified as path parameters")
+                    Some(errorTemplate.format(pt))
                   }
+                }
+
+                case Some(TypeInstance(TypeContainer.Singleton, Type.Enum(name))) => {
+                    // Enums serialize to strings
+                    None
                 }
               }
             }

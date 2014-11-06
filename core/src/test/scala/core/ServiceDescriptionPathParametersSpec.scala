@@ -84,12 +84,12 @@ class ServiceDescriptionPathParametersSpec extends FunSpec with Matchers {
 
   it("other models cannot be path parameters") {
     val json = baseJson.format("GET", "/:tag")
-    ServiceDescriptionValidator(json).errors.mkString("") should be("Resource[user] GET path parameter[tag] has an invalid type[tag]. Only numbers and strings can be specified as path parameters")
+    ServiceDescriptionValidator(json).errors.mkString("") should be("Resource[user] GET path parameter[tag] has an invalid type[tag]. Valid types for path parameters are: boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid")
   }
 
   it("unsupported types declared as parameters are validated") {
     val json = baseJson.format("POST", "/:tags")
-    ServiceDescriptionValidator(json).errors.mkString("") should be("Resource[user] POST path parameter[tags] has an invalid type[map]. Only numbers and strings can be specified as path parameters")
+    ServiceDescriptionValidator(json).errors.mkString("") should be("Resource[user] POST path parameter[tags] has an invalid type[map]. Valid types for path parameters are: boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid")
   }
 
 }
