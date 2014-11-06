@@ -416,11 +416,13 @@ private[core] object InternalParsedDatatype {
 
   private val ListRx = "^\\[(.*)\\]$".r
   private val MapRx = "^map\\[(.*)\\]$".r
+  private val DefaultMapRx = "^map$".r
 
   def apply(value: String): InternalParsedDatatype = {
     value match {
       case ListRx(name) => InternalParsedDatatype(TypeContainer.List, name)
       case MapRx(name) => InternalParsedDatatype(TypeContainer.Map, name)
+      case DefaultMapRx() => InternalParsedDatatype(TypeContainer.Map, Primitives.String.toString)
       case _ => InternalParsedDatatype(TypeContainer.Singleton, value)
     }
   }
