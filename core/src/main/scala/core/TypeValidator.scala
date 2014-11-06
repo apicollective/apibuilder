@@ -20,7 +20,11 @@ case class TypeValidator(
     }
   }
 
-  def validate(t: Type, value: String): Option[String] = {
+  def validate(
+    t: Type,
+    value: String,
+    errorPrefix: Option[String] = None
+  ): Option[String] = {
     t match {
 
       case Type.Enum(name) => {
@@ -28,7 +32,13 @@ case class TypeValidator(
           case None => Some(s"Could not find enum named[$name]")
           case Some(enum) => {
             enum.values.find(_ == value) match {
-              case None => Some(s"Default[$value] is not valid for enum[$name]. Valid values are: " + enum.values.mkString(", "))
+              case None => {
+                val msg = s"default[$value] is not a valid value for enum[$name]. Valid values are: " + enum.values.mkString(", ")
+                errorPrefix match {
+                  case None => Some(msg)
+                  case Some(prefix) => Some(s"$prefix $msg")
+                }
+              }
               case Some(_) => None
             }
           }
