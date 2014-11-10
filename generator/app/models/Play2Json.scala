@@ -70,7 +70,11 @@ case class Play2Json(serviceName: String) {
           s"implicit def jsonWrites${serviceName}${model.name}: play.api.libs.json.Writes[${model.name}] = {",
           s"  (",
           model.fields.map { field =>
-            s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
+            if (field.isOption) {
+              s"""(__ \\ "${field.originalName}").write[scala.Option[${field.datatype.name}]]"""
+            } else {
+              s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
+            }
           }.mkString(" and\n").indent(4),
           s"  )(unlift(${model.name}.unapply _))",
           s"}"
