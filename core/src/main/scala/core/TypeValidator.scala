@@ -22,6 +22,25 @@ case class TypeValidator(
     }
   }
 
+  def validateTypeInstance(
+    typeInstance: TypeInstance,
+    value: String,
+    errorPrefix: Option[String] = None
+  ): Option[String] = {
+    typeInstance.container match {
+      case TypeContainer.Singleton => {
+        validate(typeInstance.`type`, value, errorPrefix)
+      }
+      case TypeContainer.List => {
+        sys.error("TypeContainer.List: " + value)
+        validate(typeInstance.`type`, value, errorPrefix)
+      }
+      case TypeContainer.Map => {
+        sys.error("TypeContainer.Map: " + value)
+      }
+    }
+  }
+
   def validate(
     t: Type,
     value: String,
