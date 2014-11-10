@@ -2,6 +2,9 @@ package core
 
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
+import play.api.libs.json._
+import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
+import com.fasterxml.jackson.databind.JsonMappingException
 
 case class TypeValidatorEnums(name: String, values: Seq[String])
 
@@ -14,6 +17,19 @@ case class TypeValidator(
 ) {
 
   private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
+
+  private def parseJsonOrNone(value: String): Option[JsValue] = {
+    try {
+      Some(
+        Json.parse(value)
+      )
+    } catch {
+      case e: JsonParseException => None
+      case e: JsonProcessingException => None
+      case e: JsonMappingException => None
+      case e: Throwable => throw e
+    }
+  }
 
   def assertValidDefault(t: Type, value: String) {
     validate(t, value) match {
@@ -31,12 +47,51 @@ case class TypeValidator(
       case TypeContainer.Singleton => {
         validate(typeInstance.`type`, value, errorPrefix)
       }
+
       case TypeContainer.List => {
-        sys.error("TypeContainer.List: " + value)
-        validate(typeInstance.`type`, value, errorPrefix)
+        parseJsonOrNone(value) match {
+          case None => {
+            Some(s"default[$value] is not valid json")
+          }
+          case Some(json) => {
+            json.asOpt[JsArray] match {
+              case Some(v) => {
+                Some(
+                  v.value.flatMap { value =>
+                    validate(typeInstance.`type`, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                  }.mkString(", ")
+                )
+              }
+              case None => {
+                Some(s"default[$value] is not a valid list[${typeInstance.typeName}]")
+              }
+            }
+          }
+        }
       }
+
       case TypeContainer.Map => {
-        sys.error("TypeContainer.Map: " + value)
+        parseJsonOrNone(value) match {
+          case None => {
+            Some(s"default[$value] is not valid json")
+          }
+          case Some(json) => {
+            json.asOpt[JsObject] match {
+              case Some(v) => {
+                Some(
+                  v.value.flatMap {
+                    case (key, value) => {
+                      validate(typeInstance.`type`, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                    }
+                  }.mkString(", ")
+                )
+              }
+              case None => {
+                Some(s"default[$value] is not a valid map[${typeInstance.typeName}]")
+              }
+            }
+          }
+        }
       }
     }
   }

@@ -55,6 +55,12 @@ case class TypeInstance(
     TypeValidator(enums.map(e => TypeValidatorEnums(e.name, e.values.map(_.name)))).assertValidDefault(`type`, value)
   }
 
+  lazy val typeName: String = `type` match {
+    case Type.Primitive(pt) => pt.toString
+    case Type.Model(name) => name
+    case Type.Enum(name) => name
+  }
+
 }
 
 case class TypeResolver(
