@@ -44,21 +44,21 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
 
       val foo = validator.serviceDescription.get.headers.find(_.name == "X-Foo").get
       foo.name should be("X-Foo")
-      ct.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.String)))
+      foo.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.String)))
       foo.default should be(Some("bar"))
       foo.description should be(Some("test"))
       foo.required should be(true)
 
       val bar = validator.serviceDescription.get.headers.find(_.name == "X-Bar").get
       bar.name should be("X-Bar")
-      ct.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.String)))
+      bar.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.String)))
       bar.default should be(None)
       bar.description should be(None)
       bar.required should be(false)
 
       val multi = validator.serviceDescription.get.headers.find(_.name == "X-Multi").get
       multi.name should be("X-Multi")
-      ct.`type` should be(TypeInstance(TypeContainer.List, Type.Primitive(Primitives.String)))
+      multi.`type` should be(TypeInstance(TypeContainer.List, Type.Primitive(Primitives.String)))
       multi.default should be(None)
       multi.description should be(None)
       multi.required should be(true)
