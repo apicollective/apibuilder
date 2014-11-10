@@ -447,7 +447,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
   private def validateOperations(): Seq[String] = {
     internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(!_.warnings.isEmpty).map { op =>
-        s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: " + op.warnings.mkString(", ")
+        s"${opLabel(resource, op)}: ${op.warnings.mkString(", ")}"
       }
     }
   }
@@ -458,7 +458,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         case None => Some("All resources must have a model")
         case Some(name: String) => {
           internalServiceDescription.get.models.find { _.name == name } match {
-            case None => Some(s"Resource[${res.modelName.getOrElse("")}] model name[${name}] is invalid - model not found")
+            case None => Some(s"Resource[${res.modelName.getOrElse("")}] model[$name] not found")
             case Some(_) => None
           }
         }
