@@ -1,20 +1,20 @@
-GET      /echoes                    controllers.Echoes.get(foo: Option[String])
+GET      /echoes                    controllers.Echoes.get(foo: scala.Option[String])
 # Additional parameters to GET /echoes
-#   - optional_messages: Option[Seq[String]]
-#   - required_messages: Seq[String]
+#   - optional_messages: scala.Option[scala.collection.Seq[String]]
+#   - required_messages: scala.collection.Seq[String]
 GET      /echoes/arrays-only        controllers.Echoes.getArraysOnly()
 # Additional parameters to GET /echoes/arrays-only
-#   - optional_messages: Option[Seq[String]]
-#   - required_messages: Seq[String]
+#   - optional_messages: scala.Option[scala.collection.Seq[String]]
+#   - required_messages: scala.collection.Seq[String]
 POST     /members                   controllers.Members.post()
-GET      /members                   controllers.Members.get(guid: Option[java.util.UUID], organization_guid: Option[java.util.UUID], user_guid: Option[java.util.UUID], role: Option[String])
-GET      /members/:organization     controllers.Members.getByOrganization(organization: java.util.UUID)
+GET      /members                   controllers.Members.get(guid: scala.Option[_root_.java.util.UUID], organization_guid: scala.Option[_root_.java.util.UUID], user_guid: scala.Option[_root_.java.util.UUID], role: scala.Option[String])
+GET      /members/:organization     controllers.Members.getByOrganization(organization: _root_.java.util.UUID)
 POST     /organizations             controllers.Organizations.post()
-GET      /organizations             controllers.Organizations.get(guid: Option[java.util.UUID], name: Option[String])
+GET      /organizations             controllers.Organizations.get(guid: scala.Option[_root_.java.util.UUID], name: scala.Option[String])
 POST     /users                     controllers.Users.post()
-GET      /users                     controllers.Users.get(guid: Option[java.util.UUID], age_group: Option[apidocreferenceapi.models.AgeGroup], email: Option[String], active: Boolean ?= true)
+GET      /users                     controllers.Users.get(guid: scala.Option[_root_.java.util.UUID], age_group: scala.Option[apidocreferenceapi.models.AgeGroup], email: scala.Option[String], active: Boolean ?= true)
 # Additional parameters to GET /users
-#   - organization_guids: Option[Seq[Long]]
+#   - organization_guids: scala.Option[scala.collection.Seq[Long]]
 GET      /users/:age_group          controllers.Users.getByAgeGroup(age_group: apidocreferenceapi.models.AgeGroup)
 POST     /users/noop                controllers.Users.postNoop()
-GET      /:guid                     controllers.Organizations.getByGuid(guid: java.util.UUID)
+GET      /:guid                     controllers.Organizations.getByGuid(guid: _root_.java.util.UUID)
