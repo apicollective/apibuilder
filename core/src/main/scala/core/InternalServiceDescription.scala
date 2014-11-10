@@ -148,7 +148,7 @@ case class InternalOperation(method: Option[String],
                              responses: Seq[InternalResponse],
                              warnings: Seq[String] = Seq.empty) {
 
-  lazy val label = "%s %s".format(method.getOrElse(""), path)
+  lazy val label = "%s %s".format(method.getOrElse(""), path).trim
 
 }
 

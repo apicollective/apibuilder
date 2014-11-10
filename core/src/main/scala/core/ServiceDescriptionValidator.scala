@@ -313,7 +313,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
             }
             case Some(typeName) => {
               internalServiceDescription.get.typeResolver.toType(typeName) match {
-                case None => Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of an enum or model")
+                case None => Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[${typeName}].")
                 case Some(_) => None
               }
             }
@@ -379,47 +379,61 @@ case class ServiceDescriptionValidator(apiJson: String) {
     invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
   }
 
-  private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted
-  private lazy val ValidQueryDatatypes = Datatype.QueryParameterTypes.map(_.name).sorted
-
   private def validateParameterBodies(): Seq[String] = {
     val typesNotFound = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(!_.body.isEmpty).filter(op => internalServiceDescription.get.typeResolver.toType(op.body.get.name).isEmpty).map { op =>
-        s"Resource[${resource.modelName.getOrElse("")}] ${op.label} body: Model named[${op.body.get.name}] not found"
+        if (op.body.get.name.trim == "") {
+          println(s"${opLabel(resource, op)}: missing type")
+          s"${opLabel(resource, op)}: Body missing type"
+        } else {
+          s"${opLabel(resource, op)} body: Type[${op.body.get.name}] not found"
+        }
       }
     }
 
     val invalidMethods = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(op => !op.body.isEmpty && !op.method.isEmpty && !Util.isJsonDocumentMethod(op.method.get)).map { op =>
-        s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Cannot specify body for HTTP method[${op.method.get}]"
+        s"${opLabel(resource, op)}: Cannot specify body for HTTP method[${op.method.get}]"
       }
     }
 
     typesNotFound ++ invalidMethods
   }
 
+  private def opLabel(resource: InternalResource, op: InternalOperation): String = {
+    s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}"
+  }
+
   private def validateParameters(): Seq[String] = {
     val missingNames = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.parameters.filter { p => p.name.isEmpty }.map { p =>
-          s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: All parameters must have a name"
+        op.parameters.filter(_.name.isEmpty).map { p =>
+          s"${opLabel(resource, op)}: Missing name"
+        }
+        op.parameters.filter(_.datatype.isEmpty).map { p =>
+          s"${opLabel(resource, op)}: Missing type"
         }
       }
     }
 
-    val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.method.isEmpty).flatMap { op =>
-        op.parameters.filter(!_.name.isEmpty).flatMap { p =>
+    // Query parameters can only be primitives or enums
+    val invalidTypes = internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(!_.method.isEmpty).filter(!_.body.isEmpty).flatMap { op =>
+        op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
           p.datatype.map(_.name) match {
             case None => {
-              Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${p.name.get}] is missing a type.")
+              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] is missing a type.")
             }
-            case Some(name) => {
-              internalServiceDescription.get.typeResolver.toType(name) match {
-                case None => {
-                  Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${p.name.get}] has an invalid type[${p.datatype.get.name}].")
+            case Some(datatypeName) => {
+              internalServiceDescription.get.typeResolver.toType(datatypeName) match {
+                case Some(Type.Primitive(pt)) => None
+                case Some(Type.Enum(name)) => None
+                case Some(Type.Model(name)) => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$datatypeName]. Models are not supported as query parameters.")
                 }
-                case Some(_) => None
+                case None => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$datatypeName]")
+                }
               }
             }
           }
@@ -427,7 +441,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
-    missingNames ++ missingTypes
+    missingNames ++ invalidTypes
   }
 
   private def validateOperations(): Seq[String] = {
@@ -468,11 +482,6 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validatePathParameters(): Seq[String] = {
-    val typeResolver = TypeResolver(
-      enumNames = internalServiceDescription.get.enums.map(_.name),
-      modelNames = internalServiceDescription.get.models.map(_.name)
-    )
-
     internalServiceDescription.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
       internalServiceDescription.get.models.find(_.name == resource.modelName.get) match {
         case None => None
@@ -490,7 +499,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
               val errorTemplate = s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
 
 
-              typeResolver.toTypeInstance(parsedDatatype) match {
+              internalServiceDescription.get.typeResolver.toTypeInstance(parsedDatatype) match {
                 case None => Some(errorTemplate.format(name))
 
                 case Some(TypeInstance(TypeContainer.List, _)) => Some(errorTemplate.format("list"))

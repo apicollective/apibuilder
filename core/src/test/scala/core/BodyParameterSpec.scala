@@ -48,7 +48,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
 
   it("validates that body refers to a known model") {
     val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "foo" }""", "boolean"))
-    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Model named[foo] not found")
+    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Type[foo] not found")
   }
 
   it("support primitive types in body") {
@@ -128,6 +128,12 @@ class BodyParameterSpec extends FunSpec with Matchers {
     op.body should be(Some(TypeInstance(TypeContainer.List, Type.Model("message"))))
   }
 
+  it("validates missing datatype") {
+    val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "" }""", "age_group")
+    val validator = ServiceDescriptionValidator(baseJsonWithInvalidModel)
+    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType: Body missing type")
+  }
+
   it("If body specified, parameters can be enums") {
     val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "message" }""", "age_group")
     val validator = ServiceDescriptionValidator(baseJsonWithInvalidModel)
@@ -137,7 +143,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
   it("If body specified, parameters cannot be models") {
     val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "message" }""", "message")
     val validator = ServiceDescriptionValidator(baseJsonWithInvalidModel)
-    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType: Parameter[debug] has an invalid type[message]. Must be one of: boolean date-iso8601 date-time-iso8601 decimal double integer long string uuid age_group")
+    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType: Parameter[debug] has an invalid type[message]. Models are not supported as query parameters.")
   }
 
 }
