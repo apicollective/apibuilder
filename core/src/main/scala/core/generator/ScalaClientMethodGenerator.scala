@@ -72,7 +72,7 @@ case class ScalaClientMethodGenerator(
   private[this] def errorTypeClass(response: ScalaResponse): String = {
     require(!response.isSuccess)
 
-    val json = config.toJson("response", response.errorResponseType)
+    val json = config.toJson("response", response.datatype.name)
     val jsonImport = if (config.hasModelJsonPackage) Seq(s"import ${ssd.modelPackageName}.json._") else Seq.empty
     exceptionClass(response.errorClassName,
                    jsonImport :+ s"lazy val ${response.errorVariableName} = ${json.indent(2).trim}"

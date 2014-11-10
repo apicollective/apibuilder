@@ -276,15 +276,6 @@ class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Resp
 
   val errorClassName = Text.initCap(errorVariableName) + "Response"
 
-  val errorResponseType: String = datatype match {
-    case ScalaDataType.ScalaOptionType(sdt) => {
-      // In the case of errors, ignore the option wrapper as we only
-      // trigger the error response when we have an actual error.
-      sdt.name
-    }
-    case _ => datatype.name
-  }
-
 }
 
 class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) {
@@ -374,7 +365,6 @@ object ScalaDataType {
   case class ScalaEnumType(packageName: String, enumName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(enumName)}")
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaMapType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Map[String, ${inner.name}]")
-  case class ScalaOptionType(inner: ScalaDataType) extends ScalaDataType(s"scala.Option[${inner.name}]")
 
   def apply(pt: Primitives): ScalaDataType = pt match {
     case Primitives.String => ScalaStringType
