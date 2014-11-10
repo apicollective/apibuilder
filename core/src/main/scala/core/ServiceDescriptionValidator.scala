@@ -226,7 +226,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
     val headersWithInvalidTypes = internalServiceDescription.get.headers.filter(h => !h.name.isEmpty && !h.datatype.isEmpty).flatMap { header =>
       val htype = header.datatype.get.name
-      if (htype == Datatype.StringType.name || enumNames.contains(htype)) {
+      if (htype == Primitives.String.toString || enumNames.contains(htype)) {
         Seq.empty
       } else {
         Seq(s"Header[${header.name.get}] type[$htype] is invalid: Must be a string or the name of an enum")
@@ -493,7 +493,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
             op.namedPathParameters.flatMap { name =>
               val parsedDatatype = paramMap.get(name).getOrElse {
                 fieldMap.get(name).getOrElse {
-                  InternalParsedDatatype(TypeContainer.Singleton, Datatype.StringType.name)
+                  InternalParsedDatatype(TypeContainer.Singleton, Primitives.String.toString)
                 }
               }
               val errorTemplate = s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"

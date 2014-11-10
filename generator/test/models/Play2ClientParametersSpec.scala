@@ -1,6 +1,6 @@
 package models
 
-import core.{ Datatype, ServiceDescriptionValidator }
+import core.ServiceDescriptionValidator
 
 import org.scalatest.{ FunSpec, Matchers }
 
@@ -41,8 +41,7 @@ class Play2ClientParametersSpec extends FunSpec with Matchers {
 
   it("supports specifying a query parameter with model type") {
     val json = baseJson.format("tag", "tag")
-    val types = Datatype.QueryParameterTypes.map(_.name).sorted.mkString(" ")
-    ServiceDescriptionValidator(json).errors.mkString("") should be(s"Resource[user] GET /users: Parameter[tag] has an invalid type[tag]. Must be one of: $types")
+    ServiceDescriptionValidator(json).errors.mkString("") should be(s"Resource[user] GET /users: Parameter[tag] has an invalid type[tag].")
   }
 
   it("Play client supports all query data types") {

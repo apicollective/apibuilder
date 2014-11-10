@@ -1,7 +1,6 @@
 package core.generator
 
-import com.gilt.apidocgenerator.models._
-import core.Datatype.IntegerType
+import codegenerator.models._
 import core._
 import org.scalatest._
 

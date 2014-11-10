@@ -1,7 +1,7 @@
 package models
 
 import codegenerator.models.{Operation, Resource, ServiceDescription}
-import core.{Datatype, Primitives, TestHelper, Type, TypeContainer, TypeInstance}
+import core.{Primitives, TestHelper, Type, TypeContainer, TypeInstance}
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
