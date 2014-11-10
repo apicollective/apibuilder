@@ -62,7 +62,7 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
   it("rejects invalid defaults for map[integer]") {
     val json = baseJson.format("""{ "name": "tags", "type": "map[integer]", "default": "{ \"foo\": \"bar\" }" }""")
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("Value[bar] is not a valid integer")
+    validator.errors.mkString("") should be("user.tags Value[bar] is not a valid integer")
   }
 
   it("accepts valid defaults for list[string]") {
@@ -86,7 +86,7 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
   it("rejects invalid defaults for list[integer]") {
     val json = baseJson.format("""{ "name": "tags", "type": "[integer]", "default": "[\"bar\"]" }""")
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("Value[bar] is not a valid integer")
+    validator.errors.mkString("") should be("user.tags Value[bar] is not a valid integer")
   }
 
 }

@@ -68,7 +68,7 @@ class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("Model[user] field[is_active] Default[1] is not valid for datatype[boolean]")
+    validator.errors.mkString("") should be("user.is_active Value[1] is not a valid boolean. Must be one of: true, false")
   }
 
   it("validates duplicate models in the resources section") {

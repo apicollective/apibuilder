@@ -109,11 +109,12 @@ case class TypeValidator(
           case Some(enum) => {
             enum.values.find(_ == value) match {
               case None => {
-                val msg = s"default[$value] is not a valid value for enum[$name]. Valid values are: " + enum.values.mkString(", ")
-                errorPrefix match {
-                  case None => Some(msg)
-                  case Some(prefix) => Some(s"$prefix $msg")
-                }
+                Some(
+                  withPrefix(
+                    errorPrefix,
+                    s"default[$value] is not a valid value for enum[$name]. Valid values are: " + enum.values.mkString(", ")
+                  )
+                )
               }
               case Some(_) => None
             }
@@ -122,14 +123,14 @@ case class TypeValidator(
       }
       
       case Type.Model(name) => {
-        Some(s"default[$value] is not valid for model[$name]. apidoc does not support default values for models")
+        Some(withPrefix(errorPrefix, s"default[$value] is not valid for model[$name]. apidoc does not support default values for models"))
       }
 
       case Type.Primitive(Primitives.Boolean) => {
         if (TypeValidator.BooleanValues.contains(value)) {
           None
         } else {
-          Some(s"Value[$value] is not a valid boolean. Must be one of: ${TypeValidator.BooleanValues.mkString(", ")}")
+          Some(withPrefix(errorPrefix, s"Value[$value] is not a valid boolean. Must be one of: ${TypeValidator.BooleanValues.mkString(", ")}"))
         }
       }
 
@@ -138,7 +139,7 @@ case class TypeValidator(
           value.toDouble
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid double")
+          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid double"))
         }
       }
 
@@ -147,7 +148,7 @@ case class TypeValidator(
           value.toInt
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid integer")
+          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid integer"))
         }
       }
 
@@ -156,7 +157,7 @@ case class TypeValidator(
           value.toLong
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid long")
+          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid long"))
         }
       }
 
@@ -165,7 +166,7 @@ case class TypeValidator(
           BigDecimal(value)
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid decimal")
+          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid decimal"))
         }
       }
 
@@ -173,7 +174,7 @@ case class TypeValidator(
         if (value == "") {
           None
         } else {
-          Some(s"Value[$value] is not a valid unit type - must be the empty string")
+          Some(withPrefix(errorPrefix, s"Value[$value] is not a valid unit type - must be the empty string"))
         }
       }
 
@@ -182,7 +183,7 @@ case class TypeValidator(
           UUID.fromString(value)
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid uuid")
+          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid uuid"))
         }
       }
 
@@ -191,7 +192,7 @@ case class TypeValidator(
           dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid date-iso8601")
+          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-iso8601"))
         }
       }
 
@@ -200,7 +201,7 @@ case class TypeValidator(
           dateTimeISOParser.parseDateTime(value)
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid date-time-iso8601")
+          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-time-iso8601"))
         }
       }
 
@@ -208,6 +209,14 @@ case class TypeValidator(
         None
       }
     }
+  }
+
+  private def withPrefix(
+    prefix: Option[String],
+    msg: String
+  ) = prefix match {
+    case None => msg
+    case Some(p) => s"$p $msg"
   }
 
 }
