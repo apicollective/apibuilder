@@ -29,7 +29,7 @@ case class TypeValidator(
 
       case Type.Enum(name) => {
         enums.find(_.name == name) match {
-          case None => Some(s"Could not find enum named[$name]")
+          case None => Some(s"could not find enum named[$name]")
           case Some(enum) => {
             enum.values.find(_ == value) match {
               case None => {
@@ -46,14 +46,14 @@ case class TypeValidator(
       }
       
       case Type.Model(name) => {
-        Some(s"Default[$value] is not valid for model[$name]. apidoc does not support default values for models")
+        Some(s"default[$value] is not valid for model[$name]. apidoc does not support default values for models")
       }
 
       case Type.Primitive(Primitives.Boolean) => {
         if (BooleanValues.contains(value)) {
           None
         } else {
-          Some(s"Invalid default[${value}] for boolean. Must be one of: ${BooleanValues.mkString(" ")}")
+          Some(s"Value[$value] is not a valid boolean. Must be one of: ${BooleanValues.mkString(", ")}")
         }
       }
 
@@ -115,7 +115,7 @@ case class TypeValidator(
           dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid date-time-iso8601")
+          case _: Throwable => Some(s"Value[$value] is not a valid date-iso8601")
         }
       }
 
@@ -124,7 +124,7 @@ case class TypeValidator(
           dateTimeISOParser.parseDateTime(value)
           None
         } catch {
-          case _: Throwable => Some(s"Value[$value] is not a valid date-iso8601")
+          case _: Throwable => Some(s"Value[$value] is not a valid date-time-iso8601")
         }
       }
 
