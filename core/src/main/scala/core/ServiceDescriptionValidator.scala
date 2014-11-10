@@ -360,7 +360,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
       internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
         resource.operations.flatMap { op =>
           op.responses.filter(r => typesRequiringUnit.contains(r.code.toInt) && !r.datatype.isEmpty && r.datatype.get.name != Primitives.Unit.toString).map { r =>
-            s"Resource[${resource.modelName.get}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get}]"
+            s"Resource[${resource.modelName.get}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get.name}]"
           }
         }
       }
@@ -383,11 +383,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
   private lazy val ValidQueryDatatypes = Datatype.QueryParameterTypes.map(_.name).sorted
 
   private def validateParameterBodies(): Seq[String] = {
-    val modelNames = internalServiceDescription.get.models.map(_.name).toSet
-    val enumNames = internalServiceDescription.get.enums.map(_.name).toSet
-
     val typesNotFound = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(op => !op.body.isEmpty && !modelNames.contains(op.body.get.name) && !enumNames.contains(op.body.get.name) && Datatype.findByName(op.body.get.name).isEmpty).map { op =>
+      resource.operations.filter(!_.body.isEmpty).filter(op => internalServiceDescription.get.typeResolver.toType(op.body.get.name).isEmpty).map { op =>
         s"Resource[${resource.modelName.getOrElse("")}] ${op.label} body: Model named[${op.body.get.name}] not found"
       }
     }
