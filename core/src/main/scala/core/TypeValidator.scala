@@ -5,13 +5,15 @@ import org.joda.time.format.ISODateTimeFormat
 
 case class TypeValidatorEnums(name: String, values: Seq[String])
 
+object TypeValidator {
+  private[core] val BooleanValues = Seq("true", "false")
+}
+
 case class TypeValidator(
   enums: Seq[TypeValidatorEnums] = Seq.empty
 ) {
 
   private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
-
-  private val BooleanValues = Seq("true", "false")
 
   def assertValidDefault(t: Type, value: String) {
     validate(t, value) match {
@@ -50,10 +52,10 @@ case class TypeValidator(
       }
 
       case Type.Primitive(Primitives.Boolean) => {
-        if (BooleanValues.contains(value)) {
+        if (TypeValidator.BooleanValues.contains(value)) {
           None
         } else {
-          Some(s"Value[$value] is not a valid boolean. Must be one of: ${BooleanValues.mkString(", ")}")
+          Some(s"Value[$value] is not a valid boolean. Must be one of: ${TypeValidator.BooleanValues.mkString(", ")}")
         }
       }
 

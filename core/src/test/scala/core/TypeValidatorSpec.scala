@@ -126,4 +126,19 @@ class TypeValidatorSpec extends FunSpec with Matchers {
     validator.validate(Type.Primitive(Primitives.String), "foo") should be(None)
   }
 
+  it("PrimitiveMetadata defined for all primitives") {
+    val missing = Primitives.All.filter( p => PrimitiveMetadata.All.find( pm => pm.primitive == p ).isEmpty )
+    if (!missing.isEmpty) {
+      fail("Missing PrimitiveMetadata for: " + missing.mkString(" "))
+    }
+  }
+
+  it("PrimitiveMetadata examples are valid") {
+    PrimitiveMetadata.All.foreach { pm =>
+      pm.examples.foreach { example =>
+        validator.assertValidDefault(Type.Primitive(pm.primitive), example)
+      }
+    }
+  }
+
 }
