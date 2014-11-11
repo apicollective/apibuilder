@@ -151,9 +151,8 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     describe("All") {
 
       it("sees both orgs") {
-        val guids = OrganizationDao.findAll(Authorization.All, limit = 1000).map(_.guid)
-        guids.contains(publicOrg.guid) should be(true)
-        guids.contains(privateOrg.guid) should be(true)
+        OrganizationDao.findAll(Authorization.All, guid = Some(publicOrg.guid)).map(_.guid) should be(Seq(publicOrg.guid))
+        OrganizationDao.findAll(Authorization.All, guid = Some(privateOrg.guid)).map(_.guid) should be(Seq(privateOrg.guid))
       }
 
     }
@@ -161,9 +160,8 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     describe("PublicOnly") {
 
       it("sees only the public org") {
-        val guids = OrganizationDao.findAll(Authorization.PublicOnly, limit = 1000).map(_.guid)
-        guids.contains(publicOrg.guid) should be(true)
-        guids.contains(privateOrg.guid) should be(false)
+        OrganizationDao.findAll(Authorization.PublicOnly, guid = Some(publicOrg.guid)).map(_.guid) should be(Seq(publicOrg.guid))
+        OrganizationDao.findAll(Authorization.PublicOnly, guid = Some(privateOrg.guid)).map(_.guid) should be(Seq.empty)
       }
 
     }
