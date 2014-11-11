@@ -1,7 +1,5 @@
 package core.generator
 
-import core.Util
-
 case class ScalaClientMethodGenerator(
   config: ScalaClientMethodConfig,
   ssd: ScalaServiceDescription
@@ -9,7 +7,7 @@ case class ScalaClientMethodGenerator(
   import core.Text
   import core.Text._
 
-  private val playUtil = Play2Util(config)
+  private val generatorUtil = GeneratorUtil(config)
 
   private val sortedResources = ssd.resources.groupBy(_.model.plural).toSeq.sortBy(_._1)
 
@@ -102,10 +100,10 @@ case class ScalaClientMethodGenerator(
   private[this] def methods(resources: Seq[ScalaResource]): Seq[ClientMethod] = {
 
     resources.flatMap(_.operations).map { op =>
-      val path = playUtil.pathParams(op)
+      val path = generatorUtil.pathParams(op)
 
-      val payload = playUtil.formBody(op)
-      val queryParameters = playUtil.params("queryParameters", op.queryParameters)
+      val payload = generatorUtil.formBody(op)
+      val queryParameters = generatorUtil.params("queryParameters", op.queryParameters)
 
       val code = new scala.collection.mutable.ListBuffer[String]()
       val args = new scala.collection.mutable.ListBuffer[String]()

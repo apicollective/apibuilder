@@ -1,6 +1,6 @@
 package core
 
-import codegenerator.models._
+import com.gilt.apidocgenerator.models._
 import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat

@@ -1,6 +1,6 @@
 package lib
 
-import codegenerator.models.{Operation, ServiceDescription}
+import com.gilt.apidocgenerator.models.{Operation, ServiceDescription}
 import core.UrlKey
 
 object OperationKey {

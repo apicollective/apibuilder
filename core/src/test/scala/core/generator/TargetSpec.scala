@@ -13,13 +13,4 @@ class TargetSpec extends FunSpec with Matchers {
     sys.error("Cannot find code.target field")
   }
 
-  it("CodeGenTarget target lists all implemented keys in sort order") {
-    val keys = CodeGenTarget.Implemented.map(_.key)
-    keys.sorted should be(keys)
-  }
-
-  it("findByKey") {
-    CodeGenTarget.findByKey("ADSFADSF") should be(None)
-    CodeGenTarget.findByKey("ruby_client").get.key should be("ruby_client")
-  }
 }

@@ -2,7 +2,7 @@ package core
 
 import java.util.UUID
 
-import codegenerator.models.{Field, ServiceDescription}
+import com.gilt.apidocgenerator.models.{Field, ServiceDescription}
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }

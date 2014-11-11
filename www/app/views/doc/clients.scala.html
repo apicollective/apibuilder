@@ -45,7 +45,7 @@
 
   </p>
 
-  <table class="table table-hover table-condensed">
+  <!--table class="table table-hover table-condensed">
     <tmain>
        <tr>
          <th>Status</th>
@@ -56,14 +56,14 @@
 
     <tbody>
 
-      @core.generator.CodeGenTarget.All.map { target =>
+      core.generator.CodeGenTarget.All.map { target =>
         <tr>
-          <td>@target.status</td>
-          <td>@target.key</td>
-          <td>@Html(target.description.getOrElse(""))</td>
+          <td>target.status</td>
+          <td>target.key</td>
+          <td>Html(target.description.getOrElse(""))</td>
         </tr>
       }
     </tbody>
-  </table>
+  </table-->
 
 }

@@ -37,6 +37,7 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
+      ws,
       jdbc,
       anorm,
       "org.postgresql" % "postgresql" % "9.3-1101-jdbc4",
@@ -46,6 +47,13 @@ lazy val api = project
 
 lazy val www = project
   .in(file("www"))
+  .dependsOn(generated)
+  .aggregate(generated)
+  .enablePlugins(PlayScala)
+  .settings(commonSettings: _*)
+
+lazy val generator = project
+  .in(file("generator"))
   .dependsOn(generated)
   .aggregate(generated)
   .enablePlugins(PlayScala)

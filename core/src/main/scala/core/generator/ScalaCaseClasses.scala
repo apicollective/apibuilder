@@ -1,6 +1,6 @@
 package core.generator
 
-import codegenerator.models.ServiceDescription
+import com.gilt.apidocgenerator.models.ServiceDescription
 import core._
 import Text._
 
@@ -24,7 +24,7 @@ object ScalaCaseClasses extends CodeGenerator {
 
   private def generatePlayEnums(enums: Seq[ScalaEnum]): String = {
     enums.map { enum =>
-      Play2Enums.build(enum)
+      ScalaEnums.build(enum)
     }.mkString("\n\n")
   }
 }

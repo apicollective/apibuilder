@@ -1,0 +1,3 @@
+GET      /generators           controllers.Generators.get()
+GET      /generators/:key      controllers.Generators.getByKey(key: String)
+POST     /invocations/:key     controllers.Invocations.postByKey(key: String)

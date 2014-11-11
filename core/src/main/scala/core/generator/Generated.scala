@@ -1,13 +1,8 @@
-package codegenerator.models {
-  case class Code(
-    targetKey: String,
-    source: String
-  )
-
+package com.gilt.apidocgenerator.models {
   case class Enum(
     name: String,
     description: scala.Option[String] = None,
-    values: scala.collection.Seq[codegenerator.models.EnumValue]
+    values: scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]
   )
 
   case class EnumValue(
@@ -22,7 +17,7 @@ package codegenerator.models {
 
   case class Field(
     name: String,
-    datatype: codegenerator.models.Type,
+    datatype: com.gilt.apidocgenerator.models.Type,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
@@ -31,9 +26,19 @@ package codegenerator.models {
     maximum: scala.Option[Long] = None
   )
 
+  /**
+   * The generator metadata.
+   */
+  case class Generator(
+    key: String,
+    name: String,
+    language: scala.Option[String] = None,
+    description: scala.Option[String] = None
+  )
+
   case class Header(
     name: String,
-    headertype: codegenerator.models.HeaderType,
+    headertype: com.gilt.apidocgenerator.models.HeaderType,
     headertypeValue: scala.Option[String] = None,
     description: scala.Option[String] = None,
     required: Boolean,
@@ -41,27 +46,34 @@ package codegenerator.models {
     default: scala.Option[String] = None
   )
 
+  /**
+   * The result of invoking a generator.
+   */
+  case class Invocation(
+    source: String
+  )
+
   case class Model(
     name: String,
     plural: String,
     description: scala.Option[String] = None,
-    fields: scala.collection.Seq[codegenerator.models.Field]
+    fields: scala.collection.Seq[com.gilt.apidocgenerator.models.Field]
   )
 
   case class Operation(
-    model: codegenerator.models.Model,
+    model: com.gilt.apidocgenerator.models.Model,
     method: String,
     path: String,
     description: scala.Option[String] = None,
-    body: scala.Option[codegenerator.models.Type] = None,
-    parameters: scala.collection.Seq[codegenerator.models.Parameter],
-    responses: scala.collection.Seq[codegenerator.models.Response]
+    body: scala.Option[com.gilt.apidocgenerator.models.Type] = None,
+    parameters: scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter],
+    responses: scala.collection.Seq[com.gilt.apidocgenerator.models.Response]
   )
 
   case class Parameter(
     name: String,
-    datatype: codegenerator.models.Type,
-    location: codegenerator.models.ParameterLocation,
+    datatype: com.gilt.apidocgenerator.models.Type,
+    location: com.gilt.apidocgenerator.models.ParameterLocation,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
@@ -71,24 +83,24 @@ package codegenerator.models {
   )
 
   case class Resource(
-    model: codegenerator.models.Model,
+    model: com.gilt.apidocgenerator.models.Model,
     path: String,
-    operations: scala.collection.Seq[codegenerator.models.Operation]
+    operations: scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]
   )
 
   case class Response(
     code: Int,
-    datatype: codegenerator.models.Type
+    datatype: com.gilt.apidocgenerator.models.Type
   )
 
   /**
    * Description of a service
    */
   case class ServiceDescription(
-    enums: scala.collection.Seq[codegenerator.models.Enum],
-    models: scala.collection.Seq[codegenerator.models.Model],
-    headers: scala.collection.Seq[codegenerator.models.Header],
-    resources: scala.collection.Seq[codegenerator.models.Resource],
+    enums: scala.collection.Seq[com.gilt.apidocgenerator.models.Enum],
+    models: scala.collection.Seq[com.gilt.apidocgenerator.models.Model],
+    headers: scala.collection.Seq[com.gilt.apidocgenerator.models.Header],
+    resources: scala.collection.Seq[com.gilt.apidocgenerator.models.Resource],
     baseUrl: scala.Option[String] = None,
     name: String,
     packageName: scala.Option[String] = None,
@@ -96,17 +108,8 @@ package codegenerator.models {
     userAgent: scala.Option[String] = None
   )
 
-  /**
-   * The target platform for code generation.
-   */
-  case class Target(
-    key: String,
-    name: String,
-    description: scala.Option[String] = None
-  )
-
   case class Type(
-    kind: codegenerator.models.TypeKind,
+    kind: com.gilt.apidocgenerator.models.TypeKind,
     name: String,
     multiple: Boolean
   )

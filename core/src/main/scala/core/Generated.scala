@@ -3,7 +3,7 @@ package com.gilt.apidoc.models {
    * Generated source code.
    */
   case class Code(
-    targetKey: String,
+    generatorGuid: java.util.UUID,
     source: String
   )
 
@@ -21,6 +21,21 @@ package com.gilt.apidoc.models {
   case class Error(
     code: String,
     message: String
+  )
+
+  /**
+   * An apidoc generator
+   */
+  case class Generator(
+    guid: java.util.UUID,
+    key: String,
+    uri: String,
+    name: String,
+    language: scala.Option[String] = None,
+    description: scala.Option[String] = None,
+    visibility: com.gilt.apidoc.models.Visibility,
+    ownerGuid: java.util.UUID,
+    enabled: Boolean
   )
 
   case class Healthcheck(
@@ -83,15 +98,6 @@ package com.gilt.apidoc.models {
   )
 
   /**
-   * The target platform for code generation.
-   */
-  case class Target(
-    key: String,
-    name: String,
-    description: scala.Option[String] = None
-  )
-
-  /**
    * A user is a top level person interacting with the api doc server.
    */
   case class User(
@@ -126,6 +132,10 @@ package com.gilt.apidoc.models {
   object Visibility {
 
     /**
+     * Only the creator can view this service
+     */
+    case object User extends Visibility { override def toString = "user" }
+    /**
      * Any member of the organization can view this service
      */
     case object Organization extends Visibility { override def toString = "organization" }
@@ -150,7 +160,7 @@ package com.gilt.apidoc.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(Organization, Public)
+    val all = Seq(User, Organization, Public)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap
@@ -194,14 +204,14 @@ package com.gilt.apidoc.models {
     }
     implicit def jsonReadsApidocCode: play.api.libs.json.Reads[Code] = {
       (
-        (__ \ "targetKey").read[String] and
+        (__ \ "generatorGuid").read[java.util.UUID] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApidocCode: play.api.libs.json.Writes[Code] = {
       (
-        (__ \ "targetKey").write[String] and
+        (__ \ "generatorGuid").write[java.util.UUID] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
@@ -228,6 +238,34 @@ package com.gilt.apidoc.models {
         (__ \ "code").write[String] and
         (__ \ "message").write[String]
       )(unlift(Error.unapply _))
+    }
+
+    implicit def jsonReadsApidocGenerator: play.api.libs.json.Reads[Generator] = {
+      (
+        (__ \ "guid").read[java.util.UUID] and
+        (__ \ "key").read[String] and
+        (__ \ "uri").read[String] and
+        (__ \ "name").read[String] and
+        (__ \ "language").readNullable[String] and
+        (__ \ "description").readNullable[String] and
+        (__ \ "visibility").read[com.gilt.apidoc.models.Visibility] and
+        (__ \ "owner_guid").read[java.util.UUID] and
+        (__ \ "enabled").read[Boolean]
+      )(Generator.apply _)
+    }
+
+    implicit def jsonWritesApidocGenerator: play.api.libs.json.Writes[Generator] = {
+      (
+        (__ \ "guid").write[java.util.UUID] and
+        (__ \ "key").write[String] and
+        (__ \ "uri").write[String] and
+        (__ \ "name").write[String] and
+        (__ \ "language").write[scala.Option[String]] and
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "visibility").write[com.gilt.apidoc.models.Visibility] and
+        (__ \ "owner_guid").write[java.util.UUID] and
+        (__ \ "enabled").write[Boolean]
+      )(unlift(Generator.unapply _))
     }
 
     implicit def jsonReadsApidocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
@@ -328,22 +366,6 @@ package com.gilt.apidoc.models {
         (__ \ "visibility").write[com.gilt.apidoc.models.Visibility] and
         (__ \ "description").write[scala.Option[String]]
       )(unlift(Service.unapply _))
-    }
-
-    implicit def jsonReadsApidocTarget: play.api.libs.json.Reads[Target] = {
-      (
-        (__ \ "key").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "description").readNullable[String]
-      )(Target.apply _)
-    }
-
-    implicit def jsonWritesApidocTarget: play.api.libs.json.Writes[Target] = {
-      (
-        (__ \ "key").write[String] and
-        (__ \ "name").write[String] and
-        (__ \ "description").write[scala.Option[String]]
-      )(unlift(Target.unapply _))
     }
 
     implicit def jsonReadsApidocUser: play.api.libs.json.Reads[User] = {

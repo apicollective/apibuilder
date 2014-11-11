@@ -25,6 +25,13 @@ GET     /doc/playRoutesFile                                       controllers.Do
 GET     /org/create                                               controllers.Organizations.create
 POST    /org/createPost                                           controllers.Organizations.createPost
 
+GET     /generators                                               controllers.Generators.list()
+POST    /generators/:guid/remove                                  controllers.Generators.postRemove(guid: java.util.UUID)
+GET     /generators/create                                        controllers.Generators.create()
+POST    /generators/postCreate                                    controllers.Generators.postCreate()
+GET     /generators/update                                        controllers.Generators.update(generatorGuid: java.util.UUID, visibility: String, enabled: Boolean)
+POST    /generators/postUpdate                                    controllers.Generators.postUpdate(generatorGuid: java.util.UUID)
+
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/add                                      controllers.Members.add(orgKey: String)
 POST    /:orgKey/members/addPost                                  controllers.Members.addPost(orgKey: String)
@@ -55,7 +62,7 @@ POST    /:orgKey/version/createPost                               controllers.Ve
 
 GET     /:orgKey/docs/:serviceKey/:version                        controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
 GET     /:orgKey/api.json/:serviceKey/:version                    controllers.Versions.apiJson(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/code/:serviceKey/:version/:target                controllers.Code.generate(orgKey: String, serviceKey: String, version: String, target: String)
+GET     /:orgKey/code/:serviceKey/:version/:generatorGuid         controllers.Code.generate(orgKey: String, serviceKey: String, version: String, generatorGuid: java.util.UUID)
 GET     /:orgKey/settings/:serviceKey/:version                    controllers.ServiceSettings.show(orgKey: String, serviceKey: String, version: String)
 GET     /:orgKey/settings/:serviceKey/:version/edit               controllers.ServiceSettings.edit(orgKey: String, serviceKey: String, version: String)
 POST     /:orgKey/settings/:serviceKey/:version/postEdit          controllers.ServiceSettings.postEdit(orgKey: String, serviceKey: String, version: String)
