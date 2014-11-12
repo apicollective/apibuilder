@@ -30,6 +30,12 @@
 
     "models": {
 
+	"healthcheck": {
+	    "fields": [
+                { "name": "status", "type": "string", "example": "healthy" }
+	    ]
+	},
+
         "service_description": {
             "description": "Description of a service",
             "fields": [
@@ -170,6 +176,19 @@
     },
 
     "resources": {
+
+	"healthcheck": {
+	    "path": "/_internal_/healthcheck",
+            "operations": [
+                {
+                    "method": "GET",
+                    "responses": {
+                        "200": { "type": "healthcheck" }
+                    }
+                }
+	    ]
+	},
+
         "generator": {
             "operations": [
                 {
