@@ -1,6 +1,6 @@
 package core.generator
 
-import core.{Primitives, Text, Type, TypeInstance}
+import core.{Primitives, Text, Container, Type, TypeInstance, TypeKind}
 import core.Text._
 
 object GeneratorUtil {
@@ -153,9 +153,13 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
       val name = op.body.get.name
 
       val payload = body match {
-        case TypeInstance(_, Type.Primitive(pt)) => ScalaDataType.asString(name, op.ssd.scalaDataType(body))
-        case TypeInstance(_, Type.Model(name)) => ScalaUtil.toVariable(name)
-        case TypeInstance(_, Type.Enum(name)) => s"${ScalaUtil.toVariable(name)}.map(_.toString)"
+        case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, pt)) => ScalaDataType.asString("body", op.ssd.scalaDataType(body))
+        case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => ScalaUtil.toVariable(name)
+        case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => s"${ScalaUtil.toVariable(name)}.map(_.toString)"
+
+        case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, pt)) => ScalaDataType.asString("bodies", op.ssd.scalaDataType(body))
+        case TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name)) => ScalaUtil.toVariable(name, true)
+        case TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name)) => s"${ScalaUtil.toVariable(name, true)}.map(_.toString)"
       }
 
       Some(s"val payload = play.api.libs.json.Json.toJson($payload)")

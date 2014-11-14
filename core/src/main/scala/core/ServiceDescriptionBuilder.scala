@@ -164,7 +164,7 @@ object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val typeInstance = model.fields.find(_.name == name).map(_.`type`).getOrElse {
-      TypeInstance(Container.Singleton, Type.Primitive(Primitives.String))
+      TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString))
     }
 
     Parameter(name = name,
@@ -202,7 +202,7 @@ object FieldBuilder {
     val typeInstance = TypeResolver(
       enumNames = enums.map(_.name)
     ).toTypeInstance(internal.datatype.get).getOrElse {
-      TypeInstance(internal.datatype.get.container, Type.Model(internal.datatype.get.name))
+      TypeInstance(internal.datatype.get.container, Type(TypeKind.Model, internal.datatype.get.name))
     }
 
     internal.default.map { typeInstance.assertValidDefault(enums, _) }

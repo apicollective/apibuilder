@@ -18,7 +18,15 @@ object Primitives {
   case object Unit extends Primitives { override def toString = "unit" }
 
   val All = Seq(Boolean, Decimal, Integer, Double, Long, String, DateIso8601, DateTimeIso8601, Uuid, Unit)
+
   val ValidInPath = All.filter(_ != Unit)
+
+  def validInPath(name: String): Boolean = {
+    ValidInPath.find(_.toString == name) match {
+      case None => false
+      case Some(_) => true
+    }
+  }
 
   def apply(value: String): Option[Primitives] = {
     All.find(_.toString == value.toLowerCase.trim)
@@ -26,13 +34,13 @@ object Primitives {
 
 }
 
-sealed trait Type
+sealed trait TypeKind
 
-object Type {
+object TypeKind {
 
-  case class Primitive(primitive: Primitives) extends Type
-  case class Model(name: String) extends Type
-  case class Enum(name: String) extends Type
+  case object Primitive extends TypeKind { override def toString = "primitive" }
+  case object Model extends TypeKind { override def toString = "model" }
+  case object Enum extends TypeKind { override def toString = "enum" }
 
 }
 
@@ -46,6 +54,11 @@ object Container {
 
 }
 
+case class Type(
+  typeKind: TypeKind,
+  name: String
+)
+
 case class TypeInstance(
   container: Container,
   `type`: Type
@@ -55,11 +68,7 @@ case class TypeInstance(
     TypeValidator(enums.map(e => TypeValidatorEnums(e.name, e.values.map(_.name)))).assertValidDefault(`type`, value)
   }
 
-  lazy val typeName: String = `type` match {
-    case Type.Primitive(pt) => pt.toString
-    case Type.Model(name) => name
-    case Type.Enum(name) => name
-  }
+  val typeName: String = `type`.name
 
 }
 
@@ -70,13 +79,13 @@ case class TypeResolver(
 
   def toType(name: String): Option[Type] = {
     Primitives(name) match {
-      case Some(pt) => Some(Type.Primitive(pt))
+      case Some(pt) => Some(Type(TypeKind.Primitive, name))
       case None => {
         enumNames.find(_ == name) match {
-          case Some(et) => Some(Type.Enum(name))
+          case Some(et) => Some(Type(TypeKind.Enum, name))
           case None => {
             modelNames.find(_ == name) match {
-              case Some(mt) => Some(Type.Model(name))
+              case Some(mt) => Some(Type(TypeKind.Model, name))
               case None => None
             }
           }

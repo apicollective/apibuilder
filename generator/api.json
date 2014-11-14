@@ -4,7 +4,7 @@
     "base_url": "http://www.apidoc.me",
 
     "enums": {
-        "type": {
+        "type_kind": {
             "values": [
                 { "name": "primitive" },
                 { "name": "model" },
@@ -17,13 +17,6 @@
                 { "name": "singleton" },
                 { "name": "list" },
                 { "name": "map" }
-            ]
-        },
-
-        "type_instance": {
-            "values": [
-                { "name": "container", "type", "container" },
-                { "name": "type", "type", "type" }
             ]
         },
 
@@ -43,6 +36,21 @@
                 { "name": "status", "type": "string", "example": "healthy" }
 	    ]
 	},
+
+        "type": {
+            "values": [
+                { "name": "type", "type", "type" },
+                { "name": "name", "type", "string", "description": "The name of the specific primitive type, model or enum", "example": "string" }
+            ]
+        },
+
+        "type_instance": {
+	    "description": "Used to capture the metadata about a single instance of a type - for example, a model field definition will have a type instance.",
+            "values": [
+                { "name": "container", "type", "container" },
+                { "name": "type", "type", "type" }
+            ]
+        },
 
         "service_description": {
             "description": "Description of a service",

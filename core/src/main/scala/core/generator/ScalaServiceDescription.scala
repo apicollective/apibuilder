@@ -74,6 +74,14 @@ object ScalaUtil {
     Text.initLowerCase(toClassName(name, multiple))
   }
 
+  def toDefaultClassName(
+    multiple: Boolean = false
+  ): String = toClassName("value", multiple = multiple)
+
+  def toDefaultVariable(
+    multiple: Boolean = false
+  ): String = toVariable("value", multiple = multiple)
+
 }
 
 class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
@@ -108,17 +116,17 @@ class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
   def scalaDataType(
     typeInstance: TypeInstance
   ): ScalaDataType = typeInstance match {
-    case TypeInstance(Container.Singleton, Type.Primitive(pt)) => ScalaDataType(pt)
-    case TypeInstance(Container.List, Type.Primitive(pt)) => ScalaDataType.ScalaListType(ScalaDataType(pt))
-    case TypeInstance(Container.Map, Type.Primitive(pt)) => ScalaDataType.ScalaMapType(ScalaDataType(pt))
+    case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, pt)) => ScalaDataType.primitive(pt)
+    case TypeInstance(Container.List, Type(TypeKind.Primitive, pt)) => ScalaDataType.ScalaListType(ScalaDataType.primitive(pt))
+    case TypeInstance(Container.Map, Type(TypeKind.Primitive, pt)) => ScalaDataType.ScalaMapType(ScalaDataType.primitive(pt))
 
-    case TypeInstance(Container.Singleton, Type.Model(name)) => ScalaDataType.ScalaModelType(modelPackageName, name)
-    case TypeInstance(Container.List, Type.Model(name)) => ScalaDataType.ScalaListType(ScalaDataType.ScalaModelType(modelPackageName, name))
-    case TypeInstance(Container.Map, Type.Model(name)) => ScalaDataType.ScalaMapType(ScalaDataType.ScalaModelType(modelPackageName, name))
+    case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => ScalaDataType.ScalaModelType(modelPackageName, name)
+    case TypeInstance(Container.List, Type(TypeKind.Model, name)) => ScalaDataType.ScalaListType(ScalaDataType.ScalaModelType(modelPackageName, name))
+    case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => ScalaDataType.ScalaMapType(ScalaDataType.ScalaModelType(modelPackageName, name))
 
-    case TypeInstance(Container.Singleton, Type.Enum(name)) => ScalaDataType.ScalaEnumType(enumPackageName, name)
-    case TypeInstance(Container.List, Type.Enum(name)) => ScalaDataType.ScalaListType(ScalaDataType.ScalaEnumType(enumPackageName, name))
-    case TypeInstance(Container.Map, Type.Enum(name)) => ScalaDataType.ScalaMapType(ScalaDataType.ScalaEnumType(enumPackageName, name))
+    case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => ScalaDataType.ScalaEnumType(enumPackageName, name)
+    case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => ScalaDataType.ScalaListType(ScalaDataType.ScalaEnumType(enumPackageName, name))
+    case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => ScalaDataType.ScalaMapType(ScalaDataType.ScalaEnumType(enumPackageName, name))
   }
 
 }
@@ -145,14 +153,14 @@ class ScalaModel(val ssd: ScalaServiceDescription, val model: Model) {
 class ScalaBody(val body: TypeInstance) {
 
   val name: String = body match {
-    case TypeInstance(Container.Singleton, Type.Primitive(_)) => ScalaUtil.toClassName("value")
-    case TypeInstance(Container.List | Container.Map, Type.Primitive(_)) => ScalaUtil.toClassName("values")
+    case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => ScalaUtil.toDefaultClassName()
+    case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, name)) => ScalaUtil.toDefaultClassName(true)
 
-    case TypeInstance(Container.Singleton, Type.Model(name)) => ScalaUtil.toClassName(name)
-    case TypeInstance(Container.List | Container.Map, Type.Model(name)) => ScalaUtil.toClassName(name, true)
+    case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => ScalaUtil.toClassName(name)
+    case TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name)) => ScalaUtil.toClassName(name, true)
 
-    case TypeInstance(Container.Singleton, Type.Enum(name)) => ScalaUtil.toClassName(name)
-    case TypeInstance(Container.List | Container.Map, Type.Enum(name)) => ScalaUtil.toClassName(name, true)
+    case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => ScalaUtil.toClassName(name)
+    case TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name)) => ScalaUtil.toClassName(name, true)
   }
 
 }
@@ -216,13 +224,13 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
     case Some(typeInstance) => {
       val sdt = ssd.scalaDataType(typeInstance)
       val varName = typeInstance match {
-        case TypeInstance(Container.Singleton, Type.Primitive(pt)) => ScalaUtil.toVariable("value")
-        case TypeInstance(Container.Singleton, Type.Model(name)) => ScalaUtil.toVariable(name)
-        case TypeInstance(Container.Singleton, Type.Enum(name)) => ScalaUtil.toVariable(name)
+        case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, pt)) => ScalaUtil.toDefaultVariable()
+        case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => ScalaUtil.toVariable(name)
+        case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => ScalaUtil.toVariable(name)
 
-        case TypeInstance(Container.List | Container.Map, Type.Primitive(pt)) => ScalaUtil.toVariable("value", true)
-        case TypeInstance(Container.List | Container.Map, Type.Model(name)) => ScalaUtil.toVariable(name, true)
-        case TypeInstance(Container.List | Container.Map, Type.Enum(name)) => ScalaUtil.toVariable(name, true)
+        case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, name)) => ScalaUtil.toDefaultVariable(true)
+        case TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name)) => ScalaUtil.toVariable(name, true)
+        case TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name)) => ScalaUtil.toVariable(name, true)
       }
 
       Some(
@@ -370,17 +378,21 @@ object ScalaDataType {
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
   case class ScalaMapType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Map[String, ${inner.name}]")
 
-  def apply(pt: Primitives): ScalaDataType = pt match {
-    case Primitives.String => ScalaStringType
-    case Primitives.DateIso8601 => ScalaDateIso8601Type
-    case Primitives.DateTimeIso8601 => ScalaDateTimeIso8601Type
-    case Primitives.Uuid => ScalaUuidType
-    case Primitives.Integer => ScalaIntegerType
-    case Primitives.Double => ScalaDoubleType
-    case Primitives.Long => ScalaLongType
-    case Primitives.Boolean => ScalaBooleanType
-    case Primitives.Decimal => ScalaDecimalType
-    case Primitives.Unit => ScalaUnitType
+  def primitive(name: String): ScalaDataType = {
+    Primitives(name).getOrElse {
+      sys.error(s"There is no primitive named[$name]")
+    } match {
+      case Primitives.String => ScalaStringType
+      case Primitives.DateIso8601 => ScalaDateIso8601Type
+      case Primitives.DateTimeIso8601 => ScalaDateTimeIso8601Type
+      case Primitives.Uuid => ScalaUuidType
+      case Primitives.Integer => ScalaIntegerType
+      case Primitives.Double => ScalaDoubleType
+      case Primitives.Long => ScalaLongType
+      case Primitives.Boolean => ScalaBooleanType
+      case Primitives.Decimal => ScalaDecimalType
+      case Primitives.Unit => ScalaUnitType
+    }
   }
 
   def asString(varName: String, d: ScalaDataType): String = d match {

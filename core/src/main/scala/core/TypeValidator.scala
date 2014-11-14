@@ -103,7 +103,7 @@ case class TypeValidator(
   ): Option[String] = {
     t match {
 
-      case Type.Enum(name) => {
+      case Type(TypeKind.Enum, name) => {
         enums.find(_.name == name) match {
           case None => Some(s"could not find enum named[$name]")
           case Some(enum) => {
@@ -122,91 +122,103 @@ case class TypeValidator(
         }
       }
       
-      case Type.Model(name) => {
+      case Type(TypeKind.Model, name) => {
         Some(withPrefix(errorPrefix, s"default[$value] is not valid for model[$name]. apidoc does not support default values for models"))
       }
 
-      case Type.Primitive(Primitives.Boolean) => {
-        if (TypeValidator.BooleanValues.contains(value)) {
-          None
-        } else {
-          Some(withPrefix(errorPrefix, s"Value[$value] is not a valid boolean. Must be one of: ${TypeValidator.BooleanValues.mkString(", ")}"))
-        }
-      }
+      case Type(TypeKind.Primitive, name) => {
+        Primitives(name) match {
+          case None => {
+            Some(withPrefix(errorPrefix, s"there is no primitive datatype[$name]"))
+          }
 
-      case Type.Primitive(Primitives.Double) => {
-        try {
-          value.toDouble
-          None
-        } catch {
-          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid double"))
-        }
-      }
+          case Some(pt) => {
+            pt match {
+              case Primitives.Boolean => {
+                if (TypeValidator.BooleanValues.contains(value)) {
+                  None
+                } else {
+                  Some(withPrefix(errorPrefix, s"Value[$value] is not a valid boolean. Must be one of: ${TypeValidator.BooleanValues.mkString(", ")}"))
+                }
+              }
 
-      case Type.Primitive(Primitives.Integer) => {
-        try {
-          value.toInt
-          None
-        } catch {
-          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid integer"))
-        }
-      }
+              case Primitives.Double => {
+                try {
+                  value.toDouble
+                  None
+                } catch {
+                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid double"))
+                }
+              }
 
-      case Type.Primitive(Primitives.Long) => {
-        try {
-          value.toLong
-          None
-        } catch {
-          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid long"))
-        }
-      }
+              case Primitives.Integer => {
+                try {
+                  value.toInt
+                  None
+                } catch {
+                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid integer"))
+                }
+              }
 
-      case Type.Primitive(Primitives.Decimal) => {
-        try {
-          BigDecimal(value)
-          None
-        } catch {
-          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid decimal"))
-        }
-      }
+              case Primitives.Long => {
+                try {
+                  value.toLong
+                  None
+                } catch {
+                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid long"))
+                }
+              }
 
-      case Type.Primitive(Primitives.Unit) => {
-        if (value == "") {
-          None
-        } else {
-          Some(withPrefix(errorPrefix, s"Value[$value] is not a valid unit type - must be the empty string"))
-        }
-      }
+              case Primitives.Decimal => {
+                try {
+                  BigDecimal(value)
+                  None
+                } catch {
+                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid decimal"))
+                }
+              }
 
-      case Type.Primitive(Primitives.Uuid) => {
-        try {
-          UUID.fromString(value)
-          None
-        } catch {
-          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid uuid"))
-        }
-      }
+              case Primitives.Unit => {
+                if (value == "") {
+                  None
+                } else {
+                  Some(withPrefix(errorPrefix, s"Value[$value] is not a valid unit type - must be the empty string"))
+                }
+              }
 
-      case Type.Primitive(Primitives.DateIso8601) => {
-        try {
-          dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
-          None
-        } catch {
-          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-iso8601"))
-        }
-      }
+              case Primitives.Uuid => {
+                try {
+                  UUID.fromString(value)
+                  None
+                } catch {
+                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid uuid"))
+                }
+              }
 
-      case Type.Primitive(Primitives.DateTimeIso8601) => {
-        try {
-          dateTimeISOParser.parseDateTime(value)
-          None
-        } catch {
-          case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-time-iso8601"))
-        }
-      }
+              case Primitives.DateIso8601 => {
+                try {
+                  dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
+                  None
+                } catch {
+                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-iso8601"))
+                }
+              }
 
-      case Type.Primitive(Primitives.String) => {
-        None
+              case Primitives.DateTimeIso8601 => {
+                try {
+                  dateTimeISOParser.parseDateTime(value)
+                  None
+                } catch {
+                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-time-iso8601"))
+                }
+              }
+
+              case Primitives.String => {
+                None
+              }
+            }
+          }
+        }
       }
     }
   }
