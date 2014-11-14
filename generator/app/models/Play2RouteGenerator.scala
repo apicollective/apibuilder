@@ -107,24 +107,35 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
             case TypeInstance(Container.Map, _) => {
               sys.error("Cannot set defaults for maps")
             }
-            case TypeInstance(Container.Singleton, Type.Primitive(pt)) => {
-              pt match {
-                case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
-                  s"""?= "$d""""
+            case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
+              Primitives(name) match {
+                case None => {
+                  sys.error("Unknown primitive type[$name]")
                 }
-                case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean | Primitives.Decimal => {
-                  s"?= ${d}"
-                }
-                case Primitives.Unit => {
-                  sys.error(s"Unsupported type[$pt] for default values")
+                case Some(pt) => pt match {
+                  case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
+                    s"""?= "$d""""
+                  }
+                  case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean | Primitives.Decimal => {
+                    s"?= ${d}"
+                  }
+                  case Primitives.Unit => {
+                    sys.error(s"Unsupported type[$pt] for default values")
+                  }
                 }
               }
             }
-            case TypeInstance(Container.Singleton, Type.Model(name)) => {
+            case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
               sys.error(s"Models cannot be defaults in path parameters")
             }
-            case TypeInstance(Container.Singleton, Type.Enum(name)) => {
+            case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
               s"""?= "${d}""""
+            }
+            case TypeInstance(Container.UNDEFINED(container), _) => {
+              sys.error(s"Invalid container[$container]")
+            }
+            case TypeInstance(_, Type(TypeKind.UNDEFINED(kind), name)) => {
+              sys.error(s"Invalid typeKind[$kind] for name[$name]")
             }
           }
         )
@@ -149,6 +160,11 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
 
       case Container.List => datatype.name
       case Container.Map => datatype.name
+
+      case Container.UNDEFINED(container) => {
+        sys.error(s"Invalid container[$container]")
+      }
+
     }
   }
 

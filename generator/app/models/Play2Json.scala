@@ -1,6 +1,6 @@
 package models
 
-import core.Container
+import com.gilt.apidocgenerator.models.Container
 import core.Text._
 import core.generator.ScalaModel
 
@@ -35,6 +35,10 @@ case class Play2Json(serviceName: String) {
 
         case Container.Map => {
           s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse(Map.Empty))"""
+        }
+
+        case Container.UNDEFINED(container) => {
+          sys.error(s"Invalid container[$container]")
         }
       }
     }
