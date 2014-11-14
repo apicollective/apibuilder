@@ -380,7 +380,6 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val typesNotFound = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(!_.body.isEmpty).filter(op => internalServiceDescription.get.typeResolver.toType(op.body.get.name).isEmpty).map { op =>
         if (op.body.get.name.trim == "") {
-          println(s"${opLabel(resource, op)}: missing type")
           s"${opLabel(resource, op)}: Body missing type"
         } else {
           s"${opLabel(resource, op)} body: Type[${op.body.get.name}] not found"
