@@ -49,7 +49,7 @@ object Generators extends Controller {
         metaData = Generator(
           key = "play_2_2_client",
           name = "Play 2.2 client",
-          description = Some("Play Framework 2.2 client based on <a href='http://www.playframework.com/documentation/2.2.x/ScalaWS''>WS API</a>. Note this client does NOT support HTTP PATCH."),
+          description = Some("Play Framework 2.2 client based on <a href='http://www.playframework.com/documentation/2.2.x/ScalaWS''>WS API</a>. Note this client does NOT support HTTP PATCH. If you need PATCH, we recommend using the ning client instead, which uses play-json underneath so should require minimal new dependencies in Play."),
           language = Some("Scala")
         ),
         status = core.generator.Status.Beta,
