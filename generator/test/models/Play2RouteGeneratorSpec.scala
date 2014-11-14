@@ -1,7 +1,8 @@
 package models
 
-import codegenerator.models.{Operation, Resource, ServiceDescription}
-import core.{Primitives, TestHelper, Type, TypeContainer, TypeInstance}
+import com.gilt.apidocgenerator.models.{Container, Operation, Resource, ServiceDescription, Type, TypeKind, TypeInstance}
+import core.generator.ScalaServiceDescription
+import core.Primitives
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
@@ -147,7 +148,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
     it("correctly orders parameters defined in path and parameters") {
       val op = getMethod(quality, "agenda_item", "DELETE", "/meetings/:meeting_id/agenda_items/:id")
       op.parameters.map(_.name) should be(Seq("meeting_id", "id"))
-      op.parameters.head.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.Long)))
+      op.parameters.head.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Long.toString)))
     }
 
   }

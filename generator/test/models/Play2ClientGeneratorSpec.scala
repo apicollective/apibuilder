@@ -1,8 +1,8 @@
 package models
 
-import core.generator.{ScalaServiceDescription, ScalaClientMethodGenerator, ScalaClientMethodConfigs}
+import core.generator.{ScalaDataType, ScalaServiceDescription, ScalaClientMethodGenerator, ScalaClientMethodConfigs}
 import core._
-import org.scalatest.{ ShouldMatchers, FunSpec }
+import org.scalatest.{ShouldMatchers, FunSpec}
 
 class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
 
