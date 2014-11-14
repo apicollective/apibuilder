@@ -9,4 +9,4 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.5")
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.99.7.1")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.8.3")
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
