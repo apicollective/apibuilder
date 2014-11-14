@@ -1,5 +1,6 @@
 package core
 
+import com.gilt.apidocgenerator.models.{Container, Type, TypeKind, TypeInstance}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {

@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocgenerator.models.Enum
+import com.gilt.apidocgenerator.models._
 
 sealed trait Primitives
 
@@ -31,44 +31,6 @@ object Primitives {
   def apply(value: String): Option[Primitives] = {
     All.find(_.toString == value.toLowerCase.trim)
   }
-
-}
-
-sealed trait TypeKind
-
-object TypeKind {
-
-  case object Primitive extends TypeKind { override def toString = "primitive" }
-  case object Model extends TypeKind { override def toString = "model" }
-  case object Enum extends TypeKind { override def toString = "enum" }
-
-}
-
-sealed trait Container
-
-object Container {
-
-  case object Singleton extends Container { override def toString = s"singleton" }
-  case object List extends Container { override def toString = "list" }
-  case object Map extends Container { override def toString = "map" }
-
-}
-
-case class Type(
-  typeKind: TypeKind,
-  name: String
-)
-
-case class TypeInstance(
-  container: Container,
-  `type`: Type
-) {
-
-  def assertValidDefault(enums: Seq[Enum], value: String) {
-    TypeValidator(enums.map(e => TypeValidatorEnums(e.name, e.values.map(_.name)))).assertValidDefault(`type`, value)
-  }
-
-  val typeName: String = `type`.name
 
 }
 

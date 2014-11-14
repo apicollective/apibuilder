@@ -1,8 +1,9 @@
 package core
 
+import com.gilt.apidocgenerator.models.{Container, Type, TypeKind, TypeInstance}
+import java.util.UUID
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
-import java.util.UUID
 
 class TypeValidatorSpec extends FunSpec with Matchers {
 

@@ -174,14 +174,15 @@ object ParameterBuilder {
   }
 
   def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
-    val typeInstance = TypeResolver(
+    val resolver = TypeResolver(
       enumNames = enums.map(_.name),
       modelNames = models.map(_.name)
-    ).toTypeInstance(internal.datatype.get).getOrElse {
+    )
+    val typeInstance = resolver.toTypeInstance(internal.datatype.get).getOrElse {
       sys.error("Could not resolve type for parameter: " + internal)
     }
 
-    internal.default.map { typeInstance.assertValidDefault(enums, _) }
+    internal.default.map { ServiceDescriptionBuilderHelper.assertValidDefault(enums, typeInstance.`type`, _) }
 
     Parameter(name = internal.name.get,
               `type` = typeInstance,
@@ -205,7 +206,7 @@ object FieldBuilder {
       TypeInstance(internal.datatype.get.container, Type(TypeKind.Model, internal.datatype.get.name))
     }
 
-    internal.default.map { typeInstance.assertValidDefault(enums, _) }
+    internal.default.map { ServiceDescriptionBuilderHelper.assertValidDefault(enums, typeInstance.`type`, _) }
 
     Field(name = internal.name.get,
           `type` = typeInstance,
@@ -219,3 +220,13 @@ object FieldBuilder {
 
 }
 
+
+object ServiceDescriptionBuilderHelper {
+
+  def assertValidDefault(enums: Seq[Enum], t: Type, value: String) {
+    TypeValidator(
+      enums = enums.map(e => TypeValidatorEnums(e.name, e.values.map(_.name)))
+    ).assertValidDefault(t, value)
+  }
+
+}

@@ -1,4 +1,34 @@
 package com.gilt.apidocgenerator.models {
+  sealed trait TypeKind
+
+  object TypeKind {
+
+    case object Primitive extends TypeKind { override def toString = "primitive" }
+    case object Model extends TypeKind { override def toString = "model" }
+    case object Enum extends TypeKind { override def toString = "enum" }
+
+  }
+
+  sealed trait Container
+
+  object Container {
+
+    case object Singleton extends Container { override def toString = s"singleton" }
+    case object List extends Container { override def toString = "list" }
+    case object Map extends Container { override def toString = "map" }
+
+  }
+
+  case class Type(
+    typeKind: TypeKind,
+    name: String
+  )
+
+  case class TypeInstance(
+    container: Container,
+    `type`: Type
+  )
+
   case class Enum(
     name: String,
     description: scala.Option[String] = None,
@@ -17,7 +47,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Field(
     name: String,
-    `type`: core.TypeInstance,
+    `type`: TypeInstance,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
@@ -38,7 +68,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Header(
     name: String,
-    `type`: core.TypeInstance,
+    `type`: TypeInstance,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None
@@ -63,14 +93,14 @@ package com.gilt.apidocgenerator.models {
     method: String,
     path: String,
     description: scala.Option[String] = None,
-    body: scala.Option[core.TypeInstance] = None,
+    body: scala.Option[TypeInstance] = None,
     parameters: scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter],
     responses: scala.collection.Seq[com.gilt.apidocgenerator.models.Response]
   )
 
   case class Parameter(
     name: String,
-    `type`: core.TypeInstance,
+    `type`: TypeInstance,
     location: com.gilt.apidocgenerator.models.ParameterLocation,
     description: scala.Option[String] = None,
     required: Boolean,
@@ -88,7 +118,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Response(
     code: Int,
-    `type`: core.TypeInstance
+    `type`: TypeInstance
   )
 
   /**

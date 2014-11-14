@@ -5,11 +5,14 @@ import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
+import com.gilt.apidocgenerator.models.{Container, Type, TypeInstance, TypeKind}
 
 case class TypeValidatorEnums(name: String, values: Seq[String])
 
 object TypeValidator {
+
   private[core] val BooleanValues = Seq("true", "false")
+
 }
 
 case class TypeValidator(
@@ -63,7 +66,7 @@ case class TypeValidator(
                 )
               }
               case None => {
-                Some(s"default[$value] is not a valid list[${typeInstance.typeName}]")
+                Some(s"default[$value] is not a valid list[${typeInstance.`type`.name}]")
               }
             }
           }
@@ -87,7 +90,7 @@ case class TypeValidator(
                 )
               }
               case None => {
-                Some(s"default[$value] is not a valid map[${typeInstance.typeName}]")
+                Some(s"default[$value] is not a valid map[${typeInstance.`type`.name}]")
               }
             }
           }
