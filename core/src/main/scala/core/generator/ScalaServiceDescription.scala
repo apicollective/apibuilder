@@ -286,7 +286,16 @@ class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Resp
 
   val resultType: String = datatype.name
 
-  val errorVariableName = ScalaUtil.toVariable(datatype.name, !isSingleton)
+  val errorVariableName = response.`type` match {
+    case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => ScalaUtil.toDefaultVariable(multiple = false)
+    case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, name)) => ScalaUtil.toDefaultVariable(multiple = false)
+
+    case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => ScalaUtil.toVariable(name, multiple = false)
+    case TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name)) => ScalaUtil.toVariable(name, multiple = true)
+
+    case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => ScalaUtil.toVariable(name, multiple = false)
+    case TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name)) => ScalaUtil.toVariable(name, multiple = true)
+  }
 
   val errorClassName = Text.initCap(errorVariableName) + "Response"
 
