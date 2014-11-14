@@ -64,14 +64,14 @@ package com.gilt.apidocgenerator.models {
     path: String,
     description: scala.Option[String] = None,
     body: scala.Option[core.TypeInstance] = None,
-    parameters: scala.collection.Seq[codegenerator.models.Parameter],
-    responses: scala.collection.Seq[codegenerator.models.Response]
+    parameters: scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter],
+    responses: scala.collection.Seq[com.gilt.apidocgenerator.models.Response]
   )
 
   case class Parameter(
     name: String,
     `type`: core.TypeInstance,
-    location: codegenerator.models.ParameterLocation,
+    location: com.gilt.apidocgenerator.models.ParameterLocation,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,

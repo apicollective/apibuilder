@@ -1,6 +1,6 @@
 package core
 
-import codegenerator.models.Enum
+import com.gilt.apidocgenerator.models.Enum
 
 sealed trait Primitives
 

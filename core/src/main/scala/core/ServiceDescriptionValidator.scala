@@ -1,14 +1,11 @@
 package core
 
-import scala.util.Try
-
-import java.util.UUID
-
 import com.gilt.apidocgenerator.models.{Field, ServiceDescription}
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
+import scala.util.Try
 
 case class ServiceDescriptionValidator(apiJson: String) {
 

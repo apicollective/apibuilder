@@ -1,6 +1,6 @@
 package core.generator
 
-import codegenerator.models._
+import com.gilt.apidocgenerator.models._
 import core._
 import org.scalatest._
 
