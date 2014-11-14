@@ -61,6 +61,14 @@ One way to do this is to run a screen session, and in one screen do:
 
 Goto http://localhost:9000 in your browser
 
+If you want to run the standard code generators:
+
+  $ sbt
+  sbt> project generator
+  sbt> run 9002
+
+Goto http://localhost:9002/generators in your browser
+
 Now both should be running and able to talk to each other, and should recompile
 in situ for a nice development experience.
 
