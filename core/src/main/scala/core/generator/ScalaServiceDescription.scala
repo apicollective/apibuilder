@@ -220,13 +220,9 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
         case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => ScalaUtil.toVariable(name)
         case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => ScalaUtil.toVariable(name)
 
-        case TypeInstance(TypeContainer.List, Type.Primitive(pt)) => ScalaUtil.toVariable("value", true)
-        case TypeInstance(TypeContainer.List, Type.Model(name)) => ScalaUtil.toVariable(name, true)
-        case TypeInstance(TypeContainer.List, Type.Enum(name)) => ScalaUtil.toVariable(name, true)
-
-        case TypeInstance(TypeContainer.Map, Type.Primitive(pt)) => ScalaUtil.toVariable("value", true)
-        case TypeInstance(TypeContainer.Map, Type.Model(name)) => ScalaUtil.toVariable(name, true)
-        case TypeInstance(TypeContainer.Map, Type.Enum(name)) => ScalaUtil.toVariable(name, true)
+        case TypeInstance(TypeContainer.List | TypeContainer.Map, Type.Primitive(pt)) => ScalaUtil.toVariable("value", true)
+        case TypeInstance(TypeContainer.List | TypeContainer.Map, Type.Model(name)) => ScalaUtil.toVariable(name, true)
+        case TypeInstance(TypeContainer.List | TypeContainer.Map, Type.Enum(name)) => ScalaUtil.toVariable(name, true)
       }
 
       Some(
@@ -340,11 +336,10 @@ sealed abstract class ScalaDataType(val name: String) {
     varName: String,
     optional: Boolean
   ): String = {
-    val decl = s"$varName: $name"
     if (optional) {
-      decl + " = " + nilValue(typeInstance)
+      s"$varName: scala.Option[$name]" + " = " + nilValue(typeInstance)
     } else {
-      decl
+      s"$varName: $name"
     }
   }
 
