@@ -317,6 +317,8 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
 
   def name: String = ScalaUtil.toVariable(param.name)
 
+  def `type`: TypeInstance = param.`type`
+
   def originalName: String = param.name
 
   def datatype = ssd.scalaDataType(param.`type`)

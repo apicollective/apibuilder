@@ -82,21 +82,45 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
   import ScalaDataType._
 
   def params(
-              fieldName: String,
-              params: Seq[ScalaParameter]
-              ): Option[String] = {
+    fieldName: String,
+    params: Seq[ScalaParameter]
+  ): Option[String] = {
     if (params.isEmpty) {
       None
     } else {
-      val arrayParams = params.filter(!_.isSingleton) match {
+      val listParams = params.filter(_.`type`.container == Container.List) match {
         case Nil => Seq.empty
         case params => {
           params.map { p =>
-            s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", p.datatype)})"""
+            p.datatype match {
+              case ScalaListType(inner) => {
+                s"""  ${p.name}.map("${p.originalName}" -> ${ScalaDataType.asString("_", inner)})"""
+              }
+              case other => {
+                sys.error(s"Unexpected scala type[$other]")
+              }
+            }
           }
         }
       }
-      val arrayParamString = arrayParams.mkString(" ++\n")
+      val arrayParamString = listParams.mkString(" ++\n")
+
+      val mapParams = params.filter(_.`type`.container == Container.Map) match {
+        case Nil => Seq.empty
+        case params => {
+          params.map { p =>
+            p.datatype match {
+              case ScalaMapType(inner) => {
+                sys.error("TODO: Finish map")
+              }
+              case other => {
+                sys.error(s"Unexpected scala type[$other]")
+              }
+            }
+          }
+        }
+      }
+      // TODO: Finish map val mapParamString = listParams.mkString(" ++\n")
 
       val singleParams = params.filter(_.isSingleton) match {
         case Nil => Seq.empty
@@ -119,7 +143,7 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
       Some(
         if (singleParams.isEmpty) {
           s"val $fieldName = " + arrayParamString.trim
-        } else if (arrayParams.isEmpty) {
+        } else if (listParams.isEmpty) {
           singleParamString
         } else {
           singleParamString + " ++\n" + arrayParamString
