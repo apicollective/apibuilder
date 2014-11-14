@@ -550,7 +550,7 @@ package com.gilt.apidocgenerator {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidocgenerator.models.json._
 
-    private val UserAgent = "apidoc:0.6.8 http://www.apidoc.me/gilt/code/apidoc-generator/0.7.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.10 http://www.apidoc.me/com.gilt/code/apidoc-generator/0.0.1-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidocgenerator.client")
 
     logger.info(s"Initializing com.gilt.apidocgenerator.client for url $apiUrl")
@@ -579,7 +579,7 @@ package com.gilt.apidocgenerator {
     }
 
     object Invocations extends Invocations {
-      override def postByKey(serviceDescription: com.gilt.apidocgenerator.models.ServiceDescription,
+      override def postByKey(serviceDescription: com.gilt.apidocgenerator.models.ServiceDescription, 
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidocgenerator.models.Invocation] = {
         val payload = play.api.libs.json.Json.toJson(serviceDescription)
@@ -635,6 +635,9 @@ package com.gilt.apidocgenerator {
         case "DELETE" => {
           _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
         }
+         case "HEAD" => {
+          _logRequest("HEAD", _requestHolder(path).withQueryString(queryParameters:_*)).head()
+        }
         case _ => {
           _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))
           sys.error("Unsupported method[%s]".format(method))
@@ -662,7 +665,7 @@ package com.gilt.apidocgenerator {
     /**
      * Invoke a generator
      */
-    def postByKey(serviceDescription: com.gilt.apidocgenerator.models.ServiceDescription,
+    def postByKey(serviceDescription: com.gilt.apidocgenerator.models.ServiceDescription, 
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidocgenerator.models.Invocation]
   }
@@ -700,6 +703,17 @@ package com.gilt.apidocgenerator {
     // Type: date-iso8601
     implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29"
+    )
+
+    // Enum: Container
+    private val enumContainerNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Container.all.mkString(", ")}"
+
+    implicit val pathBindableEnumContainer = new PathBindable.Parsing[Container] (
+      Container.fromString(_).get, _.toString, enumContainerNotFound
+    )
+
+    implicit val queryStringBindableEnumContainer = new QueryStringBindable.Parsing[Container](
+      Container.fromString(_).get, _.toString, enumContainerNotFound
     )
 
     // Enum: ParameterLocation
