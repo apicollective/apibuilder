@@ -193,11 +193,11 @@ case class RubyClientGenerator(service: ServiceDescription) {
             sys.error(s"Could not find path parameter named[$varName]")
           }
           param.`type` match {
-            case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => asString(name, pt)
-            case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => sys.error("Models cannot be in the path")
-            case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => s"#{${param.name}.value}"
-            case TypeInstance(TypeContainer.List, _) => sys.error("Cannot have lists in the path")
-            case TypeInstance(TypeContainer.Map, _) => sys.error("Cannot have maps in the path")
+            case TypeInstance(Container.Singleton, Type.Primitive(pt)) => asString(name, pt)
+            case TypeInstance(Container.Singleton, Type.Model(name)) => sys.error("Models cannot be in the path")
+            case TypeInstance(Container.Singleton, Type.Enum(name)) => s"#{${param.name}.value}"
+            case TypeInstance(Container.List, _) => sys.error("Cannot have lists in the path")
+            case TypeInstance(Container.Map, _) => sys.error("Cannot have maps in the path")
           }
         } else {
           name
@@ -217,13 +217,13 @@ case class RubyClientGenerator(service: ServiceDescription) {
         op.body match {
           case None => paramStrings.append("hash")
 
-          case Some(TypeInstance(TypeContainer.Singleton, Type.Primitive(pt))) => paramStrings.append(RubyUtil.toVariable("value", false))
+          case Some(TypeInstance(Container.Singleton, Type.Primitive(pt))) => paramStrings.append(RubyUtil.toVariable("value", false))
           case Some(TypeInstance(_, Type.Primitive(pt))) => paramStrings.append(RubyUtil.toVariable("value", true))
 
-          case Some(TypeInstance(TypeContainer.Singleton, Type.Model(name))) => paramStrings.append(RubyUtil.toVariable(name, false))
+          case Some(TypeInstance(Container.Singleton, Type.Model(name))) => paramStrings.append(RubyUtil.toVariable(name, false))
           case Some(TypeInstance(_, Type.Model(name))) => paramStrings.append(RubyUtil.toVariable(name, true))
 
-          case Some(TypeInstance(TypeContainer.Singleton, Type.Enum(name))) => paramStrings.append(RubyUtil.toVariable(name, false))
+          case Some(TypeInstance(Container.Singleton, Type.Enum(name))) => paramStrings.append(RubyUtil.toVariable(name, false))
           case Some(TypeInstance(_, Type.Enum(name))) => paramStrings.append(RubyUtil.toVariable(name, true))
         }
       }
@@ -280,23 +280,23 @@ case class RubyClientGenerator(service: ServiceDescription) {
                 requestBuilder.append(".with_body(${ti.varName})")
               }
 
-              case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => {
+              case TypeInstance(Container.Singleton, Type.Model(name)) => {
                 requestBuilder.append(s".with_json(${ti.varName}.to_hash.to_json)")
               }
-              case TypeInstance(TypeContainer.List, Type.Model(name)) => {
+              case TypeInstance(Container.List, Type.Model(name)) => {
                 requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash.to_json })")
               }
-              case TypeInstance(TypeContainer.Map, Type.Model(name)) => {
+              case TypeInstance(Container.Map, Type.Model(name)) => {
                 sys.error("Ruby client does not yet serialize maps to json")
               }
 
-              case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => {
+              case TypeInstance(Container.Singleton, Type.Enum(name)) => {
                 requestBuilder.append(s".with_json(${ti.varName}.to_hash.to_json)")
               }
-              case TypeInstance(TypeContainer.List, Type.Enum(name)) => {
+              case TypeInstance(Container.List, Type.Enum(name)) => {
                 requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash.to_json })")
               }
-              case TypeInstance(TypeContainer.Map, Type.Enum(name)) => {
+              case TypeInstance(Container.Map, Type.Enum(name)) => {
                 sys.error("Ruby client does not yet serialize maps to json")
               }
             }
@@ -368,24 +368,24 @@ case class RubyClientGenerator(service: ServiceDescription) {
             s":${field.name} => ${field.name}"
           }
 
-          case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => {
+          case TypeInstance(Container.Singleton, Type.Model(name)) => {
             s":${field.name} => ${field.name}.to_hash"
           }
-          case TypeInstance(TypeContainer.List, Type.Model(name)) => {
+          case TypeInstance(Container.List, Type.Model(name)) => {
             s":${field.name} => ${field.name}.map(&:to_hash)"
           }
-          //case TypeInstance(TypeContainer.Map, Type.Model(name)) => {
+          //case TypeInstance(Container.Map, Type.Model(name)) => {
           //s":${field.name} => ${field.name}.map(&:to_hash)"
           //  TODO: Finish map
           //}
 
-          case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => {
+          case TypeInstance(Container.Singleton, Type.Enum(name)) => {
             s":${field.name} => ${field.name}.value"
           }
-          case TypeInstance(TypeContainer.List, Type.Enum(name)) => {
+          case TypeInstance(Container.List, Type.Enum(name)) => {
             s":${field.name} => ${field.name}.map(&:value)"
           }
-          //case TypeInstance(TypeContainer.Map, Type.Enum(name)) => {
+          //case TypeInstance(Container.Map, Type.Enum(name)) => {
           //  TODO: Finish map
           //}
         }
@@ -440,20 +440,20 @@ case class RubyClientGenerator(service: ServiceDescription) {
     )
   }
 
-  private def parseModelArgument(name: String, container: TypeContainer, modelName: String, required: Boolean): String = {
+  private def parseModelArgument(name: String, container: Container, modelName: String, required: Boolean): String = {
     val value = s"opts.delete(:$name)"
     val klass = qualifiedClassName(modelName)
 
     val methodName = container match {
-      case TypeContainer.Singleton => "to_instance_singleton"
-      case TypeContainer.List => "to_instance_list"
-      case TypeContainer.Map => "to_instance_map"
+      case Container.Singleton => "to_instance_singleton"
+      case Container.List => "to_instance_list"
+      case Container.Map => "to_instance_map"
     }
 
     s"HttpClient::Helper.$methodName('${name}', ${klass}, ${value}, :required => $required)"
   }
 
-  private def parseEnumArgument(name: String, container: TypeContainer, enumName: String, required: Boolean, default: Option[String]): String = {
+  private def parseEnumArgument(name: String, container: Container, enumName: String, required: Boolean, default: Option[String]): String = {
     val value = default match {
       case None => s"opts.delete(:${name})"
       case Some(defaultValue) => s"opts.delete(:${name}) || \'$defaultValue\'"
@@ -462,15 +462,15 @@ case class RubyClientGenerator(service: ServiceDescription) {
     val klass = qualifiedClassName(enumName)
 
     val methodName = container match {
-      case TypeContainer.Singleton => "to_klass_singleton"
-      case TypeContainer.List => "to_klass_list"
-      case TypeContainer.Map => "to_klass_map"
+      case Container.Singleton => "to_klass_singleton"
+      case Container.List => "to_klass_list"
+      case Container.Map => "to_klass_map"
     }
 
     s"HttpClient::Helper.$methodName('$name', $klass.apply($value), $klass, :required => $required)"
   }
 
-  private def parsePrimitiveArgument(name: String, container: TypeContainer, pt: Primitives, required: Boolean, default: Option[String]): String = {
+  private def parsePrimitiveArgument(name: String, container: Container, pt: Primitives, required: Boolean, default: Option[String]): String = {
     val value = default match {
       case None => s"opts.delete(:${name})"
       case Some(defaultValue) => {
@@ -492,9 +492,9 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
 
     val multiple = container match {
-      case TypeContainer.Singleton => false
-      case TypeContainer.List => true
-      case TypeContainer.Map => {
+      case Container.Singleton => false
+      case Container.List => true
+      case Container.Map => {
         sys.error("TODO: Finish map")
       }
     }
@@ -573,23 +573,23 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
 
     val varName = instance match {
-      case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = false)
-      case TypeInstance(TypeContainer.List, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
-      case TypeInstance(TypeContainer.Map, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
+      case TypeInstance(Container.Singleton, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = false)
+      case TypeInstance(Container.List, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
+      case TypeInstance(Container.Map, Type.Primitive(pt)) => RubyUtil.toVariable("value", multiple = true)
 
-      case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => RubyUtil.toVariable(name, multiple = false)
-      case TypeInstance(TypeContainer.List, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
-      case TypeInstance(TypeContainer.Map, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(Container.Singleton, Type.Model(name)) => RubyUtil.toVariable(name, multiple = false)
+      case TypeInstance(Container.List, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(Container.Map, Type.Model(name)) => RubyUtil.toVariable(name, multiple = true)
 
-      case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = false)
-      case TypeInstance(TypeContainer.List, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
-      case TypeInstance(TypeContainer.Map, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(Container.Singleton, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = false)
+      case TypeInstance(Container.List, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(Container.Map, Type.Enum(name)) => RubyUtil.toVariable(name, multiple = true)
     }
 
     val assertStub = instance.container match {
-      case TypeContainer.Singleton => "assert_class"
-      case TypeContainer.List => "assert_collection_of_class"
-      case TypeContainer.Map => "assert_hash_of_class"
+      case Container.Singleton => "assert_class"
+      case Container.List => "assert_collection_of_class"
+      case Container.Map => "assert_hash_of_class"
     }
 
     RubyTypeInfo(
@@ -600,14 +600,14 @@ case class RubyClientGenerator(service: ServiceDescription) {
   }
 
   private def buildResponse(
-    container: TypeContainer,
+    container: Container,
     name: String
   ): String = {
     val varName = qualifiedClassName(name)
     val code = s" { |hash| $varName.new(hash) }"
     container match {
-      case TypeContainer.Singleton => code
-      case TypeContainer.List => ".map" + code
+      case Container.Singleton => code
+      case Container.List => ".map" + code
       // TODO: Finish map
     }
   }

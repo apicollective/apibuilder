@@ -69,14 +69,14 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
 
   val verb = op.method
   val url = op.path
-  val params = parametersWithTypesAndDefaults(op.parameters.filter(_.location != ParameterLocation.Form).filter(_.`type`.container == TypeContainer.Singleton))
+  val params = parametersWithTypesAndDefaults(op.parameters.filter(_.location != ParameterLocation.Form).filter(_.`type`.container == Container.Singleton))
 
   /**
     * Play does not have native support for providing a list as a
     * query parameter. Document these query parameters in the routes
     * file - but do not implement.
     */
-  val paramComments: Option[String] = op.parameters.filter(_.location != ParameterLocation.Form).filter(_.`type`.container != TypeContainer.Singleton) match {
+  val paramComments: Option[String] = op.parameters.filter(_.location != ParameterLocation.Form).filter(_.`type`.container != Container.Singleton) match {
     case Nil => None
     case paramsToComment => {
       Some(
@@ -101,13 +101,13 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
         Some(parameterWithType(ssd, param)),
         param.default.map( d =>
           param.`type` match {
-            case TypeInstance(TypeContainer.List, _) => {
+            case TypeInstance(Container.List, _) => {
               sys.error("Cannot set defaults for lists")
             }
-            case TypeInstance(TypeContainer.Map, _) => {
+            case TypeInstance(Container.Map, _) => {
               sys.error("Cannot set defaults for maps")
             }
-            case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => {
+            case TypeInstance(Container.Singleton, Type.Primitive(pt)) => {
               pt match {
                 case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
                   s"""?= "$d""""
@@ -120,10 +120,10 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
                 }
               }
             }
-            case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => {
+            case TypeInstance(Container.Singleton, Type.Model(name)) => {
               sys.error(s"Models cannot be defaults in path parameters")
             }
-            case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => {
+            case TypeInstance(Container.Singleton, Type.Enum(name)) => {
               s"""?= "${d}""""
             }
           }
@@ -139,7 +139,7 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
   private def scalaDataType(ssd: ScalaServiceDescription, param: Parameter): String = {
     val datatype = ssd.scalaDataType(param.`type`)
     param.`type`.container match {
-      case TypeContainer.Singleton => {
+      case Container.Singleton => {
         if (param.required) {
           datatype.name
         } else {
@@ -147,8 +147,8 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
         }
       }
 
-      case TypeContainer.List => datatype.name
-      case TypeContainer.Map => datatype.name
+      case Container.List => datatype.name
+      case Container.Map => datatype.name
     }
   }
 

@@ -1,6 +1,6 @@
 package models
 
-import core.TypeContainer
+import core.Container
 import core.Text._
 import core.generator.ScalaModel
 
@@ -21,7 +21,7 @@ case class Play2Json(serviceName: String) {
   private def fieldReaders(model: ScalaModel): String = {
     val serializations = model.fields.map { field =>
       field.`type`.container match {
-        case TypeContainer.Singleton => {
+        case Container.Singleton => {
           if (field.isOption) {
             s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}]"""
           } else {
@@ -29,11 +29,11 @@ case class Play2Json(serviceName: String) {
           }
         }
 
-        case TypeContainer.List => {
+        case Container.List => {
           s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse(Nil))"""
         }
 
-        case TypeContainer.Map => {
+        case Container.Map => {
           s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse(Map.Empty))"""
         }
       }
