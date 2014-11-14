@@ -67,7 +67,7 @@
       "type": <em>type</em>,
       "description": <em>string (optional)</em>,
       "required": <em>Boolean (optional, true by default)</em>,
-      "default": <em>type (optional)</em>,
+      "default": <em>value (optional)</em>,
       "example": <em>string (optional)</em>
     }
     </pre>
@@ -75,10 +75,10 @@
     where:
     <ul>
       <li><em>name</em> specifies the name of the field. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> specifies the datatype of this field. Acceptable values include the name of either an enum, a model, or a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> typeInfo("field")</li>
       <li><em>description</em> optional longer description for this field.</li>
       <li><em>required</em> specifies a Boolean: true|false. By default, all fields are considered required. To make a field optional, set "required" to false.</li>
-      <li><em>default</em> optional default value. Can only be used for primitive types. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
+      <li><em>default</em> optional default value. Can only be used for primitive types and enums. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@core.Primitives.Integer.toString', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
     </ul>
 
@@ -149,7 +149,7 @@
 
     where
     <ul>
-      <li><em>type</em> the type of this body. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> typeInfo("body")</li>
     </ul>
   </p>
 
@@ -165,7 +165,7 @@
       "type": <em>type</em>,
       "description": <em>string (optional)</em>,
       "required": <em>boolean (optional, true by default)</em>,
-      "default": <em>type (optional)</em>,
+      "default": <em>value (optional)</em>,
       "example": <em>string (optional)</em>
     }
     </pre>
@@ -173,10 +173,10 @@
     where
     <ul>
       <li><em>name</em> the name of the parameter. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>type</em> the datatype of this parameter. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> typeInfo("parameter")</li>
       <li><em>description</em> optional longer description for this parameter.</li>
       <li><em>required</em> boolean: true|false. By default all parameters are considered required. To make a parameter optional, set "required" to false.</li>
-      <li><em>default</em> optional default value. Can only be used for primitive and enum types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@core.Datatype.IntegerType.name', an acceptable default would be 10</li>
+      <li><em>default</em> optional default value. Can only be used for primitive and enum types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@core.Primitives.Integer.toString', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this parameter used only in the produced documentation</li>
     </ul>
 
@@ -234,7 +234,7 @@
       "name": <em>name</em>,
       "type": <em>type</em>,
       "required": <em>boolean (optional, true by default)</em>,
-      "default": <em>string (optional)</em>,
+      "default": <em>value (optional)</em>,
       "description": <em>string (optional)</em>
     }
     </pre>
@@ -267,7 +267,7 @@
     where
     <ul>
       <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
-      <li><em>type</em> the datatype of this field. Acceptable values are either the name of an enum, a model, or the name of a primitive type (<a href="@routes.DocController.types">@core.Datatype.All.map(_.name).sorted.mkString(" ")</a>). To specify a collection, the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
+      <li><em>type</em> typeInfo("response")</li>
     </ul>
 
     There are a few conventions enforced:

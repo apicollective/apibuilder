@@ -14,12 +14,7 @@
    @headers.map { header =>
      <tr>
        <td>@header.name</td>
-       <td>@{header.headertype match {
-             case com.gilt.apidocgenerator.models.HeaderType.String => datatype(core.Datatype.StringType, header.multiple)
-             case com.gilt.apidocgenerator.models.HeaderType.Enum => enumType(org, service, version, header.headertypeValue.get, header.multiple)
-             case com.gilt.apidocgenerator.models.HeaderType.UNDEFINED(name) => name
-           }}
-       </td>
+       <td>@typeInstance(org, service, version, sd, header.`type`)</td>
        <td>@if(header.required && header.default.isEmpty) { Yes } else { No }</td>
        <td>@header.default.getOrElse("-")</td>
        <td>@header.description.getOrElse("")</td>

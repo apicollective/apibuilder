@@ -1,12 +1,14 @@
 package lib
 
+import com.gilt.apidocgenerator.models.Container
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class UtilSpec extends FunSpec with ShouldMatchers {
 
   it("formatType") {
-    Util.formatType("user", false) should be("user")
-    Util.formatType("user", true) should be("[user]")
+    Util.formatType(Container.Singleton, "user") should be("user")
+    Util.formatType(Container.List, "user") should be("[user]")
+    Util.formatType(Container.Map, "user") should be("map[user]")
   }
 
   it("calculateNextVersion") {
