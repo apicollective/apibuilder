@@ -40,7 +40,7 @@
         "type": {
 	    "description": "Combines a type kind (e.g. a primitive) and the name of the type (e.g. a string)",
             "fields": [
-                { "name": "type", "type": "type" },
+                { "name": "typeKind", "type": "type_kind" },
                 { "name": "name", "type": "string", "description": "The name of the specific primitive type, model or enum", "example": "string" }
             ]
         },
@@ -95,7 +95,7 @@
         "field": {
             "fields": [
                 { "name": "name", "type": "string" },
-                { "name": "type", "type": "type" },
+                { "name": "type", "type": "type_instance" },
                 { "name": "description", "type": "string", "required": false },
                 { "name": "required", "type": "boolean" },
                 { "name": "default", "type": "string", "required": false },
@@ -141,6 +141,7 @@
                 { "name": "type", "type": "type_instance" },
                 { "name": "location", "type": "parameter_location" },
                 { "name": "description", "type": "string", "required": false },
+                { "name": "required", "type": "boolean" },
                 { "name": "default", "type": "string", "required": false },
                 { "name": "example", "type": "string", "required": false },
                 { "name": "minimum", "type": "long", "required": false },
