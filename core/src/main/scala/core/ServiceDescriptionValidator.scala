@@ -428,6 +428,9 @@ case class ServiceDescriptionValidator(apiJson: String) {
                 case None => {
                   Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$datatypeName]")
                 }
+                case Some(Type(TypeKind.UNDEFINED(kind), name)) => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid typeKind[$kind]")
+                }
               }
             }
           }
@@ -511,6 +514,15 @@ case class ServiceDescriptionValidator(apiJson: String) {
                   // Enums serialize to strings
                   None
                 }
+
+                case Some(TypeInstance(Container.UNDEFINED(container), _)) => {
+                  Some(errorTemplate.format(name) + s" has an invalid container[$container]")
+                }
+
+                case Some(TypeInstance(_, Type(TypeKind.UNDEFINED(kind), _))) => {
+                  Some(errorTemplate.format(name) + s" has an invalid kind[$kind]")
+                }
+
               }
             }
           }

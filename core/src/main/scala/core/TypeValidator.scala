@@ -96,6 +96,10 @@ case class TypeValidator(
           }
         }
       }
+
+      case Container.UNDEFINED(container) => {
+        Some(s"container[$container] is not a valid")
+      }
     }
   }
 

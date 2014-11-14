@@ -272,6 +272,7 @@ class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Resp
   val isSingleton = response.`type`.container match {
     case Container.Singleton => true
     case Container.List | Container.Map => false
+    case Container.UNDEFINED(_) => false
   }
   val isOption = isSingleton && !Util.isJsonDocumentMethod(method)
 
@@ -324,6 +325,7 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
   val isSingleton = param.`type`.container match {
     case Container.Singleton => true
     case Container.List | Container.Map => false
+    case Container.UNDEFINED(_) => false
   }
 
   /**
@@ -355,6 +357,7 @@ sealed abstract class ScalaDataType(val name: String) {
     case Container.Singleton => "None"
     case Container.List => "Nil"
     case Container.Map => "Map.Empty"
+    case Container.UNDEFINED(container) => sys.error(s"Invalid container[$container]")
   }
 
 }
