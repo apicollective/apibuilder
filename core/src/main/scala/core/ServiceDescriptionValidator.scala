@@ -413,7 +413,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
     // Query parameters can only be primitives or enums
     val invalidTypes = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.method.isEmpty).filter(!_.body.isEmpty).flatMap { op =>
+      resource.operations.filter(!_.method.isEmpty).filter(op => !op.body.isEmpty || op.method == Some("GET") ).flatMap { op =>
         op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
           p.datatype.map(_.name) match {
             case None => {
