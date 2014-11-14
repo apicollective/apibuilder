@@ -36,18 +36,18 @@ object Type {
 
 }
 
-sealed trait TypeContainer
+sealed trait Container
 
-object TypeContainer {
+object Container {
 
-  case object Singleton extends TypeContainer { override def toString = s"singleton" }
-  case object List extends TypeContainer { override def toString = "list" }
-  case object Map extends TypeContainer { override def toString = "map" }
+  case object Singleton extends Container { override def toString = s"singleton" }
+  case object List extends Container { override def toString = "list" }
+  case object Map extends Container { override def toString = "map" }
 
 }
 
 case class TypeInstance(
-  container: TypeContainer,
+  container: Container,
   `type`: Type
 ) {
 

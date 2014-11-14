@@ -56,7 +56,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.String))))
+    op.body should be(Some(TypeInstance(Container.Singleton, Type.Primitive(Primitives.String))))
   }
 
   it("support arrays of primitive types in body") {
@@ -64,7 +64,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(TypeContainer.List, Type.Primitive(Primitives.String))))
+    op.body should be(Some(TypeInstance(Container.List, Type.Primitive(Primitives.String))))
   }
 
   it("support enums in body") {
@@ -72,7 +72,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(TypeContainer.Singleton, Type.Enum("age_group"))))
+    op.body should be(Some(TypeInstance(Container.Singleton, Type.Enum("age_group"))))
   }
 
   it("support arrays of enums in body") {
@@ -80,7 +80,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(TypeContainer.List, Type.Enum("age_group"))))
+    op.body should be(Some(TypeInstance(Container.List, Type.Enum("age_group"))))
   }
 
   it("supports arrays of models in body") {
@@ -88,7 +88,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(TypeContainer.List, Type.Model(model.name))))
+    op.body should be(Some(TypeInstance(Container.List, Type.Model(model.name))))
   }
 
   it("validates if body is not a map") {
@@ -108,7 +108,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(TypeContainer.Singleton, Type.Model(model.name))))
+    op.body should be(Some(TypeInstance(Container.Singleton, Type.Model(model.name))))
   }
 
   it("If body specified, all parameters are either PATH or QUERY") {
@@ -125,7 +125,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "[message]" }""", "boolean"))
     validator.errors.mkString("") should be("")
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(TypeContainer.List, Type.Model("message"))))
+    op.body should be(Some(TypeInstance(Container.List, Type.Model("message"))))
   }
 
   it("validates missing datatype") {

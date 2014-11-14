@@ -489,7 +489,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
             op.namedPathParameters.flatMap { name =>
               val parsedDatatype = paramMap.get(name).getOrElse {
                 fieldMap.get(name).getOrElse {
-                  InternalParsedDatatype(TypeContainer.Singleton, Primitives.String.toString)
+                  InternalParsedDatatype(Container.Singleton, Primitives.String.toString)
                 }
               }
               val errorTemplate = s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
@@ -498,11 +498,11 @@ case class ServiceDescriptionValidator(apiJson: String) {
               internalServiceDescription.get.typeResolver.toTypeInstance(parsedDatatype) match {
                 case None => Some(errorTemplate.format(name))
 
-                case Some(TypeInstance(TypeContainer.List, _)) => Some(errorTemplate.format("list"))
-                case Some(TypeInstance(TypeContainer.Map, _)) => Some(errorTemplate.format("map"))
-                case Some(TypeInstance(TypeContainer.Singleton, Type.Model(name))) => Some(errorTemplate.format(name))
+                case Some(TypeInstance(Container.List, _)) => Some(errorTemplate.format("list"))
+                case Some(TypeInstance(Container.Map, _)) => Some(errorTemplate.format("map"))
+                case Some(TypeInstance(Container.Singleton, Type.Model(name))) => Some(errorTemplate.format(name))
 
-                case Some(TypeInstance(TypeContainer.Singleton, Type.Primitive(pt))) => {
+                case Some(TypeInstance(Container.Singleton, Type.Primitive(pt))) => {
                   if (Primitives.ValidInPath.contains(pt)) {
                     None
                   } else {
@@ -510,7 +510,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
                   }
                 }
 
-                case Some(TypeInstance(TypeContainer.Singleton, Type.Enum(name))) => {
+                case Some(TypeInstance(Container.Singleton, Type.Enum(name))) => {
                     // Enums serialize to strings
                     None
                 }

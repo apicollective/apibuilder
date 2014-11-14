@@ -4,7 +4,7 @@
     "base_url": "http://www.apidoc.me",
 
     "enums": {
-        "type_kind": {
+        "type": {
             "values": [
                 { "name": "primitive" },
                 { "name": "model" },
@@ -12,10 +12,18 @@
             ]
         },
 
-        "header_type": {
+        "container": {
             "values": [
-                { "name": "string" },
-                { "name": "enum" }
+                { "name": "singleton" },
+                { "name": "list" },
+                { "name": "map" }
+            ]
+        },
+
+        "type_instance": {
+            "values": [
+                { "name": "container", "type", "container" },
+                { "name": "type", "type", "type" }
             ]
         },
 
@@ -78,7 +86,7 @@
         "field": {
             "fields": [
                 { "name": "name", "type": "string" },
-                { "name": "datatype", "type": "type" },
+                { "name": "type", "type": "type" },
                 { "name": "description", "type": "string", "required": false },
                 { "name": "required", "type": "boolean" },
                 { "name": "default", "type": "string", "required": false },
@@ -88,22 +96,12 @@
             ]
         },
 
-        "type": {
-            "fields": [
-                { "name": "kind", "type": "type_kind" },
-                { "name": "name", "type": "string" },
-                { "name": "multiple", "type": "boolean" }
-            ]
-        },
-
         "header": {
             "fields": [
                 { "name": "name", "type": "string" },
-                { "name": "headertype", "type": "header_type" },
-                { "name": "headertype_value", "type": "string", "required": false },
+                { "name": "type", "type": "type_instance" },
                 { "name": "description", "type": "string", "required": false },
                 { "name": "required", "type": "boolean" },
-                { "name": "multiple", "type": "boolean" },
                 { "name": "default", "type": "string", "required": false }
             ]
         },
@@ -122,7 +120,7 @@
                 { "name": "method", "type": "string" },
                 { "name": "path", "type": "string" },
                 { "name": "description", "type": "string", "required": false },
-                { "name": "body", "type": "type", "required": false },
+                { "name": "body", "type": "type_instance", "required": false },
                 { "name": "parameters", "type": "[parameter]" },
                 { "name": "responses", "type": "[response]" }
             ]
@@ -131,10 +129,9 @@
         "parameter": {
             "fields": [
                 { "name": "name", "type": "string" },
-                { "name": "datatype", "type": "type" },
+                { "name": "type", "type": "type_instance" },
                 { "name": "location", "type": "parameter_location" },
                 { "name": "description", "type": "string", "required": false },
-                { "name": "required", "type": "boolean" },
                 { "name": "default", "type": "string", "required": false },
                 { "name": "example", "type": "string", "required": false },
                 { "name": "minimum", "type": "long", "required": false },
@@ -145,7 +142,7 @@
         "response": {
             "fields": [
                 { "name": "code", "type": "integer" },
-                { "name": "datatype", "type": "type" }
+                { "name": "type", "type": "type_instance" }
             ]
         },
 

@@ -44,11 +44,11 @@ case class TypeValidator(
     errorPrefix: Option[String] = None
   ): Option[String] = {
     typeInstance.container match {
-      case TypeContainer.Singleton => {
+      case Container.Singleton => {
         validate(typeInstance.`type`, value, errorPrefix)
       }
 
-      case TypeContainer.List => {
+      case Container.List => {
         parseJsonOrNone(value) match {
           case None => {
             Some(s"default[$value] is not valid json")
@@ -70,7 +70,7 @@ case class TypeValidator(
         }
       }
 
-      case TypeContainer.Map => {
+      case Container.Map => {
         parseJsonOrNone(value) match {
           case None => {
             Some(s"default[$value] is not valid json")

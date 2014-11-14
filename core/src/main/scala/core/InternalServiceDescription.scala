@@ -184,9 +184,9 @@ case class InternalResponse(
 
   lazy val datatypeLabel: Option[String] = datatype.map { dt =>
     dt match {
-      case InternalParsedDatatype(TypeContainer.List, name) => s"[$name]"
-      case InternalParsedDatatype(TypeContainer.Map, name) => s"map[$name]"
-      case InternalParsedDatatype(TypeContainer.Singleton, name) => name
+      case InternalParsedDatatype(Container.List, name) => s"[$name]"
+      case InternalParsedDatatype(Container.Map, name) => s"map[$name]"
+      case InternalParsedDatatype(Container.Singleton, name) => name
     }
   }
 
@@ -408,7 +408,7 @@ private[core] object JsonUtil {
 }
 
 private[core] case class InternalParsedDatatype(
-  container: TypeContainer,
+  container: Container,
   name: String
 )
 
@@ -420,10 +420,10 @@ private[core] object InternalParsedDatatype {
 
   def apply(value: String): InternalParsedDatatype = {
     value match {
-      case ListRx(name) => InternalParsedDatatype(TypeContainer.List, name)
-      case MapRx(name) => InternalParsedDatatype(TypeContainer.Map, name)
-      case DefaultMapRx() => InternalParsedDatatype(TypeContainer.Map, Primitives.String.toString)
-      case _ => InternalParsedDatatype(TypeContainer.Singleton, value)
+      case ListRx(name) => InternalParsedDatatype(Container.List, name)
+      case MapRx(name) => InternalParsedDatatype(Container.Map, name)
+      case DefaultMapRx() => InternalParsedDatatype(Container.Map, Primitives.String.toString)
+      case _ => InternalParsedDatatype(Container.Singleton, value)
     }
   }
 

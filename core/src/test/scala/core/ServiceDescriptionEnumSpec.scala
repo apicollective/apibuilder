@@ -64,7 +64,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
-    ageGroup.`type` should be(TypeInstance(TypeContainer.Singleton, Type.Enum("age_group")))
+    ageGroup.`type` should be(TypeInstance(Container.Singleton, Type.Enum("age_group")))
   }
 
   it("validates that enum values do not start with numbers") {

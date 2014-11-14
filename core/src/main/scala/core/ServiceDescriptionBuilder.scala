@@ -164,7 +164,7 @@ object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val typeInstance = model.fields.find(_.name == name).map(_.`type`).getOrElse {
-      TypeInstance(TypeContainer.Singleton, Type.Primitive(Primitives.String))
+      TypeInstance(Container.Singleton, Type.Primitive(Primitives.String))
     }
 
     Parameter(name = name,

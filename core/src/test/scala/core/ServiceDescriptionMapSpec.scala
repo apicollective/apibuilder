@@ -24,7 +24,7 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val tags = validator.serviceDescription.get.models.head.fields.head
-    tags.`type` should be(TypeInstance(TypeContainer.Map, Type.Primitive(Primitives.String)))
+    tags.`type` should be(TypeInstance(Container.Map, Type.Primitive(Primitives.String)))
   }
 
   it("accept defaults for maps") {
