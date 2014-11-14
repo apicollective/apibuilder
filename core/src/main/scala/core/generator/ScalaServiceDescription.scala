@@ -215,9 +215,18 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
     case None => ScalaUtil.fieldsToArgList(parameters.map(_.definition))
     case Some(typeInstance) => {
       val sdt = ssd.scalaDataType(typeInstance)
-      val varName = typeInstance.container match {
-        case TypeContainer.Singleton => "value"
-        case TypeContainer.List | TypeContainer.Map => "values"
+      val varName = typeInstance match {
+        case TypeInstance(TypeContainer.Singleton, Type.Primitive(pt)) => ScalaUtil.toVariable("value")
+        case TypeInstance(TypeContainer.Singleton, Type.Model(name)) => ScalaUtil.toVariable(name)
+        case TypeInstance(TypeContainer.Singleton, Type.Enum(name)) => ScalaUtil.toVariable(name)
+
+        case TypeInstance(TypeContainer.List, Type.Primitive(pt)) => ScalaUtil.toVariable("value", true)
+        case TypeInstance(TypeContainer.List, Type.Model(name)) => ScalaUtil.toVariable(name, true)
+        case TypeInstance(TypeContainer.List, Type.Enum(name)) => ScalaUtil.toVariable(name, true)
+
+        case TypeInstance(TypeContainer.Map, Type.Primitive(pt)) => ScalaUtil.toVariable("value", true)
+        case TypeInstance(TypeContainer.Map, Type.Model(name)) => ScalaUtil.toVariable(name, true)
+        case TypeInstance(TypeContainer.Map, Type.Enum(name)) => ScalaUtil.toVariable(name, true)
       }
 
       Some(
