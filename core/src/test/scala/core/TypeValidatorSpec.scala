@@ -142,4 +142,8 @@ class TypeValidatorSpec extends FunSpec with Matchers {
     }
   }
 
+  it("PrimitiveMetadata is alphabetized") {
+    PrimitiveMetadata.All.map(_.primitive.toString) should be(PrimitiveMetadata.All.map(_.primitive.toString).sorted)
+  }
+
 }
