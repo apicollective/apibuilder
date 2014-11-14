@@ -1,9 +1,5 @@
 package core
 
-<<<<<<< HEAD
-import com.gilt.apidocgenerator.models.{Type, TypeKind}
-=======
->>>>>>> Update tests per API changes. Tests now compile with change to TestInstance
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
