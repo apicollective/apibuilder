@@ -11,12 +11,12 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
 
   val q1 = new Parameter(
     "q1",
-    TypeInstance(Container.Singleton, Type.Primitive(Primitives.Double)),
+    TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Double.toString)),
     ParameterLocation.Query,
     None, false, None, None, None, None)
 
   it("models as a parameter in the body should use capitalize") {
-    val body = TypeInstance(Container.Singleton, Type.Model("model"))
+    val body = TypeInstance(Container.Singleton, Type(TypeKind.Model, "model"))
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
@@ -31,7 +31,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
   }
 
   it("array of models as a parameter in the body should use capitalize") {
-    val body = TypeInstance(Container.List, Type.Model("model"))
+    val body = TypeInstance(Container.List, Type(TypeKind.Model, "model"))
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
@@ -46,7 +46,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
   }
 
   it("primitive type as a parameter in the body should not use capitalize") {
-    val body = TypeInstance(Container.Singleton, Type.Primitive(Primitives.Integer))
+    val body = TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Integer.toString))
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
@@ -61,7 +61,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
   }
 
   it("array of primitive types as a parameter in the body should not use capitalize") {
-    val body = TypeInstance(Container.List, Type.Primitive(Primitives.Integer))
+    val body = TypeInstance(Container.List, Type(TypeKind.Primitive, Primitives.Integer.toString))
     val model = new Model("model", "models", None, Nil)
     val operation = new Operation(model, "GET", "models", None, Some(body), Seq(q1), Nil)
     val resource = new Resource(model, "models", Seq(operation))
