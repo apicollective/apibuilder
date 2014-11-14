@@ -104,7 +104,7 @@ object PrimitiveMetadata {
 
     PrimitiveMetadata(
       primitive = Primitives.Integer,
-
+      examples = Seq("10", "0", "-10"),
       description = "32-bit signed integer"
     ),
 
