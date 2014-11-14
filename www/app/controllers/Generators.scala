@@ -43,7 +43,7 @@ object Generators extends Controller {
       valid => {
         request.api.Generators.putByGuid(GeneratorUpdateForm(
           visibility = valid.visibility.map(Visibility(_)),
-          enabled = Some(valid.enabled)
+          enabled = valid.enabled
         ), generatorGuid).map(_ => Ok)
       }
     )
@@ -132,11 +132,11 @@ object Generators extends Controller {
     )(GeneratorCreateData.apply)(GeneratorCreateData.unapply)
   )
 
-  case class GeneratorUpdateData(visibility: Option[String], enabled:  Boolean)
+  case class GeneratorUpdateData(visibility: Option[String], enabled: Option[Boolean])
   private val generatorUpdateForm = Form(
     mapping(
       "visibility" -> optional(nonEmptyText),
-      "enabled" -> boolean
+      "enabled" -> optional(boolean)
     )(GeneratorUpdateData.apply)(GeneratorUpdateData.unapply)
   )
 }

@@ -8,22 +8,22 @@ import java.util.UUID
 
 private[db] object SoftDelete {
 
-  private val SoftDeleteQuery = """
-    update %s set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where guid = {guid}::uuid and deleted_at is null
-  """
-
   def delete(tableName: String, deletedBy: User, guid: String) {
     delete(tableName, deletedBy, UUID.fromString(guid))
   }
 
-  def delete(tableName: String, deletedBy: User, guid: UUID) {
-    DB.withConnection { implicit c =>
-      delete(c, tableName, deletedBy, guid)
-    }
+  def delete(tableName: String, deletedBy: User, guid: UUID): Unit = {
+    delete(tableName, deletedBy, ("guid", Some("::uuid"), guid.toString))
   }
 
-  private[db] def delete(implicit c: java.sql.Connection, tableName: String, deletedBy: User, guid: UUID) {
-    SQL(SoftDeleteQuery.format(tableName)).on('deleted_by_guid -> deletedBy.guid, 'guid -> guid.toString).execute()
+  def delete(tableName: String, deletedBy: User, field: (String, Option[String], String)) {
+    val (name, tpe, value) = field
+    val SoftDeleteQuery = s"""
+      update %s set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where ${name} = {${name}}${tpe.getOrElse("")} and deleted_at is null
+                          """
+    DB.withConnection { implicit c =>
+      SQL(SoftDeleteQuery.format(tableName)).on('deleted_by_guid -> deletedBy.guid, name -> value).execute()
+    }
   }
 
 }

@@ -94,18 +94,6 @@ object GeneratorDao {
       'created_by_guid -> createdBy.guid
     ).execute()
 
-    SQL("""
-      insert into generator_users
-      (guid, generator_guid, user_guid, enabled, created_by_guid)
-      values
-      ({guid}::uuid, {generator_guid}::uuid, {user_guid}::uuid, true, {created_by_guid}::uuid)
-    """).on(
-      'guid -> UUID.randomUUID(),
-      'generator_guid -> generator.guid,
-      'user_guid -> generator.ownerGuid,
-      'created_by_guid -> generator.ownerGuid
-    ).execute()
-
     generator
   }
 
@@ -164,6 +152,8 @@ object GeneratorDao {
   }
 
   def softDelete(deletedBy: User, generator: Generator) {
+    SoftDelete.delete("generator_organizations", deletedBy, ("generator_guid", Some("::uuid"), generator.guid.toString))
+    SoftDelete.delete("generator_users", deletedBy, ("generator_guid", Some("::uuid"), generator.guid.toString))
     SoftDelete.delete("generators", deletedBy, generator.guid)
   }
 
@@ -201,6 +191,9 @@ object GeneratorDao {
         val genGuid = row[UUID]("guid")
         val uri = row[String]("uri")
         val visibility = Visibility(row[String]("visibility"))
+        val ownerGuid = row[UUID]("user_guid")
+        val isEnabled = row[Option[Boolean]]("enabled")
+        println("genGuid=" + genGuid + " isEnabled=" + isEnabled)
         Generator(
           guid = genGuid,
           key = row[String]("key"),
@@ -209,23 +202,21 @@ object GeneratorDao {
           description = None,
           language = None,
           visibility = visibility,
-          ownerGuid = row[UUID]("user_guid"),
-          enabled = row[Option[Boolean]]("enabled").orElse(isPublicAndTrusted(uri, visibility)).getOrElse(visibility == Visibility.Organization && orgEnabledGenerators.contains(genGuid))
+          ownerGuid = ownerGuid,
+          enabled = isEnabled.getOrElse(false) || isOwner(user.guid, ownerGuid) || isTrusted(uri) || isOrgEnabled(visibility, genGuid, orgEnabledGenerators)
         ) -> row[Date]("created_at")
       }.toSeq.sortBy(_._2.getTime).map(_._1).distinct
     }
   }
 
+  def isOwner(userGuid: UUID, ownerGuid: UUID): Boolean = userGuid == ownerGuid
+
   val trustedUris = Seq("http://generator.apidoc.me", "http://generator.origin.apidoc.me", "http://localhost:9003")
 
-  def isPublicAndTrusted(uri: String, visibility: Visibility): Option[Boolean] = {
-    if (visibility == Visibility.Public) {
-      Some(
-        trustedUris.contains(uri)
-      )
-    } else {
-      None
-    }
+  def isTrusted(uri: String): Boolean = trustedUris.contains(uri)
+
+  def isOrgEnabled(visibility: Visibility, generatorGuid: UUID, orgEnabledGenerators: Set[UUID]): Boolean = {
+    visibility == Visibility.Organization && orgEnabledGenerators.contains(generatorGuid)
   }
 
 }
