@@ -38,28 +38,29 @@
 	},
 
         "type": {
-            "values": [
-                { "name": "type", "type", "type" },
-                { "name": "name", "type", "string", "description": "The name of the specific primitive type, model or enum", "example": "string" }
+	    "description": "Combines a type kind (e.g. a primitive) and the name of the type (e.g. a string)",
+            "fields": [
+                { "name": "type", "type": "type" },
+                { "name": "name", "type": "string", "description": "The name of the specific primitive type, model or enum", "example": "string" }
             ]
         },
 
         "type_instance": {
 	    "description": "Used to capture the metadata about a single instance of a type - for example, a model field definition will have a type instance.",
-            "values": [
-                { "name": "container", "type", "container" },
-                { "name": "type", "type", "type" }
+            "fields": [
+                { "name": "container", "type": "container" },
+                { "name": "type", "type": "type" }
             ]
         },
 
         "service_description": {
-            "description": "Description of a service",
+            "description": "Description of a REST service",
             "fields": [
                 { "name": "enums", "type": "[enum]" },
                 { "name": "models", "type": "[model]" },
                 { "name": "headers", "type": "[header]" },
                 { "name": "resources", "type": "[resource]" },
-                { "name": "baseUrl", "type": "string", "required": false },
+                { "name": "base_url", "type": "string", "required": false },
                 { "name": "name", "type": "string" },
                 { "name": "package_name", "type": "string", "description": "The package name when used by code generators (e.g. scala package name for the clients)", "required": false },
                 { "name": "description", "type": "string", "required": false },
