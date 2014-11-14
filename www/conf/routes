@@ -29,7 +29,6 @@ GET     /generators                                               controllers.Ge
 POST    /generators/:guid/remove                                  controllers.Generators.postRemove(guid: java.util.UUID)
 GET     /generators/create                                        controllers.Generators.create()
 POST    /generators/postCreate                                    controllers.Generators.postCreate()
-GET     /generators/update                                        controllers.Generators.update(generatorGuid: java.util.UUID, visibility: String, enabled: Boolean)
 POST    /generators/postUpdate                                    controllers.Generators.postUpdate(generatorGuid: java.util.UUID)
 
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)

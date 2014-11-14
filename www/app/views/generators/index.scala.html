@@ -1,5 +1,7 @@
 @(tpl: models.MainTemplate)(implicit flash: Flash)
 
+@import com.gilt.apidoc.models.Visibility
+
 @main(tpl) {
 
   <p>
@@ -33,16 +35,30 @@
             <td>@generator.key</td>
             <td>@generator.uri</td>
             <td>@generator.name</td>
-            <td>@generator.description.getOrElse("")</td>
+            <td>@Html(generator.description.getOrElse(""))</td>
             <td>@generator.language.getOrElse("")</td>
-            <td>@generator.visibility</td>
-            <td><input type="checkbox" name="enabled" value="true" disabled="disabled"
+            <td>@if(tpl.user.exists(_.guid == generator.ownerGuid)){
+                    <select name="visibility" class="generator-visibility-setter" data-generator-guid="@generator.guid">
+                        @Visibility.all.map { vis =>
+                          <option @if(vis == generator.visibility){
+                                  selected="true"
+                          }>@vis.toString</option>
+                        }
+                    </select>
+                } else {
+                  @generator.visibility
+                }
+            </td>
+            <td>
+                <input type="checkbox" name="enabled" value="true" class="generator-enable-setter" data-generator-guid="@generator.guid"
                 @if(generator.enabled){
                     checked="checked"
                 }/>
             </td>
-            <td><a href="@routes.Generators.update(generator.guid, generator.visibility.toString, generator.enabled)" class="update">Update</a></td>
-            <td><a href="@routes.Generators.postRemove(generator.guid)" class="delete" data-confirm="Are you sure?">Remove</a></td>
+            <td>@if(tpl.user.exists(_.guid == generator.ownerGuid)){
+                <a href="@routes.Generators.postRemove(generator.guid)" class="delete" data-confirm="Are you sure?">Remove</a>
+                }
+            </td>
         </tr>
       }
           </tbody>

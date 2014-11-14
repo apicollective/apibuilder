@@ -17,4 +17,24 @@ $(function(){
       $('<form method="post" action="' + href + '"></form>').appendTo('body').submit();
     });
   });
+
+  $('.generator-enable-setter').on('click', function() {
+    var guid = $(this).data('generator-guid'),
+        enabled = $(this).is(':checked');
+    $.ajax({
+      type: "POST",
+      url: "/generators/postUpdate?generatorGuid=" + guid,
+      data: { "generatorGuid": guid, "enabled": enabled }
+    })
+  });
+
+  $('.generator-visibility-setter').on('change', function() {
+    var guid = $(this).data('generator-guid'),
+        visibility = $(this).val();
+    $.ajax({
+      type: "POST",
+      url: "/generators/postUpdate?generatorGuid=" + guid,
+      data: { "generatorGuid": guid, "visibility": visibility }
+    })
+  });
 });

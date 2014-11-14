@@ -28,18 +28,6 @@ object Generators extends Controller {
     }
   }
 
-  def update(generatorGuid: UUID, visibility: String, enabled: Boolean) = Authenticated { implicit request =>
-    val filledForm = generatorUpdateForm.fill(GeneratorUpdateData(visibility, enabled))
-    Ok(views.html.generators.update(
-      MainTemplate(
-        user = Some(request.user),
-        title = s"Update Generator"
-      ),
-      generatorGuid,
-      filledForm
-    ))
-  }
-
   def postUpdate(generatorGuid: java.util.UUID) = Authenticated.async { implicit request =>
     val tpl = MainTemplate(
       user = Some(request.user),
@@ -49,20 +37,14 @@ object Generators extends Controller {
     boundForm.fold (
 
       errors => Future {
-        Ok(views.html.generators.update(tpl, generatorGuid, errors))
+        InternalServerError
       },
 
       valid => {
         request.api.Generators.putByGuid(GeneratorUpdateForm(
-          visibility = Some(Visibility(valid.visibility)),
+          visibility = valid.visibility.map(Visibility(_)),
           enabled = Some(valid.enabled)
-        ), generatorGuid).map { d =>
-          Redirect(routes.Generators.list()).flashing("success" -> s"Generator updated")
-        }.recover {
-          case response: com.gilt.apidoc.error.ErrorsResponse => {
-            Ok(views.html.generators.update(tpl, generatorGuid, boundForm, response.errors.map(_.message)))
-          }
-        }
+        ), generatorGuid).map(_ => Ok)
       }
     )
   }
@@ -107,10 +89,16 @@ object Generators extends Controller {
             }
           }
         }.getOrElse {
-          new com.gilt.apidocgenerator.Client(valid.uri).generators.get().map { gens =>
-            val d = gens.toList.map(gen => GeneratorDetails(gen.key, Visibility.Public.toString, true))
+          val existingGenF = request.api.Generators.get()
+          val newGenF = new com.gilt.apidocgenerator.Client(valid.uri).generators.get()
+          (for {
+            existingGenerators <- existingGenF
+            newGenerators <- newGenF
+          } yield {
+            val existingKeys = existingGenerators.filter(_.uri == valid.uri).map(_.key).toSet
+            val d = newGenerators.toList.map(gen => GeneratorDetails(gen.key, Visibility.Public.toString, !existingKeys.contains(gen.key)))
             Ok(views.html.generators.form(tpl, 2, generatorCreateForm.fill(valid.copy(details = d))))
-          }.recover {
+          }).recover {
             case response: com.gilt.apidoc.error.ErrorsResponse => {
               Ok(views.html.generators.form(tpl, 1, boundForm, response.errors.map(_.message)))
             }
@@ -144,10 +132,10 @@ object Generators extends Controller {
     )(GeneratorCreateData.apply)(GeneratorCreateData.unapply)
   )
 
-  case class GeneratorUpdateData(visibility:  String, enabled:  Boolean)
+  case class GeneratorUpdateData(visibility: Option[String], enabled:  Boolean)
   private val generatorUpdateForm = Form(
     mapping(
-      "visibility" -> nonEmptyText,
+      "visibility" -> optional(nonEmptyText),
       "enabled" -> boolean
     )(GeneratorUpdateData.apply)(GeneratorUpdateData.unapply)
   )
