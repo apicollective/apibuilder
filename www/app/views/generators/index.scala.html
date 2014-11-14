@@ -5,7 +5,7 @@
 @main(tpl) {
 
   <p>
-    Organizations can provide one or more generators to add additional code generation targets.
+    Users can provide generators to add additional code generation targets.
   </p>
 
   @tpl.user.map { user =>
@@ -21,43 +21,21 @@
       <table class="table table-hover table-condensed">
           <tbody>
           <tr>
-              <th>Key</th>
-              <th>URI</th>
               <th>Name</th>
               <th>Description</th>
               <th>Language</th>
-              <th>Visibility</th>
               <th>Enabled</th>
-              <th/>
           </tr>
       @tpl.generators.map { generator =>
         <tr>
-            <td>@generator.key</td>
-            <td>@generator.uri</td>
-            <td>@generator.name</td>
-            <td>@Html(generator.description.getOrElse(""))</td>
-            <td>@generator.language.getOrElse("")</td>
-            <td>@if(tpl.user.exists(_.guid == generator.ownerGuid)){
-                    <select name="visibility" class="generator-visibility-setter" data-generator-guid="@generator.guid">
-                        @Visibility.all.map { vis =>
-                          <option @if(vis == generator.visibility){
-                                  selected="true"
-                          }>@vis.toString</option>
-                        }
-                    </select>
-                } else {
-                  @generator.visibility
-                }
-            </td>
+            <td class="generator-select" data-generator-guid="@generator.guid">@generator.name</td>
+            <td class="generator-select" data-generator-guid="@generator.guid">@Html(generator.description.getOrElse(""))</td>
+            <td class="generator-select" data-generator-guid="@generator.guid">@generator.language.getOrElse("")</td>
             <td>
                 <input type="checkbox" name="enabled" value="true" class="generator-enable-setter" data-generator-guid="@generator.guid"
                 @if(generator.enabled){
                     checked="checked"
                 }/>
-            </td>
-            <td>@if(tpl.user.exists(_.guid == generator.ownerGuid)){
-                <a href="@routes.Generators.postRemove(generator.guid)" class="delete" data-confirm="Are you sure?">Remove</a>
-                }
             </td>
         </tr>
       }

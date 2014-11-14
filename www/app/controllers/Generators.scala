@@ -1,9 +1,7 @@
 package controllers
 
-import java.util.UUID
-
-import com.gilt.apidoc.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, Domain}
-import models._
+import com.gilt.apidoc.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, User}
+import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
 import play.api.mvc._
@@ -23,6 +21,34 @@ object Generators extends Controller {
           user = Some(request.user),
           generators = generators,
           title = s"Generators"
+        )
+      ))
+    }
+  }
+
+  def getByGuid(guid: java.util.UUID) = Authenticated.async { implicit request =>
+    def getOwner(gen: Option[Generator]): Future[Option[User]] = {
+      gen.fold(
+        Future.successful(None: Option[User])
+      ) { gen =>
+        request.api.Users.getByGuid(gen.ownerGuid)
+      }
+    }
+    (for {
+      generator <- request.api.Generators.getByGuid(guid)
+      owner <- getOwner(generator)
+    } yield {
+      (generator, owner)
+    }).recover {
+      case ex: Exception => (None, None)
+    }.map { t =>
+      val (generator, owner) = t
+      Ok(views.html.generators.details(
+        MainTemplate(
+          user = Some(request.user),
+          owner = owner,
+          generators = generator.toSeq,
+          title = s"Generator Details"
         )
       ))
     }

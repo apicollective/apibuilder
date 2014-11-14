@@ -37,4 +37,10 @@ $(function(){
       data: { "generatorGuid": guid, "visibility": visibility }
     })
   });
+
+
+  $('.generator-select').on('click', function() {
+    var guid = $(this).data('generator-guid');
+    location.href = "/generators/" + guid;
+  });
 });
