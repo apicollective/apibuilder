@@ -269,13 +269,13 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
 
 class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Response) {
 
-  val isSingleton = response.`type`.container match {
-    case Container.Singleton => true
+  val isOption = response.`type`.container match {
+    case Container.Singleton => !Util.isJsonDocumentMethod(method)
     case Container.List | Container.Map => false
     case Container.UNDEFINED(_) => false
   }
-  val isOption = isSingleton && !Util.isJsonDocumentMethod(method)
 
+  val `type` = response.`type`
   val code = response.code
   val isSuccess = code >= 200 && code < 300
   val isNotFound = code == 404

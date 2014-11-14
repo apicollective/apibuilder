@@ -122,15 +122,8 @@ case class ScalaClientMethodGenerator(
         case v => s"""${v.mkString("\n\n")}\n\n_executeRequest("${op.method}", $path, ${args.mkString(", ")})"""
       }
 
-      val hasOptionResult = op.responses.filter(_.isSuccess).find(_.isOption) match {
-        case None => ""
-        case Some(r) => {
-          if (r.isSingleton) {
-            s"\ncase r if r.${config.responseStatusMethod} == 404 => None"
-          } else {
-            s"\ncase r if r.${config.responseStatusMethod} == 404 => Nil"
-          }
-        }
+      val hasOptionResult = op.responses.filter(_.isSuccess).find(_.isOption).map { r =>
+        s"\ncase r if r.${config.responseStatusMethod} == 404 => ${r.datatype.nilValue(r.`type`)}"
       }
 
       val matchResponse: String = {
