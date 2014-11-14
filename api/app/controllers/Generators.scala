@@ -90,9 +90,12 @@ object Generators extends Controller {
         GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption match {
           case Some(g) =>
             fillInGeneratorMeta(g).map {
+              case Right(g) if (form.visibility.isDefined && g.ownerGuid != request.user.guid) =>
+                Unauthorized
               case Right(g) =>
-                val generator = GeneratorDao.update(request.user, g, form)
-                Ok(Json.toJson(generator))
+                val g1 = form.visibility.fold(g)(GeneratorDao.visibilityUpdate(request.user, g, _))
+                val g2 = form.enabled.fold(g1)(GeneratorDao.userEnabledUpdate(request.user, g1, _))
+                Ok(Json.toJson(g2))
               case Left(s) =>
                 s
             }
@@ -116,7 +119,7 @@ object Generators extends Controller {
           case (Some(g), Some(o)) =>
             fillInGeneratorMeta(g).map {
               case Right(g) =>
-                GeneratorDao.orgUpdate(request.user, g.guid, o.guid, form.enabled)
+                GeneratorDao.orgEnabledUpdate(request.user, g.guid, o.guid, form.enabled)
                 Ok(Json.toJson(g))
               case Left(s) =>
                 s
@@ -130,9 +133,11 @@ object Generators extends Controller {
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
     GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption match {
-      case Some(g) =>
+      case Some(g) if (g.ownerGuid == request.user.guid) =>
         GeneratorDao.softDelete(request.user, g)
         NoContent
+      case Some(g) =>
+        Unauthorized
       case _ =>
         NotFound
     }

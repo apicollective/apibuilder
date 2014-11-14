@@ -1,12 +1,10 @@
 package db
 
-import com.gilt.apidoc.models.{GeneratorUpdateForm, Visibility, Generator, User}
-import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.models.{Visibility, Generator, User}
 import anorm._
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
-import java.util.UUID
+import java.util.{Date, UUID}
 
 object GeneratorDao {
 
@@ -14,6 +12,7 @@ object GeneratorDao {
   private val BaseQuery = s"""
     select generators.guid,
            generators.key,
+           generators.created_at,
            generators.user_guid,
            generators.uri,
            generators.visibility,
@@ -23,7 +22,7 @@ object GeneratorDao {
       left join memberships on memberships.deleted_at is null
                             and memberships.user_guid = generators.user_guid
       left join generator_users on generator_users.deleted_at is null
-                            and generator_users.user_guid = generators.user_guid
+                            and generator_users.user_guid = {user_guid}::uuid
                             and generator_users.generator_guid = generators.guid
      where generators.deleted_at is null
      and (
@@ -83,18 +82,15 @@ object GeneratorDao {
 
     SQL("""
       insert into generators
-      (guid, key, uri, user_guid, visibility, name, description, language, created_by_guid)
+      (guid, key, uri, user_guid, visibility, created_by_guid)
       values
-      ({guid}::uuid, {key}, {uri}, {user_guid}::uuid, {visibility}, {name}, {description}, {language}, {created_by_guid}::uuid)
+      ({guid}::uuid, {key}, {uri}, {user_guid}::uuid, {visibility}, {created_by_guid}::uuid)
     """).on(
       'guid -> generator.guid,
       'key -> generator.key,
       'uri -> generator.uri,
       'user_guid -> generator.ownerGuid,
       'visibility -> visibility.toString,
-      'name -> generator.name,
-      'description -> generator.description,
-      'language -> generator.language,
       'created_by_guid -> createdBy.guid
     ).execute()
 
@@ -113,45 +109,40 @@ object GeneratorDao {
     generator
   }
 
-  def update(user: User, generator: Generator, form: GeneratorUpdateForm): Generator = {
+  def visibilityUpdate(user: User, generator: Generator, visibility: Visibility): Generator = {
     DB.withConnection { implicit c =>
-      update(c, user, generator, form)
-    }
-  }
-
-  private[db] def update(implicit c: java.sql.Connection, user: User, generator: Generator, form: GeneratorUpdateForm): Generator = {
-    val (queryParts: Seq[String], bind: Seq[NamedParameter]) = Seq(
-      form.visibility.map(v => "visibility = {visibility}" -> (('visibility -> v.toString): NamedParameter))
-    ).flatten.unzip
-
-    if (queryParts.size > 0) {
-      val updateQuery = s"update generators set ${queryParts.mkString(", ")} where guid = {guid}::uuid"
-
-      SQL(updateQuery).on(bind ++ (Seq('guid -> generator.guid): Seq[NamedParameter]): _*).execute()
-    }
-
-    form.enabled.foreach { enable =>
-      val updateQuery = "update generator_users set deleted_at = now(), deleted_by_guid = {deleted_by_guid}::uuid where generator_guid = {generator_guid}::uuid and user_guid = {user_guid}::uuid"
+      val updateQuery = s"update generators set visibility = {visibility} where guid = {guid}::uuid"
       SQL(updateQuery).on(
-        'deleted_by_guid -> user.guid,
-        'generator_guid -> generator.guid,
-        'user_guid -> user.guid
+        'visibility -> visibility.toString,
+        'guid -> generator.guid
       ).execute()
-      val insertQuery = s"insert into generator_users (guid, generator_guid, user_guid, enabled, created_by_guid) values ({guid}::uuid, {generator_guid}::uuid, {user_guid}::uuid, {enabled}, {created_by_guid}::uuid)"
-      SQL(insertQuery).on(
-        'guid -> UUID.randomUUID(),
-        'generator_guid -> generator.guid,
-        'user_guid -> user.guid,
-        'enabled -> enable,
-        'created_by_guid -> user.guid
-      ).execute()
-    }
 
-    generator.copy(visibility = form.visibility.getOrElse(generator.visibility),
-                   enabled = form.enabled.getOrElse(generator.enabled))
+      generator.copy(visibility = visibility)
+    }
   }
 
-  def orgUpdate(user: User, generatorGuid: UUID, orgGuid: UUID, enable: Boolean) = {
+  def userEnabledUpdate(user: User, generator: Generator, enabled: Boolean): Generator = {
+    DB.withConnection { implicit c =>
+        val updateQuery = "update generator_users set deleted_at = now(), deleted_by_guid = {deleted_by_guid}::uuid where generator_guid = {generator_guid}::uuid and user_guid = {user_guid}::uuid"
+        SQL(updateQuery).on(
+          'deleted_by_guid -> user.guid,
+          'generator_guid -> generator.guid,
+          'user_guid -> user.guid
+        ).execute()
+        val insertQuery = s"insert into generator_users (guid, generator_guid, user_guid, enabled, created_by_guid) values ({guid}::uuid, {generator_guid}::uuid, {user_guid}::uuid, {enabled}, {created_by_guid}::uuid)"
+        SQL(insertQuery).on(
+          'guid -> UUID.randomUUID(),
+          'generator_guid -> generator.guid,
+          'user_guid -> user.guid,
+          'enabled -> enabled,
+          'created_by_guid -> user.guid
+        ).execute()
+
+      generator.copy(enabled = enabled)
+    }
+  }
+
+  def orgEnabledUpdate(user: User, generatorGuid: UUID, orgGuid: UUID, enable: Boolean) = {
     DB.withConnection { implicit c =>
       if (enable) {
         val insertQuery = s"insert into generator_organizations (guid, generator_guid, organization_guid, created_by_guid) values({guid}::uuid, {generator_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid)"
@@ -199,6 +190,7 @@ object GeneratorDao {
     val bind = Seq[Option[NamedParameter]](
       Some('user_guid -> user.guid),
       Some('user_guid -> user.guid),
+      Some('user_guid -> user.guid),
       guid.map('guid -> _),
       keyAndUri.map('key -> _._1),
       keyAndUri.map('uri -> _._2)
@@ -207,18 +199,32 @@ object GeneratorDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         val genGuid = row[UUID]("guid")
+        val uri = row[String]("uri")
+        val visibility = Visibility(row[String]("visibility"))
         Generator(
           guid = genGuid,
           key = row[String]("key"),
-          uri = row[String]("uri"),
+          uri = uri,
           name = "",
           description = None,
           language = None,
-          visibility = Visibility(row[String]("visibility")),
+          visibility = visibility,
           ownerGuid = row[UUID]("user_guid"),
-          enabled = row[Option[Boolean]]("enabled").getOrElse(orgEnabledGenerators.contains(genGuid))
-        )
-      }.toSeq.distinct
+          enabled = row[Option[Boolean]]("enabled").orElse(isPublicAndTrusted(uri, visibility)).getOrElse(visibility == Visibility.Organization && orgEnabledGenerators.contains(genGuid))
+        ) -> row[Date]("created_at")
+      }.toSeq.sortBy(_._2.getTime).map(_._1).distinct
+    }
+  }
+
+  val trustedUris = Seq("http://generator.apidoc.me", "http://generator.origin.apidoc.me", "http://localhost:9003")
+
+  def isPublicAndTrusted(uri: String, visibility: Visibility): Option[Boolean] = {
+    if (visibility == Visibility.Public) {
+      Some(
+        trustedUris.contains(uri)
+      )
+    } else {
+      None
     }
   }
 

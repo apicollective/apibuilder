@@ -44,11 +44,21 @@
                 '_error -> form.error("visibility"),
                 '_label -> null
               )</td>
-              <td>@helper.checkbox(
-                details("selected"),
-                '_error -> form.error("selected"),
-                '_label -> null
-              )</td>
+              <td>@if(details("selected").value.fold(false)(_.toBoolean)) {
+                      @helper.checkbox(
+                        details("selected"),
+                        '_error -> form.error("selected"),
+                        '_label -> null
+                      )
+                  } else {
+                      @helper.checkbox(
+                          details("selected"),
+                          '_error -> form.error("selected"),
+                          'disabled -> "true",
+                          '_label -> null
+                      )
+                  }
+              </td>
               </tr>
             }
             </tbody>
