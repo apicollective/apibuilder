@@ -24,15 +24,15 @@ object Code extends Controller {
     sys.error("git.version is required")
   }
 
-  def getByOrgKeyAndServiceKeyAndVersionAndGeneratorGuid(orgKey: String, serviceKey: String, version: String, generatorGuid: UUID) = Authenticated.async { request =>
+  def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(orgKey: String, serviceKey: String, version: String, generatorKey: String) = Authenticated.async { request =>
     val auth = Authorization(Some(request.user))
     OrganizationDao.findByKey(auth, orgKey) match {
       case None =>
         Future.successful(NotFound)
       case Some(org) => {
-        GeneratorDao.findAll(user = request.user, guid = Some(generatorGuid)).headOption match {
+        GeneratorDao.findAll(user = request.user, key = Some(generatorKey)).headOption match {
           case None =>
-            Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid generator guid[$generatorGuid]."))))
+            Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid generator key[$generatorKey]."))))
           case Some(generator: Generator) =>
             VersionDao.findVersion(auth, orgKey, serviceKey, version) match {
               case None => Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid service[$serviceKey] or version[$version]"))))
@@ -40,7 +40,7 @@ object Code extends Controller {
                 val userAgent = s"apidoc:$apidocVersion http://www.apidoc.me/${org.key}/code/${serviceKey}/${v.version}/${generator.key}"
                 val serviceDescription = ServiceDescriptionBuilder(v.json, org.metadata.flatMap(_.packageName), Some(userAgent))
                 new Client(generator.uri).invocations.postByKey(serviceDescription, generator.key).map { invocation =>
-                  Ok(Json.toJson(com.gilt.apidoc.models.Code(generatorGuid, invocation.source)))
+                  Ok(Json.toJson(com.gilt.apidoc.models.Code(generator.guid, invocation.source)))
                 }
             }
         }

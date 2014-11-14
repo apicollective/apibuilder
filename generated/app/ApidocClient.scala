@@ -515,13 +515,13 @@ package com.gilt.apidoc {
     def versions: Versions = Versions
 
     object Code extends Code {
-      override def getByOrgKeyAndServiceKeyAndVersionAndGeneratorGuid(
+      override def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(
         orgKey: String,
         serviceKey: String,
         version: String,
-        generatorGuid: java.util.UUID
+        generatorKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${generatorGuid}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${generatorKey}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Code])
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r if r.status == 404 => None
@@ -1073,11 +1073,11 @@ package com.gilt.apidoc {
     /**
      * Generate code for a specific version of a service.
      */
-    def getByOrgKeyAndServiceKeyAndVersionAndGeneratorGuid(
+    def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(
       orgKey: String,
       serviceKey: String,
       version: String,
-      generatorGuid: java.util.UUID
+      generatorKey: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]]
   }
 

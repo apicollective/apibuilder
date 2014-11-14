@@ -72,7 +72,7 @@
             <b>Clients</b>
             <ul class="nav nav-sidebar">
                 @metadata.generators.map { generator =>
-                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, generator.guid)">@generator.name</a>
+                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, generator.key)">@generator.name</a>
               }
             </ul>
           }

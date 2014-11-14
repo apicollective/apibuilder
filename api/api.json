@@ -113,7 +113,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "generator_guid", "type": "uuid" },
+                { "name": "generator_key", "type": "string" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -473,7 +473,7 @@
         },
 
         "code": {
-	    "path": "/:orgKey/:serviceKey/:version/:generatorGuid",
+	    "path": "/:orgKey/:serviceKey/:version/:generatorKey",
 
             "operations": [
                 {
@@ -483,11 +483,11 @@
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
                         { "name": "serviceKey", "type": "string", "description": "The service key for which to generate code" },
                         { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
-                        { "name": "generatorGuid", "type": "uuid", "description": "The target key for which to generate code" }
+                        { "name": "generatorKey", "type": "string", "description": "The target key for which to generate code" }
 		    ],
                     "responses": {
                         "200": { "type": "code" },
-                        "409": { "type": "[error]", "description": "If the target or version are invalid." }
+                        "409": { "type": "[error]", "description": "If the target, version, and/or generator are invalid." }
                     }
                 }
             ]

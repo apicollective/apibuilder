@@ -160,8 +160,13 @@ object GeneratorDao {
   def findAll(
     user: User,
     guid: Option[UUID] = None,
+    key: Option[String] = None,
     keyAndUri: Option[(String, String)] = None
   ): Seq[Generator] = {
+    require(
+      key.isEmpty || keyAndUri.isEmpty,
+      "Cannot specify key and keyAndUri"
+    )
 
    // get generator enabled choice for all orgs of the user
     val orgEnabledGenerators: Set[UUID] = DB.withConnection { implicit c =>
@@ -174,14 +179,14 @@ object GeneratorDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map(_ => "and generators.guid = {guid}::uuid"),
+      key.map(_ => "and generators.key = {key}"),
       keyAndUri.map(_ => "and generators.key = {key} and generators.uri = {uri}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       Some('user_guid -> user.guid),
-      Some('user_guid -> user.guid),
-      Some('user_guid -> user.guid),
       guid.map('guid -> _),
+      key.map('key -> _),
       keyAndUri.map('key -> _._1),
       keyAndUri.map('uri -> _._2)
     ).flatten
