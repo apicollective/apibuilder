@@ -119,10 +119,9 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       val r = Play2Route(ssd, op, echoResource)
       r.method should be("controllers.Echoes.get")
       r.params.mkString(" ") should be("foo: scala.Option[String]")
-      println(r.paramComments.getOrElse(""))
       r.paramComments.getOrElse("") should be("""
 # Additional parameters to GET /echoes
-#   - optional_messages: scala.collection.Seq[String]
+#   - optional_messages: scala.Option[scala.collection.Seq[String]]
 #   - required_messages: scala.collection.Seq[String]
 """.trim)
 
