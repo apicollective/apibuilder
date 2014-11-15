@@ -238,7 +238,7 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
         Seq(
           Some(s"%s: %s".format(varName, sdt.name)),
           ScalaUtil.fieldsToArgList(parameters.map(_.definition))
-        ).flatten.mkString(", ")
+        ).flatten.mkString(",")
       )
     }
   }
@@ -257,7 +257,7 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
     Seq(
       Some(s"${ScalaUtil.toVariable(name, multiple)}: $className"),
       ScalaUtil.fieldsToArgList(parameters.map(_.definition))
-    ).flatten.mkString(", ")
+    ).flatten.mkString(",")
   }
 
   val responses: Seq[ScalaResponse] = {
