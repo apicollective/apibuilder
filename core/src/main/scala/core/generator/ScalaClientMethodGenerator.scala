@@ -153,7 +153,7 @@ case class ScalaClientMethodGenerator(
             Some(s"case r if r.${config.responseStatusMethod} == ${response.code} => throw new ${ssd.packageName}.error.${response.errorClassName}(r)")
           }
         }.mkString("\n")
-      } + hasOptionResult + "\ncase r => throw new FailedRequest(r)\n"
+      } + hasOptionResult.getOrElse("") + "\ncase r => throw new FailedRequest(r)\n"
 
       ClientMethod(
         name = op.name,
