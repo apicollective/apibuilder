@@ -1,6 +1,6 @@
 package db
 
-import core.Role
+import lib.Role
 import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID

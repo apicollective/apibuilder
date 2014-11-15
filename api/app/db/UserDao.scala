@@ -1,8 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.User
-import lib.Constants
-import core.Role
+import lib.{Constants, Role}
 import anorm._
 import play.api.db._
 import play.api.Play.current

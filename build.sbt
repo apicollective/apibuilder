@@ -35,8 +35,8 @@ lazy val generated = project
 
 lazy val api = project
   .in(file("api"))
-  .dependsOn(generated)
-  .aggregate(generated)
+  .dependsOn(generator, core)
+  .aggregate(generated, core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(

@@ -1,8 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.{Organization, Service, User, Visibility}
-import core.UrlKey
-import lib.{Validation, ValidationError}
+import lib.{UrlKey, Validation, ValidationError}
 import anorm._
 import play.api.db._
 import play.api.libs.json._
