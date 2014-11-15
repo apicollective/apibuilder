@@ -1,9 +1,11 @@
 package core
 
-import com.gilt.apidocgenerator.models._
+import codegenerator.models._
+
 import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
+import scala.util.Try
 
 object ServiceDescriptionBuilder {
 
@@ -295,14 +297,7 @@ object FieldBuilder {
     * datatype. False otherwise.
     */
   def isValid(datatype: Datatype, value: String): Boolean = {
-    try {
-      assertValidDefault(datatype: Datatype, value: String)
-      true
-    } catch {
-      case e: Throwable => {
-        false
-      }
-    }
+    Try(assertValidDefault(datatype: Datatype, value: String)).isSuccess
   }
 
   private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
