@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.6.9 http://www.apidoc.me/gilt/code/apidoc/0.6.9/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.6.10 http://www.apidoc.me/gilt/code/apidoc/0.6.12/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -42,6 +42,10 @@ module Apidoc
       @domains ||= Apidoc::Clients::Domains.new(self)
     end
 
+    def generators
+      @generators ||= Apidoc::Clients::Generators.new(self)
+    end
+
     def healthchecks
       @healthchecks ||= Apidoc::Clients::Healthchecks.new(self)
     end
@@ -66,10 +70,6 @@ module Apidoc
       @services ||= Apidoc::Clients::Services.new(self)
     end
 
-    def targets
-      @targets ||= Apidoc::Clients::Targets.new(self)
-    end
-
     def users
       @users ||= Apidoc::Clients::Users.new(self)
     end
@@ -92,12 +92,12 @@ module Apidoc
       end
 
       # Generate code for a specific version of a service.
-      def get_by_org_key_and_service_key_and_version_and_target_key(orgKey, serviceKey, version, targetKey)
+      def get_by_org_key_and_service_key_and_version_and_generator_guid(orgKey, serviceKey, version, generatorGuid)
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
         HttpClient::Preconditions.assert_class('serviceKey', serviceKey, String)
         HttpClient::Preconditions.assert_class('version', version, String)
-        HttpClient::Preconditions.assert_class('targetKey', targetKey, String)
-        @client.request("/#{orgKey}/#{serviceKey}/#{version}/#{targetKey}").get { |hash| Apidoc::Models::Code.new(hash) }
+        HttpClient::Preconditions.assert_class('generatorGuid', generatorGuid, String)
+        @client.request("/#{orgKey}/#{serviceKey}/#{version}/#{generatorGuid}").get { |hash| Apidoc::Models::Code.new(hash) }
       end
 
     end
@@ -120,6 +120,53 @@ module Apidoc
         HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
         HttpClient::Preconditions.assert_class('name', name, String)
         @client.request("/domains/#{orgKey}/#{name}").delete
+        nil
+      end
+
+    end
+
+    class Generators
+
+      def initialize(client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
+      end
+
+      # List all generators visible by this user
+      def get
+        @client.request("/generators").get.map { |hash| Apidoc::Models::Generator.new(hash) }
+      end
+
+      # Returns the generator with this guid.
+      def get_by_guid(guid)
+        HttpClient::Preconditions.assert_class('guid', guid, String)
+        @client.request("/generators/#{guid}").get { |hash| Apidoc::Models::Generator.new(hash) }
+      end
+
+      # Create a new generator.
+      def post(generator_Create_Form)
+        HttpClient::Preconditions.assert_class('generator_create_form', generator_create_form, Apidoc::Models::GeneratorCreateForm)
+        @client.request("/generators").with_json(generator_create_form.to_hash.to_json).post { |hash| Apidoc::Models::Generator.new(hash) }
+      end
+
+      # Update a generator.
+      def put_by_guid(guid, generator_Update_Form)
+        HttpClient::Preconditions.assert_class('guid', guid, String)
+        HttpClient::Preconditions.assert_class('generator_update_form', generator_update_form, Apidoc::Models::GeneratorUpdateForm)
+        @client.request("/generators/#{guid}").with_json(generator_update_form.to_hash.to_json).put { |hash| Apidoc::Models::Generator.new(hash) }
+      end
+
+      # Update a generator.
+      def put_by_guid_and_org(guid, org, generator_Org_Form)
+        HttpClient::Preconditions.assert_class('guid', guid, String)
+        HttpClient::Preconditions.assert_class('org', org, String)
+        HttpClient::Preconditions.assert_class('generator_org_form', generator_org_form, Apidoc::Models::GeneratorOrgForm)
+        @client.request("/generators/#{guid}/#{org}").with_json(generator_org_form.to_hash.to_json).put { |hash| Apidoc::Models::Generator.new(hash) }
+      end
+
+      # Deletes a generator.
+      def delete_by_guid(guid)
+        HttpClient::Preconditions.assert_class('guid', guid, String)
+        @client.request("/generators/#{guid}").delete
         nil
       end
 
@@ -310,20 +357,6 @@ module Apidoc
 
     end
 
-    class Targets
-
-      def initialize(client)
-        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
-      end
-
-      # List all targets of this org.
-      def get(orgKey)
-        HttpClient::Preconditions.assert_class('orgKey', orgKey, String)
-        @client.request("/targets/#{orgKey}").get.map { |hash| Apidoc::Models::Target.new(hash) }
-      end
-
-    end
-
     class Users
 
       def initialize(client)
@@ -460,7 +493,12 @@ module Apidoc
       end
 
       def Visibility.ALL
-        @@all ||= [Visibility.organization, Visibility.public]
+        @@all ||= [Visibility.user, Visibility.organization, Visibility.public]
+      end
+
+      # Only the creator can view this service
+      def Visibility.user
+        @@_user ||= Visibility.new('user')
       end
 
       # Any member of the organization can view this service
@@ -478,17 +516,17 @@ module Apidoc
     # Generated source code.
     class Code
 
-      attr_reader :targetKey, :source
+      attr_reader :generator_guid, :source
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
-        @targetKey = HttpClient::Helper.to_klass('targetKey', opts.delete(:targetKey), String, :required => true, :multiple => false)
+        @generator_guid = HttpClient::Helper.to_uuid('generator_guid', opts.delete(:generator_guid), :required => true, :multiple => false)
         @source = HttpClient::Helper.to_klass('source', opts.delete(:source), String, :required => true, :multiple => false)
       end
 
       def to_hash
         {
-            :targetKey => targetKey,
+            :generator_guid => generator_guid,
             :source => source
         }
       end
@@ -532,6 +570,100 @@ module Apidoc
         {
             :code => code,
             :message => message
+        }
+      end
+
+    end
+
+    # An apidoc generator
+    class Generator
+
+      attr_reader :guid, :key, :uri, :name, :language, :description, :visibility, :owner_guid, :enabled
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @guid = HttpClient::Helper.to_uuid('guid', opts.delete(:guid), :required => true, :multiple => false)
+        @key = HttpClient::Helper.to_klass('key', opts.delete(:key), String, :required => true, :multiple => false)
+        @uri = HttpClient::Helper.to_klass('uri', opts.delete(:uri), String, :required => true, :multiple => false)
+        @name = HttpClient::Helper.to_klass('name', opts.delete(:name), String, :required => true, :multiple => false)
+        @language = HttpClient::Helper.to_klass('language', opts.delete(:language), String, :required => false, :multiple => false)
+        @description = HttpClient::Helper.to_klass('description', opts.delete(:description), String, :required => false, :multiple => false)
+        @visibility = HttpClient::Helper.to_klass('visibility', Apidoc::Models::Visibility.apply(opts.delete(:visibility)), Apidoc::Models::Visibility, :required => true, :multiple => false)
+        @owner_guid = HttpClient::Helper.to_uuid('owner_guid', opts.delete(:owner_guid), :required => true, :multiple => false)
+        @enabled = HttpClient::Helper.to_boolean('enabled', opts.delete(:enabled), :required => true, :multiple => false)
+      end
+
+      def to_hash
+        {
+            :guid => guid,
+            :key => key,
+            :uri => uri,
+            :name => name,
+            :language => language,
+            :description => description,
+            :visibility => visibility.value,
+            :owner_guid => owner_guid,
+            :enabled => enabled
+        }
+      end
+
+    end
+
+    # Form to create a new generator
+    class GeneratorCreateForm
+
+      attr_reader :key, :uri, :visibility
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @key = HttpClient::Helper.to_klass('key', opts.delete(:key), String, :required => true, :multiple => false)
+        @uri = HttpClient::Helper.to_klass('uri', opts.delete(:uri), String, :required => true, :multiple => false)
+        @visibility = HttpClient::Helper.to_klass('visibility', Apidoc::Models::Visibility.apply(opts.delete(:visibility)), Apidoc::Models::Visibility, :required => true, :multiple => false)
+      end
+
+      def to_hash
+        {
+            :key => key,
+            :uri => uri,
+            :visibility => visibility.value
+        }
+      end
+
+    end
+
+    # Form to enable or disable a generator for an organization
+    class GeneratorOrgForm
+
+      attr_reader :enabled
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @enabled = HttpClient::Helper.to_boolean('enabled', opts.delete(:enabled), :required => true, :multiple => false)
+      end
+
+      def to_hash
+        {
+            :enabled => enabled
+        }
+      end
+
+    end
+
+    # Form to update a generator
+    class GeneratorUpdateForm
+
+      attr_reader :visibility, :enabled
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @visibility = HttpClient::Helper.to_klass('visibility', Apidoc::Models::Visibility.apply(opts.delete(:visibility)), Apidoc::Models::Visibility, :required => false, :multiple => false)
+        @enabled = HttpClient::Helper.to_boolean('enabled', opts.delete(:enabled), :required => false, :multiple => false)
+      end
+
+      def to_hash
+        {
+            :visibility => visibility.value,
+            :enabled => enabled
         }
       end
 
@@ -673,28 +805,6 @@ module Apidoc
             :name => name,
             :key => key,
             :visibility => visibility.value,
-            :description => description
-        }
-      end
-
-    end
-
-    # The target platform for code generation.
-    class Target
-
-      attr_reader :key, :name, :description
-
-      def initialize(incoming={})
-        opts = HttpClient::Helper.symbolize_keys(incoming)
-        @key = HttpClient::Helper.to_klass('key', opts.delete(:key), String, :required => true, :multiple => false)
-        @name = HttpClient::Helper.to_klass('name', opts.delete(:name), String, :required => true, :multiple => false)
-        @description = HttpClient::Helper.to_klass('description', opts.delete(:description), String, :required => false, :multiple => false)
-      end
-
-      def to_hash
-        {
-            :key => key,
-            :name => name,
             :description => description
         }
       end

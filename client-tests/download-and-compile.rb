@@ -9,8 +9,8 @@ if service_uri.to_s.strip == "" || token.to_s.strip == "" || user_guid.to_s == "
   raise "service uri, token and user_guid required"
 end
 
-orgs = [] # ['gilt']
-services = []  # ['apidoc']
+orgs = ['gilt'] # ['gilt']
+services = ['delivery-window']  # ['apidoc']
 services_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }
@@ -107,8 +107,12 @@ targets = [Target.new('ning_1_8', ScalaTester.new("src/main/scala"), ['ning_1_8_
            Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client', 'play_2_x_json', 'scala_models']),
            Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
 
-def get_code(client, org, service, target)
-  client.code.get_by_org_key_and_service_key_and_version_and_target_key(org.key, service.key, "latest", target)
+def get_code(client, generators, org, service, target)
+  generator = generators[target]
+  if generator.nil?
+    raise "No generator found for target[#{target}]"
+  end
+  client.code.get_by_org_key_and_service_key_and_version_and_generator_guid(org.key, service.key, "latest", generator.key)
 end
 
 class MyClient < Apidoc::Client
@@ -126,6 +130,11 @@ end
 
 
 client = MyClient.new(service_uri, user_guid, :authorization => Apidoc::HttpClient::Authorization.basic(token))
+
+generators = client.generators.get.inject({}) do |hash, generator|
+  hash[generator.key] = generator
+  hash
+end
 
 CACHE = {}
 
@@ -159,7 +168,7 @@ targets.each do |target|
         next if services_to_skip.include?(service.key)
 
         puts "  %s/%s" % [org.key, service.key]
-        if code = get_code(client, org, service, target_name)
+        if code = get_code(client, generators, org, service, target_name)
           filename = target.tester.write(target.platform, org.key, service.key, target_name, code.source)
         end
       end
