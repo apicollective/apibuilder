@@ -260,7 +260,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
         val paramBuilder = ListBuffer[String]()
 
         queryParams.foreach { param =>
-          paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
+          paramBuilder.append(s":${param.name} => ${parseArgument(param.name, param.`type`, param.required, param.default)}")
         }
 
         sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
@@ -381,7 +381,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
 
     model.fields.map { field =>
-      sb.append(s"        @${field.name} = ${parseArgument(field)}")
+      sb.append(s"        @${field.name} = ${parseArgument(field.name, field.`type`, field.required, field.default)}")
     }
 
     sb.append("      end\n")
@@ -429,30 +429,147 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.mkString("\n")
   }
 
-  private def parseArgument(field: Field): String = {
-    field.`type` match {
-      case TypeInstance(container, Type(TypeKind.Primitive, name)) => {
-        parsePrimitiveArgument(field.name, container, name, field.required, field.default)
+  private def withDefault(code: String, default: Option[String]) = default match {
+    case None => code
+    case Some(dv) => s"$code || $dv"
+  }
+
+  case class Argument(className: Option[String] = None, value: String)
+
+  // TODO: Check optional/required. Assert class
+  private def parseArgumentPrimitive(
+    fieldName: String,
+    value: String,
+    ptName: String,
+    required: Boolean,
+    default: Option[String]
+  ): String = {
+    val arg = Primitives(ptName).getOrElse {
+      sys.error("Invalid primitive[$ptName]")
+    } match {
+      case Primitives.String => {
+        Argument(
+          Some("String"),
+          withDefault(value, default.map(d => "\'$v\'"))
+        )
       }
-      case TypeInstance(container, Type(TypeKind.Model, name)) => {
-        parseModelArgument(field.name, container, name, field.required)
+
+      case Primitives.Integer | Primitives.Double | Primitives.Long => {
+        Argument(
+          Some("Integer"),
+          withDefault(value, default)
+        )
       }
-      case TypeInstance(container, Type(TypeKind.Enum, name)) => {
-        parseEnumArgument(field.name, container, name, field.required, field.default)
+
+      case Primitives.Boolean => {
+        Argument(
+          value = s"HttpClient::Helper.to_boolean(" +
+          withDefault(value, default.map(d => "\'$v\'")) +
+          ")"
+        )
+      }
+
+      case Primitives.DateIso8601 => {
+        Argument(
+          Some("String"),
+          s"HttpClient::Helper.to_date_iso8601(" +
+          withDefault(value, default.map(v => s"\'$v\')")) +
+          ")"
+        )
+      }
+
+      case Primitives.DateTimeIso8601 => {
+        Argument(
+          Some("String"),
+          s"HttpClient::Helper.to_date_time_iso8601(" +
+          withDefault(value, default.map(v => s"\'$v\')")) +
+          ")"
+        )
+      }
+
+      case Primitives.Uuid => {
+        Argument(
+          Some("String"),
+          s"HttpClient::Helper.to_uuid(" +
+          withDefault(value, default.map(d => "\'$v\'")) +
+          ")"
+        )
+      }
+
+      case Primitives.Decimal => {
+        Argument(
+          Some("BigDecimal"),
+          s"HttpClient::Helper.to_big_decimal(" +
+          withDefault(value, default.map(d => "\'$v\'")) +
+          ")"
+        )
+      }
+
+      case Primitives.Unit => {
+        sys.error("Cannot have a unit parameter")
+      }
+    }
+
+    arg.className match {
+      case None => {
+        arg.value
+      }
+      case Some(className) => {
+        val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
+        s"HttpClient::Preconditions.$assertMethod($fieldName, ${arg.value}, $className)"
       }
     }
   }
 
-  private def parseArgument(param: Parameter): String = {
-    param.`type` match {
-      case TypeInstance(container, Type(TypeKind.Primitive, name)) => {
-        parsePrimitiveArgument(param.name, container, name, param.required, param.default)
+  private def parseArgument(
+    name: String,
+    ti: TypeInstance,
+    required: Boolean,
+    default: Option[String]
+  ): String = {
+    ti match {
+      case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
+        parseArgumentPrimitive(name, "opts.delete(:$name)", name, required, default)
       }
-      case TypeInstance(container, Type(TypeKind.Model, name)) => {
-        parseModelArgument(param.name, container, name, param.required)
+
+      case TypeInstance(Container.List, Type(TypeKind.Primitive, name)) => {
+        s"opts.delete(:$name).map { |v| " +
+        parseArgumentPrimitive(name, "v", name, required, default) +
+        "}"
       }
-      case TypeInstance(container, Type(TypeKind.Enum, name)) => {
-        parseEnumArgument(param.name, container, name, param.required, param.default)
+
+      case TypeInstance(Container.Map, Type(TypeKind.Primitive, name)) => {
+        s"opts.delete(:$name).inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(name, "d[1]", name, required, default) + "; h }"
+      }
+
+      case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
+        val klass = qualifiedClassName(name)
+        s"opts[:$name].nil? ? nil : (opts[:$name].is_a?($klass) ? opts.delete(:$name) : $klass.new(opts.delete(:$name))"
+      }
+
+      case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
+        val klass = qualifiedClassName(name)
+        s"(opts.delete(:name) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el)" + "}"
+      }
+
+      case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
+        val klass = qualifiedClassName(name)
+        s"(opts.delete(:name) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1]); h" + "}"
+      }
+
+      case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
+        val klass = qualifiedClassName(name)
+        s"opts[:$name].nil? ? nil : (opts[:$name].is_a?($klass) ? opts.delete(:$name) : $klass.apply(opts.delete(:$name))"
+      }
+
+      case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
+        val klass = qualifiedClassName(name)
+        s"(opts.delete(:name) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
+      }
+
+      case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
+        val klass = qualifiedClassName(name)
+        s"(opts.delete(:name) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
       }
     }
   }
@@ -479,13 +596,13 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
     }
 
-    s"HttpClient::Helper.$methodName('${name}', ${klass}, ${value}, :required => $required)"
+    s"HttpClient::Helper.$methodName('$name', ${klass}, ${value}, :required => $required)"
   }
 
   private def parseEnumArgument(name: String, container: Container, enumName: String, required: Boolean, default: Option[String]): String = {
     val value = default match {
-      case None => s"opts.delete(:${name})"
-      case Some(defaultValue) => s"opts.delete(:${name}) || \'$defaultValue\'"
+      case None => s"opts.delete(:$name)"
+      case Some(defaultValue) => s"opts.delete(:$name) || \'$defaultValue\'"
     }
 
     val klass = qualifiedClassName(enumName)
@@ -508,17 +625,17 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
 
     val value = default match {
-      case None => s"opts.delete(:${name})"
+      case None => s"opts.delete(:$name)"
       case Some(defaultValue) => {
         pt match {
           case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
-            s"opts.delete(:${name}) || \'$defaultValue\'"
+            s"opts.delete(:$name) || \'$defaultValue\'"
           }
           case Primitives.Boolean => {
-            s"opts.has_key?(:${name}) ? (opts.delete(:${name}) ? true : false) : $defaultValue"
+            s"opts.has_key?(:$name) ? (opts.delete(:$name) ? true : false) : $defaultValue"
           }
           case Primitives.Decimal | Primitives.Integer | Primitives.Double | Primitives.Long => {
-            s"opts.delete(:${name}) || ${default.get}"
+            s"opts.delete(:$name) || ${default.get}"
           }
           case Primitives.Unit => {
             sys.error("Cannot have a unit argument")
