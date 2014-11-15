@@ -6,6 +6,7 @@ import play.api.libs.json._
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.gilt.apidocgenerator.models.{Container, Type, TypeInstance, TypeKind}
+import scala.util.{Failure, Success, Try}
 
 case class TypeValidatorEnums(name: String, values: Seq[String])
 
@@ -22,15 +23,14 @@ case class TypeValidator(
   private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
 
   private def parseJsonOrNone(value: String): Option[JsValue] = {
-    try {
-      Some(
-        Json.parse(value)
-      )
-    } catch {
-      case e: JsonParseException => None
-      case e: JsonProcessingException => None
-      case e: JsonMappingException => None
-      case e: Throwable => throw e
+    Try(Json.parse(value)) match {
+      case Success(jsValue) => Some(jsValue)
+      case Failure(ex) => ex match {
+        case e: JsonParseException => None
+        case e: JsonMappingException => None
+        case e: JsonProcessingException => None
+        case e: Throwable => throw e
+      }
     }
   }
 
@@ -150,38 +150,30 @@ case class TypeValidator(
               }
 
               case Primitives.Double => {
-                try {
-                  value.toDouble
-                  None
-                } catch {
-                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid double"))
+                Try(value.toDouble) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid double"))
                 }
               }
 
               case Primitives.Integer => {
-                try {
-                  value.toInt
-                  None
-                } catch {
-                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid integer"))
+                Try(value.toInt) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid integer"))
                 }
               }
 
               case Primitives.Long => {
-                try {
-                  value.toLong
-                  None
-                } catch {
-                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid long"))
+                Try(value.toLong) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid long"))
                 }
               }
 
               case Primitives.Decimal => {
-                try {
-                  BigDecimal(value)
-                  None
-                } catch {
-                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid decimal"))
+                Try(BigDecimal(value)) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid decimal"))
                 }
               }
 
@@ -194,29 +186,23 @@ case class TypeValidator(
               }
 
               case Primitives.Uuid => {
-                try {
-                  UUID.fromString(value)
-                  None
-                } catch {
-                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid uuid"))
+                Try(UUID.fromString(value)) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid uuid"))
                 }
               }
 
               case Primitives.DateIso8601 => {
-                try {
-                  dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
-                  None
-                } catch {
-                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-iso8601"))
+                Try(dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-iso8601"))
                 }
               }
 
               case Primitives.DateTimeIso8601 => {
-                try {
-                  dateTimeISOParser.parseDateTime(value)
-                  None
-                } catch {
-                  case _: Throwable => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-time-iso8601"))
+                Try(dateTimeISOParser.parseDateTime(value)) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid date-time-iso8601"))
                 }
               }
 

@@ -4,7 +4,7 @@ import com.gilt.apidocgenerator.models.{Container, Field, ServiceDescription, Ty
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 case class ServiceDescriptionValidator(apiJson: String) {
 
@@ -285,12 +285,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val invalidCodes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
-          try {
-            r.code.toInt
-            None
-          } catch {
-            case e: java.lang.NumberFormatException => {
-              Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Response code is not an integer[${r.code}]")
+          Try(r.code.toInt) match {
+            case Success(v) => None
+            case Failure(ex) => ex match {
+              case e: java.lang.NumberFormatException => {
+                Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Response code is not an integer[${r.code}]")
+              }
             }
           }
         }

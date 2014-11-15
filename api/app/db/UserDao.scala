@@ -8,6 +8,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 case class UserForm(email: String, password: String, name: Option[String] = None)
 
@@ -93,12 +94,11 @@ object UserDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v =>
-        try {
-          val uuid = UUID.fromString(v)
-          "and users.guid = {guid}::uuid"
-        } catch {
-          // not a valid guid - won't match anything
-          case e: IllegalArgumentException => "and false"
+        Try(UUID.fromString(v)) match {
+          case Success(uuid) => "and users.guid = {guid}::uuid"
+          case Failure(e) => e match {
+            case e: IllegalArgumentException => "and false"
+          }
         }
       },
       guid.map { v => "and users.guid = {guid}::uuid" },
