@@ -298,7 +298,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
                 requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash.to_json })")
               }
               case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
-                sys.error("TODO: Finish map")
+                requestBuilder.append(s".with_json(${ti.varName}.inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : o[1].to_hash; hash }).to_json")
               }
 
               case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
@@ -308,7 +308,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
                 requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash.to_json })")
               }
               case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
-                sys.error("TODO: Finish map")
+                requestBuilder.append(s".with_json(${ti.varName}.inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : o[1].to_hash; hash }).to_json")
               }
               case TypeInstance(Container.UNDEFINED(container), _) => {
                 sys.error(s"Unsupported container[$container]")
@@ -401,9 +401,9 @@ case class RubyClientGenerator(service: ServiceDescription) {
           case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
             s":${field.name} => ${field.name}.map(&:to_hash)"
           }
-          //case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
-          //  TODO: Finish map
-          //}
+          case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
+            s":${field.name} => ${field.name}.inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].to_hash; h }"
+          }
 
           case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
             s":${field.name} => ${field.name}.value"
@@ -411,9 +411,9 @@ case class RubyClientGenerator(service: ServiceDescription) {
           case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
             s":${field.name} => ${field.name}.map(&:value)"
           }
-          //case TypeInstance(Container.Map, Type.Enum(name)) => {
-          //  TODO: Finish map
-          //}
+          case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
+            s":${field.name} => ${field.name}.inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].value; h }"
+          }
         }
 
         val value = if (field.required) { nullable } else { s"${field.name}.nil? ? nil : ${nullable}" }
