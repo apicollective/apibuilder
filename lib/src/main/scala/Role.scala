@@ -1,4 +1,4 @@
-package core
+package lib
 
 case class Role(key: String, name: String)
 

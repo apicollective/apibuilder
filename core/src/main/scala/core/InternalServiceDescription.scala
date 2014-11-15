@@ -1,5 +1,6 @@
 package core
 
+import lib.Text
 import com.gilt.apidocgenerator.models.Container
 import play.api.libs.json._
 

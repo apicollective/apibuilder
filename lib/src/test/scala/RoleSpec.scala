@@ -1,4 +1,4 @@
-package core
+package lib
 
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers

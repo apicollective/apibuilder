@@ -2,7 +2,7 @@ package core.generator
 
 import com.gilt.apidocgenerator.models.ServiceDescription
 import core._
-import Text._
+import lib.Text._
 
 object ScalaCaseClasses extends CodeGenerator {
   def generate(sd: ServiceDescription): String = {

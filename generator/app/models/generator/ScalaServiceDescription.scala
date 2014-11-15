@@ -2,7 +2,7 @@ package core.generator
 
 import com.gilt.apidocgenerator.models._
 import core._
-import Text._
+import lib.Text._
 
 object ScalaUtil {
 

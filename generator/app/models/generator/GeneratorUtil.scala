@@ -2,7 +2,7 @@ package core.generator
 
 import com.gilt.apidocgenerator.models.{Container, Type, TypeInstance, TypeKind}
 import core.{Primitives, Text}
-import core.Text._
+import lib.Text._
 
 object GeneratorUtil {
 

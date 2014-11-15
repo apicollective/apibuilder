@@ -1,4 +1,4 @@
-package core
+package lib
 
 case class Review(key: String, name: String)
 

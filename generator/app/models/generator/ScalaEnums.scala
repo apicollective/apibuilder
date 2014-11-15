@@ -1,11 +1,11 @@
 package core.generator
 
-import core.Text
+import lib.Text
 
 object ScalaEnums {
 
   def build(enum: ScalaEnum): String = {
-    import Text._
+    import lib.Text._
     Seq(
       enum.description.map { desc => ScalaUtil.textToComment(desc) + "\n" }.getOrElse("") +
         s"sealed trait ${enum.name}",

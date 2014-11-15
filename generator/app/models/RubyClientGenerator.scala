@@ -2,7 +2,7 @@ package models
 
 import com.gilt.apidocgenerator.models._
 import core._
-import Text._
+import lib.Text._
 import core.generator.{GeneratorUtil, CodeGenerator, ScalaUtil}
 import scala.collection.mutable.ListBuffer
 

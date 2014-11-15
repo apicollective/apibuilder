@@ -1,4 +1,4 @@
-package core
+package lib
 
 import scala.collection.immutable.StringOps
 
@@ -83,7 +83,7 @@ object Text {
     "species" -> "species",
     "epoch" -> "epochs"
   )
-  private[core] val KnownPlurals = (Plurals.values ++ Seq(
+  private[lib] val KnownPlurals = (Plurals.values ++ Seq(
     "bison",
     "buffalo",
     "deer",

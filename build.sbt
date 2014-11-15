@@ -6,8 +6,14 @@ organization := "com.gilt.apidoc"
 
 scalaVersion in ThisBuild := "2.11.2"
 
+lazy val lib = project
+  .in(file("lib"))
+  .settings(commonSettings: _*)
+
 lazy val core = project
   .in(file("core"))
+  .dependsOn(lib)
+  .aggregate(lib)
   .settings(commonSettings: _*)
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
@@ -18,8 +24,6 @@ lazy val core = project
 
 lazy val generated = project
   .in(file("generated"))
-  .dependsOn(core)
-  .aggregate(core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
@@ -47,15 +51,15 @@ lazy val api = project
 
 lazy val www = project
   .in(file("www"))
-  .dependsOn(generated)
-  .aggregate(generated)
+  .dependsOn(generated, core)
+  .aggregate(generated, core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
 
 lazy val generator = project
   .in(file("generator"))
-  .dependsOn(generated)
-  .aggregate(generated)
+  .dependsOn(generated, lib)
+  .aggregate(generated, lib)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
 

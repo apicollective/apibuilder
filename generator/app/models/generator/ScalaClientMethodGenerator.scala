@@ -4,8 +4,8 @@ case class ScalaClientMethodGenerator(
   config: ScalaClientMethodConfig,
   ssd: ScalaServiceDescription
 ) {
-  import core.Text
-  import core.Text._
+  import lib.Text
+  import lib.Text._
 
   private val generatorUtil = GeneratorUtil(config)
 
@@ -179,7 +179,7 @@ case class ScalaClientMethodGenerator(
     response: String,
     comments: Option[String]
   ) {
-    import core.Text._
+    import lib.Text._
     
     private val commentString = comments.map(string => ScalaUtil.textToComment(string) + "\n").getOrElse("")
 
