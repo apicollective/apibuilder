@@ -1,14 +1,23 @@
 #!/usr/bin/env ruby
 
-data = {
-    "ruby_client" => "client-tests/ruby_client.rb",
-    "play_2_3_client" => "generated/app/GeneratedClient.scala",
-    "play_2_x_json" => "core/src/main/scala/core/Generated.scala",
-    "play_2_x_routes" => "api/conf/routes"
-}
+SERVICE_URL = ARGV.shift || "http://www.apidoc.me"
+ORG = "gilt"
 
-data.each do |target, path|
-    cmd = "curl --silent http://www.apidoc.me/gilt/code/apidoc/latest/#{target} > #{path}"
+def download(service_name, data)
+  data.each do |target, path|
+    cmd = "curl --silent #{SERVICE_URL}/#{ORG}/code/#{service_name}/latest/#{target} > #{path}"
     puts cmd
     system(cmd)
+  end
 end
+
+download("apidoc", {
+           "ruby_client" => "client-tests/ruby_client.rb",
+           "play_2_3_client" => "generated/app/ApidocClient.scala",
+           "play_2_x_json" => "core/src/main/scala/core/Generated.scala",
+           "play_2_x_routes" => "api/conf/routes"
+         })
+
+download("apidoc-generator", {
+           "play_2_3_client" => "generated/app/GeneratorClient.scala"
+         })
