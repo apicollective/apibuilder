@@ -1,0 +1,1 @@
+drop index if exists generators_key_idx;

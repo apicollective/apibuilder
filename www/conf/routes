@@ -28,6 +28,7 @@ POST    /org/createPost                                           controllers.Or
 GET     /generators                                               controllers.Generators.list()
 POST    /generators/:guid/remove                                  controllers.Generators.postRemove(guid: java.util.UUID)
 GET     /generators/create                                        controllers.Generators.create()
+GET     /generators/:guid                                         controllers.Generators.getByGuid(guid: java.util.UUID)
 POST    /generators/postCreate                                    controllers.Generators.postCreate()
 POST    /generators/postUpdate                                    controllers.Generators.postUpdate(generatorGuid: java.util.UUID)
 

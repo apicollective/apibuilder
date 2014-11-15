@@ -12,6 +12,7 @@ case class MainTemplate(
   serviceDescription: Option[ServiceDescription] = None,
   allServiceVersions: Seq[String] = Seq.empty,
   user: Option[User] = None,
+  owner: Option[User] = None,
   resource: Option[Resource] = None,
   settings: Option[SettingsMenu] = None,
   generators: Seq[Generator] = Seq.empty,

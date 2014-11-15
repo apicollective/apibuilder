@@ -1,9 +1,7 @@
 package controllers
 
-import java.util.UUID
-
-import com.gilt.apidoc.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, Domain}
-import models._
+import com.gilt.apidoc.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, User}
+import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
 import play.api.mvc._
@@ -28,6 +26,34 @@ object Generators extends Controller {
     }
   }
 
+  def getByGuid(guid: java.util.UUID) = Authenticated.async { implicit request =>
+    def getOwner(gen: Option[Generator]): Future[Option[User]] = {
+      gen.fold(
+        Future.successful(None: Option[User])
+      ) { gen =>
+        request.api.Users.getByGuid(gen.ownerGuid)
+      }
+    }
+    (for {
+      generator <- request.api.Generators.getByGuid(guid)
+      owner <- getOwner(generator)
+    } yield {
+      (generator, owner)
+    }).recover {
+      case ex: Exception => (None, None)
+    }.map { t =>
+      val (generator, owner) = t
+      Ok(views.html.generators.details(
+        MainTemplate(
+          user = Some(request.user),
+          owner = owner,
+          generators = generator.toSeq,
+          title = s"Generator Details"
+        )
+      ))
+    }
+  }
+
   def postUpdate(generatorGuid: java.util.UUID) = Authenticated.async { implicit request =>
     val tpl = MainTemplate(
       user = Some(request.user),
@@ -43,7 +69,7 @@ object Generators extends Controller {
       valid => {
         request.api.Generators.putByGuid(GeneratorUpdateForm(
           visibility = valid.visibility.map(Visibility(_)),
-          enabled = Some(valid.enabled)
+          enabled = valid.enabled
         ), generatorGuid).map(_ => Ok)
       }
     )
@@ -132,11 +158,11 @@ object Generators extends Controller {
     )(GeneratorCreateData.apply)(GeneratorCreateData.unapply)
   )
 
-  case class GeneratorUpdateData(visibility: Option[String], enabled:  Boolean)
+  case class GeneratorUpdateData(visibility: Option[String], enabled: Option[Boolean])
   private val generatorUpdateForm = Form(
     mapping(
       "visibility" -> optional(nonEmptyText),
-      "enabled" -> boolean
+      "enabled" -> optional(boolean)
     )(GeneratorUpdateData.apply)(GeneratorUpdateData.unapply)
   )
 }
