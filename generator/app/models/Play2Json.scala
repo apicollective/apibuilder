@@ -29,16 +29,9 @@ case class Play2Json(serviceName: String) {
           }
         }
 
-        case Container.List => {
-          s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse(Nil))"""
-        }
-
-        case Container.Map => {
-          s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse(Map.Empty))"""
-        }
-
-        case Container.UNDEFINED(container) => {
-          sys.error(s"Invalid container[$container]")
+        case c => {
+          val nilValue = field.datatype.nilValue(field.`type`)
+          s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse($nilValue))"""
         }
       }
     }

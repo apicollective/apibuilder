@@ -372,7 +372,7 @@ sealed abstract class ScalaDataType(val name: String) {
   def nilValue(typeInstance: TypeInstance): String = typeInstance.container match {
     case Container.Singleton => "None"
     case Container.List => "Nil"
-    case Container.Map => "Map.Empty"
+    case Container.Map => "Map.empty"
     case Container.UNDEFINED(container) => sys.error(s"Invalid container[$container]")
   }
 
@@ -394,8 +394,8 @@ object ScalaDataType {
 
   case class ScalaModelType(packageName: String, modelName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(modelName)}")
   case class ScalaEnumType(packageName: String, enumName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(enumName)}")
-  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Seq[${inner.name}]")
-  case class ScalaMapType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.Map[String, ${inner.name}]")
+  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.Seq[${inner.name}]")
+  case class ScalaMapType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.Map[String, ${inner.name}]")
 
   def primitive(name: String): ScalaDataType = {
     Primitives(name).getOrElse {
