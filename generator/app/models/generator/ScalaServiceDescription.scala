@@ -1,5 +1,6 @@
 package core.generator
 
+import lib.Primitives
 import com.gilt.apidocgenerator.models._
 import core._
 import lib.Text._
@@ -42,24 +43,24 @@ object ScalaUtil {
   }
 
   def packageName(serviceName: String): String = {
-    Text.safeName(serviceName).toLowerCase
+   lib.Text.safeName(serviceName).toLowerCase
   }
 
   def toClassName(
     name: String,
     multiple: Boolean = false
   ) = {
-    val baseName = Text.safeName(
+    val baseName =lib.Text.safeName(
       if (name == name.toUpperCase) {
-        Text.initCap(Text.splitIntoWords(name).map(_.toLowerCase)).mkString("")
+       lib.Text.initCap(lib.Text.splitIntoWords(name).map(_.toLowerCase)).mkString("")
       } else {
-        Text.initCap(snakeToCamelCase(name))
+       lib.Text.initCap(snakeToCamelCase(name))
       }
     )
 
     ScalaUtil.quoteNameIfKeyword(
       if (multiple) {
-        Text.pluralize(baseName)
+       lib.Text.pluralize(baseName)
       } else {
         baseName
       }
@@ -71,7 +72,7 @@ object ScalaUtil {
     name: String,
     multiple: Boolean = false
   ): String = {
-    Text.initLowerCase(toClassName(name, multiple))
+   lib.Text.initLowerCase(toClassName(name, multiple))
   }
 
   def toDefaultClassName(
@@ -297,7 +298,7 @@ class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Resp
     case TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name)) => ScalaUtil.toVariable(name, multiple = true)
   }
 
-  val errorClassName = Text.initCap(errorVariableName) + "Response"
+  val errorClassName =lib.Text.initCap(errorVariableName) + "Response"
 
 }
 

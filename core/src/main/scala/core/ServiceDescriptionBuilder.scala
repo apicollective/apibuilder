@@ -1,5 +1,6 @@
 package core
 
+import lib.Primitives
 import com.gilt.apidocgenerator.models._
 import play.api.libs.json._
 import org.joda.time.format.ISODateTimeFormat

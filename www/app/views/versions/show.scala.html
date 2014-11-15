@@ -20,10 +20,10 @@
 
     <h2>Resources</h2>
     @service.resources.map { resource =>
-      <div id="resource-@core.UrlKey.generate(resource.model.name)"></div>
-      <a name="resource-@core.UrlKey.generate(resource.model.name)"></a>
+      <div id="resource-@lib.UrlKey.generate(resource.model.name)"></div>
+      <a name="resource-@lib.UrlKey.generate(resource.model.name)"></a>
       <div class="version_resource">
-        <h3><a href="#model-@core.UrlKey.generate(resource.model.name)">@resource.model.name</a></h3>
+        <h3><a href="#model-@lib.UrlKey.generate(resource.model.name)">@resource.model.name</a></h3>
 
         @resource.model.description.getOrElse("")
 
@@ -41,11 +41,11 @@
             <tbody>
              @resource.operations.zipWithIndex.map { case(operation, index) =>
                <tr>
-                 <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.method</a></td>
-                 <td class="nowrap"><a onClick="$('#operation-@core.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.path</a></td>
+                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.method</a></td>
+                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.path</a></td>
                  <td>@operation.description.getOrElse("")</td>
                </tr>
-               <tr id="operation-@core.UrlKey.generate(resource.model.name)-@index" style="display:none">
+               <tr id="operation-@lib.UrlKey.generate(resource.model.name)-@index" style="display:none">
                  <td></td>
                  <td colspan="2">
                    @operation.method @service.baseUrl@operation.path
@@ -86,8 +86,8 @@
       <em>None</em>
     } else {
       @service.enums.map { enum =>
-        <div id="enum-@core.UrlKey.generate(enum.name)"></div>
-        <a name="enum-@core.UrlKey.generate(enum.name)"></a>
+        <div id="enum-@lib.UrlKey.generate(enum.name)"></div>
+        <a name="enum-@lib.UrlKey.generate(enum.name)"></a>
         <div class="version_model">
           <h3>@enum.name</h3>
 
@@ -103,8 +103,8 @@
       <em>None</em>
     } else {
       @service.models.map { model =>
-        <div id="model-@core.UrlKey.generate(model.name)"></div>
-        <a name="model-@core.UrlKey.generate(model.name)"></a>
+        <div id="model-@lib.UrlKey.generate(model.name)"></div>
+        <a name="model-@lib.UrlKey.generate(model.name)"></a>
         <div class="version_model">
           <h3>@model.name</h3>
 

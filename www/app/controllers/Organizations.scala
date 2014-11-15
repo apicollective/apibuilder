@@ -1,7 +1,7 @@
 package controllers
 
-import core.Role
-import lib.{ Pagination, PaginatedCollection }
+import lib.Role
+import lib.{Pagination, PaginatedCollection, Role}
 import models.MainTemplate
 import com.gilt.apidoc.models.Organization
 import play.api._

@@ -58,8 +58,8 @@ lazy val www = project
 
 lazy val generator = project
   .in(file("generator"))
-  .dependsOn(generated, lib)
-  .aggregate(generated, lib)
+  .dependsOn(generated, lib, core) // goal is to remove core dependency here
+  .aggregate(generated, lib, core) // goal is to remove core dependency here
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
 

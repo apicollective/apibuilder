@@ -2,6 +2,7 @@ package models
 
 import com.gilt.apidocgenerator.models._
 import core._
+import lib.Primitives
 import lib.Text._
 import core.generator.{GeneratorUtil, CodeGenerator, ScalaUtil}
 import scala.collection.mutable.ListBuffer
@@ -25,7 +26,7 @@ object RubyUtil {
     name: String,
     multiple: Boolean = false
   ): String = {
-    Text.initLowerCase(Text.camelCaseToUnderscore(toClassName(name, multiple)))
+   lib.Text.initLowerCase(lib.Text.camelCaseToUnderscore(toClassName(name, multiple)))
   }
 
 }
@@ -89,9 +90,9 @@ object RubyClientGenerator extends CodeGenerator {
 
   def enumName(value: String): String = {
     if (value == value.toUpperCase) {
-      Text.camelCaseToUnderscore(value.toLowerCase).split("_").map(Text.initLowerCase(_)).mkString("_")
+     lib.Text.camelCaseToUnderscore(value.toLowerCase).split("_").map(lib.Text.initLowerCase(_)).mkString("_")
     } else {
-      Text.camelCaseToUnderscore(value).split("_").map(Text.initLowerCase(_)).mkString("_")
+     lib.Text.camelCaseToUnderscore(value).split("_").map(lib.Text.initLowerCase(_)).mkString("_")
     }
   }
 
@@ -211,7 +212,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
         }
       }.mkString("/")
 
-      val methodName = Text.camelCaseToUnderscore(
+      val methodName =lib.Text.camelCaseToUnderscore(
         GeneratorUtil.urlToMethodName(
           resource.model.plural, resource.path, op.method, op.path
         )

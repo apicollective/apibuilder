@@ -1,5 +1,6 @@
 package core
 
+import lib.{Primitives, Text}
 import com.gilt.apidocgenerator.models.{Container, Field, ServiceDescription, Type, TypeInstance, TypeKind}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }

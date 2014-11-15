@@ -1,5 +1,6 @@
 package models
 
+import lib.Primitives
 import com.gilt.apidocgenerator.models._
 import core._
 import core.generator.{ScalaDataType, GeneratorUtil, ScalaServiceDescription, CodeGenerator}
@@ -91,7 +92,7 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
   }
 
   val method = "%s.%s".format(
-    "controllers." + Text.underscoreAndDashToInitCap(op.model.plural),
+    "controllers." +lib.Text.underscoreAndDashToInitCap(op.model.plural),
     GeneratorUtil.urlToMethodName(resource.model.plural, resource.path, op.method, url)
   )
 

@@ -23,7 +23,7 @@
 
           @select(
               addForm("role"),
-              options = core.Role.All.map( r => (r.key, r.name) ),
+              options = lib.Role.All.map( r => (r.key, r.name) ),
               '_label -> "Role",
               '_error -> addForm("role")
           )

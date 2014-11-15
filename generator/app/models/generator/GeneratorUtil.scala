@@ -1,7 +1,7 @@
 package core.generator
 
 import com.gilt.apidocgenerator.models.{Container, Type, TypeInstance, TypeKind}
-import core.{Primitives, Text}
+import lib.Primitives
 import lib.Text._
 
 object GeneratorUtil {
@@ -21,11 +21,11 @@ object GeneratorUtil {
       url.replaceAll("^" + resourcePath, "")
     }).split("/").filter { !_.isEmpty }
 
-    val named = pieces.filter { _.startsWith(":") }.map { name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name.slice(1, name.length)))) }
+    val named = pieces.filter { _.startsWith(":") }.map { name =>lib.Text.initCap(lib.Text.safeName(lib.Text.underscoreAndDashToInitCap(name.slice(1, name.length)))) }
     val notNamed = pieces.
       filter { !_.startsWith(":") }.
       filter { _ != resourcePlural.toLowerCase }.
-      map( name => Text.initCap(Text.safeName(Text.underscoreAndDashToInitCap(name))) )
+      map( name =>lib.Text.initCap(lib.Text.safeName(lib.Text.underscoreAndDashToInitCap(name))) )
 
     if (named.isEmpty && notNamed.isEmpty) {
       httpMethod.toLowerCase

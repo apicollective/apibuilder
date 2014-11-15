@@ -3,7 +3,8 @@ package models
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
 
-import core.{Text, ServiceDescriptionValidator}
+import lib.Text
+import core.ServiceDescriptionValidator
 
 object TestHelper {
 

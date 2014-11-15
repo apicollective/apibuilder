@@ -1,7 +1,8 @@
 package core.generator
 
 import com.gilt.apidocgenerator.models.ServiceDescription
-import core.{ServiceDescriptionBuilder, TestHelper}
+import models.TestHelper
+import core.ServiceDescriptionBuilder
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class ScalaEnumsSpec extends FunSpec with ShouldMatchers {

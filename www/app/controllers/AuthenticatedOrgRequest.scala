@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.apidoc.models.{ Membership, Organization, User }
 import models.MainTemplate
-import core.Role
+import lib.Role
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }

@@ -17,7 +17,7 @@ case class ScalaClientMethodGenerator(
 
   def accessors(): String = {
     sortedResources.map { case (plural, resources) =>
-      val methodName = Text.snakeToCamelCase(Text.camelCaseToUnderscore(plural).toLowerCase)
+      val methodName =lib.Text.snakeToCamelCase(lib.Text.camelCaseToUnderscore(plural).toLowerCase)
       config.accessor(methodName, plural)
     }.mkString("\n\n")
   }

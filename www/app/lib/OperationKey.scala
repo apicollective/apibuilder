@@ -1,7 +1,7 @@
 package lib
 
 import com.gilt.apidocgenerator.models.{Operation, ServiceDescription}
-import core.UrlKey
+import lib.UrlKey
 
 object OperationKey {
 

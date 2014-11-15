@@ -1,5 +1,6 @@
 package models
 
+import lib.Primitives
 import com.gilt.apidocgenerator.models.{Container, Model, Parameter, ParameterLocation, Operation, Resource, Type, TypeInstance, TypeKind}
 import core._
 import core.generator._

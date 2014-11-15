@@ -1,5 +1,6 @@
 package core
 
+import lib.Primitives
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
