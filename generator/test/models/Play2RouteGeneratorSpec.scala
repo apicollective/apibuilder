@@ -95,7 +95,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
   }
 
   describe("with reference-api service") {
-    lazy val service = TestHelper.parseFile(s"../reference-api/api.json").serviceDescription.get
+    lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
     lazy val ssd = new ScalaServiceDescription(service)
 
     it("normalizes explicit paths that match resource name") {
