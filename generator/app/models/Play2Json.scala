@@ -75,7 +75,17 @@ case class Play2Json(serviceName: String) {
           s"  (",
           model.fields.map { field =>
             if (field.isOption) {
-              s"""(__ \\ "${field.originalName}").write[scala.Option[${field.datatype.name}]]"""
+              field.`type`.container match {
+                case Container.Singleton => {
+                  s"""(__ \\ "${field.originalName}").write[scala.Option[${field.datatype.name}]]"""
+                }
+                case Container.List | Container.Map => {
+                  s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
+                }
+                case Container.UNDEFINED(container) => {
+                  sys.error(s"Unknown container[$container]")
+                }
+              }
             } else {
               s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
             }
