@@ -40,7 +40,7 @@ class RubyClientGeneratorSpec extends FunSpec with Matchers {
   }
 
   it("generate ruby") {
-    val json = io.Source.fromFile(new File("../reference-api/api.json")).getLines.mkString("\n")
+    val json = io.Source.fromFile(new File("reference-api/api.json")).getLines.mkString("\n")
     val generator = RubyClientGenerator(ServiceDescriptionBuilder(json), "gilt 0.0.1-test")
     //println(generator.generate())
   }

@@ -43,12 +43,12 @@ class ScalaEnumsSpec extends FunSpec with ShouldMatchers {
 
     it("generates valid models") {
       val enums = ssd.enums.map(ScalaEnums.build(_)).mkString("\n\n")
-      TestHelper.assertEqualsFile("core/src/test/resources/play2enums-example.txt", enums)
+      TestHelper.assertEqualsFile("test/resources/play2enums-example.txt", enums)
     }
 
     it("generates valid json conversions") {
       val jsonConversions = ssd.enums.map(ScalaEnums.buildJson("Test", _)).mkString("\n\n")
-      TestHelper.assertEqualsFile("core/src/test/resources/play2enums-json-example.txt", jsonConversions)
+      TestHelper.assertEqualsFile("test/resources/play2enums-json-example.txt", jsonConversions)
     }
   }
 

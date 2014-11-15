@@ -7,7 +7,7 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2BindablesSpec extends FunSpec with ShouldMatchers {
 
-  lazy val service = TestHelper.parseFile(s"../reference-api/api.json").serviceDescription.get
+  lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
   lazy val ssd = new ScalaServiceDescription(service)
   lazy val ageGroup = ssd.enums.find(_.name == "AgeGroup").getOrElse {
     sys.error("No age group enum found")

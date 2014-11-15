@@ -7,9 +7,9 @@ import org.scalatest.Matchers
 
 class UtilSpec extends FunSpec with Matchers {
 
-  lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
-  private lazy val ageGroupEnum = service.enums.find(_.name == "age_group").getOrElse {
-    sys.error("No age_group enum found")
+  lazy val service = TestHelper.parseFile(s"api/api.json").serviceDescription.get
+  private lazy val visibilityEnum = service.enums.find(_.name == "visibility").getOrElse {
+    sys.error("No visibility enum found")
   }
 
   it("isJsonDocumentMethod") {
@@ -33,17 +33,17 @@ class UtilSpec extends FunSpec with Matchers {
   }
 
   it("isValidEnumValue") {
-    Util.isValidEnumValue(ageGroupEnum, "Youth") should be(true)
-    Util.isValidEnumValue(ageGroupEnum, "Adult") should be(true)
-    Util.isValidEnumValue(ageGroupEnum, "foobar") should be(false)
+    Util.isValidEnumValue(visibilityEnum, "user") should be(true)
+    Util.isValidEnumValue(visibilityEnum, "organization") should be(true)
+    Util.isValidEnumValue(visibilityEnum, "foobar") should be(false)
   }
 
   it("assertValidEnumValue") {
-    Util.assertValidEnumValue(ageGroupEnum, "Youth")
-    Util.assertValidEnumValue(ageGroupEnum, "Adult")
+    Util.assertValidEnumValue(visibilityEnum, "user")
+    Util.assertValidEnumValue(visibilityEnum, "organization")
     intercept[IllegalArgumentException] {
-      Util.assertValidEnumValue(ageGroupEnum, "foobar")
-    }.getMessage should be("requirement failed: Enum[age_group] does not have a value[foobar]. Valid values are: Youth, Adult")
+      Util.assertValidEnumValue(visibilityEnum, "foobar")
+    }.getMessage should be("requirement failed: Enum[visibility] does not have a value[foobar]. Valid values are: User, Organization")
   }
 
 }

@@ -8,7 +8,7 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
 
-  private lazy val service = TestHelper.parseFile("../reference-api/api.json").serviceDescription.get
+  private lazy val service = TestHelper.parseFile("reference-api/api.json").serviceDescription.get
   private lazy val ssd = new ScalaServiceDescription(service)
 
   private val play2Util = GeneratorUtil(new ScalaClientMethodConfigs.Play {
@@ -71,7 +71,7 @@ val queryParameters = optionalMessages.map("optional_messages" -> _) ++
   }
 
   describe("with reference-api service") {
-    lazy val service = TestHelper.parseFile(s"../reference-api/api.json").serviceDescription.get
+    lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
 
     it("supports optional seq  query parameters") {
       val operation = ssd.resources.find(_.model.name == "User").get.operations.find(op => op.method == "GET" && op.path == "/users").get
