@@ -107,6 +107,8 @@ targets = [Target.new('ning_1_8', ScalaTester.new("src/main/scala"), ['ning_1_8_
            Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client', 'play_2_x_json', 'scala_models']),
            Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
 
+targets = [Target.new('ruby', RubyTester.new, ['ruby_client'])]
+
 def get_code(client, generators, org, service, target)
   generator = generators[target]
   if generator.nil?

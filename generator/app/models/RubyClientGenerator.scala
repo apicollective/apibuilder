@@ -292,24 +292,25 @@ case class RubyClientGenerator(service: ServiceDescription) {
               }
 
               case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
-                requestBuilder.append(s".with_json(${ti.varName}.to_hash.to_json)")
+                requestBuilder.append(s".with_json(${ti.varName}.to_json)")
               }
               case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
-                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash.to_json })")
+                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_json })")
               }
               case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
                 requestBuilder.append(s".with_json(${ti.varName}.inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : o[1].to_hash; hash }).to_json")
               }
 
               case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
-                requestBuilder.append(s".with_json(${ti.varName}.to_hash.to_json)")
+                requestBuilder.append(s".with_json(${ti.varName}.to_json)")
               }
               case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
-                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash.to_json })")
+                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_json })")
               }
               case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
                 requestBuilder.append(s".with_json(${ti.varName}.inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : o[1].to_hash; hash }).to_json")
               }
+
               case TypeInstance(Container.UNDEFINED(container), _) => {
                 sys.error(s"Unsupported container[$container]")
               }
@@ -386,33 +387,37 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
     sb.append("      end\n")
 
+    sb.append("      def to_json")
+    sb.append("        JSON.dump(to_hash)")
+    sb.append("       end\n")
+
     sb.append("      def to_hash")
     sb.append("        {")
     sb.append(
       model.fields.map { field =>
         val nullable = field.`type` match {
           case TypeInstance(_, Type(TypeKind.Primitive, name)) => {
-            s":${field.name} => ${field.name}"
+            field.name
           }
 
           case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
-            s":${field.name} => ${field.name}.to_hash"
+            s"${field.name}.to_hash"
           }
           case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
-            s":${field.name} => ${field.name}.map(&:to_hash)"
+            s"${field.name}.map(&:to_hash)"
           }
           case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
-            s":${field.name} => ${field.name}.inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].to_hash; h }"
+            s"${field.name}.inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].to_hash; h }"
           }
 
           case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
-            s":${field.name} => ${field.name}.value"
+            s"${field.name}.value"
           }
           case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
-            s":${field.name} => ${field.name}.map(&:value)"
+            s"${field.name}.map(&:value)"
           }
           case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
-            s":${field.name} => ${field.name}.inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].value; h }"
+            s"${field.name}.inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].value; h }"
           }
         }
 
@@ -516,30 +521,30 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
       case Some(className) => {
         val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
-        s"HttpClient::Preconditions.$assertMethod($fieldName, ${arg.value}, $className)"
+        s"HttpClient::Preconditions.$assertMethod('$fieldName', ${arg.value}, $className)"
       }
     }
   }
 
   private def parseArgument(
-    name: String,
+    fieldName: String,
     ti: TypeInstance,
     required: Boolean,
     default: Option[String]
   ): String = {
     ti match {
       case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
-        parseArgumentPrimitive(name, "opts.delete(:$name)", name, required, default)
+        parseArgumentPrimitive(fieldName, s"opts.delete(:$name)", name, required, default)
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Primitive, name)) => {
         s"opts.delete(:$name).map { |v| " +
-        parseArgumentPrimitive(name, "v", name, required, default) +
+        parseArgumentPrimitive(fieldName, "v", name, required, default) +
         "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Primitive, name)) => {
-        s"opts.delete(:$name).inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(name, "d[1]", name, required, default) + "; h }"
+        s"opts.delete(:$name).inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
@@ -549,17 +554,17 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:name) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el)" + "}"
+        s"(opts.delete(:name) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:name) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1]); h" + "}"
+        s"(opts.delete(:name) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1])); h" + "}"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        s"opts[:$name].nil? ? nil : (opts[:$name].is_a?($klass) ? opts.delete(:$name) : $klass.apply(opts.delete(:$name))"
+        s"opts[:$name].nil? ? nil : (opts[:$name].is_a?($klass) ? opts.delete(:$name) : $klass.apply(opts.delete(:$name)))"
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
