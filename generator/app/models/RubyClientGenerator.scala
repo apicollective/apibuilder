@@ -363,17 +363,21 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.append("        {")
     sb.append(
       model.fields.map { field =>
-        field.datatype match {
-          case Type(TypeKind.Primitive, _, _) => s":${field.name} => ${field.name}"
+        val nullable = field.datatype match {
+          case Type(TypeKind.Primitive, _, _) => field.name
           case Type(TypeKind.Model, _, _) => {
             if (field.datatype.multiple) {
-              s":${field.name} => ${field.name}.map(&:to_hash)"
+              s"${field.name}.map(&:to_hash)"
             } else {
-              s":${field.name} => ${field.name}.to_hash"
+              s"${field.name}.to_hash"
             }
           }
           case Type(TypeKind.Enum, _, _) => s":${field.name} => ${field.name}.value"
         }
+
+        val value = if (field.required) nullable else s"${field.name}.nil? ? nil : ${nullable}"
+
+        s":${field.name} => ${value}"
       }.mkString("            ", ",\n            ", "")
     )
     sb.append("        }")
