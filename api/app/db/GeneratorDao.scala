@@ -193,7 +193,6 @@ object GeneratorDao {
         val visibility = Visibility(row[String]("visibility"))
         val ownerGuid = row[UUID]("user_guid")
         val isEnabled = row[Option[Boolean]]("enabled")
-        println("genGuid=" + genGuid + " isEnabled=" + isEnabled)
         Generator(
           guid = genGuid,
           key = row[String]("key"),
