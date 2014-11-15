@@ -4,7 +4,7 @@ import com.gilt.apidocgenerator.models._
 import core._
 import lib.Primitives
 import lib.Text._
-import core.generator.{GeneratorUtil, CodeGenerator, ScalaUtil}
+import generator.{GeneratorUtil, CodeGenerator, ScalaUtil}
 import scala.collection.mutable.ListBuffer
 
 object RubyUtil {

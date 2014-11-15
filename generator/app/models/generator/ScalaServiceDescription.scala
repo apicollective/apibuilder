@@ -1,4 +1,4 @@
-package core.generator
+package generator
 
 import lib.Primitives
 import com.gilt.apidocgenerator.models._

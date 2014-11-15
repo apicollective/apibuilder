@@ -3,7 +3,7 @@ package models
 import com.gilt.apidocgenerator.models.ServiceDescription
 import core._
 import lib.Text._
-import core.generator.{ScalaClientMethodGenerator, ScalaServiceDescription, CodeGenerator, ScalaClientMethodConfigs, ScalaClientMethodConfig}
+import generator.{ScalaClientMethodGenerator, ScalaServiceDescription, CodeGenerator, ScalaClientMethodConfigs, ScalaClientMethodConfig}
 
 case class PlayFrameworkVersion(
   name: String,

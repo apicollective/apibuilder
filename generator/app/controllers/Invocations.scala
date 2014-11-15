@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.apidocgenerator.models.json._
 import com.gilt.apidocgenerator.models.{Invocation, Generator, ServiceDescription}
-import core.generator.{CodeGenTarget, CodeGenerator}
+import generator.{CodeGenTarget, CodeGenerator}
 import lib.Validation
 import play.api.libs.json._
 import play.api.mvc._

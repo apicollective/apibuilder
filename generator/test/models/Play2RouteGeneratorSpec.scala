@@ -2,7 +2,7 @@ package models
 
 import lib.Primitives
 import com.gilt.apidocgenerator.models.{Container, Operation, Resource, ServiceDescription, Type, TypeKind, TypeInstance}
-import core.generator.ScalaServiceDescription
+import generator.ScalaServiceDescription
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {

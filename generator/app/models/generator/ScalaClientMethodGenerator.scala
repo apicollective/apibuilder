@@ -1,4 +1,4 @@
-package core.generator
+package generator
 
 case class ScalaClientMethodGenerator(
   config: ScalaClientMethodConfig,

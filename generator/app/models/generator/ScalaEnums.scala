@@ -1,4 +1,4 @@
-package core.generator
+package generator
 
 import lib.Text
 

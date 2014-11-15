@@ -1,7 +1,5 @@
 @(user: Option[com.gilt.apidoc.models.User])
 
-@import core.generator.CodeGenTarget
-
 @doc.main(user, Some("Clients")) {
 
   <p>
@@ -56,7 +54,7 @@
 
     <tbody>
 
-      core.generator.CodeGenTarget.All.map { target =>
+      generator.CodeGenTarget.All.map { target =>
         <tr>
           <td>target.status</td>
           <td>target.key</td>

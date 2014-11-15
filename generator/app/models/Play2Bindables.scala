@@ -1,7 +1,7 @@
 package models
 
 import lib.Text
-import core.generator.{ScalaEnum, ScalaServiceDescription}
+import generator.{ScalaEnum, ScalaServiceDescription}
 
 object Play2Bindables {
 

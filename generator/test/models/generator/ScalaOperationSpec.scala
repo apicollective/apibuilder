@@ -1,5 +1,7 @@
-package core.generator
+package generator
 
+import models.TestHelper
+import lib.Primitives
 import com.gilt.apidocgenerator.models._
 import core._
 import org.scalatest._

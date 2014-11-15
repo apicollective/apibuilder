@@ -1,4 +1,4 @@
-package core.generator
+package generator
 
 import com.gilt.apidocgenerator.models.ServiceDescription
 import core._

@@ -2,7 +2,7 @@ package models
 
 import com.gilt.apidocgenerator.models.Container
 import lib.Text._
-import core.generator.ScalaModel
+import generator.ScalaModel
 
 case class Play2Json(serviceName: String) {
 

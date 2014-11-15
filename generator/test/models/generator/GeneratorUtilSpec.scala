@@ -1,4 +1,4 @@
-package core.generator
+package generator
 
 import org.scalatest.{ ShouldMatchers, FunSpec }
 

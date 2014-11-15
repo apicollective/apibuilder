@@ -1,7 +1,6 @@
 package controllers
 
-import core.{ Review, Role }
-import lib.{ Pagination, PaginatedCollection }
+import lib.{ Pagination, PaginatedCollection, Review, Role }
 import com.gilt.apidoc.models.{ Organization, User }
 import models._
 import play.api._

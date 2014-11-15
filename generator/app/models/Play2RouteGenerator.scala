@@ -3,7 +3,7 @@ package models
 import lib.Primitives
 import com.gilt.apidocgenerator.models._
 import core._
-import core.generator.{ScalaDataType, GeneratorUtil, ScalaServiceDescription, CodeGenerator}
+import generator.{ScalaDataType, GeneratorUtil, ScalaServiceDescription, CodeGenerator}
 
 object Play2RouteGenerator extends CodeGenerator {
 

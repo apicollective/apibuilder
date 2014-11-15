@@ -1,6 +1,6 @@
 package models
 
-import core.generator.{ScalaDataType, ScalaServiceDescription, ScalaClientMethodGenerator, ScalaClientMethodConfigs}
+import generator.{ScalaDataType, ScalaServiceDescription, ScalaClientMethodGenerator, ScalaClientMethodConfigs}
 import core._
 import org.scalatest.{ShouldMatchers, FunSpec}
 
