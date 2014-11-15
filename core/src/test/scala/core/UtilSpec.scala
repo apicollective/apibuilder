@@ -43,7 +43,7 @@ class UtilSpec extends FunSpec with Matchers {
     Util.assertValidEnumValue(visibilityEnum, "organization")
     intercept[IllegalArgumentException] {
       Util.assertValidEnumValue(visibilityEnum, "foobar")
-    }.getMessage should be("requirement failed: Enum[visibility] does not have a value[foobar]. Valid values are: User, Organization")
+    }.getMessage should be("requirement failed: Enum[visibility] does not have a value[foobar]. Valid values are: user, organization, public")
   }
 
 }
