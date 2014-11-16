@@ -695,13 +695,17 @@ case class RubyClientGenerator(service: ServiceDescription) {
     name: String
   ): String = {
     val varName = qualifiedClassName(name)
-    val code = s" { |hash| $varName.new(hash) }"
+    val mapSingleObject = s" { |hash| $varName.new(hash) }"
     container match {
-      case Container.Singleton => code
-      case Container.List => ".map" + code
-      //case Container.Map => {
-        // TODO: Finish map
-      //}
+      case Container.Singleton => {
+        mapSingleObject
+      }
+      case Container.List => {
+        ".map" + mapSingleObject
+      }
+      case Container.Map => {
+        "inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : $varName.new(hash); hash }"
+      }
       case Container.UNDEFINED(container) => {
         sys.error(s"Invalid container[$container]")
       }
