@@ -214,7 +214,10 @@ case class RubyClientGenerator(service: ServiceDescription) {
             sys.error(s"Could not find path parameter named[$varName]")
           }
           param.`type` match {
-            case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => asString(RubyUtil.toVariable(varName), name)
+            case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
+              val code = asString(RubyUtil.toVariable(varName), name)
+              s"#{$code}"
+            }
             case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => sys.error("Models cannot be in the path")
             case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => s"#{${param.name}.value}"
             case TypeInstance(Container.List, _) => sys.error("Cannot have lists in the path")
