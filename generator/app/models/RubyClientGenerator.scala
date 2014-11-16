@@ -441,7 +441,6 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
   case class Argument(className: Option[String] = None, value: String)
 
-  // TODO: Check optional/required. Assert class
   private def parseArgumentPrimitive(
     fieldName: String,
     value: String,
@@ -549,7 +548,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"opts[:$name].nil? ? nil : (opts[:$name].is_a?($klass) ? opts.delete(:$name) : $klass.new(opts.delete(:$name))"
+        s"opts[:$name].nil? ? nil : (opts[:$name].is_a?($klass) ? opts.delete(:$name) : $klass.new(opts.delete(:$name)))"
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {

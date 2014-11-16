@@ -9,8 +9,8 @@ if service_uri.to_s.strip == "" || token.to_s.strip == "" || user_guid.to_s == "
   raise "service uri, token and user_guid required"
 end
 
-orgs = ['gilt'] # ['gilt']
-services = ['delivery-window']  # ['apidoc']
+orgs = [] # ['gilt']
+services = []  # ['apidoc']
 services_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }
