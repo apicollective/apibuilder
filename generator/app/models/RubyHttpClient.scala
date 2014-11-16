@@ -253,6 +253,20 @@ require 'bigdecimal'
         end
       end
 
+      def Preconditions.assert_boolean(field_name, value)
+        Preconditions.check_not_nil('field_name', field_name)
+        Preconditions.check_not_nil('value', value, "Value for %s cannot be nil. Expected an instance of TrueClass or FalseClass" % field_name)
+        Preconditions.check_state(value.is_a?(TrueClass) || value.is_a?(FalseClass),
+                                  "Value for #{field_name} is of type[#{value.class}] - class[TrueClass or FalseClass] is required. value[#{value.inspect.to_s}]")
+        value
+      end
+
+      def Preconditions.assert_boolean_or_nil(field_name, value)
+        if !value.nil?
+          Preconditions.assert_boolean(field_name, value)
+        end
+      end
+
       def Preconditions.assert_collection_of_class(field_name, values, klass)
         Preconditions.assert_class(field_name, values, Array)
         values.each { |v| Preconditions.assert_class(field_name, v, klass) }

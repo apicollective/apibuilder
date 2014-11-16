@@ -454,23 +454,10 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.mkString("\n")
   }
 
-  private def withDefault(
-    code: String,
-    default: Option[String],
-    method: Option[String] = None
-  ) = {
-    val result = default match {
-      case None => code
-      case Some(dv) => {
-        s"$code || $dv"
-      }
-    }
-
-    method match {
-      case None => result
-      case Some(m) => s"$m($result)"
-    }
-  }
+  private def withHelper(
+    method: String,
+    code: String
+  ) = s"$method($code)"
 
   private def parseArgumentPrimitive(
     fieldName: String,
@@ -483,32 +470,24 @@ case class RubyClientGenerator(service: ServiceDescription) {
       sys.error("Invalid primitive[$ptName]")
     }
     val arg = pt match {
-      case Primitives.String => {
-        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)))
-      }
-
-      case Primitives.Integer | Primitives.Double | Primitives.Long => {
-        withDefault(value, default)
-      }
-
-      case Primitives.Boolean => {
-        withDefault(value, default)
+      case Primitives.String | Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean => {
+        value
       }
 
       case Primitives.DateIso8601 => {
-        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)), method = Some("HttpClient::Helper.to_date_iso8601"))
+        withHelper("HttpClient::Helper.to_date_iso8601", value)
       }
 
       case Primitives.DateTimeIso8601 => {
-        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)), method = Some("HttpClient::Helper.to_date_time_iso8601"))
+        withHelper("HttpClient::Helper.to_date_time_iso8601", value)
       }
 
       case Primitives.Uuid => {
-        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)), method = Some("HttpClient::Helper.to_uuid"))
+        withHelper("HttpClient::Helper.to_uuid", value)
       }
 
       case Primitives.Decimal => {
-        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)), method = Some("HttpClient::Helper.to_big_decimal"))
+        withHelper("HttpClient::Helper.to_big_decimal", value)
       }
 
       case Primitives.Unit => {
@@ -516,13 +495,18 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
     }
 
-    pt match {
-      case Primitives.Boolean => {
-        arg
+    val mustBeSpecified = required && default.isEmpty
+
+    (pt, mustBeSpecified) match {
+      case (Primitives.Boolean, true) => {
+        s"HttpClient::Preconditions.assert_boolean('$fieldName', $arg)"
       }
-      case _ => {
+      case (Primitives.Boolean, false) => {
+        s"HttpClient::Preconditions.assert_boolean_or_nil('$fieldName', $arg)"
+      }
+      case (_, req) => {
         val className = rubyClass(pt)
-        val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
+        val assertMethod = if (req) { "assert_class" } else { "assert_class_or_nil" }
         s"HttpClient::Preconditions.$assertMethod('$fieldName', $arg, $className)"
       }
     }
@@ -536,47 +520,47 @@ case class RubyClientGenerator(service: ServiceDescription) {
   ): String = {
     ti match {
       case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
-        parseArgumentPrimitive(fieldName, s"opts.delete(:$name)", name, required, default)
+        parseArgumentPrimitive(fieldName, s"opts.delete(:$fieldName)", name, required, default)
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Primitive, name)) => {
-        s"opts.delete(:$name).map { |v| " +
+        s"opts.delete(:$fieldName).map { |v| " +
         parseArgumentPrimitive(fieldName, "v", name, required, default) +
         "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Primitive, name)) => {
-        s"opts.delete(:$name).inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
+        s"opts.delete(:$fieldName).inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"opts[:$name].nil? ? nil : (opts[:$name].is_a?($klass) ? opts.delete(:$name) : $klass.new(opts.delete(:$name)))"
+        s"opts[:$fieldName].nil? ? nil : (opts[:$fieldName].is_a?($klass) ? opts.delete(:$fieldName) : $klass.new(opts.delete(:$fieldName)))"
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:name) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
+        s"(opts.delete(:$fieldName) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:name) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1])); h" + "}"
+        s"(opts.delete(:$fieldName) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1])); h" + "}"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        s"opts[:$name].nil? ? nil : (opts[:$name].is_a?($klass) ? opts.delete(:$name) : $klass.apply(opts.delete(:$name)))"
+        s"opts[:$fieldName].nil? ? nil : (opts[:$fieldName].is_a?($klass) ? opts.delete(:$fieldName) : $klass.apply(opts.delete(:$fieldName)))"
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:name) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
+        s"(opts.delete(:$fieldName) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:name) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
+        s"(opts.delete(:$fieldName) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
       }
     }
   }
