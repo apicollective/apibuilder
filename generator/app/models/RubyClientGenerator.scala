@@ -29,6 +29,16 @@ object RubyUtil {
    lib.Text.initLowerCase(lib.Text.camelCaseToUnderscore(toClassName(name, multiple)))
   }
 
+  def wrapInQuotes(value: String): String = {
+    if (value.indexOf("'") >= 0) {
+      s"'$value'"
+    } else if (value.indexOf("\"") >= 0) {
+      s""""$value""""
+    } else {
+      sys.error("TODO: Support quoting quotes")
+    }
+  }
+
 }
 
 object RubyClientGenerator extends CodeGenerator {
@@ -288,7 +298,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
             body match {
               case TypeInstance(_, Type(TypeKind.Primitive, name)) => {
-                requestBuilder.append(".with_body(${ti.varName})")
+                requestBuilder.append(s".with_body(${ti.varName})")
               }
 
               case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
@@ -434,12 +444,23 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.mkString("\n")
   }
 
-  private def withDefault(code: String, default: Option[String]) = default match {
-    case None => code
-    case Some(dv) => s"$code || $dv"
-  }
+  private def withDefault(
+    code: String,
+    default: Option[String],
+    method: Option[String] = None
+  ) = {
+    val result = default match {
+      case None => code
+      case Some(dv) => {
+        s"$code || $dv"
+      }
+    }
 
-  case class Argument(className: Option[String] = None, value: String)
+    method match {
+      case None => result
+      case Some(m) => s"$m($result)"
+    }
+  }
 
   private def parseArgumentPrimitive(
     fieldName: String,
@@ -448,65 +469,36 @@ case class RubyClientGenerator(service: ServiceDescription) {
     required: Boolean,
     default: Option[String]
   ): String = {
-    val arg = Primitives(ptName).getOrElse {
+    val pt = Primitives(ptName).getOrElse {
       sys.error("Invalid primitive[$ptName]")
-    } match {
+    }
+    val arg = pt match {
       case Primitives.String => {
-        Argument(
-          Some("String"),
-          withDefault(value, default.map(d => "\'$v\'"))
-        )
+        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)))
       }
 
       case Primitives.Integer | Primitives.Double | Primitives.Long => {
-        Argument(
-          Some("Integer"),
-          withDefault(value, default)
-        )
+        withDefault(value, default)
       }
 
       case Primitives.Boolean => {
-        Argument(
-          value = s"HttpClient::Helper.to_boolean(" +
-          withDefault(value, default.map(d => "\'$v\'")) +
-          ")"
-        )
+        withDefault(value, default)
       }
 
       case Primitives.DateIso8601 => {
-        Argument(
-          Some("String"),
-          s"HttpClient::Helper.to_date_iso8601(" +
-          withDefault(value, default.map(v => s"\'$v\')")) +
-          ")"
-        )
+        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)), method = Some("HttpClient::Helper.to_date_iso8601"))
       }
 
       case Primitives.DateTimeIso8601 => {
-        Argument(
-          Some("String"),
-          s"HttpClient::Helper.to_date_time_iso8601(" +
-          withDefault(value, default.map(v => s"\'$v\')")) +
-          ")"
-        )
+        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)), method = Some("HttpClient::Helper.to_date_time_iso8601"))
       }
 
       case Primitives.Uuid => {
-        Argument(
-          Some("String"),
-          s"HttpClient::Helper.to_uuid(" +
-          withDefault(value, default.map(d => "\'$v\'")) +
-          ")"
-        )
+        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)), method = Some("HttpClient::Helper.to_uuid"))
       }
 
       case Primitives.Decimal => {
-        Argument(
-          Some("BigDecimal"),
-          s"HttpClient::Helper.to_big_decimal(" +
-          withDefault(value, default.map(d => "\'$v\'")) +
-          ")"
-        )
+        withDefault(value, default.map(RubyUtil.wrapInQuotes(_)), method = Some("HttpClient::Helper.to_big_decimal"))
       }
 
       case Primitives.Unit => {
@@ -514,13 +506,14 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
     }
 
-    arg.className match {
-      case None => {
-        arg.value
+    pt match {
+      case Primitives.Boolean => {
+        arg
       }
-      case Some(className) => {
+      case _ => {
+        val className = rubyClass(pt)
         val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
-        s"HttpClient::Preconditions.$assertMethod('$fieldName', ${arg.value}, $className)"
+        s"HttpClient::Preconditions.$assertMethod('$fieldName', $arg, $className)"
       }
     }
   }
@@ -621,76 +614,6 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
 
     s"HttpClient::Helper.$methodName('$name', $klass.apply($value), $klass, :required => $required)"
-  }
-
-  private def parsePrimitiveArgument(name: String, container: Container, ptName: String, required: Boolean, default: Option[String]): String = {
-    val pt = Primitives(ptName).getOrElse {
-      sys.error(s"Invalid primitive[$ptName]")
-    }
-
-    val value = default match {
-      case None => s"opts.delete(:$name)"
-      case Some(defaultValue) => {
-        pt match {
-          case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
-            s"opts.delete(:$name) || \'$defaultValue\'"
-          }
-          case Primitives.Boolean => {
-            s"opts.has_key?(:$name) ? (opts.delete(:$name) ? true : false) : $defaultValue"
-          }
-          case Primitives.Decimal | Primitives.Integer | Primitives.Double | Primitives.Long => {
-            s"opts.delete(:$name) || ${default.get}"
-          }
-          case Primitives.Unit => {
-            sys.error("Cannot have a unit argument")
-          }
-        }
-      }
-    }
-
-    val multiple = container match {
-      case Container.Singleton => false
-      case Container.List => true
-      case Container.Map => {
-        sys.error("TODO: Finish map")
-      }
-      case Container.UNDEFINED(container) => {
-        sys.error(s"Invalid container[$container]")
-      }
-    }
-
-    pt match {
-      case Primitives.Decimal => {
-        s"HttpClient::Helper.to_big_decimal('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Primitives.Uuid => {
-        s"HttpClient::Helper.to_uuid('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Primitives.DateIso8601 => {
-        s"HttpClient::Helper.to_date_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Primitives.DateTimeIso8601 => {
-        s"HttpClient::Helper.to_date_time_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Primitives.Boolean => {
-        s"HttpClient::Helper.to_boolean('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Primitives.Double | Primitives.Integer | Primitives.Long | Primitives.String => {
-        val klass = rubyClass(pt)
-        s"HttpClient::Helper.to_klass('$name', $value, $klass, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Primitives.Unit => {
-        sys.error("Cannot have a unit type as a parameter")
-      }
-
-    }
-
   }
 
   private def rubyClass(pt: Primitives): String = {
