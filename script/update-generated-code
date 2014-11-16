@@ -15,7 +15,7 @@ def download(data)
     end
   end
   downloads.each do |tmp, path|
-    command = "diff #{tmp} #{path}"
+    command = "cp #{tmp} #{path}"
     puts command
     system(command)
   end
@@ -28,5 +28,6 @@ download("apidoc" => {
            "play_2_x_routes" => "api/conf/routes"
          },
          "apidoc-generator" => {
-           "play_2_3_client" => "generated/app/GeneratorClient.scala"
+           "play_2_3_client" => "generated/app/GeneratorClient.scala",
+           "play_2_x_routes" => "generator/conf/routes"
          })
