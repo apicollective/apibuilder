@@ -219,7 +219,10 @@ case class RubyClientGenerator(service: ServiceDescription) {
               s"#{$code}"
             }
             case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => sys.error("Models cannot be in the path")
-            case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => s"#{${param.name}.value}"
+            case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
+              val code = RubyUtil.toVariable(varName)
+              s"#{$code.value}"
+            }
             case TypeInstance(Container.List, _) => sys.error("Cannot have lists in the path")
             case TypeInstance(Container.Map, _) => sys.error("Cannot have maps in the path")
             case TypeInstance(Container.UNDEFINED(container), _) => sys.error(s"Cannot have container[$container] in the path")
@@ -642,8 +645,8 @@ case class RubyClientGenerator(service: ServiceDescription) {
     Primitives(ptName).getOrElse {
       sys.error(s"Unknown primitive type[$ptName]")
     } match {
-      case Primitives.String | Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Uuid => varName
-      case Primitives.Decimal | Primitives.Boolean => s"$varName.toString"
+      case Primitives.String => s"CGI.escape($varName)"
+      case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Uuid | Primitives.Decimal | Primitives.Boolean => varName
       case Primitives.DateIso8601 => s"$varName.strftime('%Y-%m-%d')"
       case Primitives.DateTimeIso8601 => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
       case Primitives.Unit => {
