@@ -296,6 +296,15 @@ require 'bigdecimal'
 
     module Helper
 
+      def Helper.symbolize_keys(hash)
+        Preconditions.assert_class('hash', hash, Hash)
+        new_hash = {}
+        hash.each do |k, v|
+          new_hash[k.to_sym] = v
+        end
+        new_hash
+      end
+
       def Helper.to_big_decimal(value)
         value ? BigDecimal.new(value.to_s) : nil
       end
