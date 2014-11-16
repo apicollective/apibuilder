@@ -34,9 +34,9 @@ object RubyUtil {
   }
 
   def wrapInQuotes(value: String): String = {
-    if (value.indexOf("'") >= 0) {
+    if (value.indexOf("'") < 0) {
       s"'$value'"
-    } else if (value.indexOf("\"") >= 0) {
+    } else if (value.indexOf("\"") < 0) {
       s""""$value""""
     } else {
       sys.error("TODO: Support quoting quotes")
