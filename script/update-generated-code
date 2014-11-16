@@ -15,7 +15,9 @@ def download(data)
     end
   end
   downloads.each do |tmp, path|
-    puts "diff #{tmp} #{path}"
+    command = "diff #{tmp} #{path}"
+    puts command
+    system(command)
   end
 end
 
