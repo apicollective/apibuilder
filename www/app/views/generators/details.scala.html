@@ -38,11 +38,11 @@
     </tr>
     <tr>
         <th>Owner</th>
-        <td>@tpl.owner.fold(generator.ownerGuid.toString)(owner => owner.name.fold(user.email)(name => s"${name} (${owner.email})"))</td>
+        <td>@generator.owner.name.fold(generator.owner.email)(name => s"${name} (${generator.owner.email})")</td>
     </tr>
     <tr>
         <th>Visibility</th>
-        <td>@if(tpl.user.exists(_.guid == generator.ownerGuid)){
+        <td>@if(tpl.user.exists(_.guid == generator.owner.guid)){
             <select name="visibility" class="generator-visibility-setter" data-generator-guid="@generator.guid">
                 @Visibility.all.map { vis =>
                 <option @if(vis == generator.visibility){
@@ -67,8 +67,8 @@
     </tbody>
 </table>
 <a href="@routes.Generators.list()" class="btn btn-large btn-primary btn-default">Close</a>
-@if(tpl.user.exists(_.guid == generator.ownerGuid)){
-  <a href="@routes.Generators.postRemove(generator.guid)" class="btn btn-large btn-default delete" data-confirm="Are you sure?">Remove</a>
+@if(tpl.user.exists(_.guid == generator.owner.guid)){
+  <a href="@routes.Generators.postRemove(generator.key)" class="btn btn-large btn-default delete" data-confirm="Are you sure?">Remove</a>
 }
 }
 }

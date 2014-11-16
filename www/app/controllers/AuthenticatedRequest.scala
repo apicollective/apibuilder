@@ -1,5 +1,6 @@
 package controllers
 
+import models.MainTemplate
 import com.gilt.apidoc.models.User
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
@@ -11,6 +12,13 @@ import java.util.UUID
 class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
   lazy val api = Authenticated.api(Some(user))
+
+  def mainTemplate(title: String = "apidoc"): MainTemplate = {
+    MainTemplate(
+      title = title,
+      user = Some(user)
+    )
+  }
 
 }
 

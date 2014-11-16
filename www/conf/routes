@@ -26,11 +26,11 @@ GET     /org/create                                               controllers.Or
 POST    /org/createPost                                           controllers.Organizations.createPost
 
 GET     /generators                                               controllers.Generators.list()
-POST    /generators/:guid/remove                                  controllers.Generators.postRemove(guid: java.util.UUID)
+POST    /generators/:key/remove                                   controllers.Generators.postRemove(key: String)
 GET     /generators/create                                        controllers.Generators.create()
-GET     /generators/:guid                                         controllers.Generators.getByGuid(guid: java.util.UUID)
+GET     /generators/:key                                          controllers.Generators.getByKey(key: String)
 POST    /generators/postCreate                                    controllers.Generators.postCreate()
-POST    /generators/postUpdate                                    controllers.Generators.postUpdate(generatorGuid: java.util.UUID)
+POST    /generators/postUpdate                                    controllers.Generators.postUpdate(key: String)
 
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/add                                      controllers.Members.add(orgKey: String)
