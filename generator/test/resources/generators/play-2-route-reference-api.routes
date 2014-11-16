@@ -1,11 +1,11 @@
 GET      /echoes                    controllers.Echoes.get(foo: scala.Option[String])
 # Additional parameters to GET /echoes
-#   - optional_messages: scala.Option[scala.collection.Seq[String]]
-#   - required_messages: scala.collection.Seq[String]
+#   - optional_messages: scala.Option[scala.collection.immutable.Seq[String]]
+#   - required_messages: scala.collection.immutable.Seq[String]
 GET      /echoes/arrays-only        controllers.Echoes.getArraysOnly()
 # Additional parameters to GET /echoes/arrays-only
-#   - optional_messages: scala.Option[scala.collection.Seq[String]]
-#   - required_messages: scala.collection.Seq[String]
+#   - optional_messages: scala.Option[scala.collection.immutable.Seq[String]]
+#   - required_messages: scala.collection.immutable.Seq[String]
 POST     /members                   controllers.Members.post()
 GET      /members                   controllers.Members.get(guid: scala.Option[_root_.java.util.UUID], organization_guid: scala.Option[_root_.java.util.UUID], user_guid: scala.Option[_root_.java.util.UUID], role: scala.Option[String])
 GET      /members/:organization     controllers.Members.getByOrganization(organization: _root_.java.util.UUID)
@@ -14,7 +14,7 @@ GET      /organizations             controllers.Organizations.get(guid: scala.Op
 POST     /users                     controllers.Users.post()
 GET      /users                     controllers.Users.get(guid: scala.Option[_root_.java.util.UUID], age_group: scala.Option[apidocreferenceapi.models.AgeGroup], email: scala.Option[String], active: Boolean ?= true)
 # Additional parameters to GET /users
-#   - organization_guids: scala.Option[scala.collection.Seq[Long]]
+#   - organization_guids: scala.Option[scala.collection.immutable.Seq[Long]]
 GET      /users/:age_group          controllers.Users.getByAgeGroup(age_group: apidocreferenceapi.models.AgeGroup)
 POST     /users/noop                controllers.Users.postNoop()
 GET      /:guid                     controllers.Organizations.getByGuid(guid: _root_.java.util.UUID)

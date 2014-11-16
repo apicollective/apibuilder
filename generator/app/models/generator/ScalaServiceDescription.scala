@@ -249,7 +249,7 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
   ): String = {
     val baseClassName = ssd.modelClassName(name)
     val className = if (multiple) {
-      s"scala.collection.Seq[$baseClassName]"
+      s"scala.collection.immutable.Seq[$baseClassName]"
     } else {
       baseClassName
     }

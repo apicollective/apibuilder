@@ -2,6 +2,10 @@
 
 load 'ruby_client.rb'
 
+if arg_force = (ARGV[0] == "--force")
+  ARGV.shift
+end
+
 service_uri = ARGV.shift
 token = ARGV.shift
 user_guid = ARGV.shift
@@ -9,13 +13,13 @@ if service_uri.to_s.strip == "" || token.to_s.strip == "" || user_guid.to_s == "
   raise "service uri, token and user_guid required"
 end
 
-orgs = [] # ['gilt']
-services = []  # ['apidoc']
+orgs = ['gilt'] # ['gilt']
+services = ['svc-avro-schema-registry', 'apidoc', 'delivery-window']  # ['apidoc']
 services_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }
 
-if !orgs.empty? || !services.empty?
+if !arg_force && (!orgs.empty? || !services.empty?)
   puts "Confirm you would like to limit tests to:"
   puts "  Organization: " + (orgs.empty? ? "All" : orgs.join(", "))
   puts "      Services: " + (services.empty? ? "All" : services.join(", "))
@@ -106,8 +110,6 @@ targets = [Target.new('ning_1_8', ScalaTester.new("src/main/scala"), ['ning_1_8_
            Target.new('ruby', RubyTester.new, ['ruby_client']),
            Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client', 'play_2_x_json', 'scala_models']),
            Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
-
-targets = [Target.new('ruby', RubyTester.new, ['ruby_client'])]
 
 def get_code(client, generators, org, service, target)
   generator = generators[target]

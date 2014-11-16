@@ -58,7 +58,7 @@ package referenceapi.models {
   )
 
   case class UserList(
-    users: scala.collection.Seq[User]
+    users: scala.collection.immutable.Seq[User]
   )
 
   sealed trait AgeGroup
@@ -259,7 +259,7 @@ package referenceapi.models {
     }
 
     implicit def jsonReadsReferenceApiUserList: play.api.libs.json.Reads[UserList] = {
-      (__ \ "users").readNullable[scala.collection.Seq[User]].map(_.getOrElse(Nil)).map { x => new UserList(users = x) }
+      (__ \ "users").readNullable[scala.collection.immutable.Seq[User]].map(_.getOrElse(Nil)).map { x => new UserList(users = x) }
     }
 
     implicit def jsonWritesReferenceApiUserList: play.api.libs.json.Writes[UserList] = new play.api.libs.json.Writes[UserList] {
@@ -319,16 +319,16 @@ package referenceapi {
     trait Echos {
       def get(
         foo: scala.Option[String] = None,
-        optionalMessages: scala.collection.Seq[String] = Nil,
-        requiredMessages: scala.collection.Seq[String]
+        optionalMessages: scala.collection.immutable.Seq[String] = Nil,
+        requiredMessages: scala.collection.immutable.Seq[String]
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
     }
 
     object Echos extends Echos {
       override def get(
         foo: scala.Option[String] = None,
-        optionalMessages: scala.collection.Seq[String] = Nil,
-        requiredMessages: scala.collection.Seq[String]
+        optionalMessages: scala.collection.immutable.Seq[String] = Nil,
+        requiredMessages: scala.collection.immutable.Seq[String]
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
         val query = Seq(
           foo.map("foo" -> _),
@@ -357,11 +357,11 @@ package referenceapi {
         organizationGuid: scala.Option[java.util.UUID] = None,
         userGuid: scala.Option[java.util.UUID] = None,
         role: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[referenceapi.models.Member]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[referenceapi.models.Member]]
 
       def getByOrganization(
         organization: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[referenceapi.models.Member]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[referenceapi.models.Member]]
     }
 
     object Members extends Members {
@@ -390,7 +390,7 @@ package referenceapi {
         organizationGuid: scala.Option[java.util.UUID] = None,
         userGuid: scala.Option[java.util.UUID] = None,
         role: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[referenceapi.models.Member]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[referenceapi.models.Member]] = {
         val query = Seq(
           guid.map("guid" -> _.toString),
           organizationGuid.map("organization_guid" -> _.toString),
@@ -399,16 +399,16 @@ package referenceapi {
         ).flatten
 
         GET(s"/members", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[referenceapi.models.Member]]
+          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[referenceapi.models.Member]]
           case r => throw new FailedRequest(r)
         }
       }
 
       override def getByOrganization(
         organization: java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[referenceapi.models.Member]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[referenceapi.models.Member]] = {
         GET(s"/members/${organization}").map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[referenceapi.models.Member]]
+          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[referenceapi.models.Member]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -422,7 +422,7 @@ package referenceapi {
       def get(
         guid: scala.Option[java.util.UUID] = None,
         name: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[referenceapi.models.Organization]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[referenceapi.models.Organization]]
 
       def getByGuid(
         guid: java.util.UUID
@@ -447,14 +447,14 @@ package referenceapi {
       override def get(
         guid: scala.Option[java.util.UUID] = None,
         name: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[referenceapi.models.Organization]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[referenceapi.models.Organization]] = {
         val query = Seq(
           guid.map("guid" -> _.toString),
           name.map("name" -> _)
         ).flatten
 
         GET(s"/organizations", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[referenceapi.models.Organization]]
+          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[referenceapi.models.Organization]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -481,7 +481,7 @@ package referenceapi {
         guid: scala.Option[java.util.UUID] = None,
         email: scala.Option[String] = None,
         active: scala.Option[Boolean] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[referenceapi.models.User]]
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[referenceapi.models.User]]
 
       def postNoop()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
     }
@@ -509,7 +509,7 @@ package referenceapi {
         guid: scala.Option[java.util.UUID] = None,
         email: scala.Option[String] = None,
         active: scala.Option[Boolean] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[referenceapi.models.User]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[referenceapi.models.User]] = {
         val query = Seq(
           guid.map("guid" -> _.toString),
           email.map("email" -> _),
@@ -517,7 +517,7 @@ package referenceapi {
         ).flatten
 
         GET(s"/users", query).map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[referenceapi.models.User]]
+          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[referenceapi.models.User]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -601,7 +601,7 @@ package referenceapi {
 
     case class ErrorsResponse(response: play.api.libs.ws.WSResponse) extends Exception(response.status + ": " + response.body) {
 
-      lazy val errors = response.json.as[scala.collection.Seq[referenceapi.models.Error]]
+      lazy val errors = response.json.as[scala.collection.immutable.Seq[referenceapi.models.Error]]
 
     }
   }
