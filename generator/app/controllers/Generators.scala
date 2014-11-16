@@ -8,8 +8,17 @@ import generator.{CodeGenerator, CodeGenTarget}
 
 object Generators extends Controller {
 
-  def get() = Action { request: Request[AnyContent] =>
-    Ok(Json.toJson(targets.filter(t => t.codeGenerator.isDefined && t.status != generator.Status.Proposal).map(t => t.metaData)))
+  def get(
+    key: Option[String] = None,
+    limit: Integer = 100,
+    offset: Integer = 0
+  ) = Action { request: Request[AnyContent] =>
+    Ok(
+      Json.toJson(
+        targets.
+          filter(t => t.codeGenerator.isDefined && t.status != generator.Status.Proposal).
+          filter(t => key.isEmpty || key == Some(t.metaData.key))
+          map(t => t.metaData)))
   }
 
   def getByKey(key: String) = Action { request: Request[AnyContent] =>
