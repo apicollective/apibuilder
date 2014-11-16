@@ -38,6 +38,30 @@ package com.gilt.apidoc.models {
     enabled: Boolean
   )
 
+  /**
+   * Form to create a new generator
+   */
+  case class GeneratorCreateForm(
+    key: String,
+    uri: String,
+    visibility: com.gilt.apidoc.models.Visibility
+  )
+
+  /**
+   * Form to enable or disable a generator for an organization
+   */
+  case class GeneratorOrgForm(
+    enabled: Boolean
+  )
+
+  /**
+   * Form to update a generator
+   */
+  case class GeneratorUpdateForm(
+    visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
+    enabled: scala.Option[Boolean] = None
+  )
+
   case class Healthcheck(
     status: String
   )
@@ -204,14 +228,14 @@ package com.gilt.apidoc.models {
     }
     implicit def jsonReadsApidocCode: play.api.libs.json.Reads[Code] = {
       (
-        (__ \ "generatorGuid").read[java.util.UUID] and
+        (__ \ "generator_guid").read[java.util.UUID] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApidocCode: play.api.libs.json.Writes[Code] = {
       (
-        (__ \ "generatorGuid").write[java.util.UUID] and
+        (__ \ "generator_guid").write[java.util.UUID] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
@@ -266,6 +290,46 @@ package com.gilt.apidoc.models {
         (__ \ "owner_guid").write[java.util.UUID] and
         (__ \ "enabled").write[Boolean]
       )(unlift(Generator.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorCreateForm: play.api.libs.json.Reads[GeneratorCreateForm] = {
+      (
+        (__ \ "key").read[String] and
+        (__ \ "uri").read[String] and
+        (__ \ "visibility").read[com.gilt.apidoc.models.Visibility]
+      )(GeneratorCreateForm.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorCreateForm: play.api.libs.json.Writes[GeneratorCreateForm] = {
+      (
+        (__ \ "key").write[String] and
+        (__ \ "uri").write[String] and
+        (__ \ "visibility").write[com.gilt.apidoc.models.Visibility]
+      )(unlift(GeneratorCreateForm.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorOrgForm: play.api.libs.json.Reads[GeneratorOrgForm] = {
+      (__ \ "enabled").read[Boolean].map { x => new GeneratorOrgForm(enabled = x) }
+    }
+
+    implicit def jsonWritesApidocGeneratorOrgForm: play.api.libs.json.Writes[GeneratorOrgForm] = new play.api.libs.json.Writes[GeneratorOrgForm] {
+      def writes(x: GeneratorOrgForm) = play.api.libs.json.Json.obj(
+        "enabled" -> play.api.libs.json.Json.toJson(x.enabled)
+      )
+    }
+
+    implicit def jsonReadsApidocGeneratorUpdateForm: play.api.libs.json.Reads[GeneratorUpdateForm] = {
+      (
+        (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
+        (__ \ "enabled").readNullable[Boolean]
+      )(GeneratorUpdateForm.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorUpdateForm: play.api.libs.json.Writes[GeneratorUpdateForm] = {
+      (
+        (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
+        (__ \ "enabled").write[scala.Option[Boolean]]
+      )(unlift(GeneratorUpdateForm.unapply _))
     }
 
     implicit def jsonReadsApidocHealthcheck: play.api.libs.json.Reads[Healthcheck] = {

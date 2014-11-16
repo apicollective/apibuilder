@@ -113,7 +113,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "generator_key", "type": "string" },
+                { "name": "generator", "type": "generator" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -122,7 +122,7 @@
           "description": "An apidoc generator",
           "fields": [
             { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this generator." },
-            { "name": "key", "type": "string", "description": "A unique key for the generator service" },
+            { "name": "key", "type": "string", "description": "A human readable key identifying this generator." },
             { "name": "uri", "type": "string", "description": "The uri of the generator service" },
             { "name": "name", "type": "string" },
             { "name": "language", "type": "string", "required": false },
@@ -473,7 +473,7 @@
         },
 
         "code": {
-	    "path": "/:orgKey/:serviceKey/:version/:generatorKey",
+	    "path": "/:orgKey/:serviceKey/:version/:generatorGuid",
 
             "operations": [
                 {
@@ -483,7 +483,7 @@
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
                         { "name": "serviceKey", "type": "string", "description": "The service key for which to generate code" },
                         { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
-                        { "name": "generatorKey", "type": "string", "description": "The target key for which to generate code" }
+                        { "name": "generatorGuid", "type": "uuid", "description": "The generator to invoke" }
 		    ],
                     "responses": {
                         "200": { "type": "code" },
