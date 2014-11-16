@@ -201,6 +201,11 @@
                 {
                     "method": "GET",
                     "description": "Get all available generators",
+                    "parameters": [
+                        { "name": "key", "type": "string", "description": "Filter generators with this key", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ],
                     "responses": {
                         "200": { "type": "[generator]" }
                     }
@@ -208,7 +213,7 @@
                 {
                   "method": "GET",
                   "path": "/:key",
-                  "description": "Get the meta data of this generator",
+                  "description": "Get generator with this key",
                   "responses": {
                     "200": { "type": "generator" }
                   }
