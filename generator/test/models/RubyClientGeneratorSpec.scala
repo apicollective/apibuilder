@@ -8,6 +8,22 @@ import org.scalatest.{ FunSpec, Matchers }
 
 class RubyClientGeneratorSpec extends FunSpec with Matchers {
 
+  it("RubyUtil.toVariableName") {
+    RubyUtil.toVariable("value", multiple = false) should be("value")
+    RubyUtil.toVariable("value", multiple = true) should be("values")
+
+    RubyUtil.toVariable("org_key", multiple = false) should be("org_key")
+    RubyUtil.toVariable("org_key", multiple = true) should be("org_keys")
+
+    RubyUtil.toVariable("orgKey", multiple = false) should be("org_key")
+    RubyUtil.toVariable("orgKey", multiple = true) should be("org_keys")
+  }
+
+  it("RubyUtil.wrapInQuotes") {
+    RubyUtil.wrapInQuotes("value") should be("'value'")
+    RubyUtil.wrapInQuotes("'value'") should be(""""'value'"""")
+  }
+
   it("enumName") {
     RubyClientGenerator.enumName("CANCEL_REQUEST") should be("cancel_request")
     RubyClientGenerator.enumName("cancel_request") should be("cancel_request")

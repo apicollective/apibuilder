@@ -26,7 +26,11 @@ object RubyUtil {
     name: String,
     multiple: Boolean = false
   ): String = {
-   lib.Text.initLowerCase(lib.Text.camelCaseToUnderscore(toClassName(name, multiple)))
+    val value = lib.Text.initLowerCase(lib.Text.camelCaseToUnderscore(name).toLowerCase)
+    multiple match {
+      case true => lib.Text.pluralize(value)
+      case false => value
+    }
   }
 
   def wrapInQuotes(value: String): String = {
@@ -210,7 +214,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
             sys.error(s"Could not find path parameter named[$varName]")
           }
           param.`type` match {
-            case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => asString(varName, name)
+            case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => asString(RubyUtil.toVariable(varName), name)
             case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => sys.error("Models cannot be in the path")
             case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => s"#{${param.name}.value}"
             case TypeInstance(Container.List, _) => sys.error("Cannot have lists in the path")
@@ -229,7 +233,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
       ).toLowerCase
 
       val paramStrings = ListBuffer[String]()
-      pathParams.map(_.name).foreach { n => paramStrings.append(n) }
+      pathParams.map(_.name).foreach { n => paramStrings.append(RubyUtil.toVariable(n)) }
 
       if (Util.isJsonDocumentMethod(op.method)) {
         op.body match {
@@ -262,7 +266,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
       sb.append(s"      def ${methodName}$paramCall")
 
       pathParams.foreach { param =>
-        val ti = parseTypeInstance(param.`type`)
+        val ti = parseTypeInstance(param.`type`, fieldName = Some(param.name))
         sb.append(s"        " + ti.assertMethod)
       }
 
@@ -635,7 +639,8 @@ case class RubyClientGenerator(service: ServiceDescription) {
     Primitives(ptName).getOrElse {
       sys.error(s"Unknown primitive type[$ptName]")
     } match {
-      case Primitives.String | Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean | Primitives.Decimal | Primitives.Uuid => varName
+      case Primitives.String | Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Uuid => varName
+      case Primitives.Decimal | Primitives.Boolean => s"$varName.toString"
       case Primitives.DateIso8601 => s"$varName.strftime('%Y-%m-%d')"
       case Primitives.DateTimeIso8601 => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
       case Primitives.Unit => {
@@ -651,7 +656,8 @@ case class RubyClientGenerator(service: ServiceDescription) {
   )
 
   private def parseTypeInstance(
-    instance: TypeInstance
+    instance: TypeInstance,
+    fieldName: Option[String] = None
   ): RubyTypeInfo = {
     val klass = instance.`type` match {
       case Type(TypeKind.Primitive, ptName) => Primitives(ptName) match {
@@ -664,14 +670,24 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
 
     val varName = instance match {
-      case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => RubyUtil.toDefaultVariable(multiple = false)
-      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, name)) => RubyUtil.toDefaultVariable(multiple = true)
+      case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
+        fieldName match {
+          case Some(n) => RubyUtil.toVariable(n, multiple = false)
+          case None => RubyUtil.toDefaultVariable(multiple = false)
+        }
+      }
+      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, name)) => {
+        fieldName match {
+          case Some(name) => RubyUtil.toVariable(name, multiple = true)
+          case None => RubyUtil.toDefaultVariable(multiple = true)
+        }
+      }
 
-      case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => RubyUtil.toVariable(name, multiple = false)
-      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => RubyUtil.toVariable(fieldName.getOrElse(name), multiple = false)
+      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name)) => RubyUtil.toVariable(fieldName.getOrElse(name), multiple = true)
 
-      case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => RubyUtil.toVariable(name, multiple = false)
-      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name)) => RubyUtil.toVariable(name, multiple = true)
+      case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => RubyUtil.toVariable(fieldName.getOrElse(name), multiple = false)
+      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name)) => RubyUtil.toVariable(fieldName.getOrElse(name), multiple = true)
     }
 
     val assertStub = instance.container match {
