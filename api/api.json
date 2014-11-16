@@ -473,7 +473,7 @@
         },
 
         "code": {
-	    "path": "/:orgKey/:serviceKey/:version/:generatorGuid",
+	    "path": "/:orgKey/:serviceKey/:version/:generatorKey",
 
             "operations": [
                 {
@@ -483,7 +483,7 @@
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
                         { "name": "serviceKey", "type": "string", "description": "The service key for which to generate code" },
                         { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
-                        { "name": "generatorGuid", "type": "uuid", "description": "The generator to invoke" }
+                        { "name": "generatorKey", "type": "string", "description": "The key of the generator to invoke" }
 		    ],
                     "responses": {
                         "200": { "type": "code" },

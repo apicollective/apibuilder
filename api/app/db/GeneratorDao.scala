@@ -13,12 +13,15 @@ object GeneratorDao {
     select generators.guid,
            generators.key,
            generators.created_at,
-           generators.user_guid,
            generators.uri,
            generators.visibility,
            memberships.organization_guid,
-           generator_users.enabled
+           generator_users.enabled,
+           users.guid as user_guid,
+           users.email as user_email,
+           users.name as user_name
       from generators
+      join users on users.guid = generators.owner_guid
       left join memberships on memberships.deleted_at is null
                             and memberships.user_guid = generators.user_guid
       left join generator_users on generator_users.deleted_at is null
@@ -76,7 +79,7 @@ object GeneratorDao {
       name = name,
       description = description,
       language = language,
-      ownerGuid = createdBy.guid,
+      owner = createdBy,
       enabled = true
     )
 
@@ -89,7 +92,7 @@ object GeneratorDao {
       'guid -> generator.guid,
       'key -> generator.key,
       'uri -> generator.uri,
-      'user_guid -> generator.ownerGuid,
+      'user_guid -> generator.owner.guid,
       'visibility -> visibility.toString,
       'created_by_guid -> createdBy.guid
     ).execute()
@@ -161,7 +164,9 @@ object GeneratorDao {
     user: User,
     guid: Option[UUID] = None,
     key: Option[String] = None,
-    keyAndUri: Option[(String, String)] = None
+    keyAndUri: Option[(String, String)] = None,
+    limit: Int = 50,
+    offset: Int = 0
   ): Seq[Generator] = {
     require(
       key.isEmpty || keyAndUri.isEmpty,
@@ -180,7 +185,8 @@ object GeneratorDao {
       Some(BaseQuery.trim),
       guid.map(_ => "and generators.guid = {guid}::uuid"),
       key.map(_ => "and generators.key = {key}"),
-      keyAndUri.map(_ => "and generators.key = {key} and generators.uri = {uri}")
+      keyAndUri.map(_ => "and generators.key = {key} and generators.uri = {uri}"),
+      Some(s"limit $limit offset $offset")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
@@ -196,8 +202,12 @@ object GeneratorDao {
         val genGuid = row[UUID]("guid")
         val uri = row[String]("uri")
         val visibility = Visibility(row[String]("visibility"))
-        val ownerGuid = row[UUID]("user_guid")
         val isEnabled = row[Option[Boolean]]("enabled")
+        val owner = User(
+          guid = row[UUID]("user_guid"),
+          email = row[String]("user_email"),
+          name = row[Option[String]]("user_name")
+        )
         Generator(
           guid = genGuid,
           key = row[String]("key"),
@@ -206,14 +216,14 @@ object GeneratorDao {
           description = None,
           language = None,
           visibility = visibility,
-          ownerGuid = ownerGuid,
-          enabled = isEnabled.getOrElse(false) || isOwner(user.guid, ownerGuid) || isTrusted(uri) || isOrgEnabled(visibility, genGuid, orgEnabledGenerators)
+          owner = owner,
+          enabled = isEnabled.getOrElse(false) || isOwner(user.guid, owner) || isTrusted(uri) || isOrgEnabled(visibility, genGuid, orgEnabledGenerators)
         ) -> row[Date]("created_at")
       }.toSeq.sortBy(_._2.getTime).map(_._1).distinct
     }
   }
 
-  def isOwner(userGuid: UUID, ownerGuid: UUID): Boolean = userGuid == ownerGuid
+  def isOwner(userGuid: UUID, owner: User): Boolean = userGuid == owner.guid
 
   val trustedUris = Seq("http://generator.apidoc.me", "http://generator.origin.apidoc.me", "http://localhost:9003")
 
