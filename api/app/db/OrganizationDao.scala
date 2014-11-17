@@ -116,7 +116,7 @@ object OrganizationDao {
       guid = UUID.randomUUID,
       key = UrlKey.generate(form.name),
       name = form.name,
-      domains = form.domains.getOrElse(Seq.empty).map(Domain(_)).to[collection.immutable.Seq],
+      domains = form.domains.getOrElse(Seq.empty).map(Domain(_)),
       metadata = Some(
         OrganizationMetadata(
           packageName = metadataForm.package_name
@@ -224,7 +224,7 @@ object OrganizationDao {
           guid = row[UUID]("guid"),
           name = row[String]("name"),
           key = row[String]("key"),
-          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_)).to[collection.immutable.Seq],
+          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_)),
           metadata = Some(
             OrganizationMetadata(
               visibility = row[Option[String]]("metadata_visibility").map(Visibility(_)),
