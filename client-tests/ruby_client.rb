@@ -516,7 +516,7 @@ module Apidoc
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
-        @generator = opts[:generator].nil? ? nil : (opts[:generator].is_a?(Apidoc::Models::Generator) ? opts.delete(:generator) : Apidoc::Models::Generator.new(opts.delete(:generator)))
+        @generator = HttpClient::Preconditions.assert_class('generator', opts[:generator].nil? ? nil : (opts[:generator].is_a?(Apidoc::Models::Generator) ? opts.delete(:generator) : Apidoc::Models::Generator.new(opts.delete(:generator))), Apidoc::Models::Generator)
         @source = HttpClient::Preconditions.assert_class('source', opts.delete(:source), String)
       end
 
@@ -526,7 +526,7 @@ module Apidoc
 
       def to_hash
         {
-            :generator => generator.to_hash,
+            :generator => generator.nil? ? nil : generator.to_hash,
             :source => source
         }
       end
@@ -596,8 +596,8 @@ module Apidoc
         @name = HttpClient::Preconditions.assert_class('name', opts.delete(:name), String)
         @language = HttpClient::Preconditions.assert_class_or_nil('language', opts.delete(:language), String)
         @description = HttpClient::Preconditions.assert_class_or_nil('description', opts.delete(:description), String)
-        @visibility = opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility)))
-        @owner = opts[:owner].nil? ? nil : (opts[:owner].is_a?(Apidoc::Models::User) ? opts.delete(:owner) : Apidoc::Models::User.new(opts.delete(:owner)))
+        @visibility = HttpClient::Preconditions.assert_class('visibility', opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility))), Apidoc::Models::Visibility)
+        @owner = HttpClient::Preconditions.assert_class('owner', opts[:owner].nil? ? nil : (opts[:owner].is_a?(Apidoc::Models::User) ? opts.delete(:owner) : Apidoc::Models::User.new(opts.delete(:owner))), Apidoc::Models::User)
         @enabled = HttpClient::Preconditions.assert_boolean('enabled', opts.delete(:enabled))
       end
 
@@ -611,10 +611,10 @@ module Apidoc
             :key => key,
             :uri => uri,
             :name => name,
-            :language => language.nil? ? nil : language,
-            :description => description.nil? ? nil : description,
-            :visibility => visibility.value,
-            :owner => owner.to_hash,
+            :language => language,
+            :description => description,
+            :visibility => visibility.nil? ? nil : visibility.value,
+            :owner => owner.nil? ? nil : owner.to_hash,
             :enabled => enabled
         }
       end
@@ -630,7 +630,7 @@ module Apidoc
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @key = HttpClient::Preconditions.assert_class('key', opts.delete(:key), String)
         @uri = HttpClient::Preconditions.assert_class('uri', opts.delete(:uri), String)
-        @visibility = opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility)))
+        @visibility = HttpClient::Preconditions.assert_class('visibility', opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility))), Apidoc::Models::Visibility)
       end
 
       def to_json
@@ -641,7 +641,7 @@ module Apidoc
         {
             :key => key,
             :uri => uri,
-            :visibility => visibility.value
+            :visibility => visibility.nil? ? nil : visibility.value
         }
       end
 
@@ -676,7 +676,7 @@ module Apidoc
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
-        @visibility = opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility)))
+        @visibility = HttpClient::Preconditions.assert_class_or_nil('visibility', opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility))), Apidoc::Models::Visibility)
         @enabled = HttpClient::Preconditions.assert_boolean_or_nil('enabled', opts.delete(:enabled))
       end
 
@@ -687,7 +687,7 @@ module Apidoc
       def to_hash
         {
             :visibility => visibility.nil? ? nil : visibility.value,
-            :enabled => enabled.nil? ? nil : enabled
+            :enabled => enabled
         }
       end
 
@@ -724,8 +724,8 @@ module Apidoc
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
-        @user = opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user)))
-        @organization = opts[:organization].nil? ? nil : (opts[:organization].is_a?(Apidoc::Models::Organization) ? opts.delete(:organization) : Apidoc::Models::Organization.new(opts.delete(:organization)))
+        @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user))), Apidoc::Models::User)
+        @organization = HttpClient::Preconditions.assert_class('organization', opts[:organization].nil? ? nil : (opts[:organization].is_a?(Apidoc::Models::Organization) ? opts.delete(:organization) : Apidoc::Models::Organization.new(opts.delete(:organization))), Apidoc::Models::Organization)
         @role = HttpClient::Preconditions.assert_class('role', opts.delete(:role), String)
       end
 
@@ -736,8 +736,8 @@ module Apidoc
       def to_hash
         {
             :guid => guid,
-            :user => user.to_hash,
-            :organization => organization.to_hash,
+            :user => user.nil? ? nil : user.to_hash,
+            :organization => organization.nil? ? nil : organization.to_hash,
             :role => role
         }
       end
@@ -755,8 +755,8 @@ module Apidoc
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
-        @user = opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user)))
-        @organization = opts[:organization].nil? ? nil : (opts[:organization].is_a?(Apidoc::Models::Organization) ? opts.delete(:organization) : Apidoc::Models::Organization.new(opts.delete(:organization)))
+        @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user))), Apidoc::Models::User)
+        @organization = HttpClient::Preconditions.assert_class('organization', opts[:organization].nil? ? nil : (opts[:organization].is_a?(Apidoc::Models::Organization) ? opts.delete(:organization) : Apidoc::Models::Organization.new(opts.delete(:organization))), Apidoc::Models::Organization)
         @role = HttpClient::Preconditions.assert_class('role', opts.delete(:role), String)
       end
 
@@ -767,8 +767,8 @@ module Apidoc
       def to_hash
         {
             :guid => guid,
-            :user => user.to_hash,
-            :organization => organization.to_hash,
+            :user => user.nil? ? nil : user.to_hash,
+            :organization => organization.nil? ? nil : organization.to_hash,
             :role => role
         }
       end
@@ -786,7 +786,7 @@ module Apidoc
         @key = HttpClient::Preconditions.assert_class('key', opts.delete(:key), String)
         @name = HttpClient::Preconditions.assert_class('name', opts.delete(:name), String)
         @domains = (opts.delete(:domains) || []).map { |el| el.nil? ? nil : (el.is_a?(Apidoc::Models::Domain) ? el : Apidoc::Models::Domain.new(el))}
-        @metadata = opts[:metadata].nil? ? nil : (opts[:metadata].is_a?(Apidoc::Models::OrganizationMetadata) ? opts.delete(:metadata) : Apidoc::Models::OrganizationMetadata.new(opts.delete(:metadata)))
+        @metadata = HttpClient::Preconditions.assert_class_or_nil('metadata', opts[:metadata].nil? ? nil : (opts[:metadata].is_a?(Apidoc::Models::OrganizationMetadata) ? opts.delete(:metadata) : Apidoc::Models::OrganizationMetadata.new(opts.delete(:metadata))), Apidoc::Models::OrganizationMetadata)
       end
 
       def to_json
@@ -798,7 +798,7 @@ module Apidoc
             :guid => guid,
             :key => key,
             :name => name,
-            :domains => domains.nil? ? nil : domains.map(&:to_hash),
+            :domains => (domains || []).map(&:to_hash),
             :metadata => metadata.nil? ? nil : metadata.to_hash
         }
       end
@@ -812,7 +812,7 @@ module Apidoc
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
-        @visibility = opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility)))
+        @visibility = HttpClient::Preconditions.assert_class_or_nil('visibility', opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility))), Apidoc::Models::Visibility)
         @package_name = HttpClient::Preconditions.assert_class_or_nil('package_name', opts.delete(:package_name), String)
       end
 
@@ -823,7 +823,7 @@ module Apidoc
       def to_hash
         {
             :visibility => visibility.nil? ? nil : visibility.value,
-            :package_name => package_name.nil? ? nil : package_name
+            :package_name => package_name
         }
       end
 
@@ -839,7 +839,7 @@ module Apidoc
         @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
         @name = HttpClient::Preconditions.assert_class('name', opts.delete(:name), String)
         @key = HttpClient::Preconditions.assert_class('key', opts.delete(:key), String)
-        @visibility = opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility)))
+        @visibility = HttpClient::Preconditions.assert_class('visibility', opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility))), Apidoc::Models::Visibility)
         @description = HttpClient::Preconditions.assert_class_or_nil('description', opts.delete(:description), String)
       end
 
@@ -852,8 +852,8 @@ module Apidoc
             :guid => guid,
             :name => name,
             :key => key,
-            :visibility => visibility.value,
-            :description => description.nil? ? nil : description
+            :visibility => visibility.nil? ? nil : visibility.value,
+            :description => description
         }
       end
 
@@ -879,7 +879,7 @@ module Apidoc
         {
             :guid => guid,
             :email => email,
-            :name => name.nil? ? nil : name
+            :name => name
         }
       end
 
@@ -904,7 +904,7 @@ module Apidoc
       def to_hash
         {
             :valid => valid,
-            :errors => errors.nil? ? nil : errors
+            :errors => errors
         }
       end
 
