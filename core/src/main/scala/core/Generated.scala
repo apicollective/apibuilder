@@ -98,7 +98,7 @@ package com.gilt.apidoc.models {
     guid: _root_.java.util.UUID,
     key: String,
     name: String,
-    domains: scala.collection.immutable.Seq[com.gilt.apidoc.models.Domain] = Nil,
+    domains: Seq[com.gilt.apidoc.models.Domain] = Nil,
     metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadata] = None
   )
 
@@ -136,7 +136,7 @@ package com.gilt.apidoc.models {
    */
   case class Validation(
     valid: Boolean,
-    errors: scala.collection.immutable.Seq[String] = Nil
+    errors: Seq[String] = Nil
   )
 
   /**
@@ -383,7 +383,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "key").read[String] and
         (__ \ "name").read[String] and
-        (__ \ "domains").readNullable[scala.collection.immutable.Seq[com.gilt.apidoc.models.Domain]].map(_.getOrElse(Nil)) and
+        (__ \ "domains").readNullable[Seq[com.gilt.apidoc.models.Domain]].map(_.getOrElse(Nil)) and
         (__ \ "metadata").readNullable[com.gilt.apidoc.models.OrganizationMetadata]
       )(Organization.apply _)
     }
@@ -393,7 +393,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "key").write[String] and
         (__ \ "name").write[String] and
-        (__ \ "domains").write[scala.collection.immutable.Seq[com.gilt.apidoc.models.Domain]] and
+        (__ \ "domains").write[Seq[com.gilt.apidoc.models.Domain]] and
         (__ \ "metadata").write[scala.Option[com.gilt.apidoc.models.OrganizationMetadata]]
       )(unlift(Organization.unapply _))
     }
@@ -451,14 +451,14 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApidocValidation: play.api.libs.json.Reads[Validation] = {
       (
         (__ \ "valid").read[Boolean] and
-        (__ \ "errors").readNullable[scala.collection.immutable.Seq[String]].map(_.getOrElse(Nil))
+        (__ \ "errors").readNullable[Seq[String]].map(_.getOrElse(Nil))
       )(Validation.apply _)
     }
 
     implicit def jsonWritesApidocValidation: play.api.libs.json.Writes[Validation] = {
       (
         (__ \ "valid").write[Boolean] and
-        (__ \ "errors").write[scala.collection.immutable.Seq[String]]
+        (__ \ "errors").write[Seq[String]]
       )(unlift(Validation.unapply _))
     }
 

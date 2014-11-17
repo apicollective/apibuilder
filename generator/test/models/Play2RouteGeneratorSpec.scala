@@ -121,8 +121,8 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       r.params.mkString(" ") should be("foo: scala.Option[String]")
       r.paramComments.getOrElse("") should be("""
 # Additional parameters to GET /echoes
-#   - optional_messages: scala.Option[scala.collection.immutable.Seq[String]]
-#   - required_messages: scala.collection.immutable.Seq[String]
+#   - optional_messages: scala.Option[Seq[String]]
+#   - required_messages: Seq[String]
 """.trim)
 
       TestHelper.assertEqualsFile(

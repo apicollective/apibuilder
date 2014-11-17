@@ -44,7 +44,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
       operation,
       new ScalaResource(ssd, resource))
 
-    scalaOperation.argList shouldEqual Some("models: scala.collection.immutable.Seq[apidocreferenceapi.models.Model],\n  q1: scala.Option[Double] = None\n")
+    scalaOperation.argList shouldEqual Some("models: Seq[apidocreferenceapi.models.Model],\n  q1: scala.Option[Double] = None\n")
   }
 
   it("primitive type as a parameter in the body should not use capitalize") {
@@ -75,7 +75,7 @@ class ScalaOperationSpec extends FunSpec with ShouldMatchers {
       new ScalaResource(ssd, resource)
     )
 
-    scalaOperation.argList shouldEqual Some("values: scala.collection.immutable.Seq[Int],\n  q1: scala.Option[Double] = None\n")
+    scalaOperation.argList shouldEqual Some("values: Seq[Int],\n  q1: scala.Option[Double] = None\n")
 
   }
 

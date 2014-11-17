@@ -98,7 +98,7 @@ package com.gilt.apidoc.models {
     guid: _root_.java.util.UUID,
     key: String,
     name: String,
-    domains: scala.collection.immutable.Seq[com.gilt.apidoc.models.Domain] = Nil,
+    domains: Seq[com.gilt.apidoc.models.Domain] = Nil,
     metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadata] = None
   )
 
@@ -136,7 +136,7 @@ package com.gilt.apidoc.models {
    */
   case class Validation(
     valid: Boolean,
-    errors: scala.collection.immutable.Seq[String] = Nil
+    errors: Seq[String] = Nil
   )
 
   /**
@@ -383,7 +383,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "key").read[String] and
         (__ \ "name").read[String] and
-        (__ \ "domains").readNullable[scala.collection.immutable.Seq[com.gilt.apidoc.models.Domain]].map(_.getOrElse(Nil)) and
+        (__ \ "domains").readNullable[Seq[com.gilt.apidoc.models.Domain]].map(_.getOrElse(Nil)) and
         (__ \ "metadata").readNullable[com.gilt.apidoc.models.OrganizationMetadata]
       )(Organization.apply _)
     }
@@ -393,7 +393,7 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "key").write[String] and
         (__ \ "name").write[String] and
-        (__ \ "domains").write[scala.collection.immutable.Seq[com.gilt.apidoc.models.Domain]] and
+        (__ \ "domains").write[Seq[com.gilt.apidoc.models.Domain]] and
         (__ \ "metadata").write[scala.Option[com.gilt.apidoc.models.OrganizationMetadata]]
       )(unlift(Organization.unapply _))
     }
@@ -451,14 +451,14 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApidocValidation: play.api.libs.json.Reads[Validation] = {
       (
         (__ \ "valid").read[Boolean] and
-        (__ \ "errors").readNullable[scala.collection.immutable.Seq[String]].map(_.getOrElse(Nil))
+        (__ \ "errors").readNullable[Seq[String]].map(_.getOrElse(Nil))
       )(Validation.apply _)
     }
 
     implicit def jsonWritesApidocValidation: play.api.libs.json.Writes[Validation] = {
       (
         (__ \ "valid").write[Boolean] and
-        (__ \ "errors").write[scala.collection.immutable.Seq[String]]
+        (__ \ "errors").write[Seq[String]]
       )(unlift(Validation.unapply _))
     }
 
@@ -561,7 +561,7 @@ package com.gilt.apidoc {
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Generator]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Generator]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           key.map("key" -> _),
@@ -570,7 +570,7 @@ package com.gilt.apidoc {
         ).flatten
 
         _executeRequest("GET", s"/generators", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[com.gilt.apidoc.models.Generator]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.models.Generator]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -648,7 +648,7 @@ package com.gilt.apidoc {
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.MembershipRequest]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.MembershipRequest]] = {
         val queryParameters = Seq(
           orgGuid.map("org_guid" -> _.toString),
           orgKey.map("org_key" -> _),
@@ -659,7 +659,7 @@ package com.gilt.apidoc {
         ).flatten
 
         _executeRequest("GET", s"/membership_requests", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[com.gilt.apidoc.models.MembershipRequest]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.models.MembershipRequest]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -711,7 +711,7 @@ package com.gilt.apidoc {
         role: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Membership]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Membership]] = {
         val queryParameters = Seq(
           orgGuid.map("org_guid" -> _.toString),
           orgKey.map("org_key" -> _),
@@ -722,7 +722,7 @@ package com.gilt.apidoc {
         ).flatten
 
         _executeRequest("GET", s"/memberships", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[com.gilt.apidoc.models.Membership]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.models.Membership]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -770,7 +770,7 @@ package com.gilt.apidoc {
         name: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Organization]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Organization]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           userGuid.map("user_guid" -> _.toString),
@@ -781,7 +781,7 @@ package com.gilt.apidoc {
         ).flatten
 
         _executeRequest("GET", s"/organizations", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[com.gilt.apidoc.models.Organization]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.models.Organization]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -828,7 +828,7 @@ package com.gilt.apidoc {
         key: scala.Option[String] = None,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Service]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Service]] = {
         val queryParameters = Seq(
           name.map("name" -> _),
           key.map("key" -> _),
@@ -837,7 +837,7 @@ package com.gilt.apidoc {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[com.gilt.apidoc.models.Service]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.models.Service]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -878,7 +878,7 @@ package com.gilt.apidoc {
         guid: scala.Option[_root_.java.util.UUID] = None,
         email: scala.Option[String] = None,
         token: scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.User]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.User]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           email.map("email" -> _),
@@ -886,7 +886,7 @@ package com.gilt.apidoc {
         ).flatten
 
         _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[com.gilt.apidoc.models.User]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.models.User]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -970,14 +970,14 @@ package com.gilt.apidoc {
         serviceKey: String,
         limit: scala.Option[Int] = None,
         offset: scala.Option[Int] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Version]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Version]] = {
         val queryParameters = Seq(
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[scala.collection.immutable.Seq[com.gilt.apidoc.models.Version]]
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.models.Version]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -1118,7 +1118,7 @@ package com.gilt.apidoc {
       key: scala.Option[String] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Generator]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Generator]]
 
     def getByKey(
       key: String
@@ -1154,7 +1154,7 @@ package com.gilt.apidoc {
       role: scala.Option[String] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.MembershipRequest]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.MembershipRequest]]
 
     /**
      * Create a membership request
@@ -1193,7 +1193,7 @@ package com.gilt.apidoc {
       role: scala.Option[String] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Membership]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Membership]]
 
     def getByGuid(
       guid: _root_.java.util.UUID
@@ -1224,7 +1224,7 @@ package com.gilt.apidoc {
       name: scala.Option[String] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Organization]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Organization]]
 
     /**
      * Returns the organization with this key.
@@ -1258,7 +1258,7 @@ package com.gilt.apidoc {
       key: scala.Option[String] = None,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Service]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Service]]
 
     /**
      * Updates a service.
@@ -1289,7 +1289,7 @@ package com.gilt.apidoc {
       guid: scala.Option[_root_.java.util.UUID] = None,
       email: scala.Option[String] = None,
       token: scala.Option[String] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.User]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.User]]
 
     /**
      * Returns information about the user with this guid.
@@ -1340,7 +1340,7 @@ package com.gilt.apidoc {
       serviceKey: String,
       limit: scala.Option[Int] = None,
       offset: scala.Option[Int] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.immutable.Seq[com.gilt.apidoc.models.Version]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Version]]
 
     /**
      * Retrieve a specific version of a service.
@@ -1386,7 +1386,7 @@ package com.gilt.apidoc {
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       import com.gilt.apidoc.models.json._
-      lazy val errors = response.json.as[scala.collection.immutable.Seq[com.gilt.apidoc.models.Error]]
+      lazy val errors = response.json.as[Seq[com.gilt.apidoc.models.Error]]
     }
   }
 

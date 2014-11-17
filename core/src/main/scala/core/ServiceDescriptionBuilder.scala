@@ -109,7 +109,7 @@ object EnumBuilder {
     Enum(
       name = ie.name,
       description = ie.description,
-      values = ie.values.map { iv => EnumValue(iv.name.get, iv.description) }
+      values = ie.values.map { iv => EnumValue(name = iv.name.get, description = iv.description) }.to[Seq]
     )
   }
 

@@ -249,7 +249,7 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
   ): String = {
     val baseClassName = ssd.modelClassName(name)
     val className = if (multiple) {
-      s"scala.collection.immutable.Seq[$baseClassName]"
+      s"Seq[$baseClassName]"
     } else {
       baseClassName
     }
@@ -394,7 +394,7 @@ object ScalaDataType {
 
   case class ScalaModelType(packageName: String, modelName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(modelName)}")
   case class ScalaEnumType(packageName: String, enumName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(enumName)}")
-  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.Seq[${inner.name}]")
+  case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"Seq[${inner.name}]")
   case class ScalaMapType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.Map[String, ${inner.name}]")
 
   def primitive(name: String): ScalaDataType = {

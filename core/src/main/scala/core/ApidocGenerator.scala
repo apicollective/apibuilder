@@ -2,7 +2,7 @@ package com.gilt.apidocgenerator.models {
   case class Enum(
     name: String,
     description: scala.Option[String] = None,
-    values: scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]
+    values: Seq[com.gilt.apidocgenerator.models.EnumValue]
   )
 
   case class EnumValue(
@@ -55,7 +55,7 @@ package com.gilt.apidocgenerator.models {
     name: String,
     plural: String,
     description: scala.Option[String] = None,
-    fields: scala.collection.Seq[com.gilt.apidocgenerator.models.Field]
+    fields: Seq[com.gilt.apidocgenerator.models.Field]
   )
 
   case class Operation(
@@ -64,8 +64,8 @@ package com.gilt.apidocgenerator.models {
     path: String,
     description: scala.Option[String] = None,
     body: scala.Option[com.gilt.apidocgenerator.models.TypeInstance] = None,
-    parameters: scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter],
-    responses: scala.collection.Seq[com.gilt.apidocgenerator.models.Response]
+    parameters: Seq[com.gilt.apidocgenerator.models.Parameter],
+    responses: Seq[com.gilt.apidocgenerator.models.Response]
   )
 
   case class Parameter(
@@ -83,7 +83,7 @@ package com.gilt.apidocgenerator.models {
   case class Resource(
     model: com.gilt.apidocgenerator.models.Model,
     path: String,
-    operations: scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]
+    operations: Seq[com.gilt.apidocgenerator.models.Operation]
   )
 
   case class Response(
@@ -95,10 +95,10 @@ package com.gilt.apidocgenerator.models {
    * Description of a REST service
    */
   case class ServiceDescription(
-    enums: scala.collection.Seq[com.gilt.apidocgenerator.models.Enum],
-    models: scala.collection.Seq[com.gilt.apidocgenerator.models.Model],
-    headers: scala.collection.Seq[com.gilt.apidocgenerator.models.Header],
-    resources: scala.collection.Seq[com.gilt.apidocgenerator.models.Resource],
+    enums: Seq[com.gilt.apidocgenerator.models.Enum],
+    models: Seq[com.gilt.apidocgenerator.models.Model],
+    headers: Seq[com.gilt.apidocgenerator.models.Header],
+    resources: Seq[com.gilt.apidocgenerator.models.Resource],
     baseUrl: scala.Option[String] = None,
     name: String,
     packageName: scala.Option[String] = None,
@@ -273,7 +273,7 @@ package com.gilt.apidocgenerator.models {
       (
         (__ \ "name").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "values").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]].map(_.getOrElse(Nil))
+        (__ \ "values").readNullable[Seq[com.gilt.apidocgenerator.models.EnumValue]].map(_.getOrElse(Nil))
       )(Enum.apply _)
     }
 
@@ -281,7 +281,7 @@ package com.gilt.apidocgenerator.models {
       (
         (__ \ "name").write[String] and
         (__ \ "description").write[scala.Option[String]] and
-        (__ \ "values").write[scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]]
+        (__ \ "values").write[Seq[com.gilt.apidocgenerator.models.EnumValue]]
       )(unlift(Enum.unapply _))
     }
 
@@ -392,7 +392,7 @@ package com.gilt.apidocgenerator.models {
         (__ \ "name").read[String] and
         (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "fields").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Field]].map(_.getOrElse(Nil))
+        (__ \ "fields").readNullable[Seq[com.gilt.apidocgenerator.models.Field]].map(_.getOrElse(Nil))
       )(Model.apply _)
     }
 
@@ -401,7 +401,7 @@ package com.gilt.apidocgenerator.models {
         (__ \ "name").write[String] and
         (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
-        (__ \ "fields").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Field]]
+        (__ \ "fields").write[Seq[com.gilt.apidocgenerator.models.Field]]
       )(unlift(Model.unapply _))
     }
 
@@ -412,8 +412,8 @@ package com.gilt.apidocgenerator.models {
         (__ \ "path").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "body").readNullable[com.gilt.apidocgenerator.models.TypeInstance] and
-        (__ \ "parameters").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter]].map(_.getOrElse(Nil)) and
-        (__ \ "responses").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Response]].map(_.getOrElse(Nil))
+        (__ \ "parameters").readNullable[Seq[com.gilt.apidocgenerator.models.Parameter]].map(_.getOrElse(Nil)) and
+        (__ \ "responses").readNullable[Seq[com.gilt.apidocgenerator.models.Response]].map(_.getOrElse(Nil))
       )(Operation.apply _)
     }
 
@@ -424,8 +424,8 @@ package com.gilt.apidocgenerator.models {
         (__ \ "path").write[String] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "body").write[scala.Option[com.gilt.apidocgenerator.models.TypeInstance]] and
-        (__ \ "parameters").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter]] and
-        (__ \ "responses").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Response]]
+        (__ \ "parameters").write[Seq[com.gilt.apidocgenerator.models.Parameter]] and
+        (__ \ "responses").write[Seq[com.gilt.apidocgenerator.models.Response]]
       )(unlift(Operation.unapply _))
     }
 
@@ -461,7 +461,7 @@ package com.gilt.apidocgenerator.models {
       (
         (__ \ "model").read[com.gilt.apidocgenerator.models.Model] and
         (__ \ "path").read[String] and
-        (__ \ "operations").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]].map(_.getOrElse(Nil))
+        (__ \ "operations").readNullable[Seq[com.gilt.apidocgenerator.models.Operation]].map(_.getOrElse(Nil))
       )(Resource.apply _)
     }
 
@@ -469,7 +469,7 @@ package com.gilt.apidocgenerator.models {
       (
         (__ \ "model").write[com.gilt.apidocgenerator.models.Model] and
         (__ \ "path").write[String] and
-        (__ \ "operations").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]]
+        (__ \ "operations").write[Seq[com.gilt.apidocgenerator.models.Operation]]
       )(unlift(Resource.unapply _))
     }
 
@@ -489,10 +489,10 @@ package com.gilt.apidocgenerator.models {
 
     implicit def jsonReadsApidocGeneratorServiceDescription: play.api.libs.json.Reads[ServiceDescription] = {
       (
-        (__ \ "enums").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Enum]].map(_.getOrElse(Nil)) and
-        (__ \ "models").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Model]].map(_.getOrElse(Nil)) and
-        (__ \ "headers").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Header]].map(_.getOrElse(Nil)) and
-        (__ \ "resources").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Resource]].map(_.getOrElse(Nil)) and
+        (__ \ "enums").readNullable[Seq[com.gilt.apidocgenerator.models.Enum]].map(_.getOrElse(Nil)) and
+        (__ \ "models").readNullable[Seq[com.gilt.apidocgenerator.models.Model]].map(_.getOrElse(Nil)) and
+        (__ \ "headers").readNullable[Seq[com.gilt.apidocgenerator.models.Header]].map(_.getOrElse(Nil)) and
+        (__ \ "resources").readNullable[Seq[com.gilt.apidocgenerator.models.Resource]].map(_.getOrElse(Nil)) and
         (__ \ "base_url").readNullable[String] and
         (__ \ "name").read[String] and
         (__ \ "package_name").readNullable[String] and
@@ -503,10 +503,10 @@ package com.gilt.apidocgenerator.models {
 
     implicit def jsonWritesApidocGeneratorServiceDescription: play.api.libs.json.Writes[ServiceDescription] = {
       (
-        (__ \ "enums").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Enum]] and
-        (__ \ "models").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Model]] and
-        (__ \ "headers").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Header]] and
-        (__ \ "resources").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Resource]] and
+        (__ \ "enums").write[Seq[com.gilt.apidocgenerator.models.Enum]] and
+        (__ \ "models").write[Seq[com.gilt.apidocgenerator.models.Model]] and
+        (__ \ "headers").write[Seq[com.gilt.apidocgenerator.models.Header]] and
+        (__ \ "resources").write[Seq[com.gilt.apidocgenerator.models.Resource]] and
         (__ \ "base_url").write[scala.Option[String]] and
         (__ \ "name").write[String] and
         (__ \ "package_name").write[scala.Option[String]] and
