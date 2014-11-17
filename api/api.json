@@ -128,7 +128,7 @@
             { "name": "language", "type": "string", "required": false },
             { "name": "description", "type": "string", "required": false },
             { "name": "visibility", "type": "visibility" },
-            { "name": "owner_guid", "type": "uuid" },
+            { "name": "owner", "type": "user" },
             { "name": "enabled", "type": "boolean" }
           ]
         },
