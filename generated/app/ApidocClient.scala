@@ -485,7 +485,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.6.13 http://www.apidoc.me/gilt/code/apidoc/0.6.5/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.13 http://www.apidoc.me/gilt/code/apidoc/0.6.7/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -521,7 +521,7 @@ package com.gilt.apidoc {
         version: String,
         generatorKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Code]] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${generatorKey}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(serviceKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(generatorKey, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Code])
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r if r.status == 404 => None
@@ -599,18 +599,6 @@ package com.gilt.apidoc {
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
         val payload = play.api.libs.json.Json.toJson(generatorUpdateForm)
-
-        _executeRequest("PUT", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
-          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
-        }
-      }
-
-      override def putByKey(generatorOrgForm: com.gilt.apidoc.models.GeneratorOrgForm,
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
-        val payload = play.api.libs.json.Json.toJson(generatorOrgForm)
 
         _executeRequest("PUT", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Generator]
@@ -1130,10 +1118,9 @@ package com.gilt.apidoc {
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
 
-    def putByKey(generatorOrgForm: com.gilt.apidoc.models.GeneratorOrgForm,
-      key: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
-
+    /**
+     * Deletes a generator.
+     */
     def deleteByKey(
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
