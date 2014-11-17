@@ -415,33 +415,31 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.append("        {")
     sb.append(
       model.fields.map { field =>
-        val nullable = field.`type` match {
+        val value = field.`type` match {
           case TypeInstance(_, Type(TypeKind.Primitive, name)) => {
             field.name
           }
 
           case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
-            s"${field.name}.to_hash"
+            s"${field.name}.nil? ? nil : ${field.name}.to_hash"
           }
           case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
-            s"${field.name}.map(&:to_hash)"
+            s"(${field.name} || []).map(&:to_hash)"
           }
           case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
-            s"${field.name}.inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].to_hash; h }"
+            s"(${field.name} || {}).inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].to_hash; h }"
           }
 
           case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
-            s"${field.name}.value"
+            s"${field.name}.nil? ? nil : ${field.name}.value"
           }
           case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
-            s"${field.name}.map(&:value)"
+            s"(${field.name} || []).map(&:value)"
           }
           case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
-            s"${field.name}.inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].value; h }"
+            s"(${field.name} || {}).inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].value; h }"
           }
         }
-
-        val value = if (field.required) { nullable } else { s"${field.name}.nil? ? nil : ${nullable}" }
 
         s":${field.name} => ${value}"
       }.mkString("            ", ",\n            ", "")
@@ -535,7 +533,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"opts[:$fieldName].nil? ? nil : (opts[:$fieldName].is_a?($klass) ? opts.delete(:$fieldName) : $klass.new(opts.delete(:$fieldName)))"
+        wrapWithAssertion(
+          fieldName,
+          klass,
+          required,
+          s"opts[:$fieldName].nil? ? nil : (opts[:$fieldName].is_a?($klass) ? opts.delete(:$fieldName) : $klass.new(opts.delete(:$fieldName)))"
+        )
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
@@ -550,7 +553,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        s"opts[:$fieldName].nil? ? nil : (opts[:$fieldName].is_a?($klass) ? opts.delete(:$fieldName) : $klass.apply(opts.delete(:$fieldName)))"
+        wrapWithAssertion(
+          fieldName,
+          klass,
+          required,
+          s"opts[:$fieldName].nil? ? nil : (opts[:$fieldName].is_a?($klass) ? opts.delete(:$fieldName) : $klass.apply(opts.delete(:$fieldName)))"
+        )
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
@@ -563,6 +571,16 @@ case class RubyClientGenerator(service: ServiceDescription) {
         s"(opts.delete(:$fieldName) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
       }
     }
+  }
+
+  private def wrapWithAssertion(
+    fieldName: String,
+    className: String,
+    required: Boolean,
+    code: String
+  ): String = {
+    val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
+    s"HttpClient::Preconditions.$assertMethod('$fieldName', $code, $className)"
   }
 
   private def qualifiedClassName(
