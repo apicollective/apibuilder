@@ -7,6 +7,6 @@ package error {
     message: Option[String] = None
   ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
     import apidoc.models.json._
-    lazy val errors = response.json.as[scala.collection.immutable.Seq[apidoc.models.Error]]
+    lazy val errors = response.json.as[Seq[apidoc.models.Error]]
   }
 }
