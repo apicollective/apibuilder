@@ -40,7 +40,10 @@ class SvcApiDocJson extends FunSpec with Matchers {
     service.resources.flatMap(_.operations.filter(_.method == "GET")).foreach { op =>
 
       op.parameters.find { _.name == "limit" }.map { p =>
-        p.default should be(Some("25"))
+        p.default match {
+          case None => fail("no default specified for limit param")
+          case Some(v) => v.toInt should be >= 25
+        }
       }
 
       op.parameters.find { _.name == "offset" }.map { p =>
