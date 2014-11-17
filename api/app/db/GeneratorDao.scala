@@ -21,7 +21,7 @@ object GeneratorDao {
            users.email as user_email,
            users.name as user_name
       from generators
-      join users on users.guid = generators.owner_guid
+      join users on users.guid = generators.user_guid
       left join memberships on memberships.deleted_at is null
                             and memberships.user_guid = generators.user_guid
       left join generator_users on generator_users.deleted_at is null
