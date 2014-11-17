@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.6.13 http://www.apidoc.me/gilt/code/apidoc/0.6.5/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.6.13 http://www.apidoc.me/gilt/code/apidoc/0.6.7/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -92,12 +92,12 @@ module Apidoc
       end
 
       # Generate code for a specific version of a service.
-      def get_by_org_key_and_service_key_and_version_and_generator_guid(org_key, service_key, version, generator_guid)
+      def get_by_org_key_and_service_key_and_version_and_generator_key(org_key, service_key, version, generator_key)
         HttpClient::Preconditions.assert_class('org_key', org_key, String)
         HttpClient::Preconditions.assert_class('service_key', service_key, String)
         HttpClient::Preconditions.assert_class('version', version, String)
-        HttpClient::Preconditions.assert_class('generator_guid', generator_guid, String)
-        @client.request("/#{CGI.escape(org_key)}/#{CGI.escape(service_key)}/#{CGI.escape(version)}/#{generator_guid}").get { |hash| Apidoc::Models::Code.new(hash) }
+        HttpClient::Preconditions.assert_class('generator_key', generator_key, String)
+        @client.request("/#{CGI.escape(org_key)}/#{CGI.escape(service_key)}/#{CGI.escape(version)}/#{CGI.escape(generator_key)}").get { |hash| Apidoc::Models::Code.new(hash) }
       end
 
     end
@@ -159,12 +159,7 @@ module Apidoc
         @client.request("/generators/#{CGI.escape(key)}").with_json(generator_update_form.to_json).put { |hash| Apidoc::Models::Generator.new(hash) }
       end
 
-      def put_by_key(key, generator_org_form)
-        HttpClient::Preconditions.assert_class('key', key, String)
-        HttpClient::Preconditions.assert_class('generator_org_form', generator_org_form, Apidoc::Models::GeneratorOrgForm)
-        @client.request("/generators/#{CGI.escape(key)}").with_json(generator_org_form.to_json).put { |hash| Apidoc::Models::Generator.new(hash) }
-      end
-
+      # Deletes a generator.
       def delete_by_key(key)
         HttpClient::Preconditions.assert_class('key', key, String)
         @client.request("/generators/#{CGI.escape(key)}").delete
