@@ -1,3 +1,5 @@
+require File.expand_path(File.dirname(__FILE__) + '/docker_config.rb')
+
 module Deployer
 
   class Commands
@@ -101,11 +103,6 @@ module Deployer
       system(cmd)
     end
 
-    def Util.env(name)
-      value = ENV[name].to_s
-      Preconditions.check_not_blank(value, "Missing environment variable[%s]" % name)
-    end
-
   end
 
   module Preconditions
@@ -116,6 +113,14 @@ module Deployer
       Preconditions.check_state(value.is_a?(klass),
                                 "Value is of type[#{value.class}] - class[#{klass}] is required")
       value
+    end
+
+    def Preconditions.assert_class_or_nil(value, klass)
+      if value.nil?
+        nil
+      else
+        Preconditions.assert_class(value, klass)
+      end
     end
 
     def Preconditions.check_argument(expression, error_message=nil)

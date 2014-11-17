@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
 # Example
-#   script/release-and-deploy [--tag x.y.x] api [www, ...]
+#   PROFILE=gilt-architecture ./script/release-and-deploy --tag 0.7.0 api [www, ...]
 #
 #     tag: Optional tag to deploy. If not specified, we create a new tag
 #     api: List of services to deploy. Must have at least one service.
 #          Each service must be defined in .ionblaster.json
+#     PROFILE: The name of the docker profile to use when deploying. Defaults
+#          to 'default'
 #
 # Description
 #   - Breaks up the release and deploy process into multiple steps.
@@ -42,6 +44,8 @@ else
   DOCKER_HOST = ENV['DOCKER_HOST']
 end
 
+config = Deployer::DockerConfig.new.get(ENV['PROFILE'] || Deployer::DockerConfig::DEFAULT_PROFILE)
+
 # Service matches a name from .ionblaster.json
 
 if ARGV.first == "--tag"
@@ -64,10 +68,10 @@ if new_tag
   commands.add(File.dirname(__FILE__) + "/tag")
 end
 
-commands.add("DOCKER_HOST=#{DOCKER_HOST} docker login --email=#{Deployer::Util.env('DOCKER_INDEX_EMAIL')} --username #{Deployer::Util.env('DOCKER_INDEX_USERNAME')} --password #{Deployer::Util.env('DOCKER_INDEX_PASSWORD')}",
+commands.add("DOCKER_HOST=#{DOCKER_HOST} docker login --email=#{config.email} --username #{config.username} --password #{config.password}",
              :name => "docker login")
 
-docker_image_tag = "%s/%s:%s" % [Deployer::Util.env('DOCKER_INDEX_USERNAME'), project_name, tag]
+docker_image_tag = "%s/%s:%s" % [config.account, project_name, tag]
 
 # commands.add("sbt -Dsbt.ivy.home=.ivy2 test:update", :name => "sbt update")
 commands.add("DOCKER_HOST=#{DOCKER_HOST} docker build -t #{docker_image_tag} .",
