@@ -1,7 +1,8 @@
 package models
 
-import core.Text._
-import core.generator.ScalaModel
+import com.gilt.apidocgenerator.models.Container
+import lib.Text._
+import generator.ScalaModel
 
 case class Play2Json(serviceName: String) {
 
@@ -19,12 +20,19 @@ case class Play2Json(serviceName: String) {
 
   private def fieldReaders(model: ScalaModel): String = {
     val serializations = model.fields.map { field =>
-      if (field.multiple) {
-        s"""(__ \\ "${field.originalName}").readNullable[scala.collection.Seq[${field.baseType.name}]].map(_.getOrElse(Nil))"""
-      } else if (field.isOption) {
-        s"""(__ \\ "${field.originalName}").readNullable[${field.baseType.name}]"""
-      } else {
-        s"""(__ \\ "${field.originalName}").read[${field.baseType.name}]"""
+      field.`type`.container match {
+        case Container.Singleton => {
+          if (field.isOption) {
+            s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}]"""
+          } else {
+            s"""(__ \\ "${field.originalName}").read[${field.datatype.name}]"""
+          }
+        }
+
+        case c => {
+          val nilValue = field.datatype.nilValue(field.`type`)
+          s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse($nilValue))"""
+        }
       }
     }
 
@@ -59,7 +67,21 @@ case class Play2Json(serviceName: String) {
           s"implicit def jsonWrites${serviceName}${model.name}: play.api.libs.json.Writes[${model.name}] = {",
           s"  (",
           model.fields.map { field =>
-            s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
+            if (field.isOption) {
+              field.`type`.container match {
+                case Container.Singleton => {
+                  s"""(__ \\ "${field.originalName}").write[scala.Option[${field.datatype.name}]]"""
+                }
+                case Container.List | Container.Map => {
+                  s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
+                }
+                case Container.UNDEFINED(container) => {
+                  sys.error(s"Unknown container[$container]")
+                }
+              }
+            } else {
+              s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
+            }
           }.mkString(" and\n").indent(4),
           s"  )(unlift(${model.name}.unapply _))",
           s"}"

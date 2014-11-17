@@ -1,8 +1,9 @@
 package models
 
+import lib.Primitives
 import com.gilt.apidocgenerator.models._
 import core._
-import core.generator.{ScalaDataType, GeneratorUtil, ScalaServiceDescription, CodeGenerator}
+import generator.{ScalaDataType, GeneratorUtil, ScalaServiceDescription, CodeGenerator}
 
 object Play2RouteGenerator extends CodeGenerator {
 
@@ -69,29 +70,29 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
 
   val verb = op.method
   val url = op.path
-  val params = parametersWithTypesAndDefaults(op.parameters.filter(!_.datatype.multiple).filter(_.location != ParameterLocation.Form))
+  val params = parametersWithTypesAndDefaults(op.parameters.filter(_.location != ParameterLocation.Form).filter(_.`type`.container == Container.Singleton))
 
   /**
     * Play does not have native support for providing a list as a
     * query parameter. Document these query parameters in the routes
     * file - but do not implement.
     */
-  private val parametersToComment = op.parameters.filter(_.datatype.multiple).filter(_.location != ParameterLocation.Form)
-  val paramComments = if (parametersToComment.isEmpty) {
-    None
-  } else {
-    Some(
-      Seq(
-        s"# Additional parameters to ${op.method} ${op.path}",
-        parametersToComment.map { p =>
-          "#   - " + parameterWithType(ssd, p)
-        }.mkString("\n")
-      ).mkString("\n")
-    )
+  val paramComments: Option[String] = op.parameters.filter(_.location != ParameterLocation.Form).filter(_.`type`.container != Container.Singleton) match {
+    case Nil => None
+    case paramsToComment => {
+      Some(
+        Seq(
+          s"# Additional parameters to ${op.method} ${op.path}",
+          paramsToComment.map { p =>
+            "#   - " + parameterWithType(ssd, p)
+          }.mkString("\n")
+        ).mkString("\n")
+      )
+    }
   }
 
   val method = "%s.%s".format(
-    "controllers." + Text.underscoreAndDashToInitCap(op.model.plural),
+    "controllers." +lib.Text.underscoreAndDashToInitCap(op.model.plural),
     GeneratorUtil.urlToMethodName(resource.model.plural, resource.path, op.method, url)
   )
 
@@ -100,25 +101,42 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
       Seq(
         Some(parameterWithType(ssd, param)),
         param.default.map( d =>
-          param.datatype match {
-            case Type(TypeKind.Primitive, name, _) =>
-              val datatype = Datatype.forceByName(name)
-              datatype match {
-                case Datatype.StringType | Datatype.UnitType | Datatype.DateIso8601Type | Datatype.DateTimeIso8601Type | Datatype.UuidType => {
-                  s"""?= "$d""""
-                }
-                case Datatype.IntegerType | Datatype.DoubleType | Datatype.LongType | Datatype.BooleanType | Datatype.DecimalType => {
-                  s"?= ${d}"
-                }
-                case Datatype.UnitType | Datatype.MapType => {
-                  sys.error(s"Unsupported type[${datatype}] for default values")
-                }
+          param.`type` match {
+            case TypeInstance(Container.List, _) => {
+              sys.error("Cannot set defaults for lists")
             }
-            case Type(TypeKind.Model, _, _) => {
+            case TypeInstance(Container.Map, _) => {
+              sys.error("Cannot set defaults for maps")
+            }
+            case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
+              Primitives(name) match {
+                case None => {
+                  sys.error("Unknown primitive type[$name]")
+                }
+                case Some(pt) => pt match {
+                  case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
+                    s"""?= "$d""""
+                  }
+                  case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean | Primitives.Decimal => {
+                    s"?= ${d}"
+                  }
+                  case Primitives.Unit => {
+                    sys.error(s"Unsupported type[$pt] for default values")
+                  }
+                }
+              }
+            }
+            case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
               sys.error(s"Models cannot be defaults in path parameters")
             }
-            case Type(TypeKind.Enum, _, _) => {
+            case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
               s"""?= "${d}""""
+            }
+            case TypeInstance(Container.UNDEFINED(container), _) => {
+              sys.error(s"Invalid container[$container]")
+            }
+            case TypeInstance(_, Type(TypeKind.UNDEFINED(kind), name)) => {
+              sys.error(s"Invalid typeKind[$kind] for name[$name]")
             }
           }
         )
@@ -131,30 +149,20 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
   }
 
   private def scalaDataType(ssd: ScalaServiceDescription, param: Parameter): String = {
-    param.datatype match {
-      case Type(TypeKind.Model, _, _) => {
-        sys.error("Model parameter types not supported in play routes")
+    val datatype = ssd.scalaDataType(param.`type`)
+    param.`type`.container match {
+      case Container.Singleton | Container.List | Container.Map => {
+        if (param.required) {
+          datatype.name
+        } else {
+          s"scala.Option[${datatype.name}]"
+        }
       }
-      case Type(TypeKind.Enum, enumName, _) => {
-        qualifyParam(ssd.enumClassName(enumName), param.required, param.datatype.multiple)
-      }
-      case Type(TypeKind.Primitive, n, _) => {
-        val dt = Datatype.forceByName(n)
-        val name = ScalaDataType(dt).name
-        qualifyParam(name, param.required, param.datatype.multiple)
-      }
-    }
-  }
 
-  private def qualifyParam(name: String, required: Boolean, multiple: Boolean): String = {
-    if (!required && multiple) {
-      s"Option[Seq[$name]]"
-    } else if (!required) {
-      s"Option[$name]"
-    } else if (multiple) {
-      s"Seq[$name]"
-    } else {
-      name
+      case Container.UNDEFINED(container) => {
+        sys.error(s"Invalid container[$container]")
+      }
+
     }
   }
 

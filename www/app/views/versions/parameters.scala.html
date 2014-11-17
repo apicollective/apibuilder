@@ -15,12 +15,7 @@
    @operation.parameters.map { param =>
      <tr>
        <td>@param.name</td>
-       <td>@{param.datatype match {
-             case com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Primitive, name, multiple) => datatype(core.Datatype.forceByName(name), multiple)
-             case com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Model, name, multiple) => modelTypeByName(org, service, version, sd, name, multiple)
-             case com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Enum, name, multiple) => enumType(org, service, version, name, multiple)
-           }}
-       </td>
+       <td>@typeInstance(org, service, version, sd, param.`type`)</td>
        <td>@param.location</td>
        <td>@if(param.required && param.default.isEmpty) { Yes } else { No }</td>
        <td>@param.default.getOrElse("-")</td>

@@ -1,6 +1,6 @@
 package db
 
-import org.scalatest.{ FunSpec, Matchers }
+import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
 

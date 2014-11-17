@@ -1,11 +1,9 @@
 package core
 
-import codegenerator.models._
-
+import lib.Primitives
+import com.gilt.apidocgenerator.models._
 import play.api.libs.json._
-import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
-import scala.util.Try
 
 object ServiceDescriptionBuilder {
 
@@ -31,7 +29,9 @@ object ServiceDescriptionBuilder {
     val enums = internal.enums.map(EnumBuilder(_)).sortBy(_.name.toLowerCase)
     val models = internal.models.map(ModelBuilder(enums, _)).sortBy(_.name.toLowerCase)
     val headers = internal.headers.map(HeaderBuilder(enums, _))
+
     val resources = internal.resources.map(ResourceBuilder(enums, models, _)).sortBy(_.model.plural.toLowerCase)
+
     ServiceDescription(
       enums,
       models,
@@ -83,22 +83,12 @@ object OperationBuilder {
       ParameterBuilder(enums, models, p, location)
     }
 
-    val body: Option[Type] = internal.body.map { ib =>
-      Datatype.findByName(ib.name) match {
-        case Some(dt) => Type(TypeKind.Primitive, dt.name, ib.multiple)
-        case None => {
-          models.find(_.name == ib.name) match {
-            case Some(model) => Type(TypeKind.Model, model.name, ib.multiple)
-            case None => {
-              enums.find(_.name == ib.name) match {
-                case Some(enum) => Type(TypeKind.Enum, enum.name, ib.multiple)
-                case None => {
-                  sys.error(s"Operation specifies body[$ib.name] which references an undefined datatype, model or enum")
-                }
-              }
-            }
-          }
-        }
+    val body: Option[TypeInstance] = internal.body.map { ib =>
+      TypeResolver(
+        enumNames = enums.map(_.name),
+        modelNames = models.map(_.name)
+      ).toTypeInstance(ib).getOrElse {
+        sys.error(s"Operation specifies body[${ib.name}] which references an undefined datatype, model or enum")
       }
     }
 
@@ -119,7 +109,7 @@ object EnumBuilder {
     Enum(
       name = ie.name,
       description = ie.description,
-      values = ie.values.map { iv => EnumValue(iv.name.get, iv.description) }
+      values = ie.values.map { iv => EnumValue(name = iv.name.get, description = iv.description) }.to[Seq]
     )
   }
 
@@ -128,20 +118,11 @@ object EnumBuilder {
 object HeaderBuilder {
 
   def apply(enums: Seq[Enum], ih: InternalHeader): Header = {
-    val (headertype, headervalue) = if (ih.headertype.get == Datatype.StringType.name) {
-      HeaderType.String -> None
-    } else {
-      val enum = enums.find(_.name == ih.headertype.get).getOrElse {
-        sys.error(s"Invalid header type[${ih.headertype.get}]")
-      }
-      HeaderType.Enum -> Some(enum.name)
-    }
-
     Header(
       name = ih.name.get,
-      headertype = headertype,
-      headertypeValue = headervalue,
-      multiple = ih.multiple,
+      `type` = TypeResolver(enumNames = enums.map(_.name)).toTypeInstance(ih.datatype.get).getOrElse {
+        sys.error(s"Invalid header type[${ih.datatype.get.name}]")
+      },
       required = ih.required,
       description = ih.description,
       default = ih.default
@@ -164,31 +145,15 @@ object ModelBuilder {
 object ResponseBuilder {
 
   def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResponse): Response = {
-    val typeName = internal.datatype.getOrElse {
-      sys.error("No datatype for response: " + internal)
-    }
-    val responseType = Datatype.findByName(typeName) match {
-      case None => {
-        enums.find(_.name == typeName) match {
-          case Some(enum) => {
-            Type(TypeKind.Enum, enum.name, internal.multiple)
-          }
-
-          case None => {
-            Type(TypeKind.Model, models.find(_.name == typeName).map(_.name).getOrElse {
-              sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
-            }, internal.multiple)
-          }
-        }
+    Response(
+      code = internal.code.toInt,
+      `type` = TypeResolver(
+        enumNames = enums.map(_.name),
+        modelNames = models.map(_.name)
+      ).toTypeInstance(internal.datatype.get).getOrElse {
+        sys.error("No datatype for response: " + internal)
       }
-
-      case Some(dt: Datatype) => {
-        Type(TypeKind.Primitive, dt.name, internal.multiple)
-      }
-    }
-
-    Response(code = internal.code.toInt,
-             datatype = responseType)
+    )
   }
 
 }
@@ -196,52 +161,29 @@ object ResponseBuilder {
 object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
-    val datatype = model.fields.find(_.name == name) match {
-      case None => {
-        Type(TypeKind.Primitive, Datatype.StringType.name, false)
-      }
-        
-      case Some(f: Field) => {
-        f.datatype
-      }
+    val typeInstance = model.fields.find(_.name == name).map(_.`type`).getOrElse {
+      TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString))
     }
 
     Parameter(name = name,
-              datatype = datatype,
+              `type` = typeInstance,
               location = ParameterLocation.Path,
               required = true)
   }
 
   def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
-    val typeName = internal.paramtype.getOrElse {
-      sys.error("Missing parameter type for: " + internal)
+    val resolver = TypeResolver(
+      enumNames = enums.map(_.name),
+      modelNames = models.map(_.name)
+    )
+    val typeInstance = resolver.toTypeInstance(internal.datatype.get).getOrElse {
+      sys.error("Could not resolve type for parameter: " + internal)
     }
 
-    val paramtype = Datatype.findByName(typeName) match {
-      case None => {
-        enums.find(_.name == typeName) match {
-          case Some(enum) => {
-            internal.default.map { v => FieldBuilder.assertValidDefault(Datatype.StringType, v) }
-            Type(TypeKind.Enum, enum.name, internal.multiple)
-          }
-
-          case None => {
-            assert(internal.default.isEmpty, "Can only have a default for a primitive datatype")
-            Type(TypeKind.Model, models.find(_.name == typeName).map(_.name).getOrElse {
-              sys.error(s"Param type[${typeName}] is invalid. Must be a valid primitive datatype or the name of a known model")
-            }, internal.multiple)
-          }
-        }
-      }
-
-      case Some(dt: Datatype) => {
-        internal.default.map { v => FieldBuilder.assertValidDefault(dt, v) }
-        Type(TypeKind.Primitive, dt.name, internal.multiple)
-      }
-    }
+    internal.default.map { ServiceDescriptionBuilderHelper.assertValidDefault(enums, typeInstance.`type`, _) }
 
     Parameter(name = internal.name.get,
-              datatype = paramtype,
+              `type` = typeInstance,
               location = location,
               description = internal.description,
               required = internal.required,
@@ -256,32 +198,16 @@ object ParameterBuilder {
 object FieldBuilder {
 
   def apply(enums: Seq[Enum], im: InternalModel, internal: InternalField): Field = {
-    val fieldTypeName = internal.fieldtype.getOrElse {
-      sys.error("missing field type")
+    val typeInstance = TypeResolver(
+      enumNames = enums.map(_.name)
+    ).toTypeInstance(internal.datatype.get).getOrElse {
+      TypeInstance(internal.datatype.get.container, Type(TypeKind.Model, internal.datatype.get.name))
     }
 
-    val fieldtype = Datatype.findByName(fieldTypeName) match {
-      case Some(dt: Datatype) => {
-        internal.default.map { v => assertValidDefault(dt, v) }
-        Type(TypeKind.Primitive, dt.name, internal.multiple)
-      }
-
-      case None => {
-        enums.find(_.name == fieldTypeName) match {
-          case Some(e: Enum) => {
-            internal.default.map { v => assertValidDefault(Datatype.StringType, v) }
-            Type(TypeKind.Enum, e.name, internal.multiple)
-          }
-          case None => {
-            require(internal.default.isEmpty, s"Cannot have a default for a field of type[$fieldTypeName]")
-            Type(TypeKind.Model, fieldTypeName, internal.multiple)
-          }
-        }
-      }
-    }
+    internal.default.map { ServiceDescriptionBuilderHelper.assertValidDefault(enums, typeInstance.`type`, _) }
 
     Field(name = internal.name.get,
-          datatype = fieldtype,
+          `type` = typeInstance,
           description = internal.description,
           required = internal.required,
           default = internal.default,
@@ -290,70 +216,15 @@ object FieldBuilder {
           example = internal.example)
   }
 
-  private val BooleanValues = Seq("true", "false")
+}
 
-  /**
-    * Returns true if the specified value is valid for the given
-    * datatype. False otherwise.
-    */
-  def isValid(datatype: Datatype, value: String): Boolean = {
-    Try(assertValidDefault(datatype: Datatype, value: String)).isSuccess
-  }
 
-  private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
-  private[this] val dateTimeISOFormatter = ISODateTimeFormat.dateTime()
+object ServiceDescriptionBuilderHelper {
 
-  def assertValidDefault(datatype: Datatype, value: String) {
-    datatype match {
-      case Datatype.BooleanType => {
-        if (!BooleanValues.contains(value)) {
-          sys.error(s"Invalid default[${value}] for boolean. Must be one of: ${BooleanValues.mkString(" ")}")
-        }
-      }
-
-      case Datatype.MapType => {
-        Json.parse(value).asOpt[JsObject] match {
-          case None => {
-            sys.error(s"Invalid default[${value}] for type object. Must be a valid JSON Object")
-          }
-          case Some(o) => {}
-        }
-      }
-
-      case Datatype.IntegerType => {
-        value.toInt
-      }
-
-      case Datatype.LongType => {
-        value.toLong
-      }
-
-      case Datatype.DecimalType => {
-        BigDecimal(value)
-      }
-
-      case Datatype.UnitType => {
-        value == ""
-      }
-
-      case Datatype.UuidType => {
-        UUID.fromString(value)
-      }
-
-      case Datatype.DateTimeIso8601Type => {
-        dateTimeISOParser.parseDateTime(value)
-      }
-
-      case Datatype.DateIso8601Type => {
-        dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
-      }
-
-      case Datatype.StringType => ()
-
-      case Datatype.DoubleType => value.toDouble
-
-    }
+  def assertValidDefault(enums: Seq[Enum], t: Type, value: String) {
+    TypeValidator(
+      enums = enums.map(e => TypeValidatorEnums(e.name, e.values.map(_.name)))
+    ).assertValidDefault(t, value)
   }
 
 }
-

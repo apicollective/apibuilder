@@ -12,10 +12,11 @@
             ]
         },
 
-        "header_type": {
+        "container": {
             "values": [
-                { "name": "string" },
-                { "name": "enum" }
+                { "name": "singleton" },
+                { "name": "list" },
+                { "name": "map" }
             ]
         },
 
@@ -36,14 +37,30 @@
 	    ]
 	},
 
+        "type": {
+	    "description": "Combines a type kind (e.g. a primitive) and the name of the type (e.g. a string)",
+            "fields": [
+                { "name": "typeKind", "type": "type_kind" },
+                { "name": "name", "type": "string", "description": "The name of the specific primitive type, model or enum", "example": "string" }
+            ]
+        },
+
+        "type_instance": {
+	    "description": "Used to capture the metadata about a single instance of a type - for example, a model field definition will have a type instance.",
+            "fields": [
+                { "name": "container", "type": "container" },
+                { "name": "type", "type": "type" }
+            ]
+        },
+
         "service_description": {
-            "description": "Description of a service",
+            "description": "Description of a REST service",
             "fields": [
                 { "name": "enums", "type": "[enum]" },
                 { "name": "models", "type": "[model]" },
                 { "name": "headers", "type": "[header]" },
                 { "name": "resources", "type": "[resource]" },
-                { "name": "baseUrl", "type": "string", "required": false },
+                { "name": "base_url", "type": "string", "required": false },
                 { "name": "name", "type": "string" },
                 { "name": "package_name", "type": "string", "description": "The package name when used by code generators (e.g. scala package name for the clients)", "required": false },
                 { "name": "description", "type": "string", "required": false },
@@ -78,7 +95,7 @@
         "field": {
             "fields": [
                 { "name": "name", "type": "string" },
-                { "name": "datatype", "type": "type" },
+                { "name": "type", "type": "type_instance" },
                 { "name": "description", "type": "string", "required": false },
                 { "name": "required", "type": "boolean" },
                 { "name": "default", "type": "string", "required": false },
@@ -88,22 +105,12 @@
             ]
         },
 
-        "type": {
-            "fields": [
-                { "name": "kind", "type": "type_kind" },
-                { "name": "name", "type": "string" },
-                { "name": "multiple", "type": "boolean" }
-            ]
-        },
-
         "header": {
             "fields": [
                 { "name": "name", "type": "string" },
-                { "name": "headertype", "type": "header_type" },
-                { "name": "headertype_value", "type": "string", "required": false },
+                { "name": "type", "type": "type_instance" },
                 { "name": "description", "type": "string", "required": false },
                 { "name": "required", "type": "boolean" },
-                { "name": "multiple", "type": "boolean" },
                 { "name": "default", "type": "string", "required": false }
             ]
         },
@@ -122,7 +129,7 @@
                 { "name": "method", "type": "string" },
                 { "name": "path", "type": "string" },
                 { "name": "description", "type": "string", "required": false },
-                { "name": "body", "type": "type", "required": false },
+                { "name": "body", "type": "type_instance", "required": false },
                 { "name": "parameters", "type": "[parameter]" },
                 { "name": "responses", "type": "[response]" }
             ]
@@ -131,7 +138,7 @@
         "parameter": {
             "fields": [
                 { "name": "name", "type": "string" },
-                { "name": "datatype", "type": "type" },
+                { "name": "type", "type": "type_instance" },
                 { "name": "location", "type": "parameter_location" },
                 { "name": "description", "type": "string", "required": false },
                 { "name": "required", "type": "boolean" },
@@ -145,7 +152,7 @@
         "response": {
             "fields": [
                 { "name": "code", "type": "integer" },
-                { "name": "datatype", "type": "type" }
+                { "name": "type", "type": "type_instance" }
             ]
         },
 
@@ -194,6 +201,11 @@
                 {
                     "method": "GET",
                     "description": "Get all available generators",
+                    "parameters": [
+                        { "name": "key", "type": "string", "description": "Filter generators with this key", "required": false },
+                        { "name": "limit", "type": "integer", "default": 100, "description": "The number of records to return", "minimum": 0 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ],
                     "responses": {
                         "200": { "type": "[generator]" }
                     }
@@ -201,7 +213,7 @@
                 {
                   "method": "GET",
                   "path": "/:key",
-                  "description": "Get the meta data of this generator",
+                  "description": "Get generator with this key",
                   "responses": {
                     "200": { "type": "generator" }
                   }

@@ -1,5 +1,10 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: com.gilt.apidocgenerator.models.ServiceDescription, modelName: String, isMultiple: Boolean)
+@(org: com.gilt.apidoc.models.Organization,
+  service: com.gilt.apidoc.models.Service,
+  version: String,
+  sd: com.gilt.apidocgenerator.models.ServiceDescription,
+  container: com.gilt.apidocgenerator.models.Container,
+  modelName: String)
 
 @sd.models.find { _.name == modelName }.map { model =>
-  @modelType(org, service, version, model, isMultiple)
+  @modelType(org, service, version, container, model)
 }

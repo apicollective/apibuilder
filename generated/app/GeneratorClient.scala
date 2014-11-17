@@ -2,7 +2,7 @@ package com.gilt.apidocgenerator.models {
   case class Enum(
     name: String,
     description: scala.Option[String] = None,
-    values: scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]
+    values: Seq[com.gilt.apidocgenerator.models.EnumValue]
   )
 
   case class EnumValue(
@@ -17,7 +17,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Field(
     name: String,
-    datatype: com.gilt.apidocgenerator.models.Type,
+    `type`: com.gilt.apidocgenerator.models.TypeInstance,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
@@ -38,12 +38,14 @@ package com.gilt.apidocgenerator.models {
 
   case class Header(
     name: String,
-    headertype: com.gilt.apidocgenerator.models.HeaderType,
-    headertypeValue: scala.Option[String] = None,
+    `type`: com.gilt.apidocgenerator.models.TypeInstance,
     description: scala.Option[String] = None,
     required: Boolean,
-    multiple: Boolean,
     default: scala.Option[String] = None
+  )
+
+  case class Healthcheck(
+    status: String
   )
 
   /**
@@ -57,7 +59,7 @@ package com.gilt.apidocgenerator.models {
     name: String,
     plural: String,
     description: scala.Option[String] = None,
-    fields: scala.collection.Seq[com.gilt.apidocgenerator.models.Field]
+    fields: Seq[com.gilt.apidocgenerator.models.Field]
   )
 
   case class Operation(
@@ -65,14 +67,14 @@ package com.gilt.apidocgenerator.models {
     method: String,
     path: String,
     description: scala.Option[String] = None,
-    body: scala.Option[com.gilt.apidocgenerator.models.Type] = None,
-    parameters: scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter],
-    responses: scala.collection.Seq[com.gilt.apidocgenerator.models.Response]
+    body: scala.Option[com.gilt.apidocgenerator.models.TypeInstance] = None,
+    parameters: Seq[com.gilt.apidocgenerator.models.Parameter],
+    responses: Seq[com.gilt.apidocgenerator.models.Response]
   )
 
   case class Parameter(
     name: String,
-    datatype: com.gilt.apidocgenerator.models.Type,
+    `type`: com.gilt.apidocgenerator.models.TypeInstance,
     location: com.gilt.apidocgenerator.models.ParameterLocation,
     description: scala.Option[String] = None,
     required: Boolean,
@@ -85,22 +87,22 @@ package com.gilt.apidocgenerator.models {
   case class Resource(
     model: com.gilt.apidocgenerator.models.Model,
     path: String,
-    operations: scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]
+    operations: Seq[com.gilt.apidocgenerator.models.Operation]
   )
 
   case class Response(
     code: Int,
-    datatype: com.gilt.apidocgenerator.models.Type
+    `type`: com.gilt.apidocgenerator.models.TypeInstance
   )
 
   /**
-   * Description of a service
+   * Description of a REST service
    */
   case class ServiceDescription(
-    enums: scala.collection.Seq[com.gilt.apidocgenerator.models.Enum],
-    models: scala.collection.Seq[com.gilt.apidocgenerator.models.Model],
-    headers: scala.collection.Seq[com.gilt.apidocgenerator.models.Header],
-    resources: scala.collection.Seq[com.gilt.apidocgenerator.models.Resource],
+    enums: Seq[com.gilt.apidocgenerator.models.Enum],
+    models: Seq[com.gilt.apidocgenerator.models.Model],
+    headers: Seq[com.gilt.apidocgenerator.models.Header],
+    resources: Seq[com.gilt.apidocgenerator.models.Resource],
     baseUrl: scala.Option[String] = None,
     name: String,
     packageName: scala.Option[String] = None,
@@ -108,18 +110,30 @@ package com.gilt.apidocgenerator.models {
     userAgent: scala.Option[String] = None
   )
 
+  /**
+   * Combines a type kind (e.g. a primitive) and the name of the type (e.g. a string)
+   */
   case class Type(
-    kind: com.gilt.apidocgenerator.models.TypeKind,
-    name: String,
-    multiple: Boolean
+    typeKind: com.gilt.apidocgenerator.models.TypeKind,
+    name: String
   )
 
-  sealed trait HeaderType
+  /**
+   * Used to capture the metadata about a single instance of a type - for example, a
+   * model field definition will have a type instance.
+   */
+  case class TypeInstance(
+    container: com.gilt.apidocgenerator.models.Container,
+    `type`: com.gilt.apidocgenerator.models.Type
+  )
 
-  object HeaderType {
+  sealed trait Container
 
-    case object String extends HeaderType { override def toString = "string" }
-    case object Enum extends HeaderType { override def toString = "enum" }
+  object Container {
+
+    case object Singleton extends Container { override def toString = "singleton" }
+    case object List extends Container { override def toString = "list" }
+    case object Map extends Container { override def toString = "map" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -130,21 +144,21 @@ package com.gilt.apidocgenerator.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends HeaderType
+    case class UNDEFINED(override val toString: String) extends Container
 
     /**
      * all returns a list of all the valid, known values. We use
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(String, Enum)
+    val all = Seq(Singleton, List, Map)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap
 
-    def apply(value: String): HeaderType = fromString(value).getOrElse(UNDEFINED(value))
+    def apply(value: String): Container = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): scala.Option[HeaderType] = byName.get(value)
+    def fromString(value: String): scala.Option[Container] = byName.get(value)
 
   }
 
@@ -245,9 +259,9 @@ package com.gilt.apidocgenerator.models {
       }
     }
 
-    implicit val jsonReadsApidocGeneratorEnum_HeaderType = __.read[String].map(HeaderType.apply)
-    implicit val jsonWritesApidocGeneratorEnum_HeaderType = new Writes[HeaderType] {
-      def writes(x: HeaderType) = JsString(x.toString)
+    implicit val jsonReadsApidocGeneratorEnum_Container = __.read[String].map(Container.apply)
+    implicit val jsonWritesApidocGeneratorEnum_Container = new Writes[Container] {
+      def writes(x: Container) = JsString(x.toString)
     }
 
     implicit val jsonReadsApidocGeneratorEnum_ParameterLocation = __.read[String].map(ParameterLocation.apply)
@@ -263,7 +277,7 @@ package com.gilt.apidocgenerator.models {
       (
         (__ \ "name").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "values").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]].map(_.getOrElse(Nil))
+        (__ \ "values").readNullable[Seq[com.gilt.apidocgenerator.models.EnumValue]].map(_.getOrElse(Nil))
       )(Enum.apply _)
     }
 
@@ -271,7 +285,7 @@ package com.gilt.apidocgenerator.models {
       (
         (__ \ "name").write[String] and
         (__ \ "description").write[scala.Option[String]] and
-        (__ \ "values").write[scala.collection.Seq[com.gilt.apidocgenerator.models.EnumValue]]
+        (__ \ "values").write[Seq[com.gilt.apidocgenerator.models.EnumValue]]
       )(unlift(Enum.unapply _))
     }
 
@@ -306,7 +320,7 @@ package com.gilt.apidocgenerator.models {
     implicit def jsonReadsApidocGeneratorField: play.api.libs.json.Reads[Field] = {
       (
         (__ \ "name").read[String] and
-        (__ \ "datatype").read[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "type").read[com.gilt.apidocgenerator.models.TypeInstance] and
         (__ \ "description").readNullable[String] and
         (__ \ "required").read[Boolean] and
         (__ \ "default").readNullable[String] and
@@ -319,7 +333,7 @@ package com.gilt.apidocgenerator.models {
     implicit def jsonWritesApidocGeneratorField: play.api.libs.json.Writes[Field] = {
       (
         (__ \ "name").write[String] and
-        (__ \ "datatype").write[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "type").write[com.gilt.apidocgenerator.models.TypeInstance] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "required").write[Boolean] and
         (__ \ "default").write[scala.Option[String]] and
@@ -350,11 +364,9 @@ package com.gilt.apidocgenerator.models {
     implicit def jsonReadsApidocGeneratorHeader: play.api.libs.json.Reads[Header] = {
       (
         (__ \ "name").read[String] and
-        (__ \ "headertype").read[com.gilt.apidocgenerator.models.HeaderType] and
-        (__ \ "headertype_value").readNullable[String] and
+        (__ \ "type").read[com.gilt.apidocgenerator.models.TypeInstance] and
         (__ \ "description").readNullable[String] and
         (__ \ "required").read[Boolean] and
-        (__ \ "multiple").read[Boolean] and
         (__ \ "default").readNullable[String]
       )(Header.apply _)
     }
@@ -362,13 +374,21 @@ package com.gilt.apidocgenerator.models {
     implicit def jsonWritesApidocGeneratorHeader: play.api.libs.json.Writes[Header] = {
       (
         (__ \ "name").write[String] and
-        (__ \ "headertype").write[com.gilt.apidocgenerator.models.HeaderType] and
-        (__ \ "headertype_value").write[scala.Option[String]] and
+        (__ \ "type").write[com.gilt.apidocgenerator.models.TypeInstance] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "required").write[Boolean] and
-        (__ \ "multiple").write[Boolean] and
         (__ \ "default").write[scala.Option[String]]
       )(unlift(Header.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
+      (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
+    }
+
+    implicit def jsonWritesApidocGeneratorHealthcheck: play.api.libs.json.Writes[Healthcheck] = new play.api.libs.json.Writes[Healthcheck] {
+      def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
+        "status" -> play.api.libs.json.Json.toJson(x.status)
+      )
     }
 
     implicit def jsonReadsApidocGeneratorInvocation: play.api.libs.json.Reads[Invocation] = {
@@ -386,7 +406,7 @@ package com.gilt.apidocgenerator.models {
         (__ \ "name").read[String] and
         (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "fields").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Field]].map(_.getOrElse(Nil))
+        (__ \ "fields").readNullable[Seq[com.gilt.apidocgenerator.models.Field]].map(_.getOrElse(Nil))
       )(Model.apply _)
     }
 
@@ -395,7 +415,7 @@ package com.gilt.apidocgenerator.models {
         (__ \ "name").write[String] and
         (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
-        (__ \ "fields").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Field]]
+        (__ \ "fields").write[Seq[com.gilt.apidocgenerator.models.Field]]
       )(unlift(Model.unapply _))
     }
 
@@ -405,9 +425,9 @@ package com.gilt.apidocgenerator.models {
         (__ \ "method").read[String] and
         (__ \ "path").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "body").readNullable[com.gilt.apidocgenerator.models.Type] and
-        (__ \ "parameters").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter]].map(_.getOrElse(Nil)) and
-        (__ \ "responses").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Response]].map(_.getOrElse(Nil))
+        (__ \ "body").readNullable[com.gilt.apidocgenerator.models.TypeInstance] and
+        (__ \ "parameters").readNullable[Seq[com.gilt.apidocgenerator.models.Parameter]].map(_.getOrElse(Nil)) and
+        (__ \ "responses").readNullable[Seq[com.gilt.apidocgenerator.models.Response]].map(_.getOrElse(Nil))
       )(Operation.apply _)
     }
 
@@ -417,16 +437,16 @@ package com.gilt.apidocgenerator.models {
         (__ \ "method").write[String] and
         (__ \ "path").write[String] and
         (__ \ "description").write[scala.Option[String]] and
-        (__ \ "body").write[scala.Option[com.gilt.apidocgenerator.models.Type]] and
-        (__ \ "parameters").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Parameter]] and
-        (__ \ "responses").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Response]]
+        (__ \ "body").write[scala.Option[com.gilt.apidocgenerator.models.TypeInstance]] and
+        (__ \ "parameters").write[Seq[com.gilt.apidocgenerator.models.Parameter]] and
+        (__ \ "responses").write[Seq[com.gilt.apidocgenerator.models.Response]]
       )(unlift(Operation.unapply _))
     }
 
     implicit def jsonReadsApidocGeneratorParameter: play.api.libs.json.Reads[Parameter] = {
       (
         (__ \ "name").read[String] and
-        (__ \ "datatype").read[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "type").read[com.gilt.apidocgenerator.models.TypeInstance] and
         (__ \ "location").read[com.gilt.apidocgenerator.models.ParameterLocation] and
         (__ \ "description").readNullable[String] and
         (__ \ "required").read[Boolean] and
@@ -440,7 +460,7 @@ package com.gilt.apidocgenerator.models {
     implicit def jsonWritesApidocGeneratorParameter: play.api.libs.json.Writes[Parameter] = {
       (
         (__ \ "name").write[String] and
-        (__ \ "datatype").write[com.gilt.apidocgenerator.models.Type] and
+        (__ \ "type").write[com.gilt.apidocgenerator.models.TypeInstance] and
         (__ \ "location").write[com.gilt.apidocgenerator.models.ParameterLocation] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "required").write[Boolean] and
@@ -455,7 +475,7 @@ package com.gilt.apidocgenerator.models {
       (
         (__ \ "model").read[com.gilt.apidocgenerator.models.Model] and
         (__ \ "path").read[String] and
-        (__ \ "operations").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]].map(_.getOrElse(Nil))
+        (__ \ "operations").readNullable[Seq[com.gilt.apidocgenerator.models.Operation]].map(_.getOrElse(Nil))
       )(Resource.apply _)
     }
 
@@ -463,31 +483,31 @@ package com.gilt.apidocgenerator.models {
       (
         (__ \ "model").write[com.gilt.apidocgenerator.models.Model] and
         (__ \ "path").write[String] and
-        (__ \ "operations").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Operation]]
+        (__ \ "operations").write[Seq[com.gilt.apidocgenerator.models.Operation]]
       )(unlift(Resource.unapply _))
     }
 
     implicit def jsonReadsApidocGeneratorResponse: play.api.libs.json.Reads[Response] = {
       (
         (__ \ "code").read[Int] and
-        (__ \ "datatype").read[com.gilt.apidocgenerator.models.Type]
+        (__ \ "type").read[com.gilt.apidocgenerator.models.TypeInstance]
       )(Response.apply _)
     }
 
     implicit def jsonWritesApidocGeneratorResponse: play.api.libs.json.Writes[Response] = {
       (
         (__ \ "code").write[Int] and
-        (__ \ "datatype").write[com.gilt.apidocgenerator.models.Type]
+        (__ \ "type").write[com.gilt.apidocgenerator.models.TypeInstance]
       )(unlift(Response.unapply _))
     }
 
     implicit def jsonReadsApidocGeneratorServiceDescription: play.api.libs.json.Reads[ServiceDescription] = {
       (
-        (__ \ "enums").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Enum]].map(_.getOrElse(Nil)) and
-        (__ \ "models").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Model]].map(_.getOrElse(Nil)) and
-        (__ \ "headers").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Header]].map(_.getOrElse(Nil)) and
-        (__ \ "resources").readNullable[scala.collection.Seq[com.gilt.apidocgenerator.models.Resource]].map(_.getOrElse(Nil)) and
-        (__ \ "baseUrl").readNullable[String] and
+        (__ \ "enums").readNullable[Seq[com.gilt.apidocgenerator.models.Enum]].map(_.getOrElse(Nil)) and
+        (__ \ "models").readNullable[Seq[com.gilt.apidocgenerator.models.Model]].map(_.getOrElse(Nil)) and
+        (__ \ "headers").readNullable[Seq[com.gilt.apidocgenerator.models.Header]].map(_.getOrElse(Nil)) and
+        (__ \ "resources").readNullable[Seq[com.gilt.apidocgenerator.models.Resource]].map(_.getOrElse(Nil)) and
+        (__ \ "base_url").readNullable[String] and
         (__ \ "name").read[String] and
         (__ \ "package_name").readNullable[String] and
         (__ \ "description").readNullable[String] and
@@ -497,11 +517,11 @@ package com.gilt.apidocgenerator.models {
 
     implicit def jsonWritesApidocGeneratorServiceDescription: play.api.libs.json.Writes[ServiceDescription] = {
       (
-        (__ \ "enums").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Enum]] and
-        (__ \ "models").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Model]] and
-        (__ \ "headers").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Header]] and
-        (__ \ "resources").write[scala.collection.Seq[com.gilt.apidocgenerator.models.Resource]] and
-        (__ \ "baseUrl").write[scala.Option[String]] and
+        (__ \ "enums").write[Seq[com.gilt.apidocgenerator.models.Enum]] and
+        (__ \ "models").write[Seq[com.gilt.apidocgenerator.models.Model]] and
+        (__ \ "headers").write[Seq[com.gilt.apidocgenerator.models.Header]] and
+        (__ \ "resources").write[Seq[com.gilt.apidocgenerator.models.Resource]] and
+        (__ \ "base_url").write[scala.Option[String]] and
         (__ \ "name").write[String] and
         (__ \ "package_name").write[scala.Option[String]] and
         (__ \ "description").write[scala.Option[String]] and
@@ -511,18 +531,30 @@ package com.gilt.apidocgenerator.models {
 
     implicit def jsonReadsApidocGeneratorType: play.api.libs.json.Reads[Type] = {
       (
-        (__ \ "kind").read[com.gilt.apidocgenerator.models.TypeKind] and
-        (__ \ "name").read[String] and
-        (__ \ "multiple").read[Boolean]
+        (__ \ "typeKind").read[com.gilt.apidocgenerator.models.TypeKind] and
+        (__ \ "name").read[String]
       )(Type.apply _)
     }
 
     implicit def jsonWritesApidocGeneratorType: play.api.libs.json.Writes[Type] = {
       (
-        (__ \ "kind").write[com.gilt.apidocgenerator.models.TypeKind] and
-        (__ \ "name").write[String] and
-        (__ \ "multiple").write[Boolean]
+        (__ \ "typeKind").write[com.gilt.apidocgenerator.models.TypeKind] and
+        (__ \ "name").write[String]
       )(unlift(Type.unapply _))
+    }
+
+    implicit def jsonReadsApidocGeneratorTypeInstance: play.api.libs.json.Reads[TypeInstance] = {
+      (
+        (__ \ "container").read[com.gilt.apidocgenerator.models.Container] and
+        (__ \ "type").read[com.gilt.apidocgenerator.models.Type]
+      )(TypeInstance.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorTypeInstance: play.api.libs.json.Writes[TypeInstance] = {
+      (
+        (__ \ "container").write[com.gilt.apidocgenerator.models.Container] and
+        (__ \ "type").write[com.gilt.apidocgenerator.models.Type]
+      )(unlift(TypeInstance.unapply _))
     }
   }
 }
@@ -532,19 +564,31 @@ package com.gilt.apidocgenerator {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidocgenerator.models.json._
 
-    private val UserAgent = "apidoc:0.6.8 http://www.apidoc.me/gilt/code/apidoc-generator/0.7.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.6.13 http://www.apidoc.me/gilt/code/apidoc-generator/0.0.1-dev/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidocgenerator.client")
 
     logger.info(s"Initializing com.gilt.apidocgenerator.client for url $apiUrl")
 
     def generators: Generators = Generators
 
+    def healthchecks: Healthchecks = Healthchecks
+
     def invocations: Invocations = Invocations
 
     object Generators extends Generators {
-      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidocgenerator.models.Generator]] = {
-        _executeRequest("GET", s"/generators").map {
-          case r if r.status == 200 => r.json.as[scala.collection.Seq[com.gilt.apidocgenerator.models.Generator]]
+      override def get(
+        key: scala.Option[String] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidocgenerator.models.Generator]] = {
+        val queryParameters = Seq(
+          key.map("key" -> _),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/generators", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidocgenerator.models.Generator]]
           case r => throw new FailedRequest(r)
         }
       }
@@ -554,6 +598,16 @@ package com.gilt.apidocgenerator {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidocgenerator.models.Generator]] = {
         _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(r.json.as[com.gilt.apidocgenerator.models.Generator])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
+    object Healthchecks extends Healthchecks {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidocgenerator.models.Healthcheck]] = {
+        _executeRequest("GET", s"/_internal_/healthcheck").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidocgenerator.models.Healthcheck])
           case r if r.status == 404 => None
           case r => throw new FailedRequest(r)
         }
@@ -617,6 +671,9 @@ package com.gilt.apidocgenerator {
         case "DELETE" => {
           _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
         }
+         case "HEAD" => {
+          _logRequest("HEAD", _requestHolder(path).withQueryString(queryParameters:_*)).head()
+        }
         case _ => {
           _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))
           sys.error("Unsupported method[%s]".format(method))
@@ -630,14 +687,22 @@ package com.gilt.apidocgenerator {
     /**
      * Get all available generators
      */
-    def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.collection.Seq[com.gilt.apidocgenerator.models.Generator]]
+    def get(
+      key: scala.Option[String] = None,
+      limit: scala.Option[Int] = None,
+      offset: scala.Option[Int] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidocgenerator.models.Generator]]
 
     /**
-     * Get the meta data of this generator
+     * Get generator with this key
      */
     def getByKey(
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidocgenerator.models.Generator]]
+  }
+
+  trait Healthchecks {
+    def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidocgenerator.models.Healthcheck]]
   }
 
   trait Invocations {
@@ -663,7 +728,7 @@ package com.gilt.apidocgenerator {
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       import com.gilt.apidocgenerator.models.json._
-      lazy val errors = response.json.as[scala.collection.Seq[com.gilt.apidocgenerator.models.Error]]
+      lazy val errors = response.json.as[Seq[com.gilt.apidocgenerator.models.Error]]
     }
   }
 
@@ -681,18 +746,18 @@ package com.gilt.apidocgenerator {
 
     // Type: date-iso8601
     implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29"
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
-    // Enum: HeaderType
-    private val enumHeaderTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${HeaderType.all.mkString(", ")}"
+    // Enum: Container
+    private val enumContainerNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Container.all.mkString(", ")}"
 
-    implicit val pathBindableEnumHeaderType = new PathBindable.Parsing[HeaderType] (
-      HeaderType.fromString(_).get, _.toString, enumHeaderTypeNotFound
+    implicit val pathBindableEnumContainer = new PathBindable.Parsing[Container] (
+      Container.fromString(_).get, _.toString, enumContainerNotFound
     )
 
-    implicit val queryStringBindableEnumHeaderType = new QueryStringBindable.Parsing[HeaderType](
-      HeaderType.fromString(_).get, _.toString, enumHeaderTypeNotFound
+    implicit val queryStringBindableEnumContainer = new QueryStringBindable.Parsing[Container](
+      Container.fromString(_).get, _.toString, enumContainerNotFound
     )
 
     // Enum: ParameterLocation

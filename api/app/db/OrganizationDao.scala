@@ -2,9 +2,8 @@ package db
 
 import com.gilt.apidoc.models.{Domain, Organization, OrganizationMetadata, User, Version, Visibility}
 import com.gilt.apidoc.models.json._
-import core.{Role, UrlKey}
+import lib.{Role, Validation, ValidationError, UrlKey}
 import anorm._
-import lib.{Validation, ValidationError}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._

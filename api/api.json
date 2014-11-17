@@ -113,7 +113,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "generator_guid", "type": "uuid" },
+                { "name": "generator", "type": "generator" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -122,13 +122,13 @@
           "description": "An apidoc generator",
           "fields": [
             { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this generator." },
-            { "name": "key", "type": "string", "description": "A unique key for the generator service" },
+            { "name": "key", "type": "string", "description": "A human readable key identifying this generator." },
             { "name": "uri", "type": "string", "description": "The uri of the generator service" },
             { "name": "name", "type": "string" },
             { "name": "language", "type": "string", "required": false },
             { "name": "description", "type": "string", "required": false },
             { "name": "visibility", "type": "visibility" },
-            { "name": "owner_guid", "type": "uuid" },
+            { "name": "owner", "type": "user" },
             { "name": "enabled", "type": "boolean" }
           ]
         },
@@ -473,7 +473,7 @@
         },
 
         "code": {
-	    "path": "/:orgKey/:serviceKey/:version/:generatorGuid",
+	    "path": "/:orgKey/:serviceKey/:version/:generatorKey",
 
             "operations": [
                 {
@@ -483,11 +483,11 @@
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
                         { "name": "serviceKey", "type": "string", "description": "The service key for which to generate code" },
                         { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
-                        { "name": "generatorGuid", "type": "uuid", "description": "The target key for which to generate code" }
+                        { "name": "generatorKey", "type": "string", "description": "The key of the generator to invoke" }
 		    ],
                     "responses": {
                         "200": { "type": "code" },
-                        "409": { "type": "[error]", "description": "If the target or version are invalid." }
+                        "409": { "type": "[error]", "description": "If the target, version, and/or generator are invalid." }
                     }
                 }
             ]
@@ -547,6 +547,12 @@
             {
               "method": "GET",
               "description": "List all generators visible by this user",
+              "parameters": [
+                  { "name": "guid", "type": "uuid", "required": false, "description": "Filter to generator with this uuid" },
+                  { "name": "key", "type": "string", "required": false, "description": "Filter to generator with this key" },
+                  { "name": "limit", "type": "integer", "default": 100, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                  { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+              ],
               "responses": {
                 "200": { "type": "[generator]" }
               }
@@ -554,8 +560,7 @@
 
             {
               "method": "GET",
-              "path": "/:guid",
-              "description": "Returns the generator with this guid.",
+              "path": "/:key",
               "responses": {
                 "200": { "type": "generator" }
               }
@@ -563,7 +568,6 @@
 
             {
               "method": "POST",
-              "description": "Create a new generator.",
               "body": { "type": "generator_create_form" },
               "responses": {
                 "200": { "type": "generator" },
@@ -573,8 +577,7 @@
 
             {
               "method": "PUT",
-              "path": "/:guid",
-              "description": "Update a generator.",
+              "path": "/:key",
               "body": { "type": "generator_update_form" },
               "responses": {
                 "200": { "type": "generator" },
@@ -583,19 +586,8 @@
             },
 
             {
-              "method": "PUT",
-              "path": "/:guid/:org",
-              "description": "Update a generator.",
-              "body": { "type": "generator_org_form" },
-              "responses": {
-                "200": { "type": "generator" },
-                "409": { "type": "[error]" }
-              }
-            },
-
-            {
               "method": "DELETE",
-              "path": "/:guid",
+              "path": "/:key",
               "description": "Deletes a generator."
             }
           ]

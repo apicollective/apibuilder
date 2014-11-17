@@ -1,14 +1,11 @@
 package core
 
-import scala.util.Try
-
-import java.util.UUID
-
-import com.gilt.apidocgenerator.models.{Field, ServiceDescription}
-import org.joda.time.format.ISODateTimeFormat
+import lib.{Primitives, Text}
+import com.gilt.apidocgenerator.models.{Container, Field, ServiceDescription, Type, TypeInstance, TypeKind}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
+import scala.util.{Failure, Success, Try}
 
 case class ServiceDescriptionValidator(apiJson: String) {
 
@@ -66,7 +63,6 @@ case class ServiceDescriptionValidator(apiJson: String) {
           validateHeaders ++
           validateModelAndEnumNamesAreDistinct ++
           validateFields ++
-          validateParameterTypes ++
           validateFieldTypes ++
           validateFieldDefaults ++
           validateOperations ++
@@ -134,21 +130,10 @@ case class ServiceDescriptionValidator(apiJson: String) {
    */
   private def validateFieldTypes(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter { f => !f.fieldtype.isEmpty && !f.name.isEmpty }.flatMap { field =>
-        val name = field.fieldtype.get
-        Datatype.findByName(name) match {
-          case None => {
-            internalServiceDescription.get.models.find { _.name == name } match {
-              case None => {
-                internalServiceDescription.get.enums.find { _.name == name } match {
-                  case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[$name]")
-                  case Some(_) => None
-                }
-              }
-              case Some(_) => None
-            }
-          }
-          case Some(_) => None
+      model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).flatMap { field =>
+        internalServiceDescription.get.typeResolver.toType(field.datatype.get.name) match {
+          case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[${field.datatype.get.name}]")
+          case _ => None
         }
       }
     }
@@ -161,96 +146,11 @@ case class ServiceDescriptionValidator(apiJson: String) {
    */
   private def validateFieldDefaults(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter { f => !f.fieldtype.isEmpty && !f.name.isEmpty && !f.default.isEmpty }.flatMap { field =>
-        val name = field.fieldtype.get
-        Datatype.findByName(name) match {
-          case None => {
-            internalServiceDescription.get.enums.find(_.name == name) match {
-              case None => None
-              case Some(enum) => {
-                enum.values.filter(!_.name.isEmpty).map(_.name.get) match {
-                  case Nil => None
-                  case values => {
-                    if (values.contains(field.default.get)) {
-                      None
-                    } else {
-                      Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid. Must be one of: " + values.mkString(", "))
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          case Some(dt) => {
-            if (isValid(dt, field.default.get)) {
-              None
-            } else {
-              Some(s"Model[${model.name}] field[${field.name.get}] Default[${field.default.get}] is not valid for datatype[$name]")
-            }
-          }
+      model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).filter(!_.default.isEmpty).flatMap { field =>
+        internalServiceDescription.get.typeResolver.toTypeInstance(field.datatype.get).flatMap { ti =>
+          internalServiceDescription.get.typeValidator.validateTypeInstance(ti, field.default.get, Some(s"${model.name}.${field.name.get}"))
         }
       }
-    }
-  }
-
-  private def isValid(datatype: Datatype, value: String): Boolean = {
-    Try(assertValidDefault(datatype: Datatype, value: String)).isSuccess
-  }
-
-  private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
-
-  private val BooleanValues = Seq("true", "false")
-
-  private def assertValidDefault(datatype: Datatype, value: String) {
-    datatype match {
-      case Datatype.BooleanType => {
-        if (!BooleanValues.contains(value)) {
-          sys.error(s"Invalid default[${value}] for boolean. Must be one of: ${BooleanValues.mkString(" ")}")
-        }
-      }
-
-      case Datatype.MapType => {
-        Json.parse(value).asOpt[JsObject] match {
-          case None => {
-            sys.error(s"Invalid default[${value}] for type object. Must be a valid JSON Object")
-          }
-          case Some(o) => {}
-        }
-      }
-
-      case Datatype.IntegerType => {
-        value.toInt
-      }
-
-      case Datatype.LongType => {
-        value.toLong
-      }
-
-      case Datatype.DecimalType => {
-        BigDecimal(value)
-      }
-
-      case Datatype.UnitType => {
-        value == ""
-      }
-
-      case Datatype.UuidType => {
-        UUID.fromString(value)
-      }
-
-      case Datatype.DateTimeIso8601Type => {
-        dateTimeISOParser.parseDateTime(value)
-      }
-
-      case Datatype.DateIso8601Type => {
-        dateTimeISOParser.parseDateTime(s"${value}T00:00:00Z")
-      }
-
-      case Datatype.StringType => ()
-
-      case Datatype.DoubleType => value.toDouble
-
     }
   }
 
@@ -316,14 +216,14 @@ case class ServiceDescriptionValidator(apiJson: String) {
       case headers => Seq("All headers must have a name")
     }
 
-    val headersWithoutTypes = internalServiceDescription.get.headers.filter(_.headertype.isEmpty) match {
+    val headersWithoutTypes = internalServiceDescription.get.headers.filter(_.datatype.isEmpty) match {
       case Nil => Seq.empty
       case headers => Seq("All headers must have a type")
     }
 
-    val headersWithInvalidTypes = internalServiceDescription.get.headers.filter(h => !h.name.isEmpty && !h.headertype.isEmpty).flatMap { header =>
-      val htype = header.headertype.get
-      if (htype == Datatype.StringType.name || enumNames.contains(htype)) {
+    val headersWithInvalidTypes = internalServiceDescription.get.headers.filter(h => !h.name.isEmpty && !h.datatype.isEmpty).flatMap { header =>
+      val htype = header.datatype.get.name
+      if (htype == Primitives.String.toString || enumNames.contains(htype)) {
         Seq.empty
       } else {
         Seq(s"Header[${header.name.get}] type[$htype] is invalid: Must be a string or the name of an enum")
@@ -353,14 +253,14 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validateFields(): Seq[String] = {
-    val missingTypes = internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter { _.fieldtype.isEmpty }.map { f =>
-        s"Model[${model.name}] field[${f.name.get}] must have a type"
+    val missingNames = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter(_.name.isEmpty).map { f =>
+        s"Model[${model.name}] field[${f.name}] must have a name"
       }
     }
-    val missingNames = internalServiceDescription.get.models.flatMap { model =>
-      model.fields.filter { _.name.isEmpty }.map { f =>
-        s"Model[${model.name}] field[${f.name}] must have a name"
+    val missingTypes = internalServiceDescription.get.models.flatMap { model =>
+      model.fields.filter(!_.name.isEmpty).filter(_.datatype.isEmpty).map { f =>
+        s"Model[${model.name}] field[${f.name.get}] must have a type"
       }
     }
     val badNames = internalServiceDescription.get.models.flatMap { model =>
@@ -386,12 +286,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val invalidCodes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
-          try {
-            r.code.toInt
-            None
-          } catch {
-            case e: java.lang.NumberFormatException => {
-              Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Response code is not an integer[${r.code}]")
+          Try(r.code.toInt) match {
+            case Success(v) => None
+            case Failure(ex) => ex match {
+              case e: java.lang.NumberFormatException => {
+                Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Response code is not an integer[${r.code}]")
+              }
             }
           }
         }
@@ -404,22 +304,14 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
-          r.datatype match {
+          r.datatype.map(_.name) match {
             case None => {
               Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}]: Missing type")
             }
-            case Some(typeName: String) => {
-              Datatype.findByName(typeName) match {
-                case Some(dt: Datatype) => {
-                  None
-                }
-                case None => {
-                  if (modelNames.contains(typeName) || enumNames.contains(typeName)) {
-                    None
-                  } else {
-                    Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of an enum or model")
-                  }
-                }
+            case Some(typeName) => {
+              internalServiceDescription.get.typeResolver.toType(typeName) match {
+                case None => Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[${typeName}].")
+                case Some(_) => None
               }
             }
           }
@@ -464,8 +356,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val noContentWithTypes = if (invalidCodes.isEmpty) {
       internalServiceDescription.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
         resource.operations.flatMap { op =>
-          op.responses.filter(r => typesRequiringUnit.contains(r.code.toInt) && !r.datatype.isEmpty && r.datatype.get != Datatype.UnitType.name).map { r =>
-            s"Resource[${resource.modelName.get}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get}]"
+          op.responses.filter(r => typesRequiringUnit.contains(r.code.toInt) && !r.datatype.isEmpty && r.datatype.get.name != Primitives.Unit.toString).map { r =>
+            s"Resource[${resource.modelName.get}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get.name}]"
           }
         }
       }
@@ -484,94 +376,76 @@ case class ServiceDescriptionValidator(apiJson: String) {
     invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
   }
 
-  private lazy val ValidDatatypes = Datatype.All.map(_.name).sorted
-  private lazy val ValidQueryDatatypes = Datatype.QueryParameterTypes.map(_.name).sorted
-
   private def validateParameterBodies(): Seq[String] = {
-    val modelNames = internalServiceDescription.get.models.map(_.name).toSet
-    val enumNames = internalServiceDescription.get.enums.map(_.name).toSet
-
     val typesNotFound = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(op => !op.body.isEmpty && !modelNames.contains(op.body.get.name) && !enumNames.contains(op.body.get.name) && Datatype.findByName(op.body.get.name).isEmpty).map { op =>
-        s"Resource[${resource.modelName.getOrElse("")}] ${op.label} body: Model named[${op.body.get.name}] not found"
+      resource.operations.filter(!_.body.isEmpty).filter(op => internalServiceDescription.get.typeResolver.toType(op.body.get.name).isEmpty).map { op =>
+        if (op.body.get.name.trim == "") {
+          s"${opLabel(resource, op)}: Body missing type"
+        } else {
+          s"${opLabel(resource, op)} body: Type[${op.body.get.name}] not found"
+        }
       }
     }
 
     val invalidMethods = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(op => !op.body.isEmpty && !op.method.isEmpty && !Util.isJsonDocumentMethod(op.method.get)).map { op =>
-        s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Cannot specify body for HTTP method[${op.method.get}]"
+        s"${opLabel(resource, op)}: Cannot specify body for HTTP method[${op.method.get}]"
       }
     }
 
     typesNotFound ++ invalidMethods
   }
 
+  private def opLabel(resource: InternalResource, op: InternalOperation): String = {
+    s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}"
+  }
+
   private def validateParameters(): Seq[String] = {
     val missingNames = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.parameters.filter { p => p.name.isEmpty }.map { p =>
-          s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: All parameters must have a name"
+        op.parameters.filter(_.name.isEmpty).map { p =>
+          s"${opLabel(resource, op)}: Missing name"
+        }
+        op.parameters.filter(_.datatype.isEmpty).map { p =>
+          s"${opLabel(resource, op)}: Missing type"
         }
       }
     }
 
-    val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.method.isEmpty).flatMap { op =>
-        val types = if (op.body.isEmpty && Util.isJsonDocumentMethod(op.method.get)) { 
-          ValidDatatypes ++
-          internalServiceDescription.get.models.filter(!_.name.isEmpty).map(_.name) ++
-          internalServiceDescription.get.enums.filter(!_.name.isEmpty).map(_.name)
-        } else {
-          ValidQueryDatatypes ++
-          internalServiceDescription.get.enums.filter(!_.name.isEmpty).map(_.name)
-        }
-
-        op.parameters.filter { !_.name.isEmpty }.flatMap { p =>
-          if (p.paramtype.isEmpty) {
-            Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${p.name.get}] is missing a type. Must be one of: ${types.mkString(" ")}")
-          } else if (!types.contains(p.paramtype.get)) {
-            Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${p.name.get}] has an invalid type[${p.paramtype.get}]. Must be one of: ${types.mkString(" ")}")
-          } else {
-            None
-          }
-        }
-      }
-    }
-
-    missingNames ++ missingTypes
-  }
-
-  private def validateParameterTypes(): Seq[String] = {
-    internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.parameters.filter( !_.paramtype.isEmpty ).flatMap { param =>
-
-          val typeName = param.paramtype.get
-
-          Datatype.findByName(typeName) match {
-
-            case Some(dt: Datatype) => None
-
+    // Query parameters can only be primitives or enums
+    val invalidTypes = internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(!_.method.isEmpty).filter(op => !op.body.isEmpty || op.method == Some("GET") ).flatMap { op =>
+        op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
+          p.datatype.map(_.name) match {
             case None => {
-              val model = internalServiceDescription.get.models.find(_.name == typeName)
-              val enum = internalServiceDescription.get.enums.find(_.name == typeName)
-
-              if (model.isEmpty && enum.isEmpty) {
-                Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}: Parameter[${param.name.get}] has an invalid datatype[${typeName}]. Must be one of: ${ValidDatatypes.mkString(" ")} or the name of an enum or model")
-              } else {
-                None
+              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] is missing a type.")
+            }
+            case Some(datatypeName) => {
+              internalServiceDescription.get.typeResolver.toType(datatypeName) match {
+                case Some(Type(TypeKind.Primitive | TypeKind.Enum, _)) => None
+                case Some(Type(TypeKind.Model, name)) => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$datatypeName]. Models are not supported as query parameters.")
+                }
+                case None => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$datatypeName]")
+                }
+                case Some(Type(TypeKind.UNDEFINED(kind), name)) => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid typeKind[$kind]")
+                }
               }
             }
           }
         }
       }
     }
+
+    missingNames ++ invalidTypes
   }
 
   private def validateOperations(): Seq[String] = {
     internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(!_.warnings.isEmpty).map { op =>
-        s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: " + op.warnings.mkString(", ")
+        s"${opLabel(resource, op)}: ${op.warnings.mkString(", ")}"
       }
     }
   }
@@ -582,7 +456,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
         case None => Some("All resources must have a model")
         case Some(name: String) => {
           internalServiceDescription.get.models.find { _.name == name } match {
-            case None => Some(s"Resource[${res.modelName.getOrElse("")}] model name[${name}] is invalid - model not found")
+            case None => Some(s"Resource[${res.modelName.getOrElse("")}] model[$name] not found")
             case Some(_) => None
           }
         }
@@ -606,41 +480,50 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validatePathParameters(): Seq[String] = {
-    val enums = internalServiceDescription.get.enums.map(_.name).toSet
-
     internalServiceDescription.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
       internalServiceDescription.get.models.find(_.name == resource.modelName.get) match {
         case None => None
         case Some(model: InternalModel) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
-            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.fieldtype.isEmpty).map(f => (f.name.get -> f.fieldtype.get)).toMap
-            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.paramtype.isEmpty).map(p => (p.name.get -> p.paramtype.get)).toMap
+            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.name).isEmpty).map(f => (f.name.get -> f.datatype.get)).toMap
+            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.name).isEmpty).map(p => (p.name.get -> p.datatype.get)).toMap
 
             op.namedPathParameters.flatMap { name =>
-              val typeName = paramMap.get(name).getOrElse {
+              val parsedDatatype = paramMap.get(name).getOrElse {
                 fieldMap.get(name).getOrElse {
-                  Datatype.StringType.name
+                  InternalParsedDatatype(Container.Singleton, Primitives.String.toString)
                 }
               }
+              val errorTemplate = s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
 
-              Datatype.findByName(typeName) match {
-                case Some(Datatype.BooleanType) => None
-                case Some(Datatype.DecimalType) => None
-                case Some(Datatype.IntegerType) => None
-                case Some(Datatype.DoubleType) => None
-                case Some(Datatype.LongType) => None
-                case Some(Datatype.StringType) => None
-                case Some(Datatype.UuidType) => None
-                case Some(Datatype.DateIso8601Type) => None
-                case Some(Datatype.DateTimeIso8601Type) => None
-                case _ => {
-                  if (enums.contains(typeName)) {
-                    // Enums are treated as strings here
+              internalServiceDescription.get.typeResolver.toTypeInstance(parsedDatatype) match {
+                case None => Some(errorTemplate.format(name))
+
+                case Some(TypeInstance(Container.List, _)) => Some(errorTemplate.format("list"))
+                case Some(TypeInstance(Container.Map, _)) => Some(errorTemplate.format("map"))
+                case Some(TypeInstance(Container.Singleton, Type(TypeKind.Model, name))) => Some(errorTemplate.format(name))
+
+                case Some(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name))) => {
+                  if (Primitives.validInPath(name)) {
                     None
                   } else {
-                    Some(s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[$typeName]. Only numbers and strings can be specified as path parameters")
+                    Some(errorTemplate.format(name))
                   }
                 }
+
+                case Some(TypeInstance(Container.Singleton, Type(TypeKind.Enum, name))) => {
+                  // Enums serialize to strings
+                  None
+                }
+
+                case Some(TypeInstance(Container.UNDEFINED(container), _)) => {
+                  Some(errorTemplate.format(name) + s" has an invalid container[$container]")
+                }
+
+                case Some(TypeInstance(_, Type(TypeKind.UNDEFINED(kind), _))) => {
+                  Some(errorTemplate.format(name) + s" has an invalid kind[$kind]")
+                }
+
               }
             }
           }
@@ -655,8 +538,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
         case None => None
         case Some(model: InternalModel) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
-            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.fieldtype.isEmpty).map(f => (f.name.get -> f.required)).toMap
-            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.paramtype.isEmpty).map(p => (p.name.get -> p.required)).toMap
+            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.name).isEmpty).map(f => (f.name.get -> f.required)).toMap
+            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.name).isEmpty).map(p => (p.name.get -> p.required)).toMap
 
             op.namedPathParameters.flatMap { name =>
               val isRequired = paramMap.get(name).getOrElse {

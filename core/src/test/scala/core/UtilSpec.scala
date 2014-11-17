@@ -7,6 +7,11 @@ import org.scalatest.Matchers
 
 class UtilSpec extends FunSpec with Matchers {
 
+  lazy val service = TestHelper.parseFile(s"api/api.json").serviceDescription.get
+  private lazy val visibilityEnum = service.enums.find(_.name == "visibility").getOrElse {
+    sys.error("No visibility enum found")
+  }
+
   it("isJsonDocumentMethod") {
     Util.isJsonDocumentMethod("GET") should be(false)
     Util.isJsonDocumentMethod("get") should be(false)
@@ -25,6 +30,20 @@ class UtilSpec extends FunSpec with Matchers {
     Util.namedParametersInPath("/users/:guid") should be(Seq("guid"))
     Util.namedParametersInPath("/:org/docs/:version") should be(Seq("org", "version"))
     Util.namedParametersInPath("/:org/:service/:version") should be(Seq("org", "service", "version"))
+  }
+
+  it("isValidEnumValue") {
+    Util.isValidEnumValue(visibilityEnum, "user") should be(true)
+    Util.isValidEnumValue(visibilityEnum, "organization") should be(true)
+    Util.isValidEnumValue(visibilityEnum, "foobar") should be(false)
+  }
+
+  it("assertValidEnumValue") {
+    Util.assertValidEnumValue(visibilityEnum, "user")
+    Util.assertValidEnumValue(visibilityEnum, "organization")
+    intercept[IllegalArgumentException] {
+      Util.assertValidEnumValue(visibilityEnum, "foobar")
+    }.getMessage should be("requirement failed: Enum[visibility] does not have a value[foobar]. Valid values are: user, organization, public")
   }
 
 }

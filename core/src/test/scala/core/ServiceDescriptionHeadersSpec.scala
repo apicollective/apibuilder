@@ -1,6 +1,7 @@
 package core
 
-import com.gilt.apidocgenerator.models.HeaderType
+import lib.Primitives
+import com.gilt.apidocgenerator.models.{Container, Type, TypeKind, TypeInstance}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -37,40 +38,32 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
 
       val ct = validator.serviceDescription.get.headers.find(_.name == "Content-Type").get
       ct.name should be("Content-Type")
-      ct.headertype should be(HeaderType.Enum)
-      ct.headertypeValue should be(Some(ctEnum.name))
+      ct.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Enum, ctEnum.name)))
       ct.default should be(None)
       ct.required should be(true)
       ct.description should be(None)
       ct.required should be(true)
-      ct.multiple should be(false)
 
       val foo = validator.serviceDescription.get.headers.find(_.name == "X-Foo").get
       foo.name should be("X-Foo")
-      foo.headertype should be(HeaderType.String)
-      foo.headertypeValue should be(None)
+      foo.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString)))
       foo.default should be(Some("bar"))
       foo.description should be(Some("test"))
       foo.required should be(true)
-      foo.multiple should be(false)
 
       val bar = validator.serviceDescription.get.headers.find(_.name == "X-Bar").get
       bar.name should be("X-Bar")
-      bar.headertype should be(HeaderType.String)
-      bar.headertypeValue should be(None)
+      bar.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString)))
       bar.default should be(None)
       bar.description should be(None)
       bar.required should be(false)
-      bar.multiple should be(false)
 
       val multi = validator.serviceDescription.get.headers.find(_.name == "X-Multi").get
       multi.name should be("X-Multi")
-      multi.headertype should be(HeaderType.String)
-      multi.headertypeValue should be(None)
+      multi.`type` should be(TypeInstance(Container.List, Type(TypeKind.Primitive, Primitives.String.toString)))
       multi.default should be(None)
       multi.description should be(None)
       multi.required should be(true)
-      multi.multiple should be(true)
     }
   }
 

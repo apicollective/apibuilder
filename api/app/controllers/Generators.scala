@@ -16,8 +16,26 @@ object Generators extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def getByGuid(guid: UUID) = Authenticated.async { request =>
-    GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption match {
+  def get(
+    guid: Option[UUID] = None,
+    key: Option[String] = None,
+    limit: Int = 100,
+    offset: Int = 0
+  ) = Authenticated.async { request =>
+    fillInGeneratorMeta(
+      GeneratorDao.findAll(
+        user = request.user,
+        guid = guid,
+        key = key,
+        limit = limit,
+        offset = offset
+      )
+    ).map(generators => Ok(Json.toJson(generators)))
+  }
+
+
+  def getByKey(key: String) = Authenticated.async { request =>
+    GeneratorDao.findAll(user = request.user, key = Some(key)).headOption match {
       case Some(g) =>
         fillInGeneratorMeta(g).map {
           case Right(g) => Ok(Json.toJson(g))
@@ -47,14 +65,6 @@ object Generators extends Controller {
       Future.sequence(futures).map(_.flatten)
     }
 
-  private def getGenerators(user: User): Future[Seq[Generator]] = {
-    fillInGeneratorMeta(GeneratorDao.findAll(user = user))
-  }
-
-  def get() = Authenticated.async { request =>
-    getGenerators(request.user).map(generators => Ok(Json.toJson(generators)))
-  }
-
   def post() = Authenticated.async(parse.json) { request =>
     request.body.validate[GeneratorCreateForm] match {
       case e: JsError => {
@@ -80,17 +90,17 @@ object Generators extends Controller {
     }
   }
 
-  def putByGuid(guid: UUID) = Authenticated.async(parse.json) { request =>
+  def putByKey(key: String) = Authenticated.async(parse.json) { request =>
     request.body.validate[GeneratorUpdateForm] match {
       case e: JsError => {
         Future.successful(Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString))))
       }
       case s: JsSuccess[GeneratorUpdateForm] => {
         val form = s.get
-        GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption match {
+        GeneratorDao.findAll(user = request.user, key = Some(key)).headOption match {
           case Some(g) =>
             fillInGeneratorMeta(g).map {
-              case Right(g) if (form.visibility.isDefined && g.ownerGuid != request.user.guid) =>
+              case Right(g) if (form.visibility.isDefined && !GeneratorDao.isOwner(request.user.guid, g.owner)) =>
                 Unauthorized
               case Right(g) =>
                 val g1 = form.visibility.fold(g)(GeneratorDao.visibilityUpdate(request.user, g, _))
@@ -106,14 +116,14 @@ object Generators extends Controller {
     }
   }
 
-  def putByGuidAndOrg(guid: UUID, orgKey: String) = Authenticated.async(parse.json) { request =>
+  def putByKeyAndOrg(key: String, orgKey: String) = Authenticated.async(parse.json) { request =>
     request.body.validate[GeneratorOrgForm] match {
       case e: JsError => {
         Future.successful(Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString))))
       }
       case s: JsSuccess[GeneratorOrgForm] => {
         val form = s.get
-        val generator = GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption
+        val generator = GeneratorDao.findAll(user = request.user, key = Some(key)).headOption
         val org = OrganizationDao.findAll(Authorization(Some(request.user)), key = Some(orgKey)).headOption
         (generator, org) match {
           case (Some(g), Some(o)) =>
@@ -131,9 +141,9 @@ object Generators extends Controller {
     }
   }
 
-  def deleteByGuid(guid: UUID) = Authenticated { request =>
-    GeneratorDao.findAll(user = request.user, guid = Some(guid)).headOption match {
-      case Some(g) if (g.ownerGuid == request.user.guid) =>
+  def deleteByKey(key: String) = Authenticated { request =>
+    GeneratorDao.findAll(user = request.user, key = Some(key)).headOption match {
+      case Some(g) if GeneratorDao.isOwner(request.user.guid, g.owner) =>
         GeneratorDao.softDelete(request.user, g)
         NoContent
       case Some(g) =>

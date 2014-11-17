@@ -1,8 +1,8 @@
 package models
 
-import com.gilt.apidocgenerator.models.{Operation, Resource, ServiceDescription}
-import core.generator.ScalaServiceDescription
-import core.{Datatype}
+import lib.Primitives
+import com.gilt.apidocgenerator.models.{Container, Operation, Resource, ServiceDescription, Type, TypeKind, TypeInstance}
+import generator.ScalaServiceDescription
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
@@ -38,7 +38,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
         r.verb should be("GET")
         r.url should be("/users")
         r.method should be("controllers.Users.get")
-        r.params.mkString(", ") should be("guid: Option[java.util.UUID], email: Option[String], token: Option[String]")
+        r.params.mkString(", ") should be("guid: scala.Option[_root_.java.util.UUID], email: scala.Option[String], token: scala.Option[String]")
       }
 
       it("GET w/ path, guid path param, no additional parameters") {
@@ -47,7 +47,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
         r.verb should be("GET")
         r.url should be("/users/:guid")
         r.method should be("controllers.Users.getByGuid")
-        r.params.mkString(", ") should be("guid: java.util.UUID")
+        r.params.mkString(", ") should be("guid: _root_.java.util.UUID")
       }
 
       it("POST w/ default path, no parameters") {
@@ -65,7 +65,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
         r.verb should be("PUT")
         r.url should be("/users/:guid")
         r.method should be("controllers.Users.putByGuid")
-        r.params.mkString(", ") should be("guid: java.util.UUID")
+        r.params.mkString(", ") should be("guid: _root_.java.util.UUID")
       }
     }
 
@@ -80,7 +80,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
         r.verb should be("POST")
         r.url should be("/membership_requests/:guid/accept")
         r.method should be("controllers.MembershipRequests.postAcceptByGuid")
-        r.params.mkString(", ") should be("guid: java.util.UUID")
+        r.params.mkString(", ") should be("guid: _root_.java.util.UUID")
       }
     }
 
@@ -95,7 +95,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
   }
 
   describe("with reference-api service") {
-    lazy val service = TestHelper.parseFile(s"../reference-api/api.json").serviceDescription.get
+    lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
     lazy val ssd = new ScalaServiceDescription(service)
 
     it("normalizes explicit paths that match resource name") {
@@ -118,10 +118,10 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
       val op = getMethod(service, "echo", "GET", "/echoes")
       val r = Play2Route(ssd, op, echoResource)
       r.method should be("controllers.Echoes.get")
-      r.params.mkString(" ") should be("foo: Option[String]")
+      r.params.mkString(" ") should be("foo: scala.Option[String]")
       r.paramComments.getOrElse("") should be("""
 # Additional parameters to GET /echoes
-#   - optional_messages: Option[Seq[String]]
+#   - optional_messages: scala.Option[Seq[String]]
 #   - required_messages: Seq[String]
 """.trim)
 
@@ -147,7 +147,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
     it("correctly orders parameters defined in path and parameters") {
       val op = getMethod(quality, "agenda_item", "DELETE", "/meetings/:meeting_id/agenda_items/:id")
       op.parameters.map(_.name) should be(Seq("meeting_id", "id"))
-      op.parameters.head.datatype.name should be(Datatype.LongType.name)
+      op.parameters.head.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Long.toString)))
     }
 
   }

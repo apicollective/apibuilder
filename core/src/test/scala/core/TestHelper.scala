@@ -1,5 +1,6 @@
 package core
 
+import lib.Text
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
 

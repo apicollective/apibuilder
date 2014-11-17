@@ -1,5 +1,6 @@
 package core
 
+import lib.Primitives
 import com.gilt.apidocgenerator.models._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
@@ -48,7 +49,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
 
   it("validates that body refers to a known model") {
     val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "foo" }""", "boolean"))
-    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Model named[foo] not found")
+    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType body: Type[foo] not found")
   }
 
   it("support primitive types in body") {
@@ -56,7 +57,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(Type(TypeKind.Primitive, Datatype.StringType.name, false)))
+    op.body should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString))))
   }
 
   it("support arrays of primitive types in body") {
@@ -64,7 +65,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(Type(TypeKind.Primitive, Datatype.StringType.name, true)))
+    op.body should be(Some(TypeInstance(Container.List, Type(TypeKind.Primitive, Primitives.String.toString))))
   }
 
   it("support enums in body") {
@@ -72,7 +73,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(Type(TypeKind.Enum, "age_group", false)))
+    op.body should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Enum, "age_group"))))
   }
 
   it("support arrays of enums in body") {
@@ -80,7 +81,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(Type(TypeKind.Enum, "age_group", true)))
+    op.body should be(Some(TypeInstance(Container.List, Type(TypeKind.Enum, "age_group"))))
   }
 
   it("supports arrays of models in body") {
@@ -88,7 +89,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(Type(TypeKind.Model, model.name, true)))
+    op.body should be(Some(TypeInstance(Container.List, Type(TypeKind.Model, model.name))))
   }
 
   it("validates if body is not a map") {
@@ -108,7 +109,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(Type(TypeKind.Model, model.name, false)))
+    op.body should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Model, model.name))))
   }
 
   it("If body specified, all parameters are either PATH or QUERY") {
@@ -125,7 +126,13 @@ class BodyParameterSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "[message]" }""", "boolean"))
     validator.errors.mkString("") should be("")
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(Type(TypeKind.Model, "message", true)))
+    op.body should be(Some(TypeInstance(Container.List, Type(TypeKind.Model, "message"))))
+  }
+
+  it("validates missing datatype") {
+    val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "" }""", "age_group")
+    val validator = ServiceDescriptionValidator(baseJsonWithInvalidModel)
+    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType: Body missing type")
   }
 
   it("If body specified, parameters can be enums") {
@@ -137,7 +144,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
   it("If body specified, parameters cannot be models") {
     val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "message" }""", "message")
     val validator = ServiceDescriptionValidator(baseJsonWithInvalidModel)
-    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType: Parameter[debug] has an invalid type[message]. Must be one of: boolean date-iso8601 date-time-iso8601 decimal double integer long string uuid age_group")
+    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType: Parameter[debug] has an invalid type[message]. Models are not supported as query parameters.")
   }
 
 }

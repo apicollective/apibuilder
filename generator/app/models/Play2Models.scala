@@ -2,8 +2,8 @@ package models
 
 import com.gilt.apidocgenerator.models.ServiceDescription
 import core._
-import Text._
-import core.generator.{ScalaEnums, ScalaCaseClasses, ScalaServiceDescription, CodeGenerator}
+import lib.Text._
+import generator.{ScalaEnums, ScalaCaseClasses, ScalaServiceDescription, CodeGenerator}
 
 object Play2Models extends CodeGenerator {
 

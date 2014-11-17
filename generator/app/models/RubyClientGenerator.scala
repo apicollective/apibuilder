@@ -2,8 +2,9 @@ package models
 
 import com.gilt.apidocgenerator.models._
 import core._
-import Text._
-import core.generator.{GeneratorUtil, CodeGenerator, ScalaUtil}
+import lib.Primitives
+import lib.Text._
+import generator.{GeneratorUtil, CodeGenerator, ScalaUtil}
 import scala.collection.mutable.ListBuffer
 
 object RubyUtil {
@@ -15,11 +16,31 @@ object RubyUtil {
     ScalaUtil.toClassName(name, multiple)
   }
 
+  def toDefaultVariable(
+    multiple: Boolean = false
+  ): String = {
+    toVariable("value", multiple = multiple)
+  }
+
   def toVariable(
     name: String,
     multiple: Boolean = false
   ): String = {
-    Text.initLowerCase(Text.camelCaseToUnderscore(toClassName(name, multiple)))
+    val value = lib.Text.initLowerCase(lib.Text.camelCaseToUnderscore(name).toLowerCase)
+    multiple match {
+      case true => lib.Text.pluralize(value)
+      case false => value
+    }
+  }
+
+  def wrapInQuotes(value: String): String = {
+    if (value.indexOf("'") < 0) {
+      s"'$value'"
+    } else if (value.indexOf("\"") < 0) {
+      s""""$value""""
+    } else {
+      sys.error("TODO: Support quoting quotes")
+    }
   }
 
 }
@@ -83,9 +104,9 @@ object RubyClientGenerator extends CodeGenerator {
 
   def enumName(value: String): String = {
     if (value == value.toUpperCase) {
-      Text.camelCaseToUnderscore(value.toLowerCase).split("_").map(Text.initLowerCase(_)).mkString("_")
+     lib.Text.camelCaseToUnderscore(value.toLowerCase).split("_").map(lib.Text.initLowerCase(_)).mkString("_")
     } else {
-      Text.camelCaseToUnderscore(value).split("_").map(Text.initLowerCase(_)).mkString("_")
+     lib.Text.camelCaseToUnderscore(value).split("_").map(lib.Text.initLowerCase(_)).mkString("_")
     }
   }
 
@@ -192,34 +213,49 @@ case class RubyClientGenerator(service: ServiceDescription) {
           val param = pathParams.find(_.name == varName).getOrElse {
             sys.error(s"Could not find path parameter named[$varName]")
           }
-          param.datatype match {
-            case Type(TypeKind.Primitive, name, _) =>
-              val datatype = Datatype.forceByName(name)
-              s"#{${asString(varName, datatype)}}"
-            case Type(TypeKind.Model, _, _) => sys.error("Models cannot be in the path")
-            case Type(TypeKind.Enum, _, _) => s"#{${param.name}.value}"
+          param.`type` match {
+            case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
+              val code = asString(RubyUtil.toVariable(varName), name)
+              s"#{$code}"
+            }
+            case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => sys.error("Models cannot be in the path")
+            case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
+              val code = RubyUtil.toVariable(varName)
+              s"#{$code.value}"
+            }
+            case TypeInstance(Container.List, _) => sys.error("Cannot have lists in the path")
+            case TypeInstance(Container.Map, _) => sys.error("Cannot have maps in the path")
+            case TypeInstance(Container.UNDEFINED(container), _) => sys.error(s"Cannot have container[$container] in the path")
           }
         } else {
           name
         }
       }.mkString("/")
 
-      val methodName = Text.camelCaseToUnderscore(
+      val methodName =lib.Text.camelCaseToUnderscore(
         GeneratorUtil.urlToMethodName(
           resource.model.plural, resource.path, op.method, op.path
         )
       ).toLowerCase
 
       val paramStrings = ListBuffer[String]()
-      pathParams.map(_.name).foreach { n => paramStrings.append(n) }
+      pathParams.map(_.name).foreach { n => paramStrings.append(RubyUtil.toVariable(n)) }
 
       if (Util.isJsonDocumentMethod(op.method)) {
         op.body match {
           case None => paramStrings.append("hash")
-          case Some(Type(TypeKind.Primitive, _, multiple)) => paramStrings.append(RubyUtil.toVariable("value", multiple))
-          case Some(Type(TypeKind.Model, name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
-          case Some(Type(TypeKind.Enum, name, multiple)) => paramStrings.append(RubyUtil.toVariable(name, multiple))
-          case _ => sys.error(s"Invalid body [${op.body}]")
+
+          case Some(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name))) => paramStrings.append(RubyUtil.toDefaultVariable(multiple = false))
+          case Some(TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, name))) => paramStrings.append(RubyUtil.toDefaultVariable(multiple = true))
+
+          case Some(TypeInstance(Container.Singleton, Type(TypeKind.Model, name))) => paramStrings.append(RubyUtil.toVariable(name, multiple = false))
+          case Some(TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name))) => paramStrings.append(RubyUtil.toVariable(name, multiple = true))
+
+          case Some(TypeInstance(Container.Singleton, Type(TypeKind.Enum, name))) => paramStrings.append(RubyUtil.toVariable(name, multiple = false))
+          case Some(TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name))) => paramStrings.append(RubyUtil.toVariable(name, multiple = true))
+
+          case Some(TypeInstance(Container.UNDEFINED(container), _)) => sys.error(s"Unsupported container[$container]")
+          case Some(TypeInstance(_, Type(kind, name))) => sys.error(s"Unsupported typeKind[$kind]")
         }
       }
 
@@ -236,23 +272,15 @@ case class RubyClientGenerator(service: ServiceDescription) {
       sb.append(s"      def ${methodName}$paramCall")
 
       pathParams.foreach { param =>
-
-        val klass = param.datatype match {
-          case Type(TypeKind.Primitive, name, _) =>
-            val datatype = Datatype.forceByName(name)
-            rubyClass(datatype)
-          case Type(TypeKind.Model, name, _) => qualifiedClassName(name)
-          case Type(TypeKind.Enum, name, _) => qualifiedClassName(name)
-        }
-
-        sb.append(s"        HttpClient::Preconditions.assert_class('${param.name}', ${param.name}, ${klass})")
+        val ti = parseTypeInstance(param.`type`, fieldName = Some(param.name))
+        sb.append(s"        " + ti.assertMethod)
       }
 
       if (!queryParams.isEmpty) {
         val paramBuilder = ListBuffer[String]()
 
         queryParams.foreach { param =>
-          paramBuilder.append(s":${param.name} => ${parseArgument(param)}")
+          paramBuilder.append(s":${param.name} => ${parseArgument(param.name, param.`type`, param.required, param.default)}")
         }
 
         sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
@@ -274,37 +302,42 @@ case class RubyClientGenerator(service: ServiceDescription) {
             sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
             requestBuilder.append(".with_json(hash.to_json)")
           }
-          case Some(Type(TypeKind.Primitive, name, false)) => {
-            val dt = Datatype.forceByName(name)
-            sb.append(s"        HttpClient::Preconditions.assert_class('value', value, ${rubyClass(dt)})")
-            requestBuilder.append(".with_body(value)")
-          }
-          case Some(Type(TypeKind.Primitive, name, true)) => {
-            val dt = Datatype.forceByName(name)
-            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('values', values, ${rubyClass(dt)})")
-            requestBuilder.append(".with_body(value)")
-          }
-          case Some(Type(TypeKind.Model, name, false)) => {
-            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_class('$name', $name, $klass)")
-            requestBuilder.append(s".with_json($name.to_hash.to_json)")
-          }
-          case Some(Type(TypeKind.Model, name, true)) => {
-            val plural = RubyUtil.toVariable(name, true)
-            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
-            requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
-          }
-          case Some(Type(TypeKind.Enum, name, false)) => {
-            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_class('$name', $name, $klass)")
-            requestBuilder.append(s".with_json($name.to_hash.to_json)")
-          }
-          case Some(Type(TypeKind.Enum, name, true)) => {
-            val plural = RubyUtil.toVariable(name, true)
-            val klass = s"$moduleName::Models::${RubyUtil.toClassName(name)}"
-            sb.append(s"        HttpClient::Preconditions.assert_collection_of_class('$plural', $plural, $klass)")
-            requestBuilder.append(s".with_json($plural.map { |o| o.to_hash.to_json })")
+          case Some(body) => {
+            val ti = parseTypeInstance(body)
+            sb.append("        " + ti.assertMethod)
+
+            body match {
+              case TypeInstance(_, Type(TypeKind.Primitive, name)) => {
+                requestBuilder.append(s".with_body(${ti.varName})")
+              }
+
+              case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.to_json)")
+              }
+              case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_json })")
+              }
+              case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : o[1].to_hash; hash }).to_json")
+              }
+
+              case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.to_json)")
+              }
+              case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_json })")
+              }
+              case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
+                requestBuilder.append(s".with_json(${ti.varName}.inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : o[1].to_hash; hash }).to_json")
+              }
+
+              case TypeInstance(Container.UNDEFINED(container), _) => {
+                sys.error(s"Unsupported container[$container]")
+              }
+              case TypeInstance(_, Type(TypeKind.UNDEFINED(kind), name)) => {
+                sys.error(s"Unsupported typeKind[$kind] w/ name[$name]")
+              }
+            }
           }
           case _ => sys.error(s"Invalid body [${op.body}]")
         }
@@ -315,16 +348,31 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       // TODO: match on all response codes
       op.responses.headOption.map { response =>
-        response.datatype.name match {
-          case Datatype.UnitType.name => {
-            responseBuilder.append("\n        nil")
+        response.`type` match {
+          case TypeInstance(container, Type(TypeKind.Primitive, name)) => {
+            Primitives(name) match {
+              case None => 
+              case Some(Primitives.Unit) => responseBuilder.append("\n        nil")
+              case Some(pt) => {
+                responseBuilder.append(buildResponse(container, RubyUtil.toDefaultVariable()))
+              }
+            }
           }
 
-          case resourceName: String => {
-            if (op.responses.head.datatype.multiple) {
-              responseBuilder.append(".map")
-            }
-            responseBuilder.append(s" { |hash| ${moduleName}::Models::${RubyUtil.toClassName(resourceName)}.new(hash) }")
+          case TypeInstance(container, Type(TypeKind.Model, name)) => {
+            responseBuilder.append(buildResponse(container, name))
+          }
+
+          case TypeInstance(container, Type(TypeKind.Enum, name)) => {
+            responseBuilder.append(buildResponse(container, name))
+          }
+
+          case TypeInstance(Container.UNDEFINED(container), _) => {
+            sys.error(s"Invalid container[$container]")
+          }
+
+          case TypeInstance(_, Type(TypeKind.UNDEFINED(kind), name)) => {
+            sys.error(s"Unsupported typeKind[$kind] w/ name[$name]")
           }
         }
       }
@@ -354,28 +402,44 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
 
     model.fields.map { field =>
-      sb.append(s"        @${field.name} = ${parseArgument(field)}")
+      sb.append(s"        @${field.name} = ${parseArgument(field.name, field.`type`, field.required, field.default)}")
     }
 
     sb.append("      end\n")
+
+    sb.append("      def to_json")
+    sb.append("        JSON.dump(to_hash)")
+    sb.append("       end\n")
 
     sb.append("      def to_hash")
     sb.append("        {")
     sb.append(
       model.fields.map { field =>
-        val nullable = field.datatype match {
-          case Type(TypeKind.Primitive, _, _) => field.name
-          case Type(TypeKind.Model, _, _) => {
-            if (field.datatype.multiple) {
-              s"${field.name}.map(&:to_hash)"
-            } else {
-              s"${field.name}.to_hash"
-            }
+        val value = field.`type` match {
+          case TypeInstance(_, Type(TypeKind.Primitive, name)) => {
+            field.name
           }
-          case Type(TypeKind.Enum, _, _) => s":${field.name} => ${field.name}.value"
-        }
 
-        val value = if (field.required) nullable else s"${field.name}.nil? ? nil : ${nullable}"
+          case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
+            s"${field.name}.nil? ? nil : ${field.name}.to_hash"
+          }
+          case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
+            s"(${field.name} || []).map(&:to_hash)"
+          }
+          case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
+            s"(${field.name} || {}).inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].to_hash; h }"
+          }
+
+          case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
+            s"${field.name}.nil? ? nil : ${field.name}.value"
+          }
+          case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
+            s"(${field.name} || []).map(&:value)"
+          }
+          case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
+            s"(${field.name} || {}).inject({}).map { |h, o| h[o[0]] = o[1].nil? ? nil : o[1].value; h }"
+          }
+        }
 
         s":${field.name} => ${value}"
       }.mkString("            ", ",\n            ", "")
@@ -388,35 +452,135 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.mkString("\n")
   }
 
-  private def parseArgument(field: Field): String = {
-    field.datatype match {
-      case Type(TypeKind.Primitive, name, _) => {
-        val datatype = Datatype.forceByName(name)
-        parsePrimitiveArgument(field.name, datatype, field.required, field.default, field.datatype.multiple)
+  private def withHelper(
+    method: String,
+    code: String
+  ) = s"$method($code)"
+
+  private def parseArgumentPrimitive(
+    fieldName: String,
+    value: String,
+    ptName: String,
+    required: Boolean,
+    default: Option[String]
+  ): String = {
+    val pt = Primitives(ptName).getOrElse {
+      sys.error("Invalid primitive[$ptName]")
+    }
+    val arg = pt match {
+      case Primitives.String | Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean => {
+        value
       }
-      case  Type(TypeKind.Model, name, _) => {
-        parseModelArgument(field.name, name, field.required, field.datatype.multiple)
+
+      case Primitives.DateIso8601 => {
+        withHelper("HttpClient::Helper.to_date_iso8601", value)
       }
-      case Type(TypeKind.Enum, name, _) => {
-        parseEnumArgument(field.name, name, field.required, field.datatype.multiple)
+
+      case Primitives.DateTimeIso8601 => {
+        withHelper("HttpClient::Helper.to_date_time_iso8601", value)
+      }
+
+      case Primitives.Uuid => {
+        withHelper("HttpClient::Helper.to_uuid", value)
+      }
+
+      case Primitives.Decimal => {
+        withHelper("HttpClient::Helper.to_big_decimal", value)
+      }
+
+      case Primitives.Unit => {
+        sys.error("Cannot have a unit parameter")
       }
     }
 
+    val mustBeSpecified = required && default.isEmpty
+
+    (pt, mustBeSpecified) match {
+      case (Primitives.Boolean, true) => {
+        s"HttpClient::Preconditions.assert_boolean('$fieldName', $arg)"
+      }
+      case (Primitives.Boolean, false) => {
+        s"HttpClient::Preconditions.assert_boolean_or_nil('$fieldName', $arg)"
+      }
+      case (_, req) => {
+        val className = rubyClass(pt)
+        val assertMethod = if (req) { "assert_class" } else { "assert_class_or_nil" }
+        s"HttpClient::Preconditions.$assertMethod('$fieldName', $arg, $className)"
+      }
+    }
   }
 
-  private def parseArgument(param: Parameter): String = {
-    param.datatype match {
-      case Type(TypeKind.Primitive, name, _) => {
-        val datatype = Datatype.forceByName(name)
-        parsePrimitiveArgument(param.name, datatype, param.required, param.default, param.datatype.multiple)
+  private def parseArgument(
+    fieldName: String,
+    ti: TypeInstance,
+    required: Boolean,
+    default: Option[String]
+  ): String = {
+    ti match {
+      case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
+        parseArgumentPrimitive(fieldName, s"opts.delete(:$fieldName)", name, required, default)
       }
-      case Type(TypeKind.Model, name, _) => {
-        parseModelArgument(param.name, name, param.required, param.datatype.multiple)
+
+      case TypeInstance(Container.List, Type(TypeKind.Primitive, name)) => {
+        s"opts.delete(:$fieldName).map { |v| " +
+        parseArgumentPrimitive(fieldName, "v", name, required, default) +
+        "}"
       }
-      case Type(TypeKind.Enum, name, _) => {
-        parseEnumArgument(param.name, name, param.required, param.datatype.multiple)
+
+      case TypeInstance(Container.Map, Type(TypeKind.Primitive, name)) => {
+        s"opts.delete(:$fieldName).inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
+      }
+
+      case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
+        val klass = qualifiedClassName(name)
+        wrapWithAssertion(
+          fieldName,
+          klass,
+          required,
+          s"opts[:$fieldName].nil? ? nil : (opts[:$fieldName].is_a?($klass) ? opts.delete(:$fieldName) : $klass.new(opts.delete(:$fieldName)))"
+        )
+      }
+
+      case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
+        val klass = qualifiedClassName(name)
+        s"(opts.delete(:$fieldName) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
+      }
+
+      case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
+        val klass = qualifiedClassName(name)
+        s"(opts.delete(:$fieldName) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1])); h" + "}"
+      }
+
+      case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
+        val klass = qualifiedClassName(name)
+        wrapWithAssertion(
+          fieldName,
+          klass,
+          required,
+          s"opts[:$fieldName].nil? ? nil : (opts[:$fieldName].is_a?($klass) ? opts.delete(:$fieldName) : $klass.apply(opts.delete(:$fieldName)))"
+        )
+      }
+
+      case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
+        val klass = qualifiedClassName(name)
+        s"(opts.delete(:$fieldName) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
+      }
+
+      case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
+        val klass = qualifiedClassName(name)
+        s"(opts.delete(:$fieldName) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
       }
     }
+  }
+
+  private def wrapWithAssertion(
+    fieldName: String,
+    className: String,
+    required: Boolean,
+    code: String
+  ): String = {
+    val assertMethod = if (required) { "assert_class" } else { "assert_class_or_nil" }
+    s"HttpClient::Preconditions.$assertMethod('$fieldName', $code, $className)"
   }
 
   private def qualifiedClassName(
@@ -428,88 +592,147 @@ case class RubyClientGenerator(service: ServiceDescription) {
     )
   }
 
-  private def parseModelArgument(name: String, modelName: String, required: Boolean, multiple: Boolean): String = {
-    val value = s"opts.delete(:${name})"
+  private def parseModelArgument(name: String, container: Container, modelName: String, required: Boolean): String = {
+    val value = s"opts.delete(:$name)"
     val klass = qualifiedClassName(modelName)
-    s"HttpClient::Helper.to_model_instance('${name}', ${klass}, ${value}, :required => $required, :multiple => $multiple)"
+
+    val methodName = container match {
+      case Container.Singleton => "to_instance_singleton"
+      case Container.List => "to_instance_list"
+      case Container.Map => "to_instance_map"
+      case Container.UNDEFINED(container) => {
+        sys.error(s"Invalid container[$container]")
+      }
+    }
+
+    s"HttpClient::Helper.$methodName('$name', ${klass}, ${value}, :required => $required)"
   }
 
-  private def parseEnumArgument(name: String, enumName: String, required: Boolean, multiple: Boolean): String = {
-    val value = s"opts.delete(:${name})"
+  private def parseEnumArgument(name: String, container: Container, enumName: String, required: Boolean, default: Option[String]): String = {
+    val value = default match {
+      case None => s"opts.delete(:$name)"
+      case Some(defaultValue) => s"opts.delete(:$name) || \'$defaultValue\'"
+    }
+
     val klass = qualifiedClassName(enumName)
-    s"HttpClient::Helper.to_klass('$name', $klass.apply($value), $klass, :required => $required, :multiple => $multiple)"
-  }
 
-  private def parsePrimitiveArgument(name: String, datatype: Datatype, required: Boolean, default: Option[String], multiple: Boolean): String = {
-    val value = if (default.isEmpty) {
-      s"opts.delete(:${name})"
-    } else if (datatype == Datatype.StringType) {
-      s"opts.delete(:${name}) || \'${default.get}\'"
-    } else if (datatype == Datatype.BooleanType) {
-      s"opts.has_key?(:${name}) ? (opts.delete(:${name}) ? true : false) : ${default.get}"
-    } else {
-      s"opts.delete(:${name}) || ${default.get}"
+    val methodName = container match {
+      case Container.Singleton => "to_klass_singleton"
+      case Container.List => "to_klass_list"
+      case Container.Map => "to_klass_map"
+      case Container.UNDEFINED(container) => {
+        sys.error(s"Invalid container[$container]")
+      }
     }
 
-    val hasValue = (required || !default.isEmpty)
-    val assertMethod = if (hasValue) { "assert_class" } else { "assert_class_or_nil" }
-    val klass = rubyClass(datatype)
-
-    datatype match {
-      case Datatype.DecimalType => {
-        s"HttpClient::Helper.to_big_decimal('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Datatype.UuidType => {
-        s"HttpClient::Helper.to_uuid('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Datatype.DateIso8601Type => {
-        s"HttpClient::Helper.to_date_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Datatype.DateTimeIso8601Type => {
-        s"HttpClient::Helper.to_date_time_iso8601('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Datatype.BooleanType => {
-        s"HttpClient::Helper.to_boolean('$name', $value, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Datatype.DoubleType | Datatype.IntegerType | Datatype.LongType | Datatype.MapType | Datatype.StringType => {
-        s"HttpClient::Helper.to_klass('$name', $value, $klass, :required => ${required}, :multiple => ${multiple})"
-      }
-
-      case Datatype.UnitType => {
-        sys.error("Cannot have a unit type as a parameter")
-      }
-
-    }
-
+    s"HttpClient::Helper.$methodName('$name', $klass.apply($value), $klass, :required => $required)"
   }
 
-  private def rubyClass(datatype: Datatype): String = {
-    datatype match {
-      case Datatype.StringType => "String"
-      case Datatype.LongType => "Integer"
-      case Datatype.DoubleType => "Float"
-      case Datatype.IntegerType => "Integer"
-      case Datatype.BooleanType => "String"
-      case Datatype.DecimalType => "BigDecimal"
-      case Datatype.UuidType => "String"
-      case Datatype.DateIso8601Type => "Date"
-      case Datatype.DateTimeIso8601Type => "DateTime"
-      case Datatype.MapType => "Hash"
-      case Datatype.UnitType => "nil"
+  private def rubyClass(pt: Primitives): String = {
+    pt match {
+      case Primitives.String => "String"
+      case Primitives.Long => "Integer"
+      case Primitives.Double => "Float"
+      case Primitives.Integer => "Integer"
+      case Primitives.Boolean => "String"
+      case Primitives.Decimal => "BigDecimal"
+      case Primitives.Uuid => "String"
+      case Primitives.DateIso8601 => "Date"
+      case Primitives.DateTimeIso8601 => "DateTime"
+      case Primitives.Unit => "nil"
     }
   }
 
-  private def asString(varName: String, d: Datatype): String = d match {
-    case Datatype.StringType | Datatype.IntegerType | Datatype.DoubleType | Datatype.LongType | Datatype.BooleanType | Datatype.DecimalType | Datatype.UuidType => varName
-    case Datatype.DateIso8601Type => s"$varName.strftime('%Y-%m-%d')"
-    case Datatype.DateTimeIso8601Type => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
-    case Datatype.MapType | Datatype.UnitType => {
-      sys.error(s"Unsupported type[$d] for string formatting - name[$varName]")
+  private def asString(varName: String, ptName: String): String = {
+    Primitives(ptName).getOrElse {
+      sys.error(s"Unknown primitive type[$ptName]")
+    } match {
+      case Primitives.String => s"CGI.escape($varName)"
+      case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Uuid | Primitives.Decimal | Primitives.Boolean => varName
+      case Primitives.DateIso8601 => s"$varName.strftime('%Y-%m-%d')"
+      case Primitives.DateTimeIso8601 => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
+      case Primitives.Unit => {
+        sys.error(s"Unsupported type[$ptName] for string formatting - varName[$varName]")
+      }
+    }
+  }
+
+  case class RubyTypeInfo(
+    varName: String,
+    klass: String,
+    assertMethod: String
+  )
+
+  private def parseTypeInstance(
+    instance: TypeInstance,
+    fieldName: Option[String] = None
+  ): RubyTypeInfo = {
+    val klass = instance.`type` match {
+      case Type(TypeKind.Primitive, ptName) => Primitives(ptName) match {
+        case None => sys.error(s"Unsupported primitive[$ptName] for instance[$instance]")
+        case Some(pt) => rubyClass(pt)
+      }
+      case Type(TypeKind.Model, name) => qualifiedClassName(name)
+      case Type(TypeKind.Enum, name) => qualifiedClassName(name)
+      case Type(TypeKind.UNDEFINED(kind), name) => sys.error(s"Unsupported typeKind[$kind] for var[$name]")
+    }
+
+    val varName = instance match {
+      case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
+        fieldName match {
+          case Some(n) => RubyUtil.toVariable(n, multiple = false)
+          case None => RubyUtil.toDefaultVariable(multiple = false)
+        }
+      }
+      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, name)) => {
+        fieldName match {
+          case Some(name) => RubyUtil.toVariable(name, multiple = true)
+          case None => RubyUtil.toDefaultVariable(multiple = true)
+        }
+      }
+
+      case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => RubyUtil.toVariable(fieldName.getOrElse(name), multiple = false)
+      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name)) => RubyUtil.toVariable(fieldName.getOrElse(name), multiple = true)
+
+      case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => RubyUtil.toVariable(fieldName.getOrElse(name), multiple = false)
+      case TypeInstance(Container.List | Container.Map, Type(TypeKind.Enum, name)) => RubyUtil.toVariable(fieldName.getOrElse(name), multiple = true)
+    }
+
+    val assertStub = instance.container match {
+      case Container.Singleton => "assert_class"
+      case Container.List => "assert_collection_of_class"
+      case Container.Map => "assert_hash_of_class"
+      case Container.UNDEFINED(container) => {
+        sys.error(s"Invalid container[$container]")
+      }
+    }
+
+    RubyTypeInfo(
+      varName = varName,
+      klass = klass,
+      assertMethod = s"HttpClient::Preconditions.$assertStub('$varName', $varName, $klass)"
+    )
+  }
+
+  private def buildResponse(
+    container: Container,
+    name: String
+  ): String = {
+    val varName = qualifiedClassName(name)
+    val mapSingleObject = s" { |hash| $varName.new(hash) }"
+    container match {
+      case Container.Singleton => {
+        mapSingleObject
+      }
+      case Container.List => {
+        ".map" + mapSingleObject
+      }
+      case Container.Map => {
+        "inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : $varName.new(hash); hash }"
+      }
+      case Container.UNDEFINED(container) => {
+        sys.error(s"Invalid container[$container]")
+      }
     }
   }
 

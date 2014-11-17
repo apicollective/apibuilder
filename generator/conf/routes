@@ -1,4 +1,4 @@
-GET      /_internal_/healthcheck    controllers.Healthchecks.get()
-GET      /generators           controllers.Generators.get()
-GET      /generators/:key      controllers.Generators.getByKey(key: String)
-POST     /invocations/:key     controllers.Invocations.postByKey(key: String)
+GET      /generators                 controllers.Generators.get(key: scala.Option[String], limit: Int ?= 100, offset: Int ?= 0)
+GET      /generators/:key            controllers.Generators.getByKey(key: String)
+GET      /_internal_/healthcheck     controllers.Healthchecks.get()
+POST     /invocations/:key           controllers.Invocations.postByKey(key: String)

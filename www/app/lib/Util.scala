@@ -1,6 +1,7 @@
 package lib
 
 import core.VersionTag
+import com.gilt.apidocgenerator.models.Container
 
 object Util {
 
@@ -24,11 +25,12 @@ object Util {
     }
   }
 
-  def formatType(typeName: String, isMultiple: Boolean) = {
-    if (isMultiple) {
-      s"[$typeName]"
-    } else {
-      typeName
+  def formatType(container: Container, name: String) = {
+    container match {
+      case Container.Singleton => name
+      case Container.List => s"[$name]"
+      case Container.Map => s"map[$name]"
+      case Container.UNDEFINED(container) => s"$container[$name]"
     }
   }
 

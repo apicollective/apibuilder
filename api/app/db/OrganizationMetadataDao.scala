@@ -2,8 +2,7 @@ package db
 
 import com.gilt.apidoc.models.json._
 import com.gilt.apidoc.models.{Organization, OrganizationMetadata, User, Version, Visibility}
-import core.Text
-import lib.{Validation, ValidationError}
+import lib.{Text, Validation, ValidationError}
 import anorm._
 import play.api.db._
 import play.api.Play.current

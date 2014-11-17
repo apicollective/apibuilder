@@ -2,9 +2,9 @@ package models.ning
 
 import com.gilt.apidocgenerator.models.ServiceDescription
 import core._
-import core.generator._
+import generator._
 import models._
-import Text._
+import lib.Text._
 
 case class NingVersion(
   name: String

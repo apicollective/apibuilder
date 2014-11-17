@@ -1,8 +1,8 @@
 package db
 
-import org.scalatest.{ FunSpec, Matchers }
+import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
-import core.Role
+import lib.Role
 
 class UserDaoSpec extends FunSpec with Matchers {
 

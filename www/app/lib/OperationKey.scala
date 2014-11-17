@@ -1,7 +1,6 @@
 package lib
 
 import com.gilt.apidocgenerator.models.{Operation, ServiceDescription}
-import core.UrlKey
 
 object OperationKey {
 
@@ -15,6 +14,6 @@ object OperationKey {
 
 case class OperationKey(op: Operation) {
 
-  lazy val key = UrlKey.generate(s"${op.model.name} ${op.method} ${op.path}")
+  lazy val key = lib.UrlKey.generate(s"${op.model.name} ${op.method} ${op.path}")
 
 }

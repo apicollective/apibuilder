@@ -22,7 +22,7 @@
            <td>@member.user.name</td>
            @if(isAdmin) {
              <td>
-               @if(member.role == core.Role.Member.key) {
+               @if(member.role == lib.Role.Member.key) {
                  <a class="postForm" href="@routes.Members.postMakeAdmin(tpl.org.get.key, member.guid)">Make admin</a>
                } else {
                  <a class="postForm" href="@routes.Members.postRevokeAdmin(tpl.org.get.key, member.guid)">Revoke admin</a>

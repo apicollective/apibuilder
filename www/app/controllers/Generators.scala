@@ -26,35 +26,24 @@ object Generators extends Controller {
     }
   }
 
-  def getByGuid(guid: java.util.UUID) = Authenticated.async { implicit request =>
-    def getOwner(gen: Option[Generator]): Future[Option[User]] = {
-      gen.fold(
-        Future.successful(None: Option[User])
-      ) { gen =>
-        request.api.Users.getByGuid(gen.ownerGuid)
-      }
-    }
-    (for {
-      generator <- request.api.Generators.getByGuid(guid)
-      owner <- getOwner(generator)
+  def getByKey(key: String) = Authenticated.async { implicit request =>
+    for {
+      generator <- request.api.Generators.getByKey(key)
     } yield {
-      (generator, owner)
-    }).recover {
-      case ex: Exception => (None, None)
-    }.map { t =>
-      val (generator, owner) = t
-      Ok(views.html.generators.details(
-        MainTemplate(
-          user = Some(request.user),
-          owner = owner,
-          generators = generator.toSeq,
-          title = s"Generator Details"
-        )
-      ))
+      generator match {
+        case None => Redirect(routes.Generators.list()).flashing("warning" -> s"Generator not found")
+        case Some(g) => {
+          Ok(
+            views.html.generators.details(
+              request.mainTemplate("Generator Details").copy(generators = Seq(g))
+            )
+          )
+        }
+      }
     }
   }
 
-  def postUpdate(generatorGuid: java.util.UUID) = Authenticated.async { implicit request =>
+  def postUpdate(key: String) = Authenticated.async { implicit request =>
     val tpl = MainTemplate(
       user = Some(request.user),
       title = s"Add Generator"
@@ -67,30 +56,24 @@ object Generators extends Controller {
       },
 
       valid => {
-        request.api.Generators.putByGuid(GeneratorUpdateForm(
+        request.api.Generators.putByKey(GeneratorUpdateForm(
           visibility = valid.visibility.map(Visibility(_)),
           enabled = valid.enabled
-        ), generatorGuid).map(_ => Ok)
+        ), key).map(_ => Ok)
       }
     )
   }
 
   def create() = Authenticated { implicit request =>
     Ok(views.html.generators.form(
-      MainTemplate(
-        user = Some(request.user),
-        title = s"Add Generator"
-      ),
+      request.mainTemplate("Add Generator"),
       1,
       generatorCreateForm
     ))
   }
 
   def postCreate() = Authenticated.async { implicit request =>
-    val tpl = MainTemplate(
-      user = Some(request.user),
-      title = s"Add Generator"
-    )
+    val tpl = request.mainTemplate("Add Generator")
     val boundForm = generatorCreateForm.bindFromRequest
     boundForm.fold (
 
@@ -134,9 +117,9 @@ object Generators extends Controller {
     )
   }
 
-  def postRemove(guid: java.util.UUID) = Authenticated.async { implicit request =>
+  def postRemove(key: String) = Authenticated.async { implicit request =>
     for {
-      response <- request.api.Generators.deleteByGuid(guid)
+      response <- request.api.Generators.deleteByKey(key)
     } yield {
       Redirect(routes.Generators.list()).flashing("success" -> s"Generator removed")
     }

@@ -2,6 +2,10 @@
 
 load 'ruby_client.rb'
 
+if arg_force = (ARGV[0] == "--force")
+  ARGV.shift
+end
+
 service_uri = ARGV.shift
 token = ARGV.shift
 user_guid = ARGV.shift
@@ -15,7 +19,7 @@ services_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }
 
-if !orgs.empty? || !services.empty?
+if !arg_force && (!orgs.empty? || !services.empty?)
   puts "Confirm you would like to limit tests to:"
   puts "  Organization: " + (orgs.empty? ? "All" : orgs.join(", "))
   puts "      Services: " + (services.empty? ? "All" : services.join(", "))
@@ -108,7 +112,7 @@ targets = [Target.new('ning_1_8', ScalaTester.new("src/main/scala"), ['ning_1_8_
            Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
 
 def get_code(client, org, service, target)
-  client.code.get_by_org_key_and_service_key_and_version_and_target_key(org.key, service.key, "latest", target)
+  client.code.get_by_org_key_and_service_key_and_version_and_generator_key(org.key, service.key, "latest", target)
 end
 
 class MyClient < Apidoc::Client

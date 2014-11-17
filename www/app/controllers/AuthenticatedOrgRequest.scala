@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.apidoc.models.{ Membership, Organization, User }
 import models.MainTemplate
-import core.Role
+import lib.Role
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
@@ -22,7 +22,7 @@ class AuthenticatedOrgRequest[A](
     "A user that is an admin should always be considered a member"
   )
 
-  def mainTemplate(title: String = org.name): MainTemplate = {
+  override def mainTemplate(title: String = org.name): MainTemplate = {
     MainTemplate(
       title = title,
       user = Some(user),

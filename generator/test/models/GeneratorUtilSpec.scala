@@ -1,13 +1,14 @@
 package models
 
-import com.gilt.apidocgenerator.models.{Parameter, Model, Type, TypeKind, ParameterLocation, Operation, Resource}
+import lib.Primitives
+import com.gilt.apidocgenerator.models.{Container, Model, Parameter, ParameterLocation, Operation, Resource, Type, TypeInstance, TypeKind}
 import core._
-import core.generator._
+import generator._
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
 
-  private lazy val service = TestHelper.parseFile("../reference-api/api.json").serviceDescription.get
+  private lazy val service = TestHelper.parseFile("reference-api/api.json").serviceDescription.get
   private lazy val ssd = new ScalaServiceDescription(service)
 
   private val play2Util = GeneratorUtil(new ScalaClientMethodConfigs.Play {
@@ -18,13 +19,13 @@ class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
     val model = new Model("model", "models", None, Nil)
     val q1 = new Parameter(
       "q1",
-      Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
+      TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Double.toString)),
       ParameterLocation.Query,
       None, true, None, None, None, None
     )
     val q2 = new Parameter(
       "q2",
-      Type(TypeKind.Primitive, Datatype.DoubleType.name, false),
+      TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Double.toString)),
       ParameterLocation.Query,
       None, false, None, None, None, None
     )
@@ -70,7 +71,7 @@ val queryParameters = optionalMessages.map("optional_messages" -> _) ++
   }
 
   describe("with reference-api service") {
-    lazy val service = TestHelper.parseFile(s"../reference-api/api.json").serviceDescription.get
+    lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
 
     it("supports optional seq  query parameters") {
       val operation = ssd.resources.find(_.model.name == "User").get.operations.find(op => op.method == "GET" && op.path == "/users").get

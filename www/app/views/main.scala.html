@@ -46,7 +46,7 @@
               <b>Resources</b>
               <ul class="nav nav-sidebar">
                 @sd.resources.map { resource =>
-                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@core.UrlKey.generate(resource.model.name)">@resource.model.plural</a></li>
+                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@lib.UrlKey.generate(resource.model.name)">@resource.model.plural</a></li>
                 }
               </ul>
             }
@@ -55,7 +55,7 @@
               <b>Enums</b>
               <ul class="nav nav-sidebar">
                 @sd.enums.map { enum =>
-                  <li><a href="#enum-@core.UrlKey.generate(enum.name)">@enum.name</a></li>
+                  <li><a href="#enum-@lib.UrlKey.generate(enum.name)">@enum.name</a></li>
                 }
               </ul>
             }
@@ -64,7 +64,7 @@
               <b>Models</b>
               <ul class="nav nav-sidebar">
                 @sd.models.map { model =>
-                  <li><a href="#model-@core.UrlKey.generate(model.name)">@model.name</a></li>
+                  <li><a href="#model-@lib.UrlKey.generate(model.name)">@model.name</a></li>
                 }
               </ul>
             }
@@ -72,7 +72,7 @@
             <b>Clients</b>
             <ul class="nav nav-sidebar">
                 @metadata.generators.map { generator =>
-                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, generator.guid)">@generator.name</a>
+                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, generator.key)">@generator.name</a>
               }
             </ul>
           }

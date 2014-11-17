@@ -1,4 +1,8 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, model: com.gilt.apidocgenerator.models.Model, isMultiple: Boolean)
+@(org: com.gilt.apidoc.models.Organization,
+  service: com.gilt.apidoc.models.Service,
+  version: String,
+  container: com.gilt.apidocgenerator.models.Container,
+  model: com.gilt.apidocgenerator.models.Model)
 
-<a href="@routes.Versions.show(org.key, service.key, version)#model-@core.UrlKey.generate(model.name)">@lib.Util.formatType(model.name, isMultiple)</a>
+<a href="@routes.Versions.show(org.key, service.key, version)#model-@lib.UrlKey.generate(model.name)">@lib.Util.formatType(container, model.name)</a>
 

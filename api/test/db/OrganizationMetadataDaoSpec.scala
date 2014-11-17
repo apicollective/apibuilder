@@ -2,7 +2,7 @@ package db
 
 import com.gilt.apidoc.models.{Organization, OrganizationMetadata, Visibility}
 import lib.Validation
-import org.scalatest.{ FunSpec, Matchers }
+import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
 import org.postgresql.util.PSQLException
