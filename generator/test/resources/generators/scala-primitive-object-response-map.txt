@@ -1,0 +1,8 @@
+object Contents extends Contents {
+  override def getData()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Map[String, _root_.play.api.libs.json.JsObject]] = {
+    _executeRequest("GET", s"/contents/data").map {
+      case r if r.status == 200 => r.json.as[Map[String, _root_.play.api.libs.json.JsObject]]
+      case r => throw new FailedRequest(r)
+    }
+  }
+}

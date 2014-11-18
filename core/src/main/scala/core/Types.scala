@@ -84,6 +84,12 @@ object PrimitiveMetadata {
     ),
 
     PrimitiveMetadata(
+      primitive = Primitives.Object,
+      examples = Seq("{}"),
+      description = "Represents an arbitrary json object. In scala clients using play-json, maps to a play.api.libs.json.JsObject. In ruby clients, JSON is parsed into a hash"
+    ),
+
+    PrimitiveMetadata(
       primitive = Primitives.String,
       examples = Seq("This is a fox."),
       description = "unicode character sequence"

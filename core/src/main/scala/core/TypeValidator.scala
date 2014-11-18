@@ -171,6 +171,13 @@ case class TypeValidator(
                 }
               }
 
+              case Primitives.Object => {
+                Try(Json.parse(value)) match {
+                  case Success(v) => None
+                  case Failure(v) => Some(withPrefix(errorPrefix, s"Value[$value] is not a valid object"))
+                }
+              }
+
               case Primitives.Decimal => {
                 Try(BigDecimal(value)) match {
                   case Success(v) => None

@@ -132,8 +132,8 @@ case class RubyClientGenerator(service: ServiceDescription) {
     "\n\n  end" +
     "\n\n  module Models\n" +
     service.enums.map { RubyClientGenerator.generateEnum(_) }.mkString("\n\n").indent(4) + "\n\n" +
-    service.models.map { generateModel(_) }.mkString("\n\n") +
-    "\n\n  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
+    service.models.map { generateModel(_) }.mkString("\n\n").indent(4) + "\n\n" +
+    "  end\n\n  # ===== END OF SERVICE DEFINITION =====\n  " +
     RubyHttpClient.contents +
     "\nend"
   }
@@ -344,40 +344,9 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
       requestBuilder.append(s".${op.method.toLowerCase}")
 
-      val responseBuilder = new StringBuilder()
+      val response = generateResponses(op)
 
-      // TODO: match on all response codes
-      op.responses.headOption.map { response =>
-        response.`type` match {
-          case TypeInstance(container, Type(TypeKind.Primitive, name)) => {
-            Primitives(name) match {
-              case None => 
-              case Some(Primitives.Unit) => responseBuilder.append("\n        nil")
-              case Some(pt) => {
-                responseBuilder.append(buildResponse(container, RubyUtil.toDefaultVariable()))
-              }
-            }
-          }
-
-          case TypeInstance(container, Type(TypeKind.Model, name)) => {
-            responseBuilder.append(buildResponse(container, name))
-          }
-
-          case TypeInstance(container, Type(TypeKind.Enum, name)) => {
-            responseBuilder.append(buildResponse(container, name))
-          }
-
-          case TypeInstance(Container.UNDEFINED(container), _) => {
-            sys.error(s"Invalid container[$container]")
-          }
-
-          case TypeInstance(_, Type(TypeKind.UNDEFINED(kind), name)) => {
-            sys.error(s"Unsupported typeKind[$kind] w/ name[$name]")
-          }
-        }
-      }
-
-      sb.append(s"        ${requestBuilder.toString}${responseBuilder.toString}")
+      sb.append(s"        ${requestBuilder.toString}$response")
       sb.append("      end")
     }
 
@@ -393,26 +362,26 @@ case class RubyClientGenerator(service: ServiceDescription) {
     val sb = ListBuffer[String]()
 
     model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
-    sb.append(s"    class $className\n")
+    sb.append(s"class $className\n")
 
-    sb.append("      attr_reader " + model.fields.map( f => s":${f.name}" ).mkString(", "))
+    sb.append("  attr_reader " + model.fields.map( f => s":${f.name}" ).mkString(", "))
 
     sb.append("")
-    sb.append("      def initialize(incoming={})")
-    sb.append("        opts = HttpClient::Helper.symbolize_keys(incoming)")
+    sb.append("  def initialize(incoming={})")
+    sb.append("    opts = HttpClient::Helper.symbolize_keys(incoming)")
 
     model.fields.map { field =>
-      sb.append(s"        @${field.name} = ${parseArgument(field.name, field.`type`, field.required, field.default)}")
+      sb.append(s"    @${field.name} = ${parseArgument(field.name, field.`type`, field.required, field.default)}")
     }
 
-    sb.append("      end\n")
+    sb.append("  end\n")
 
-    sb.append("      def to_json")
-    sb.append("        JSON.dump(to_hash)")
-    sb.append("       end\n")
+    sb.append("  def to_json")
+    sb.append("    JSON.dump(to_hash)")
+    sb.append("  end\n")
 
-    sb.append("      def to_hash")
-    sb.append("        {")
+    sb.append("  def to_hash")
+    sb.append("    {")
     sb.append(
       model.fields.map { field =>
         val value = field.`type` match {
@@ -442,12 +411,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
         }
 
         s":${field.name} => ${value}"
-      }.mkString("            ", ",\n            ", "")
+      }.mkString("\n").indent(6)
     )
-    sb.append("        }")
-    sb.append("      end\n")
+    sb.append("    }")
+    sb.append("  end\n")
 
-    sb.append("    end")
+    sb.append("end")
 
     sb.mkString("\n")
   }
@@ -488,6 +457,10 @@ case class RubyClientGenerator(service: ServiceDescription) {
         withHelper("HttpClient::Helper.to_big_decimal", value)
       }
 
+      case Primitives.Object => {
+        withHelper("HttpClient::Helper.to_object", value)
+      }
+
       case Primitives.Unit => {
         sys.error("Cannot have a unit parameter")
       }
@@ -510,6 +483,22 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
   }
 
+  private def withDefaultArray(
+    arg: String,
+    required: Boolean
+  ) = required match {
+    case false => s"($arg || [])"
+    case true => s"HttpClient::Preconditions.assert_class($arg, Array)"
+  }
+
+  private def withDefaultMap(
+    arg: String,
+    required: Boolean
+  ) = required match {
+    case false => s"($arg || {})"
+    case true => s"HttpClient::Preconditions.assert_class($arg, Hash)"
+  }
+
   private def parseArgument(
     fieldName: String,
     ti: TypeInstance,
@@ -522,13 +511,11 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Primitive, name)) => {
-        s"opts.delete(:$fieldName).map { |v| " +
-        parseArgumentPrimitive(fieldName, "v", name, required, default) +
-        "}"
+        withDefaultArray(s"opts.delete(:$fieldName)", required) + ".map { |v| " + parseArgumentPrimitive(fieldName, "v", name, required, default) + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Primitive, name)) => {
-        s"opts.delete(:$fieldName).inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
+        withDefaultMap(s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
@@ -543,12 +530,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:$fieldName) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
+        withDefaultArray(s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:$fieldName) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1])); h" + "}"
+        withDefaultMap(s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1])); h" + "}"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
@@ -563,12 +550,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:$fieldName) || []).map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
+        withDefaultArray(s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        s"(opts.delete(:$fieldName) || {}).inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
+        withDefaultMap(s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
       }
     }
   }
@@ -630,16 +617,17 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
   private def rubyClass(pt: Primitives): String = {
     pt match {
-      case Primitives.String => "String"
-      case Primitives.Long => "Integer"
-      case Primitives.Double => "Float"
-      case Primitives.Integer => "Integer"
       case Primitives.Boolean => "String"
       case Primitives.Decimal => "BigDecimal"
-      case Primitives.Uuid => "String"
+      case Primitives.Double => "Float"
+      case Primitives.Integer => "Integer"
+      case Primitives.Long => "Integer"
       case Primitives.DateIso8601 => "Date"
       case Primitives.DateTimeIso8601 => "DateTime"
+      case Primitives.Object => "Hash"
+      case Primitives.String => "String"
       case Primitives.Unit => "nil"
+      case Primitives.Uuid => "String"
     }
   }
 
@@ -647,11 +635,11 @@ case class RubyClientGenerator(service: ServiceDescription) {
     Primitives(ptName).getOrElse {
       sys.error(s"Unknown primitive type[$ptName]")
     } match {
-      case Primitives.String => s"CGI.escape($varName)"
       case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Uuid | Primitives.Decimal | Primitives.Boolean => varName
+      case Primitives.String => s"CGI.escape($varName)"
       case Primitives.DateIso8601 => s"$varName.strftime('%Y-%m-%d')"
       case Primitives.DateTimeIso8601 => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
-      case Primitives.Unit => {
+      case Primitives.Object | Primitives.Unit => {
         sys.error(s"Unsupported type[$ptName] for string formatting - varName[$varName]")
       }
     }
@@ -714,6 +702,47 @@ case class RubyClientGenerator(service: ServiceDescription) {
     )
   }
 
+  def generateResponses(op: Operation): String = {
+    // TODO: match on all response codes
+    op.responses.headOption.map { response =>
+      generateResponse(response) match {
+        case None => "\n        nil"
+        case Some(v) => v
+      }
+    }.mkString("\n")
+  }
+
+  def generateResponse(response: Response): Option[String] = {
+    response.`type` match {
+      case TypeInstance(container, Type(TypeKind.Primitive, name)) => {
+        Primitives(name).getOrElse {
+          sys.error(s"Unknown primitive type[$name]")
+        } match {
+          case Primitives.Unit => None
+          case pt => {
+            Some(buildResponse(container, RubyUtil.toDefaultVariable()))
+          }
+        }
+      }
+
+      case TypeInstance(container, Type(TypeKind.Model, name)) => {
+        Some(buildResponse(container, name))
+      }
+
+      case TypeInstance(container, Type(TypeKind.Enum, name)) => {
+        Some(buildResponse(container, name))
+      }
+
+      case TypeInstance(Container.UNDEFINED(container), _) => {
+        sys.error(s"Invalid container[$container]")
+      }
+
+      case TypeInstance(_, Type(TypeKind.UNDEFINED(kind), name)) => {
+        sys.error(s"Unsupported typeKind[$kind] w/ name[$name]")
+      }
+    }
+  }
+
   private def buildResponse(
     container: Container,
     name: String
@@ -728,7 +757,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
         ".map" + mapSingleObject
       }
       case Container.Map => {
-        "inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : $varName.new(hash); hash }"
+        s".inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : $varName.new(hash); hash }"
       }
       case Container.UNDEFINED(container) => {
         sys.error(s"Invalid container[$container]")

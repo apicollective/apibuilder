@@ -1,0 +1,7 @@
+package apidoctest.models {
+
+  case class Content(
+    data: Seq[_root_.play.api.libs.json.JsObject]
+  )
+
+}

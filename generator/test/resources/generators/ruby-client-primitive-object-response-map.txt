@@ -1,0 +1,1 @@
+.inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : ApiDocTest::Models::Value.new(hash); hash }

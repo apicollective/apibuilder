@@ -3,7 +3,7 @@ package models
 import lib.Primitives
 import com.gilt.apidocgenerator.models._
 import core._
-import generator.{ScalaDataType, GeneratorUtil, ScalaServiceDescription, CodeGenerator}
+import generator.{ScalaDataType, GeneratorUtil, ScalaServiceDescription, ScalaUtil, CodeGenerator}
 
 object Play2RouteGenerator extends CodeGenerator {
 
@@ -115,10 +115,13 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
                 }
                 case Some(pt) => pt match {
                   case Primitives.String | Primitives.DateIso8601 | Primitives.DateTimeIso8601 | Primitives.Uuid => {
-                    s"""?= "$d""""
+                    s"?= %s".format(ScalaUtil.wrapInQuotes(d))
                   }
                   case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Boolean | Primitives.Decimal => {
                     s"?= ${d}"
+                  }
+                  case Primitives.Object => {
+                    "?= play.api.libs.json.parse(%s)".format(ScalaUtil.wrapInQuotes(d))
                   }
                   case Primitives.Unit => {
                     sys.error(s"Unsupported type[$pt] for default values")

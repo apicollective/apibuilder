@@ -217,16 +217,16 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
 
   private object PathParamHelper {
     def urlEncode(
-                   name: String,
-                   d: ScalaDataType
-                   ): String = {
+      name: String,
+      d: ScalaDataType
+    ): String = {
       d match {
         case ScalaStringType => s"""${config.pathEncodingMethod}($name, "UTF-8")"""
         case ScalaIntegerType | ScalaDoubleType | ScalaLongType | ScalaBooleanType | ScalaDecimalType | ScalaUuidType => name
         case ScalaEnumType(_, _) => s"""${config.pathEncodingMethod}($name.toString, "UTF-8")"""
         case ScalaDateIso8601Type => s"$name.toString"
         case ScalaDateTimeIso8601Type => s"$name.toString" // TODO
-        case ScalaListType(_) | ScalaMapType(_) | ScalaModelType(_, _) | ScalaUnitType => {
+        case ScalaListType(_) | ScalaMapType(_) | ScalaModelType(_, _) | ScalaObjectType | ScalaUnitType => {
           sys.error(s"Cannot encode params of type[$d] as path parameters (name: $name)")
         }
       }

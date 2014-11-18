@@ -323,6 +323,10 @@ require 'bigdecimal'
         value ? BigDecimal.new(value.to_s) : nil
       end
 
+      def Helper.to_object(value)
+        value ? JSON.parse(value) : nil
+      end
+
       def Helper.to_uuid(value)
         Preconditions.check_state(value.nil? || value.match(/^\w\w\w\w\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\-\w\w\w\w\w\w\w\w\w\w\w\w$/),
                                   "Invalid guid[%s]" % value)
