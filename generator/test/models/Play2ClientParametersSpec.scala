@@ -6,7 +6,8 @@ import org.scalatest.{ FunSpec, Matchers }
 
 class Play2ClientParametersSpec extends FunSpec with Matchers {
 
-  val baseJson = """
+  describe("validates that models cannot be parameters") {
+    val baseJson = """
     {
       "base_url": "http://localhost:9000",
       "name": "Api Doc",
@@ -37,15 +38,12 @@ class Play2ClientParametersSpec extends FunSpec with Matchers {
         }
       }
     }
-  """
+    """
 
-  it("supports specifying a query parameter with model type") {
-    val json = baseJson.format("tag", "tag")
-    ServiceDescriptionValidator(json).errors.mkString("") should be(s"Resource[user] GET /users: Parameter[tag] has an invalid type[tag]. Models are not supported as query parameters.")
-  }
-
-  it("Play client supports all query data types") {
-    // TODO
+    it("supports specifying a query parameter with model type") {
+      val json = baseJson.format("tag", "tag")
+      ServiceDescriptionValidator(json).errors.mkString("") should be(s"Resource[user] GET /users: Parameter[tag] has an invalid type[tag]. Models are not supported as query parameters.")
+    }
   }
 
 }

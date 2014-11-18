@@ -72,7 +72,8 @@
                 { "name": "guid", "type": "uuid" },
                 { "name": "email", "type": "string" },
                 { "name": "active", "type": "boolean" },
-                { "name": "age_group", "type": "age_group" }
+                { "name": "age_group", "type": "age_group" },
+                { "name": "tags", "type": "map[string]", "required": false }
             ]
         },
 
