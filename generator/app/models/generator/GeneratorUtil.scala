@@ -174,12 +174,12 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
       None
 
     } else if (!op.body.isEmpty) {
-      val body = op.body.get.body
+      val bodyType = op.body.get.body.`type`
       val name = op.body.get.name
 
-      val payload = body match {
+      val payload = bodyType match {
         case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, pt)) => {
-          ScalaDataType.asString(ScalaUtil.toDefaultVariable(), op.ssd.scalaDataType(body))
+          ScalaDataType.asString(ScalaUtil.toDefaultVariable(), op.ssd.scalaDataType(bodyType))
         }
         case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
           ScalaUtil.toVariable(name)
@@ -189,7 +189,7 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
         }
 
         case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, pt)) => {
-          ScalaDataType.asString(ScalaUtil.toDefaultVariable(multiple = true), op.ssd.scalaDataType(body))
+          ScalaDataType.asString(ScalaUtil.toDefaultVariable(multiple = true), op.ssd.scalaDataType(bodyType))
         }
         case TypeInstance(Container.List | Container.Map, Type(TypeKind.Model, name)) => {
           ScalaUtil.toVariable(name, true)

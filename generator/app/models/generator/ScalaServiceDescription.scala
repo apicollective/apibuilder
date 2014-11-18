@@ -155,9 +155,9 @@ class ScalaModel(val ssd: ScalaServiceDescription, val model: Model) {
 
 }
 
-class ScalaBody(val body: TypeInstance) {
+class ScalaBody(val body: Body) {
 
-  val name: String = body match {
+  val name: String = body.`type` match {
     case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => ScalaUtil.toDefaultClassName()
     case TypeInstance(Container.List | Container.Map, Type(TypeKind.Primitive, name)) => ScalaUtil.toDefaultClassName(true)
 
@@ -224,7 +224,7 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
 
   val name: String = GeneratorUtil.urlToMethodName(resource.model.plural, resource.path, operation.method, operation.path)
 
-  val argList: Option[String] = operation.body match {
+  val argList: Option[String] = operation.body.map(_.`type`) match {
     case None => ScalaUtil.fieldsToArgList(parameters.map(_.definition))
     case Some(typeInstance) => {
       val sdt = ssd.scalaDataType(typeInstance)

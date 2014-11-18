@@ -242,7 +242,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
       pathParams.map(_.name).foreach { n => paramStrings.append(RubyUtil.toVariable(n)) }
 
       if (Util.isJsonDocumentMethod(op.method)) {
-        op.body match {
+        op.body.map(_.`type`) match {
           case None => paramStrings.append("hash")
 
           case Some(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name))) => paramStrings.append(RubyUtil.toDefaultVariable(multiple = false))
@@ -297,7 +297,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
 
       if (Util.isJsonDocumentMethod(op.method)) {
-        op.body match {
+        op.body.map(_.`type`) match {
           case None => {
             sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
             requestBuilder.append(".with_json(hash.to_json)")
