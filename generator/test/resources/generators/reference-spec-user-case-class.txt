@@ -1,0 +1,7 @@
+case class User(
+  guid: _root_.java.util.UUID,
+  email: String,
+  active: Boolean,
+  ageGroup: apidocreferenceapi.models.AgeGroup,
+  tags: Option[Map[String, String]] = None
+)

@@ -14,13 +14,17 @@ object ScalaCaseClasses extends CodeGenerator {
     s"package ${ssd.modelPackageName} {\n\n  " +
     Seq(
       ssd.models.map { model =>
-        model.description.map { desc => ScalaUtil.textToComment(desc) + "\n" }.getOrElse("") +
-        s"case class ${model.name}(${model.argList.getOrElse("")})"
+        generateCaseClass(model)
       }.mkString("\n\n").indent(2),
       "",
       genEnums(ssd.enums).indent(2)
     ).mkString("\n").trim +
     s"\n\n}"
+  }
+
+  def generateCaseClass(model: ScalaModel): String = {
+    model.description.map { desc => ScalaUtil.textToComment(desc) + "\n" }.getOrElse("") +
+    s"case class ${model.name}(${model.argList.getOrElse("")})"
   }
 
   private def generatePlayEnums(enums: Seq[ScalaEnum]): String = {

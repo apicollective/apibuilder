@@ -1,0 +1,6 @@
+case class Member(
+  guid: _root_.java.util.UUID,
+  organization: apidocreferenceapi.models.Organization,
+  user: apidocreferenceapi.models.User,
+  role: String
+)
