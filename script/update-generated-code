@@ -28,6 +28,7 @@ download("apidoc" => {
            "play_2_x_routes" => "api/conf/routes"
          },
          "apidoc-generator" => {
+           "scala_models" => "core/src/main/scala/core/ApidocGenerator.scala",
            "play_2_3_client" => "generated/app/GeneratorClient.scala",
            "play_2_x_routes" => "generator/conf/routes"
          })

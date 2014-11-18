@@ -1,4 +1,9 @@
 package com.gilt.apidocgenerator.models {
+  case class Body(
+    `type`: com.gilt.apidocgenerator.models.TypeInstance,
+    description: scala.Option[String] = None
+  )
+
   case class Enum(
     name: String,
     description: scala.Option[String] = None,
@@ -67,7 +72,7 @@ package com.gilt.apidocgenerator.models {
     method: String,
     path: String,
     description: scala.Option[String] = None,
-    body: scala.Option[com.gilt.apidocgenerator.models.TypeInstance] = None,
+    body: scala.Option[com.gilt.apidocgenerator.models.Body] = None,
     parameters: Seq[com.gilt.apidocgenerator.models.Parameter],
     responses: Seq[com.gilt.apidocgenerator.models.Response]
   )
@@ -273,6 +278,20 @@ package com.gilt.apidocgenerator.models {
     implicit val jsonWritesApidocGeneratorEnum_TypeKind = new Writes[TypeKind] {
       def writes(x: TypeKind) = JsString(x.toString)
     }
+    implicit def jsonReadsApidocGeneratorBody: play.api.libs.json.Reads[Body] = {
+      (
+        (__ \ "type").read[com.gilt.apidocgenerator.models.TypeInstance] and
+        (__ \ "description").readNullable[String]
+      )(Body.apply _)
+    }
+
+    implicit def jsonWritesApidocGeneratorBody: play.api.libs.json.Writes[Body] = {
+      (
+        (__ \ "type").write[com.gilt.apidocgenerator.models.TypeInstance] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(Body.unapply _))
+    }
+
     implicit def jsonReadsApidocGeneratorEnum: play.api.libs.json.Reads[Enum] = {
       (
         (__ \ "name").read[String] and
@@ -425,7 +444,7 @@ package com.gilt.apidocgenerator.models {
         (__ \ "method").read[String] and
         (__ \ "path").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "body").readNullable[com.gilt.apidocgenerator.models.TypeInstance] and
+        (__ \ "body").readNullable[com.gilt.apidocgenerator.models.Body] and
         (__ \ "parameters").readNullable[Seq[com.gilt.apidocgenerator.models.Parameter]].map(_.getOrElse(Nil)) and
         (__ \ "responses").readNullable[Seq[com.gilt.apidocgenerator.models.Response]].map(_.getOrElse(Nil))
       )(Operation.apply _)
@@ -437,7 +456,7 @@ package com.gilt.apidocgenerator.models {
         (__ \ "method").write[String] and
         (__ \ "path").write[String] and
         (__ \ "description").write[scala.Option[String]] and
-        (__ \ "body").write[scala.Option[com.gilt.apidocgenerator.models.TypeInstance]] and
+        (__ \ "body").write[scala.Option[com.gilt.apidocgenerator.models.Body]] and
         (__ \ "parameters").write[Seq[com.gilt.apidocgenerator.models.Parameter]] and
         (__ \ "responses").write[Seq[com.gilt.apidocgenerator.models.Response]]
       )(unlift(Operation.unapply _))
@@ -564,7 +583,7 @@ package com.gilt.apidocgenerator {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidocgenerator.models.json._
 
-    private val UserAgent = "apidoc:0.6.13 http://www.apidoc.me/gilt/code/apidoc-generator/0.0.1-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.7.2 http://www.apidoc.me/gilt/code/apidoc-generator/0.7.1/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidocgenerator.client")
 
     logger.info(s"Initializing com.gilt.apidocgenerator.client for url $apiUrl")

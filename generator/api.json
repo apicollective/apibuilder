@@ -92,6 +92,13 @@
             ]
         },
 
+        "body": {
+            "fields": [
+                { "name": "type", "type": "type_instance" },
+                { "name": "description", "type": "string", "required": false }
+            ]
+        },
+
         "field": {
             "fields": [
                 { "name": "name", "type": "string" },
@@ -129,7 +136,7 @@
                 { "name": "method", "type": "string" },
                 { "name": "path", "type": "string" },
                 { "name": "description", "type": "string", "required": false },
-                { "name": "body", "type": "type_instance", "required": false },
+                { "name": "body", "type": "body", "required": false },
                 { "name": "parameters", "type": "[parameter]" },
                 { "name": "responses", "type": "[response]" }
             ]

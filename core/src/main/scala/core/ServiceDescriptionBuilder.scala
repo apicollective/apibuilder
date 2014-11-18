@@ -83,25 +83,36 @@ object OperationBuilder {
       ParameterBuilder(enums, models, p, location)
     }
 
-    val body: Option[TypeInstance] = internal.body.map { ib =>
-      TypeResolver(
-        enumNames = enums.map(_.name),
-        modelNames = models.map(_.name)
-      ).toTypeInstance(ib).getOrElse {
-        sys.error(s"Operation specifies body[${ib.name}] which references an undefined datatype, model or enum")
-      }
-    }
-
     Operation(model = model,
               method = method,
               path = internal.path,
               description = internal.description,
-              body = body,
+              body = internal.body.map { ib => Body(enums, models, ib) },
               parameters = pathParameters ++ internalParams,
               responses = internal.responses.map { ResponseBuilder(enums, models, _) })
   }
 
 }
+
+object Body {
+
+  def apply(enums: Seq[Enum], models: Seq[Model], ib: InternalBody): Body = {
+    ib.datatype match {
+      case None => sys.error("Body missing type: " + ib)
+      case Some(datatype) => com.gilt.apidocgenerator.models.Body(
+        `type` = TypeResolver(
+          enumNames = enums.map(_.name),
+          modelNames = models.map(_.name)
+        ).toTypeInstance(datatype).getOrElse {
+          sys.error(s"Body[$datatype] is not valid")
+        },
+        description = ib.description
+      )
+    }
+  }
+
+}
+
 
 object EnumBuilder {
 

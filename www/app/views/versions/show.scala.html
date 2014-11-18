@@ -50,9 +50,9 @@
                  <td colspan="2">
                    @operation.method @service.baseUrl@operation.path
 
-                   @if(!operation.body.isEmpty) {
+                   @operation.body.map { b =>
                      <h4>Body</h4>
-                     @body(tpl.org.get, tpl.service.get, tpl.version.get, service, operation)
+                     @body(tpl.org.get, tpl.service.get, tpl.version.get, service, b)
                    }
 
                    <h4>Parameters</h4>
