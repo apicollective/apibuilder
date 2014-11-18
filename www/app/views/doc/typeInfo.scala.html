@@ -4,4 +4,8 @@ specifies the type of this @field. Acceptable values include the name
 of either an enum, a model, or a
 (<a href="@routes.DocController.types">primitive type</a>). To specify
 a List, the type name can be wrapped with "[]". For example, to
-specify that the type is a collection of strings, use "[string]".
+specify that the type is a collection of strings, use "[string]". To
+specify a Map, the type name can be prefixed with "map[type]". For
+example, to specify that the type is a collection of longs, use
+"map[long]".  Note that for map, the keys must be strings (per the
+JSON specification).
