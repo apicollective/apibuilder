@@ -19,13 +19,13 @@
 
     where:
     <ul>
-      <li><em>name</em> specifies the human readable name of this service. It is used for display, and as the basis for generating a unique key for a URL</li>
-      <li><em>baseUrl</em> specifies the base URL where this service is hosted. Must start with "http"</li>
-      <li><em>description</em> specifies an optional description for what this service provides.</li>
-      <li><em>headers</em> specifies a JSON array defining any HTTP Headers that the service understands or expects. See <a href="#enum">Enum</a></li>
-      <li><em>enums</em> specifies a JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#header">Header</a></li>
-      <li><em>models</em> specifies a JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
-      <li><em>resources</em> specifies a JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the Models object. See <a href="#resource">Resource</a></li>
+      <li><em>name</em>: the human readable name of this service. Used for display, and as the basis for generating a unique key for URL.</li>
+      <li><em>baseUrl</em>: the base URL where this service is hosted. Must start with http.</li>
+      <li><em>description</em>: optional description for what this service provides.</li>
+      <li><em>headers</em> JSON array defining any HTTP Headers that the service understands or expects. See <a href="#enum">Enum</a></li>
+      <li><em>enums</em> JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#header">Header</a></li>
+      <li><em>models</em> JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
+      <li><em>resources</em> JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the Models object. See <a href="#resource">Resource</a></li>
     </ul>
 
   </p>
@@ -77,7 +77,7 @@
       <li><em>name</em> specifies the name of the field. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
       <li><em>type</em> typeInfo("field")</li>
       <li><em>description</em> optional longer description for this field.</li>
-      <li><em>required</em> specifies a Boolean: true|false. By default, all fields are considered required. To make a field optional, set "required" to false.</li>
+      <li><em>required</em> Boolean: true|false. By default, all fields are considered required. To make a field optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive types and enums. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@lib.Primitives.Integer.toString', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
     </ul>

@@ -1,4 +1,4 @@
-@(user: Option[com.gilt.apidoc.models.User])
+hip@(user: Option[com.gilt.apidoc.models.User])
 
 @doc.main(user, Some("History")) {
 
@@ -14,28 +14,26 @@
   </p>
 
   <p>
+   The idea for apidoc stems from our team's realization that, in
+   order to continue iterating and growing, we needed a new approach
+   to handle the complexity of a growing microservice architecture.
+  </p>
 
-   We were reaching another pivot in our growth that required a new
-   approach to handling the complexity of software development in
-   order to continue to iterate and grow.
-
+  <p>
+   As developers, we were constantly building new APIs, spending a lot
+   of time writing clients and learning the intricacies of services
+   provided by other teams. By spending more time up front on API
+   design, and using standardized client libraries, we could free up
+   our time to focus on building the services and less time in the
+   integration tasks.
   </p>
 
   <p>
 
-   One of the core principles that emerged is the notion of Schema
-   First development; namely, that if the interface is truly critical,
-   it is actually helpful in practice to define your API by hand as a
-   first class artifact of software development.
-
-  </p>
-
-  <p>
-
-   From this point, we started to explore what was available on the
-   market, hand writing interfaces for a few systems we were actively
-   building. We looked at protobufs, thrift, avro, swagger, apiary
-   and others before identifying our key requirements:
+   We explored what was available on the market - trying different
+   projects to hand write interfaces for a few systems we were
+   actively building. We looked at protobufs, thrift, avro, swagger,
+   apiary and others before identifying our key requirements:
 
    <ul>
 

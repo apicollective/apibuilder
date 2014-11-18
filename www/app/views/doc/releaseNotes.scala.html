@@ -28,10 +28,22 @@
 
     <li> <b>Support for community code generators (alpha):</b>
     Generators are now implemented as rest services, with a standard
-    interface described in apidoc. More details to come on how to add
-    generators. For information on the api - visit
-    http://www.apidoc.me/gilt/docs/apidoc-generator/latest.Many thanks
-    to gheine for this contribution!
+    interface described in apidoc. Adding a generator requires two
+    steps:
+
+    <ol>
+
+      <li> Create a service implementing
+      the <a href="/gilt/docs/apidoc-generator/latest">apidoc-generator
+      API</a>.</li>
+
+      <li>
+      Visit <a href="@routes.Generators.list">@routes.Generators.list</a>
+      and enter the URL of your service.</li>
+
+    </ol>
+
+    Many thanks to <a href="https://github.com/gheine">gheine</a> for this contribution!
     See <a href='@lib.Util.GitHubUrl/pull/914'>PR 194</a>
     and <a href='@lib.Util.GitHubUrl/pull/216'>PR 216</a>.
 
