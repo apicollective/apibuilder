@@ -7,26 +7,50 @@ import java.util.UUID
 
 class MembershipRequestSpec extends FlatSpec {
   new play.core.StaticApplication(new java.io.File("."))
-
+  lazy val org = Util.createOrganization()
   lazy val member = Util.upsertUser("gilt-member@gilt.com")
   lazy val admin = Util.upsertUser("gilt-admin@gilt.com")
 
   it should "create member" in {
-    val request = MembershipRequest.upsert(Util.createdBy, Util.gilt, member, Role.Member)
-    assertEquals(request.organization.name, Util.gilt.name)
+    val thisOrg = Util.createOrganization()
+
+    assertEquals(Membership.isUserMember(member, thisOrg), false)
+    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+
+    val request = MembershipRequest.upsert(Util.createdBy, thisOrg, member, Role.Member)
+    assertEquals(request.organization.name, thisOrg.name)
     assertEquals(request.user, member)
     assertEquals(request.role, Role.Member.key)
+
+    assertEquals(Membership.isUserMember(member, thisOrg), false)
+    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+
+    request.accept(Util.createdBy)
+    assertEquals(Membership.isUserMember(member, thisOrg), true)
+    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
   }
 
   it should "create admin" in {
-    val request = MembershipRequest.upsert(Util.createdBy, Util.gilt, member, Role.Admin)
-    assertEquals(request.organization.name, Util.gilt.name)
+    val thisOrg = Util.createOrganization()
+
+    assertEquals(Membership.isUserMember(member, thisOrg), false)
+    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+
+    val request = MembershipRequest.upsert(Util.createdBy, thisOrg, member, Role.Admin)
+    assertEquals(request.organization.name, thisOrg.name)
     assertEquals(request.user, member)
     assertEquals(request.role, Role.Admin.key)
+
+    assertEquals(Membership.isUserMember(member, thisOrg), false)
+    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+
+    request.accept(Util.createdBy)
+    assertEquals(Membership.isUserMember(member, thisOrg), true)
+    assertEquals(Membership.isUserAdmin(member, thisOrg), true)
   }
 
   it should "findByGuid" in {
-    val request = MembershipRequest.upsert(Util.createdBy, Util.gilt, member, Role.Admin)
+    val request = MembershipRequest.upsert(Util.createdBy, org, member, Role.Admin)
     assertEquals(request, MembershipRequest.findByGuid(request.guid).get)
   }
 
@@ -56,7 +80,7 @@ class MembershipRequestSpec extends FlatSpec {
   }
 
   it can "softDelete" in {
-    val request = MembershipRequest.upsert(Util.createdBy, Util.gilt, member, Role.Admin)
+    val request = MembershipRequest.upsert(Util.createdBy, org, member, Role.Admin)
     MembershipRequest.softDelete(Util.createdBy, request)
     assertEquals(None, MembershipRequest.findByGuid(request.guid))
   }

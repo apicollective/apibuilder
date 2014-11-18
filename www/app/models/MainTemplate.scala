@@ -17,7 +17,13 @@ case class MainTemplate(
   generators: Seq[Generator] = Seq.empty,
   isOrgAdmin: Boolean = false,
   isOrgMember: Boolean = false
-)
+) {
+
+  def canEditService(service: String): Boolean = isOrgMember
+
+  def canDeleteService(service: String): Boolean = isOrgMember
+
+}
 
 object MainTemplate {
 
