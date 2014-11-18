@@ -1,6 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models.Validation
+import com.gilt.apidoc.models.json._
 import core.ServiceDescriptionValidator
 import play.api.mvc._
 import play.api.libs.json._
