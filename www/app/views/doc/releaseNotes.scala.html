@@ -2,6 +2,84 @@
 
 @doc.main(user, Some("Release notes")) {
 
+<h3>0.7.4</h3>
+
+  <p>This is a major release with over 150 individual commits! Main
+  changes are support for community contributed generators and a
+  revamp of the internal type system, providing much more consistency
+  in how we parse types as well as support for Maps of any defined
+  type.</p>
+
+  <p>Major features</p>
+  <ul>
+
+    <li> <b>Support for map[Any defined type] (beta):</b> This release
+    introduces expanded support for map types. You can now define a
+    type as Map[xxx] where xxx can be a primitive, enum, or model
+    defined in your service. Prior to this release, we only supported
+    maps where the values were strings. Note that in all cases, the
+    keys of the map must be strings to confirm to the JSON
+    specification. This feature takes advantage of the existing JSON
+    parsers in client libraries to serialize to/from maps using the
+    standard serialization - e.g. serialization works as expected, and
+    because we validate the type of the values in the map, we can
+    guarantee that a proper serializer exists.</li>
+
+
+    <li> <b>Support for community code generators (alpha):</b>
+    Generators are now implemented as rest services, with a standard
+    interface described in apidoc. More details to come on how to add
+    generators. For information on the api - visit
+    http://www.apidoc.me/gilt/docs/apidoc-generator/latest.Many thanks
+    to gheine for this contribution!
+    See <a href='@lib.Util.GitHubUrl/pull/914'>PR 194</a>
+    and <a href='@lib.Util.GitHubUrl/pull/216'>PR 216</a>.
+
+  </ul>
+
+  <p>Minor improvements / bug fixes</p>
+  <ul>
+
+    <li> Add support for a JSON 'object' as a primitive
+    datatype. While usage is anticipated to be rare, there are a few
+    common use-cases to be able to send arbitrary json objects. We've
+    added support for the 'object' datatype as a primitive to support
+    these cases. See <a href='@lib.Util.GitHubUrl/issues/215'>Issue
+    215</a></li>
+
+    <li> Ruby client models support explicit JSON serialization - each
+    model will now have a to_json method to make explicit how the
+    client expects json to be
+    generated. See <a href='@lib.Util.GitHubUrl/issues/213'>Issue
+    213</a></li>
+
+    <li> Ruby client to_hash method now checks for nil, avoiding null
+    pointer errors in some cases -
+    See <a href='@lib.Util.GitHubUrl/issues/214'>Issue 214</a></li>
+
+    <li> Remove scala.collection.Seq and replace with Seq -
+    See <a href='@lib.Util.GitHubUrl/issues/204'>Issue 204</a></li>
+
+    <li> Standardize parameter names in ruby
+    client. See <a href='@lib.Util.GitHubUrl/issues/203'>Issue
+    203</a></li>
+
+    <li> Enum value names now handle dots correctly,
+    e.g. incidents.create will generate IncidentsCreate constant in
+    the scala
+    clients. See <a href='@lib.Util.GitHubUrl/issues/199'>Issue
+    199</a></li>
+
+    <li> Fix bug in scala clients when an operation has multiple 2xx
+    response codes. See <a href='@lib.Util.GitHubUrl/issues/187'>Issue
+    187</a></li>
+
+    <li> Add validation for query parameters with models when there is
+    a body present. See <a href='@lib.Util.GitHubUrl/issues/172'>Issue
+    172</a></li>
+
+  </ul>
+
 <h3>0.6.3</h3>
 
   <ul>

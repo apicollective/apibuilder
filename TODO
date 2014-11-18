@@ -1,11 +1,1 @@
-release notes:
-  https://github.com/gilt/apidoc/issues/213
-    Ruby client models should support JSON serialization
-
-  https://github.com/gilt/apidoc/issues/204
-    Remove scala.collection.Seq (use Seq)
-
-  https://github.com/gilt/apidoc/issues/203
-    Standardize parameter names in ruby client
-
 TODO: Finish map
