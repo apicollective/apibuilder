@@ -344,40 +344,9 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
       requestBuilder.append(s".${op.method.toLowerCase}")
 
-      val responseBuilder = new StringBuilder()
+      val response = generateResponses(op)
 
-      // TODO: match on all response codes
-      op.responses.headOption.map { response =>
-        response.`type` match {
-          case TypeInstance(container, Type(TypeKind.Primitive, name)) => {
-            Primitives(name) match {
-              case None => 
-              case Some(Primitives.Unit) => responseBuilder.append("\n        nil")
-              case Some(pt) => {
-                responseBuilder.append(buildResponse(container, RubyUtil.toDefaultVariable()))
-              }
-            }
-          }
-
-          case TypeInstance(container, Type(TypeKind.Model, name)) => {
-            responseBuilder.append(buildResponse(container, name))
-          }
-
-          case TypeInstance(container, Type(TypeKind.Enum, name)) => {
-            responseBuilder.append(buildResponse(container, name))
-          }
-
-          case TypeInstance(Container.UNDEFINED(container), _) => {
-            sys.error(s"Invalid container[$container]")
-          }
-
-          case TypeInstance(_, Type(TypeKind.UNDEFINED(kind), name)) => {
-            sys.error(s"Unsupported typeKind[$kind] w/ name[$name]")
-          }
-        }
-      }
-
-      sb.append(s"        ${requestBuilder.toString}${responseBuilder.toString}")
+      sb.append(s"        ${requestBuilder.toString}$response")
       sb.append("      end")
     }
 
@@ -733,6 +702,47 @@ case class RubyClientGenerator(service: ServiceDescription) {
     )
   }
 
+  def generateResponses(op: Operation): String = {
+    // TODO: match on all response codes
+    op.responses.headOption.map { response =>
+      generateResponse(response) match {
+        case None => "\n        nil"
+        case Some(v) => v
+      }
+    }.mkString("\n")
+  }
+
+  def generateResponse(response: Response): Option[String] = {
+    response.`type` match {
+      case TypeInstance(container, Type(TypeKind.Primitive, name)) => {
+        Primitives(name).getOrElse {
+          sys.error(s"Unknown primitive type[$name]")
+        } match {
+          case Primitives.Unit => None
+          case pt => {
+            Some(buildResponse(container, RubyUtil.toDefaultVariable()))
+          }
+        }
+      }
+
+      case TypeInstance(container, Type(TypeKind.Model, name)) => {
+        Some(buildResponse(container, name))
+      }
+
+      case TypeInstance(container, Type(TypeKind.Enum, name)) => {
+        Some(buildResponse(container, name))
+      }
+
+      case TypeInstance(Container.UNDEFINED(container), _) => {
+        sys.error(s"Invalid container[$container]")
+      }
+
+      case TypeInstance(_, Type(TypeKind.UNDEFINED(kind), name)) => {
+        sys.error(s"Unsupported typeKind[$kind] w/ name[$name]")
+      }
+    }
+  }
+
   private def buildResponse(
     container: Container,
     name: String
@@ -747,7 +757,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
         ".map" + mapSingleObject
       }
       case Container.Map => {
-        "inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : $varName.new(hash); hash }"
+        s".inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : $varName.new(hash); hash }"
       }
       case Container.UNDEFINED(container) => {
         sys.error(s"Invalid container[$container]")

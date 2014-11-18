@@ -49,8 +49,7 @@ class RubyClientGeneratorSpec extends FunSpec with Matchers {
         )
       )
             
-      val enums = RubyClientGenerator.generateEnum(enum)
-      enums.trim should be(TestHelper.readFile("test/resources/ruby-gem-enums.txt").trim)
+      TestHelper.assertEqualsFile("test/resources/ruby-gem-enums.txt", RubyClientGenerator.generateEnum(enum))
     }
 
   }
@@ -58,6 +57,6 @@ class RubyClientGeneratorSpec extends FunSpec with Matchers {
   it("generate ruby") {
     val json = io.Source.fromFile(new File("reference-api/api.json")).getLines.mkString("\n")
     val generator = RubyClientGenerator(ServiceDescriptionBuilder(json), "gilt 0.0.1-test")
-    //println(generator.generate())
+    TestHelper.assertEqualsFile("test/resources/ruby-client-generator-gilt-0.0.1-test.txt", generator.generate())
   }
 }

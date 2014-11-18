@@ -1,0 +1,1 @@
+{ |hash| ApiDocTest::Models::Value.new(hash) }

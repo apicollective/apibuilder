@@ -69,7 +69,6 @@ class RubyClientPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
 
   }
 
-/*
   describe("for a response with an object field") {
 
     val baseJson = """
@@ -102,17 +101,18 @@ class RubyClientPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
     }
     """
 
-    def ssd(typeString: String): ServiceDescription = {
-      new ServiceDescription(ServiceDescriptionBuilder(baseJson.format(typeString)))
+    def sd(typeString: String): ServiceDescription = {
+      ServiceDescriptionBuilder(baseJson.format(typeString))
     }
 
     def operation(typeString: String): Operation = {
-      ssd(typeString).resources.head.operations.head
+      sd(typeString).resources.head.operations.head
     }
 
     def response(typeString: String): Response = {
       operation(typeString).responses.head
     }
+
 
     it("singleton object") {
       response("object").`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Object.toString)))
@@ -128,25 +128,22 @@ class RubyClientPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
 
     describe("generates valid response code") {
 
-
       it("singleton") {
-        val generator = new ClientMethodGenerator(ClientMethodConfigs.Play23, ssd("object"))
-        TestHelper.assertEqualsFile("test/resources/generators/scala-primitive-object-response-singleton.txt", generator.objects)
+        val code = RubyClientGenerator(sd("object")).generateResponses(operation("object"))
+        TestHelper.assertEqualsFile("test/resources/generators/ruby-client-primitive-object-response-singleton.txt", code)
       }
 
       it("list") {
-        val generator = new ClientMethodGenerator(ClientMethodConfigs.Play23, ssd("[object]"))
-        TestHelper.assertEqualsFile("test/resources/generators/scala-primitive-object-response-list.txt", generator.objects)
+        val code = RubyClientGenerator(sd("object")).generateResponses(operation("[object]"))
+        TestHelper.assertEqualsFile("test/resources/generators/ruby-client-primitive-object-response-list.txt", code)
       }
 
       it("map") {
-        val generator = new ClientMethodGenerator(ClientMethodConfigs.Play23, ssd("map[object]"))
-        TestHelper.assertEqualsFile("test/resources/generators/scala-primitive-object-response-map.txt", generator.objects)
-
+        val code = RubyClientGenerator(sd("object")).generateResponses(operation("map[object]"))
+        TestHelper.assertEqualsFile("test/resources/generators/ruby-client-primitive-object-response-map.txt", code)
       }
 
     }
   }
- */
 
 }
