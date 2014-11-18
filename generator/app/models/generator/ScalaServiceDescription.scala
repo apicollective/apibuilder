@@ -83,6 +83,10 @@ object ScalaUtil {
     multiple: Boolean = false
   ): String = toVariable("value", multiple = multiple)
 
+  def wrapInQuotes(value: String): String = {
+    // TODO: Quote values if needed
+    s""""$value""""
+  }
 }
 
 class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
@@ -384,6 +388,7 @@ object ScalaDataType {
   case object ScalaIntegerType extends ScalaDataType("Int")
   case object ScalaDoubleType extends ScalaDataType("Double")
   case object ScalaLongType extends ScalaDataType("Long")
+  case object ScalaObjectType extends ScalaDataType("_root_.play.api.libs.json.JsObject")
   case object ScalaBooleanType extends ScalaDataType("Boolean")
   case object ScalaDecimalType extends ScalaDataType("BigDecimal")
   case object ScalaUnitType extends ScalaDataType("Unit")
@@ -395,22 +400,23 @@ object ScalaDataType {
   case class ScalaModelType(packageName: String, modelName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(modelName)}")
   case class ScalaEnumType(packageName: String, enumName: String) extends ScalaDataType(s"${packageName}.${ScalaUtil.toClassName(enumName)}")
   case class ScalaListType(inner: ScalaDataType) extends ScalaDataType(s"Seq[${inner.name}]")
-  case class ScalaMapType(inner: ScalaDataType) extends ScalaDataType(s"scala.collection.immutable.Map[String, ${inner.name}]")
+  case class ScalaMapType(inner: ScalaDataType) extends ScalaDataType(s"Map[String, ${inner.name}]")
 
   def primitive(name: String): ScalaDataType = {
     Primitives(name).getOrElse {
       sys.error(s"There is no primitive named[$name]")
     } match {
-      case Primitives.String => ScalaStringType
-      case Primitives.DateIso8601 => ScalaDateIso8601Type
-      case Primitives.DateTimeIso8601 => ScalaDateTimeIso8601Type
-      case Primitives.Uuid => ScalaUuidType
-      case Primitives.Integer => ScalaIntegerType
-      case Primitives.Double => ScalaDoubleType
-      case Primitives.Long => ScalaLongType
       case Primitives.Boolean => ScalaBooleanType
       case Primitives.Decimal => ScalaDecimalType
+      case Primitives.Double => ScalaDoubleType
+      case Primitives.DateIso8601 => ScalaDateIso8601Type
+      case Primitives.DateTimeIso8601 => ScalaDateTimeIso8601Type
+      case Primitives.Integer => ScalaIntegerType
+      case Primitives.Long => ScalaLongType
+      case Primitives.Object => ScalaObjectType
+      case Primitives.String => ScalaStringType
       case Primitives.Unit => ScalaUnitType
+      case Primitives.Uuid => ScalaUuidType
     }
   }
 
@@ -427,7 +433,9 @@ object ScalaDataType {
       s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
     case ScalaEnumType(_, _) => s"$varName.toString"
-    case _ => throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
+    case ScalaMapType(_) | ScalaListType(_) | ScalaModelType(_, _) | ScalaUnitType | ScalaObjectType => {
+      throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
+    }
   }
 
 }

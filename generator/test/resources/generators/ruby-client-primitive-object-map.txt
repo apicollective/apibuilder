@@ -1,0 +1,20 @@
+class Content
+
+  attr_reader :data
+
+  def initialize(incoming={})
+    opts = HttpClient::Helper.symbolize_keys(incoming)
+    @data = HttpClient::Preconditions.assert_class(opts.delete(:data), Hash).inject({}) { |h, d| h[d0] = HttpClient::Preconditions.assert_class('data', HttpClient::Helper.to_object(d[1]), Hash); h }
+  end
+
+  def to_json
+    JSON.dump(to_hash)
+  end
+
+  def to_hash
+    {
+      :data => data
+    }
+  end
+
+end
