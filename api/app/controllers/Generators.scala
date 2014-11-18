@@ -68,23 +68,28 @@ object Generators extends Controller {
   def post() = Authenticated.async(parse.json) { request =>
     request.body.validate[GeneratorCreateForm] match {
       case e: JsError => {
-        Future.successful(Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString))))
+        Future.successful(Conflict(Json.toJson(Validation.invalidJson(e))))
       }
       case s: JsSuccess[GeneratorCreateForm] => {
         val form = s.get
-        GeneratorDao.findAll(user = request.user, keyAndUri = Some(form.key -> form.uri)).headOption match {
-          case None =>
-            new Client(form.uri).generators.getByKey(form.key).recover {
-              case ex: Exception => None
-            }.map {
-              case Some(meta) =>
-                val generator = GeneratorDao.create(request.user, form.key, form.uri, form.visibility, meta.name, meta.description, meta.language)
-                Ok(Json.toJson(generator))
+        GeneratorDao.validate(form) match {
+          case Nil => {
+            GeneratorDao.findAll(user = request.user, keyAndUri = Some(form.key -> form.uri)).headOption match {
+              case Some(d) =>
+                Future.successful(Conflict(Json.toJson(Validation.error(s"generator ${form.key} already exists"))))
               case None =>
-                NotFound("Generator uri invalid")
+                new Client(form.uri).generators.getByKey(form.key).recover {
+                  case ex: com.gilt.apidoc.FailedRequest => None
+                }.map {
+                  case Some(meta) =>
+                    val generator = GeneratorDao.create(request.user, form.key, form.uri, form.visibility, meta.name, meta.description, meta.language)
+                    Ok(Json.toJson(generator))
+                  case None =>
+                    NotFound("Generator uri invalid")
+                }
             }
-          case Some(d) =>
-            Future.successful(Conflict(Json.toJson(Validation.error("generator already exists"))))
+          }
+          case errors => Future.successful(Conflict(Json.toJson(errors)))
         }
       }
     }
@@ -93,7 +98,7 @@ object Generators extends Controller {
   def putByKey(key: String) = Authenticated.async(parse.json) { request =>
     request.body.validate[GeneratorUpdateForm] match {
       case e: JsError => {
-        Future.successful(Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString))))
+        Future.successful(Conflict(Json.toJson(Validation.invalidJson(e))))
       }
       case s: JsSuccess[GeneratorUpdateForm] => {
         val form = s.get
@@ -119,7 +124,7 @@ object Generators extends Controller {
   def putByKeyAndOrg(key: String, orgKey: String) = Authenticated.async(parse.json) { request =>
     request.body.validate[GeneratorOrgForm] match {
       case e: JsError => {
-        Future.successful(Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString))))
+        Future.successful(Conflict(Json.toJson(Validation.invalidJson(e))))
       }
       case s: JsSuccess[GeneratorOrgForm] => {
         val form = s.get
