@@ -1,14 +1,16 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: com.gilt.apidocgenerator.models.ServiceDescription, operation: com.gilt.apidocgenerator.models.Operation)
+@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: com.gilt.apidocgenerator.models.ServiceDescription, body: com.gilt.apidocgenerator.models.Body)
 
 <table class="table table-hover table-condensed">
   <thead>
     <tr>
       <th>Type</th>
+      <th>Description</th>
     </tr>
   </thead>
   <tbody>
    <tr>
-     <td>@typeInstance(org, service, version, sd, operation.body.get)</td>
+     <td>@typeInstance(org, service, version, sd, body.`type`)</td>
+     <td>@body..description.getOrElse("N/A")</td>
    </tr>
   </tbody>
 </table>

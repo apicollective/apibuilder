@@ -53,11 +53,12 @@ class BodyParameterSpec extends FunSpec with Matchers {
   }
 
   it("support primitive types in body") {
-    val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "string" }""", "boolean"))
+    val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "string", "description": "test" }""", "boolean"))
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString))))
+    op.body.map(_.`type`) should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString))))
+    op.body.flatMap(_.description) should be(Some("test"))
   }
 
   it("support arrays of primitive types in body") {
@@ -65,7 +66,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(Container.List, Type(TypeKind.Primitive, Primitives.String.toString))))
+    op.body.map(_.`type`) should be(Some(TypeInstance(Container.List, Type(TypeKind.Primitive, Primitives.String.toString))))
   }
 
   it("support enums in body") {
@@ -73,7 +74,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Enum, "age_group"))))
+    op.body.map(_.`type`) should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Enum, "age_group"))))
   }
 
   it("support arrays of enums in body") {
@@ -81,7 +82,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(Container.List, Type(TypeKind.Enum, "age_group"))))
+    op.body.map(_.`type`) should be(Some(TypeInstance(Container.List, Type(TypeKind.Enum, "age_group"))))
   }
 
   it("supports arrays of models in body") {
@@ -89,7 +90,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(Container.List, Type(TypeKind.Model, model.name))))
+    op.body.map(_.`type`) should be(Some(TypeInstance(Container.List, Type(TypeKind.Model, model.name))))
   }
 
   it("validates if body is not a map") {
@@ -109,7 +110,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "message").get
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Model, model.name))))
+    op.body.map(_.`type`) should be(Some(TypeInstance(Container.Singleton, Type(TypeKind.Model, model.name))))
   }
 
   it("If body specified, all parameters are either PATH or QUERY") {
@@ -126,7 +127,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(baseJson.format("POST", """{ "type": "[message]" }""", "boolean"))
     validator.errors.mkString("") should be("")
     val op = validator.serviceDescription.get.resources.head.operations.head
-    op.body should be(Some(TypeInstance(Container.List, Type(TypeKind.Model, "message"))))
+    op.body.map(_.`type`) should be(Some(TypeInstance(Container.List, Type(TypeKind.Model, "message"))))
   }
 
   it("validates missing datatype") {

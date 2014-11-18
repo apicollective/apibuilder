@@ -378,11 +378,21 @@ case class ServiceDescriptionValidator(apiJson: String) {
 
   private def validateParameterBodies(): Seq[String] = {
     val typesNotFound = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.body.isEmpty).filter(op => internalServiceDescription.get.typeResolver.toType(op.body.get.name).isEmpty).map { op =>
-        if (op.body.get.name.trim == "") {
-          s"${opLabel(resource, op)}: Body missing type"
-        } else {
-          s"${opLabel(resource, op)} body: Type[${op.body.get.name}] not found"
+      resource.operations.filter(!_.body.isEmpty).flatMap { op =>
+        op.body.flatMap(_.datatype) match {
+          case None => Seq(s"${opLabel(resource, op)}: Body missing type")
+          case Some(datatype) => {
+            internalServiceDescription.get.typeResolver.toTypeInstance(datatype) match {
+              case None => {
+                if (datatype.name.trim == "") {
+                  Seq(s"${opLabel(resource, op)}: Body missing type")
+                } else {
+                  Seq(s"${opLabel(resource, op)} body: Type[${datatype.name}] not found")
+                }
+              }
+              case Some(ti) => Seq.empty
+            }
+          }
         }
       }
     }
