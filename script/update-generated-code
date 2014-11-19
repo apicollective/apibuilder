@@ -11,6 +11,11 @@ def download(data)
       cmd = "curl --silent #{SERVICE_URL}/#{ORG}/code/#{service_name}/latest/#{target} > #{tmpfile}"
       puts cmd
       system(cmd)
+
+      if IO.read(tmpfile).match(/<html>/)
+        raise " --> Error downloading URL"
+      end
+
       downloads[tmpfile] = path
     end
   end
