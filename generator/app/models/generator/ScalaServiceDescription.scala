@@ -240,7 +240,7 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
 
       Some(
         Seq(
-          Some(s"%s: %s".format(varName, sdt.name)),
+          Some(s"%s: %s".format(ScalaUtil.quoteNameIfKeyword(varName), sdt.name)),
           ScalaUtil.fieldsToArgList(parameters.map(_.definition))
         ).flatten.mkString(",")
       )
@@ -359,9 +359,10 @@ sealed abstract class ScalaDataType(val name: String) {
 
   def definition(
     typeInstance: TypeInstance,
-    varName: String,
+    originalVarName: String,
     optional: Boolean
   ): String = {
+    val varName = ScalaUtil.quoteNameIfKeyword(originalVarName)
     if (optional) {
       typeInstance.container match {
         case Container.Singleton => s"$varName: scala.Option[$name]" + " = " + nilValue(typeInstance)
@@ -420,21 +421,24 @@ object ScalaDataType {
     }
   }
 
-  def asString(varName: String, d: ScalaDataType): String = d match {
-    case ScalaStringType => s"$varName"
-    case ScalaIntegerType => s"$varName.toString"
-    case ScalaDoubleType => s"$varName.toString"
-    case ScalaLongType => s"$varName.toString"
-    case ScalaBooleanType => s"$varName.toString"
-    case ScalaDecimalType => s"$varName.toString"
-    case ScalaUuidType => s"$varName.toString"
-    case ScalaDateIso8601Type => s"$varName.toString"
-    case ScalaDateTimeIso8601Type => {
-      s"_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
-    }
-    case ScalaEnumType(_, _) => s"$varName.toString"
-    case ScalaMapType(_) | ScalaListType(_) | ScalaModelType(_, _) | ScalaUnitType | ScalaObjectType => {
-      throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
+  def asString(originalVarName: String, d: ScalaDataType): String = {
+    val varName = ScalaUtil.quoteNameIfKeyword(originalVarName)
+    d match {
+      case ScalaStringType => s"$varName"
+      case ScalaIntegerType => s"$varName.toString"
+      case ScalaDoubleType => s"$varName.toString"
+      case ScalaLongType => s"$varName.toString"
+      case ScalaBooleanType => s"$varName.toString"
+      case ScalaDecimalType => s"$varName.toString"
+      case ScalaUuidType => s"$varName.toString"
+      case ScalaDateIso8601Type => s"$varName.toString"
+      case ScalaDateTimeIso8601Type => {
+        s"_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
+      }
+      case ScalaEnumType(_, _) => s"$varName.toString"
+      case ScalaMapType(_) | ScalaListType(_) | ScalaModelType(_, _) | ScalaUnitType | ScalaObjectType => {
+        throw new UnsupportedOperationException(s"unsupported conversion of type ${d} to query string for $varName")
+      }
     }
   }
 

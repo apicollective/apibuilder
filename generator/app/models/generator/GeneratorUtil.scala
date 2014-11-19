@@ -203,7 +203,8 @@ case class GeneratorUtil(config: ScalaClientMethodConfig) {
 
     } else {
       val params = op.formParameters.map { param =>
-        s""" "${param.originalName}" -> play.api.libs.json.Json.toJson(${param.name})""".trim
+        val varName = ScalaUtil.quoteNameIfKeyword(param.name)
+        s""" "${param.originalName}" -> play.api.libs.json.Json.toJson($varName)""".trim
       }.mkString(",\n")
       Some(
         Seq(
