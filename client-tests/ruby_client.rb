@@ -524,6 +524,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        Code.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :generator => generator.nil? ? nil : generator.to_hash,
@@ -551,6 +555,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        Domain.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :name => name
@@ -571,6 +579,10 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Error.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -602,6 +614,10 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Generator.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -636,6 +652,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        GeneratorCreateForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :key => key,
@@ -658,6 +678,10 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        GeneratorOrgForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -683,6 +707,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        GeneratorUpdateForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :visibility => visibility.nil? ? nil : visibility.value,
@@ -703,6 +731,10 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Healthcheck.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -730,6 +762,10 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Membership.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -763,6 +799,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        MembershipRequest.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :guid => guid,
@@ -792,6 +832,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        Organization.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :guid => guid,
@@ -819,6 +863,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        OrganizationMetadata.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :visibility => visibility.nil? ? nil : visibility.value,
@@ -844,6 +892,10 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Service.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -874,6 +926,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        User.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :guid => guid,
@@ -900,6 +956,10 @@ module Apidoc
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        Validation.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
           :valid => valid,
@@ -923,6 +983,10 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Version.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash

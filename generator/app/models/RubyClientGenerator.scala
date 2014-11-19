@@ -380,6 +380,10 @@ case class RubyClientGenerator(service: ServiceDescription) {
     sb.append("    JSON.dump(to_hash)")
     sb.append("  end\n")
 
+    sb.append("  def copy(incoming={})")
+    sb.append(s"    $className.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))")
+    sb.append("  end\n")
+
     sb.append("  def to_hash")
     sb.append("    {")
     sb.append(
