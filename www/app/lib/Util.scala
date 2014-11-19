@@ -3,12 +3,22 @@ package lib
 import core.VersionTag
 import com.gilt.apidocgenerator.models.Container
 
+case class ExampleService(key: String) {
+
+  val docsUrl = s"/gilt/docs/$key/latest"
+  val apiJsonUrl = s"/gilt/api.json/$key/latest"
+
+}
+
 object Util {
 
   val AddServiceText = "Add Service"
   val OrgSettingsText = "Org Settings"
-  val ApiDocExampleUrl = "/gilt/docs/apidoc/latest"
-  val ApiDocExampleApiJsonUrl = "/gilt/api.json/apidoc/latest"
+
+  val ApidocExample = ExampleService("apidoc")
+  val ApidocGeneratorExample = ExampleService("apidoc-generator")
+  val Examples = Seq(ApidocExample, ApidocGeneratorExample)
+
   val GitHubUrl = "https://github.com/gilt/apidoc"
 
   def calculateNextVersion(version: String): String = {

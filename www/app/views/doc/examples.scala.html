@@ -11,11 +11,15 @@
 
   <table class="table table-hover table-condensed">
     <tbody>
-       <tr>
-         <td>Apidoc</td>
-         <td><a href="@lib.Util.ApiDocExampleUrl">Online docs</a></td>
-         <td><a href="@lib.Util.ApiDocExampleApiJsonUrl">api.json</a></td>
-       </tr>
+
+       @lib.Util.Examples.map { example =>
+         <tr>
+           <td>@example.key</td>
+           <td><a href="@example.docsUrl">Online docs</a></td>
+           <td><a href="@example.apiJsonUrl">api.json</a></td>
+         </tr>
+       }
+
     </tbody>
   </table>
 
