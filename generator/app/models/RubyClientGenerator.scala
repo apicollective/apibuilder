@@ -215,7 +215,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
           }
           param.`type` match {
             case TypeInstance(Container.Singleton, Type(TypeKind.Primitive, name)) => {
-              val code = asString(RubyUtil.toVariable(varName), name)
+              val code = asString(RubyUtil.toVariable(varName), name, escape = true)
               s"#{$code}"
             }
             case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => sys.error("Models cannot be in the path")
@@ -390,7 +390,10 @@ case class RubyClientGenerator(service: ServiceDescription) {
       model.fields.map { field =>
         val value = field.`type` match {
           case TypeInstance(_, Type(TypeKind.Primitive, name)) => {
-            asString(field.name, name)
+            Primitives(name) match {
+              case Some(Primitives.Object) | Some(Primitives.Unit) => field.name
+              case _ => asString(field.name, name, escape = false)
+            }
           }
 
           case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
@@ -637,12 +640,22 @@ case class RubyClientGenerator(service: ServiceDescription) {
     }
   }
 
-  private def asString(varName: String, ptName: String): String = {
+  private def asString(
+    varName: String,
+    ptName: String,
+    escape: Boolean
+  ): String = {
     Primitives(ptName).getOrElse {
       sys.error(s"Unknown primitive type[$ptName]")
     } match {
       case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Uuid | Primitives.Decimal | Primitives.Boolean => varName
-      case Primitives.String => s"CGI.escape($varName)"
+      case Primitives.String => {
+        if (escape) {
+          s"CGI.escape($varName)"
+        } else {
+          varName
+        }
+      }
       case Primitives.DateIso8601 => s"HttpClient::Helper.date_iso8601_to_string($varName)"
       case Primitives.DateTimeIso8601 => s"HttpClient::Helper.date_time_iso8601_to_string($varName)"
       case Primitives.Object | Primitives.Unit => {
