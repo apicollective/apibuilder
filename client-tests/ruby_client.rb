@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.7.2 http://www.apidoc.me/gilt/code/apidoc/0.7.0/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.7.4 http://www.apidoc.me/gilt/code/apidoc/0.7.0/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -509,7 +509,7 @@ module Apidoc
 
     end
 
-    # Generated source code.
+        # Generated source code.
     class Code
 
       attr_reader :generator, :source
@@ -522,23 +522,23 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :generator => generator.nil? ? nil : generator.to_hash,
-            :source => source
+          :generator => generator.nil? ? nil : generator.to_hash
+          :source => source
         }
       end
 
     end
 
-    # Represents a single domain name (e.g. www.apidoc.me). When a new user
-    # registers and confirms their email, we automatically associate that user
-    # with a member of the organization associated with their domain. For
-    # example, if you confirm your account with an email address of
-    # foo@gilt.com, we will automatically add you as a member to the
-    # organization with domain gilt.com.
+        # Represents a single domain name (e.g. www.apidoc.me). When a new user
+        # registers and confirms their email, we automatically associate that user
+        # with a member of the organization associated with their domain. For
+        # example, if you confirm your account with an email address of
+        # foo@gilt.com, we will automatically add you as a member to the
+        # organization with domain gilt.com.
     class Domain
 
       attr_reader :name
@@ -550,11 +550,11 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :name => name
+          :name => name
         }
       end
 
@@ -572,18 +572,18 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :code => code,
-            :message => message
+          :code => code
+          :message => message
         }
       end
 
     end
 
-    # An apidoc generator
+        # An apidoc generator
     class Generator
 
       attr_reader :guid, :key, :uri, :name, :language, :description, :visibility, :owner, :enabled
@@ -603,25 +603,25 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :key => key,
-            :uri => uri,
-            :name => name,
-            :language => language,
-            :description => description,
-            :visibility => visibility.nil? ? nil : visibility.value,
-            :owner => owner.nil? ? nil : owner.to_hash,
-            :enabled => enabled
+          :guid => guid
+          :key => key
+          :uri => uri
+          :name => name
+          :language => language
+          :description => description
+          :visibility => visibility.nil? ? nil : visibility.value
+          :owner => owner.nil? ? nil : owner.to_hash
+          :enabled => enabled
         }
       end
 
     end
 
-    # Form to create a new generator
+        # Form to create a new generator
     class GeneratorCreateForm
 
       attr_reader :key, :uri, :visibility
@@ -635,19 +635,19 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :key => key,
-            :uri => uri,
-            :visibility => visibility.nil? ? nil : visibility.value
+          :key => key
+          :uri => uri
+          :visibility => visibility.nil? ? nil : visibility.value
         }
       end
 
     end
 
-    # Form to enable or disable a generator for an organization
+        # Form to enable or disable a generator for an organization
     class GeneratorOrgForm
 
       attr_reader :enabled
@@ -659,17 +659,17 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :enabled => enabled
+          :enabled => enabled
         }
       end
 
     end
 
-    # Form to update a generator
+        # Form to update a generator
     class GeneratorUpdateForm
 
       attr_reader :visibility, :enabled
@@ -682,12 +682,12 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :visibility => visibility.nil? ? nil : visibility.value,
-            :enabled => enabled
+          :visibility => visibility.nil? ? nil : visibility.value
+          :enabled => enabled
         }
       end
 
@@ -704,19 +704,19 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :status => status
+          :status => status
         }
       end
 
     end
 
-    # A membership represents a user in a specific role to an organization.
-    # Memberships cannot be created directly. Instead you first create a
-    # membership request, then that request is either accepted or declined.
+        # A membership represents a user in a specific role to an organization.
+        # Memberships cannot be created directly. Instead you first create a
+        # membership request, then that request is either accepted or declined.
     class Membership
 
       attr_reader :guid, :user, :organization, :role
@@ -731,23 +731,23 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :user => user.nil? ? nil : user.to_hash,
-            :organization => organization.nil? ? nil : organization.to_hash,
-            :role => role
+          :guid => guid
+          :user => user.nil? ? nil : user.to_hash
+          :organization => organization.nil? ? nil : organization.to_hash
+          :role => role
         }
       end
 
     end
 
-    # A membership request represents a user requesting to join an organization
-    # with a specific role (e.g. as a member or an admin). Membership requests
-    # can be reviewed by any current admin of the organization who can either
-    # accept or decline the request.
+        # A membership request represents a user requesting to join an organization
+        # with a specific role (e.g. as a member or an admin). Membership requests
+        # can be reviewed by any current admin of the organization who can either
+        # accept or decline the request.
     class MembershipRequest
 
       attr_reader :guid, :user, :organization, :role
@@ -762,20 +762,20 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :user => user.nil? ? nil : user.to_hash,
-            :organization => organization.nil? ? nil : organization.to_hash,
-            :role => role
+          :guid => guid
+          :user => user.nil? ? nil : user.to_hash
+          :organization => organization.nil? ? nil : organization.to_hash
+          :role => role
         }
       end
 
     end
 
-    # An organization is used to group a set of services together.
+        # An organization is used to group a set of services together.
     class Organization
 
       attr_reader :guid, :key, :name, :domains, :metadata
@@ -791,21 +791,21 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :key => key,
-            :name => name,
-            :domains => (domains || []).map(&:to_hash),
-            :metadata => metadata.nil? ? nil : metadata.to_hash
+          :guid => guid
+          :key => key
+          :name => name
+          :domains => (domains || []).map(&:to_hash)
+          :metadata => metadata.nil? ? nil : metadata.to_hash
         }
       end
 
     end
 
-    # Supplemental (non-required) information about an organization
+        # Supplemental (non-required) information about an organization
     class OrganizationMetadata
 
       attr_reader :visibility, :package_name
@@ -818,18 +818,18 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :visibility => visibility.nil? ? nil : visibility.value,
-            :package_name => package_name
+          :visibility => visibility.nil? ? nil : visibility.value
+          :package_name => package_name
         }
       end
 
     end
 
-    # A service has a name and multiple versions of an API (Interface).
+        # A service has a name and multiple versions of an API (Interface).
     class Service
 
       attr_reader :guid, :name, :key, :visibility, :description
@@ -845,21 +845,21 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :name => name,
-            :key => key,
-            :visibility => visibility.nil? ? nil : visibility.value,
-            :description => description
+          :guid => guid
+          :name => name
+          :key => key
+          :visibility => visibility.nil? ? nil : visibility.value
+          :description => description
         }
       end
 
     end
 
-    # A user is a top level person interacting with the api doc server.
+        # A user is a top level person interacting with the api doc server.
     class User
 
       attr_reader :guid, :email, :name
@@ -873,20 +873,20 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :email => email,
-            :name => name
+          :guid => guid
+          :email => email
+          :name => name
         }
       end
 
     end
 
-    # Used only to validate json files - used as a resource where http status
-    # code defines success
+        # Used only to validate json files - used as a resource where http status
+        # code defines success
     class Validation
 
       attr_reader :valid, :errors
@@ -894,23 +894,23 @@ module Apidoc
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @valid = HttpClient::Preconditions.assert_boolean('valid', opts.delete(:valid))
-        @errors = opts.delete(:errors).map { |v| HttpClient::Preconditions.assert_class_or_nil('errors', v, String)}
+        @errors = (opts.delete(:errors) || []).map { |v| HttpClient::Preconditions.assert_class_or_nil('errors', v, String)}
       end
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :valid => valid,
-            :errors => errors
+          :valid => valid
+          :errors => errors
         }
       end
 
     end
 
-    # Represents a unique version of the service.
+        # Represents a unique version of the service.
     class Version
 
       attr_reader :guid, :version, :json
@@ -924,13 +924,13 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :version => version,
-            :json => json
+          :guid => guid
+          :version => version
+          :json => json
         }
       end
 
@@ -1245,6 +1245,10 @@ module Apidoc
 
       def Helper.to_big_decimal(value)
         value ? BigDecimal.new(value.to_s) : nil
+      end
+
+      def Helper.to_object(value)
+        value ? JSON.parse(value) : nil
       end
 
       def Helper.to_uuid(value)

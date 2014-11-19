@@ -1,4 +1,5 @@
 package com.gilt.apidoc.models {
+
   /**
    * Generated source code.
    */
@@ -98,7 +99,7 @@ package com.gilt.apidoc.models {
     guid: _root_.java.util.UUID,
     key: String,
     name: String,
-    domains: Seq[com.gilt.apidoc.models.Domain] = Nil,
+    domains: Option[Seq[com.gilt.apidoc.models.Domain]] = None,
     metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadata] = None
   )
 
@@ -136,7 +137,7 @@ package com.gilt.apidoc.models {
    */
   case class Validation(
     valid: Boolean,
-    errors: Seq[String] = Nil
+    errors: Option[Seq[String]] = None
   )
 
   /**
@@ -194,6 +195,7 @@ package com.gilt.apidoc.models {
     def fromString(value: String): scala.Option[Visibility] = byName.get(value)
 
   }
+
 }
 
 package com.gilt.apidoc.models {

@@ -1,4 +1,5 @@
 package com.gilt.apidocgenerator.models {
+
   case class Body(
     `type`: com.gilt.apidocgenerator.models.TypeInstance,
     description: scala.Option[String] = None
@@ -236,4 +237,5 @@ package com.gilt.apidocgenerator.models {
     def fromString(value: String): scala.Option[TypeKind] = byName.get(value)
 
   }
+
 }
