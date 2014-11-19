@@ -215,7 +215,7 @@ module ApidocReferenceApi
 
     end
 
-        # A model with a lot of fields.
+    # A model with a lot of fields.
     class Big
 
       attr_reader :f1, :f2, :f3, :f4, :f5, :f6, :f7, :f8, :f9, :f10, :f11, :f12, :f13, :f14, :f15, :f16, :f17, :f18, :f19, :f20, :f21
@@ -298,7 +298,7 @@ module ApidocReferenceApi
 
     end
 
-        # Models an API error.
+    # Models an API error.
     class Error
 
       attr_reader :code, :message

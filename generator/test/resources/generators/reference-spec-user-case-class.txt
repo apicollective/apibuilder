@@ -3,5 +3,5 @@ case class User(
   email: String,
   active: Boolean,
   ageGroup: apidocreferenceapi.models.AgeGroup,
-  tags: Option[Map[String, String]] = None
+  tags: Map[String, String] = Map.empty
 )
