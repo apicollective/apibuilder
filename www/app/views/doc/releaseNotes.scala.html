@@ -2,6 +2,27 @@
 
 @doc.main(user, Some("Release notes")) {
 
+<h3><!-- NEXT_TAG --></h3>
+
+  <ul>
+
+    <li> Ruby client models now have a copy method that can be used to
+    create copies of the instances with changes to specific
+    fields. Example:
+    <pre>
+      domain = Apidoc::Models::Domain.new(:name => "apidoc.me")
+      puts domain.name
+      => apidoc.me
+
+      puts domain.copy(:name => "gilt.com").name
+      => gilt.com
+    </pre>
+
+    See <a href='@lib.Util.GitHubUrl/issues/212'>Issue
+    212</a></li>
+
+  </ul>
+
 <h3>0.7.4</h3>
 
   <p>This is a major release with over 150 individual commits! Main
