@@ -30,11 +30,8 @@ case class Play2Json(serviceName: String) {
         }
 
         case c => {
-          if (field.isOption) {
-            s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse(None))"""
-          } else {
-            s"""(__ \\ "${field.originalName}").read[${field.datatype.name}]"""
-          }
+          val nilValue = field.datatype.nilValue(field.`type`)
+          s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse($nilValue))"""
         }
       }
     }

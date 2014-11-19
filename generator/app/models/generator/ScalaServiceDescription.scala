@@ -365,7 +365,7 @@ sealed abstract class ScalaDataType(val name: String) {
     if (optional) {
       typeInstance.container match {
         case Container.Singleton => s"$varName: scala.Option[$name]" + " = " + nilValue(typeInstance)
-        case Container.List | Container.Map => s"$varName: Option[$name] = None"
+        case Container.List | Container.Map => s"$varName: $name = " + nilValue(typeInstance)
         case Container.UNDEFINED(container) => sys.error(s"Unknown container[$container]")
       }
     } else {
