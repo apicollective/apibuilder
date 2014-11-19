@@ -18,7 +18,7 @@ case class Play2Json(serviceName: String) {
     ).mkString("\n")
   }
 
-  private def fieldReaders(model: ScalaModel): String = {
+  def fieldReaders(model: ScalaModel): String = {
     val serializations = model.fields.map { field =>
       field.`type`.container match {
         case Container.Singleton => {
@@ -30,8 +30,11 @@ case class Play2Json(serviceName: String) {
         }
 
         case c => {
-          val nilValue = field.datatype.nilValue(field.`type`)
-          s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse($nilValue))"""
+          if (field.isOption) {
+            s"""(__ \\ "${field.originalName}").readNullable[${field.datatype.name}].map(_.getOrElse(None))"""
+          } else {
+            s"""(__ \\ "${field.originalName}").read[${field.datatype.name}]"""
+          }
         }
       }
     }

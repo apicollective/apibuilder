@@ -6,6 +6,36 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2JsonSpec extends FunSpec with ShouldMatchers {
 
+  describe("for models with lists") {
+
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc Test",
+
+      "models": {
+        "content": {
+          "fields": [
+            { "name": "required_tags", "type": "[string]" },
+            { "name": "optional_tags", "type": "[string]", "required": false },
+            { "name": "data", "type": "map[long]", "required": false }
+          ]
+        }
+      }
+    }
+    """
+
+    it("generates valid json readers") {
+      val ssd = new ScalaServiceDescription(ServiceDescriptionBuilder(json))
+      val model = ssd.models.head
+      TestHelper.assertEqualsFile(
+        "test/resources/play2-json-spec-model-readers.txt",
+        Play2Json("Api Doc Test").fieldReaders(model)
+      )
+    }
+
+  }
+
   describe("quality schema") {
 
     lazy val quality = new ScalaServiceDescription(TestHelper.parseFile("test/resources/examples/quality.json").serviceDescription.get)

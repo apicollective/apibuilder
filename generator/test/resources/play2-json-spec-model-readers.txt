@@ -1,0 +1,5 @@
+(
+  (__ \ "required_tags").read[Seq[String]] and
+  (__ \ "optional_tags").readNullable[Seq[String]].map(_.getOrElse(None)) and
+  (__ \ "data").readNullable[Map[String, Long]].map(_.getOrElse(None))
+)(Content.apply _)
