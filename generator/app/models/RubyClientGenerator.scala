@@ -536,7 +536,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        withDefaultArray(fieldName, s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
+        withDefaultArray(fieldName, s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el)) }"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
@@ -556,12 +556,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        withDefaultArray(fieldName, s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
+        withDefaultArray(fieldName, s"opts.delete(:$fieldName)", required) + s".map { |el| el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)) }"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        withDefaultMap(fieldName, s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
+        withDefaultMap(fieldName, s"opts.delete(:$fieldName)", required) + s".inject({}) { |h, el| h[el[0]] = el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h }"
       }
     }
   }
