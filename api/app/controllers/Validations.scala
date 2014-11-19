@@ -16,7 +16,7 @@ object Validations extends Controller {
     val contents = scala.io.Source.fromFile(request.body.file).getLines.mkString("\n")
     ServiceDescriptionValidator(contents).errors match {
       case Nil => Ok(Json.toJson(ValidationResult(true, Nil)))
-      case errors => Ok(Json.toJson(ValidationResult(false, errors)))
+      case errors => BadRequest(Json.toJson(ValidationResult(false, errors)))
     }
   }
 
