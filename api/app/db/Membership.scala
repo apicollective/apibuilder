@@ -87,7 +87,14 @@ object Membership {
   def isUserAdmin(user: User, organization: Organization): Boolean = {
     findByOrganizationAndUserAndRole(organization, user, Role.Admin) match {
       case None => false
-      case Some(m: Membership) => true
+      case Some(_) => true
+    }
+  }
+
+  def isUserMember(user: User, organization: Organization): Boolean = {
+    findAll(organizationGuid = Some(organization.guid), userGuid = Some(user.guid), limit = 1).headOption match {
+      case None => false
+      case Some(_) => true
     }
   }
 

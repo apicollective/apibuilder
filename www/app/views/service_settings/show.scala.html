@@ -5,14 +5,20 @@
 
 @main(tpl) {
 
-  <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ServiceSettings.edit(orgKey = tpl.org.get.key, serviceKey = service.key, version = tpl.version.get)">Edit</a>
-  </div>
+  @tpl.org.map { org =>
+    @if(tpl.canEditService(service.key)) {
+      <div class="pull-right">
+        <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ServiceSettings.edit(orgKey = org.key, serviceKey = service.key, version = tpl.version.get)">Edit</a>
+      </div>
+    }
 
-  <ul>
-    <li>Visibility: @service.visibility</li>
-  </ul>
+    <ul>
+      <li>Visibility: @service.visibility</li>
+    </ul>
 
-  <a href="@routes.ServiceSettings.postDelete(tpl.org.get.key, service.key, tpl.version.get)" class="delete" data-confirm="Are you sure?">Delete this service</a>
+    @if(tpl.canDeleteService(service.key)) {
+      <a href="@routes.ServiceSettings.postDelete(org.key, service.key, tpl.version.get)" class="delete" data-confirm="Are you sure?">Delete this service</a>
+    }
+  }
 
 }

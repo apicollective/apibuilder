@@ -57,7 +57,7 @@ object Services extends Controller {
 
   def deleteByOrgKeyAndServiceKey(orgKey: String, serviceKey: String) = Authenticated { request =>
     OrganizationDao.findByKey(Authorization.User(request.user.guid), orgKey) map { org =>
-      request.requireAdmin(org)
+      request.requireMember(org)
       ServiceDao.findByOrganizationKeyAndServiceKey(Authorization.User(request.user.guid), orgKey, serviceKey).map { service =>
         ServiceDao.softDelete(request.user, service)
       }

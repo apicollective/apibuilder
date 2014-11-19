@@ -76,6 +76,10 @@ class AuthenticatedRequest[A](val tokenUser: User, val user: User, request: Requ
     require(Membership.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
   }
 
+  def requireMember(org: Organization) {
+    require(Membership.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
+  }
+
 }
 
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
