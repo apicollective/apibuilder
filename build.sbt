@@ -18,7 +18,7 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.3.5"
+      "com.typesafe.play" %% "play-json" % "2.3.6"
     )
   )
 
