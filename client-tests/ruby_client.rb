@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.7.4 http://www.apidoc.me/gilt/code/apidoc/0.7.4/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.7.5 http://www.apidoc.me/gilt/code/apidoc/0.7.4/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -526,7 +526,7 @@ module Apidoc
 
       def to_hash
         {
-          :generator => generator.nil? ? nil : generator.to_hash
+          :generator => generator.nil? ? nil : generator.to_hash,
           :source => source
         }
       end
@@ -575,7 +575,7 @@ module Apidoc
 
       def to_hash
         {
-          :code => code
+          :code => code,
           :message => message
         }
       end
@@ -606,14 +606,14 @@ module Apidoc
 
       def to_hash
         {
-          :guid => guid
-          :key => key
-          :uri => uri
-          :name => name
-          :language => language
-          :description => description
-          :visibility => visibility.nil? ? nil : visibility.value
-          :owner => owner.nil? ? nil : owner.to_hash
+          :guid => guid,
+          :key => key,
+          :uri => uri,
+          :name => name,
+          :language => language,
+          :description => description,
+          :visibility => visibility.nil? ? nil : visibility.value,
+          :owner => owner.nil? ? nil : owner.to_hash,
           :enabled => enabled
         }
       end
@@ -638,8 +638,8 @@ module Apidoc
 
       def to_hash
         {
-          :key => key
-          :uri => uri
+          :key => key,
+          :uri => uri,
           :visibility => visibility.nil? ? nil : visibility.value
         }
       end
@@ -685,7 +685,7 @@ module Apidoc
 
       def to_hash
         {
-          :visibility => visibility.nil? ? nil : visibility.value
+          :visibility => visibility.nil? ? nil : visibility.value,
           :enabled => enabled
         }
       end
@@ -734,9 +734,9 @@ module Apidoc
 
       def to_hash
         {
-          :guid => guid
-          :user => user.nil? ? nil : user.to_hash
-          :organization => organization.nil? ? nil : organization.to_hash
+          :guid => guid,
+          :user => user.nil? ? nil : user.to_hash,
+          :organization => organization.nil? ? nil : organization.to_hash,
           :role => role
         }
       end
@@ -765,9 +765,9 @@ module Apidoc
 
       def to_hash
         {
-          :guid => guid
-          :user => user.nil? ? nil : user.to_hash
-          :organization => organization.nil? ? nil : organization.to_hash
+          :guid => guid,
+          :user => user.nil? ? nil : user.to_hash,
+          :organization => organization.nil? ? nil : organization.to_hash,
           :role => role
         }
       end
@@ -794,10 +794,10 @@ module Apidoc
 
       def to_hash
         {
-          :guid => guid
-          :key => key
-          :name => name
-          :domains => (domains || []).map(&:to_hash)
+          :guid => guid,
+          :key => key,
+          :name => name,
+          :domains => (domains || []).map(&:to_hash),
           :metadata => metadata.nil? ? nil : metadata.to_hash
         }
       end
@@ -821,7 +821,7 @@ module Apidoc
 
       def to_hash
         {
-          :visibility => visibility.nil? ? nil : visibility.value
+          :visibility => visibility.nil? ? nil : visibility.value,
           :package_name => package_name
         }
       end
@@ -848,10 +848,10 @@ module Apidoc
 
       def to_hash
         {
-          :guid => guid
-          :name => name
-          :key => key
-          :visibility => visibility.nil? ? nil : visibility.value
+          :guid => guid,
+          :name => name,
+          :key => key,
+          :visibility => visibility.nil? ? nil : visibility.value,
           :description => description
         }
       end
@@ -876,8 +876,8 @@ module Apidoc
 
       def to_hash
         {
-          :guid => guid
-          :email => email
+          :guid => guid,
+          :email => email,
           :name => name
         }
       end
@@ -902,7 +902,7 @@ module Apidoc
 
       def to_hash
         {
-          :valid => valid
+          :valid => valid,
           :errors => errors
         }
       end
@@ -927,8 +927,8 @@ module Apidoc
 
       def to_hash
         {
-          :guid => guid
-          :version => version
+          :guid => guid,
+          :version => version,
           :json => json
         }
       end

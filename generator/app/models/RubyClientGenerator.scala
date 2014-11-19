@@ -411,7 +411,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
         }
 
         s":${field.name} => ${value}"
-      }.mkString("\n").indent(6)
+      }.mkString(",\n").indent(6)
     )
     sb.append("    }")
     sb.append("  end\n")
