@@ -57,9 +57,9 @@ object GeneratorDao {
     val urlErrors = Try(new URL(form.uri)) match {
       case Success(url) => {
         if (form.uri.toLowerCase.startsWith("http")) {
-          Seq("URL must start with http")
-        } else {
           Seq.empty
+        } else {
+          Seq("URL must start with http")
         }
       }
       case Failure(e) => e match {
