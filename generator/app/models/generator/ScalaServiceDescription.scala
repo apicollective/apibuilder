@@ -430,7 +430,7 @@ object ScalaDataType {
     case ScalaUuidType => s"$varName.toString"
     case ScalaDateIso8601Type => s"$varName.toString"
     case ScalaDateTimeIso8601Type => {
-      s"org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
+      s"_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print($varName)"
     }
     case ScalaEnumType(_, _) => s"$varName.toString"
     case ScalaMapType(_) | ScalaListType(_) | ScalaModelType(_, _) | ScalaUnitType | ScalaObjectType => {
