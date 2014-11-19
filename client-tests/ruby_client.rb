@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.7.2 http://www.apidoc.me/gilt/code/apidoc/0.7.0/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.7.4 http://www.apidoc.me/gilt/code/apidoc/0.7.4/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -522,23 +522,22 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :generator => generator.nil? ? nil : generator.to_hash,
-            :source => source
+          :generator => generator.nil? ? nil : generator.to_hash
+          :source => source
         }
       end
 
     end
 
     # Represents a single domain name (e.g. www.apidoc.me). When a new user
-    # registers and confirms their email, we automatically associate that user
-    # with a member of the organization associated with their domain. For
-    # example, if you confirm your account with an email address of
-    # foo@gilt.com, we will automatically add you as a member to the
-    # organization with domain gilt.com.
+    # registers and confirms their email, we automatically associate that user with
+    # a member of the organization associated with their domain. For example, if you
+    # confirm your account with an email address of foo@gilt.com, we will
+    # automatically add you as a member to the organization with domain gilt.com.
     class Domain
 
       attr_reader :name
@@ -550,11 +549,11 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :name => name
+          :name => name
         }
       end
 
@@ -572,12 +571,12 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :code => code,
-            :message => message
+          :code => code
+          :message => message
         }
       end
 
@@ -603,19 +602,19 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :key => key,
-            :uri => uri,
-            :name => name,
-            :language => language,
-            :description => description,
-            :visibility => visibility.nil? ? nil : visibility.value,
-            :owner => owner.nil? ? nil : owner.to_hash,
-            :enabled => enabled
+          :guid => guid
+          :key => key
+          :uri => uri
+          :name => name
+          :language => language
+          :description => description
+          :visibility => visibility.nil? ? nil : visibility.value
+          :owner => owner.nil? ? nil : owner.to_hash
+          :enabled => enabled
         }
       end
 
@@ -635,13 +634,13 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :key => key,
-            :uri => uri,
-            :visibility => visibility.nil? ? nil : visibility.value
+          :key => key
+          :uri => uri
+          :visibility => visibility.nil? ? nil : visibility.value
         }
       end
 
@@ -659,11 +658,11 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :enabled => enabled
+          :enabled => enabled
         }
       end
 
@@ -682,12 +681,12 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :visibility => visibility.nil? ? nil : visibility.value,
-            :enabled => enabled
+          :visibility => visibility.nil? ? nil : visibility.value
+          :enabled => enabled
         }
       end
 
@@ -704,19 +703,19 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :status => status
+          :status => status
         }
       end
 
     end
 
     # A membership represents a user in a specific role to an organization.
-    # Memberships cannot be created directly. Instead you first create a
-    # membership request, then that request is either accepted or declined.
+    # Memberships cannot be created directly. Instead you first create a membership
+    # request, then that request is either accepted or declined.
     class Membership
 
       attr_reader :guid, :user, :organization, :role
@@ -731,23 +730,23 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :user => user.nil? ? nil : user.to_hash,
-            :organization => organization.nil? ? nil : organization.to_hash,
-            :role => role
+          :guid => guid
+          :user => user.nil? ? nil : user.to_hash
+          :organization => organization.nil? ? nil : organization.to_hash
+          :role => role
         }
       end
 
     end
 
-    # A membership request represents a user requesting to join an organization
-    # with a specific role (e.g. as a member or an admin). Membership requests
-    # can be reviewed by any current admin of the organization who can either
-    # accept or decline the request.
+    # A membership request represents a user requesting to join an organization with
+    # a specific role (e.g. as a member or an admin). Membership requests can be
+    # reviewed by any current admin of the organization who can either accept or
+    # decline the request.
     class MembershipRequest
 
       attr_reader :guid, :user, :organization, :role
@@ -762,14 +761,14 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :user => user.nil? ? nil : user.to_hash,
-            :organization => organization.nil? ? nil : organization.to_hash,
-            :role => role
+          :guid => guid
+          :user => user.nil? ? nil : user.to_hash
+          :organization => organization.nil? ? nil : organization.to_hash
+          :role => role
         }
       end
 
@@ -791,15 +790,15 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :key => key,
-            :name => name,
-            :domains => (domains || []).map(&:to_hash),
-            :metadata => metadata.nil? ? nil : metadata.to_hash
+          :guid => guid
+          :key => key
+          :name => name
+          :domains => (domains || []).map(&:to_hash)
+          :metadata => metadata.nil? ? nil : metadata.to_hash
         }
       end
 
@@ -818,12 +817,12 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :visibility => visibility.nil? ? nil : visibility.value,
-            :package_name => package_name
+          :visibility => visibility.nil? ? nil : visibility.value
+          :package_name => package_name
         }
       end
 
@@ -845,15 +844,15 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :name => name,
-            :key => key,
-            :visibility => visibility.nil? ? nil : visibility.value,
-            :description => description
+          :guid => guid
+          :name => name
+          :key => key
+          :visibility => visibility.nil? ? nil : visibility.value
+          :description => description
         }
       end
 
@@ -873,20 +872,20 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :email => email,
-            :name => name
+          :guid => guid
+          :email => email
+          :name => name
         }
       end
 
     end
 
-    # Used only to validate json files - used as a resource where http status
-    # code defines success
+    # Used only to validate json files - used as a resource where http status code
+    # defines success
     class Validation
 
       attr_reader :valid, :errors
@@ -894,17 +893,17 @@ module Apidoc
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
         @valid = HttpClient::Preconditions.assert_boolean('valid', opts.delete(:valid))
-        @errors = opts.delete(:errors).map { |v| HttpClient::Preconditions.assert_class_or_nil('errors', v, String)}
+        @errors = (opts.delete(:errors) || []).map { |v| HttpClient::Preconditions.assert_class_or_nil('errors', v, String)}
       end
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :valid => valid,
-            :errors => errors
+          :valid => valid
+          :errors => errors
         }
       end
 
@@ -924,13 +923,13 @@ module Apidoc
 
       def to_json
         JSON.dump(to_hash)
-       end
+      end
 
       def to_hash
         {
-            :guid => guid,
-            :version => version,
-            :json => json
+          :guid => guid
+          :version => version
+          :json => json
         }
       end
 
@@ -1245,6 +1244,10 @@ module Apidoc
 
       def Helper.to_big_decimal(value)
         value ? BigDecimal.new(value.to_s) : nil
+      end
+
+      def Helper.to_object(value)
+        value ? JSON.parse(value) : nil
       end
 
       def Helper.to_uuid(value)
