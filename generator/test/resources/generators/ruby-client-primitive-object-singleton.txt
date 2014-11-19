@@ -11,6 +11,10 @@ class Content
     JSON.dump(to_hash)
   end
 
+  def copy(incoming={})
+    Content.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+  end
+
   def to_hash
     {
       :data => data

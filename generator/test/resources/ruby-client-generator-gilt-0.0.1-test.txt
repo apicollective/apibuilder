@@ -62,7 +62,7 @@ module ApidocReferenceApi
         query = {
           :foo => HttpClient::Preconditions.assert_class_or_nil('foo', opts.delete(:foo), String),
           :optional_messages => (opts.delete(:optional_messages) || []).map { |v| HttpClient::Preconditions.assert_class_or_nil('optional_messages', v, String)},
-          :required_messages => HttpClient::Preconditions.assert_class(opts.delete(:required_messages), Array).map { |v| HttpClient::Preconditions.assert_class('required_messages', v, String)}
+          :required_messages => HttpClient::Preconditions.assert_class('required_messages', opts.delete(:required_messages), Array).map { |v| HttpClient::Preconditions.assert_class('required_messages', v, String)}
         }.delete_if { |k, v| v.nil? }
         @client.request("/echoes").with_query(query).get
         nil
@@ -72,7 +72,7 @@ module ApidocReferenceApi
         opts = HttpClient::Helper.symbolize_keys(incoming)
         query = {
           :optional_messages => (opts.delete(:optional_messages) || []).map { |v| HttpClient::Preconditions.assert_class_or_nil('optional_messages', v, String)},
-          :required_messages => HttpClient::Preconditions.assert_class(opts.delete(:required_messages), Array).map { |v| HttpClient::Preconditions.assert_class('required_messages', v, String)}
+          :required_messages => HttpClient::Preconditions.assert_class('required_messages', opts.delete(:required_messages), Array).map { |v| HttpClient::Preconditions.assert_class('required_messages', v, String)}
         }.delete_if { |k, v| v.nil? }
         @client.request("/echoes/arrays-only").with_query(query).get
         nil
@@ -249,28 +249,32 @@ module ApidocReferenceApi
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        Big.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
-          :f1 => f1
-          :f2 => f2
-          :f3 => f3
-          :f4 => f4
-          :f5 => f5
-          :f6 => f6
-          :f7 => f7
-          :f8 => f8
-          :f9 => f9
-          :f10 => f10
-          :f11 => f11
-          :f12 => f12
-          :f13 => f13
-          :f14 => f14
-          :f15 => f15
-          :f16 => f16
-          :f17 => f17
-          :f18 => f18
-          :f19 => f19
-          :f20 => f20
+          :f1 => f1,
+          :f2 => f2,
+          :f3 => f3,
+          :f4 => f4,
+          :f5 => f5,
+          :f6 => f6,
+          :f7 => f7,
+          :f8 => f8,
+          :f9 => f9,
+          :f10 => f10,
+          :f11 => f11,
+          :f12 => f12,
+          :f13 => f13,
+          :f14 => f14,
+          :f15 => f15,
+          :f16 => f16,
+          :f17 => f17,
+          :f18 => f18,
+          :f19 => f19,
+          :f20 => f20,
           :f21 => f21
         }
       end
@@ -288,6 +292,10 @@ module ApidocReferenceApi
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Echo.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -313,9 +321,13 @@ module ApidocReferenceApi
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        Error.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
-          :code => code
+          :code => code,
           :message => message
         }
       end
@@ -338,11 +350,15 @@ module ApidocReferenceApi
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        Member.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
-          :guid => guid
-          :organization => organization.nil? ? nil : organization.to_hash
-          :user => user.nil? ? nil : user.to_hash
+          :guid => guid,
+          :organization => organization.nil? ? nil : organization.to_hash,
+          :user => user.nil? ? nil : user.to_hash,
           :role => role
         }
       end
@@ -363,9 +379,13 @@ module ApidocReferenceApi
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        Organization.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
-          :guid => guid
+          :guid => guid,
           :name => name
         }
       end
@@ -389,12 +409,16 @@ module ApidocReferenceApi
         JSON.dump(to_hash)
       end
 
+      def copy(incoming={})
+        User.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
       def to_hash
         {
-          :guid => guid
-          :email => email
-          :active => active
-          :age_group => age_group.nil? ? nil : age_group.value
+          :guid => guid,
+          :email => email,
+          :active => active,
+          :age_group => age_group.nil? ? nil : age_group.value,
           :tags => tags
         }
       end
@@ -407,11 +431,15 @@ module ApidocReferenceApi
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
-        @users = HttpClient::Preconditions.assert_class(opts.delete(:users), Array).map { |el| el.nil? ? nil : (el.is_a?(ApidocReferenceApi::Models::User) ? el : ApidocReferenceApi::Models::User.new(el))}
+        @users = HttpClient::Preconditions.assert_class('users', opts.delete(:users), Array).map { |el| el.nil? ? nil : (el.is_a?(ApidocReferenceApi::Models::User) ? el : ApidocReferenceApi::Models::User.new(el)) }
       end
 
       def to_json
         JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        UserList.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -761,6 +789,14 @@ module ApidocReferenceApi
         else
           nil
         end
+      end
+
+      def Helper.date_iso8601_to_string(value)
+        value.nil? ? nil : value.strftime('%Y-%m-%d')
+      end
+
+      def Helper.date_time_iso8601_to_string(value)
+        value.nil? ? nil : value.strftime('%Y-%m-%dT%H:%M:%S%z')
       end
 
       TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRINGS)
