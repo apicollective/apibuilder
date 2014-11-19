@@ -390,7 +390,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
       model.fields.map { field =>
         val value = field.`type` match {
           case TypeInstance(_, Type(TypeKind.Primitive, name)) => {
-            field.name
+            asString(field.name, name)
           }
 
           case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
@@ -643,8 +643,8 @@ case class RubyClientGenerator(service: ServiceDescription) {
     } match {
       case Primitives.Integer | Primitives.Double | Primitives.Long | Primitives.Uuid | Primitives.Decimal | Primitives.Boolean => varName
       case Primitives.String => s"CGI.escape($varName)"
-      case Primitives.DateIso8601 => s"$varName.strftime('%Y-%m-%d')"
-      case Primitives.DateTimeIso8601 => s"$varName.strftime('%Y-%m-%dT%H:%M:%S%z')"
+      case Primitives.DateIso8601 => s"HttpClient::Helper.date_iso8601_to_string($varName)"
+      case Primitives.DateTimeIso8601 => s"HttpClient::Helper.date_time_iso8601_to_string($varName)"
       case Primitives.Object | Primitives.Unit => {
         sys.error(s"Unsupported type[$ptName] for string formatting - varName[$varName]")
       }

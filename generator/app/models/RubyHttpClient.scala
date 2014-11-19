@@ -353,6 +353,14 @@ require 'bigdecimal'
         end
       end
 
+      def Helper.date_iso8601_to_string(value)
+        value.nil? ? nil : value.strftime('%Y-%m-%d')
+      end
+
+      def Helper.date_time_iso8601_to_string(value)
+        value.nil? ? nil : value.strftime('%Y-%m-%dT%H:%M:%S%z')
+      end
+
       TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRINGS)
       FALSE_STRINGS = ['f', 'false', 'n', 'no', 'off', '0', 'falseclass'] unless defined?(FALSE_STRINGS)
 
