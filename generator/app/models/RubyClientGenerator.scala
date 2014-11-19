@@ -484,19 +484,21 @@ case class RubyClientGenerator(service: ServiceDescription) {
   }
 
   private def withDefaultArray(
+    fieldName: String,
     arg: String,
     required: Boolean
   ) = required match {
     case false => s"($arg || [])"
-    case true => s"HttpClient::Preconditions.assert_class($arg, Array)"
+    case true => s"HttpClient::Preconditions.assert_class('$fieldName', $arg, Array)"
   }
 
   private def withDefaultMap(
+    fieldName: String,
     arg: String,
     required: Boolean
   ) = required match {
     case false => s"($arg || {})"
-    case true => s"HttpClient::Preconditions.assert_class($arg, Hash)"
+    case true => s"HttpClient::Preconditions.assert_class('$fieldName', $arg, Hash)"
   }
 
   private def parseArgument(
@@ -511,11 +513,11 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
 
       case TypeInstance(Container.List, Type(TypeKind.Primitive, name)) => {
-        withDefaultArray(s"opts.delete(:$fieldName)", required) + ".map { |v| " + parseArgumentPrimitive(fieldName, "v", name, required, default) + "}"
+        withDefaultArray(fieldName, s"opts.delete(:$fieldName)", required) + ".map { |v| " + parseArgumentPrimitive(fieldName, "v", name, required, default) + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Primitive, name)) => {
-        withDefaultMap(s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
+        withDefaultMap(fieldName, s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
@@ -530,12 +532,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        withDefaultArray(s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
+        withDefaultArray(fieldName, s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.new(el))" + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
         val klass = qualifiedClassName(name)
-        withDefaultMap(s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1])); h" + "}"
+        withDefaultMap(fieldName, s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.new(el[1])); h" + "}"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Enum, name)) => {
@@ -550,12 +552,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
       case TypeInstance(Container.List, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        withDefaultArray(s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
+        withDefaultArray(fieldName, s"opts.delete(:$fieldName)", required) + ".map { |el| " + s"el.nil? ? nil : (el.is_a?($klass) ? el : $klass.apply(el)" + "}"
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Enum, name)) => {
         val klass = qualifiedClassName(name)
-        withDefaultMap(s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
+        withDefaultMap(fieldName, s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, el| h[el[0]] = " + s"el[1].nil? ? nil : (el[1].is_a?($klass) ? el[1] : $klass.apply(el[1]); h" + "}"
       }
     }
   }
