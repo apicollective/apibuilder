@@ -169,15 +169,13 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     describe("User") {
 
       it("user can see own org") {
-        val guids = OrganizationDao.findAll(Authorization.User(privateUser.guid)).map(_.guid)
-        guids.contains(publicOrg.guid) should be(true)
-        guids.contains(privateOrg.guid) should be(true)
+        OrganizationDao.findAll(Authorization.User(privateUser.guid), guid = Some(publicOrg.guid)).map(_.guid) should be(Seq(publicOrg.guid))
+        OrganizationDao.findAll(Authorization.User(privateUser.guid), guid = Some(privateOrg.guid)).map(_.guid) should be(Seq(privateOrg.guid))
       }
 
       it("other user cannot see private org") {
-        val guids = OrganizationDao.findAll(Authorization.User(publicUser.guid)).map(_.guid)
-        guids.contains(publicOrg.guid) should be(true)
-        guids.contains(privateOrg.guid) should be(false)
+        OrganizationDao.findAll(Authorization.User(publicUser.guid), guid = Some(publicOrg.guid)).map(_.guid) should be(Seq(publicOrg.guid))
+        OrganizationDao.findAll(Authorization.User(publicUser.guid), guid = Some(privateOrg.guid)).map(_.guid) should be(Seq.empty)
       }
 
     }

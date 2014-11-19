@@ -99,7 +99,7 @@ package com.gilt.apidoc.models {
     guid: _root_.java.util.UUID,
     key: String,
     name: String,
-    domains: Option[Seq[com.gilt.apidoc.models.Domain]] = None,
+    domains: Seq[com.gilt.apidoc.models.Domain] = Nil,
     metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadata] = None
   )
 
@@ -137,7 +137,7 @@ package com.gilt.apidoc.models {
    */
   case class Validation(
     valid: Boolean,
-    errors: Option[Seq[String]] = None
+    errors: Seq[String] = Nil
   )
 
   /**

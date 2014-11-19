@@ -94,7 +94,7 @@ object RubyClientGenerator extends CodeGenerator {
       }
       lines.append(s"  def $className.$varName")
       lines.append(s"    @@_$varName ||= $className.new('${value.name}')")
-      lines.append("  end")
+      lines.append(s"  end")
       lines.append("")
     }
 
@@ -361,7 +361,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
     val sb = ListBuffer[String]()
 
-    model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc, 4)) }
+    model.description.map { desc => sb.append(GeneratorUtil.formatComment(desc)) }
     sb.append(s"class $className\n")
 
     sb.append("  attr_reader " + model.fields.map( f => s":${f.name}" ).mkString(", "))

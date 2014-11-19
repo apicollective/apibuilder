@@ -18,7 +18,7 @@ case class Play2Json(serviceName: String) {
     ).mkString("\n")
   }
 
-  private def fieldReaders(model: ScalaModel): String = {
+  def fieldReaders(model: ScalaModel): String = {
     val serializations = model.fields.map { field =>
       field.`type`.container match {
         case Container.Singleton => {
