@@ -1,4 +1,5 @@
 package com.gilt.apidoc.models {
+
   /**
    * Generated source code.
    */
@@ -194,6 +195,7 @@ package com.gilt.apidoc.models {
     def fromString(value: String): scala.Option[Visibility] = byName.get(value)
 
   }
+
 }
 
 package com.gilt.apidoc.models {
