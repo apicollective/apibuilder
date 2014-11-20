@@ -521,7 +521,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
 
       case TypeInstance(Container.Map, Type(TypeKind.Primitive, name)) => {
-        withDefaultMap(fieldName, s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, d| h[d0] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
+        withDefaultMap(fieldName, s"opts.delete(:$fieldName)", required) + ".inject({}) { |h, d| h[d[0]] = " + parseArgumentPrimitive(fieldName, "d[1]", name, required, default) + "; h }"
       }
 
       case TypeInstance(Container.Singleton, Type(TypeKind.Model, name)) => {
