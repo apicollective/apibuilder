@@ -402,7 +402,7 @@ module ApidocReferenceApi
         @email = HttpClient::Preconditions.assert_class('email', opts.delete(:email), String)
         @active = HttpClient::Preconditions.assert_boolean('active', opts.delete(:active))
         @age_group = HttpClient::Preconditions.assert_class('age_group', opts[:age_group].nil? ? nil : (opts[:age_group].is_a?(ApidocReferenceApi::Models::AgeGroup) ? opts.delete(:age_group) : ApidocReferenceApi::Models::AgeGroup.apply(opts.delete(:age_group))), ApidocReferenceApi::Models::AgeGroup)
-        @tags = (opts.delete(:tags) || {}).inject({}) { |h, d| h[d0] = HttpClient::Preconditions.assert_class_or_nil('tags', d[1], String); h }
+        @tags = (opts.delete(:tags) || {}).inject({}) { |h, d| h[d[0]] = HttpClient::Preconditions.assert_class_or_nil('tags', d[1], String); h }
       end
 
       def to_json
