@@ -315,7 +315,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
                 requestBuilder.append(s".with_json(${ti.varName}.to_json)")
               }
               case TypeInstance(Container.List, Type(TypeKind.Model, name)) => {
-                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_json })")
+                requestBuilder.append(s".with_json(${ti.varName}.map { |o| o.to_hash }.to_json)")
               }
               case TypeInstance(Container.Map, Type(TypeKind.Model, name)) => {
                 requestBuilder.append(s".with_json(${ti.varName}.inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : o[1].to_hash; hash }).to_json")
