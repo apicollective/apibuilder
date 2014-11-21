@@ -594,6 +594,8 @@ module ApidocReferenceApi
         if @uri.scheme == "https"
           http.use_ssl = true
           http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+          https.cert_store = OpenSSL::X509::Store.new
+          https.cert_store.set_default_paths
         end
         response = http.request(request)
 

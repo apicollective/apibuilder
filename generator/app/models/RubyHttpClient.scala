@@ -156,6 +156,8 @@ require 'bigdecimal'
         if @uri.scheme == "https"
           http.use_ssl = true
           http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+          http.cert_store = OpenSSL::X509::Store.new
+          http.cert_store.set_default_paths
         end
         response = http.request(request)
 
