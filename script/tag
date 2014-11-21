@@ -8,10 +8,8 @@ tag = `sem-info tag next #{ARGV.first}`.strip
 
 git_version = "git.version"
 
-files = ['api/conf/base.conf', 'www/conf/base.conf']
+files = ['api/conf/base.conf', 'www/conf/base.conf'].select { |f| File.exists?(f) }
 files.each do |path|
-  next if !File.exists?(path)
-  
   found = false
   tmp = "#{path}.tmp"
   begin
@@ -56,7 +54,9 @@ def run(command)
   system(command)
 end
 
-run("git commit -m 'Update configuration to record version #{tag}' " + files.join(" "))
+if !files.empty?
+  run("git commit -m 'Update configuration to record version #{tag}' " + files.join(" "))
+end
 run("git tag -a -m #{tag} #{tag}")
 run("git push --tags origin")
 run("git push origin master")
