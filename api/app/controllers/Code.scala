@@ -30,7 +30,7 @@ object Code extends Controller {
       case None =>
         Future.successful(NotFound)
       case Some(org) => {
-        GeneratorDao.findAll(user = request.user, key = Some(generatorKey)).headOption match {
+        GeneratorDao.findAll(user = Some(request.user), key = Some(generatorKey)).headOption match {
           case None =>
             Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid generator key[$generatorKey]."))))
           case Some(generator: Generator) =>

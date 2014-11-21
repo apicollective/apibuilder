@@ -180,7 +180,7 @@ object GeneratorDao {
   }
 
   def findAll(
-    user: User,
+    user: Option[User] = None,
     guid: Option[UUID] = None,
     key: Option[String] = None,
     keyAndUri: Option[(String, String)] = None,
@@ -193,10 +193,15 @@ object GeneratorDao {
     )
 
    // get generator enabled choice for all orgs of the user
-    val orgEnabledGenerators: Set[UUID] = DB.withConnection { implicit c =>
-      SQL(OrgGeneratorsQuery).on('user_guid -> user.guid)().toList.map { row =>
-        row[UUID]("generator_guid")
-      }.toSet
+    val orgEnabledGenerators: Set[UUID] = user match {
+      case None => Set.empty
+      case Some(u) => {
+        DB.withConnection { implicit c =>
+          SQL(OrgGeneratorsQuery).on('user_guid -> u.guid)().toList.map { row =>
+            row[UUID]("generator_guid")
+          }.toSet
+        }
+      }
     }
 
     // Query generators
@@ -209,7 +214,7 @@ object GeneratorDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
-      Some('user_guid -> user.guid),
+      Some('user_guid -> user.map(_.guid).getOrElse(UUID.randomUUID)), // TODO Avoid needing the random guid
       guid.map('guid -> _),
       key.map('key -> _),
       keyAndUri.map('key -> _._1),
@@ -236,7 +241,7 @@ object GeneratorDao {
           language = None,
           visibility = visibility,
           owner = owner,
-          enabled = isEnabled.getOrElse(false) || isOwner(user.guid, owner) || isTrusted(uri) || isOrgEnabled(visibility, genGuid, orgEnabledGenerators)
+          enabled = isEnabled.getOrElse(false) || (!user.isEmpty && isOwner(user.get.guid, owner)) || isTrusted(uri) || isOrgEnabled(visibility, genGuid, orgEnabledGenerators)
         ) -> row[Date]("created_at")
       }.toSeq.sortBy(_._2.getTime).map(_._1).distinct
     }
