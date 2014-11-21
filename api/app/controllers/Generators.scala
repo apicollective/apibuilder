@@ -21,7 +21,7 @@ object Generators extends Controller {
     key: Option[String] = None,
     limit: Int = 100,
     offset: Int = 0
-  ) = Authenticated.async { request =>
+  ) = AnonymousRequest.async { request =>
     fillInGeneratorMeta(
       GeneratorDao.findAll(
         user = request.user,
@@ -34,7 +34,7 @@ object Generators extends Controller {
   }
 
 
-  def getByKey(key: String) = Authenticated.async { request =>
+  def getByKey(key: String) = AnonymousRequest.async { request =>
     GeneratorDao.findAll(user = request.user, key = Some(key)).headOption match {
       case Some(g) =>
         fillInGeneratorMeta(g).map {
@@ -74,7 +74,7 @@ object Generators extends Controller {
         val form = s.get
         GeneratorDao.validate(form) match {
           case Nil => {
-            GeneratorDao.findAll(user = request.user, keyAndUri = Some(form.key -> form.uri)).headOption match {
+            GeneratorDao.findAll(user = Some(request.user), keyAndUri = Some(form.key -> form.uri)).headOption match {
               case Some(d) =>
                 Future.successful(Conflict(Json.toJson(Validation.error(s"generator ${form.key} already exists"))))
               case None =>
@@ -102,7 +102,7 @@ object Generators extends Controller {
       }
       case s: JsSuccess[GeneratorUpdateForm] => {
         val form = s.get
-        GeneratorDao.findAll(user = request.user, key = Some(key)).headOption match {
+        GeneratorDao.findAll(user = Some(request.user), key = Some(key)).headOption match {
           case Some(g) =>
             fillInGeneratorMeta(g).map {
               case Right(g) if (form.visibility.isDefined && !GeneratorDao.isOwner(request.user.guid, g.owner)) =>
@@ -128,7 +128,7 @@ object Generators extends Controller {
       }
       case s: JsSuccess[GeneratorOrgForm] => {
         val form = s.get
-        val generator = GeneratorDao.findAll(user = request.user, key = Some(key)).headOption
+        val generator = GeneratorDao.findAll(user = Some(request.user), key = Some(key)).headOption
         val org = OrganizationDao.findAll(Authorization(Some(request.user)), key = Some(orgKey)).headOption
         (generator, org) match {
           case (Some(g), Some(o)) =>
@@ -147,7 +147,7 @@ object Generators extends Controller {
   }
 
   def deleteByKey(key: String) = Authenticated { request =>
-    GeneratorDao.findAll(user = request.user, key = Some(key)).headOption match {
+    GeneratorDao.findAll(user = Some(request.user), key = Some(key)).headOption match {
       case Some(g) if GeneratorDao.isOwner(request.user.guid, g.owner) =>
         GeneratorDao.softDelete(request.user, g)
         NoContent
