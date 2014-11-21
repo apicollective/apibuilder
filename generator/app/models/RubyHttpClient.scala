@@ -75,14 +75,13 @@ require 'bigdecimal'
       def new_http_client
         client = Net::HTTP.new(@uri.host, @uri.port)
         if @uri.scheme == "https"
-          with_ssl(client)
-        else
-          client
+          configure_ssl(client)
         end
+        client
       end
 
       # If HTTP is required, this method accepts an HTTP Client and configures SSL
-      def with_ssl(client)
+      def configure_ssl(client)
         Preconditions.assert_class('client', client, Net::HTTP)
         client.use_ssl = true
         client.verify_mode = OpenSSL::SSL::VERIFY_PEER
