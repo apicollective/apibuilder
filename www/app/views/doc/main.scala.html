@@ -15,6 +15,7 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
+            <li><a class="apidoc" href="/">apidoc</a></li>
             <li@if(title == None) { class="active" }><a href="@routes.DocController.index">Introduction</a></li>
             <li@if(title == Some("Getting Started")) { class="active" }><a href="@routes.DocController.gettingStarted">Getting Started</a></li>
             <li@if(title == Some("api.json format")) { class="active" }><a href="@routes.DocController.apiJson">api.json format</a></li>
