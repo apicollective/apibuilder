@@ -12,10 +12,12 @@
 
     <div class="container-fluid">
       <div class="row">
+          
         <div class="col-sm-3 col-md-2 sidebar models">
-          @metadata.org.map { org =>
-            <ul class="nav nav-sidebar">
-              <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
+          <ul class="nav nav-sidebar">
+            <li><a class="apidoc" href="/">apidoc</a></li>
+            @metadata.org.map { org =>
+              <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>   
 
               @if(metadata.isOrgMember) {
                 <li><a href="@routes.Domains.index(orgKey = org.key)">@lib.Util.OrgSettingsText</a></li>
@@ -38,8 +40,8 @@
                   <li><a@if(settings.section == Some(models.SettingSection.Members)) { class="active" } href="@routes.Members.show(orgKey = org.key)">Members</a></li>
                 }
               }
-            </ul>
-          }
+            }
+          </ul>
 
           @metadata.serviceDescription.map { sd =>
             @if(!sd.resources.isEmpty) {

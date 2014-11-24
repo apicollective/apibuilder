@@ -1,6 +1,28 @@
 body {
   min-height: 2000px;
-  padding-top: 40px;
+}
+
+body .navbar-fixed-top {
+  position: relative;
+  left: inherit;
+  right: inherit;
+  top: inherit;
+  padding-left: 220px;
+  z-index: 0;
+}
+
+body .sidebar {
+  top: 0px;
+  padding-top: 0px;
+}
+
+.apidoc {
+  font-weight: bold;
+  font-size: 150%;
+}
+
+body .container {
+  width: 100%;
 }
 
 /*
@@ -59,17 +81,11 @@ body {
  * Main content
  */
 
-.main {
-  padding: 20px;
-}
 @media (min-width: 768px) {
   .main {
     padding-right: 20px;
     padding-left: 20px;
   }
-}
-.main .page-header {
-  margin-top: 0;
 }
 
 .version_resource {
@@ -82,4 +98,13 @@ dd.error {
 
 span.error {
   color: #cc3333;
+}
+
+body h2 {
+  margin-top: 0px;
+}
+
+body .modal-body .well {
+  background-color: #fff;
+  width: 400px;
 }
