@@ -137,7 +137,7 @@ object Versions extends Controller {
           case Some(file) => {
             val path = File.createTempFile("api", "json")
             file.ref.moveTo(path, true)
-            val contents = scala.io.Source.fromFile(path).getLines.mkString("\n")
+            val contents = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n")
 
             val validator = ServiceDescriptionValidator(contents)
             if (validator.isValid) {
