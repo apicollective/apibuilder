@@ -38,7 +38,7 @@ object TokenDao {
         'description -> form.description,
         'token -> TokenGenerator.generate(),
         'created_by_guid -> user.guid
-      )
+      ).execute()
     }
 
     findByGuid(Authorization.All, guid).getOrElse {
