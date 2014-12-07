@@ -15,9 +15,8 @@ object MembershipRequestDao {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]
 
-
   private val BaseQuery = """
-    select membership_requests.guid::varchar,
+    select membership_requests.guid,
            membership_requests.role,
            membership_requests.created_at::varchar,
            organizations.guid as organization_guid,
@@ -32,6 +31,13 @@ object MembershipRequestDao {
      where membership_requests.deleted_at is null
   """
 
+  private val InsertQuery = """
+   insert into membership_requests
+   (guid, organization_guid, user_guid, role, created_by_guid)
+   values
+   ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
+  """
+
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
     findByOrganizationAndUserAndRole(organization, user, role) match {
       case Some(r: MembershipRequest) => r
@@ -44,16 +50,13 @@ object MembershipRequestDao {
   private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
     val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
-      SQL("""
-          insert into membership_requests
-          (guid, organization_guid, user_guid, role, created_by_guid)
-          values
-          ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
-          """).on('guid -> guid,
-                  'organization_guid -> organization.guid,
-                  'user_guid -> user.guid,
-                  'role -> role.key,
-                  'created_by_guid -> createdBy.guid).execute()
+      SQL(InsertQuery).on(
+        'guid -> guid,
+        'organization_guid -> organization.guid,
+        'user_guid -> user.guid,
+        'role -> role.key,
+        'created_by_guid -> createdBy.guid
+      ).execute()
     }
 
     findByGuid(guid).getOrElse {

@@ -650,7 +650,7 @@
                     "description": "Create a new subscription.",
                     "body": { "type": "subscription_form" },
                     "responses": {
-                        "201": { "type": "subscription" },
+                        "200": { "type": "subscription" },
                         "409": { "type": "[error]" }
                     }
                 },
