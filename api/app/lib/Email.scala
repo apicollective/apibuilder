@@ -37,17 +37,19 @@ object Email {
     subject: String,
     body: String
   ) {
+    val prefixedSubject = subjectPrefix + " " + subject
+
     val email = new SendGrid.Email()
     email.addTo(to.email)
     to.name.map { n => email.addToName(n) }
     email.setFrom(from.email)
     from.name.map { n => email.setFromName(n) }
-    email.setSubject(subjectPrefix + " " + subject)
+    email.setSubject(prefixedSubject)
     email.setHtml(body)
 
     localDeliveryDir match {
       case Some(dir) => {
-        localDelivery(dir, to, subject, body)
+        localDelivery(dir, to, prefixedSubject, body)
       }
 
       case None => {
