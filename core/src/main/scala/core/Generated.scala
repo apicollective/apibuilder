@@ -12,8 +12,8 @@ package com.gilt.apidoc.models {
    * Represents a single domain name (e.g. www.apidoc.me). When a new user registers
    * and confirms their email, we automatically associate that user with a member of
    * the organization associated with their domain. For example, if you confirm your
-   * account with an email address of foo@gilt.com, we will automatically add you as
-   * a member to the organization with domain gilt.com.
+   * account with an email address of foo@gilt.com, we will automatically create a
+   * membership request on your behalf to join the organization with domain gilt.com.
    */
   case class Domain(
     name: String
@@ -126,7 +126,7 @@ package com.gilt.apidoc.models {
    * Represents a user that is currently subscribed to a publication
    */
   case class Subscription(
-    id: Long,
+    guid: _root_.java.util.UUID,
     organization: com.gilt.apidoc.models.Organization,
     user: com.gilt.apidoc.models.User,
     publication: com.gilt.apidoc.models.Publication
@@ -513,7 +513,7 @@ package com.gilt.apidoc.models {
 
     implicit def jsonReadsApidocSubscription: play.api.libs.json.Reads[Subscription] = {
       (
-        (__ \ "id").read[Long] and
+        (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "organization").read[com.gilt.apidoc.models.Organization] and
         (__ \ "user").read[com.gilt.apidoc.models.User] and
         (__ \ "publication").read[com.gilt.apidoc.models.Publication]
@@ -522,7 +522,7 @@ package com.gilt.apidoc.models {
 
     implicit def jsonWritesApidocSubscription: play.api.libs.json.Writes[Subscription] = {
       (
-        (__ \ "id").write[Long] and
+        (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "organization").write[com.gilt.apidoc.models.Organization] and
         (__ \ "user").write[com.gilt.apidoc.models.User] and
         (__ \ "publication").write[com.gilt.apidoc.models.Publication]

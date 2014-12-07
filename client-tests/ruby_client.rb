@@ -15,10 +15,14 @@ module Apidoc
   class Client
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17/ruby_client' unless defined?(USER_AGENT)
 =======
     USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.18/ruby_client' unless defined?(USER_AGENT)
 >>>>>>> Add publication/subscription to API
+=======
+    USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.19/ruby_client' unless defined?(USER_AGENT)
+>>>>>>> Update model to include subscriptions.guid
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -383,8 +387,8 @@ module Apidoc
 
       # Returns information about this subscription.
       def get_by_id(id)
-        HttpClient::Preconditions.assert_class('id', id, Integer)
-        @client.request("/subscriptions/#{id}").get { |hash| Apidoc::Models::Subscription.new(hash) }
+        HttpClient::Preconditions.assert_class('id', id, String)
+        @client.request("/subscriptions/#{CGI.escape(id)}").get { |hash| Apidoc::Models::Subscription.new(hash) }
       end
 
       # Create a new subscription.
@@ -394,8 +398,8 @@ module Apidoc
       end
 
       def delete_by_id(id)
-        HttpClient::Preconditions.assert_class('id', id, Integer)
-        @client.request("/subscriptions/#{id}").delete
+        HttpClient::Preconditions.assert_class('id', id, String)
+        @client.request("/subscriptions/#{CGI.escape(id)}").delete
         nil
       end
 
@@ -642,7 +646,8 @@ module Apidoc
     # registers and confirms their email, we automatically associate that user with
     # a member of the organization associated with their domain. For example, if you
     # confirm your account with an email address of foo@gilt.com, we will
-    # automatically add you as a member to the organization with domain gilt.com.
+    # automatically create a membership request on your behalf to join the
+    # organization with domain gilt.com.
     class Domain
 
       attr_reader :name
@@ -1014,11 +1019,11 @@ module Apidoc
     # Represents a user that is currently subscribed to a publication
     class Subscription
 
-      attr_reader :id, :organization, :user, :publication
+      attr_reader :guid, :organization, :user, :publication
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
-        @id = HttpClient::Preconditions.assert_class('id', opts.delete(:id), Integer)
+        @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
         @organization = HttpClient::Preconditions.assert_class('organization', opts[:organization].nil? ? nil : (opts[:organization].is_a?(Apidoc::Models::Organization) ? opts.delete(:organization) : Apidoc::Models::Organization.new(opts.delete(:organization))), Apidoc::Models::Organization)
         @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user))), Apidoc::Models::User)
         @publication = HttpClient::Preconditions.assert_class('publication', opts[:publication].nil? ? nil : (opts[:publication].is_a?(Apidoc::Models::Publication) ? opts.delete(:publication) : Apidoc::Models::Publication.apply(opts.delete(:publication))), Apidoc::Models::Publication)
@@ -1034,7 +1039,7 @@ module Apidoc
 
       def to_hash
         {
-          :id => id,
+          :guid => guid,
           :organization => organization.nil? ? nil : organization.to_hash,
           :user => user.nil? ? nil : user.to_hash,
           :publication => publication.nil? ? nil : publication.value

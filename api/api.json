@@ -62,7 +62,7 @@
         },
 
         "domain": {
-            "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@gilt.com, we will automatically add you as a member to the organization with domain gilt.com.",
+            "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@gilt.com, we will automatically create a membership request on your behalf to join the organization with domain gilt.com.",
             "fields": [
                 { "name": "name", "type": "string", "description": "The domain name", "example": "www.apidoc.me" }
             ]
