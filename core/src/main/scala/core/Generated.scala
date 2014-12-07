@@ -151,6 +151,21 @@ package com.gilt.apidoc.models {
   )
 
   /**
+   * A token gives a user access to the API.
+   */
+  case class Token(
+    guid: _root_.java.util.UUID,
+    user: com.gilt.apidoc.models.User,
+    token: String,
+    description: scala.Option[String] = None
+  )
+
+  case class TokenForm(
+    userGuid: _root_.java.util.UUID,
+    description: scala.Option[String] = None
+  )
+
+  /**
    * A user is a top level person interacting with the api doc server.
    */
   case class User(
@@ -604,6 +619,38 @@ package com.gilt.apidoc.models {
         (__ \ "user_guid").write[_root_.java.util.UUID] and
         (__ \ "publication").write[com.gilt.apidoc.models.Publication]
       )(unlift(SubscriptionForm.unapply _))
+    }
+
+    implicit def jsonReadsApidocToken: play.api.libs.json.Reads[Token] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "token").read[String] and
+        (__ \ "description").readNullable[String]
+      )(Token.apply _)
+    }
+
+    implicit def jsonWritesApidocToken: play.api.libs.json.Writes[Token] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "token").write[String] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(Token.unapply _))
+    }
+
+    implicit def jsonReadsApidocTokenForm: play.api.libs.json.Reads[TokenForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "description").readNullable[String]
+      )(TokenForm.apply _)
+    }
+
+    implicit def jsonWritesApidocTokenForm: play.api.libs.json.Writes[TokenForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(TokenForm.unapply _))
     }
 
     implicit def jsonReadsApidocUser: play.api.libs.json.Reads[User] = {

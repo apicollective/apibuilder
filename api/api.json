@@ -50,6 +50,23 @@
             ]
         },
 
+        "token": {
+            "description": "A token gives a user access to the API.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this token." },
+                { "name": "user", "type": "user", "description": "The user to which this token belongs." },
+                { "name": "token", "type": "string", "description": "The actual token. Guaranteed to be globally unique." },
+                { "name": "description", "type": "string", "description": "optional description to help the user manage the token.", "required": false }
+            ]
+        },
+
+        "token_form": {
+            "fields": [
+                { "name": "user_guid", "type": "uuid", "description": "The user for which we are creating the token." },
+                { "name": "description", "type": "string", "required": false }
+            ]
+        },
+
         "organization": {
             "description": "An organization is used to group a set of services together.",
             "fields": [

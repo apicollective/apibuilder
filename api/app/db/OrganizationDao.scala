@@ -12,7 +12,11 @@ import java.util.UUID
 object OrganizationDao {
 
   private val MinNameLength = 4
-  private val MinKeyLength = 4
+  val MinKeyLength = 4
+  val ReservedKeys = Seq(
+    "_internal_", "account", "accounts", "admin", "assets", "org", "orgs", "organizations",
+    "private", "subaccount", "subaccounts", "team", "teams", "user", "users"
+  )
 
   private val EmptyOrganizationMetadataForm = OrganizationMetadataForm()
 
@@ -41,13 +45,28 @@ object OrganizationDao {
     }
 
     val keyErrors = form.key match {
-      case None => Seq.empty
+      case None => {
+        nameErrors match {
+          case Nil => {
+            val generated = UrlKey.generate(form.name)
+            if (ReservedKeys.contains(generated)) {
+              Seq(s"Key $generated is a reserved word and cannot be used for the name of an organization")
+            } else {
+              Seq.empty
+            }
+          }
+          case errors => Seq.empty
+        }
+      }
+
       case Some(key) => {
         val generated = UrlKey.generate(key)
         if (key.length < MinKeyLength) {
           Seq(s"Key must be at least $MinKeyLength characters")
         } else if (key != generated) {
           Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
+        } else if (ReservedKeys.contains(generated)) {
+          Seq(s"Key $generated is a reserved word and cannot be used for the key of an organization")
         } else {
           OrganizationDao.findByKey(Authorization.All, key) match {
             case None => Seq.empty

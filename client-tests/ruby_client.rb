@@ -1170,6 +1170,65 @@ module Apidoc
 
     end
 
+    # A token gives a user access to the API.
+    class Token
+
+      attr_reader :guid, :user, :token, :description
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
+        @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user))), Apidoc::Models::User)
+        @token = HttpClient::Preconditions.assert_class('token', opts.delete(:token), String)
+        @description = HttpClient::Preconditions.assert_class_or_nil('description', opts.delete(:description), String)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Token.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :guid => guid,
+          :user => user.nil? ? nil : user.to_hash,
+          :token => token,
+          :description => description
+        }
+      end
+
+    end
+
+    class TokenForm
+
+      attr_reader :user_guid, :description
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @user_guid = HttpClient::Preconditions.assert_class('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String)
+        @description = HttpClient::Preconditions.assert_class_or_nil('description', opts.delete(:description), String)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        TokenForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :user_guid => user_guid,
+          :description => description
+        }
+      end
+
+    end
+
     # A user is a top level person interacting with the api doc server.
     class User
 
