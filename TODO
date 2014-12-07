@@ -16,3 +16,5 @@ Org level setting to enable semver versioning (default on)
 Support for testing
 
 Replace ValidationError with com.gilt.apidoc.models.Error
+
+Email user when their membership request has been processed
