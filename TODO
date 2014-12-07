@@ -18,3 +18,5 @@ Support for testing
 Replace ValidationError with com.gilt.apidoc.models.Error
 
 Email user when their membership request has been processed
+
+Implement subscriptions.finaAll authorization filter
