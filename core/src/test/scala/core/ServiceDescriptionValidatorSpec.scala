@@ -249,4 +249,39 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     idParam.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Long.toString)))
   }
 
+  it("lists of models are not valid in parameters") {
+
+    val json = """
+    {
+        "base_url": "https://localhost",
+        "name": "Test Validation of Parameters",
+    
+        "models": {
+    
+            "tag": {
+                "fields": [
+                    { "name": "name", "type": "string" }
+                ]
+            }
+    
+        },
+        "resources": {
+    	"tag": {
+                "operations": [
+                    {
+                        "method": "POST",
+                        "parameters": [
+                            { "name": "tags", "type": "[tags]" }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+    """
+
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString("") should be("Resource[tag] POST /tags: Parameter[tags] has an invalid type[tags]")
+  }
+
 }
