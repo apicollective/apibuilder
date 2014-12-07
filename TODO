@@ -14,3 +14,5 @@ Org level setting to enable semver versioning (default on)
   - prevent backwards incompatible changes once at major version 1
 
 Support for testing
+
+Replace ValidationError with com.gilt.apidoc.models.Error
