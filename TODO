@@ -1,1 +1,17 @@
-TODO: Finish map
+check if bug with smart quotes is fixed
+
+add subscriptions:
+
+  - For organizations for which I am an administrator, email me
+    whenever a user applies to join the org
+      - only show if user is an admin of at least 1 org
+
+  - For organizations that I watch, email me whenever a service is
+    created
+
+  - For organizations that I watch, email me whenever a new service
+    version is uploaded
+
+  - For services that I watch, email me whenver a new version is
+    uploaded
+
