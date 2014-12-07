@@ -14,17 +14,12 @@ object ValidationError {
 object Validation {
 
   private val InvalidJsonCode = "invalid_json"
-  private val InvalidNameCode = "invalid_name"
   private val UserAuthorizationFailedCode = "user_authorization_failed"
   private val ErrorCode = "validation_error"
   private val ServerError = "server_error"
 
   def invalidJson(errors: JsError): Seq[ValidationError] = {
     Seq(ValidationError(InvalidJsonCode, errors.toString))
-  }
-
-  def invalidName(): Seq[ValidationError] = {
-    Seq(ValidationError(InvalidNameCode, "Package name is not valid. Must be a dot separated list of valid names (start wtih letter, contains only a-z, A-Z, 0-9 and _ characters"))
   }
 
   def userAuthorizationFailed(): Seq[ValidationError] = {

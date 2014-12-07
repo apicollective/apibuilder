@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Domain, Organization, OrganizationMetadata, User, Version, Visibility}
+import com.gilt.apidoc.models.{Domain, Organization, OrganizationForm, OrganizationMetadata, OrganizationMetadataForm, User, Version, Visibility}
 import com.gilt.apidoc.models.json._
 import lib.{Role, Validation, ValidationError, UrlKey}
 import anorm._
@@ -9,19 +9,12 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-case class OrganizationForm(
-  name: String,
-  domains: Option[Seq[String]] = None,
-  metadata: Option[OrganizationMetadataForm] = None
-)
-
-object OrganizationForm {
-  implicit val organizationFormReads = Json.reads[OrganizationForm]
-}
-
 object OrganizationDao {
 
   private val MinNameLength = 4
+  private val MinKeyLength = 4
+
+  private val EmptyOrganizationMetadataForm = OrganizationMetadataForm()
 
   private[db] val BaseQuery = """
     select organizations.guid, organizations.name, organizations.key,
@@ -47,15 +40,26 @@ object OrganizationDao {
       }
     }
 
-    val domainErrors = form.domains.getOrElse(Seq.empty).flatMap { domain =>
-      if (isDomainValid(domain)) {
-        None
-      } else {
-        Some(s"Domain $domain is not valid. Expected a domain name like gilt.com")
+    val keyErrors = form.key match {
+      case None => Seq.empty
+      case Some(key) => {
+        val generated = UrlKey.generate(key)
+        if (key.length < MinKeyLength) {
+          Seq(s"Key must be at least $MinKeyLength characters")
+        } else if (key != generated) {
+          Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
+        } else {
+          OrganizationDao.findByKey(Authorization.All, key) match {
+            case None => Seq.empty
+            case Some(existing) => Seq("Org with this key already exists")
+          }
+        }
       }
     }
 
-    Validation.errors(nameErrors ++ domainErrors)
+    val domainErrors = form.domains.filter(!isDomainValid(_)).map(d => s"Domain $d is not valid. Expected a domain name like apidoc.me")
+
+    Validation.errors(nameErrors ++ keyErrors ++ domainErrors)
   }
 
 
@@ -104,11 +108,11 @@ object OrganizationDao {
   private def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): Organization = {
     require(form.name.length >= MinNameLength, "Name too short")
 
-    val defaultPackageName = form.domains.getOrElse(Seq.empty).headOption.map(reverseDomain(_))
+    val defaultPackageName = form.domains.headOption.map(reverseDomain(_))
 
-    val initialMetadataForm = form.metadata.getOrElse(OrganizationMetadataForm.Empty)
-    val metadataForm = initialMetadataForm.package_name match {
-      case None => initialMetadataForm.copy(package_name = defaultPackageName)
+    val initialMetadataForm = form.metadata.getOrElse(EmptyOrganizationMetadataForm)
+    val metadataForm = initialMetadataForm.packageName match {
+      case None => initialMetadataForm.copy(packageName = defaultPackageName)
       case Some(_) => initialMetadataForm
     }
 
@@ -116,10 +120,10 @@ object OrganizationDao {
       guid = UUID.randomUUID,
       key = UrlKey.generate(form.name),
       name = form.name,
-      domains = form.domains.getOrElse(Seq.empty).map(Domain(_)),
+      domains = form.domains.map(Domain(_)),
       metadata = Some(
         OrganizationMetadata(
-          packageName = metadataForm.package_name
+          packageName = metadataForm.packageName
         )
       )
     )
@@ -140,7 +144,7 @@ object OrganizationDao {
       OrganizationDomainDao.create(c, createdBy, org, domain.name)
     }
 
-    if (metadataForm != OrganizationMetadataForm.Empty) {
+    if (metadataForm != EmptyOrganizationMetadataForm) {
       OrganizationMetadataDao.create(c, createdBy, org, metadataForm)
     }
 
@@ -157,10 +161,6 @@ object OrganizationDao {
 
   def findByUserAndGuid(user: User, guid: UUID): Option[Organization] = {
     findByGuid(Authorization.User(user.guid), guid)
-  }
-
-  def findByKey(authorization: Authorization, guid: UUID): Option[Organization] = {
-    findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
   def findByUserAndKey(user: User, orgKey: String): Option[Organization] = {

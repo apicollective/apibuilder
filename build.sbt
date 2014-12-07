@@ -70,7 +70,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.gilt.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.1",
-    "org.scalatest" %% "scalatest" % "2.2.0" % "test"
+    "org.scalatest" %% "scalatest" % "2.2.0" % "test",
+    "org.scalatestplus" %% "play" % "1.2.0" % "test"
   ),
   scalacOptions += "-feature",
   ScoverageKeys.highlighting := true

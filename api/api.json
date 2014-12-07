@@ -61,6 +61,15 @@
             ]
         },
 
+        "organization_form": {
+            "fields": [
+                { "name": "name", "type": "string" },
+                { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" },
+                { "name": "domains", "type": "[string]", "required": false, "example": "apidoc.me" },
+                { "name": "metadata", "type": "organization_metadata_form", "required": false }
+            ]
+        },
+
         "domain": {
             "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@gilt.com, we will automatically create a membership request on your behalf to join the organization with domain gilt.com.",
             "fields": [
@@ -73,6 +82,13 @@
             "fields": [
                 { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "required": false, "default": "organization" },
                 { "name": "package_name", "type": "string", "description": "The package name when used by code generators (e.g. scala package name for the clients)", "required": false }
+            ]
+        },
+
+        "organization_metadata_form": {
+            "fields": [
+                { "name": "visibility", "type": "visibility", "required": false },
+                { "name": "package_name", "type": "string", "required": false }
             ]
         },
 
@@ -179,6 +195,24 @@
 		{ "name": "organization_key", "type": "string" },
 		{ "name": "user_guid", "type": "uuid" },
 		{ "name": "publication", "type": "publication" }
+	    ]
+	},
+
+	"watch": {
+	    "description": "Users can watch individual services which enables features like receiving an email notification when there is a new version of a service.",
+	    "fields": [
+		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this watch" },
+		{ "name": "user", "type": "user" },
+		{ "name": "organization", "type": "organization" },
+		{ "name": "service", "type": "service" }
+	    ]
+	},
+
+	"watch_form": {
+	    "fields": [
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "organization_key", "type": "string" },
+		{ "name": "service_key", "type": "string" }
 	    ]
 	},
 
@@ -317,9 +351,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new organization.",
-                    "parameters": [
-                        { "name": "name", "type": "string" }
-                    ],
+                    "body": { "type": "organization_form" },
                     "responses": {
                         "200": { "type": "organization" },
                         "409": { "type": "[error]" }
@@ -622,14 +654,14 @@
 	    "operations": [
                 {
                     "method": "GET",
-                    "description": "Search for a specific subscription.",
+                    "description": "Search subscriptions. Always paginated.",
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find the subscription with this guid.", "required": false },
                         { "name": "organization_key", "type": "string", "description": "Find subscriptions for this organization.", "required": false },
                         { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
                         { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
-                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
-                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
                         "200": { "type": "[subscription]" }
@@ -651,6 +683,49 @@
                     "body": { "type": "subscription_form" },
                     "responses": {
                         "200": { "type": "subscription" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+		    "path": "/:guid"
+                }
+            ]
+        },
+
+	"watch": {
+	    "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search watches. Always paginated.",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid", "description": "Find the subscription with this guid.", "required": false },
+                        { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
+                        { "name": "service_key", "type": "string", "description": "Find subscriptions for this service.", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[watch]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Returns information about a specific watch.",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "watch" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "description": "Create a new watch.",
+                    "body": { "type": "watch_form" },
+                    "responses": {
+                        "200": { "type": "watch" },
                         "409": { "type": "[error]" }
                     }
                 },

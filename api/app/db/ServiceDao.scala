@@ -22,13 +22,9 @@ object ServiceForm {
 object ServiceDao {
 
   private val BaseQuery = """
-    select services.guid, services.name, services.key, services.description,
-           coalesce(services.visibility, 'organization') as visibility,
-           organizations.guid::varchar as organization_guid,
-           organizations.name as organization_name,
-           organizations.key as organization_key
+    select services.guid, services.name, services.key, services.description, services.visibility
       from services
-      join organizations on organizations.guid = services.organization_guid
+      join organizations on organizations.guid = services.organization_guid and organizations.deleted_at is null
      where services.deleted_at is null
   """
 
@@ -156,16 +152,22 @@ object ServiceDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        Service(
-          guid = row[UUID]("guid"),
-          name = row[String]("name"),
-          key = row[String]("key"),
-          visibility = Visibility(row[String]("visibility")),
-          description = row[Option[String]]("description")
-        )
-        }.toSeq
+      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
     }
+  }
+
+  private[db] def fromRow(
+    row: anorm.Row,
+    prefix: Option[String] = None
+  ): Service = {
+    val p = prefix.map( _ + "_").getOrElse("")
+    Service(
+      guid = row[UUID](s"${p}guid"),
+      name = row[String](s"${p}name"),
+      key = row[String](s"${p}key"),
+      visibility = Visibility(row[String](s"${p}visibility")),
+      description = row[Option[String]](s"${p}description")
+    )
   }
 
 }

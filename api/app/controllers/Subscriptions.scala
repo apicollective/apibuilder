@@ -1,6 +1,6 @@
 package controllers
 
-import db.{Authorization, OrganizationDao, SubscriptionDao, UserDao}
+import db.{Authorization, SubscriptionDao}
 import lib.Validation
 import com.gilt.apidoc.models.{Publication, Subscription, SubscriptionForm, User}
 import com.gilt.apidoc.models.json._
@@ -18,8 +18,8 @@ trait Subscriptions {
     organizationKey: Option[String],
     userGuid: Option[java.util.UUID],
     publication: Option[Publication],
-    limit: Int = 25,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ) = Authenticated { request =>
     val subscriptions = SubscriptionDao.findAll(
       Authorization(Some(request.user)),
