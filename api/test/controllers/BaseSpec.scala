@@ -67,4 +67,10 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     publication = Publication.MembershipRequestsCreate
   )
 
+  def createService(
+    form: SubscriptionForm = createSubscriptionForm()
+  ): Subscription = {
+    await(client.subscriptions.post(form))
+  }
+
 }

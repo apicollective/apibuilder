@@ -34,7 +34,7 @@ object Users extends Controller {
   def post() = Action(parse.json) { request =>
     request.body.validate[UserForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+        Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[UserForm] => {
         val form = s.get
@@ -56,7 +56,7 @@ object Users extends Controller {
   def putByGuid(guid: UUID) = Authenticated(parse.json) { request =>
     request.body.validate[UserForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+        Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[UserForm] => {
         val form = s.get
@@ -84,7 +84,7 @@ object Users extends Controller {
 
     request.body.validate[UserAuthenticationForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+        Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[UserAuthenticationForm] => {
         val form = s.get

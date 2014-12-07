@@ -12,7 +12,7 @@ object Invocations extends Controller {
     Generators.findGenerator(key) match {
       case Some((_, generator)) =>
         request.body.validate[ServiceDescription] match {
-          case e: JsError => Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+          case e: JsError => Conflict(Json.toJson(Validation.invalidJson(e)))
           case s: JsSuccess[ServiceDescription] => Ok(Json.toJson(Invocation(generator.generate(s.get))))
         }
       case _ => NotFound

@@ -35,7 +35,7 @@ object Organizations extends Controller {
   def post() = Authenticated(parse.json) { request =>
     request.body.validate[OrganizationForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+        Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[OrganizationForm] => {
         val form = s.get
