@@ -118,12 +118,12 @@ object OrganizationDao {
 
     val org = Organization(
       guid = UUID.randomUUID,
-      key = UrlKey.generate(form.name),
-      name = form.name,
+      key = form.key.getOrElse(UrlKey.generate(form.name)).trim,
+      name = form.name.trim,
       domains = form.domains.map(Domain(_)),
       metadata = Some(
         OrganizationMetadata(
-          packageName = metadataForm.packageName
+          packageName = metadataForm.packageName.map(_.trim)
         )
       )
     )

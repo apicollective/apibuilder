@@ -145,7 +145,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       val name = UUID.randomUUID.toString
       OrganizationDao.validate(OrganizationForm(name = name, domains = Seq.empty)) should be(Seq.empty)
       OrganizationDao.validate(OrganizationForm(name = name, domains = Seq.empty)) should be(Seq.empty)
-      OrganizationDao.validate(OrganizationForm(name = name, domains = Seq("bad name"))).head.message should be("Domain bad name is not valid. Expected a domain name like gilt.com")
+      OrganizationDao.validate(OrganizationForm(name = name, domains = Seq("bad name"))).head.message should be("Domain bad name is not valid. Expected a domain name like apidoc.me")
     }
   }
 
