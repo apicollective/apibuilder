@@ -14,7 +14,11 @@ module Apidoc
 
   class Client
 
+<<<<<<< HEAD
     USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17/ruby_client' unless defined?(USER_AGENT)
+=======
+    USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.18/ruby_client' unless defined?(USER_AGENT)
+>>>>>>> Add publication/subscription to API
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -25,7 +29,7 @@ module Apidoc
 
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil('path', path, String)
-      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('X-Api-Doc', 'www.apidoc.me').with_header('User-Agent', USER_AGENT)
+      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('User-Agent', USER_AGENT)
 
       if @authorization
         request.with_auth(@authorization)
@@ -68,6 +72,10 @@ module Apidoc
 
     def services
       @services ||= Apidoc::Clients::Services.new(self)
+    end
+
+    def subscriptions
+      @subscriptions ||= Apidoc::Clients::Subscriptions.new(self)
     end
 
     def users
@@ -353,6 +361,46 @@ module Apidoc
 
     end
 
+    class Subscriptions
+
+      def initialize(client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
+      end
+
+      # Search for a specific subscription.
+      def get(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        query = {
+          :id => HttpClient::Preconditions.assert_class_or_nil('id', opts.delete(:id), Integer),
+          :organization_key => HttpClient::Preconditions.assert_class_or_nil('organization_key', opts.delete(:organization_key), String),
+          :user_guid => HttpClient::Preconditions.assert_class_or_nil('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String),
+          :publication => HttpClient::Preconditions.assert_class_or_nil('publication', opts[:publication].nil? ? nil : (opts[:publication].is_a?(Apidoc::Models::Publication) ? opts.delete(:publication) : Apidoc::Models::Publication.apply(opts.delete(:publication))), Apidoc::Models::Publication),
+          :limit => HttpClient::Preconditions.assert_class_or_nil('limit', opts.delete(:limit), Integer),
+          :offset => HttpClient::Preconditions.assert_class_or_nil('offset', opts.delete(:offset), Integer)
+        }.delete_if { |k, v| v.nil? }
+        @client.request("/subscriptions").with_query(query).get.map { |hash| Apidoc::Models::Subscription.new(hash) }
+      end
+
+      # Returns information about this subscription.
+      def get_by_id(id)
+        HttpClient::Preconditions.assert_class('id', id, Integer)
+        @client.request("/subscriptions/#{id}").get { |hash| Apidoc::Models::Subscription.new(hash) }
+      end
+
+      # Create a new subscription.
+      def post(subscription_form)
+        HttpClient::Preconditions.assert_class('subscription_form', subscription_form, Apidoc::Models::SubscriptionForm)
+        @client.request("/subscriptions").with_json(subscription_form.to_json).post { |hash| Apidoc::Models::Subscription.new(hash) }
+      end
+
+      def delete_by_id(id)
+        HttpClient::Preconditions.assert_class('id', id, Integer)
+        @client.request("/subscriptions/#{id}").delete
+        nil
+      end
+
+    end
+
     class Users
 
       def initialize(client)
@@ -464,6 +512,59 @@ module Apidoc
   end
 
   module Models
+    class Publication
+
+      attr_reader :value
+
+      def initialize(value)
+        @value = HttpClient::Preconditions.assert_class('value', value, String)
+      end
+
+      # Returns the instance of Publication for this value, creating a new instance for an unknown value
+      def Publication.apply(value)
+        if value.instance_of?(Publication)
+          value
+        else
+          HttpClient::Preconditions.assert_class_or_nil('value', value, String)
+          value.nil? ? nil : (from_string(value) || Publication.new(value))
+        end
+      end
+
+      # Returns the instance of Publication for this value, or nil if not found
+      def Publication.from_string(value)
+        HttpClient::Preconditions.assert_class('value', value, String)
+        Publication.ALL.find { |v| v.value == value }
+      end
+
+      def Publication.ALL
+        @@all ||= [Publication.membership_requests.create, Publication.memberships.create, Publication.services.create, Publication.versions.create]
+      end
+
+      # For organizations for which I am an administrator, email me whenever a user
+      # applies to join the org.
+      def Publication.membership_requests.create
+        @@_membership_requests.create ||= Publication.new('membership_requests.create')
+      end
+
+      # For organizations for which I am a member, email me whenever a user join the
+      # org.
+      def Publication.memberships.create
+        @@_memberships.create ||= Publication.new('memberships.create')
+      end
+
+      # For organizations for which I am a member, email me whenever a service is
+      # created.
+      def Publication.services.create
+        @@_services.create ||= Publication.new('services.create')
+      end
+
+      # For services that I watch, email me whenever a version is created.
+      def Publication.versions.create
+        @@_versions.create ||= Publication.new('versions.create')
+      end
+
+    end
+
     class Visibility
 
       attr_reader :value
@@ -905,6 +1006,67 @@ module Apidoc
           :key => key,
           :visibility => visibility.nil? ? nil : visibility.value,
           :description => description
+        }
+      end
+
+    end
+
+    # Represents a user that is currently subscribed to a publication
+    class Subscription
+
+      attr_reader :id, :organization, :user, :publication
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @id = HttpClient::Preconditions.assert_class('id', opts.delete(:id), Integer)
+        @organization = HttpClient::Preconditions.assert_class('organization', opts[:organization].nil? ? nil : (opts[:organization].is_a?(Apidoc::Models::Organization) ? opts.delete(:organization) : Apidoc::Models::Organization.new(opts.delete(:organization))), Apidoc::Models::Organization)
+        @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user))), Apidoc::Models::User)
+        @publication = HttpClient::Preconditions.assert_class('publication', opts[:publication].nil? ? nil : (opts[:publication].is_a?(Apidoc::Models::Publication) ? opts.delete(:publication) : Apidoc::Models::Publication.apply(opts.delete(:publication))), Apidoc::Models::Publication)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Subscription.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :id => id,
+          :organization => organization.nil? ? nil : organization.to_hash,
+          :user => user.nil? ? nil : user.to_hash,
+          :publication => publication.nil? ? nil : publication.value
+        }
+      end
+
+    end
+
+    class SubscriptionForm
+
+      attr_reader :organization_key, :user_guid, :publication
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @organization_key = HttpClient::Preconditions.assert_class('organization_key', opts.delete(:organization_key), String)
+        @user_guid = HttpClient::Preconditions.assert_class('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String)
+        @publication = HttpClient::Preconditions.assert_class('publication', opts[:publication].nil? ? nil : (opts[:publication].is_a?(Apidoc::Models::Publication) ? opts.delete(:publication) : Apidoc::Models::Publication.apply(opts.delete(:publication))), Apidoc::Models::Publication)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        SubscriptionForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :organization_key => organization_key,
+          :user_guid => user_guid,
+          :publication => publication.nil? ? nil : publication.value
         }
       end
 

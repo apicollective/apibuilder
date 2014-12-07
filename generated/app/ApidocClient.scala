@@ -123,6 +123,22 @@ package com.gilt.apidoc.models {
   )
 
   /**
+   * Represents a user that is currently subscribed to a publication
+   */
+  case class Subscription(
+    id: Long,
+    organization: com.gilt.apidoc.models.Organization,
+    user: com.gilt.apidoc.models.User,
+    publication: com.gilt.apidoc.models.Publication
+  )
+
+  case class SubscriptionForm(
+    organizationKey: String,
+    userGuid: _root_.java.util.UUID,
+    publication: com.gilt.apidoc.models.Publication
+  )
+
+  /**
    * A user is a top level person interacting with the api doc server.
    */
   case class User(
@@ -148,6 +164,62 @@ package com.gilt.apidoc.models {
     version: String,
     json: String
   )
+
+  /**
+   * A publication represents something that a user can subscribe to. An example
+   * would be subscribing to an email alert whenever a new version of a service is
+   * created.
+   */
+  sealed trait Publication
+
+  object Publication {
+
+    /**
+     * For organizations for which I am an administrator, email me whenever a user
+     * applies to join the org.
+     */
+    case object MembershipRequestsCreate extends Publication { override def toString = "membership_requests.create" }
+    /**
+     * For organizations for which I am a member, email me whenever a user join the
+     * org.
+     */
+    case object MembershipsCreate extends Publication { override def toString = "memberships.create" }
+    /**
+     * For organizations for which I am a member, email me whenever a service is
+     * created.
+     */
+    case object ServicesCreate extends Publication { override def toString = "services.create" }
+    /**
+     * For services that I watch, email me whenever a version is created.
+     */
+    case object VersionsCreate extends Publication { override def toString = "versions.create" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Publication
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(MembershipRequestsCreate, MembershipsCreate, ServicesCreate, VersionsCreate)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Publication = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Publication] = byName.get(value)
+
+  }
 
   /**
    * Controls who is able to view this version
@@ -222,6 +294,11 @@ package com.gilt.apidoc.models {
         val str = dateTime.print(x)
         JsString(str)
       }
+    }
+
+    implicit val jsonReadsApidocEnum_Publication = __.read[String].map(Publication.apply)
+    implicit val jsonWritesApidocEnum_Publication = new Writes[Publication] {
+      def writes(x: Publication) = JsString(x.toString)
     }
 
     implicit val jsonReadsApidocEnum_Visibility = __.read[String].map(Visibility.apply)
@@ -434,6 +511,40 @@ package com.gilt.apidoc.models {
       )(unlift(Service.unapply _))
     }
 
+    implicit def jsonReadsApidocSubscription: play.api.libs.json.Reads[Subscription] = {
+      (
+        (__ \ "id").read[Long] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Organization] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "publication").read[com.gilt.apidoc.models.Publication]
+      )(Subscription.apply _)
+    }
+
+    implicit def jsonWritesApidocSubscription: play.api.libs.json.Writes[Subscription] = {
+      (
+        (__ \ "id").write[Long] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Organization] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "publication").write[com.gilt.apidoc.models.Publication]
+      )(unlift(Subscription.unapply _))
+    }
+
+    implicit def jsonReadsApidocSubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
+      (
+        (__ \ "organization_key").read[String] and
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "publication").read[com.gilt.apidoc.models.Publication]
+      )(SubscriptionForm.apply _)
+    }
+
+    implicit def jsonWritesApidocSubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
+      (
+        (__ \ "organization_key").write[String] and
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "publication").write[com.gilt.apidoc.models.Publication]
+      )(unlift(SubscriptionForm.unapply _))
+    }
+
     implicit def jsonReadsApidocUser: play.api.libs.json.Reads[User] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -487,7 +598,11 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
+<<<<<<< HEAD
     private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17/play_2_3_client"
+=======
+    private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.18/play_2_3_client"
+>>>>>>> Add publication/subscription to API
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -509,6 +624,8 @@ package com.gilt.apidoc {
     def organizations: Organizations = Organizations
 
     def services: Services = Services
+
+    def subscriptions: Subscriptions = Subscriptions
 
     def users: Users = Users
 
@@ -863,6 +980,61 @@ package com.gilt.apidoc {
       }
     }
 
+    object Subscriptions extends Subscriptions {
+      override def get(
+        id: scala.Option[Long] = None,
+        organizationKey: scala.Option[String] = None,
+        userGuid: scala.Option[_root_.java.util.UUID] = None,
+        publication: scala.Option[com.gilt.apidoc.models.Publication] = None,
+        limit: scala.Option[Int] = None,
+        offset: scala.Option[Int] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Subscription]] = {
+        val queryParameters = Seq(
+          id.map("id" -> _.toString),
+          organizationKey.map("organization_key" -> _),
+          userGuid.map("user_guid" -> _.toString),
+          publication.map("publication" -> _.toString),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.models.Subscription]]
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def getById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Subscription]] = {
+        _executeRequest("GET", s"/subscriptions/${id}").map {
+          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.models.Subscription])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def post(subscriptionForm: com.gilt.apidoc.models.SubscriptionForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Subscription] = {
+        val payload = play.api.libs.json.Json.toJson(subscriptionForm)
+
+        _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
+          case r if r.status == 201 => r.json.as[com.gilt.apidoc.models.Subscription]
+          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
+          case r => throw new FailedRequest(r)
+        }
+      }
+
+      override def deleteById(
+        id: Long
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/subscriptions/${id}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+    }
+
     object Users extends Users {
       override def get(
         guid: scala.Option[_root_.java.util.UUID] = None,
@@ -1018,7 +1190,7 @@ package com.gilt.apidoc {
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("X-Api-Doc" -> "www.apidoc.me", "User-Agent" -> UserAgent)
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("User-Agent" -> UserAgent)
       apiToken.fold(holder) { token =>
         holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
       }
@@ -1269,6 +1441,36 @@ package com.gilt.apidoc {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
   }
 
+  trait Subscriptions {
+    /**
+     * Search for a specific subscription.
+     */
+    def get(
+      id: scala.Option[Long] = None,
+      organizationKey: scala.Option[String] = None,
+      userGuid: scala.Option[_root_.java.util.UUID] = None,
+      publication: scala.Option[com.gilt.apidoc.models.Publication] = None,
+      limit: scala.Option[Int] = None,
+      offset: scala.Option[Int] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Subscription]]
+
+    /**
+     * Returns information about this subscription.
+     */
+    def getById(
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Subscription]]
+
+    /**
+     * Create a new subscription.
+     */
+    def post(subscriptionForm: com.gilt.apidoc.models.SubscriptionForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Subscription]
+
+    def deleteById(
+      id: Long
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
+  }
+
   trait Users {
     /**
      * Search for a specific user. You must specify at least 1 parameter - either a
@@ -1404,6 +1606,20 @@ package com.gilt.apidoc {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
+<<<<<<< HEAD
+=======
+    // Enum: Publication
+    private val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Publication.all.mkString(", ")}"
+
+    implicit val pathBindableEnumPublication = new PathBindable.Parsing[Publication] (
+      Publication.fromString(_).get, _.toString, enumPublicationNotFound
+    )
+
+    implicit val queryStringBindableEnumPublication = new QueryStringBindable.Parsing[Publication](
+      Publication.fromString(_).get, _.toString, enumPublicationNotFound
+    )
+
+>>>>>>> Add publication/subscription to API
     // Enum: Visibility
     private val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Visibility.all.mkString(", ")}"
 
