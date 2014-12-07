@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models._
-import db._
+import db.{TokenDao, UserDao, UserForm}
 import java.util.UUID
 
 import play.api.test._
@@ -15,12 +15,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   implicit override lazy val port = 9010
   implicit override lazy val app: FakeApplication = FakeApplication()
 
-  lazy val TestUser = UserDao.create(
-    UserForm(
-      email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
-      password = UUID.randomUUID.toString
-    )
-  )
+  lazy val TestUser = UserDao.create(createUserForm())
 
   lazy val apiToken = TokenDao.create(TestUser, TokenForm(userGuid = TestUser.guid)).token
 
@@ -38,6 +33,38 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   def createOrganizationForm() = OrganizationForm(
     name = "z-test-org-" + UUID.randomUUID.toString
+  )
+
+  def createUser(): User = {
+    val form = createUserForm()
+    await(
+      client.users.post(
+        email = form.email,
+        password = form.password,
+        name = form.name
+      )
+    )
+  }
+
+  def createUserForm() = UserForm(
+    email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
+    password = UUID.randomUUID.toString,
+    name = None
+  )
+
+  def createSubscription(
+    form: SubscriptionForm = createSubscriptionForm()
+  ): Subscription = {
+    await(client.subscriptions.post(form))
+  }
+
+  def createSubscriptionForm(
+    org: Organization = createOrganization(),
+    user: User = createUser()
+  ) = SubscriptionForm(
+    organizationKey = org.key,
+    userGuid = user.guid,
+    publication = Publication.MembershipRequestsCreate
   )
 
 }

@@ -41,6 +41,7 @@ trait Subscriptions {
   }
 
   def post() = Authenticated(parse.json) { request =>
+    println("post()")
     request.body.validate[SubscriptionForm] match {
       case e: JsError => {
         BadRequest(Json.toJson(Validation.invalidJson(e)))

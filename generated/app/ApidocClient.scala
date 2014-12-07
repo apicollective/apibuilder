@@ -1154,7 +1154,7 @@ package com.gilt.apidoc {
         val payload = play.api.libs.json.Json.toJson(subscriptionForm)
 
         _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Subscription]
+          case r if r.status == 201 => r.json.as[com.gilt.apidoc.models.Subscription]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
