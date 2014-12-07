@@ -1,9 +1,9 @@
-@(headerTitle: String = "apidoc")
+@(headerTitle: Option[String])
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>@headerTitle</title>
+  <title>@headerTitle.getOrElse("apidoc")</title>
   <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.1.1/css/bootstrap.min.css")">
   <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
   <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">

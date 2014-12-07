@@ -13,7 +13,7 @@ class AuthenticatedRequest[A](val user: User, request: Request[A]) extends Wrapp
 
   lazy val api = Authenticated.api(Some(user))
 
-  def mainTemplate(title: String = "apidoc"): MainTemplate = {
+  def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(
       title = title,
       user = Some(user)

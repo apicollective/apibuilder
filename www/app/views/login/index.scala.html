@@ -4,7 +4,7 @@
   errorMessage: Option[String] = None
 )(implicit flash: Flash)
 
-@main(models.MainTemplate(title = "Login or Register")) {
+@main(models.MainTemplate(headTitle = Some("apidoc: Login or Register"))) {
 
   <div class="container">
 

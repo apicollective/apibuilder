@@ -21,7 +21,7 @@ object Application extends Controller {
         } yield {
           Ok(
             views.html.index(
-              request.mainTemplate("Organizations"),
+              request.mainTemplate(title = Some("Organizations")),
               PaginatedCollection(orgsPage, Seq.empty),
               PaginatedCollection(membershipRequestsPage, Seq.empty),
               PaginatedCollection(publicOrgsPage, publicOrgs)
@@ -49,7 +49,7 @@ object Application extends Controller {
         } yield {
           Ok(
             views.html.index(
-              request.mainTemplate("Your Organizations"),
+              request.mainTemplate(title = Some("Your Organizations")),
               PaginatedCollection(orgsPage, orgs),
               PaginatedCollection(membershipRequestsPage, membershipRequests),
               PaginatedCollection(publicOrgsPage, publicOrgs)

@@ -16,7 +16,7 @@ object Metadata extends Controller {
 
   def show(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireMember
-    val tpl = request.mainTemplate("Metadata")
+    val tpl = request.mainTemplate(Some("Metadata"))
     Ok(
       views.html.metadata.show(
         tpl.copy(settings = Some(SettingsMenu(section = Some(SettingSection.Metadata)))),
@@ -27,14 +27,14 @@ object Metadata extends Controller {
 
   def edit(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireAdmin
-    val tpl = request.mainTemplate("Edit Metadata")
+    val tpl = request.mainTemplate(Some("Edit Metadata"))
     val filledForm = metadataForm.fill(toMetadata(request.org.metadata))
     Ok(views.html.metadata.form(tpl, filledForm))
   }
 
   def postEdit(orgKey: String) = AuthenticatedOrg.async { implicit request =>
     request.requireAdmin
-    val tpl = request.mainTemplate("Edit Metadata")
+    val tpl = request.mainTemplate(Some("Edit Metadata"))
     val boundForm = metadataForm.bindFromRequest
     boundForm.fold (
 

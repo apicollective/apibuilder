@@ -20,7 +20,7 @@ object Generators extends Controller {
         MainTemplate(
           user = Some(request.user),
           generators = generators,
-          title = s"Generators"
+          title = Some("Generators")
         )
       ))
     }
@@ -35,7 +35,7 @@ object Generators extends Controller {
         case Some(g) => {
           Ok(
             views.html.generators.details(
-              request.mainTemplate("Generator Details").copy(generators = Seq(g))
+              request.mainTemplate(Some("Generator Details")).copy(generators = Seq(g))
             )
           )
         }
@@ -46,7 +46,7 @@ object Generators extends Controller {
   def postUpdate(key: String) = Authenticated.async { implicit request =>
     val tpl = MainTemplate(
       user = Some(request.user),
-      title = s"Add Generator"
+      title = Some("Add Generator")
     )
     val boundForm = generatorUpdateForm.bindFromRequest
     boundForm.fold (
@@ -66,14 +66,14 @@ object Generators extends Controller {
 
   def create() = Authenticated { implicit request =>
     Ok(views.html.generators.form(
-      request.mainTemplate("Add Generator"),
+      request.mainTemplate(Some("Add Generator")),
       1,
       generatorCreateForm
     ))
   }
 
   def postCreate() = Authenticated.async { implicit request =>
-    val tpl = request.mainTemplate("Add Generator")
+    val tpl = request.mainTemplate(Some("Add Generator"))
     val boundForm = generatorCreateForm.bindFromRequest
     boundForm.fold (
 

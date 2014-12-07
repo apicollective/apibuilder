@@ -51,7 +51,7 @@ object Organizations extends Controller {
       Ok(views.html.organizations.membershipRequests(
         MainTemplate(
           user = Some(request.user),
-          title = request.org.name,
+          title = Some(request.org.name),
           org = Some(request.org)
         ),
         requests = PaginatedCollection(page, requests))
@@ -87,7 +87,7 @@ object Organizations extends Controller {
           Ok(views.html.organizations.requestMembership(
             MainTemplate(
               user = Some(request.user),
-              title = s"Join ${org.name}"
+              title = Some("Join ${org.name}")
             ),
             org,
             adminsResponse,
@@ -120,7 +120,7 @@ object Organizations extends Controller {
     Ok(views.html.organizations.form(
       models.MainTemplate(
         user = Some(request.user),
-        title = "Add Organization"
+        title = Some("Add Organization")
       ),
       orgForm
     ))
@@ -129,7 +129,7 @@ object Organizations extends Controller {
   def createPost = Authenticated.async { implicit request =>
     val tpl = models.MainTemplate(
       user = Some(request.user),
-      title = "Add Organization"
+      title = Some("Add Organization")
     )
 
     val form = orgForm.bindFromRequest
