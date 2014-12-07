@@ -638,7 +638,7 @@
 
                 {
                     "method": "GET",
-                    "description": "Returns information about this subscription.",
+                    "description": "Returns information about a specific subscription.",
                     "path": "/:guid",
                     "responses": {
                         "200": { "type": "subscription" }
