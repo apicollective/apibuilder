@@ -423,7 +423,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
 
     // Query parameters can only be primitives or enums
-    val invalidTypes = internalServiceDescription.get.resources.flatMap { resource =>
+    val invalidQueryTypes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.filter(!_.method.isEmpty).filter(op => !op.body.isEmpty || op.method == Some("GET") ).flatMap { op =>
         op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
           p.datatype.map(_.name) match {
@@ -449,7 +449,30 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
-    missingNames ++ invalidTypes
+    val unknownTypes = internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(!_.method.isEmpty).flatMap { op =>
+        op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
+          p.datatype.map(_.name) match {
+            case None => {
+              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] is missing a type.")
+            }
+            case Some(datatypeName) => {
+              internalServiceDescription.get.typeResolver.toType(datatypeName) match {
+                case Some(Type(TypeKind.Model | TypeKind.Primitive | TypeKind.Enum, _)) => None
+                case None => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$datatypeName]")
+                }
+                case Some(Type(TypeKind.UNDEFINED(kind), name)) => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid typeKind[$kind]")
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    missingNames ++ invalidQueryTypes ++ unknownTypes
   }
 
   private def validateOperations(): Seq[String] = {
