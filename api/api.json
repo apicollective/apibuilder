@@ -3,10 +3,6 @@
     "description": "Host API documentation for REST services, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
 
-    "headers": [
-      { "name": "X-Api-Doc", "type": "string", "description": "Example of an explicit header", "default": "www.apidoc.me" }
-    ],
-
     "enums": {
 	"visibility": {
 	    "description": "Controls who is able to view this version",
@@ -15,7 +11,18 @@
 		{ "name": "organization", "description": "Any member of the organization can view this service" },
 		{ "name": "public", "description": "Anybody, including non logged in users, can view this service" }
 	    ]
-	}
+	},
+
+	"publication": {
+	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing to an email alert whenever a new version of a service is created.",
+	    "values": [
+		{ "name": "membership_requests.create", "description": "For organizations for which I am an administrator, email me whenever a user applies to join the org." },
+		{ "name": "memberships.create", "description": "For organizations for which I am a member, email me whenever a user join the org." },
+		{ "name": "services.create", "description": "For organizations for which I am a member, email me whenever a service is created." },
+		{ "name": "versions.create", "description": "For services that I watch, email me whenever a version is created." }
+	    ]
+	},
+
     },
 
     "models": {
@@ -156,6 +163,24 @@
             { "name": "enabled", "type": "boolean" }
           ]
         },
+
+	"subscription": {
+	    "description": "Represents a user that is currently subscribed to a publication",
+	    "fields": [
+		{ "name": "id", "type": "long", "description": "Internal unique identifier for this subscription record" },
+		{ "name": "organization", "type": "organization" },
+		{ "name": "user", "type": "user" },
+		{ "name": "publication", "type": "publication" }
+	    ]
+	},
+
+	"subscription_form": {
+	    "fields": [
+		{ "name": "organization_key", "type": "string" },
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "publication", "type": "publication" }
+	    ]
+	},
 
         "error": {
             "fields": [
@@ -591,6 +616,50 @@
               "description": "Deletes a generator."
             }
           ]
+        },
+
+	"subscription": {
+	    "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search for a specific subscription.",
+                    "parameters": [
+                        { "name": "id", "type": "long", "description": "Find the subscription with this id.", "required": false },
+                        { "name": "organization_key", "type": "string", "description": "Find subscriptions for this organization.", "required": false },
+                        { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
+                        { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
+                        { "name": "limit", "type": "integer", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "integer", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[subscription]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Returns information about this subscription.",
+                    "path": "/:id",
+                    "responses": {
+                        "200": { "type": "subscription" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "description": "Create a new subscription.",
+                    "body": { "type": "subscription_form" },
+                    "responses": {
+                        "201": { "type": "subscription" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+		    "path": "/:id"
+                }
+            ]
         }
 
     }

@@ -7,22 +7,18 @@ import com.gilt.apidoc.models.json._
 import com.gilt.apidocgenerator.Client
 import core.ServiceDescriptionBuilder
 import db.{GeneratorDao, Authorization, OrganizationDao, VersionDao}
-import lib.Validation
+import lib.{Config, Validation}
 
 import play.api.mvc._
 import play.api.libs.json._
-import play.api.Play.current
 
 import scala.concurrent.Future
-
 
 object Code extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  val apidocVersion = current.configuration.getString("git.version").getOrElse {
-    sys.error("git.version is required")
-  }
+  val apidocVersion = Config.getRequiredString("git.version")
 
   def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(orgKey: String, serviceKey: String, version: String, generatorKey: String) = Authenticated.async { request =>
     val auth = Authorization(Some(request.user))

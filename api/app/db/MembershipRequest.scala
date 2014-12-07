@@ -153,15 +153,13 @@ object MembershipRequest {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        MembershipRequest(guid = row[String]("guid"),
-                          created_at = row[String]("created_at"),
-                          organization = Organization(guid = row[UUID]("organization_guid"),
-                                                      name = row[String]("organization_name"),
-                                                      key = row[String]("organization_key")),
-                          user = User(guid = row[UUID]("user_guid"),
-                                      email = row[String]("user_email"),
-                                      name = row[Option[String]]("user_name")),
-                          role = row[String]("role"))
+        MembershipRequest(
+          guid = row[String]("guid"),
+          created_at = row[String]("created_at"),
+          organization = OrganizationDao.summaryFromRow(row, Some("organization")),
+          user = UserDao.fromRow(row, Some("user")),
+          role = row[String]("role")
+        )
       }.toSeq
     }
   }

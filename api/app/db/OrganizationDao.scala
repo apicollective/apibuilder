@@ -23,7 +23,7 @@ object OrganizationDao {
 
   private val MinNameLength = 4
 
-  private val BaseQuery = """
+  private[db] val BaseQuery = """
     select organizations.guid, organizations.name, organizations.key,
            organization_metadata.visibility as metadata_visibility,
            organization_metadata.package_name as metadata_package_name,
@@ -219,21 +219,35 @@ object OrganizationDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        Organization(
-          guid = row[UUID]("guid"),
-          name = row[String]("name"),
-          key = row[String]("key"),
-          domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_)),
-          metadata = Some(
-            OrganizationMetadata(
-              visibility = row[Option[String]]("metadata_visibility").map(Visibility(_)),
-              packageName = row[Option[String]]("metadata_package_name")
-            )
-          )
-        )
-      }.toSeq
+      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
     }
+  }
+
+  private[db] def fromRow(
+    row: anorm.Row
+  ): Organization = {
+    summaryFromRow(row).copy(
+      domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_)),
+      metadata = Some(
+        OrganizationMetadata(
+          visibility = row[Option[String]]("metadata_visibility").map(Visibility(_)),
+          packageName = row[Option[String]]("metadata_package_name")
+        )
+      )
+    )
+  }
+
+  private[db] def summaryFromRow(
+    row: anorm.Row,
+    prefix: Option[String] = None
+  ): Organization = {
+    val p = prefix.map( _ + "_").getOrElse("")
+
+    Organization(
+      guid = row[UUID](s"${p}guid"),
+      key = row[String](s"${p}key"),
+      name = row[String](s"${p}name")
+    )
   }
 
 }

@@ -44,8 +44,9 @@ lazy val api = project
       ws,
       jdbc,
       anorm,
-      "org.postgresql" % "postgresql" % "9.3-1101-jdbc4",
-      "org.mindrot"    %  "jbcrypt"   % "0.3m"
+      "org.postgresql" % "postgresql"    % "9.3-1101-jdbc4",
+      "org.mindrot"    %  "jbcrypt"      % "0.3m",
+      "com.sendgrid"   % "sendgrid-java" % "1.3.0"
     )
   )
 
