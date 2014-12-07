@@ -12,7 +12,7 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
   def upsertOrganizationMetadata(org: Organization): OrganizationMetadata = {
     val form = OrganizationMetadataForm(
       visibility = None,
-      package_name = None
+      packageName = None
     )
     OrganizationMetadataDao.upsert(Util.createdBy, org, form)
   }
@@ -21,10 +21,10 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
 
     val form = OrganizationMetadataForm(
       visibility = None,
-      package_name = None
+      packageName = None
     )
 
-    describe("package_name") {
+    describe("packageName") {
 
       it("defaults to None") {
         val org = Util.createOrganization()
@@ -34,7 +34,7 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
 
       it("can set") {
         val org = Util.createOrganization()
-        OrganizationMetadataDao.create(Util.createdBy, org, form.copy(package_name = Some("com.gilt")))
+        OrganizationMetadataDao.create(Util.createdBy, org, form.copy(packageName = Some("com.gilt")))
         OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.gilt"))
       }
     }
@@ -50,10 +50,10 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
       it("can set") {
         val org = Util.createOrganization()
 
-        OrganizationMetadataDao.create(Util.createdBy, org, form.copy(visibility = Some(Visibility.Public.toString)))
+        OrganizationMetadataDao.create(Util.createdBy, org, form.copy(visibility = Some(Visibility.Public)))
         OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.visibility should be(Some(Visibility.Public))
 
-        OrganizationMetadataDao.upsert(Util.createdBy, org, form.copy(visibility = Some(Visibility.Organization.toString)))
+        OrganizationMetadataDao.upsert(Util.createdBy, org, form.copy(visibility = Some(Visibility.Organization)))
         OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.visibility should be(Some(Visibility.Organization))
       }
 
@@ -64,13 +64,13 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
   it("upsert") {
     val org = Util.createOrganization()
     val form = OrganizationMetadataForm(
-      package_name = Some("com.giltgroupe")
+      packageName = Some("com.giltgroupe")
     )
 
     OrganizationMetadataDao.upsert(Util.createdBy, org, form)
     OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.giltgroupe"))
 
-    OrganizationMetadataDao.upsert(Util.createdBy, org, form.copy(package_name = Some("com.gilt")))
+    OrganizationMetadataDao.upsert(Util.createdBy, org, form.copy(packageName = Some("com.gilt")))
     OrganizationMetadataDao.findByOrganizationGuid(org.guid).get.packageName should be(Some("com.gilt"))
   }
 
@@ -105,24 +105,24 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
   describe("OrganizationMetadataForm") {
     val form = OrganizationMetadataForm(
       visibility = None,
-      package_name = None
+      packageName = None
     )
 
-    describe("package_name") {
+    describe("packageName") {
 
       it("no package name") {
-        OrganizationMetadataForm.validate(form) should be(Seq.empty)
+        OrganizationMetadataDao.validate(form) should be(Seq.empty)
       }
 
       it("valid package name") {
-        OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt"))) should be(Seq.empty)
-        OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt.foo"))) should be(Seq.empty)
-        OrganizationMetadataForm.validate(form.copy(package_name = Some("com.gilt.foo.bar"))) should be(Seq.empty)
-        OrganizationMetadataForm.validate(form.copy(package_name = Some("me.apidoc"))) should be(Seq.empty)
+        OrganizationMetadataDao.validate(form.copy(packageName = Some("com.gilt"))) should be(Seq.empty)
+        OrganizationMetadataDao.validate(form.copy(packageName = Some("com.gilt.foo"))) should be(Seq.empty)
+        OrganizationMetadataDao.validate(form.copy(packageName = Some("com.gilt.foo.bar"))) should be(Seq.empty)
+        OrganizationMetadataDao.validate(form.copy(packageName = Some("me.apidoc"))) should be(Seq.empty)
       }
 
       it("invalid package name") {
-        OrganizationMetadataForm.validate(form.copy(package_name = Some("com gilt"))) should be("Domain com gilt is not valid. Expected a domain name like apidoc.me")
+        OrganizationMetadataDao.validate(form.copy(packageName = Some("com gilt"))) should be("Domain com gilt is not valid. Expected a domain name like apidoc.me")
       }
 
     }
