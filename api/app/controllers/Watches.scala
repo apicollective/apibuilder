@@ -20,7 +20,7 @@ trait Watches {
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
-    val watchs = WatchDao.findAll(
+    val watches = WatchDao.findAll(
       Authorization(Some(request.user)),
       guid = guid,
       userGuid = userGuid,
@@ -28,7 +28,7 @@ trait Watches {
       limit = limit,
       offset = offset
     )
-    Ok(Json.toJson(watchs))
+    Ok(Json.toJson(watches))
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>

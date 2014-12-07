@@ -742,7 +742,7 @@
                     "description": "Create a new watch.",
                     "body": { "type": "watch_form" },
                     "responses": {
-                        "200": { "type": "watch" },
+                        "201": { "type": "watch" },
                         "409": { "type": "[error]" }
                     }
                 },

@@ -68,9 +68,18 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   )
 
   def createService(
-    form: SubscriptionForm = createSubscriptionForm()
-  ): Subscription = {
-    await(client.subscriptions.post(form))
+    org: Organization
+  ): Service = {
+    val serviceKey = "z-test-service-" + UUID.randomUUID.toString
+    db.ServiceDao.create(
+      createdBy = TestUser,
+      org = org,
+      form = db.ServiceForm(
+        name = "z-test-service-" + UUID.randomUUID.toString,
+        description = None,
+        visibility = Visibility.Organization
+      )
+    )
   }
 
 }

@@ -55,15 +55,15 @@ object WatchDao {
       from watches
       join users on users.guid = watches.user_guid and users.deleted_at is null
       join services on services.guid = watches.service_guid and services.deleted_at is null
-      join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null
+      join organizations on organizations.guid = services.organization_guid and organizations.deleted_at is null
      where watches.deleted_at is null
   """
 
   private val InsertQuery = """
     insert into watches
-    (guid, user_guid, service_key, created_by_guid)
+    (guid, user_guid, service_guid, created_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {service_key}, {created_by_guid}::uuid)
+    ({guid}::uuid, {user_guid}::uuid, {service_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def create(createdBy: User, fullForm: FullWatchForm): Watch = {

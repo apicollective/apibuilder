@@ -1359,7 +1359,7 @@ package com.gilt.apidoc {
         val payload = play.api.libs.json.Json.toJson(watchForm)
 
         _executeRequest("POST", s"/watches", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Watch]
+          case r if r.status == 201 => r.json.as[com.gilt.apidoc.models.Watch]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
