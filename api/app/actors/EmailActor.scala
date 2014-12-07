@@ -22,8 +22,8 @@ class EmailActor extends Actor {
 
   def receive = {
 
-    case MainActor.Messages.MembershipRequestCreated(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.MembershipRequestCreated($guid)", {
+    case EmailActor.Messages.MembershipRequestCreated(guid) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.MembershipRequestCreated($guid)", {
         MembershipRequestDao.findByGuid(guid).map { request =>
           Emails.deliver(
             org = request.organization,
@@ -36,7 +36,7 @@ class EmailActor extends Actor {
     )
 
     case m: Any => {
-      Logger.error("Main actor got an unhandled message: " + m)
+      Logger.error("Email actor got an unhandled message: " + m)
     }
 
   }

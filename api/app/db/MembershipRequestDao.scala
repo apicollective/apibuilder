@@ -59,6 +59,8 @@ object MembershipRequestDao {
       ).execute()
     }
 
+    global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestCreated(guid)
+
     findByGuid(guid).getOrElse {
       sys.error("Failed to create membership_request")
     }

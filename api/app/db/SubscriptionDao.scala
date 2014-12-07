@@ -121,12 +121,12 @@ object SubscriptionDao {
   ): Seq[Subscription] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      guid.map { v => "and subscriptions.guid = {guid}" },
-      organization.map { v => "and subscriptions.organization_guid = {organization_guid}" },
+      guid.map { v => "and subscriptions.guid = {guid}::uuid" },
+      organization.map { v => "and subscriptions.organization_guid = {organization_guid}::uuid" },
       organizationKey.map { v => "and subscriptions.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))" },
       userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
       publication.map { v => "and subscriptions.publication = {publication}" },
-      Some(s"order by subscriptions.id limit ${limit} offset ${offset}")
+      Some(s"order by subscriptions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
