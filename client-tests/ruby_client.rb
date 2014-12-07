@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.7.5 http://www.apidoc.me/gilt/code/apidoc/0.7.4/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -824,7 +824,7 @@ module Apidoc
         @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
         @key = HttpClient::Preconditions.assert_class('key', opts.delete(:key), String)
         @name = HttpClient::Preconditions.assert_class('name', opts.delete(:name), String)
-        @domains = (opts.delete(:domains) || []).map { |el| el.nil? ? nil : (el.is_a?(Apidoc::Models::Domain) ? el : Apidoc::Models::Domain.new(el))}
+        @domains = (opts.delete(:domains) || []).map { |el| el.nil? ? nil : (el.is_a?(Apidoc::Models::Domain) ? el : Apidoc::Models::Domain.new(el)) }
         @metadata = HttpClient::Preconditions.assert_class_or_nil('metadata', opts[:metadata].nil? ? nil : (opts[:metadata].is_a?(Apidoc::Models::OrganizationMetadata) ? opts.delete(:metadata) : Apidoc::Models::OrganizationMetadata.new(opts.delete(:metadata))), Apidoc::Models::OrganizationMetadata)
       end
 
@@ -1057,6 +1057,25 @@ module Apidoc
         self
       end
 
+      # Creates a new Net:HTTP client. The client returned should be
+      # fully configured to make a request.
+      def new_http_client
+        client = Net::HTTP.new(@uri.host, @uri.port)
+        if @uri.scheme == "https"
+          configure_ssl(client)
+        end
+        client
+      end
+
+      # If HTTP is required, this method accepts an HTTP Client and configures SSL
+      def configure_ssl(client)
+        Preconditions.assert_class('client', client, Net::HTTP)
+        client.use_ssl = true
+        client.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        client.cert_store = OpenSSL::X509::Store.new
+        client.cert_store.set_default_paths
+      end
+
       def get(&block)
         do_request(Net::HTTP::Get, &block)
       end
@@ -1139,12 +1158,7 @@ module Apidoc
       end
 
       def http_request(request)
-        http = Net::HTTP.new(@uri.host, @uri.port)
-        if @uri.scheme == "https"
-          http.use_ssl = true
-          http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-        end
-        response = http.request(request)
+        response = new_http_client.request(request)
 
         case response
         when Net::HTTPSuccess
@@ -1338,6 +1352,14 @@ module Apidoc
         else
           nil
         end
+      end
+
+      def Helper.date_iso8601_to_string(value)
+        value.nil? ? nil : value.strftime('%Y-%m-%d')
+      end
+
+      def Helper.date_time_iso8601_to_string(value)
+        value.nil? ? nil : value.strftime('%Y-%m-%dT%H:%M:%S%z')
       end
 
       TRUE_STRINGS = ['t', 'true', 'y', 'yes', 'on', '1', 'trueclass'] unless defined?(TRUE_STRINGS)

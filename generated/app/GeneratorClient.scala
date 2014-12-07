@@ -585,7 +585,7 @@ package com.gilt.apidocgenerator {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidocgenerator.models.json._
 
-    private val UserAgent = "apidoc:0.7.4 http://www.apidoc.me/gilt/code/apidoc-generator/0.7.4/play_2_3_client"
+    private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc-generator/0.7.4/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidocgenerator.client")
 
     logger.info(s"Initializing com.gilt.apidocgenerator.client for url $apiUrl")
@@ -765,8 +765,16 @@ package com.gilt.apidocgenerator {
       ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
     )
 
+    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
     // Type: date-iso8601
     implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
+    )
+
+    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[LocalDate](
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
