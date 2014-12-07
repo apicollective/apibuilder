@@ -57,6 +57,7 @@ object SubscriptionDao {
       case None => Seq.empty
       case Some(o) => {
         SubscriptionDao.findAll(
+          Authorization.All,
           organization = Some(o),
           userGuid = Some(form.userGuid),
           publication = Some(form.publication),
@@ -91,7 +92,7 @@ object SubscriptionDao {
       ).execute()
     }
 
-    findByGuid(guid).getOrElse {
+    findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create subscription")
     }
   }
@@ -100,13 +101,19 @@ object SubscriptionDao {
     SoftDelete.delete("subscriptions", deletedBy, subscription.guid)
   }
 
-  def findByGuid(guid: UUID): Option[Subscription] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(authorization: Authorization, guid: UUID): Option[Subscription] = {
+    findAll(authorization, guid = Some(guid), limit = 1).headOption
+  }
+
+  def findByUserAndGuid(user: User, guid: UUID): Option[Subscription] = {
+    findAll(Authorization(Some(user)), guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
+    authorization: Authorization,
     guid: Option[UUID] = None,
     organization: Option[Organization] = None,
+    organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     publication: Option[Publication] = None,
     limit: Long = 50,
@@ -116,6 +123,7 @@ object SubscriptionDao {
       Some(BaseQuery.trim),
       guid.map { v => "and subscriptions.guid = {guid}" },
       organization.map { v => "and subscriptions.organization_guid = {organization_guid}" },
+      organizationKey.map { v => "and subscriptions.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))" },
       userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
       publication.map { v => "and subscriptions.publication = {publication}" },
       Some(s"order by subscriptions.id limit ${limit} offset ${offset}")
@@ -124,6 +132,7 @@ object SubscriptionDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       organization.map('organization_guid -> _.guid.toString),
+      organizationKey.map('organization_key -> _),
       userGuid.map('user_guid -> _.toString),
       publication.map('publication -> _.toString)
     ).flatten
@@ -137,7 +146,7 @@ object SubscriptionDao {
     row: anorm.Row
   ): Subscription = {
     Subscription(
-      id = row[Long]("id"),
+      guid = row[UUID]("guid"),
       organization = OrganizationDao.summaryFromRow(row, Some("organization")),
       user = UserDao.fromRow(row, Some("user")),
       publication = Publication(row[String]("publication"))

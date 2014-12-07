@@ -25,7 +25,7 @@ class MembershipRequestDaoSpec extends FlatSpec {
     assertEquals(Membership.isUserMember(member, thisOrg), false)
     assertEquals(Membership.isUserAdmin(member, thisOrg), false)
 
-    request.accept(Util.createdBy)
+    MembershipRequestDao.accept(Util.createdBy, request)
     assertEquals(Membership.isUserMember(member, thisOrg), true)
     assertEquals(Membership.isUserAdmin(member, thisOrg), false)
   }
@@ -44,7 +44,7 @@ class MembershipRequestDaoSpec extends FlatSpec {
     assertEquals(Membership.isUserMember(member, thisOrg), false)
     assertEquals(Membership.isUserAdmin(member, thisOrg), false)
 
-    request.accept(Util.createdBy)
+    MembershipRequestDao.accept(Util.createdBy, request)
     assertEquals(Membership.isUserMember(member, thisOrg), true)
     assertEquals(Membership.isUserAdmin(member, thisOrg), true)
   }
@@ -91,7 +91,7 @@ class MembershipRequestDaoSpec extends FlatSpec {
 
     assertEquals(None, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member))
 
-    request.accept(Util.createdBy)
+    MembershipRequestDao.accept(Util.createdBy, request)
     assertEquals(member, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member).get.user)
     assertEquals("Accepted membership request for %s to join as Member".format(member.email),
                  OrganizationLog.findAllForOrganization(newOrg).map(_.message).head)
@@ -103,7 +103,7 @@ class MembershipRequestDaoSpec extends FlatSpec {
 
     assertEquals(None, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member))
 
-    request.decline(Util.createdBy)
+    MembershipRequestDao.decline(Util.createdBy, request)
     assertEquals(None, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member))
     assertEquals("Declined membership request for %s to join as Member".format(member.email),
                  OrganizationLog.findAllForOrganization(newOrg).map(_.message).head)

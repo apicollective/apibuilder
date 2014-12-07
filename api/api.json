@@ -624,7 +624,7 @@
                     "method": "GET",
                     "description": "Search for a specific subscription.",
                     "parameters": [
-                        { "name": "id", "type": "long", "description": "Find the subscription with this id.", "required": false },
+                        { "name": "guid", "type": "uuid", "description": "Find the subscription with this guid.", "required": false },
                         { "name": "organization_key", "type": "string", "description": "Find subscriptions for this organization.", "required": false },
                         { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
                         { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
@@ -639,7 +639,7 @@
                 {
                     "method": "GET",
                     "description": "Returns information about this subscription.",
-                    "path": "/:id",
+                    "path": "/:guid",
                     "responses": {
                         "200": { "type": "subscription" }
                     }
@@ -657,7 +657,7 @@
 
                 {
                     "method": "DELETE",
-		    "path": "/:id"
+		    "path": "/:guid"
                 }
             ]
         }
