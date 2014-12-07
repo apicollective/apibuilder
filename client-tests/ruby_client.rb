@@ -14,15 +14,7 @@ module Apidoc
 
   class Client
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17/ruby_client' unless defined?(USER_AGENT)
-=======
-    USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.18/ruby_client' unless defined?(USER_AGENT)
->>>>>>> Add publication/subscription to API
-=======
     USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.19/ruby_client' unless defined?(USER_AGENT)
->>>>>>> Update model to include subscriptions.guid
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)

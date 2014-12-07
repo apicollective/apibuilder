@@ -598,15 +598,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17/play_2_3_client"
-=======
-    private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.18/play_2_3_client"
->>>>>>> Add publication/subscription to API
-=======
     private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.19/play_2_3_client"
->>>>>>> Update model to include subscriptions.guid
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
@@ -1610,8 +1602,6 @@ package com.gilt.apidoc {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
-<<<<<<< HEAD
-=======
     // Enum: Publication
     private val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Publication.all.mkString(", ")}"
 
@@ -1623,7 +1613,6 @@ package com.gilt.apidoc {
       Publication.fromString(_).get, _.toString, enumPublicationNotFound
     )
 
->>>>>>> Add publication/subscription to API
     // Enum: Visibility
     private val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Visibility.all.mkString(", ")}"
 
