@@ -34,9 +34,14 @@ object OrganizationMetadataDao {
   """
 
   def validate(form: OrganizationMetadataForm): Seq[ValidationError] = {
-    val visibilityErrors = Visibility(form.visibility.toString) match {
-      case Visibility.UNDEFINED(name) => Seq("Invalid visibility")
-      case _ => Seq.empty
+    val visibilityErrors = form.visibility match {
+      case None => Seq.empty
+      case Some(vis) => {
+        Visibility(vis.toString) match {
+          case Visibility.UNDEFINED(name) => Seq(s"Invalid visibility[$vis]")
+          case _ => Seq.empty
+        }
+      }
     }
 
     val packageNameErrors = form.packageName match {

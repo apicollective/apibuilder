@@ -122,7 +122,7 @@ class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
       }
 
       it("invalid package name") {
-        OrganizationMetadataDao.validate(form.copy(packageName = Some("com gilt"))) should be("Domain com gilt is not valid. Expected a domain name like apidoc.me")
+        OrganizationMetadataDao.validate(form.copy(packageName = Some("com gilt"))).map(_.message) should be(Seq("Package name is not valid. Must be a dot separated list of valid names (start wtih letter, contains only a-z, A-Z, 0-9 and _ characters"))
       }
 
     }
