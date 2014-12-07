@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, User}
+import com.gilt.apidoc.models.{MembershipRequest, Organization, User}
 import com.gilt.apidoc.models.json._
 import lib.Role
 import anorm._
@@ -11,56 +11,7 @@ import play.api.libs.json._
 import java.util.UUID
 
 
-case class MembershipRequest(guid: String,
-                             created_at: String, // TODO Timestamp type
-                             organization: Organization,
-                             user: User,
-                             role: String) {
-
-  /**
-   * Accepts this request. The request will be deleted, the
-   * action logged, and the user added to the organization
-   * in this role if not already in this role for this org.
-   */
-  def accept(createdBy: User) {
-    assertUserCanReview(createdBy)
-    val r = Role.fromString(role).getOrElse {
-      sys.error(s"Invalid role[$role]")
-    }
-
-    val message = s"Accepted membership request for ${user.email} to join as ${r.name}"
-    DB.withTransaction { implicit conn =>
-      OrganizationLog.create(createdBy, organization, message)
-      MembershipRequest.softDelete(createdBy, this)
-      Membership.upsert(createdBy, organization, user, r)
-    }
-  }
-
-  /**
-   * Declines this request. The request will be deleted and the
-   * action logged.
-   */
-  def decline(createdBy: User) {
-    assertUserCanReview(createdBy)
-    val r = Role.fromString(role).getOrElse {
-      sys.error(s"Invalid role[$role]")
-    }
-
-    val message = s"Declined membership request for ${user.email} to join as ${r.name}"
-    DB.withTransaction { implicit conn =>
-      OrganizationLog.create(createdBy, organization, message)
-      MembershipRequest.softDelete(createdBy, this)
-    }
-  }
-
-  private def assertUserCanReview(user: User) {
-    require(Membership.isUserAdmin(user, organization),
-            s"User[${user.guid}] is not an administrator of org[${organization.guid}]")
-  }
-
-}
-
-object MembershipRequest {
+object MembershipRequestDao {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]
 
@@ -105,9 +56,52 @@ object MembershipRequest {
                   'created_by_guid -> createdBy.guid).execute()
     }
 
-    findByGuid(guid.toString).getOrElse {
+    findByGuid(guid).getOrElse {
       sys.error("Failed to create membership_request")
     }
+  }
+
+  /**
+   * Accepts this request. The request will be deleted, the
+   * action logged, and the user added to the organization
+   * in this role if not already in this role for this org.
+   */
+  def accept(createdBy: User, request: MembershipRequest) {
+    assertUserCanReview(createdBy, request)
+    val r = Role.fromString(request.role).getOrElse {
+      sys.error(s"Invalid role[${request.role}]")
+    }
+
+    val message = s"Accepted membership request for ${request.user.email} to join as ${r.name}"
+    DB.withTransaction { implicit conn =>
+      OrganizationLog.create(createdBy, request.organization, message)
+      MembershipRequestDao.softDelete(createdBy, request)
+      Membership.upsert(createdBy, request.organization, request.user, r)
+    }
+  }
+
+  /**
+   * Declines this request. The request will be deleted and the
+   * action logged.
+   */
+  def decline(createdBy: User, request: MembershipRequest) {
+    assertUserCanReview(createdBy, request)
+    val r = Role.fromString(request.role).getOrElse {
+      sys.error(s"Invalid role[${request.role}]")
+    }
+
+    val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
+    DB.withTransaction { implicit conn =>
+      OrganizationLog.create(createdBy, request.organization, message)
+      MembershipRequestDao.softDelete(createdBy, request)
+    }
+  }
+
+  private def assertUserCanReview(user: User, request: MembershipRequest) {
+    require(
+      Membership.isUserAdmin(user, request.organization),
+      s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"
+    )
   }
 
   def softDelete(user: User, membershipRequest: MembershipRequest) {
@@ -121,11 +115,11 @@ object MembershipRequest {
             limit = 1).headOption
   }
 
-  def findByGuid(guid: String): Option[MembershipRequest] = {
+  def findByGuid(guid: UUID): Option[MembershipRequest] = {
     findAll(guid = Some(guid)).headOption
   }
 
-  def findAll(guid: Option[String] = None,
+  def findAll(guid: Option[UUID] = None,
               organizationGuid: Option[UUID] = None,
               organizationKey: Option[String] = None,
               userGuid: Option[UUID] = None,
@@ -154,8 +148,7 @@ object MembershipRequest {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         MembershipRequest(
-          guid = row[String]("guid"),
-          created_at = row[String]("created_at"),
+          guid = row[UUID]("guid"),
           organization = OrganizationDao.summaryFromRow(row, Some("organization")),
           user = UserDao.fromRow(row, Some("user")),
           role = row[String]("role")

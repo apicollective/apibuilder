@@ -1,8 +1,8 @@
 package actors
 
-import com.gilt.apidoc.models.{Organization, Publication}
-import db.{Pager, SubscriptionsDao}
-import lib.{Email, Person}
+import com.gilt.apidoc.models.{Organization, Publication, Subscription}
+import db.SubscriptionDao
+import lib.{Email, Pager, Person}
 import akka.actor._
 import play.api.Logger
 import play.api.Play.current

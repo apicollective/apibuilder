@@ -1,8 +1,8 @@
 package db
 
-import com.gilt.quality.models.{Error, Publication, Subscription, SubscriptionForm, Team, User}
+import com.gilt.apidoc.models.{Error, Organization, Publication, Subscription, SubscriptionForm, User}
 import anorm._
-import lib.Validation
+import lib.{Validation, ValidationError}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -11,7 +11,7 @@ import java.util.UUID
 object SubscriptionDao {
 
   private val BaseQuery = """
-    select subscriptions.id,
+    select subscriptions.guid,
            subscriptions.publication,
            users.guid as user_guid,
            users.email as user_email,
@@ -21,22 +21,24 @@ object SubscriptionDao {
            organizations.name as organization_name
       from subscriptions
       join users on users.guid = subscriptions.user_guid and users.deleted_at is null
-      join organizations on organizations.id = subscriptions.organization_id and organizations.deleted_at is null
+      join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null
      where subscriptions.deleted_at is null
   """
 
-  private val SoftDeleteQuery = """
-    update subscriptions
-       set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
-     where deleted_at is null
-       and user_guid = {user_guid}::uuid
-       and publication = {publication}
+  private val InsertQuery = """
+    insert into subscriptions
+    (guid, organization_guid, publication, user_guid, created_by_guid)
+    values
+    ({guid}::uuid, {organization_guid}::uuid, {publication}, {user_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def validate(
+    user: User,
     form: SubscriptionForm
-  ): Seq[Error] = {
-    val organizationKeyErrors = OrganizationsDao.lookupId(form.organizationKey) match {
+  ): Seq[ValidationError] = {
+    val org = OrganizationDao.findByKey(Authorization(Some(user)), form.organizationKey)
+
+    val organizationKeyErrors = org match {
         case None => Seq("Organization not found")
         case Some(_) => Seq.empty
     }
@@ -46,60 +48,59 @@ object SubscriptionDao {
       case _ => Seq.empty
     }
 
-    val userErrors = UsersDao.findByGuid(form.userGuid) match {
+    val userErrors = UserDao.findByGuid(form.userGuid) match {
         case None => Seq("User not found")
         case Some(_) => Seq.empty
     }
 
-    val alreadySubscribed = SubscriptionDao.findAll(
-      organizationKey = Some(form.organizationKey),
-      userGuid = Some(form.userGuid),
-      publication = Some(form.publication),
-      limit = 1
-    ).headOption match {
+    val alreadySubscribed = org match {
       case None => Seq.empty
-      case Some(_) => Seq("User is already subscribed to this publication for this organization")
+      case Some(o) => {
+        SubscriptionDao.findAll(
+          organization = Some(o),
+          userGuid = Some(form.userGuid),
+          publication = Some(form.publication),
+          limit = 1
+        ).headOption match {
+          case None => Seq.empty
+          case Some(_) => Seq("User is already subscribed to this publication for this organization")
+        }
+      }
     }
 
     Validation.errors(organizationKeyErrors ++ publicationErrors ++ userErrors ++ alreadySubscribed)
   }
 
   def create(createdBy: User, form: SubscriptionForm): Subscription = {
-    val errors = validate(form)
+    val errors = validate(createdBy, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    val organizationId = OrganizationsDao.lookupId(form.organizationKey).get
+    val org = OrganizationDao.findByKey(Authorization(Some(createdBy)), form.organizationKey).getOrElse {
+      sys.error("Failed to validate org for subscription")
+    }
 
-    val id = DB.withConnection { implicit c =>
-      SQL("""
-        insert into subscriptions
-        (organization_id, publication, user_guid, created_by_guid)
-        values
-        ({organization_id}, {publication}, {user_guid}::uuid, {created_by_guid}::uuid)
-      """).on(
-        'organization_id -> organizationId,
+    val guid = UUID.randomUUID
+
+    DB.withConnection { implicit c =>
+      SQL(InsertQuery).on(
+        'guid -> guid,
+        'organization_guid -> org.guid,
         'publication -> form.publication.toString,
         'user_guid -> form.userGuid,
         'created_by_guid -> createdBy.guid
-      ).executeInsert().getOrElse(sys.error("Missing id"))
+      ).execute()
     }
 
-    findById(id).getOrElse {
+    findByGuid(guid).getOrElse {
       sys.error("Failed to create subscription")
     }
   }
 
   def softDelete(deletedBy: User, subscription: Subscription) {
-    DB.withConnection { implicit c =>
-      SQL(SoftDeleteQuery).on(
-        'deleted_by_guid -> deletedBy.guid,
-        'publication -> subscription.publication.toString,
-        'user_guid -> subscription.user.guid
-      ).execute()
-    }
+    SoftDelete.delete("subscriptions", deletedBy, subscription.guid)
   }
 
-  def findById(guid: UUID): Option[Subscription] = {
+  def findByGuid(guid: UUID): Option[Subscription] = {
     findAll(guid = Some(guid), limit = 1).headOption
   }
 

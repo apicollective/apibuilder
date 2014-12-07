@@ -167,7 +167,7 @@
 	"subscription": {
 	    "description": "Represents a user that is currently subscribed to a publication",
 	    "fields": [
-		{ "name": "id", "type": "long", "description": "Internal unique identifier for this subscription record" },
+		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this subscription record" },
 		{ "name": "organization", "type": "organization" },
 		{ "name": "user", "type": "user" },
 		{ "name": "publication", "type": "publication" }

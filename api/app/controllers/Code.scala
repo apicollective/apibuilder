@@ -18,7 +18,7 @@ object Code extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  val apidocVersion = Config.getRequiredString("git.version")
+  val apidocVersion = Config.requiredString("git.version")
 
   def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(orgKey: String, serviceKey: String, version: String, generatorKey: String) = Authenticated.async { request =>
     val auth = Authorization(Some(request.user))

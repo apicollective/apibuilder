@@ -63,7 +63,7 @@ object UserDao {
     }
 
     OrganizationDao.findByEmailDomain(form.email).foreach { org =>
-      MembershipRequest.create(user, org, user, Role.Member)
+      MembershipRequestDao.create(user, org, user, Role.Member)
     }
 
     user

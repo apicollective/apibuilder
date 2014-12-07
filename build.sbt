@@ -40,6 +40,7 @@ lazy val api = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
+    routesImport += "com.gilt.apidoc.Bindables._",
     libraryDependencies ++= Seq(
       ws,
       jdbc,

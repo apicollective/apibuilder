@@ -1,18 +1,19 @@
 package actors
 
-import com.gilt.apidoc.models.{Publication, Subscription}
+import com.gilt.apidoc.models.Publication
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
-import db.{Pager, SubscriptionDao}
-import lib.{Email, Person}
+import db.MembershipRequestDao
+import lib.{Email, Pager, Person}
 import akka.actor._
 import play.api.Logger
 import play.api.Play.current
+import java.util.UUID
 
 object EmailActor {
 
   object Messages {
-    case class MembershipRequestCreated(id: Long)
+    case class MembershipRequestCreated(guid: UUID)
   }
 
 }
@@ -21,14 +22,14 @@ class EmailActor extends Actor {
 
   def receive = {
 
-    case MainActor.Messages.MembershipRequestCreated(id) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.MembershipRequestCreated(id)", {
-        MembershipRequestDao.findById(id).map { mr =>
+    case MainActor.Messages.MembershipRequestCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.MembershipRequestCreated($guid)", {
+        MembershipRequestDao.findByGuid(guid).map { request =>
           Emails.deliver(
-            org = incident.organization,
-            publication = publication,
-            subject = s"${mr.organization.key} Membership Request from ${mr.user.email}",
-            body = views.html.emails.membershipRequestCreated(mr).toString
+            org = request.organization,
+            publication = Publication.MembershipRequestsCreate,
+            subject = s"${request.organization.key}: Membership Request from ${request.user.email}",
+            body = views.html.emails.membershipRequestCreated(request).toString
           )
         }
       }
