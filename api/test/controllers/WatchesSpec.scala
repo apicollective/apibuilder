@@ -33,7 +33,6 @@ class WatchesSpec extends BaseSpec {
   "POST /watches" in new WithServer {
     val user = createUser()
     val service = createService(org)
-    println("SERVICE: " + service)
     val watch = createWatch(
       WatchForm(
         organizationKey = org.key,
