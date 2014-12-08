@@ -13,15 +13,17 @@ object Config {
     optionalString(name).getOrElse {
       val msg = s"configuration parameter[$name] is required"
       Logger.error(msg)
-      sys.error(s"configuration parameter[$name] is required")
+      sys.error(msg)
     }
   }
 
   def optionalString(name: String): Option[String] = {
     current.configuration.getString(name).map { value =>
-      val msg = s"Value for configuration parameter[$name] cannot be blank"
-      Logger.error(msg)
-      assert(value.trim != "", msg)
+      if (value.trim == "") {
+        val msg = s"Value for configuration parameter[$name] cannot be blank"
+        Logger.error(msg)
+        sys.error(msg)
+      }
       value
     }
   }
