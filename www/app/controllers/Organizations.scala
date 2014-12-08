@@ -87,7 +87,7 @@ object Organizations extends Controller {
           Ok(views.html.organizations.requestMembership(
             MainTemplate(
               user = Some(request.user),
-              title = Some("Join ${org.name}")
+              title = Some(s"Join ${org.name}")
             ),
             org,
             adminsResponse,
