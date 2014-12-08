@@ -8,7 +8,6 @@ scalaVersion in ThisBuild := "2.11.4"
 
 lazy val lib = project
   .in(file("lib"))
-  .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
 
 lazy val core = project
