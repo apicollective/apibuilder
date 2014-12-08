@@ -5,7 +5,8 @@ import com.gilt.apidoc.models.{ Organization, Service, User, Generator }
 import play.api.Play.current
 
 case class MainTemplate(
-  title: String,
+  title: Option[String] = None,
+  headTitle: Option[String] = None,
   org: Option[Organization] = None,
   service: Option[Service] = None,
   version: Option[String] = None,

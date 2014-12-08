@@ -43,7 +43,7 @@ object Versions extends Controller {
           }
 
           val sd = ServiceDescriptionBuilder(v.json)
-          val tpl = request.mainTemplate(service.name + " " + v.version).copy(
+          val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
             service = Some(service),
             version = Some(v.version),
             allServiceVersions = versionsResponse.map(_.version),
@@ -78,7 +78,7 @@ object Versions extends Controller {
     serviceKey match {
 
       case None => Future {
-        val tpl = request.mainTemplate(Util.AddServiceText)
+        val tpl = request.mainTemplate(Some(Util.AddServiceText))
         val filledForm = uploadForm.fill(
           UploadData(
             version = DefaultVersion,
@@ -98,7 +98,7 @@ object Versions extends Controller {
               Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${key}")
             }
             case Some(service) => {
-              val tpl = request.mainTemplate(s"${service.name}: Upload new version").copy(
+              val tpl = request.mainTemplate(Some(s"${service.name}: Upload new version")).copy(
                 service = Some(service),
                 version = versionsResponse.headOption.map(_.version)
               )
@@ -119,7 +119,7 @@ object Versions extends Controller {
   def createPost(orgKey: String) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
     request.requireMember()
 
-    val tpl = request.mainTemplate("Add Service")
+    val tpl = request.mainTemplate(Some("Add Service"))
     val boundForm = uploadForm.bindFromRequest
     boundForm.fold (
 

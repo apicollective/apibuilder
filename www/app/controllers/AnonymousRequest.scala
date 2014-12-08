@@ -22,7 +22,7 @@ class AnonymousRequest[A](
 
   lazy val api = Authenticated.api(user)
 
-  def mainTemplate(title: String): MainTemplate = {
+  def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(
       title = title,
       user = user,
@@ -52,7 +52,7 @@ class AnonymousOrgRequest[A](
 
   lazy val api = anon.api
 
-  def mainTemplate(title: String = org.name): MainTemplate = anon.mainTemplate(title)
+  def mainTemplate(title: Option[String] = None): MainTemplate = anon.mainTemplate(title = title)
 
   def requireAdmin() {
     anon.requireAdmin()

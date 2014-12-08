@@ -22,7 +22,7 @@ class AuthenticatedOrgRequest[A](
     "A user that is an admin should always be considered a member"
   )
 
-  override def mainTemplate(title: String = org.name): MainTemplate = {
+  override def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(
       title = title,
       user = Some(user),

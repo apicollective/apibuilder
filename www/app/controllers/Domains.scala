@@ -14,19 +14,19 @@ object Domains extends Controller {
 
   def index(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireMember
-    val tpl = request.mainTemplate("Domains")
+    val tpl = request.mainTemplate(title = Some("Domains"))
     Ok(views.html.domains.index(tpl.copy(settings = Some(SettingsMenu(section = Some(SettingSection.Domains))))))
   }
 
   def create(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireAdmin
-    val tpl = request.mainTemplate("Add Domain")
+    val tpl = request.mainTemplate(title = Some("Add Domain"))
     Ok(views.html.domains.form(tpl, domainForm))
   }
 
   def postCreate(orgKey: String) = AuthenticatedOrg.async { implicit request =>
     request.requireAdmin
-    val tpl = request.mainTemplate("Add Domain")
+    val tpl = request.mainTemplate(title = Some("Add Domain"))
     val boundForm = domainForm.bindFromRequest
     boundForm.fold (
 
