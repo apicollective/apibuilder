@@ -740,7 +740,7 @@ package com.gilt.apidoc {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidoc.models.json._
 
-    private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17-dev/play_2_3_client"
+    private val UserAgent = "apidoc:0.7.25 http://www.apidoc.me/gilt/code/apidoc/0.7.25/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidoc.client")
 
     logger.info(s"Initializing com.gilt.apidoc.client for url $apiUrl")
