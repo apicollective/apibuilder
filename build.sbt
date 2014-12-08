@@ -25,9 +25,7 @@ lazy val core = project
 lazy val generated = project
   .in(file("generated"))
   .enablePlugins(PlayScala)
-  .settings(commonSettings: _*)
   .settings(
-    routesImport += "com.gilt.apidoc.Bindables._",
     libraryDependencies ++= Seq(
       ws
     )
@@ -46,8 +44,9 @@ lazy val api = project
       jdbc,
       anorm,
       "org.postgresql" % "postgresql"    % "9.3-1101-jdbc4",
-      "org.mindrot"    %  "jbcrypt"      % "0.3m",
-      "com.sendgrid"   % "sendgrid-java" % "1.3.0"
+      "org.mindrot"    % "jbcrypt"       % "0.3m",
+      "com.sendgrid"   % "sendgrid-java" % "1.3.0",
+      "org.scalatestplus" %% "play" % "1.2.0" % "test"
     )
   )
 
@@ -70,8 +69,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.gilt.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.1",
-    "org.scalatest" %% "scalatest" % "2.2.0" % "test",
-    "org.scalatestplus" %% "play" % "1.2.0" % "test"
+    "org.scalatest" %% "scalatest" % "2.2.0" % "test"
   ),
   scalacOptions += "-feature",
   ScoverageKeys.highlighting := true
