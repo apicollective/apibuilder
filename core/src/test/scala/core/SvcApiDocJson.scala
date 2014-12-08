@@ -53,12 +53,12 @@ class SvcApiDocJson extends FunSpec with Matchers {
     }
   }
 
-  it("all POST operations return either a 200, 204 or a 409") {
-    val validCodes = Seq(200, 204, 409)
+  it("all POST operations return either a 200, 201, 204 or a 409") {
+    val validCodes = Seq(200, 201, 204, 409)
     service.resources.flatMap(_.operations.filter(_.method == "POST")).foreach { op =>
       val invalid = op.responses.find { response => !validCodes.contains(response.code)}
       invalid.foreach { response =>
-        fail(s"POST operation should return a 200, 204 or a 409 - invalid response for op[$op] response[$response")
+        fail(s"POST operation should return a 200, 204 or a 409 - invalid response for op[$op] response[$response]")
       }
     }
   }
