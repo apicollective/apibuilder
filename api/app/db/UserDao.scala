@@ -63,7 +63,7 @@ object UserDao {
     }
 
     OrganizationDao.findByEmailDomain(form.email).foreach { org =>
-      MembershipRequest.create(user, org, user, Role.Member)
+      MembershipRequestDao.create(user, org, user, Role.Member)
     }
 
     user
@@ -113,14 +113,20 @@ object UserDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        User(
-          guid = row[UUID]("guid"),
-          email = row[String]("email"),
-          name = row[Option[String]]("name")
-        )
-      }.toSeq
+      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
     }
+  }
+
+  private[db] def fromRow(
+    row: anorm.Row,
+    prefix: Option[String] = None
+  ) = {
+    val p = prefix.map( _ + "_").getOrElse("")
+    User(
+      guid = row[UUID](s"${p}guid"),
+      email = row[String](s"${p}email"),
+      name = row[Option[String]](s"${p}name")
+    )
   }
 
 }

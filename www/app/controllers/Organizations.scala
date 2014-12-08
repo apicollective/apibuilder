@@ -3,7 +3,7 @@ package controllers
 import lib.Role
 import lib.{Pagination, PaginatedCollection, Role}
 import models.MainTemplate
-import com.gilt.apidoc.models.Organization
+import com.gilt.apidoc.models.{Organization, OrganizationForm}
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -140,7 +140,12 @@ object Organizations extends Controller {
       },
 
       valid => {
-        request.api.Organizations.post(valid.name).map { org =>
+        request.api.Organizations.post(
+          OrganizationForm(
+            name = valid.name,
+            key = valid.key
+          )
+        ).map { org =>
           Redirect(routes.Organizations.show(org.key))
         }.recover {
           case r: com.gilt.apidoc.error.ErrorsResponse => {
@@ -152,10 +157,14 @@ object Organizations extends Controller {
     )
   }
 
-  case class OrgData(name: String)
+  case class OrgData(
+    name: String,
+    key: Option[String]
+  )
   private val orgForm = Form(
     mapping(
-      "name" -> nonEmptyText
+      "name" -> nonEmptyText,
+      "key" -> optional(nonEmptyText)
     )(OrgData.apply)(OrgData.unapply)
   )
 

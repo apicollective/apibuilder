@@ -54,8 +54,8 @@ class UserDaoSpec extends FunSpec with Matchers {
         password = "testing"
       ))
 
-      MembershipRequest.findByOrganizationAndUserAndRole(gilt, user, Role.Member).isEmpty should be(false)
-      MembershipRequest.findByOrganizationAndUserAndRole(gilt, user, Role.Admin) should be(None)
+      MembershipRequestDao.findByOrganizationAndUserAndRole(gilt, user, Role.Member).isEmpty should be(false)
+      MembershipRequestDao.findByOrganizationAndUserAndRole(gilt, user, Role.Admin) should be(None)
     }
 
     it("are not linked if the email domain is different") {

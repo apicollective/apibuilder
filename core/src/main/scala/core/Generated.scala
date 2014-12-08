@@ -12,8 +12,8 @@ package com.gilt.apidoc.models {
    * Represents a single domain name (e.g. www.apidoc.me). When a new user registers
    * and confirms their email, we automatically associate that user with a member of
    * the organization associated with their domain. For example, if you confirm your
-   * account with an email address of foo@gilt.com, we will automatically add you as
-   * a member to the organization with domain gilt.com.
+   * account with an email address of foo@gilt.com, we will automatically create a
+   * membership request on your behalf to join the organization with domain gilt.com.
    */
   case class Domain(
     name: String
@@ -103,10 +103,22 @@ package com.gilt.apidoc.models {
     metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadata] = None
   )
 
+  case class OrganizationForm(
+    name: String,
+    key: scala.Option[String] = None,
+    domains: Seq[String] = Nil,
+    metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadataForm] = None
+  )
+
   /**
    * Supplemental (non-required) information about an organization
    */
   case class OrganizationMetadata(
+    visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
+    packageName: scala.Option[String] = None
+  )
+
+  case class OrganizationMetadataForm(
     visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
     packageName: scala.Option[String] = None
   )
@@ -119,6 +131,37 @@ package com.gilt.apidoc.models {
     name: String,
     key: String,
     visibility: com.gilt.apidoc.models.Visibility,
+    description: scala.Option[String] = None
+  )
+
+  /**
+   * Represents a user that is currently subscribed to a publication
+   */
+  case class Subscription(
+    guid: _root_.java.util.UUID,
+    organization: com.gilt.apidoc.models.Organization,
+    user: com.gilt.apidoc.models.User,
+    publication: com.gilt.apidoc.models.Publication
+  )
+
+  case class SubscriptionForm(
+    organizationKey: String,
+    userGuid: _root_.java.util.UUID,
+    publication: com.gilt.apidoc.models.Publication
+  )
+
+  /**
+   * A token gives a user access to the API.
+   */
+  case class Token(
+    guid: _root_.java.util.UUID,
+    user: com.gilt.apidoc.models.User,
+    token: String,
+    description: scala.Option[String] = None
+  )
+
+  case class TokenForm(
+    userGuid: _root_.java.util.UUID,
     description: scala.Option[String] = None
   )
 
@@ -148,6 +191,79 @@ package com.gilt.apidoc.models {
     version: String,
     json: String
   )
+
+  /**
+   * Users can watch individual services which enables features like receiving an
+   * email notification when there is a new version of a service.
+   */
+  case class Watch(
+    guid: _root_.java.util.UUID,
+    user: com.gilt.apidoc.models.User,
+    organization: com.gilt.apidoc.models.Organization,
+    service: com.gilt.apidoc.models.Service
+  )
+
+  case class WatchForm(
+    userGuid: _root_.java.util.UUID,
+    organizationKey: String,
+    serviceKey: String
+  )
+
+  /**
+   * A publication represents something that a user can subscribe to. An example
+   * would be subscribing to an email alert whenever a new version of a service is
+   * created.
+   */
+  sealed trait Publication
+
+  object Publication {
+
+    /**
+     * For organizations for which I am an administrator, email me whenever a user
+     * applies to join the org.
+     */
+    case object MembershipRequestsCreate extends Publication { override def toString = "membership_requests.create" }
+    /**
+     * For organizations for which I am a member, email me whenever a user join the
+     * org.
+     */
+    case object MembershipsCreate extends Publication { override def toString = "memberships.create" }
+    /**
+     * For organizations for which I am a member, email me whenever a service is
+     * created.
+     */
+    case object ServicesCreate extends Publication { override def toString = "services.create" }
+    /**
+     * For services that I watch, email me whenever a version is created.
+     */
+    case object VersionsCreate extends Publication { override def toString = "versions.create" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Publication
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(MembershipRequestsCreate, MembershipsCreate, ServicesCreate, VersionsCreate)
+
+    private[this]
+    val byName = all.map(x => x.toString -> x).toMap
+
+    def apply(value: String): Publication = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): scala.Option[Publication] = byName.get(value)
+
+  }
 
   /**
    * Controls who is able to view this version
@@ -222,6 +338,11 @@ package com.gilt.apidoc.models {
         val str = dateTime.print(x)
         JsString(str)
       }
+    }
+
+    implicit val jsonReadsApidocEnum_Publication = __.read[String].map(Publication.apply)
+    implicit val jsonWritesApidocEnum_Publication = new Writes[Publication] {
+      def writes(x: Publication) = JsString(x.toString)
     }
 
     implicit val jsonReadsApidocEnum_Visibility = __.read[String].map(Visibility.apply)
@@ -400,6 +521,24 @@ package com.gilt.apidoc.models {
       )(unlift(Organization.unapply _))
     }
 
+    implicit def jsonReadsApidocOrganizationForm: play.api.libs.json.Reads[OrganizationForm] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "key").readNullable[String] and
+        (__ \ "domains").readNullable[Seq[String]].map(_.getOrElse(Nil)) and
+        (__ \ "metadata").readNullable[com.gilt.apidoc.models.OrganizationMetadataForm]
+      )(OrganizationForm.apply _)
+    }
+
+    implicit def jsonWritesApidocOrganizationForm: play.api.libs.json.Writes[OrganizationForm] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "key").write[scala.Option[String]] and
+        (__ \ "domains").write[Seq[String]] and
+        (__ \ "metadata").write[scala.Option[com.gilt.apidoc.models.OrganizationMetadataForm]]
+      )(unlift(OrganizationForm.unapply _))
+    }
+
     implicit def jsonReadsApidocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
       (
         (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
@@ -412,6 +551,20 @@ package com.gilt.apidoc.models {
         (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
         (__ \ "package_name").write[scala.Option[String]]
       )(unlift(OrganizationMetadata.unapply _))
+    }
+
+    implicit def jsonReadsApidocOrganizationMetadataForm: play.api.libs.json.Reads[OrganizationMetadataForm] = {
+      (
+        (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
+        (__ \ "package_name").readNullable[String]
+      )(OrganizationMetadataForm.apply _)
+    }
+
+    implicit def jsonWritesApidocOrganizationMetadataForm: play.api.libs.json.Writes[OrganizationMetadataForm] = {
+      (
+        (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
+        (__ \ "package_name").write[scala.Option[String]]
+      )(unlift(OrganizationMetadataForm.unapply _))
     }
 
     implicit def jsonReadsApidocService: play.api.libs.json.Reads[Service] = {
@@ -432,6 +585,72 @@ package com.gilt.apidoc.models {
         (__ \ "visibility").write[com.gilt.apidoc.models.Visibility] and
         (__ \ "description").write[scala.Option[String]]
       )(unlift(Service.unapply _))
+    }
+
+    implicit def jsonReadsApidocSubscription: play.api.libs.json.Reads[Subscription] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Organization] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "publication").read[com.gilt.apidoc.models.Publication]
+      )(Subscription.apply _)
+    }
+
+    implicit def jsonWritesApidocSubscription: play.api.libs.json.Writes[Subscription] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Organization] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "publication").write[com.gilt.apidoc.models.Publication]
+      )(unlift(Subscription.unapply _))
+    }
+
+    implicit def jsonReadsApidocSubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
+      (
+        (__ \ "organization_key").read[String] and
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "publication").read[com.gilt.apidoc.models.Publication]
+      )(SubscriptionForm.apply _)
+    }
+
+    implicit def jsonWritesApidocSubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
+      (
+        (__ \ "organization_key").write[String] and
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "publication").write[com.gilt.apidoc.models.Publication]
+      )(unlift(SubscriptionForm.unapply _))
+    }
+
+    implicit def jsonReadsApidocToken: play.api.libs.json.Reads[Token] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "token").read[String] and
+        (__ \ "description").readNullable[String]
+      )(Token.apply _)
+    }
+
+    implicit def jsonWritesApidocToken: play.api.libs.json.Writes[Token] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "token").write[String] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(Token.unapply _))
+    }
+
+    implicit def jsonReadsApidocTokenForm: play.api.libs.json.Reads[TokenForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "description").readNullable[String]
+      )(TokenForm.apply _)
+    }
+
+    implicit def jsonWritesApidocTokenForm: play.api.libs.json.Writes[TokenForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "description").write[scala.Option[String]]
+      )(unlift(TokenForm.unapply _))
     }
 
     implicit def jsonReadsApidocUser: play.api.libs.json.Reads[User] = {
@@ -478,6 +697,40 @@ package com.gilt.apidoc.models {
         (__ \ "version").write[String] and
         (__ \ "json").write[String]
       )(unlift(Version.unapply _))
+    }
+
+    implicit def jsonReadsApidocWatch: play.api.libs.json.Reads[Watch] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[com.gilt.apidoc.models.User] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Organization] and
+        (__ \ "service").read[com.gilt.apidoc.models.Service]
+      )(Watch.apply _)
+    }
+
+    implicit def jsonWritesApidocWatch: play.api.libs.json.Writes[Watch] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[com.gilt.apidoc.models.User] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Organization] and
+        (__ \ "service").write[com.gilt.apidoc.models.Service]
+      )(unlift(Watch.unapply _))
+    }
+
+    implicit def jsonReadsApidocWatchForm: play.api.libs.json.Reads[WatchForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "organization_key").read[String] and
+        (__ \ "service_key").read[String]
+      )(WatchForm.apply _)
+    }
+
+    implicit def jsonWritesApidocWatchForm: play.api.libs.json.Writes[WatchForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "organization_key").write[String] and
+        (__ \ "service_key").write[String]
+      )(unlift(WatchForm.unapply _))
     }
   }
 }

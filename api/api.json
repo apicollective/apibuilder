@@ -3,10 +3,6 @@
     "description": "Host API documentation for REST services, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
 
-    "headers": [
-      { "name": "X-Api-Doc", "type": "string", "description": "Example of an explicit header", "default": "www.apidoc.me" }
-    ],
-
     "enums": {
 	"visibility": {
 	    "description": "Controls who is able to view this version",
@@ -15,7 +11,18 @@
 		{ "name": "organization", "description": "Any member of the organization can view this service" },
 		{ "name": "public", "description": "Anybody, including non logged in users, can view this service" }
 	    ]
+	},
+
+	"publication": {
+	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing to an email alert whenever a new version of a service is created.",
+	    "values": [
+		{ "name": "membership_requests.create", "description": "For organizations for which I am an administrator, email me whenever a user applies to join the org." },
+		{ "name": "memberships.create", "description": "For organizations for which I am a member, email me whenever a user join the org." },
+		{ "name": "services.create", "description": "For organizations for which I am a member, email me whenever a service is created." },
+		{ "name": "versions.create", "description": "For services that I watch, email me whenever a version is created." }
+	    ]
 	}
+
     },
 
     "models": {
@@ -43,6 +50,23 @@
             ]
         },
 
+        "token": {
+            "description": "A token gives a user access to the API.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this token." },
+                { "name": "user", "type": "user", "description": "The user to which this token belongs." },
+                { "name": "token", "type": "string", "description": "The actual token. Guaranteed to be globally unique." },
+                { "name": "description", "type": "string", "description": "optional description to help the user manage the token.", "required": false }
+            ]
+        },
+
+        "token_form": {
+            "fields": [
+                { "name": "user_guid", "type": "uuid", "description": "The user for which we are creating the token." },
+                { "name": "description", "type": "string", "required": false }
+            ]
+        },
+
         "organization": {
             "description": "An organization is used to group a set of services together.",
             "fields": [
@@ -54,8 +78,17 @@
             ]
         },
 
+        "organization_form": {
+            "fields": [
+                { "name": "name", "type": "string" },
+                { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" },
+                { "name": "domains", "type": "[string]", "required": false, "example": "apidoc.me" },
+                { "name": "metadata", "type": "organization_metadata_form", "required": false }
+            ]
+        },
+
         "domain": {
-            "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@gilt.com, we will automatically add you as a member to the organization with domain gilt.com.",
+            "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@gilt.com, we will automatically create a membership request on your behalf to join the organization with domain gilt.com.",
             "fields": [
                 { "name": "name", "type": "string", "description": "The domain name", "example": "www.apidoc.me" }
             ]
@@ -66,6 +99,13 @@
             "fields": [
                 { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "required": false, "default": "organization" },
                 { "name": "package_name", "type": "string", "description": "The package name when used by code generators (e.g. scala package name for the clients)", "required": false }
+            ]
+        },
+
+        "organization_metadata_form": {
+            "fields": [
+                { "name": "visibility", "type": "visibility", "required": false },
+                { "name": "package_name", "type": "string", "required": false }
             ]
         },
 
@@ -156,6 +196,42 @@
             { "name": "enabled", "type": "boolean" }
           ]
         },
+
+	"subscription": {
+	    "description": "Represents a user that is currently subscribed to a publication",
+	    "fields": [
+		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this subscription record" },
+		{ "name": "organization", "type": "organization" },
+		{ "name": "user", "type": "user" },
+		{ "name": "publication", "type": "publication" }
+	    ]
+	},
+
+	"subscription_form": {
+	    "fields": [
+		{ "name": "organization_key", "type": "string" },
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "publication", "type": "publication" }
+	    ]
+	},
+
+	"watch": {
+	    "description": "Users can watch individual services which enables features like receiving an email notification when there is a new version of a service.",
+	    "fields": [
+		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this watch" },
+		{ "name": "user", "type": "user" },
+		{ "name": "organization", "type": "organization" },
+		{ "name": "service", "type": "service" }
+	    ]
+	},
+
+	"watch_form": {
+	    "fields": [
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "organization_key", "type": "string" },
+		{ "name": "service_key", "type": "string" }
+	    ]
+	},
 
         "error": {
             "fields": [
@@ -292,9 +368,7 @@
                 {
                     "method": "POST",
                     "description": "Create a new organization.",
-                    "parameters": [
-                        { "name": "name", "type": "string" }
-                    ],
+                    "body": { "type": "organization_form" },
                     "responses": {
                         "200": { "type": "organization" },
                         "409": { "type": "[error]" }
@@ -591,6 +665,93 @@
               "description": "Deletes a generator."
             }
           ]
+        },
+
+	"subscription": {
+	    "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search subscriptions. Always paginated.",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid", "description": "Find the subscription with this guid.", "required": false },
+                        { "name": "organization_key", "type": "string", "description": "Find subscriptions for this organization.", "required": false },
+                        { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
+                        { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[subscription]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Returns information about a specific subscription.",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "subscription" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "description": "Create a new subscription.",
+                    "body": { "type": "subscription_form" },
+                    "responses": {
+                        "201": { "type": "subscription" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+		    "path": "/:guid"
+                }
+            ]
+        },
+
+	"watch": {
+	    "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search watches. Always paginated.",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid", "description": "Find the subscription with this guid.", "required": false },
+                        { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
+                        { "name": "service_key", "type": "string", "description": "Find subscriptions for this service.", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[watch]" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Returns information about a specific watch.",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "watch" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+                    "description": "Create a new watch.",
+                    "body": { "type": "watch_form" },
+                    "responses": {
+                        "201": { "type": "watch" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "DELETE",
+		    "path": "/:guid"
+                }
+            ]
         }
 
     }

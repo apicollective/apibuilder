@@ -14,7 +14,7 @@ module Apidoc
 
   class Client
 
-    USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17/ruby_client' unless defined?(USER_AGENT)
+    USER_AGENT = 'apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc/0.7.17-dev/ruby_client' unless defined?(USER_AGENT)
 
     def initialize(url, opts={})
       @url = HttpClient::Preconditions.assert_class('url', url, String)
@@ -25,7 +25,7 @@ module Apidoc
 
     def request(path=nil)
       HttpClient::Preconditions.assert_class_or_nil('path', path, String)
-      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('X-Api-Doc', 'www.apidoc.me').with_header('User-Agent', USER_AGENT)
+      request = HttpClient::Request.new(URI.parse(@url + path.to_s)).with_header('User-Agent', USER_AGENT)
 
       if @authorization
         request.with_auth(@authorization)
@@ -70,6 +70,10 @@ module Apidoc
       @services ||= Apidoc::Clients::Services.new(self)
     end
 
+    def subscriptions
+      @subscriptions ||= Apidoc::Clients::Subscriptions.new(self)
+    end
+
     def users
       @users ||= Apidoc::Clients::Users.new(self)
     end
@@ -80,6 +84,10 @@ module Apidoc
 
     def versions
       @versions ||= Apidoc::Clients::Versions.new(self)
+    end
+
+    def watches
+      @watches ||= Apidoc::Clients::Watches.new(self)
     end
   end
 
@@ -301,9 +309,9 @@ module Apidoc
       end
 
       # Create a new organization.
-      def post(hash)
-        HttpClient::Preconditions.assert_class('hash', hash, Hash)
-        @client.request("/organizations").with_json(hash.to_json).post { |hash| Apidoc::Models::Organization.new(hash) }
+      def post(organization_form)
+        HttpClient::Preconditions.assert_class('organization_form', organization_form, Apidoc::Models::OrganizationForm)
+        @client.request("/organizations").with_json(organization_form.to_json).post { |hash| Apidoc::Models::Organization.new(hash) }
       end
 
       # Deletes an organization and all of its associated services.
@@ -348,6 +356,46 @@ module Apidoc
         HttpClient::Preconditions.assert_class('org_key', org_key, String)
         HttpClient::Preconditions.assert_class('service_key', service_key, String)
         @client.request("/#{CGI.escape(org_key)}/#{CGI.escape(service_key)}").delete
+        nil
+      end
+
+    end
+
+    class Subscriptions
+
+      def initialize(client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
+      end
+
+      # Search subscriptions. Always paginated.
+      def get(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        query = {
+          :guid => HttpClient::Preconditions.assert_class_or_nil('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String),
+          :organization_key => HttpClient::Preconditions.assert_class_or_nil('organization_key', opts.delete(:organization_key), String),
+          :user_guid => HttpClient::Preconditions.assert_class_or_nil('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String),
+          :publication => HttpClient::Preconditions.assert_class_or_nil('publication', opts[:publication].nil? ? nil : (opts[:publication].is_a?(Apidoc::Models::Publication) ? opts.delete(:publication) : Apidoc::Models::Publication.apply(opts.delete(:publication))), Apidoc::Models::Publication),
+          :limit => HttpClient::Preconditions.assert_class_or_nil('limit', opts.delete(:limit), Integer),
+          :offset => HttpClient::Preconditions.assert_class_or_nil('offset', opts.delete(:offset), Integer)
+        }.delete_if { |k, v| v.nil? }
+        @client.request("/subscriptions").with_query(query).get.map { |hash| Apidoc::Models::Subscription.new(hash) }
+      end
+
+      # Returns information about a specific subscription.
+      def get_by_guid(guid)
+        HttpClient::Preconditions.assert_class('guid', guid, String)
+        @client.request("/subscriptions/#{guid}").get { |hash| Apidoc::Models::Subscription.new(hash) }
+      end
+
+      # Create a new subscription.
+      def post(subscription_form)
+        HttpClient::Preconditions.assert_class('subscription_form', subscription_form, Apidoc::Models::SubscriptionForm)
+        @client.request("/subscriptions").with_json(subscription_form.to_json).post { |hash| Apidoc::Models::Subscription.new(hash) }
+      end
+
+      def delete_by_guid(guid)
+        HttpClient::Preconditions.assert_class('guid', guid, String)
+        @client.request("/subscriptions/#{guid}").delete
         nil
       end
 
@@ -461,9 +509,101 @@ module Apidoc
 
     end
 
+    class Watches
+
+      def initialize(client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
+      end
+
+      # Search watches. Always paginated.
+      def get(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        query = {
+          :guid => HttpClient::Preconditions.assert_class_or_nil('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String),
+          :user_guid => HttpClient::Preconditions.assert_class_or_nil('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String),
+          :service_key => HttpClient::Preconditions.assert_class_or_nil('service_key', opts.delete(:service_key), String),
+          :limit => HttpClient::Preconditions.assert_class_or_nil('limit', opts.delete(:limit), Integer),
+          :offset => HttpClient::Preconditions.assert_class_or_nil('offset', opts.delete(:offset), Integer)
+        }.delete_if { |k, v| v.nil? }
+        @client.request("/watches").with_query(query).get.map { |hash| Apidoc::Models::Watch.new(hash) }
+      end
+
+      # Returns information about a specific watch.
+      def get_by_guid(guid)
+        HttpClient::Preconditions.assert_class('guid', guid, String)
+        @client.request("/watches/#{guid}").get { |hash| Apidoc::Models::Watch.new(hash) }
+      end
+
+      # Create a new watch.
+      def post(watch_form)
+        HttpClient::Preconditions.assert_class('watch_form', watch_form, Apidoc::Models::WatchForm)
+        @client.request("/watches").with_json(watch_form.to_json).post { |hash| Apidoc::Models::Watch.new(hash) }
+      end
+
+      def delete_by_guid(guid)
+        HttpClient::Preconditions.assert_class('guid', guid, String)
+        @client.request("/watches/#{guid}").delete
+        nil
+      end
+
+    end
+
   end
 
   module Models
+    class Publication
+
+      attr_reader :value
+
+      def initialize(value)
+        @value = HttpClient::Preconditions.assert_class('value', value, String)
+      end
+
+      # Returns the instance of Publication for this value, creating a new instance for an unknown value
+      def Publication.apply(value)
+        if value.instance_of?(Publication)
+          value
+        else
+          HttpClient::Preconditions.assert_class_or_nil('value', value, String)
+          value.nil? ? nil : (from_string(value) || Publication.new(value))
+        end
+      end
+
+      # Returns the instance of Publication for this value, or nil if not found
+      def Publication.from_string(value)
+        HttpClient::Preconditions.assert_class('value', value, String)
+        Publication.ALL.find { |v| v.value == value }
+      end
+
+      def Publication.ALL
+        @@all ||= [Publication.membership_requests.create, Publication.memberships.create, Publication.services.create, Publication.versions.create]
+      end
+
+      # For organizations for which I am an administrator, email me whenever a user
+      # applies to join the org.
+      def Publication.membership_requests.create
+        @@_membership_requests.create ||= Publication.new('membership_requests.create')
+      end
+
+      # For organizations for which I am a member, email me whenever a user join the
+      # org.
+      def Publication.memberships.create
+        @@_memberships.create ||= Publication.new('memberships.create')
+      end
+
+      # For organizations for which I am a member, email me whenever a service is
+      # created.
+      def Publication.services.create
+        @@_services.create ||= Publication.new('services.create')
+      end
+
+      # For services that I watch, email me whenever a version is created.
+      def Publication.versions.create
+        @@_versions.create ||= Publication.new('versions.create')
+      end
+
+    end
+
     class Visibility
 
       attr_reader :value
@@ -541,7 +681,8 @@ module Apidoc
     # registers and confirms their email, we automatically associate that user with
     # a member of the organization associated with their domain. For example, if you
     # confirm your account with an email address of foo@gilt.com, we will
-    # automatically add you as a member to the organization with domain gilt.com.
+    # automatically create a membership request on your behalf to join the
+    # organization with domain gilt.com.
     class Domain
 
       attr_reader :name
@@ -848,6 +989,37 @@ module Apidoc
 
     end
 
+    class OrganizationForm
+
+      attr_reader :name, :key, :domains, :metadata
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @name = HttpClient::Preconditions.assert_class('name', opts.delete(:name), String)
+        @key = HttpClient::Preconditions.assert_class_or_nil('key', opts.delete(:key), String)
+        @domains = (opts.delete(:domains) || []).map { |v| HttpClient::Preconditions.assert_class_or_nil('domains', v, String)}
+        @metadata = HttpClient::Preconditions.assert_class_or_nil('metadata', opts[:metadata].nil? ? nil : (opts[:metadata].is_a?(Apidoc::Models::OrganizationMetadataForm) ? opts.delete(:metadata) : Apidoc::Models::OrganizationMetadataForm.new(opts.delete(:metadata))), Apidoc::Models::OrganizationMetadataForm)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        OrganizationForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :name => name,
+          :key => key,
+          :domains => domains,
+          :metadata => metadata.nil? ? nil : metadata.to_hash
+        }
+      end
+
+    end
+
     # Supplemental (non-required) information about an organization
     class OrganizationMetadata
 
@@ -865,6 +1037,33 @@ module Apidoc
 
       def copy(incoming={})
         OrganizationMetadata.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :visibility => visibility.nil? ? nil : visibility.value,
+          :package_name => package_name
+        }
+      end
+
+    end
+
+    class OrganizationMetadataForm
+
+      attr_reader :visibility, :package_name
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @visibility = HttpClient::Preconditions.assert_class_or_nil('visibility', opts[:visibility].nil? ? nil : (opts[:visibility].is_a?(Apidoc::Models::Visibility) ? opts.delete(:visibility) : Apidoc::Models::Visibility.apply(opts.delete(:visibility))), Apidoc::Models::Visibility)
+        @package_name = HttpClient::Preconditions.assert_class_or_nil('package_name', opts.delete(:package_name), String)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        OrganizationMetadataForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
       end
 
       def to_hash
@@ -904,6 +1103,126 @@ module Apidoc
           :name => name,
           :key => key,
           :visibility => visibility.nil? ? nil : visibility.value,
+          :description => description
+        }
+      end
+
+    end
+
+    # Represents a user that is currently subscribed to a publication
+    class Subscription
+
+      attr_reader :guid, :organization, :user, :publication
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
+        @organization = HttpClient::Preconditions.assert_class('organization', opts[:organization].nil? ? nil : (opts[:organization].is_a?(Apidoc::Models::Organization) ? opts.delete(:organization) : Apidoc::Models::Organization.new(opts.delete(:organization))), Apidoc::Models::Organization)
+        @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user))), Apidoc::Models::User)
+        @publication = HttpClient::Preconditions.assert_class('publication', opts[:publication].nil? ? nil : (opts[:publication].is_a?(Apidoc::Models::Publication) ? opts.delete(:publication) : Apidoc::Models::Publication.apply(opts.delete(:publication))), Apidoc::Models::Publication)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Subscription.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :guid => guid,
+          :organization => organization.nil? ? nil : organization.to_hash,
+          :user => user.nil? ? nil : user.to_hash,
+          :publication => publication.nil? ? nil : publication.value
+        }
+      end
+
+    end
+
+    class SubscriptionForm
+
+      attr_reader :organization_key, :user_guid, :publication
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @organization_key = HttpClient::Preconditions.assert_class('organization_key', opts.delete(:organization_key), String)
+        @user_guid = HttpClient::Preconditions.assert_class('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String)
+        @publication = HttpClient::Preconditions.assert_class('publication', opts[:publication].nil? ? nil : (opts[:publication].is_a?(Apidoc::Models::Publication) ? opts.delete(:publication) : Apidoc::Models::Publication.apply(opts.delete(:publication))), Apidoc::Models::Publication)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        SubscriptionForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :organization_key => organization_key,
+          :user_guid => user_guid,
+          :publication => publication.nil? ? nil : publication.value
+        }
+      end
+
+    end
+
+    # A token gives a user access to the API.
+    class Token
+
+      attr_reader :guid, :user, :token, :description
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
+        @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user))), Apidoc::Models::User)
+        @token = HttpClient::Preconditions.assert_class('token', opts.delete(:token), String)
+        @description = HttpClient::Preconditions.assert_class_or_nil('description', opts.delete(:description), String)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Token.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :guid => guid,
+          :user => user.nil? ? nil : user.to_hash,
+          :token => token,
+          :description => description
+        }
+      end
+
+    end
+
+    class TokenForm
+
+      attr_reader :user_guid, :description
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @user_guid = HttpClient::Preconditions.assert_class('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String)
+        @description = HttpClient::Preconditions.assert_class_or_nil('description', opts.delete(:description), String)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        TokenForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :user_guid => user_guid,
           :description => description
         }
       end
@@ -994,6 +1313,68 @@ module Apidoc
           :guid => guid,
           :version => version,
           :json => json
+        }
+      end
+
+    end
+
+    # Users can watch individual services which enables features like receiving an
+    # email notification when there is a new version of a service.
+    class Watch
+
+      attr_reader :guid, :user, :organization, :service
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
+        @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Apidoc::Models::User) ? opts.delete(:user) : Apidoc::Models::User.new(opts.delete(:user))), Apidoc::Models::User)
+        @organization = HttpClient::Preconditions.assert_class('organization', opts[:organization].nil? ? nil : (opts[:organization].is_a?(Apidoc::Models::Organization) ? opts.delete(:organization) : Apidoc::Models::Organization.new(opts.delete(:organization))), Apidoc::Models::Organization)
+        @service = HttpClient::Preconditions.assert_class('service', opts[:service].nil? ? nil : (opts[:service].is_a?(Apidoc::Models::Service) ? opts.delete(:service) : Apidoc::Models::Service.new(opts.delete(:service))), Apidoc::Models::Service)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        Watch.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :guid => guid,
+          :user => user.nil? ? nil : user.to_hash,
+          :organization => organization.nil? ? nil : organization.to_hash,
+          :service => service.nil? ? nil : service.to_hash
+        }
+      end
+
+    end
+
+    class WatchForm
+
+      attr_reader :user_guid, :organization_key, :service_key
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @user_guid = HttpClient::Preconditions.assert_class('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String)
+        @organization_key = HttpClient::Preconditions.assert_class('organization_key', opts.delete(:organization_key), String)
+        @service_key = HttpClient::Preconditions.assert_class('service_key', opts.delete(:service_key), String)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        WatchForm.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :user_guid => user_guid,
+          :organization_key => organization_key,
+          :service_key => service_key
         }
       end
 

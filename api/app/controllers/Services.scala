@@ -28,7 +28,7 @@ object Services extends Controller {
 
         request.body.validate[ServiceForm] match {
           case e: JsError => {
-            Conflict(Json.toJson(Validation.error("invalid json document: " + e.toString)))
+            Conflict(Json.toJson(Validation.invalidJson(e)))
           }
           case s: JsSuccess[ServiceForm] => {
             val form = s.get

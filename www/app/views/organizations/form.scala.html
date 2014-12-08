@@ -20,6 +20,13 @@
               '_error -> form.error("name")
           )
 
+          @helper.inputText(
+              form("key"),
+              '_label -> "Key",
+              '_help -> "This is the unique URL key that will be used to idenfity your organization. By default, we will generate a unique key based on your organization's name. If you want a specific key to identify your org, enter one here.",
+              '_error -> form.error("key")
+          )
+
       </fieldset>
 
       <button class="btn btn-large btn-primary" type="submit">Submit</button>

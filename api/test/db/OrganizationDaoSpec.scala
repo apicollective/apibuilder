@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.Visibility
+import com.gilt.apidoc.models.{OrganizationForm, OrganizationMetadataForm, Visibility}
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
@@ -10,6 +10,14 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
   it("create") {
     Util.gilt.name should be("Gilt Test Org")
     Util.gilt.key should be("gilt-test-org")
+  }
+
+  it("create w/ explicit key") {
+    val name = UUID.randomUUID.toString
+    val key = "key-" + UUID.randomUUID.toString
+    val org = Util.createOrganization(Util.createdBy, name = Some(name), key = Some(key))
+    org.name should be(name)
+    org.key should be(key)
   }
 
   it("user that creates org should be an admin") {
@@ -35,7 +43,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       Util.createdBy,
       OrganizationForm(
         name = "Test Org " + UUID.randomUUID.toString,
-        domains = Some(domains)
+        domains = domains
       )
     )
 
@@ -57,9 +65,11 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
       Util.createdBy,
       OrganizationForm(
         name = "Test Org " + UUID.randomUUID.toString,
-        metadata = Some(OrganizationMetadataForm(
-          package_name = Some("com.gilt")
-        ))
+        metadata = Some(
+          OrganizationMetadataForm(
+            packageName = Some("com.gilt")
+          )
+        )
       )
     )
 
@@ -133,9 +143,9 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
 
     it("validates domains") {
       val name = UUID.randomUUID.toString
-      OrganizationDao.validate(OrganizationForm(name = name, domains = None)) should be(Seq.empty)
-      OrganizationDao.validate(OrganizationForm(name = name, domains = Some(Seq.empty))) should be(Seq.empty)
-      OrganizationDao.validate(OrganizationForm(name = name, domains = Some(Seq("bad name")))).head.message should be("Domain bad name is not valid. Expected a domain name like gilt.com")
+      OrganizationDao.validate(OrganizationForm(name = name, domains = Seq.empty)) should be(Seq.empty)
+      OrganizationDao.validate(OrganizationForm(name = name, domains = Seq.empty)) should be(Seq.empty)
+      OrganizationDao.validate(OrganizationForm(name = name, domains = Seq("bad name"))).head.message should be("Domain bad name is not valid. Expected a domain name like apidoc.me")
     }
   }
 
@@ -143,7 +153,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
 
     val publicUser = Util.createRandomUser()
     val publicOrg = Util.createOrganization(publicUser, Some("Public " + UUID.randomUUID().toString))
-    OrganizationMetadataDao.create(Util.createdBy, publicOrg, OrganizationMetadataForm(visibility = Some(Visibility.Public.toString)))
+    OrganizationMetadataDao.create(Util.createdBy, publicOrg, OrganizationMetadataForm(visibility = Some(Visibility.Public)))
 
     val privateUser = Util.createRandomUser()
     val privateOrg = Util.createOrganization(privateUser, Some("Private " + UUID.randomUUID().toString))

@@ -1,48 +1,13 @@
 package db
 
+import com.gilt.apidoc.models.{Organization, OrganizationMetadata, OrganizationMetadataForm, User, Version, Visibility}
 import com.gilt.apidoc.models.json._
-import com.gilt.apidoc.models.{Organization, OrganizationMetadata, User, Version, Visibility}
 import lib.{Text, Validation, ValidationError}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
-
-case class OrganizationMetadataForm(
-  visibility: Option[String] = None,
-  package_name: Option[String] = None
-)
-
-object OrganizationMetadataForm {
-  implicit val OrganizationMetadataFormReads = Json.reads[OrganizationMetadataForm]
-
-  val Empty = OrganizationMetadataForm()
-
-  def validate(form: OrganizationMetadataForm): Seq[ValidationError] = {
-    form.package_name match {
-      case None => Seq.empty
-      case Some(name: String) => {
-        if (isValidPackageName(name)) {
-          Seq.empty
-        } else {
-          Validation.invalidName
-        }
-      }
-    }
-  }
-
-  /**
-   * A valid package name consists of a dot separated list of strings,
-   * each of which is a valid name.
-   */
-  private[db] def isValidPackageName(name: String): Boolean = {
-    name.split("\\.").find(!Text.isValidName(_)) match {
-      case None => true
-      case _ => false
-    }
-  }
-}
 
 object OrganizationMetadataDao {
 
@@ -68,6 +33,41 @@ object OrganizationMetadataDao {
        and deleted_at is null
   """
 
+  def validate(form: OrganizationMetadataForm): Seq[ValidationError] = {
+    val visibilityErrors = form.visibility match {
+      case None => Seq.empty
+      case Some(vis) => {
+        Visibility(vis.toString) match {
+          case Visibility.UNDEFINED(name) => Seq(s"Invalid visibility[$vis]")
+          case _ => Seq.empty
+        }
+      }
+    }
+
+    val packageNameErrors = form.packageName match {
+      case None => Seq.empty
+      case Some(name: String) => {
+        if (isValidPackageName(name)) {
+          Seq.empty
+        } else {
+          Seq("Package name is not valid. Must be a dot separated list of valid names (start wtih letter, contains only a-z, A-Z, 0-9 and _ characters")
+        }
+      }
+    }
+
+    Validation.errors(visibilityErrors ++ packageNameErrors)
+  }
+
+  /**
+   * A valid package name consists of a dot separated list of strings,
+   * each of which is a valid name.
+   */
+  private[db] def isValidPackageName(name: String): Boolean = {
+    name.split("\\.").find(!Text.isValidName(_)) match {
+      case None => true
+      case _ => false
+    }
+  }
 
   def upsert(user: User, org: Organization, form: OrganizationMetadataForm): OrganizationMetadata = {
     DB.withTransaction { implicit c =>
@@ -84,8 +84,8 @@ object OrganizationMetadataDao {
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: User, org: Organization, form: OrganizationMetadataForm): OrganizationMetadata = {
     val metadata = OrganizationMetadata(
-      visibility = form.visibility.map(Visibility(_)),
-      packageName = form.package_name
+      visibility = form.visibility,
+      packageName = form.packageName
     )
     val guid = UUID.randomUUID.toString
 
@@ -93,7 +93,7 @@ object OrganizationMetadataDao {
       'guid -> guid,
       'organization_guid -> org.guid,
       'visibility -> metadata.visibility.map(_.toString),
-      'package_name -> metadata.packageName,
+      'package_name -> metadata.packageName.map(_.trim),
       'created_by_guid -> createdBy.guid
     ).execute()
 

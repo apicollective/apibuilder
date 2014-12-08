@@ -585,7 +585,7 @@ package com.gilt.apidocgenerator {
   class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
     import com.gilt.apidocgenerator.models.json._
 
-    private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc-generator/0.7.4/play_2_3_client"
+    private val UserAgent = "apidoc:0.7.17 http://www.apidoc.me/gilt/code/apidoc-generator/0.7.1/play_2_3_client"
     private val logger = play.api.Logger("com.gilt.apidocgenerator.client")
 
     logger.info(s"Initializing com.gilt.apidocgenerator.client for url $apiUrl")

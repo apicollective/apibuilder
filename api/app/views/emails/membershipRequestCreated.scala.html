@@ -1,0 +1,10 @@
+@(request: com.gilt.apidoc.models.MembershipRequest)
+
+<p>
+  @request.user.name &lt;@request.user.email&gt; has submitted a
+  request to join @request.organization.name as a @request.role.
+</p>
+
+<p>
+  <a href="@lib.Email.apidocWebHostname/@request.organization.key/membership_requests">Review membership request</a>
+</p>

@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, Service, User, Visibility}
+import com.gilt.apidoc.models.{Organization, OrganizationForm, Service, User, Visibility}
 import java.util.UUID
 
 object Util {
@@ -25,10 +25,12 @@ object Util {
 
   def createOrganization(
     createdBy: User = Util.createdBy,
-    name: Option[String] = None
+    name: Option[String] = None,
+    key: Option[String] = None
   ): Organization = {
     val form = OrganizationForm(
-      name = name.getOrElse(UUID.randomUUID.toString)
+      name = name.getOrElse(UUID.randomUUID.toString),
+      key = key
     )
     OrganizationDao.createWithAdministrator(createdBy, form)
   }
