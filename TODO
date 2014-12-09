@@ -1,3 +1,5 @@
+when asking to login, capture return url
+
 change limit / offset to long
 
 check if bug with smart quotes is fixed
