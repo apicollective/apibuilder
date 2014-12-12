@@ -9,20 +9,30 @@ import java.util.UUID
 
 object Memberships extends Controller {
 
-  def get(organizationGuid: Option[UUID], organizationKey: Option[String], userGuid: Option[UUID], role: Option[String], limit: Int = 50, offset: Int = 0) = Authenticated { request =>
-    val memberships = db.Membership.findAll(
-      organizationGuid = organizationGuid,
-      organizationKey = organizationKey,
-      userGuid = userGuid,
-      role = role,
-      limit = limit,
-      offset = offset
+  def get(
+    organizationGuid: Option[UUID],
+    organizationKey: Option[String],
+    userGuid: Option[UUID],
+    role: Option[String],
+    limit: Long = 50,
+    offset: Long = 0
+  ) = Authenticated { request =>
+    Ok(
+      Json.toJson(
+        db.Membership.findAll(
+          organizationGuid = organizationGuid,
+          organizationKey = organizationKey,
+          userGuid = userGuid,
+          role = role,
+          limit = limit,
+          offset = offset
+        )
+      )
     )
-    Ok(Json.toJson(memberships))
   }
 
-  def getByGuid(guid: java.util.UUID) = Authenticated { request =>
-    db.Membership.findAll(guid = Some(guid.toString), limit = 1).headOption match {
+  def getByGuid(guid: UUID) = Authenticated { request =>
+    db.Membership.findByGuid(guid) match {
       case None => NotFound
       case Some(membership) => {
         if (db.Membership.isUserAdmin(request.user, membership.organization)) {
@@ -34,14 +44,17 @@ object Memberships extends Controller {
     }
   }
 
-  def deleteByGuid(guid: java.util.UUID) = Authenticated { request =>
-    val membership = db.Membership.findAll(guid = Some(guid.toString), limit = 1).headOption
-
-    if (membership.isEmpty || db.Membership.isUserAdmin(request.user, membership.get.organization)) {
-      membership.map { m => db.Membership.softDelete(request.user, m) }
-      NoContent
-    } else {
-      Unauthorized
+  def deleteByGuid(guid: UUID) = Authenticated { request =>
+    db.Membership.findByGuid(guid) match {
+      case None => NoContent
+      case Some(membership) => {
+        if (db.Membership.isUserAdmin(request.user, membership.organization)) {
+          db.Membership.softDelete(request.user, membership)
+          NoContent
+        } else {
+          Unauthorized
+        }
+      }
     }
   }
 

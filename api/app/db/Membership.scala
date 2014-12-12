@@ -73,6 +73,8 @@ object Membership {
       'created_by_guid -> createdBy.guid
     ).execute()
 
+    global.Actors.mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
+
     membership
   }
 
@@ -104,13 +106,17 @@ object Membership {
     findAll(organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
   }
 
-  def findAll(guid: Option[String] = None,
+  def findByGuid(guid: UUID): Option[com.gilt.apidoc.models.Membership] = {
+    findAll(guid = Some(guid), limit = 1).headOption
+  }
+
+  def findAll(guid: Option[UUID] = None,
               organizationGuid: Option[UUID] = None,
               organizationKey: Option[String] = None,
               userGuid: Option[UUID] = None,
               role: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[com.gilt.apidoc.models.Membership] = {
+              limit: Long = 50,
+              offset: Long = 0): Seq[com.gilt.apidoc.models.Membership] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and memberships.guid = {guid}::uuid" },
@@ -122,7 +128,7 @@ object Membership {
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _ ),
+      guid.map('guid -> _.toString ),
       organizationGuid.map('organization_guid -> _.toString ),
       organizationKey.map('organization_key -> _ ),
       userGuid.map('user_guid -> _.toString),
