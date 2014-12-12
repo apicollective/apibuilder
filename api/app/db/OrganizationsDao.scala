@@ -14,9 +14,13 @@ object OrganizationsDao {
   private val MinNameLength = 4
   val MinKeyLength = 4
   val ReservedKeys = Seq(
-    "_internal_", "account", "accounts", "admin", "assets", "doc", "docs", "documentation", "generator", "generators",
-    "login", "logout", "org", "orgs", "organizations", "private", "session", "subaccount", "subaccounts",
-    "subscription", "subscriptions", "team", "teams", "user", "users"
+    "_internal_", "account", "accounts", "admin", "api", "api.json", "accept", "acceptance", "assets", "bucket", "buckets",
+    "code", "codes", "confirm", "confirmation", "confirmations",
+    "config", "configuration", "doc", "docs", "documentation", "domain", "domains", "generator", "generators", "internal",
+    "login", "logout", "member", "members", "membership", "memberships", "membership_request", "membership_request_review",
+    "membership_request_reviews", "membership_requests", "metadatum", "metadata", "org", "orgs", "organizations", "private", "reject", "rejection",
+    "session", "setting", "settings", "scms", "source", "sources", "subaccount", "subaccounts", "subscription", "subscriptions",
+    "team", "teams", "user", "users", "util", "utility", "utilities", "version", "versions"
   )
 
   private val EmptyOrganizationMetadataForm = OrganizationMetadataForm()
