@@ -19,6 +19,10 @@ object Versions extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
+  def redirectToLatest(orgKey: String, serviceKey: String) = Action {
+    Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
+  }
+
   def show(orgKey: String, serviceKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     for {
       serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
@@ -32,8 +36,7 @@ object Versions extends Controller {
           if ("latest" == versionName) {
             Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
           } else {
-            Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
-              .flashing("warning" -> s"Version not found: $versionName")
+            Redirect(routes.Versions.show(orgKey, serviceKey, "latest")).flashing("warning" -> s"Version not found: $versionName")
           }
         }
 
