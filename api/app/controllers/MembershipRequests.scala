@@ -27,8 +27,8 @@ object MembershipRequests extends Controller {
     organizationKey: Option[String],
     userGuid: Option[UUID],
     role: Option[String],
-    limit: Int = 50,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ) = Authenticated { request =>
     val requests = MembershipRequestDao.findAll(
       Authorization(Some(request.user)),

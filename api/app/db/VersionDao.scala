@@ -83,8 +83,8 @@ object VersionDao {
     service_guid: Option[UUID] = None,
     guid: Option[String] = None,
     version: Option[String] = None,
-    limit: Int = 50,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ): Seq[Version] = {
     val sql = Seq(
       Some(BaseQuery.trim),

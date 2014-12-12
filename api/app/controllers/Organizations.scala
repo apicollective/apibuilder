@@ -10,19 +10,27 @@ import java.util.UUID
 
 object Organizations extends Controller {
 
-  def get(guid: Option[UUID], userGuid: Option[UUID], key: Option[String], name: Option[String], limit: Int = 50, offset: Int = 0) = AnonymousRequest { request =>
-
-    val orgs = OrganizationDao.findAll(
-      Authorization(request.user),
-      userGuid = userGuid,
-      guid = guid,
-      key = key,
-      name = name,
-      limit = limit,
-      offset = offset
+  def get(
+    guid: Option[UUID],
+    userGuid: Option[UUID],
+    key: Option[String],
+    name: Option[String],
+    limit: Long = 25,
+    offset: Long = 0
+  ) = AnonymousRequest { request =>
+    Ok(
+      Json.toJson(
+        OrganizationDao.findAll(
+          Authorization(request.user),
+          userGuid = userGuid,
+          guid = guid,
+          key = key,
+          name = name,
+          limit = limit,
+          offset = offset
+        )
+      )
     )
-
-    Ok(Json.toJson(orgs))
   }
 
   def getByKey(key: String) = AnonymousRequest { request =>

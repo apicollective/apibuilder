@@ -184,8 +184,8 @@ object GeneratorDao {
     guid: Option[UUID] = None,
     key: Option[String] = None,
     keyAndUri: Option[(String, String)] = None,
-    limit: Int = 50,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ): Seq[Generator] = {
     require(
       key.isEmpty || keyAndUri.isEmpty,

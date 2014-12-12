@@ -19,8 +19,8 @@ object Generators extends Controller {
   def get(
     guid: Option[UUID] = None,
     key: Option[String] = None,
-    limit: Int = 100,
-    offset: Int = 0
+    limit: Long = 100,
+    offset: Long = 0
   ) = AnonymousRequest.async { request =>
     fillInGeneratorMeta(
       GeneratorDao.findAll(

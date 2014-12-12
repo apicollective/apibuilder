@@ -10,7 +10,7 @@ import play.api.libs.json._
 
 object Versions extends Controller {
 
-  def getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Int = 25, offset: Int = 0) = AnonymousRequest { request =>
+  def getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
     val versions = ServiceDao.findByOrganizationKeyAndServiceKey(Authorization(request.user), orgKey, serviceKey).map { service =>
       VersionDao.findAll(
         service_guid = Some(service.guid),

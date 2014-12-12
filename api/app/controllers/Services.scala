@@ -12,8 +12,8 @@ object Services extends Controller {
     orgKey: String,
     name: Option[String],
     key: Option[String],
-    limit: Int = 25,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ) = AnonymousRequest { request =>
     val services = ServiceDao.findAll(
       Authorization(request.user),

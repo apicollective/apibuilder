@@ -139,7 +139,7 @@ object MembershipRequestDao {
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     role: Option[String] = None,
-    limit: Long = 50,
+    limit: Long = 25,
     offset: Long = 0
   ): Seq[MembershipRequest] = {
     // TODO Implement authorization

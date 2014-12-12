@@ -14,7 +14,7 @@ object Memberships extends Controller {
     organizationKey: Option[String],
     userGuid: Option[UUID],
     role: Option[String],
-    limit: Long = 50,
+    limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
     Ok(

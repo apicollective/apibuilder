@@ -198,8 +198,8 @@ object OrganizationDao {
     service: Option[Service] = None,
     key: Option[String] = None,
     name: Option[String] = None,
-    limit: Int = 50,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),

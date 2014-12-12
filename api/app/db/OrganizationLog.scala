@@ -54,8 +54,8 @@ object OrganizationLog {
 
 
   def findAll(organizationGuid: UUID,
-              limit: Int = 50,
-              offset: Int = 0): Seq[OrganizationLog] = {
+              limit: Long = 25,
+              offset: Long = 0): Seq[OrganizationLog] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       Some("and organization_guid = {organization_guid}::uuid"),

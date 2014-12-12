@@ -125,8 +125,8 @@ object ServiceDao {
     guid: Option[UUID] = None,
     name: Option[String] = None,
     key: Option[String] = None,
-    limit: Int = 50,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ): Seq[Service] = {
     val sql = Seq(
       Some(BaseQuery.trim),

@@ -133,7 +133,7 @@ object Membership {
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     role: Option[String] = None,
-    limit: Long = 50,
+    limit: Long = 25,
     offset: Long = 0
   ): Seq[com.gilt.apidoc.models.Membership] = {
     // TODO Implement authorization
