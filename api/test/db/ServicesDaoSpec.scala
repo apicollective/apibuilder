@@ -6,6 +6,7 @@ import org.junit.Assert._
 import java.util.UUID
 
 class ServicesDaoSpec extends FunSpec with Matchers {
+
   new play.core.StaticApplication(new java.io.File("."))
 
   private lazy val baseUrl = "http://localhost"
