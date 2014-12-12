@@ -26,7 +26,7 @@ class OrganizationDaoSpec extends FunSpec with Matchers {
     val org = OrganizationDao.createWithAdministrator(user, OrganizationForm(name = name))
     org.name should be(name)
 
-    Membership.isUserAdmin(user, org) should be(true)
+    MembershipsDao.isUserAdmin(user, org) should be(true)
   }
 
   it("reverseDomain") {

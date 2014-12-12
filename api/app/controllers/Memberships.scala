@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.apidoc.models.Membership
 import com.gilt.apidoc.models.json._
-import db.{Authorization, Membership}
+import db.{Authorization, MembershipsDao}
 import play.api.mvc._
 import play.api.libs.json.Json
 import java.util.UUID
@@ -19,7 +19,7 @@ object Memberships extends Controller {
   ) = Authenticated { request =>
     Ok(
       Json.toJson(
-        db.Membership.findAll(
+        MembershipsDao.findAll(
           Authorization(Some(request.user)),
           organizationGuid = organizationGuid,
           organizationKey = organizationKey,
@@ -33,10 +33,10 @@ object Memberships extends Controller {
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>
-    db.Membership.findByGuid(Authorization(Some(request.user)), guid) match {
+    MembershipsDao.findByGuid(Authorization(Some(request.user)), guid) match {
       case None => NotFound
       case Some(membership) => {
-        if (db.Membership.isUserAdmin(request.user, membership.organization)) {
+        if (MembershipsDao.isUserAdmin(request.user, membership.organization)) {
           Ok(Json.toJson(membership))
         } else {
           Unauthorized
@@ -46,11 +46,11 @@ object Memberships extends Controller {
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    db.Membership.findByGuid(Authorization(Some(request.user)), guid) match {
+    MembershipsDao.findByGuid(Authorization(Some(request.user)), guid) match {
       case None => NoContent
       case Some(membership) => {
-        if (db.Membership.isUserAdmin(request.user, membership.organization)) {
-          db.Membership.softDelete(request.user, membership)
+        if (MembershipsDao.isUserAdmin(request.user, membership.organization)) {
+          MembershipsDao.softDelete(request.user, membership)
           NoContent
         } else {
           Unauthorized

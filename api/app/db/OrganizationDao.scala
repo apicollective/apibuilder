@@ -98,7 +98,7 @@ object OrganizationDao {
   def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
     DB.withTransaction { implicit c =>
       val org = create(c, user, form)
-      Membership.create(c, user, org, user, Role.Admin)
+      MembershipsDao.create(c, user, org, user, Role.Admin)
       OrganizationLog.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
     }

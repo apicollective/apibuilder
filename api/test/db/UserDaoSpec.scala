@@ -65,8 +65,8 @@ class UserDaoSpec extends FunSpec with Matchers {
         password = "testing"
       ))
 
-      Membership.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Member) should be(None)
-      Membership.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Admin) should be(None)
+      MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Member) should be(None)
+      MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Admin) should be(None)
     }
 
 

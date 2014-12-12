@@ -17,7 +17,7 @@ class SubsriptionDaoSpec extends FunSpec with Matchers {
 
     Publication.all.foreach { publication => Util.createSubscription(org, user, publication) }
 
-    Membership.softDelete(Util.createdBy, membership)
+    MembershipsDao.softDelete(Util.createdBy, membership)
 
     val subscriptions = SubscriptionDao.findAll(
       Authorization.All,

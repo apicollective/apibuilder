@@ -3,7 +3,7 @@ package actors
 import com.gilt.apidoc.models.{Membership, Publication, Service}
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
-import db.{Authorization, MembershipRequestDao, OrganizationDao, ServiceDao}
+import db.{Authorization, MembershipsDao, MembershipRequestDao, OrganizationDao, ServiceDao}
 import lib.{Email, Pager, Person, Role}
 import akka.actor._
 import play.api.Logger
@@ -39,7 +39,7 @@ class EmailActor extends Actor {
 
     case EmailActor.Messages.MembershipCreated(guid) => Util.withVerboseErrorHandler(
       s"EmailActor.Messages.MembershipCreated($guid)", {
-        db.Membership.findByGuid(Authorization.All, guid).map { membership =>
+        MembershipsDao.findByGuid(Authorization.All, guid).map { membership =>
           Emails.deliver(
             org = membership.organization,
             publication = Publication.MembershipsCreate,

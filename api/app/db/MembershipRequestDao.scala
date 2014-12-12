@@ -81,7 +81,7 @@ object MembershipRequestDao {
     DB.withTransaction { implicit conn =>
       OrganizationLog.create(createdBy, request.organization, message)
       MembershipRequestDao.softDelete(createdBy, request)
-      Membership.upsert(createdBy, request.organization, request.user, r)
+      MembershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
   }
 
@@ -104,7 +104,7 @@ object MembershipRequestDao {
 
   private def assertUserCanReview(user: User, request: MembershipRequest) {
     require(
-      Membership.isUserAdmin(user, request.organization),
+      MembershipsDao.isUserAdmin(user, request.organization),
       s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"
     )
   }

@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, User}
+import com.gilt.apidoc.models.{Membership, Organization, User}
 import com.gilt.apidoc.models.json._
 import lib.Role
 import anorm._
@@ -9,7 +9,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object Membership {
+object MembershipsDao {
 
   private val InsertQuery = """
     insert into memberships
@@ -33,7 +33,7 @@ object Membership {
      where memberships.deleted_at is null
   """
 
-  def upsert(createdBy: User, organization: Organization, user: User, role: Role): com.gilt.apidoc.models.Membership = {
+  def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
       case Some(r) => r
       case None => create(createdBy, organization, user, role)
@@ -51,14 +51,14 @@ object Membership {
     membership
   }
 
-  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): com.gilt.apidoc.models.Membership = {
+  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     DB.withConnection { implicit c =>
       create(c, createdBy, organization, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, user: User, role: Role): com.gilt.apidoc.models.Membership = {
-    val membership = com.gilt.apidoc.models.Membership(
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+    val membership = Membership(
       guid = UUID.randomUUID,
       organization = organization,
       user = user,
@@ -83,7 +83,7 @@ object Membership {
     * publication subscriptions that require the administrative role
     * for this org.
     */
-  def softDelete(user: User, membership: com.gilt.apidoc.models.Membership) {
+  def softDelete(user: User, membership: Membership) {
     SubscriptionDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
     SoftDelete.delete("memberships", user, membership.guid)
   }
@@ -118,11 +118,11 @@ object Membership {
     organization: Organization,
     user: User,
     role: Role
-  ): Option[com.gilt.apidoc.models.Membership] = {
+  ): Option[Membership] = {
     findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[com.gilt.apidoc.models.Membership] = {
+  def findByGuid(authorization: Authorization, guid: UUID): Option[Membership] = {
     findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
@@ -135,7 +135,7 @@ object Membership {
     role: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[com.gilt.apidoc.models.Membership] = {
+  ): Seq[Membership] = {
     // TODO Implement authorization
 
     val sql = Seq(
@@ -158,7 +158,7 @@ object Membership {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        com.gilt.apidoc.models.Membership(
+        Membership(
           guid = row[UUID]("guid"),
           organization = OrganizationDao.summaryFromRow(row, Some("organization")),
           user = UserDao.fromRow(row, Some("user")),

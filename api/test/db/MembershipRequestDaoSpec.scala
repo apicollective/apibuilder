@@ -14,39 +14,39 @@ class MembershipRequestDaoSpec extends FlatSpec {
   it should "create member" in {
     val thisOrg = Util.createOrganization()
 
-    assertEquals(Membership.isUserMember(member, thisOrg), false)
-    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserMember(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserAdmin(member, thisOrg), false)
 
     val request = MembershipRequestDao.upsert(Util.createdBy, thisOrg, member, Role.Member)
     assertEquals(request.organization.name, thisOrg.name)
     assertEquals(request.user, member)
     assertEquals(request.role, Role.Member.key)
 
-    assertEquals(Membership.isUserMember(member, thisOrg), false)
-    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserMember(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserAdmin(member, thisOrg), false)
 
     MembershipRequestDao.accept(Util.createdBy, request)
-    assertEquals(Membership.isUserMember(member, thisOrg), true)
-    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserMember(member, thisOrg), true)
+    assertEquals(MembershipsDao.isUserAdmin(member, thisOrg), false)
   }
 
   it should "create admin" in {
     val thisOrg = Util.createOrganization()
 
-    assertEquals(Membership.isUserMember(member, thisOrg), false)
-    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserMember(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserAdmin(member, thisOrg), false)
 
     val request = MembershipRequestDao.upsert(Util.createdBy, thisOrg, member, Role.Admin)
     assertEquals(request.organization.name, thisOrg.name)
     assertEquals(request.user, member)
     assertEquals(request.role, Role.Admin.key)
 
-    assertEquals(Membership.isUserMember(member, thisOrg), false)
-    assertEquals(Membership.isUserAdmin(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserMember(member, thisOrg), false)
+    assertEquals(MembershipsDao.isUserAdmin(member, thisOrg), false)
 
     MembershipRequestDao.accept(Util.createdBy, request)
-    assertEquals(Membership.isUserMember(member, thisOrg), true)
-    assertEquals(Membership.isUserAdmin(member, thisOrg), true)
+    assertEquals(MembershipsDao.isUserMember(member, thisOrg), true)
+    assertEquals(MembershipsDao.isUserAdmin(member, thisOrg), true)
   }
 
   it should "findByGuid" in {
@@ -89,10 +89,10 @@ class MembershipRequestDaoSpec extends FlatSpec {
     val newOrg = Util.createOrganization()
     val request = MembershipRequestDao.upsert(Util.createdBy, newOrg, member, Role.Member)
 
-    assertEquals(None, Membership.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
+    assertEquals(None, MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
 
     MembershipRequestDao.accept(Util.createdBy, request)
-    assertEquals(member, Membership.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member).get.user)
+    assertEquals(member, MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member).get.user)
     assertEquals(
       "Accepted membership request for %s to join as Member".format(member.email),
       OrganizationLog.findAll(Authorization.All, organization = Some(newOrg), limit = 1).map(_.message).head
@@ -103,10 +103,10 @@ class MembershipRequestDaoSpec extends FlatSpec {
     val newOrg = Util.createOrganization()
     val request = MembershipRequestDao.upsert(Util.createdBy, newOrg, member, Role.Member)
 
-    assertEquals(None, Membership.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
+    assertEquals(None, MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
 
     MembershipRequestDao.decline(Util.createdBy, request)
-    assertEquals(None, Membership.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
+    assertEquals(None, MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
     assertEquals(
       "Declined membership request for %s to join as Member".format(member.email),
       OrganizationLog.findAll(Authorization.All, organization = Some(newOrg), limit = 1).map(_.message).head
