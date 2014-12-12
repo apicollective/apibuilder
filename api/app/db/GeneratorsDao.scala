@@ -11,6 +11,8 @@ import scala.util.{Failure, Success, Try}
 
 object GeneratorsDao {
 
+  private val ReservedKeys = Seq("api.json")
+
   private val BaseQuery = s"""
     select generators.guid,
            generators.key,
@@ -46,12 +48,20 @@ object GeneratorsDao {
 
   private val OrgGeneratorsQuery = """
     select generator_guid from generator_organizations
-      where deleted_at is null
-      and organization_guid in (
-        select organization_guid from memberships
-          where deleted_at is null
-          and user_guid = {user_guid}::uuid
-      )""".stripMargin
+     where deleted_at is null
+       and organization_guid in (
+            select organization_guid from memberships
+             where deleted_at is null
+               and user_guid = {user_guid}::uuid
+           )
+  """.stripMargin
+
+  private val InsertQuery = """
+    insert into generators
+    (guid, key, uri, user_guid, visibility, created_by_guid)
+    values
+    ({guid}::uuid, {key}, {uri}, {user_guid}::uuid, {visibility}, {created_by_guid}::uuid)
+  """
 
   def validate(form: GeneratorCreateForm): Seq[Error] = {
     val urlErrors = Try(new URL(form.uri)) match {
@@ -67,7 +77,14 @@ object GeneratorsDao {
       }
     }
 
-    Validation.errors(urlErrors)
+    val formattedKey = form.key.trim.toLowerCase
+    val keyErrors = if (ReservedKeys.contains(formattedKey) || OrganizationsDao.ReservedKeys.contains(formattedKey)) {
+      Seq(s"Key ${form.key.trim} is a reserved word and cannot be used as a key for a generator")
+    } else {
+      Seq.empty
+    }
+
+    Validation.errors(urlErrors ++ keyErrors)
   }
 
   def create(createdBy: User,
@@ -92,22 +109,17 @@ object GeneratorsDao {
                          language: Option[String]): Generator = {
     val generator = Generator(
       guid = UUID.randomUUID(),
-      key = key,
+      key = key.trim,
       uri = uri,
       visibility = visibility,
-      name = name,
-      description = description,
-      language = language,
+      name = name.trim,
+      description = description.map(_.trim),
+      language = language.map(_.trim),
       owner = createdBy,
       enabled = true
     )
 
-    SQL("""
-      insert into generators
-      (guid, key, uri, user_guid, visibility, created_by_guid)
-      values
-      ({guid}::uuid, {key}, {uri}, {user_guid}::uuid, {visibility}, {created_by_guid}::uuid)
-    """).on(
+    SQL(InsertQuery).on(
       'guid -> generator.guid,
       'key -> generator.key,
       'uri -> generator.uri,
