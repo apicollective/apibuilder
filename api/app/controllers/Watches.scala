@@ -16,6 +16,7 @@ trait Watches {
   def get(
     guid: Option[UUID],
     userGuid: Option[java.util.UUID],
+    organizationKey: Option[String],
     serviceKey: Option[String],
     limit: Long = 25,
     offset: Long = 0
@@ -24,6 +25,7 @@ trait Watches {
       Authorization(Some(request.user)),
       guid = guid,
       userGuid = userGuid,
+      organizationKey =  organizationKey,
       serviceKey = serviceKey,
       limit = limit,
       offset = offset
