@@ -21,7 +21,7 @@ object OrganizationsDao {
     "membership_request_reviews", "membership_requests", "metadatum", "metadata", "org", "orgs", "organizations", "private", "reject", "rejection",
     "session", "setting", "settings", "scms", "source", "sources", "subaccount", "subaccounts", "subscription", "subscriptions",
     "team", "teams", "user", "users", "util", "utility", "utilities", "version", "versions"
-  )
+  ).map(UrlKey.generate(_))
 
   private val EmptyOrganizationMetadataForm = OrganizationMetadataForm()
 
@@ -55,7 +55,7 @@ object OrganizationsDao {
           case Nil => {
             val generated = UrlKey.generate(form.name)
             if (ReservedKeys.contains(generated)) {
-              Seq(s"Key $generated is a reserved word and cannot be used for the name of an organization")
+              Seq(s"Key ${form.name} is a reserved word and cannot be used for the key of an organization")
             } else {
               Seq.empty
             }
@@ -71,7 +71,7 @@ object OrganizationsDao {
         } else if (key != generated) {
           Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
         } else if (ReservedKeys.contains(generated)) {
-          Seq(s"Key $generated is a reserved word and cannot be used for the key of an organization")
+          Seq(s"Key $key is a reserved word and cannot be used for the key of an organization")
         } else {
           OrganizationsDao.findByKey(Authorization.All, key) match {
             case None => Seq.empty
