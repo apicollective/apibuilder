@@ -1,5 +1,6 @@
 package generator
 
+import models.ApidocHeaders
 import com.gilt.apidocgenerator.models.ServiceDescription
 import core._
 import lib.Text._
@@ -10,8 +11,17 @@ object ScalaCaseClasses extends CodeGenerator {
     generate(new ScalaServiceDescription(sd))
   }
 
-  def generate(ssd: ScalaServiceDescription, genEnums: Seq[ScalaEnum] => String = generatePlayEnums): String = {
-    s"package ${ssd.modelPackageName} {\n\n  " +
+  def generate(
+    ssd: ScalaServiceDescription,
+    genEnums: Seq[ScalaEnum] => String = generatePlayEnums,
+    addHeader: Boolean = true
+  ): String = {
+    val header = addHeader match {
+      case false => ""
+      case true => ApidocHeaders(ssd.serviceDescription.userAgent).toJavaString() + "\n"
+    }
+
+    s"${header}package ${ssd.modelPackageName} {\n\n  " +
     Seq(
       ssd.models.map { model =>
         generateCaseClass(model)
