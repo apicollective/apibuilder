@@ -2,7 +2,7 @@ package db
 
 import com.gilt.apidoc.models.{Error, Organization, Publication, Subscription, SubscriptionForm, User}
 import anorm._
-import lib.{Validation, ValidationError}
+import lib.Validation
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -37,7 +37,7 @@ object SubscriptionDao {
   def validate(
     user: User,
     form: SubscriptionForm
-  ): Seq[ValidationError] = {
+  ): Seq[Error] = {
     val org = OrganizationDao.findByKey(Authorization(Some(user)), form.organizationKey)
 
     val organizationKeyErrors = org match {

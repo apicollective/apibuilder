@@ -1,8 +1,8 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, OrganizationMetadata, OrganizationMetadataForm, User, Version, Visibility}
+import com.gilt.apidoc.models.{Error, Organization, OrganizationMetadata, OrganizationMetadataForm, User, Version, Visibility}
 import com.gilt.apidoc.models.json._
-import lib.{Text, Validation, ValidationError}
+import lib.{Text, Validation}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -33,7 +33,7 @@ object OrganizationMetadataDao {
        and deleted_at is null
   """
 
-  def validate(form: OrganizationMetadataForm): Seq[ValidationError] = {
+  def validate(form: OrganizationMetadataForm): Seq[Error] = {
     val visibilityErrors = form.visibility match {
       case None => Seq.empty
       case Some(vis) => {

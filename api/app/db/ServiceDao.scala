@@ -1,7 +1,7 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, Service, User, Visibility}
-import lib.{UrlKey, Validation, ValidationError}
+import com.gilt.apidoc.models.{Error, Organization, Service, User, Visibility}
+import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._
 import play.api.libs.json._
@@ -32,7 +32,7 @@ object ServiceDao {
     org: Organization,
     form: ServiceForm,
     existing: Option[Service]
-  ): Seq[ValidationError] = {
+  ): Seq[Error] = {
     val nameErrors = findByOrganizationAndName(org, form.name) match {
       case None => Seq.empty
       case Some(service: Service) => {

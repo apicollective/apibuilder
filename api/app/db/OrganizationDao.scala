@@ -1,8 +1,8 @@
 package db
 
-import com.gilt.apidoc.models.{Domain, Organization, OrganizationForm, OrganizationMetadata, OrganizationMetadataForm, User, Version, Visibility}
+import com.gilt.apidoc.models.{Domain, Error, Organization, OrganizationForm, OrganizationMetadata, OrganizationMetadataForm, User, Version, Visibility}
 import com.gilt.apidoc.models.json._
-import lib.{Role, Validation, ValidationError, UrlKey}
+import lib.{Role, Validation, UrlKey}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -35,7 +35,7 @@ object OrganizationDao {
      where organizations.deleted_at is null
   """
 
-  def validate(form: OrganizationForm): Seq[ValidationError] = {
+  def validate(form: OrganizationForm): Seq[Error] = {
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {

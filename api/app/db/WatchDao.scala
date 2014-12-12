@@ -2,7 +2,7 @@ package db
 
 import com.gilt.apidoc.models.{Error, Organization, Service, Watch, WatchForm, User}
 import anorm._
-import lib.{Validation, ValidationError}
+import lib.Validation
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -21,7 +21,7 @@ case class FullWatchForm(
 
   val user = UserDao.findByGuid(form.userGuid)
 
-  lazy val validate: Seq[ValidationError] = {
+  lazy val validate: Seq[Error] = {
     val serviceKeyErrors = service match {
       case None => Seq(s"Service[${form.serviceKey}] not found")
       case Some(service) => Seq.empty

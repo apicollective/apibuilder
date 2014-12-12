@@ -1,10 +1,10 @@
 package db
 
-import com.gilt.apidoc.models.{Visibility, Generator, GeneratorCreateForm, User}
+import com.gilt.apidoc.models.{Error, Generator, GeneratorCreateForm, User, Visibility}
 import anorm._
 import play.api.db._
 import play.api.Play.current
-import lib.{Validation, ValidationError}
+import lib.Validation
 import java.net.{MalformedURLException, URL}
 import java.util.{Date, UUID}
 import scala.util.{Failure, Success, Try}
@@ -53,7 +53,7 @@ object GeneratorDao {
           and user_guid = {user_guid}::uuid
       )""".stripMargin
 
-  def validate(form: GeneratorCreateForm): Seq[ValidationError] = {
+  def validate(form: GeneratorCreateForm): Seq[Error] = {
     val urlErrors = Try(new URL(form.uri)) match {
       case Success(url) => {
         if (form.uri.toLowerCase.startsWith("http")) {
