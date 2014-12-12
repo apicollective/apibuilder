@@ -8,7 +8,7 @@ def download(data)
   data.each do |service_name, map|
     map.each do |target, path|
       tmpfile = "/tmp/download-#{service_name}-#{target}.tmp"
-      cmd = "curl --silent #{SERVICE_URL}/#{ORG}/code/#{service_name}/latest/#{target} > #{tmpfile}"
+      cmd = "curl --silent #{SERVICE_URL}/#{ORG}/#{service_name}/latest/#{target} > #{tmpfile}"
       puts cmd
       system(cmd)
 

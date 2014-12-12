@@ -33,7 +33,7 @@ object Code extends Controller {
             VersionsDao.findVersion(auth, orgKey, serviceKey, version) match {
               case None => Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid service[$serviceKey] or version[$version]"))))
               case Some(v: Version) =>
-                val userAgent = s"apidoc:$apidocVersion http://www.apidoc.me/${org.key}/code/${serviceKey}/${v.version}/${generator.key}"
+                val userAgent = s"apidoc:$apidocVersion http://www.apidoc.me/${org.key}/${serviceKey}/${v.version}/${generator.key}"
                 val serviceDescription = ServiceDescriptionBuilder(v.json, org.metadata.flatMap(_.packageName), Some(userAgent))
                 new Client(generator.uri).invocations.postByKey(serviceDescription, generator.key).map { invocation =>
                   Ok(Json.toJson(com.gilt.apidoc.models.Code(generator, invocation.source)))
