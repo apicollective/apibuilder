@@ -203,7 +203,7 @@ object OrganizationDao {
   ): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.organizationFilter("organizations.guid").map(v => "and " + v),
+      authorization.organizationFilter("organizations.guid", Some("organization_metadata")).map(v => "and " + v),
       userGuid.map { v =>
         "and organizations.guid in (" +
         "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
@@ -220,14 +220,8 @@ object OrganizationDao {
       Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val authorizationUserGuid = authorization match {
-      case Authorization.User(guid) => Some(guid)
-      case _ => None
-    }
-
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      authorizationUserGuid.map('authorization_user_guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
       service.map('service_guid -> _.guid.toString),
       key.map('key -> _),
