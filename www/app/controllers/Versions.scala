@@ -16,11 +16,12 @@ import java.io.File
 object Versions extends Controller {
 
   private val DefaultVersion = "0.0.1-dev"
+  private val LatestVersion = "latest"
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirectToLatest(orgKey: String, serviceKey: String) = Action {
-    Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
+    Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion))
   }
 
   def show(orgKey: String, serviceKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
@@ -33,10 +34,10 @@ object Versions extends Controller {
       versionOption match {
 
         case None => {
-          if ("latest" == versionName) {
+          if (LatestVersion == versionName) {
             Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
           } else {
-            Redirect(routes.Versions.show(orgKey, serviceKey, "latest")).flashing("warning" -> s"Version not found: $versionName")
+            Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion)).flashing("warning" -> s"Version not found: $versionName")
           }
         }
 
@@ -62,10 +63,10 @@ object Versions extends Controller {
   def apiJson(orgKey: String, serviceKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName).map {
       case None => {
-        if ("latest" == versionName) {
+        if (LatestVersion == versionName) {
           Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
         } else {
-          Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
+          Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion))
             .flashing("warning" -> s"Version not found: ${versionName}")
         }
       }
