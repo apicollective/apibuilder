@@ -66,7 +66,7 @@ trait Watches {
         val form = FullWatchForm(request.user, s.get)
         form.validate match {
           case Nil => {
-            val watch = WatchesDao.create(request.user, form)
+            val watch = WatchesDao.upsert(request.user, form)
             Created(Json.toJson(watch))
           }
           case errors => {

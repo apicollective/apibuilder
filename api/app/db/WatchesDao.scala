@@ -7,6 +7,8 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import org.postgresql.util.PSQLException
+import scala.util.{Try, Success, Failure}
 
 case class FullWatchForm(
   createdBy: User,
@@ -66,7 +68,7 @@ object WatchesDao {
     ({guid}::uuid, {user_guid}::uuid, {service_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def create(createdBy: User, fullForm: FullWatchForm): Watch = {
+  def upsert(createdBy: User, fullForm: FullWatchForm): Watch = {
     val errors = fullForm.validate
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -76,17 +78,34 @@ object WatchesDao {
 
     val guid = UUID.randomUUID
 
-    DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'user_guid -> fullForm.form.userGuid,
-        'service_guid -> service.guid,
-        'created_by_guid -> createdBy.guid
-      ).execute()
-    }
-
-    findByGuid(Authorization.All, guid).getOrElse {
-      sys.error("Failed to create watch")
+    Try(
+      DB.withConnection { implicit c =>
+        SQL(InsertQuery).on(
+          'guid -> guid,
+          'user_guid -> fullForm.form.userGuid,
+          'service_guid -> service.guid,
+          'created_by_guid -> createdBy.guid
+        ).execute()
+      }
+    ) match {
+      case Success(_) => {
+        findByGuid(Authorization.All, guid).getOrElse {
+          sys.error("Failed to create watch")
+        }
+      }
+      case Failure(e) => e match {
+        case e: PSQLException => {
+          findAll(
+            Authorization.All,
+            userGuid = Some(fullForm.form.userGuid),
+            organizationKey = Some(fullForm.org.get.key),
+            service = Some(service),
+            limit = 1
+          ).headOption.getOrElse {
+            sys.error(s"Failed to create watch")
+          }
+        }
+      }
     }
   }
 

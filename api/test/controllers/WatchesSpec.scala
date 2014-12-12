@@ -46,4 +46,18 @@ class WatchesSpec extends BaseSpec {
     watch.service.key must be(service.key)
   }
 
+  "POST /watches is idempotent" in new WithServer {
+    val user = createUser()
+    val service = createService(org)
+
+    val form = WatchForm(
+      organizationKey = org.key,
+      userGuid = user.guid,
+      serviceKey = service.key
+    )
+
+    val watch = createWatch(form)
+    createWatch(form)
+  }
+
 }
