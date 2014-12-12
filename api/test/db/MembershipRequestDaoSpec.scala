@@ -51,21 +51,21 @@ class MembershipRequestDaoSpec extends FlatSpec {
 
   it should "findByGuid" in {
     val request = MembershipRequestDao.upsert(Util.createdBy, org, member, Role.Admin)
-    assertEquals(request, MembershipRequestDao.findByGuid(request.guid).get)
+    assertEquals(request, MembershipRequestDao.findByGuid(Authorization.All, request.guid).get)
   }
 
   it should "findAll for organization guid" in {
     val otherOrg = Util.createOrganization()
     val newOrg = Util.createOrganization()
     val request = MembershipRequestDao.upsert(Util.createdBy, newOrg, member, Role.Admin)
-    assertEquals(Seq(request), MembershipRequestDao.findAll(organizationGuid = Some(newOrg.guid)))
+    assertEquals(Seq(request), MembershipRequestDao.findAll(Authorization.All, organizationGuid = Some(newOrg.guid)))
   }
 
   it should "findAll for organization key" in {
     val otherOrg = Util.createOrganization()
     val newOrg = Util.createOrganization()
     val request = MembershipRequestDao.upsert(Util.createdBy, newOrg, member, Role.Admin)
-    assertEquals(Seq(request), MembershipRequestDao.findAll(organizationKey = Some(newOrg.key)))
+    assertEquals(Seq(request), MembershipRequestDao.findAll(Authorization.All, organizationKey = Some(newOrg.key)))
   }
 
   it should "findAllForUser" in {
@@ -73,40 +73,44 @@ class MembershipRequestDaoSpec extends FlatSpec {
     val newOrg = Util.createOrganization()
 
     val request1 = MembershipRequestDao.upsert(Util.createdBy, newOrg, newUser, Role.Admin)
-    assertEquals(Seq(request1), MembershipRequestDao.findAll(userGuid = Some(newUser.guid)))
+    assertEquals(Seq(request1), MembershipRequestDao.findAll(Authorization.All, userGuid = Some(newUser.guid)))
 
     val request2 = MembershipRequestDao.upsert(Util.createdBy, newOrg, newUser, Role.Member)
-    assertEquals(Seq(request2, request1), MembershipRequestDao.findAll(userGuid = Some(newUser.guid)))
+    assertEquals(Seq(request2, request1), MembershipRequestDao.findAll(Authorization.All, userGuid = Some(newUser.guid)))
   }
 
   it can "softDelete" in {
     val request = MembershipRequestDao.upsert(Util.createdBy, org, member, Role.Admin)
     MembershipRequestDao.softDelete(Util.createdBy, request)
-    assertEquals(None, MembershipRequestDao.findByGuid(request.guid))
+    assertEquals(None, MembershipRequestDao.findByGuid(Authorization.All, request.guid))
   }
 
   it should "create a membership record when approving" in {
     val newOrg = Util.createOrganization()
     val request = MembershipRequestDao.upsert(Util.createdBy, newOrg, member, Role.Member)
 
-    assertEquals(None, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member))
+    assertEquals(None, Membership.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
 
     MembershipRequestDao.accept(Util.createdBy, request)
-    assertEquals(member, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member).get.user)
-    assertEquals("Accepted membership request for %s to join as Member".format(member.email),
-                 OrganizationLog.findAllForOrganization(newOrg).map(_.message).head)
+    assertEquals(member, Membership.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member).get.user)
+    assertEquals(
+      "Accepted membership request for %s to join as Member".format(member.email),
+      OrganizationLog.findAll(Authorization.All, organization = Some(newOrg), limit = 1).map(_.message).head
+    )
   }
 
   it should "not create a membership record when declining" in {
     val newOrg = Util.createOrganization()
     val request = MembershipRequestDao.upsert(Util.createdBy, newOrg, member, Role.Member)
 
-    assertEquals(None, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member))
+    assertEquals(None, Membership.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
 
     MembershipRequestDao.decline(Util.createdBy, request)
-    assertEquals(None, Membership.findByOrganizationAndUserAndRole(newOrg, member, Role.Member))
-    assertEquals("Declined membership request for %s to join as Member".format(member.email),
-                 OrganizationLog.findAllForOrganization(newOrg).map(_.message).head)
+    assertEquals(None, Membership.findByOrganizationAndUserAndRole(Authorization.All, newOrg, member, Role.Member))
+    assertEquals(
+      "Declined membership request for %s to join as Member".format(member.email),
+      OrganizationLog.findAll(Authorization.All, organization = Some(newOrg), limit = 1).map(_.message).head
+    )
   }
 
 }

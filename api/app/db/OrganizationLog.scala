@@ -19,6 +19,13 @@ object OrganizationLog {
      where true
   """
 
+  private val InsertQuery = """
+    insert into organization_logs
+    (guid, organization_guid, message, created_by_guid)
+    values
+    ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
+  """
+
   def create(createdBy: User, organization: Organization, message: String): OrganizationLog = {
     DB.withConnection { implicit c =>
       create(c, createdBy, organization, message)
@@ -32,13 +39,7 @@ object OrganizationLog {
       message = message
     )
 
-    SQL("""
-      insert into organization_logs
-      (guid, organization_guid, message, created_by_guid)
-      values
-      ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
-      """
-    ).on(
+    SQL(InsertQuery).on(
       'guid -> log.guid,
       'organization_guid -> log.organization_guid,
       'message -> log.message,
@@ -48,21 +49,24 @@ object OrganizationLog {
     log
   }
 
-  def findAllForOrganization(org: Organization): Seq[OrganizationLog] = {
-    findAll(organizationGuid = org.guid)
-  }
-
-
-  def findAll(organizationGuid: UUID,
-              limit: Long = 25,
-              offset: Long = 0): Seq[OrganizationLog] = {
+  def findAll(
+    authorization: Authorization,
+    organization: Option[Organization],
+    limit: Long = 25,
+    offset: Long = 0
+  ): Seq[OrganizationLog] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      Some("and organization_guid = {organization_guid}::uuid"),
+      authorization.organizationFilter("organization_guid").map(v => "and " + v),
+      organization.map(v => "and organization_guid = {organization_guid}::uuid"),
       Some(s"order by created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val bind = Seq[NamedParameter]('organization_guid -> organizationGuid.toString)
+    val bind = Seq[Option[NamedParameter]](
+      organization.map('organization_guid -> _.guid)
+    ).flatten ++ authorization.bindVariables
+
+    println(sql)
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>

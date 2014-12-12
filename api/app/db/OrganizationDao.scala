@@ -203,18 +203,7 @@ object OrganizationDao {
   ): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization match {
-        case Authorization.All => None
-        case Authorization.PublicOnly => Some(s"and organization_metadata.visibility = '${Visibility.Public}'")
-        case Authorization.User(userGuid) => {
-          Some(
-            s"and (organization_metadata.visibility = '${Visibility.Public}'" +
-            "      or organizations.guid in (" +
-            "select organization_guid from memberships where deleted_at is null and user_guid = {authorization_user_guid}::uuid" +
-            "))"
-          )
-        }
-      },
+      authorization.organizationFilter("organizations.guid").map(v => "and " + v),
       userGuid.map { v =>
         "and organizations.guid in (" +
         "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
@@ -243,7 +232,7 @@ object OrganizationDao {
       service.map('service_guid -> _.guid.toString),
       key.map('key -> _),
       name.map('name ->_)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq

@@ -44,7 +44,7 @@ object Util {
     val request = MembershipRequestDao.upsert(Util.createdBy, org, user, role)
     MembershipRequestDao.accept(Util.createdBy, request)
 
-    Membership.findByOrganizationAndUserAndRole(org, user, role).getOrElse {
+    Membership.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
       sys.error("membership could not be created")
     }
   }

@@ -12,7 +12,7 @@ class ServiceDaoSpec extends FunSpec with Matchers {
 
   private def upsertService(nameOption: Option[String] = None): Service = {
     val n = nameOption.getOrElse("Service %s".format(UUID.randomUUID))
-    ServiceDao.findAll(Authorization.All, orgKey = Util.testOrg.key, name = Some(n), limit = 1).headOption.getOrElse {
+    ServiceDao.findAll(Authorization.All, orgKey = Some(Util.testOrg.key), name = Some(n), limit = 1).headOption.getOrElse {
       val serviceForm = ServiceForm(
         name = n,
         description = None,
@@ -23,7 +23,7 @@ class ServiceDaoSpec extends FunSpec with Matchers {
   }
 
   private def findByKey(org: Organization, key: String): Option[Service] = {
-    ServiceDao.findAll(Authorization.All, orgKey = org.key, key = Some(key), limit = 1).headOption
+    ServiceDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = 1).headOption
   }
 
   it("create") {
@@ -96,25 +96,25 @@ class ServiceDaoSpec extends FunSpec with Matchers {
     val privateService = ServiceDao.create(user, org, ServiceForm(name = "svc-private", visibility = Visibility.Organization))
 
     it("by orgKey") {
-      val guids = ServiceDao.findAll(Authorization.All, orgKey = org.key).map(_.guid)
+      val guids = ServiceDao.findAll(Authorization.All, orgKey = Some(org.key)).map(_.guid)
       guids.contains(publicService.guid) should be(true)
       guids.contains(privateService.guid) should be(true)
     }
 
     it("by guid") {
-      val guids = ServiceDao.findAll(Authorization.All, orgKey = org.key, guid = Some(publicService.guid.toString)).map(_.guid)
+      val guids = ServiceDao.findAll(Authorization.All, orgKey = Some(org.key), guid = Some(publicService.guid)).map(_.guid)
       guids.contains(publicService.guid) should be(true)
       guids.contains(privateService.guid) should be(false)
     }
 
     it("by key") {
-      val guids = ServiceDao.findAll(Authorization.All, orgKey = org.key, key = Some(publicService.key)).map(_.guid)
+      val guids = ServiceDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(publicService.key)).map(_.guid)
       guids.contains(publicService.guid) should be(true)
       guids.contains(privateService.guid) should be(false)
     }
 
     it("by name") {
-      val guids = ServiceDao.findAll(Authorization.All, orgKey = org.key, name = Some(publicService.name)).map(_.guid)
+      val guids = ServiceDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(publicService.name)).map(_.guid)
       guids.contains(publicService.guid) should be(true)
       guids.contains(privateService.guid) should be(false)
     }
@@ -124,7 +124,7 @@ class ServiceDaoSpec extends FunSpec with Matchers {
       describe("All") {
 
         it("sees both services") {
-          val guids = ServiceDao.findAll(Authorization.All, orgKey = org.key).map(_.guid)
+          val guids = ServiceDao.findAll(Authorization.All, orgKey = Some(org.key)).map(_.guid)
           guids.contains(publicService.guid) should be(true)
           guids.contains(privateService.guid) should be(true)
         }
@@ -134,7 +134,7 @@ class ServiceDaoSpec extends FunSpec with Matchers {
       describe("PublicOnly") {
 
         it("sees only the public service") {
-          val guids = ServiceDao.findAll(Authorization.PublicOnly, orgKey = org.key).map(_.guid)
+          val guids = ServiceDao.findAll(Authorization.PublicOnly, orgKey = Some(org.key)).map(_.guid)
           guids.contains(publicService.guid) should be(true)
           guids.contains(privateService.guid) should be(false)
         }
@@ -144,13 +144,13 @@ class ServiceDaoSpec extends FunSpec with Matchers {
       describe("User") {
 
         it("user can see own service") {
-          val guids = ServiceDao.findAll(Authorization.User(user.guid), orgKey = org.key).map(_.guid)
+          val guids = ServiceDao.findAll(Authorization.User(user.guid), orgKey = Some(org.key)).map(_.guid)
           guids.contains(publicService.guid) should be(true)
           guids.contains(privateService.guid) should be(true)
         }
 
         it("other user cannot see private service") {
-          val guids = ServiceDao.findAll(Authorization.User(Util.createdBy.guid), orgKey = org.key).map(_.guid)
+          val guids = ServiceDao.findAll(Authorization.User(Util.createdBy.guid), orgKey = Some(org.key)).map(_.guid)
           guids.contains(publicService.guid) should be(true)
           guids.contains(privateService.guid) should be(false)
         }
