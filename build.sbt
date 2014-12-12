@@ -60,6 +60,9 @@ lazy val www = project
   .aggregate(generated, core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
+  .settings(
+    routesImport += "com.gilt.apidoc.Bindables._"
+  )
 
 lazy val generator = project
   .in(file("generator"))
