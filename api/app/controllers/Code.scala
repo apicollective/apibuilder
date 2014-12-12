@@ -6,7 +6,7 @@ import com.gilt.apidoc.models.{Generator, Version}
 import com.gilt.apidoc.models.json._
 import com.gilt.apidocgenerator.Client
 import core.ServiceDescriptionBuilder
-import db.{GeneratorDao, Authorization, OrganizationDao, VersionDao}
+import db.{GeneratorsDao, Authorization, OrganizationsDao, VersionsDao}
 import lib.{Config, Validation}
 
 import play.api.mvc._
@@ -22,15 +22,15 @@ object Code extends Controller {
 
   def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(orgKey: String, serviceKey: String, version: String, generatorKey: String) = Authenticated.async { request =>
     val auth = Authorization(Some(request.user))
-    OrganizationDao.findByKey(auth, orgKey) match {
+    OrganizationsDao.findByKey(auth, orgKey) match {
       case None =>
         Future.successful(NotFound)
       case Some(org) => {
-        GeneratorDao.findAll(user = Some(request.user), key = Some(generatorKey)).headOption match {
+        GeneratorsDao.findAll(user = Some(request.user), key = Some(generatorKey)).headOption match {
           case None =>
             Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid generator key[$generatorKey]."))))
           case Some(generator: Generator) =>
-            VersionDao.findVersion(auth, orgKey, serviceKey, version) match {
+            VersionsDao.findVersion(auth, orgKey, serviceKey, version) match {
               case None => Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid service[$serviceKey] or version[$version]"))))
               case Some(v: Version) =>
                 val userAgent = s"apidoc:$apidocVersion http://www.apidoc.me/${org.key}/code/${serviceKey}/${v.version}/${generator.key}"

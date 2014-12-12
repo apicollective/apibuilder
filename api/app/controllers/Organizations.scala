@@ -3,7 +3,7 @@ package controllers
 import com.gilt.apidoc.models.{Organization, OrganizationForm}
 import com.gilt.apidoc.models.json._
 import lib.Validation
-import db.{Authorization, OrganizationDao}
+import db.{Authorization, OrganizationsDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -20,7 +20,7 @@ object Organizations extends Controller {
   ) = AnonymousRequest { request =>
     Ok(
       Json.toJson(
-        OrganizationDao.findAll(
+        OrganizationsDao.findAll(
           Authorization(request.user),
           userGuid = userGuid,
           guid = guid,
@@ -34,7 +34,7 @@ object Organizations extends Controller {
   }
 
   def getByKey(key: String) = AnonymousRequest { request =>
-    OrganizationDao.findByKey(Authorization(request.user), key) match {
+    OrganizationsDao.findByKey(Authorization(request.user), key) match {
       case None => NotFound
       case Some(org) => Ok(Json.toJson(org))
     }
@@ -47,9 +47,9 @@ object Organizations extends Controller {
       }
       case s: JsSuccess[OrganizationForm] => {
         val form = s.get
-        val errors = OrganizationDao.validate(form)
+        val errors = OrganizationsDao.validate(form)
         if (errors.isEmpty) {
-          val org = OrganizationDao.createWithAdministrator(request.user, form)
+          val org = OrganizationsDao.createWithAdministrator(request.user, form)
           Ok(Json.toJson(org))
         } else {
           Conflict(Json.toJson(errors))
@@ -59,9 +59,9 @@ object Organizations extends Controller {
   }
 
   def deleteByKey(key: String) = Authenticated { request =>
-    OrganizationDao.findByUserAndKey(request.user, key).map { organization =>
+    OrganizationsDao.findByUserAndKey(request.user, key).map { organization =>
       request.requireAdmin(organization)
-      OrganizationDao.softDelete(request.user, organization)
+      OrganizationsDao.softDelete(request.user, organization)
     }
     NoContent
   }

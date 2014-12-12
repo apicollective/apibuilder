@@ -9,7 +9,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object OrganizationDao {
+object OrganizationsDao {
 
   private val MinNameLength = 4
   val MinKeyLength = 4
@@ -39,7 +39,7 @@ object OrganizationDao {
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {
-      OrganizationDao.findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
+      OrganizationsDao.findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
         case None => Seq.empty
         case Some(org: Organization) => Seq("Org with this name already exists")
       }
@@ -69,7 +69,7 @@ object OrganizationDao {
         } else if (ReservedKeys.contains(generated)) {
           Seq(s"Key $generated is a reserved word and cannot be used for the key of an organization")
         } else {
-          OrganizationDao.findByKey(Authorization.All, key) match {
+          OrganizationsDao.findByKey(Authorization.All, key) match {
             case None => Seq.empty
             case Some(existing) => Seq("Org with this key already exists")
           }
@@ -99,7 +99,7 @@ object OrganizationDao {
     DB.withTransaction { implicit c =>
       val org = create(c, user, form)
       MembershipsDao.create(c, user, org, user, Role.Admin)
-      OrganizationLog.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
+      OrganizationLogsDao.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
     }
   }
@@ -115,7 +115,7 @@ object OrganizationDao {
 
   private[db] def findByEmailDomain(email: String): Option[Organization] = {
     emailDomain(email).flatMap { domain =>
-      OrganizationDomainDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
+      OrganizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
         findByGuid(Authorization.All, domain.organization_guid)
       }
     }
@@ -161,7 +161,7 @@ object OrganizationDao {
     ).execute()
 
     org.domains.foreach { domain =>
-      OrganizationDomainDao.create(c, createdBy, org, domain.name)
+      OrganizationDomainsDao.create(c, createdBy, org, domain.name)
     }
 
     if (metadataForm != EmptyOrganizationMetadataForm) {

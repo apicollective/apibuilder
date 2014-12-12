@@ -84,7 +84,7 @@ object MembershipsDao {
     * for this org.
     */
   def softDelete(user: User, membership: Membership) {
-    SubscriptionDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
+    SubscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
     SoftDelete.delete("memberships", user, membership.guid)
   }
 
@@ -160,8 +160,8 @@ object MembershipsDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         Membership(
           guid = row[UUID]("guid"),
-          organization = OrganizationDao.summaryFromRow(row, Some("organization")),
-          user = UserDao.fromRow(row, Some("user")),
+          organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
+          user = UsersDao.fromRow(row, Some("user")),
           role = row[String]("role")
         )
       }.toSeq

@@ -6,12 +6,12 @@ import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-case class OrganizationLog(guid: String, organization_guid: UUID, message: String)
+case class OrganizationLogsDao(guid: String, organization_guid: UUID, message: String)
 
 /**
  * Journal of changes to organizations
  */
-object OrganizationLog {
+object OrganizationLogsDao {
 
   private val BaseQuery = """
     select guid::varchar, organization_guid, message
@@ -26,14 +26,14 @@ object OrganizationLog {
     ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
   """
 
-  def create(createdBy: User, organization: Organization, message: String): OrganizationLog = {
+  def create(createdBy: User, organization: Organization, message: String): OrganizationLogsDao = {
     DB.withConnection { implicit c =>
       create(c, createdBy, organization, message)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, message: String): OrganizationLog = {
-    val log = OrganizationLog(
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, message: String): OrganizationLogsDao = {
+    val log = OrganizationLogsDao(
       guid = UUID.randomUUID.toString,
       organization_guid = organization.guid,
       message = message
@@ -54,7 +54,7 @@ object OrganizationLog {
     organization: Option[Organization],
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[OrganizationLog] = {
+  ): Seq[OrganizationLogsDao] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       authorization.organizationFilter("organization_guid").map(v => "and " + v),
@@ -70,7 +70,7 @@ object OrganizationLog {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        OrganizationLog(guid = row[String]("guid"),
+        OrganizationLogsDao(guid = row[String]("guid"),
                         organization_guid = row[UUID]("organization_guid"),
                         message = row[String]("message"))
       }.toSeq

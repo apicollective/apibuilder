@@ -83,7 +83,7 @@ object PasswordAlgorithm {
 
 case class UserPassword(guid: UUID, userGuid: UUID, algorithm: PasswordAlgorithm, hash: String)
 
-object UserPasswordDao {
+object UserPasswordsDao {
 
   private val BaseQuery = """
     select guid::varchar, user_guid::varchar, algorithm_key, hash

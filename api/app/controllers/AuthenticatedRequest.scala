@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models.{Organization, User}
-import db.{MembershipsDao, UserDao}
+import db.{MembershipsDao, UsersDao}
 import play.api.mvc._
 import play.api.mvc.Results.Unauthorized
 import scala.concurrent.Future
@@ -33,12 +33,12 @@ private[controllers] object RequestHelper {
 
     val tokenUser: Option[User] = BasicAuthorization.get(authorizationHeader) match {
       case Some(auth: BasicAuthorization.Token) => {
-        UserDao.findByToken(auth.token)
+        UsersDao.findByToken(auth.token)
       }
       case _ => None
     }
 
-    val userFromHeader = userGuidHeader.flatMap(UserDao.findByGuid(_)) match {
+    val userFromHeader = userGuidHeader.flatMap(UsersDao.findByGuid(_)) match {
       case None => tokenUser
       case Some(user) => Some(user)
     }

@@ -3,7 +3,7 @@ package controllers
 import com.gilt.apidoc.models.User
 import com.gilt.apidoc.models.json._
 import lib.Validation
-import db.{UserForm, UserDao, UserPasswordDao}
+import db.{UserForm, UsersDao, UserPasswordsDao}
 import play.api.mvc._
 import play.api.libs.json.{ Json, JsError, JsSuccess }
 import java.util.UUID
@@ -17,7 +17,7 @@ object Users extends Controller {
 
   def get(guid: Option[UUID], email: Option[String], token: Option[String]) = AnonymousRequest { request =>
     require(!request.tokenUser.isEmpty, "Missing API Token")
-    val users = UserDao.findAll(guid = guid.map(_.toString),
+    val users = UsersDao.findAll(guid = guid.map(_.toString),
                                 email = email,
                                 token = token)
     Ok(Json.toJson(users))
@@ -25,7 +25,7 @@ object Users extends Controller {
 
   def getByGuid(guid: UUID) = AnonymousRequest { request =>
     require(!request.tokenUser.isEmpty, "Missing API Token")
-    UserDao.findByGuid(guid) match {
+    UsersDao.findByGuid(guid) match {
       case None => NotFound
       case Some(user: User) => Ok(Json.toJson(user))
     }
@@ -38,14 +38,14 @@ object Users extends Controller {
       }
       case s: JsSuccess[UserForm] => {
         val form = s.get
-        UserDao.findByEmail(form.email) match {
+        UsersDao.findByEmail(form.email) match {
 
           case Some(u: User) => {
             Conflict(Json.toJson(Validation.error("account with this email already exists")))
           }
 
           case None => {
-            val user = UserDao.create(form)
+            val user = UsersDao.create(form)
             Ok(Json.toJson(user))
           }
         }
@@ -60,15 +60,15 @@ object Users extends Controller {
       }
       case s: JsSuccess[UserForm] => {
         val form = s.get
-        UserDao.findByGuid(guid.toString) match {
+        UsersDao.findByGuid(guid.toString) match {
 
           case None => NotFound
 
           case Some(u: User) => {
-            val existingUser = UserDao.findByEmail(form.email)
+            val existingUser = UsersDao.findByEmail(form.email)
             if (existingUser.isEmpty || existingUser.get.guid == guid.toString) {
-              UserDao.update(request.user, u, form)
-              val updatedUser = UserDao.findByGuid(guid.toString).get
+              UsersDao.update(request.user, u, form)
+              val updatedUser = UsersDao.findByGuid(guid.toString).get
               Ok(Json.toJson(updatedUser))
             } else {
               Conflict(Json.toJson(Validation.error("account with this email already exists")))
@@ -88,14 +88,14 @@ object Users extends Controller {
       }
       case s: JsSuccess[UserAuthenticationForm] => {
         val form = s.get
-        UserDao.findByEmail(form.email) match {
+        UsersDao.findByEmail(form.email) match {
 
           case None => {
             Conflict(Json.toJson(Validation.userAuthorizationFailed()))
           }
 
           case Some(u: User) => {
-            if (UserPasswordDao.isValid(u.guid, form.password)) {
+            if (UserPasswordsDao.isValid(u.guid, form.password)) {
               Ok(Json.toJson(u))
             } else {
               Conflict(Json.toJson(Validation.userAuthorizationFailed()))

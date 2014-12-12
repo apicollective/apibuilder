@@ -9,17 +9,17 @@ object Util {
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@gilttest.com"
-    UserDao.create(UserForm(email = email, name = None, password = "test"))
+    UsersDao.create(UserForm(email = email, name = None, password = "test"))
   }
 
   def upsertUser(email: String): User = {
-    UserDao.findByEmail(email).getOrElse {
-      UserDao.create(UserForm(email = email, name = Some("Admin"), password = "test"))
+    UsersDao.findByEmail(email).getOrElse {
+      UsersDao.create(UserForm(email = email, name = Some("Admin"), password = "test"))
     }
   }
 
   def upsertOrganization(name: String): Organization = {
-    OrganizationDao.findAll(Authorization.All, name = Some(name)).headOption.getOrElse {
+    OrganizationsDao.findAll(Authorization.All, name = Some(name)).headOption.getOrElse {
       createOrganization(name = Some(name))
     }
   }
@@ -33,7 +33,7 @@ object Util {
       name = name.getOrElse(UUID.randomUUID.toString),
       key = key
     )
-    OrganizationDao.createWithAdministrator(createdBy, form)
+    OrganizationsDao.createWithAdministrator(createdBy, form)
   }
 
   def createMembership(
@@ -41,8 +41,8 @@ object Util {
     user: User = Util.createRandomUser(),
     role: Role = Role.Admin
   ): com.gilt.apidoc.models.Membership = {
-    val request = MembershipRequestDao.upsert(Util.createdBy, org, user, role)
-    MembershipRequestDao.accept(Util.createdBy, request)
+    val request = MembershipRequestsDao.upsert(Util.createdBy, org, user, role)
+    MembershipRequestsDao.accept(Util.createdBy, request)
 
     MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
       sys.error("membership could not be created")
@@ -54,7 +54,7 @@ object Util {
     user: User = Util.createRandomUser(),
     publication: Publication = Publication.all.head
   ): Subscription = {
-    SubscriptionDao.create(
+    SubscriptionsDao.create(
       Util.createdBy,
       SubscriptionForm(
         organizationKey = org.key,

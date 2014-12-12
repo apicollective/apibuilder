@@ -11,7 +11,7 @@ import play.api.libs.json._
 import java.util.UUID
 
 
-object MembershipRequestDao {
+object MembershipRequestsDao {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]
 
@@ -79,8 +79,8 @@ object MembershipRequestDao {
 
     val message = s"Accepted membership request for ${request.user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
-      OrganizationLog.create(createdBy, request.organization, message)
-      MembershipRequestDao.softDelete(createdBy, request)
+      OrganizationLogsDao.create(createdBy, request.organization, message)
+      MembershipRequestsDao.softDelete(createdBy, request)
       MembershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
   }
@@ -97,8 +97,8 @@ object MembershipRequestDao {
 
     val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
-      OrganizationLog.create(createdBy, request.organization, message)
-      MembershipRequestDao.softDelete(createdBy, request)
+      OrganizationLogsDao.create(createdBy, request.organization, message)
+      MembershipRequestsDao.softDelete(createdBy, request)
     }
   }
 
@@ -166,8 +166,8 @@ object MembershipRequestDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         MembershipRequest(
           guid = row[UUID]("guid"),
-          organization = OrganizationDao.summaryFromRow(row, Some("organization")),
-          user = UserDao.fromRow(row, Some("user")),
+          organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
+          user = UsersDao.fromRow(row, Some("user")),
           role = row[String]("role")
         )
       }.toSeq

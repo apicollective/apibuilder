@@ -14,12 +14,12 @@ case class FullWatchForm(
 ) {
 
   private val auth = Authorization(Some(createdBy))
-  val org: Option[Organization] = OrganizationDao.findByKey(auth, form.organizationKey)
+  val org: Option[Organization] = OrganizationsDao.findByKey(auth, form.organizationKey)
   val service: Option[Service] = org.flatMap { o =>
-    ServiceDao.findByOrganizationKeyAndServiceKey(auth, o.key, form.serviceKey)
+    ServicesDao.findByOrganizationKeyAndServiceKey(auth, o.key, form.serviceKey)
   }
 
-  val user = UserDao.findByGuid(form.userGuid)
+  val user = UsersDao.findByGuid(form.userGuid)
 
   lazy val validate: Seq[Error] = {
     val serviceKeyErrors = service match {
@@ -37,7 +37,7 @@ case class FullWatchForm(
 
 }
 
-object WatchDao {
+object WatchesDao {
 
   private val BaseQuery = """
     select watches.guid,
@@ -138,9 +138,9 @@ object WatchDao {
   ): Watch = {
     Watch(
       guid = row[UUID]("guid"),
-      user = UserDao.fromRow(row, Some("user")),
-      organization = OrganizationDao.summaryFromRow(row, Some("organization")),
-      service = ServiceDao.fromRow(row, Some("service"))
+      user = UsersDao.fromRow(row, Some("user")),
+      organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
+      service = ServicesDao.fromRow(row, Some("service"))
     )
   }
 

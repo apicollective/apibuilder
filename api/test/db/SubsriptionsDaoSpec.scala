@@ -19,14 +19,14 @@ class SubsriptionDaoSpec extends FunSpec with Matchers {
 
     MembershipsDao.softDelete(Util.createdBy, membership)
 
-    val subscriptions = SubscriptionDao.findAll(
+    val subscriptions = SubscriptionsDao.findAll(
       Authorization.All,
       organization = Some(org),
       userGuid = Some(user.guid)
     ).map(_.publication)
 
     Publication.all.foreach { publication =>
-      if (SubscriptionDao.PublicationsRequiredAdmin.contains(publication)) {
+      if (SubscriptionsDao.PublicationsRequiredAdmin.contains(publication)) {
         subscriptions.contains(publication) should be(false)
       } else {
         subscriptions.contains(publication) should be(true)

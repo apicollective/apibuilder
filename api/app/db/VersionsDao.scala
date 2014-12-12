@@ -18,7 +18,7 @@ object VersionForm {
   implicit val versionFormReads = Json.reads[VersionForm]
 }
 
-object VersionDao {
+object VersionsDao {
 
   private val LatestVersion = "latest"
 
@@ -57,22 +57,22 @@ object VersionDao {
   def replace(user: User, version: Version, service: Service, newJson: String): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user, version)
-      VersionDao.create(user, service, version.version, newJson)
+      VersionsDao.create(user, service, version.version, newJson)
     }
   }
 
   def findVersion(authorization: Authorization, orgKey: String, serviceKey: String, version: String): Option[Version] = {
-    ServiceDao.findByOrganizationKeyAndServiceKey(authorization, orgKey, serviceKey).flatMap { service =>
+    ServicesDao.findByOrganizationKeyAndServiceKey(authorization, orgKey, serviceKey).flatMap { service =>
       if (version == LatestVersion) {
-        VersionDao.findAll(service_guid = Some(service.guid), limit = 1).headOption
+        VersionsDao.findAll(service_guid = Some(service.guid), limit = 1).headOption
       } else {
-        VersionDao.findByServiceAndVersion(service, version)
+        VersionsDao.findByServiceAndVersion(service, version)
       }
     }
   }
 
   def findByServiceAndVersion(service: Service, version: String): Option[Version] = {
-    VersionDao.findAll(
+    VersionsDao.findAll(
       service_guid = Some(service.guid),
       version = Some(version),
       limit = 1

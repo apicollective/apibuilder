@@ -8,7 +8,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object SubscriptionDao {
+object SubscriptionsDao {
 
   val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
 
@@ -38,7 +38,7 @@ object SubscriptionDao {
     user: User,
     form: SubscriptionForm
   ): Seq[Error] = {
-    val org = OrganizationDao.findByKey(Authorization(Some(user)), form.organizationKey)
+    val org = OrganizationsDao.findByKey(Authorization(Some(user)), form.organizationKey)
 
     val organizationKeyErrors = org match {
         case None => Seq("Organization not found")
@@ -50,7 +50,7 @@ object SubscriptionDao {
       case _ => Seq.empty
     }
 
-    val userErrors = UserDao.findByGuid(form.userGuid) match {
+    val userErrors = UsersDao.findByGuid(form.userGuid) match {
         case None => Seq("User not found")
         case Some(_) => Seq.empty
     }
@@ -58,7 +58,7 @@ object SubscriptionDao {
     val alreadySubscribed = org match {
       case None => Seq.empty
       case Some(o) => {
-        SubscriptionDao.findAll(
+        SubscriptionsDao.findAll(
           Authorization.All,
           organization = Some(o),
           userGuid = Some(form.userGuid),
@@ -78,7 +78,7 @@ object SubscriptionDao {
     val errors = validate(createdBy, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    val org = OrganizationDao.findByKey(Authorization(Some(createdBy)), form.organizationKey).getOrElse {
+    val org = OrganizationsDao.findByKey(Authorization(Some(createdBy)), form.organizationKey).getOrElse {
       sys.error("Failed to validate org for subscription")
     }
 
@@ -105,7 +105,7 @@ object SubscriptionDao {
 
   def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User) {
     PublicationsRequiredAdmin.foreach { publication =>
-      SubscriptionDao.findAll(
+      SubscriptionsDao.findAll(
         Authorization.All,
         organization = Some(organization),
         userGuid = Some(user.guid),
@@ -162,8 +162,8 @@ object SubscriptionDao {
   ): Subscription = {
     Subscription(
       guid = row[UUID]("guid"),
-      organization = OrganizationDao.summaryFromRow(row, Some("organization")),
-      user = UserDao.fromRow(row, Some("user")),
+      organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
+      user = UsersDao.fromRow(row, Some("user")),
       publication = Publication(row[String]("publication"))
     )
   }

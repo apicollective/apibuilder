@@ -9,7 +9,7 @@ import java.net.{MalformedURLException, URL}
 import java.util.{Date, UUID}
 import scala.util.{Failure, Success, Try}
 
-object GeneratorDao {
+object GeneratorsDao {
 
   private val BaseQuery = s"""
     select generators.guid,

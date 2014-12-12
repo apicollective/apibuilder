@@ -19,7 +19,7 @@ object ServiceForm {
   implicit val jsonReadsServiceForm = Json.reads[ServiceForm]
 }
 
-object ServiceDao {
+object ServicesDao {
 
   private val BaseQuery = """
     select services.guid, services.name, services.key, services.description, services.visibility
