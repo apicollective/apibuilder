@@ -717,9 +717,10 @@
                     "method": "GET",
                     "description": "Search watches. Always paginated.",
                     "parameters": [
-                        { "name": "guid", "type": "uuid", "description": "Find the subscription with this guid.", "required": false },
-                        { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
-                        { "name": "service_key", "type": "string", "description": "Find subscriptions for this service.", "required": false },
+                        { "name": "guid", "type": "uuid", "description": "Find the watch with this guid.", "required": false },
+                        { "name": "user_guid", "type": "uuid", "description": "Find watchs for this user.", "required": false },
+                        { "name": "organization_key", "type": "string", "description": "Find watchs for this organization.", "required": false },
+                        { "name": "service_key", "type": "string", "description": "Find watchs for this service.", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],

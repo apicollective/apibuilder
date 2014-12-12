@@ -105,6 +105,7 @@ object WatchesDao {
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
+    organizationKey: Option[String] = None,
     service: Option[Service] = None,
     serviceKey: Option[String] = None,
     userGuid: Option[UUID] = None,
@@ -113,8 +114,10 @@ object WatchesDao {
   ): Seq[Watch] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      authorization.organizationFilter("watches.organization_guid").map(v => "and " + v),
       guid.map { v => "and watches.guid = {guid}::uuid" },
       userGuid.map { v => "and watches.user_guid = {user_guid}::uuid" },
+      organizationKey.map { v => "and watches.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))" },
       service.map { v => "and watches.service_guid = {service_guid}::uuid" },
       serviceKey.map { v => "and watches.service_guid = (select guid from services where deleted_at is null and key = lower(trim({service_key})))" },
       Some(s"order by services.key, watches.created_at limit ${limit} offset ${offset}")
@@ -124,9 +127,10 @@ object WatchesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
+      organizationKey.map('organization_key -> _),
       service.map('service_guid -> _.guid.toString),
       serviceKey.map('service_key -> _)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
