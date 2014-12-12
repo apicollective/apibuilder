@@ -26,7 +26,6 @@ class SubsriptionDaoSpec extends FunSpec with Matchers {
     ).map(_.publication)
 
     Publication.all.foreach { publication =>
-      println("PUBLICATION[$publication]: " + SubscriptionDao.PublicationsRequiredAdmin.contains(publication))
       if (SubscriptionDao.PublicationsRequiredAdmin.contains(publication)) {
         subscriptions.contains(publication) should be(false)
       } else {
