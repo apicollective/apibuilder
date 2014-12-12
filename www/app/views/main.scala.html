@@ -20,7 +20,8 @@
           <ul class="nav nav-sidebar">
             <li><a class="apidoc" href="/">apidoc</a></li>
             @metadata.org.map { org =>
-              <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>   
+              <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
+              <li><a href="@routes.Subscriptions.index(orgKey = org.key)">Subscriptions</a></li>
 
               @if(metadata.isOrgMember) {
                 <li><a href="@routes.Domains.index(orgKey = org.key)">@lib.Util.OrgSettingsText</a></li>

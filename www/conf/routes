@@ -68,8 +68,8 @@ GET     /:orgKey/settings/:serviceKey/:version/edit               controllers.Se
 POST     /:orgKey/settings/:serviceKey/:version/postEdit          controllers.ServiceSettings.postEdit(orgKey: String, serviceKey: String, version: String)
 POST     /:orgKey/settings/:serviceKey/:version/postDelete        controllers.ServiceSettings.postDelete(orgKey: String, serviceKey: String, version: String)
 
-GET     /:org/subscriptions/                                      controllers.Subscriptions.index(org: String)
-POST    /:org/subscriptions/:publication/toggle                   controllers.Subscriptions.postToggle(org: String, publication: com.gilt.apidoc.models.Publication)
+GET     /:orgKey/subscriptions/                                   controllers.Subscriptions.index(orgKey: String)
+POST    /:orgKey/subscriptions/:publication/toggle                controllers.Subscriptions.postToggle(orgKey: String, publication: com.gilt.apidoc.models.Publication)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                                             controllers.Assets.at(path="/public", file)

@@ -16,11 +16,21 @@ object Subscriptions extends Controller {
 
   case class UserPublication(publication: Publication, isSubscribed: Boolean) {
     val label = publication match {
-      case Publication.MembershipRequestsCreate => "For organizations for which I am an administrator, email me whenever a user applies to join the org."
-      case Publication.MembershipsCreate => "For organizations for which I am a member, email me whenever a user join the org."
-      case Publication.ServicesCreate => "For organizations for which I am a member, email me whenever a service is created."
-      case Publication.VersionsCreate => "For services that I watch, email me whenever a version is created."
+      case Publication.MembershipRequestsCreate => "Email me when a user applies to join the org."
+      case Publication.MembershipsCreate => "Email me when a user joins the org."
+      case Publication.ServicesCreate => "Email me when a service is created."
+      case Publication.VersionsCreate => "For services that I watch, email me when a version is created."
       case Publication.UNDEFINED(key) => key
+    }
+  }
+
+  def offerPublication(isAdmin: Boolean, publication: Publication): Boolean = {
+    publication match {
+      case Publication.MembershipRequestsCreate => isAdmin
+      case Publication.MembershipsCreate => isAdmin
+      case Publication.ServicesCreate => true
+      case Publication.VersionsCreate => true
+      case Publication.UNDEFINED(key) => isAdmin
     }
   }
 
@@ -34,7 +44,7 @@ object Subscriptions extends Controller {
         limit = Some(Publication.all.size + 1)
       )
     } yield {
-      val userPublications = Publication.all.map { p =>
+      val userPublications = Publication.all.filter { p => offerPublication(request.isAdmin, p) }.map { p =>
         UserPublication(
           publication = p,
           isSubscribed = !subscriptions.find(_.publication == p).isEmpty
