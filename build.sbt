@@ -1,10 +1,14 @@
 import play.PlayImport.PlayKeys._
+import scoverage.ScoverageSbtPlugin.ScoverageKeys._
 
 name := "apidoc"
 
 organization := "com.gilt.apidoc"
 
 scalaVersion in ThisBuild := "2.11.4"
+
+// required because of issue between scoverage & sbt
+parallelExecution in Test in ThisBuild := true
 
 lazy val lib = project
   .in(file("lib"))
@@ -72,8 +76,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatest" %% "scalatest" % "2.2.0" % "test"
   ),
   scalacOptions += "-feature",
-  ScoverageKeys.highlighting := true
-) ++ instrumentSettings ++ publishSettings
+  coverageHighlighting := true
+) ++ publishSettings
 
 lazy val publishSettings: Seq[Setting[_]] = Seq(
   publishMavenStyle := true,
