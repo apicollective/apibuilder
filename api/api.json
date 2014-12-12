@@ -718,9 +718,9 @@
                     "description": "Search watches. Always paginated.",
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find the watch with this guid.", "required": false },
-                        { "name": "user_guid", "type": "uuid", "description": "Find watchs for this user.", "required": false },
-                        { "name": "organization_key", "type": "string", "description": "Find watchs for this organization.", "required": false },
-                        { "name": "service_key", "type": "string", "description": "Find watchs for this service.", "required": false },
+                        { "name": "user_guid", "type": "uuid", "description": "Find watches for this user.", "required": false },
+                        { "name": "organization_key", "type": "string", "description": "Find watches for this organization.", "required": false },
+                        { "name": "service_key", "type": "string", "description": "Find watches for this service.", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -735,6 +735,20 @@
                     "path": "/:guid",
                     "responses": {
                         "200": { "type": "watch" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Quick check if a user is watching a specific service.",
+                    "path": "/check",
+		    "parameters": [
+                        { "name": "user_guid", "type": "uuid", "description": "The user for which we are checking. API returns false if the user guid is not provided", "required": false },
+                        { "name": "organization_key", "type": "string" },
+                        { "name": "service_key", "type": "string" }
+		    ],
+                    "responses": {
+                        "200": { "type": "boolean" }
                     }
                 },
 

@@ -40,6 +40,23 @@ trait Watches {
     }
   }
 
+  def getCheck(
+    userGuid: scala.Option[_root_.java.util.UUID],
+    organizationKey: String,
+    serviceKey: String
+  ) = Authenticated { request =>
+    WatchesDao.findAll(
+      Authorization(Some(request.user)),
+      userGuid = userGuid,
+      organizationKey =  Some(organizationKey),
+      serviceKey = Some(serviceKey),
+      limit = 1
+    ).headOption match {
+      case None => Ok(Json.toJson(false))
+      case Some(_) => Ok(Json.toJson(true))
+    }
+  }
+
   def post() = Authenticated(parse.json) { request =>
     request.body.validate[WatchForm] match {
       case e: JsError => {

@@ -1361,6 +1361,24 @@ package com.gilt.apidoc {
         }
       }
 
+      override def getCheck(
+        userGuid: scala.Option[_root_.java.util.UUID] = None,
+        organizationKey: String,
+        serviceKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Boolean]] = {
+        val queryParameters = Seq(
+          userGuid.map("user_guid" -> _.toString),
+          Some("organization_key" -> organizationKey),
+          Some("service_key" -> serviceKey)
+        ).flatten
+
+        _executeRequest("GET", s"/watches/check", queryParameters = queryParameters).map {
+          case r if r.status == 200 => Some(r.json.as[Boolean])
+          case r if r.status == 404 => None
+          case r => throw new FailedRequest(r)
+        }
+      }
+
       override def post(watchForm: com.gilt.apidoc.models.WatchForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Watch] = {
         val payload = play.api.libs.json.Json.toJson(watchForm)
 
@@ -1775,6 +1793,15 @@ package com.gilt.apidoc {
     def getByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[com.gilt.apidoc.models.Watch]]
+
+    /**
+     * Quick check if a user is watching a specific service.
+     */
+    def getCheck(
+      userGuid: scala.Option[_root_.java.util.UUID] = None,
+      organizationKey: String,
+      serviceKey: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Boolean]]
 
     /**
      * Create a new watch.

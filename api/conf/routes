@@ -33,6 +33,7 @@ PUT        /users/:guid                                    controllers.Users.put
 POST       /validations                                    controllers.Validations.post()
 GET        /watches                                        controllers.Watches.get(guid: scala.Option[_root_.java.util.UUID], user_guid: scala.Option[_root_.java.util.UUID], organization_key: scala.Option[String], service_key: scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /watches/:guid                                  controllers.Watches.getByGuid(guid: _root_.java.util.UUID)
+GET        /watches/check                                  controllers.Watches.getCheck(user_guid: scala.Option[_root_.java.util.UUID], organization_key: String, service_key: String)
 POST       /watches                                        controllers.Watches.post()
 DELETE     /watches/:guid                                  controllers.Watches.deleteByGuid(guid: _root_.java.util.UUID)
 GET        /:orgKey/:serviceKey/:version/:generatorKey     controllers.Code.getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(orgKey: String, serviceKey: String, version: String, generatorKey: String)

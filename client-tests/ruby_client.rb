@@ -538,6 +538,17 @@ module Apidoc
         @client.request("/watches/#{guid}").get { |hash| Apidoc::Models::Watch.new(hash) }
       end
 
+      # Quick check if a user is watching a specific service.
+      def get_check(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        query = {
+          :user_guid => HttpClient::Preconditions.assert_class_or_nil('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String),
+          :organization_key => HttpClient::Preconditions.assert_class('organization_key', opts.delete(:organization_key), String),
+          :service_key => HttpClient::Preconditions.assert_class('service_key', opts.delete(:service_key), String)
+        }.delete_if { |k, v| v.nil? }
+        @client.request("/watches/check").with_query(query).get { |hash| Apidoc::Models::Value.new(hash) }
+      end
+
       # Create a new watch.
       def post(watch_form)
         HttpClient::Preconditions.assert_class('watch_form', watch_form, Apidoc::Models::WatchForm)
