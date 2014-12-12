@@ -20,7 +20,7 @@ object OrganizationsDao {
     "login", "logout", "member", "members", "membership", "memberships", "membership_request", "membership_request_review",
     "membership_request_reviews", "membership_requests", "metadatum", "metadata", "org", "orgs", "organizations", "private", "reject", "rejection",
     "session", "setting", "settings", "scms", "source", "sources", "subaccount", "subaccounts", "subscription", "subscriptions",
-    "team", "teams", "user", "users", "util", "utility", "utilities", "version", "versions"
+    "team", "teams", "user", "users", "util", "utility", "utilities", "version", "versions", "watch", "watches"
   ).map(UrlKey.generate(_))
 
   private val EmptyOrganizationMetadataForm = OrganizationMetadataForm()

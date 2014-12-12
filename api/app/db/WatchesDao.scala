@@ -114,10 +114,10 @@ object WatchesDao {
   ): Seq[Watch] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.organizationFilter("watches.organization_guid").map(v => "and " + v),
+      authorization.organizationFilter("organizations.guid").map(v => "and " + v),
       guid.map { v => "and watches.guid = {guid}::uuid" },
       userGuid.map { v => "and watches.user_guid = {user_guid}::uuid" },
-      organizationKey.map { v => "and watches.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))" },
+      organizationKey.map { v => "and organizations.key = lower(trim({organization_key}))" },
       service.map { v => "and watches.service_guid = {service_guid}::uuid" },
       serviceKey.map { v => "and watches.service_guid = (select guid from services where deleted_at is null and key = lower(trim({service_key})))" },
       Some(s"order by services.key, watches.created_at limit ${limit} offset ${offset}")

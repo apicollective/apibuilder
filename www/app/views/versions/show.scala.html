@@ -1,10 +1,20 @@
-@(tpl: models.MainTemplate, service: com.gilt.apidocgenerator.models.ServiceDescription)(implicit flash: Flash)
+@(tpl: models.MainTemplate,
+  service: com.gilt.apidocgenerator.models.ServiceDescription,
+  isWatching: Boolean
+)(implicit flash: Flash)
 
 @main(tpl) {
 
   @if(tpl.isOrgMember) {
     <div class="pull-right">
-      <a href="@routes.Versions.create(orgKey = tpl.org.get.key, service = tpl.service.map(_.key))">Upload new version</a>
+      @tpl.service.map { svc =>
+        <a href="@routes.Versions.create(orgKey = tpl.org.get.key, service = Some(svc.key))">Upload new version</a>
+        @if(isWatching) {
+          <a href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, serviceKey = svc.key, version = tpl.version.get)">Watching</a>
+        } else {
+          <a href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, serviceKey = svc.key, version = tpl.version.get)">Not Watching</a>
+        }
+      }
     </div>
   }
 
