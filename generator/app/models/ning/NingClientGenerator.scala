@@ -132,7 +132,7 @@ ${methodGenerator.objects().indent(4)}
 
       val requestWithParamsAndBody = body.fold(request) { b =>
         val serialized = play.api.libs.json.Json.stringify(b)
-        request.setBody(serialized).addHeader("Content-type", "application/json")
+        request.setBody(serialized).addHeader("Content-type", "application/json; charset=UTF-8")
       }
 
       val finalRequest = requestWithParamsAndBody.build()

@@ -60,7 +60,7 @@ require 'bigdecimal'
       # Wrapper to set Content-Type header to application/json and set
       # the provided json document as the body
       def with_json(json)
-        @headers['Content-Type'] ||= 'application/json'
+        @headers['Content-Type'] ||= 'application/json; charset=UTF-8'
         with_body(json)
       end
 
