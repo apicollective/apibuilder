@@ -66,8 +66,6 @@ object OrganizationLogsDao {
       organization.map('organization_guid -> _.guid)
     ).flatten ++ authorization.bindVariables
 
-    println(sql)
-
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         OrganizationLogsDao(guid = row[String]("guid"),
