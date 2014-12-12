@@ -10,6 +10,8 @@ import java.util.UUID
 
 object SubscriptionDao {
 
+  val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
+
   private val BaseQuery = """
     select subscriptions.guid,
            subscriptions.publication,
@@ -99,6 +101,19 @@ object SubscriptionDao {
 
   def softDelete(deletedBy: User, subscription: Subscription) {
     SoftDelete.delete("subscriptions", deletedBy, subscription.guid)
+  }
+
+  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User) {
+    PublicationsRequiredAdmin.foreach { publication =>
+      SubscriptionDao.findAll(
+        Authorization.All,
+        organization = Some(organization),
+        userGuid = Some(user.guid),
+        publication = Some(publication)
+      ).foreach { subscription =>
+        softDelete(user, subscription)
+      }
+    }
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Subscription] = {

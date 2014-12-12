@@ -9,11 +9,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-case class Membership(guid: String, organization: Organization, user: User, role: String)
-
 object Membership {
-
-  implicit val membershipWrites = Json.writes[Membership]
 
   private val InsertQuery = """
     insert into memberships
@@ -23,7 +19,7 @@ object Membership {
   """
 
   private val BaseQuery = """
-    select memberships.guid::varchar,
+    select memberships.guid,
            role,
            organizations.guid as organization_guid,
            organizations.name as organization_name,
@@ -37,9 +33,9 @@ object Membership {
      where memberships.deleted_at is null
   """
 
-  def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+  def upsert(createdBy: User, organization: Organization, user: User, role: Role): com.gilt.apidoc.models.Membership = {
     val membership = findByOrganizationAndUserAndRole(organization, user, role) match {
-      case Some(r: Membership) => r
+      case Some(r) => r
       case None => create(createdBy, organization, user, role)
     }
 
@@ -47,23 +43,23 @@ object Membership {
     // member, remove the member role - this is akin to an upgrade
     // in membership from member to admin.
     if (role == Role.Admin) {
-      findByOrganizationAndUserAndRole(organization, user: User, Role.Member).foreach { membership =>
-        softDelete(user, membership: Membership)
+      findByOrganizationAndUserAndRole(organization, user, Role.Member).foreach { membership =>
+        softDelete(user, membership)
       }
     }
 
     membership
   }
 
-  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): com.gilt.apidoc.models.Membership = {
     DB.withConnection { implicit c =>
       create(c, createdBy, organization, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, user: User, role: Role): Membership = {
-    val membership = Membership(
-      guid = UUID.randomUUID.toString,
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, user: User, role: Role): com.gilt.apidoc.models.Membership = {
+    val membership = com.gilt.apidoc.models.Membership(
+      guid = UUID.randomUUID,
       organization = organization,
       user = user,
       role = role.key
@@ -80,7 +76,13 @@ object Membership {
     membership
   }
 
-  def softDelete(user: User, membership: Membership) {
+  /**
+    * Deletes a membership record. Also removes the user from any
+    * publication subscriptions that require the administrative role
+    * for this org.
+    */
+  def softDelete(user: User, membership: com.gilt.apidoc.models.Membership) {
+    SubscriptionDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
     SoftDelete.delete("memberships", user, membership.guid)
   }
 
@@ -98,7 +100,7 @@ object Membership {
     }
   }
 
-  def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: Role): Option[Membership] = {
+  def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: Role): Option[com.gilt.apidoc.models.Membership] = {
     findAll(organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
   }
 
@@ -108,7 +110,7 @@ object Membership {
               userGuid: Option[UUID] = None,
               role: Option[String] = None,
               limit: Int = 50,
-              offset: Int = 0): Seq[Membership] = {
+              offset: Int = 0): Seq[com.gilt.apidoc.models.Membership] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and memberships.guid = {guid}::uuid" },
@@ -129,8 +131,8 @@ object Membership {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        Membership(
-          guid = row[String]("guid"),
+        com.gilt.apidoc.models.Membership(
+          guid = row[UUID]("guid"),
           organization = OrganizationDao.summaryFromRow(row, Some("organization")),
           user = UserDao.fromRow(row, Some("user")),
           role = row[String]("role")

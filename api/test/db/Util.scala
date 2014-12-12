@@ -1,6 +1,7 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, OrganizationForm, Service, User, Visibility}
+import com.gilt.apidoc.models.{Organization, OrganizationForm, Publication, Service, Subscription, SubscriptionForm, User, Visibility}
+import lib.Role
 import java.util.UUID
 
 object Util {
@@ -33,6 +34,34 @@ object Util {
       key = key
     )
     OrganizationDao.createWithAdministrator(createdBy, form)
+  }
+
+  def createMembership(
+    org: Organization,
+    user: User = Util.createRandomUser(),
+    role: Role = Role.Admin
+  ): com.gilt.apidoc.models.Membership = {
+    val request = MembershipRequestDao.upsert(Util.createdBy, org, user, role)
+    MembershipRequestDao.accept(Util.createdBy, request)
+
+    Membership.findByOrganizationAndUserAndRole(org, user, role).getOrElse {
+      sys.error("membership could not be created")
+    }
+  }
+
+  def createSubscription(
+    org: Organization,
+    user: User = Util.createRandomUser(),
+    publication: Publication = Publication.all.head
+  ): Subscription = {
+    SubscriptionDao.create(
+      Util.createdBy,
+      SubscriptionForm(
+        organizationKey = org.key,
+        userGuid = user.guid,
+        publication = publication
+      )
+    )
   }
 
   lazy val createdBy = Util.upsertUser("admin@apidoc.me")
