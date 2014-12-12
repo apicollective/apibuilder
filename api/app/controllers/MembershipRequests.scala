@@ -3,7 +3,7 @@ package controllers
 import com.gilt.apidoc.models.{Organization, User}
 import com.gilt.apidoc.models.json._
 import lib.{Review, Role, Validation}
-import db.{MembershipRequestDao, OrganizationDao, UserDao}
+import db.{Authorization, MembershipRequestDao, OrganizationDao, UserDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -31,6 +31,7 @@ object MembershipRequests extends Controller {
     offset: Int = 0
   ) = Authenticated { request =>
     val requests = MembershipRequestDao.findAll(
+      Authorization(Some(request.user)),
       organizationGuid = organizationGuid,
       organizationKey = organizationKey,
       userGuid = userGuid,
@@ -80,7 +81,7 @@ object MembershipRequests extends Controller {
   }
 
   def postAcceptByGuid(guid: UUID) = Authenticated { request =>
-    MembershipRequestDao.findByGuid(guid) match {
+    MembershipRequestDao.findByGuid(Authorization(Some(request.user)), guid) match {
       case None => NotFound
       case Some(mr) => {
         MembershipRequestDao.accept(request.user, mr)
@@ -90,7 +91,7 @@ object MembershipRequests extends Controller {
   }
 
   def postDeclineByGuid(guid: UUID) = Authenticated { request =>
-    MembershipRequestDao.findByGuid(guid) match {
+    MembershipRequestDao.findByGuid(Authorization(Some(request.user)), guid) match {
       case None => NotFound
       case Some(mr) => {
         MembershipRequestDao.decline(request.user, mr)

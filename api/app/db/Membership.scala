@@ -34,7 +34,7 @@ object Membership {
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): com.gilt.apidoc.models.Membership = {
-    val membership = findByOrganizationAndUserAndRole(organization, user, role) match {
+    val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
       case Some(r) => r
       case None => create(createdBy, organization, user, role)
     }
@@ -43,7 +43,7 @@ object Membership {
     // member, remove the member role - this is akin to an upgrade
     // in membership from member to admin.
     if (role == Role.Admin) {
-      findByOrganizationAndUserAndRole(organization, user, Role.Member).foreach { membership =>
+      findByOrganizationAndUserAndRole(Authorization.All, organization, user, Role.Member).foreach { membership =>
         softDelete(user, membership)
       }
     }
@@ -88,35 +88,56 @@ object Membership {
     SoftDelete.delete("memberships", user, membership.guid)
   }
 
-  def isUserAdmin(user: User, organization: Organization): Boolean = {
-    findByOrganizationAndUserAndRole(organization, user, Role.Admin) match {
+  def isUserAdmin(
+    user: User,
+    organization: Organization
+  ): Boolean = {
+    findByOrganizationAndUserAndRole(Authorization.All, organization, user, Role.Admin) match {
       case None => false
       case Some(_) => true
     }
   }
 
-  def isUserMember(user: User, organization: Organization): Boolean = {
-    findAll(organizationGuid = Some(organization.guid), userGuid = Some(user.guid), limit = 1).headOption match {
+  def isUserMember(
+    user: User,
+    organization: Organization
+  ): Boolean = {
+    findAll(
+      Authorization.All,
+      organizationGuid = Some(organization.guid),
+      userGuid = Some(user.guid),
+      limit = 1
+    ).headOption match {
       case None => false
       case Some(_) => true
     }
   }
 
-  def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: Role): Option[com.gilt.apidoc.models.Membership] = {
-    findAll(organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
+  def findByOrganizationAndUserAndRole(
+    authorization: Authorization,
+    organization: Organization,
+    user: User,
+    role: Role
+  ): Option[com.gilt.apidoc.models.Membership] = {
+    findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
   }
 
-  def findByGuid(guid: UUID): Option[com.gilt.apidoc.models.Membership] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(authorization: Authorization, guid: UUID): Option[com.gilt.apidoc.models.Membership] = {
+    findAll(authorization, guid = Some(guid), limit = 1).headOption
   }
 
-  def findAll(guid: Option[UUID] = None,
-              organizationGuid: Option[UUID] = None,
-              organizationKey: Option[String] = None,
-              userGuid: Option[UUID] = None,
-              role: Option[String] = None,
-              limit: Long = 50,
-              offset: Long = 0): Seq[com.gilt.apidoc.models.Membership] = {
+  def findAll(
+    authorization: Authorization,
+    guid: Option[UUID] = None,
+    organizationGuid: Option[UUID] = None,
+    organizationKey: Option[String] = None,
+    userGuid: Option[UUID] = None,
+    role: Option[String] = None,
+    limit: Long = 50,
+    offset: Long = 0
+  ): Seq[com.gilt.apidoc.models.Membership] = {
+    // TODO Implement authorization
+
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and memberships.guid = {guid}::uuid" },

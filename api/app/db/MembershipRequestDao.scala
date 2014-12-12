@@ -39,7 +39,7 @@ object MembershipRequestDao {
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
-    findByOrganizationAndUserAndRole(organization, user, role) match {
+    findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
       case Some(r: MembershipRequest) => r
       case None => {
         create(createdBy, organization, user, role)
@@ -61,7 +61,7 @@ object MembershipRequestDao {
 
     global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestCreated(guid)
 
-    findByGuid(guid).getOrElse {
+    findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create membership_request")
     }
   }
@@ -113,24 +113,36 @@ object MembershipRequestDao {
     SoftDelete.delete("membership_requests", user, membershipRequest.guid)
   }
 
-  private[db] def findByOrganizationAndUserAndRole(org: Organization, user: User, role: Role): Option[MembershipRequest] = {
-    findAll(organizationGuid = Some(org.guid),
-            userGuid = Some(user.guid),
-            role = Some(role.key),
-            limit = 1).headOption
+  private[db] def findByOrganizationAndUserAndRole(
+    authorization: Authorization,
+    org: Organization,
+    user: User,
+    role: Role
+  ): Option[MembershipRequest] = {
+    findAll(
+      authorization,
+      organizationGuid = Some(org.guid),
+      userGuid = Some(user.guid),
+      role = Some(role.key),
+      limit = 1
+    ).headOption
   }
 
-  def findByGuid(guid: UUID): Option[MembershipRequest] = {
-    findAll(guid = Some(guid)).headOption
+  def findByGuid(authorization: Authorization, guid: UUID): Option[MembershipRequest] = {
+    findAll(authorization, guid = Some(guid)).headOption
   }
 
-  def findAll(guid: Option[UUID] = None,
-              organizationGuid: Option[UUID] = None,
-              organizationKey: Option[String] = None,
-              userGuid: Option[UUID] = None,
-              role: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[MembershipRequest] = {
+  def findAll(
+    authorization: Authorization,
+    guid: Option[UUID] = None,
+    organizationGuid: Option[UUID] = None,
+    organizationKey: Option[String] = None,
+    userGuid: Option[UUID] = None,
+    role: Option[String] = None,
+    limit: Long = 50,
+    offset: Long = 0
+  ): Seq[MembershipRequest] = {
+    // TODO Implement authorization
 
     val sql = Seq(
       Some(BaseQuery.trim),

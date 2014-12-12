@@ -13,6 +13,7 @@ object MainActor {
   object Messages {
     case class MembershipRequestCreated(guid: UUID)
     case class MembershipCreated(guid: UUID)
+    case class ServiceCreated(guid: UUID)
   }
 }
 
@@ -33,6 +34,12 @@ class MainActor(name: String) extends Actor with ActorLogging {
     case MainActor.Messages.MembershipCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.MembershipCreated($guid)", {
         emailActor ! EmailActor.Messages.MembershipCreated(guid)
+      }
+    )
+
+    case MainActor.Messages.ServiceCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.ServiceCreated($guid)", {
+        emailActor ! EmailActor.Messages.ServiceCreated(guid)
       }
     )
 

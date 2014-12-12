@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.apidoc.models.Membership
 import com.gilt.apidoc.models.json._
-import db.Membership
+import db.{Authorization, Membership}
 import play.api.mvc._
 import play.api.libs.json.Json
 import java.util.UUID
@@ -20,6 +20,7 @@ object Memberships extends Controller {
     Ok(
       Json.toJson(
         db.Membership.findAll(
+          Authorization(Some(request.user)),
           organizationGuid = organizationGuid,
           organizationKey = organizationKey,
           userGuid = userGuid,
@@ -32,7 +33,7 @@ object Memberships extends Controller {
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>
-    db.Membership.findByGuid(guid) match {
+    db.Membership.findByGuid(Authorization(Some(request.user)), guid) match {
       case None => NotFound
       case Some(membership) => {
         if (db.Membership.isUserAdmin(request.user, membership.organization)) {
@@ -45,7 +46,7 @@ object Memberships extends Controller {
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    db.Membership.findByGuid(guid) match {
+    db.Membership.findByGuid(Authorization(Some(request.user)), guid) match {
       case None => NoContent
       case Some(membership) => {
         if (db.Membership.isUserAdmin(request.user, membership.organization)) {

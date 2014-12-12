@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Domain, Error, Organization, OrganizationForm, OrganizationMetadata, OrganizationMetadataForm, User, Version, Visibility}
+import com.gilt.apidoc.models._
 import com.gilt.apidoc.models.json._
 import lib.{Role, Validation, UrlKey}
 import anorm._
@@ -35,7 +35,7 @@ object OrganizationDao {
      where organizations.deleted_at is null
   """
 
-  def validate(form: OrganizationForm): Seq[Error] = {
+  def validate(form: OrganizationForm): Seq[com.gilt.apidoc.models.Error] = {
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {
@@ -195,6 +195,7 @@ object OrganizationDao {
     authorization: Authorization,
     guid: Option[UUID] = None,
     userGuid: Option[UUID] = None,
+    service: Option[Service] = None,
     key: Option[String] = None,
     name: Option[String] = None,
     limit: Int = 50,
@@ -219,6 +220,11 @@ object OrganizationDao {
         "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
         ")"
       },
+      service.map { v =>
+        "and organizations.guid in (" +
+        "select organization_guid from services where deleted_at is null and guid = {service_guid}::uuid" +
+        ")"
+      },
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       key.map { v => "and organizations.key = lower(trim({key}))" },
       name.map { v => "and lower(trim(organizations.name)) = lower(trim({name}))" },
@@ -234,6 +240,7 @@ object OrganizationDao {
       guid.map('guid -> _.toString),
       authorizationUserGuid.map('authorization_user_guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
+      service.map('service_guid -> _.guid.toString),
       key.map('key -> _),
       name.map('name ->_)
     ).flatten
