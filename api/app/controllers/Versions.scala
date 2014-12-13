@@ -14,7 +14,7 @@ object Versions extends Controller {
     val versions = ServicesDao.findByOrganizationKeyAndServiceKey(Authorization(request.user), orgKey, serviceKey).map { service =>
       VersionsDao.findAll(
         Authorization(request.user),
-        service_guid = Some(service.guid),
+        serviceGuid = Some(service.guid),
         limit = limit,
         offset = offset
       )

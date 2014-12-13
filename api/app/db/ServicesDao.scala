@@ -136,7 +136,7 @@ object ServicesDao {
       orgKey.map { v => "and services.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
       name.map { v => "and lower(trim(services.name)) = lower(trim({name}))" },
       key.map { v => "and services.key = lower(trim({key}))" },
-      version.map { v => "and services.guid = (select service_guid from versions where deleted_at is null and versions.guid = {version_guid})" },
+      version.map { v => "and services.guid = (select service_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)" },
       Some(s"order by lower(services.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

@@ -23,9 +23,17 @@ object VersionsDao {
   private val LatestVersion = "latest"
 
   private val BaseQuery = """
-    select guid, version, json::varchar
+    select versions.guid, versions.version, versions.json::varchar
      from versions
-    where deleted_at is null
+     join services on services.deleted_at is null and services.guid = versions.service_guid
+    where versions.deleted_at is null
+  """
+
+  private val InsertQuery = """
+    insert into versions
+    (guid, service_guid, version, version_sort_key, json, created_by_guid)
+    values
+    ({guid}::uuid, {service_guid}::uuid, {version}, {version_sort_key}, {json}::json, {created_by_guid}::uuid)
   """
 
   def create(user: User, service: Service, version: String, json: String): Version = {
@@ -34,17 +42,14 @@ object VersionsDao {
                     json = json)
 
     DB.withConnection { implicit c =>
-      SQL("""
-          insert into versions
-          (guid, service_guid, version, version_sort_key, json, created_by_guid)
-          values
-          ({guid}::uuid, {service_guid}::uuid, {version}, {version_sort_key}, {json}::json, {created_by_guid}::uuid)
-          """).on('guid -> v.guid,
-                  'service_guid -> service.guid,
-                  'version -> v.version,
-                  'version_sort_key -> VersionTag(v.version).sortKey,
-                  'json -> v.json,
-                  'created_by_guid -> user.guid).execute()
+      SQL(InsertQuery).on(
+        'guid -> v.guid,
+        'service_guid -> service.guid,
+        'version -> v.version,
+        'version_sort_key -> VersionTag(v.version).sortKey,
+        'json -> v.json,
+        'created_by_guid -> user.guid
+      ).execute()
     }
 
     global.Actors.mainActor ! actors.MainActor.Messages.VersionCreated(v.guid)
@@ -66,7 +71,7 @@ object VersionsDao {
   def findVersion(authorization: Authorization, orgKey: String, serviceKey: String, version: String): Option[Version] = {
     ServicesDao.findByOrganizationKeyAndServiceKey(authorization, orgKey, serviceKey).flatMap { service =>
       if (version == LatestVersion) {
-        VersionsDao.findAll(authorization, service_guid = Some(service.guid), limit = 1).headOption
+        VersionsDao.findAll(authorization, serviceGuid = Some(service.guid), limit = 1).headOption
       } else {
         VersionsDao.findByServiceAndVersion(authorization, service, version)
       }
@@ -76,7 +81,7 @@ object VersionsDao {
   def findByServiceAndVersion(authorization: Authorization, service: Service, version: String): Option[Version] = {
     VersionsDao.findAll(
       authorization,
-      service_guid = Some(service.guid),
+      serviceGuid = Some(service.guid),
       version = Some(version),
       limit = 1
     ).headOption
@@ -88,7 +93,7 @@ object VersionsDao {
 
   def findAll(
     authorization: Authorization,
-    service_guid: Option[UUID] = None,
+    serviceGuid: Option[UUID] = None,
     guid: Option[UUID] = None,
     version: Option[String] = None,
     limit: Long = 25,
@@ -96,16 +101,16 @@ object VersionsDao {
   ): Seq[Version] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.serviceFilter("versions.service_guid").map(v => "and " + v),
+      authorization.serviceFilter("services").map(v => "and " + v),
       guid.map { v => "and versions.guid = {guid}::uuid" },
-      service_guid.map { _ => "and versions.service_guid = {service_guid}::uuid" },
+      serviceGuid.map { _ => "and versions.service_guid = {service_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },
       Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      service_guid.map('service_guid -> _.toString),
+      serviceGuid.map('service_guid -> _.toString),
       version.map('version ->_)
     ).flatten ++ authorization.bindVariables
 
