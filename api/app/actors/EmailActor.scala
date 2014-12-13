@@ -3,7 +3,7 @@ package actors
 import com.gilt.apidoc.models.{Membership, Publication, Service}
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
-import db.{Authorization, MembershipsDao, MembershipRequestsDao, OrganizationsDao, ServicesDao}
+import db.{Authorization, MembershipsDao, MembershipRequestsDao, OrganizationsDao, ServicesDao, VersionsDao}
 import lib.{Email, Pager, Person, Role}
 import akka.actor._
 import play.api.Logger
@@ -16,6 +16,7 @@ object EmailActor {
     case class MembershipRequestCreated(guid: UUID)
     case class MembershipCreated(guid: UUID)
     case class ServiceCreated(guid: UUID)
+    case class VersionCreated(guid: UUID)
   }
 
 }
@@ -60,6 +61,23 @@ class EmailActor extends Actor {
               subject = s"${org.name}: New Service Created - ${service.name}",
               body = views.html.emails.serviceCreated(org, service).toString
             )
+          }
+        }
+      }
+    )
+
+    case EmailActor.Messages.VersionCreated(guid) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.ServiceCreated($guid)", {
+        VersionsDao.findByGuid(Authorization.All, guid).map { version =>
+          ServicesDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { service =>
+            OrganizationsDao.findAll(Authorization.All, service = Some(service), limit = 1).headOption.map { org =>
+              Emails.deliver(
+                org = org,
+                publication = Publication.VersionsCreate,
+                subject = s"${org.name}/${service.name}: New Version Uploaded (${version.version}) ",
+                body = views.html.emails.versionCreated(org, service, version).toString
+              )
+            }
           }
         }
       }

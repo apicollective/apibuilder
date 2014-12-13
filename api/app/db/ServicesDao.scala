@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Error, Organization, Service, User, Visibility}
+import com.gilt.apidoc.models.{Error, Organization, Service, User, Version, Visibility}
 import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._
@@ -96,7 +96,7 @@ object ServicesDao {
       ).execute()
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.ServiceCreated(guid)    
+    global.Actors.mainActor ! actors.MainActor.Messages.ServiceCreated(guid)
 
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create service")
@@ -125,27 +125,18 @@ object ServicesDao {
     guid: Option[UUID] = None,
     name: Option[String] = None,
     key: Option[String] = None,
+    version: Option[Version] = None,
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Service] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization match {
-        case Authorization.All => None
-        case Authorization.PublicOnly => Some(s"and services.visibility = '${Visibility.Public.toString}'")
-        case Authorization.User(userGuid) => {
-          Some(
-            s"and (services.visibility = '${Visibility.Public.toString}' or " +
-              "organizations.guid in (" +
-              "select organization_guid from memberships where deleted_at is null and user_guid = {authorization_user_guid}::uuid" +
-            "))"
-          )
-        }
-      },
+      authorization.serviceFilter("services").map(v => "and " + v),
       guid.map { v => "and services.guid = {guid}::uuid" },
       orgKey.map { v => "and services.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
       name.map { v => "and lower(trim(services.name)) = lower(trim({name}))" },
       key.map { v => "and services.key = lower(trim({key}))" },
+      version.map { v => "and services.guid = (select service_guid from versions where deleted_at is null and versions.guid = {version_guid})" },
       Some(s"order by lower(services.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
@@ -156,11 +147,11 @@ object ServicesDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      authorizationUserGuid.map('authorization_user_guid -> _.toString),
       orgKey.map('organization_key -> _),
       name.map('name -> _),
-      key.map('key ->_)
-    ).flatten
+      key.map('key -> _),
+      version.map('version_guid -> _.guid.toString)
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq

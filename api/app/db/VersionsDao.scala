@@ -47,6 +47,8 @@ object VersionsDao {
                   'created_by_guid -> user.guid).execute()
     }
 
+    global.Actors.mainActor ! actors.MainActor.Messages.VersionCreated(v.guid)
+
     v
   }
 
@@ -64,30 +66,37 @@ object VersionsDao {
   def findVersion(authorization: Authorization, orgKey: String, serviceKey: String, version: String): Option[Version] = {
     ServicesDao.findByOrganizationKeyAndServiceKey(authorization, orgKey, serviceKey).flatMap { service =>
       if (version == LatestVersion) {
-        VersionsDao.findAll(service_guid = Some(service.guid), limit = 1).headOption
+        VersionsDao.findAll(authorization, service_guid = Some(service.guid), limit = 1).headOption
       } else {
-        VersionsDao.findByServiceAndVersion(service, version)
+        VersionsDao.findByServiceAndVersion(authorization, service, version)
       }
     }
   }
 
-  def findByServiceAndVersion(service: Service, version: String): Option[Version] = {
+  def findByServiceAndVersion(authorization: Authorization, service: Service, version: String): Option[Version] = {
     VersionsDao.findAll(
+      authorization,
       service_guid = Some(service.guid),
       version = Some(version),
       limit = 1
     ).headOption
   }
 
+  def findByGuid(authorization: Authorization, guid: UUID): Option[Version] = {
+    findAll(authorization, guid = Some(guid), limit = 1).headOption
+  }
+
   def findAll(
+    authorization: Authorization,
     service_guid: Option[UUID] = None,
-    guid: Option[String] = None,
+    guid: Option[UUID] = None,
     version: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Version] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      authorization.serviceFilter("versions.service_guid").map(v => "and " + v),
       guid.map { v => "and versions.guid = {guid}::uuid" },
       service_guid.map { _ => "and versions.service_guid = {service_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },
@@ -95,10 +104,10 @@ object VersionsDao {
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _),
+      guid.map('guid -> _.toString),
       service_guid.map('service_guid -> _.toString),
       version.map('version ->_)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>

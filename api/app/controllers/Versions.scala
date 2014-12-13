@@ -13,6 +13,7 @@ object Versions extends Controller {
   def getByOrgKeyAndServiceKey(orgKey: String, serviceKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
     val versions = ServicesDao.findByOrganizationKeyAndServiceKey(Authorization(request.user), orgKey, serviceKey).map { service =>
       VersionsDao.findAll(
+        Authorization(request.user),
         service_guid = Some(service.guid),
         limit = limit,
         offset = offset
@@ -64,7 +65,7 @@ object Versions extends Controller {
                 ServicesDao.update(request.user, service.copy(visibility = visibility))
               }
 
-              val resultingVersion = VersionsDao.findByServiceAndVersion(service, version) match {
+              val resultingVersion = VersionsDao.findByServiceAndVersion(Authorization(Some(request.user)), service, version) match {
                 case None => VersionsDao.create(request.user, service, version, form.json)
                 case Some(existing: Version) => VersionsDao.replace(request.user, existing, service, form.json)
               }

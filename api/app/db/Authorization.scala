@@ -20,6 +20,15 @@ sealed trait Authorization {
     organizationMetadataTableName: Option[String] = None
   ): Option[String]
 
+  /**
+    * Generates a sql filter to restrict the returned set of
+    * services to those that are able to be seen by this
+    * authorization.
+    */
+  def serviceFilter(
+    servicesTableName: String = "services"
+  ): Option[String]
+
   def bindVariables(): Seq[NamedParameter] = Seq.empty
 
 }
@@ -31,6 +40,8 @@ object Authorization {
 
   private val UserQuery =
     s"select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid"
+
+  private val PublicServicesQuery = s"%s.visibility = '${Visibility.Public.toString}'"
 
   case object PublicOnly extends Authorization {
 
@@ -44,6 +55,12 @@ object Authorization {
       }
     }
 
+    def serviceFilter(
+      servicesTableName: String = "services"
+    ) = {
+      Some(PublicServicesQuery.format(servicesTableName))
+    }
+
   }
 
   case object All extends Authorization {
@@ -51,6 +68,10 @@ object Authorization {
     override def organizationFilter(
       organizationGuidColumn: String,
       organizationMetadataTableName: Option[String] = None
+    ) = None
+
+    def serviceFilter(
+      servicesTableName: String = "services"
     ) = None
 
   }
@@ -65,6 +86,14 @@ object Authorization {
         case None => Some(s"$organizationGuidColumn in ($MetadataQuery union all $UserQuery)")
         case Some(table) => Some(s"($table.visibility = '${Visibility.Public}' or $organizationGuidColumn in ($UserQuery))")
       }
+    }
+
+    def serviceFilter(
+      servicesTableName: String = "services"
+    ) = {
+      Some(
+        "(" + PublicServicesQuery.format(servicesTableName) + " or " + organizationFilter(s"$servicesTableName.organization_guid").get + ")"
+      )
     }
 
     override def bindVariables(): Seq[NamedParameter] = {
