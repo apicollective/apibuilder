@@ -232,6 +232,9 @@ object OrganizationsDao {
       name.map('name ->_)
     ).flatten ++ authorization.bindVariables
 
+    println(sql)
+    println(authorization.bindVariables)
+
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
     }

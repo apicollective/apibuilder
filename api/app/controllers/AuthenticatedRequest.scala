@@ -38,10 +38,7 @@ private[controllers] object RequestHelper {
       case _ => None
     }
 
-    val userFromHeader = userGuidHeader.flatMap(UsersDao.findByGuid(_)) match {
-      case None => tokenUser
-      case Some(user) => Some(user)
-    }
+    val userFromHeader = userGuidHeader.flatMap(UsersDao.findByGuid(_))
     UserAuth(tokenUser, userFromHeader)
 
   }
