@@ -19,9 +19,13 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   lazy val apiToken = TokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid)).token
 
-  lazy val client = new com.gilt.apidoc.Client(s"http://localhost:$port", Some(apiToken)) {
-    override def _requestHolder(path: String) = {
-      super._requestHolder(path).withHeaders("X-User-Guid" -> TestUser.guid.toString)
+  lazy val client = newClient(TestUser)
+
+  def newClient(user: User) = {
+    new com.gilt.apidoc.Client(s"http://localhost:$port", Some(apiToken)) {
+      override def _requestHolder(path: String) = {
+        super._requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
+      }
     }
   }
 

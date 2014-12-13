@@ -1,7 +1,7 @@
 package controllers
 
 import db.OrganizationsDao
-import com.gilt.apidoc.models.{Organization, OrganizationForm}
+import com.gilt.apidoc.models.{Organization, OrganizationForm, OrganizationMetadataForm, Visibility}
 import com.gilt.apidoc.error.ErrorsResponse
 import java.util.UUID
 
@@ -11,7 +11,7 @@ import play.api.test.Helpers._
 class OrganizationsSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-
+/*
   "POST /organizations" in new WithServer {
     val name = UUID.randomUUID.toString
     val org = createOrganization(OrganizationForm(name = name))
@@ -59,6 +59,26 @@ class OrganizationsSpec extends BaseSpec {
     val org = createOrganization()
     await(client.organizations.getByKey(org.key)) must be(Some(org))
     await(client.organizations.getByKey(UUID.randomUUID.toString)) must be(None)
+  }
+*/
+
+  "GET /organizations for an anonymous user shows only public orgs" in new WithServer {
+    val privateOrg = createOrganization(createOrganizationForm().copy(metadata = Some(OrganizationMetadataForm(
+      visibility = Some(Visibility.Organization)
+    ))))
+
+    val publicOrg = createOrganization(createOrganizationForm().copy(metadata = Some(OrganizationMetadataForm(
+      visibility = Some(Visibility.Public)
+    ))))
+
+    val anonymous = createUser()
+
+    val client = newClient(anonymous)
+    await(client.organizations.getByKey(privateOrg.key)) must be(None)
+    await(client.organizations.getByKey(publicOrg.key)).map(_.key) must be(Some(publicOrg.key))
+
+    await(client.organizations.get(key = Some(privateOrg.key))) must be(Seq.empty)
+    await(client.organizations.get(key = Some(publicOrg.key))).map(_.key) must be(Seq(publicOrg.key))
   }
 
 }
