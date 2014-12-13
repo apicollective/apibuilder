@@ -70,13 +70,13 @@ POST    /:orgKey/subscriptions/:publication/toggle                controllers.Su
 
 # Start dynamic routing by service key
 
+GET     /:orgKey/:serviceKey/:version/settings                    controllers.ServiceSettings.show(orgKey: String, serviceKey: String, version: String)
+GET     /:orgKey/:serviceKey/:version/settings/edit               controllers.ServiceSettings.edit(orgKey: String, serviceKey: String, version: String)
+POST    /:orgKey/:serviceKey/:version/settings/postEdit           controllers.ServiceSettings.postEdit(orgKey: String, serviceKey: String, version: String)
+POST    /:orgKey/:serviceKey/:version/settings/postDelete         controllers.ServiceSettings.postDelete(orgKey: String, serviceKey: String, version: String)
+
 GET     /:orgKey/:serviceKey                                      controllers.Versions.redirectToLatest(orgKey: String, serviceKey: String)
 GET     /:orgKey/:serviceKey/:version                             controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
 GET     /:orgKey/:serviceKey/:version/api.json                    controllers.Versions.apiJson(orgKey: String, serviceKey: String, version: String)
 POST    /:orgKey/:serviceKey/:version/watch                       controllers.Versions.postWatch(orgKey: String, serviceKey: String, version: String)
 GET     /:orgKey/:serviceKey/:version/:generatorKey               controllers.Code.generate(orgKey: String, serviceKey: String, version: String, generatorKey: String)
-
-GET     /:orgKey/:serviceKey/:version/settings                    controllers.ServiceSettings.show(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/:serviceKey/:version/settings/edit               controllers.ServiceSettings.edit(orgKey: String, serviceKey: String, version: String)
-POST    /:orgKey/:serviceKey/:version/settings/postEdit           controllers.ServiceSettings.postEdit(orgKey: String, serviceKey: String, version: String)
-POST    /:orgKey/:serviceKey/:version/settings/postDelete         controllers.ServiceSettings.postDelete(orgKey: String, serviceKey: String, version: String)
