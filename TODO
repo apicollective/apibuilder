@@ -5,6 +5,15 @@ Cache the generators
 Email verification process, including auto add to orgs based no email
   domain if there is a membership request pending
 
+UX:
+
+  - On adding watch, check subscription and offer the user to enable
+    the relevant subscriptions if not subscribed
+
+  - On service visibility - if service is public and org is NOT, add
+    note that the service will not be visible until the org is made
+    public.
+
 Org level setting to enable semver versioning (default on)
   - prevent backwards incompatible changes once at major version 1
 
