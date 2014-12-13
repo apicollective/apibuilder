@@ -74,7 +74,6 @@ GET     /:orgKey/:serviceKey                                      controllers.Ve
 GET     /:orgKey/:serviceKey/:version                             controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
 GET     /:orgKey/:serviceKey/:version/api.json                    controllers.Versions.apiJson(orgKey: String, serviceKey: String, version: String)
 POST    /:orgKey/:serviceKey/:version/watch                       controllers.Versions.postWatch(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/:serviceKey/:version/watch                       controllers.Versions.postWatch(orgKey: String, serviceKey: String, version: String)
 GET     /:orgKey/:serviceKey/:version/:generatorKey               controllers.Code.generate(orgKey: String, serviceKey: String, version: String, generatorKey: String)
 
 GET     /:orgKey/:serviceKey/:version/settings                    controllers.ServiceSettings.show(orgKey: String, serviceKey: String, version: String)

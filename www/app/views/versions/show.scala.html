@@ -5,15 +5,16 @@
 
 @main(tpl) {
 
-  @if(tpl.isOrgMember) {
+  @tpl.service.map { svc =>
     <div class="pull-right">
-      @tpl.service.map { svc =>
-        <a href="@routes.Versions.create(orgKey = tpl.org.get.key, service = Some(svc.key))">Upload new version</a>
-        @if(isWatching) {
-          <a href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, serviceKey = svc.key, version = tpl.version.get)">Watching</a>
-        } else {
-          <a href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, serviceKey = svc.key, version = tpl.version.get)">Not Watching</a>
-        }
+      @if(tpl.isOrgMember) {
+        <a href="@routes.Versions.create(orgKey = tpl.org.get.key, service = Some(svc.key))">Upload new version</a> |
+      }
+
+      @if(isWatching) {
+        <a class="postForm" href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, serviceKey = svc.key, version = tpl.version.get)">Watching</a>
+      } else {
+        <a class="postForm" href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, serviceKey = svc.key, version = tpl.version.get)">Not Watching</a>
       }
     </div>
   }
