@@ -16,13 +16,10 @@ object Generators extends Controller {
     request.api.Generators.get().recover {
       case ex: Exception => Seq.empty
     }.map { generators =>
-      Ok(views.html.generators.index(
-        MainTemplate(
-          user = Some(request.user),
-          generators = generators,
-          title = Some("Generators")
-        )
-      ))
+      Ok(views.html.generators.index(request.mainTemplate().copy(
+        title = Some("Generators"),
+        generators = generators
+      )))
     }
   }
 
@@ -33,21 +30,17 @@ object Generators extends Controller {
       generator match {
         case None => Redirect(routes.Generators.list()).flashing("warning" -> s"Generator not found")
         case Some(g) => {
-          Ok(
-            views.html.generators.details(
-              request.mainTemplate(Some("Generator Details")).copy(generators = Seq(g))
-            )
-          )
+          Ok(views.html.generators.details(request.mainTemplate().copy(
+            title = Some("Generator Details"),
+            generators = Seq(g)
+          )))
         }
       }
     }
   }
 
   def postUpdate(key: String) = Authenticated.async { implicit request =>
-    val tpl = MainTemplate(
-      user = Some(request.user),
-      title = Some("Add Generator")
-    )
+    val tpl = request.mainTemplate(Some("Add Generator"))
     val boundForm = generatorUpdateForm.bindFromRequest
     boundForm.fold (
 

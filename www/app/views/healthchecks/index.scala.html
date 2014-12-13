@@ -1,6 +1,6 @@
-@(org: Option[com.gilt.apidoc.models.Organization])(implicit flash: Flash)
+@(tpl: models.MainTemplate)(implicit flash: Flash)
 
-@main(MainTemplate(title = Some("Healthcheck"), org = org)) {
+@main(tpl) {
   healthy
 }
 

@@ -3,7 +3,7 @@ GET     /_internal_/healthcheck                                   controllers.He
 GET     /                                                         controllers.Application.index(orgsPage: Int ?= 0, membershipRequestsPage: Int ?= 0, publicOrganizationsPage: Int ?= 0)
 
 GET     /login                                                    controllers.LoginController.redirect
-GET     /login/                                                   controllers.LoginController.index
+GET     /login/                                                   controllers.LoginController.index(return_url: Option[String] ?= None)
 POST    /login/                                                   controllers.LoginController.indexPost
 POST    /login/register                                           controllers.LoginController.registerPost
 

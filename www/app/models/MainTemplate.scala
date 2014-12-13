@@ -17,7 +17,8 @@ case class MainTemplate(
   settings: Option[SettingsMenu] = None,
   generators: Seq[Generator] = Seq.empty,
   isOrgAdmin: Boolean = false,
-  isOrgMember: Boolean = false
+  isOrgMember: Boolean = false,
+  requestPath: String
 ) {
 
   def canEditService(service: String): Boolean = isOrgMember

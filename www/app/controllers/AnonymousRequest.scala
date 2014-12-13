@@ -24,6 +24,7 @@ class AnonymousRequest[A](
 
   def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(
+      requestPath = request.path,
       title = title,
       user = user,
       org = org,

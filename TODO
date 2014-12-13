@@ -1,5 +1,3 @@
-when asking to login, capture return url
-
 Cache the generators
 
 Email verification process, including auto add to orgs based no email

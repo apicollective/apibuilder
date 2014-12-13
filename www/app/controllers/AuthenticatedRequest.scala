@@ -15,6 +15,7 @@ class AuthenticatedRequest[A](val user: User, request: Request[A]) extends Wrapp
 
   def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(
+      requestPath = request.path,
       title = title,
       user = Some(user)
     )
@@ -47,12 +48,20 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
+    lazy val returnUrl: Option[String] = {
+      if (request.method.toUpperCase == "GET") {
+        Some(request.uri)
+      } else {
+        None
+      }
+    }
+
     request.session.get("user_guid").map { userGuid =>
       Await.result(api().Users.getByGuid(UUID.fromString(userGuid)), 5000.millis) match {
 
         case None => {
           // have a user guid, but user does not exist
-          Future.successful(Redirect("/login").withNewSession)
+          Future.successful(Redirect(routes.LoginController.index(return_url = returnUrl)).withNewSession)
         }
 
         case Some(u: User) => {
@@ -62,8 +71,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
       }
 
     } getOrElse {
-      Future.successful(Redirect("/login"))
-
+      Future.successful(Redirect(routes.LoginController.index(return_url = returnUrl)).withNewSession)
     }
 
   }

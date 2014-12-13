@@ -49,11 +49,7 @@ object Organizations extends Controller {
       )
     } yield {
       Ok(views.html.organizations.membershipRequests(
-        MainTemplate(
-          user = Some(request.user),
-          title = Some(request.org.name),
-          org = Some(request.org)
-        ),
+        request.mainTemplate(Some(request.org.name)),
         requests = PaginatedCollection(page, requests))
       )
     }
@@ -85,10 +81,7 @@ object Organizations extends Controller {
           val isMember = !membershipsResponse.headOption.isEmpty
           val hasMembershipRequest = !membershipRequestResponse.isEmpty
           Ok(views.html.organizations.requestMembership(
-            MainTemplate(
-              user = Some(request.user),
-              title = Some(s"Join ${org.name}")
-            ),
+            request.mainTemplate(Some(s"Join ${org.name}")),
             org,
             adminsResponse,
             hasMembershipRequest,
@@ -118,19 +111,13 @@ object Organizations extends Controller {
 
   def create() = Authenticated { implicit request =>
     Ok(views.html.organizations.form(
-      models.MainTemplate(
-        user = Some(request.user),
-        title = Some("Add Organization")
-      ),
+      request.mainTemplate(Some("Add Organization")),
       orgForm
     ))
   }
 
   def createPost = Authenticated.async { implicit request =>
-    val tpl = models.MainTemplate(
-      user = Some(request.user),
-      title = Some("Add Organization")
-    )
+    val tpl = request.mainTemplate(Some("Add Organization"))
 
     val form = orgForm.bindFromRequest
     form.fold (

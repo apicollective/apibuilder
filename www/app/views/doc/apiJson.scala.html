@@ -1,6 +1,6 @@
 @(user: Option[com.gilt.apidoc.models.User])
 
-@doc.main(user, Some("api.json format")) {
+@doc.main(routes.DocController.apiJson.url, user, Some("api.json format")) {
 
   <p>
     A schema is represented in JSON as a JSON object of the form:

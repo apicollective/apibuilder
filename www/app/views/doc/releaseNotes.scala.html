@@ -1,6 +1,6 @@
 @(user: Option[com.gilt.apidoc.models.User])
 
-@doc.main(user, Some("Release notes")) {
+@doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
 <h3>0.7.7</h3>
 

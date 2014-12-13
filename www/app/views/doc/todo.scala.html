@@ -1,6 +1,6 @@
 @(user: Option[com.gilt.apidoc.models.User])
 
-@doc.main(user, Some("Todo")) {
+@doc.main(routes.DocController.todo.url, user, Some("Todo")) {
 
   <ul>
 

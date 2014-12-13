@@ -1,6 +1,6 @@
 @(user: Option[com.gilt.apidoc.models.User])
 
-@doc.main(user, Some("Getting Started")) {
+@doc.main(routes.DocController.gettingStarted.url, user, Some("Getting Started")) {
 
 <div class="panel panel-default">
   <div class="panel-heading">

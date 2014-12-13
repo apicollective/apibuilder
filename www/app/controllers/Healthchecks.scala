@@ -1,5 +1,6 @@
 package controllers
 
+import models.MainTemplate
 import play.api._
 import play.api.mvc._
 
@@ -11,7 +12,8 @@ object Healthchecks extends Controller {
     for {
       orgs <- Authenticated.api().Organizations.get(key = Some("gilt"), limit = Some(1))
     } yield {
-      Ok(views.html.healthchecks.index(orgs.headOption))
+      val tpl = MainTemplate(requestPath = request.path, title = Some("Healthcheck"), org = orgs.headOption)
+      Ok(views.html.healthchecks.index(tpl))
     }
   }
 

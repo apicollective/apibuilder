@@ -1,6 +1,6 @@
 @(user: Option[com.gilt.apidoc.models.User])
 
-@doc.main(user) {
+@doc.main(routes.DocController.index.url, user) {
 
 <div class="jumbotron">
   <h1>apidoc</h1>

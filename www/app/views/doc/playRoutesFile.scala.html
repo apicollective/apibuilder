@@ -1,6 +1,6 @@
 @(user: Option[com.gilt.apidoc.models.User])
 
-@doc.main(user, Some("Play Routes")) {
+@doc.main(routes.DocController.playRoutesFile.url, user, Some("Play Routes")) {
 
   <p>
     apidoc generates a play routes file to help ensure that a service

@@ -24,6 +24,7 @@ class AuthenticatedOrgRequest[A](
 
   override def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(
+      requestPath = request.path,
       title = title,
       user = Some(user),
       org = Some(org),
@@ -48,16 +49,30 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedOrgRequest[A]) => Future[Result]) = {
 
+    def returnUrl(orgKey: Option[String]): Option[String] = {
+      if (request.method.toUpperCase == "GET") {
+        Some(request.uri)
+      } else {
+        orgKey match {
+          case None => Some(routes.Application.index().url)
+          case Some(key) => Some(routes.Organizations.show(key).url)
+        }
+      }
+    }
+
+    val orgKeyOption = request.path.split("/").drop(1).headOption
+
     request.session.get("user_guid").map { userGuid =>
+
       Await.result(Authenticated.api().Users.getByGuid(UUID.fromString(userGuid)), 5000.millis) match {
 
         case None => {
           // have a user guid, but user does not exist
-          Future.successful(Redirect("/login").withNewSession)
+          Future.successful(Redirect(routes.LoginController.index(return_url = returnUrl(orgKeyOption))).withNewSession)
         }
 
         case Some(u: User) => {
-          val orgKey = request.path.split("/").drop(1).headOption.getOrElse {
+          val orgKey = orgKeyOption.getOrElse {
             sys.error(s"No org key for request path[${request.path}]")
           }
 
@@ -80,8 +95,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
       }
 
     } getOrElse {
-      Future.successful(Redirect("/login"))
-
+      Future.successful(Redirect(routes.LoginController.index(return_url = returnUrl(orgKeyOption))).withNewSession)
     }
 
   }

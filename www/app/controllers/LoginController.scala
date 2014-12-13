@@ -1,5 +1,6 @@
 package controllers
 
+import models.MainTemplate
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -14,24 +15,29 @@ object LoginController extends Controller {
     Redirect(routes.LoginController.index())
   }
 
-  def index() = Action { implicit request =>
-    Ok(views.html.login.index(Tab.Login, loginForm, registerForm))
+  def index(returnUrl: Option[String]) = Action { implicit request =>
+    val tpl = MainTemplate(requestPath = request.path)
+    val lForm = loginForm.fill(LoginData(email = "", password = "", returnUrl = returnUrl))
+    val rForm = registerForm.fill(RegisterData(name = None, email = "", password = "", passwordVerify = "", returnUrl = returnUrl))
+    Ok(views.html.login.index(tpl, Tab.Login, lForm, rForm))
   }
 
   def indexPost = Action.async { implicit request =>
+    val tpl = MainTemplate(requestPath = request.path)
     val form = loginForm.bindFromRequest
     form.fold (
 
       formWithErrors => Future {
-        Ok(views.html.login.index(Tab.Login, formWithErrors, registerForm))
+        Ok(views.html.login.index(tpl, Tab.Login, formWithErrors, registerForm))
       },
 
       validForm => {
+        val returnUrl = validForm.returnUrl.getOrElse("/")
         Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { user =>
-          Redirect("/").withSession { "user_guid" -> user.guid.toString }
+          Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: com.gilt.apidoc.error.ErrorsResponse => {
-            Ok(views.html.login.index(Tab.Login, form, registerForm, Some(r.errors.map(_.message).mkString(", "))))
+            Ok(views.html.login.index(tpl, Tab.Login, form, registerForm, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
       }
@@ -40,19 +46,22 @@ object LoginController extends Controller {
   }
 
   def registerPost = Action.async { implicit request =>
+    val tpl = MainTemplate(requestPath = request.path)
+
     val form = registerForm.bindFromRequest
     form.fold (
 
       formWithErrors => Future {
-        Ok(views.html.login.index(Tab.Register, loginForm, formWithErrors))
+        Ok(views.html.login.index(tpl, Tab.Register, loginForm, formWithErrors))
       },
 
       validForm => {
+        val returnUrl = validForm.returnUrl.getOrElse("/")
         Authenticated.api().Users.post(name = validForm.name, email = validForm.email, password = validForm.password).map { user =>
-          Redirect("/").withSession { "user_guid" -> user.guid.toString }
+          Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: com.gilt.apidoc.error.ErrorsResponse => {
-            Ok(views.html.login.index(Tab.Register, loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
+            Ok(views.html.login.index(tpl, Tab.Register, loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
       }
@@ -60,23 +69,25 @@ object LoginController extends Controller {
     )
   }
 
-  case class LoginData(email: String, password: String)
+  case class LoginData(email: String, password: String, returnUrl: Option[String])
   val loginForm = Form(
     mapping(
       "email" -> nonEmptyText,
-      "password" -> nonEmptyText
+      "password" -> nonEmptyText,
+      "return_url" -> optional(text)
     )(LoginData.apply)(LoginData.unapply)
   )
 
-  case class RegisterData(name: Option[String], email: String, password: String, password_verify: String)
+  case class RegisterData(name: Option[String], email: String, password: String, passwordVerify: String, returnUrl: Option[String])
   val registerForm = Form(
     mapping(
       "name" -> optional(text),
       "email" -> nonEmptyText,
       "password" -> nonEmptyText(minLength=5),
-      "password_verify" -> nonEmptyText
+      "password_verify" -> nonEmptyText,
+      "return_url" -> optional(text)
     )(RegisterData.apply)(RegisterData.unapply) verifying("Password and password verify do not match", { f =>
-      f.password == f.password_verify
+      f.password == f.passwordVerify
     })
   )
 
@@ -87,6 +98,5 @@ object LoginController extends Controller {
     case object Register extends Tab
 
   }
-
 
 }
