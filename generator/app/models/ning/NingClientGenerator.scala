@@ -45,8 +45,9 @@ object NingClientGenerator {
 case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescription) {
 
   def generate(): String = {
+    ApidocHeaders(ssd.serviceDescription.userAgent).toJavaString + "\n" +
     Seq(
-      Play2Models(ssd),
+      Play2Models(ssd, addHeader = false),
       client()
     ).mkString("\n\n")
   }

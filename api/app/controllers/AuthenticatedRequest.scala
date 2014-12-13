@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models.{Organization, User}
-import db.{Membership, UserDao}
+import db.{MembershipsDao, UsersDao}
 import play.api.mvc._
 import play.api.mvc.Results.Unauthorized
 import scala.concurrent.Future
@@ -33,12 +33,12 @@ private[controllers] object RequestHelper {
 
     val tokenUser: Option[User] = BasicAuthorization.get(authorizationHeader) match {
       case Some(auth: BasicAuthorization.Token) => {
-        UserDao.findByToken(auth.token)
+        UsersDao.findByToken(auth.token)
       }
       case _ => None
     }
 
-    val userFromHeader = userGuidHeader.flatMap(UserDao.findByGuid(_)) match {
+    val userFromHeader = userGuidHeader.flatMap(UsersDao.findByGuid(_)) match {
       case None => tokenUser
       case Some(user) => Some(user)
     }
@@ -73,11 +73,11 @@ object AnonymousRequest extends ActionBuilder[AnonymousRequest] {
 class AuthenticatedRequest[A](val tokenUser: User, val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
   def requireAdmin(org: Organization) {
-    require(Membership.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
+    require(MembershipsDao.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
   }
 
   def requireMember(org: Organization) {
-    require(Membership.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
+    require(MembershipsDao.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
   }
 
 }

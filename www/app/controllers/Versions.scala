@@ -3,7 +3,7 @@ package controllers
 import models.MainTemplate
 import core.{ServiceDescriptionBuilder, ServiceDescriptionValidator}
 import lib.{UrlKey, Util}
-import com.gilt.apidoc.models.{Organization, Version, Visibility}
+import com.gilt.apidoc.models.{Organization, User, Version, Visibility, WatchForm}
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.Json
@@ -16,24 +16,28 @@ import java.io.File
 object Versions extends Controller {
 
   private val DefaultVersion = "0.0.1-dev"
+  private val LatestVersion = "latest"
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
+  def redirectToLatest(orgKey: String, serviceKey: String) = Action {
+    Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion))
+  }
+
   def show(orgKey: String, serviceKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     for {
-      serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
-      versionsResponse <- request.api.Versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
-      versionOption <- request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+      serviceResponse <- request.api.services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
+      versionsResponse <- request.api.versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
+      versionOption <- request.api.versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
       generators <- request.api.Generators.get()
     } yield {
       versionOption match {
 
         case None => {
-          if ("latest" == versionName) {
+          if (LatestVersion == versionName) {
             Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
           } else {
-            Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
-              .flashing("warning" -> s"Version not found: $versionName")
+            Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion)).flashing("warning" -> s"Version not found: $versionName")
           }
         }
 
@@ -41,6 +45,9 @@ object Versions extends Controller {
           val service = serviceResponse.headOption.getOrElse {
             sys.error(s"Could not find service for orgKey[$orgKey] and key[$serviceKey]")
           }
+
+          // TODO: Move this earlier based on user guid
+          val watches = isWatching(request.api, request.user, orgKey, serviceKey)
 
           val sd = ServiceDescriptionBuilder(v.json)
           val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
@@ -50,7 +57,7 @@ object Versions extends Controller {
             serviceDescription = Some(sd),
             generators = generators.filter(_.enabled)
           )
-          Ok(views.html.versions.show(tpl, sd))
+          Ok(views.html.versions.show(tpl, sd, watches))
         }
       }
     }
@@ -59,15 +66,56 @@ object Versions extends Controller {
   def apiJson(orgKey: String, serviceKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName).map {
       case None => {
-        if ("latest" == versionName) {
+        if (LatestVersion == versionName) {
           Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
         } else {
-          Redirect(routes.Versions.show(orgKey, serviceKey, "latest"))
+          Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion))
             .flashing("warning" -> s"Version not found: ${versionName}")
         }
       }
       case Some(version) => {
         Ok(version.json).withHeaders("Content-Type" -> "application/json")
+      }
+    }
+  }
+
+  def postWatch(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+    request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(request.org.key, serviceKey, versionName).flatMap {
+      case None => {
+        if (LatestVersion == versionName) {
+          Future {
+            Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
+          }
+        } else {
+          Future {
+            Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion))
+              .flashing("warning" -> s"Version not found: ${versionName}")
+          }
+        }
+      }
+      case Some(version) => {
+        Await.result(request.api.watches.get(
+          userGuid = Some(request.user.guid),
+          organizationKey = Some(orgKey),
+          serviceKey = Some(serviceKey)
+        ), 5000.millis).headOption match {
+          case None => {
+            request.api.watches.post(
+              WatchForm(
+                userGuid = request.user.guid,
+                organizationKey = orgKey,
+                serviceKey = serviceKey
+              )
+            ).map { _ =>
+              Redirect(routes.Versions.show(orgKey, serviceKey, versionName)).flashing("success" -> "You are now watching this service")
+            }
+          }
+          case Some(watch) => {
+            request.api.watches.deleteByGuid(watch.guid).map { _ =>
+              Redirect(routes.Versions.show(orgKey, serviceKey, versionName)).flashing("success" -> "You are no longer watching this service")
+            }
+          }
+        }
       }
     }
   }
@@ -164,6 +212,27 @@ object Versions extends Controller {
         }
       }
     )
+  }
+
+  private def isWatching(
+    api: com.gilt.apidoc.Client,
+    user: Option[User],
+    orgKey: String,
+    serviceKey: String
+  ): Boolean = {
+    user match {
+      case None => false
+      case Some(u) => {
+        Await.result(api.watches.get(
+          userGuid = Some(u.guid),
+          organizationKey = Some(orgKey),
+          serviceKey = Some(serviceKey)
+        ), 5000.millis).headOption match {
+          case None => false
+          case Some(_) => true
+        }
+      }
+    }
   }
 
   case class UploadData(version: String, visibility: String)

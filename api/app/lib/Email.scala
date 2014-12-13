@@ -69,7 +69,8 @@ object Email {
       case Some(name) => s""""$name" <${to.email}">"""
     }
 
-    val bytes = s"""<p>To: $name<br/>
+    val bytes = s"""<p>
+To: $name<br/>
 Subject: $subject
 </p>
 <hr size="1"/>

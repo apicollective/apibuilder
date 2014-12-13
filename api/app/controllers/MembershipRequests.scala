@@ -3,7 +3,7 @@ package controllers
 import com.gilt.apidoc.models.{Organization, User}
 import com.gilt.apidoc.models.json._
 import lib.{Review, Role, Validation}
-import db.{MembershipRequestDao, OrganizationDao, UserDao}
+import db.{Authorization, MembershipRequestsDao, OrganizationsDao, UsersDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -27,10 +27,11 @@ object MembershipRequests extends Controller {
     organizationKey: Option[String],
     userGuid: Option[UUID],
     role: Option[String],
-    limit: Int = 50,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ) = Authenticated { request =>
-    val requests = MembershipRequestDao.findAll(
+    val requests = MembershipRequestsDao.findAll(
+      Authorization(Some(request.user)),
       organizationGuid = organizationGuid,
       organizationKey = organizationKey,
       userGuid = userGuid,
@@ -48,13 +49,13 @@ object MembershipRequests extends Controller {
       }
       case s: JsSuccess[MembershipRequestForm] => {
         val form = s.get
-        OrganizationDao.findByUserAndGuid(request.user, form.org_guid) match {
+        OrganizationsDao.findByUserAndGuid(request.user, form.org_guid) match {
           case None => {
             Conflict(Json.toJson(Validation.error("Organization not found or not authorized to make changes to this org")))
           }
 
           case Some(org: Organization) => {
-            UserDao.findByGuid(form.user_guid) match {
+            UsersDao.findByGuid(form.user_guid) match {
 
               case None => {
                 Conflict(Json.toJson(Validation.error("User not found")))
@@ -67,7 +68,7 @@ object MembershipRequests extends Controller {
                   }
 
                   case Some(role: Role) => {
-                    val mr = MembershipRequestDao.upsert(request.user, org, user, role)
+                    val mr = MembershipRequestsDao.upsert(request.user, org, user, role)
                     Ok(Json.toJson(mr))
                   }
                 }
@@ -80,20 +81,20 @@ object MembershipRequests extends Controller {
   }
 
   def postAcceptByGuid(guid: UUID) = Authenticated { request =>
-    MembershipRequestDao.findByGuid(guid) match {
+    MembershipRequestsDao.findByGuid(Authorization(Some(request.user)), guid) match {
       case None => NotFound
       case Some(mr) => {
-        MembershipRequestDao.accept(request.user, mr)
+        MembershipRequestsDao.accept(request.user, mr)
         NoContent
       }
     }
   }
 
   def postDeclineByGuid(guid: UUID) = Authenticated { request =>
-    MembershipRequestDao.findByGuid(guid) match {
+    MembershipRequestsDao.findByGuid(Authorization(Some(request.user)), guid) match {
       case None => NotFound
       case Some(mr) => {
-        MembershipRequestDao.decline(request.user, mr)
+        MembershipRequestsDao.decline(request.user, mr)
         NoContent
       }
     }

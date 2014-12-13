@@ -15,13 +15,21 @@ object Play2Models extends CodeGenerator {
     apply(new ScalaServiceDescription(sd))
   }
 
-  def apply(ssd: ScalaServiceDescription): String = {
-    val caseClasses = ScalaCaseClasses.generate(ssd)
+  def apply(
+    ssd: ScalaServiceDescription,
+    addHeader: Boolean = true
+  ): String = {
+    val caseClasses = ScalaCaseClasses.generate(ssd, addHeader = false)
     val prefix = underscoreAndDashToInitCap(ssd.name)
     val enumJson: String = ssd.enums.map { enum => ScalaEnums.buildJson(ssd.name, enum) }.mkString("\n\n")
     val modelJson: String = ssd.models.map { model => Play2Json(ssd.name).generate(model) }.mkString("\n\n")
 
-s"""$caseClasses
+    val header = addHeader match {
+      case false => ""
+      case true => ApidocHeaders(ssd.serviceDescription.userAgent).toJavaString() + "\n"
+    }
+
+s"""$header$caseClasses
 
 package ${ssd.modelPackageName} {
   package object json {

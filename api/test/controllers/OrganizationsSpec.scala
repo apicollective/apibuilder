@@ -1,6 +1,6 @@
 package controllers
 
-import db.OrganizationDao
+import db.OrganizationsDao
 import com.gilt.apidoc.models.{Organization, OrganizationForm}
 import com.gilt.apidoc.error.ErrorsResponse
 import java.util.UUID
@@ -27,7 +27,7 @@ class OrganizationsSpec extends BaseSpec {
   "POST /organizations validates key is valid" in new WithServer {
     intercept[ErrorsResponse] {
       createOrganization(OrganizationForm(name = UUID.randomUUID.toString, key = Some("a")))
-    }.errors.map(_.message) must be(Seq(s"Key must be at least ${db.OrganizationDao.MinKeyLength} characters"))
+    }.errors.map(_.message) must be(Seq(s"Key must be at least ${db.OrganizationsDao.MinKeyLength} characters"))
 
     intercept[ErrorsResponse] {
       createOrganization(OrganizationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
@@ -36,10 +36,9 @@ class OrganizationsSpec extends BaseSpec {
 
   "POST /organizations validates key is not reserved" in new WithServer {
     intercept[ErrorsResponse] {
-      createOrganization(OrganizationForm(name = UUID.randomUUID.toString, key = Some("user")))
-    }.errors.map(_.message) must be(Seq(s"Key user is a reserved word and cannot be used for the key of an organization"))
+      createOrganization(OrganizationForm(name = "membership_request"))
+    }.errors.map(_.message) must be(Seq(s"Key membership_request is a reserved word and cannot be used for the key of an organization"))
   }
-
 
   "DELETE /organizations/:key" in new WithServer {
     val org = createOrganization()

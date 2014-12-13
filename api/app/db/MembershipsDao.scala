@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, User}
+import com.gilt.apidoc.models.{Membership, Organization, User}
 import com.gilt.apidoc.models.json._
 import lib.Role
 import anorm._
@@ -9,11 +9,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-case class Membership(guid: String, organization: Organization, user: User, role: String)
-
-object Membership {
-
-  implicit val membershipWrites = Json.writes[Membership]
+object MembershipsDao {
 
   private val InsertQuery = """
     insert into memberships
@@ -23,7 +19,7 @@ object Membership {
   """
 
   private val BaseQuery = """
-    select memberships.guid::varchar,
+    select memberships.guid,
            role,
            organizations.guid as organization_guid,
            organizations.name as organization_name,
@@ -38,8 +34,8 @@ object Membership {
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
-    val membership = findByOrganizationAndUserAndRole(organization, user, role) match {
-      case Some(r: Membership) => r
+    val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
+      case Some(r) => r
       case None => create(createdBy, organization, user, role)
     }
 
@@ -47,8 +43,8 @@ object Membership {
     // member, remove the member role - this is akin to an upgrade
     // in membership from member to admin.
     if (role == Role.Admin) {
-      findByOrganizationAndUserAndRole(organization, user: User, Role.Member).foreach { membership =>
-        softDelete(user, membership: Membership)
+      findByOrganizationAndUserAndRole(Authorization.All, organization, user, Role.Member).foreach { membership =>
+        softDelete(user, membership)
       }
     }
 
@@ -63,7 +59,7 @@ object Membership {
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     val membership = Membership(
-      guid = UUID.randomUUID.toString,
+      guid = UUID.randomUUID,
       organization = organization,
       user = user,
       role = role.key
@@ -77,38 +73,71 @@ object Membership {
       'created_by_guid -> createdBy.guid
     ).execute()
 
+    global.Actors.mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
+
     membership
   }
 
+  /**
+    * Deletes a membership record. Also removes the user from any
+    * publication subscriptions that require the administrative role
+    * for this org.
+    */
   def softDelete(user: User, membership: Membership) {
+    SubscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
     SoftDelete.delete("memberships", user, membership.guid)
   }
 
-  def isUserAdmin(user: User, organization: Organization): Boolean = {
-    findByOrganizationAndUserAndRole(organization, user, Role.Admin) match {
+  def isUserAdmin(
+    user: User,
+    organization: Organization
+  ): Boolean = {
+    findByOrganizationAndUserAndRole(Authorization.All, organization, user, Role.Admin) match {
       case None => false
       case Some(_) => true
     }
   }
 
-  def isUserMember(user: User, organization: Organization): Boolean = {
-    findAll(organizationGuid = Some(organization.guid), userGuid = Some(user.guid), limit = 1).headOption match {
+  def isUserMember(
+    user: User,
+    organization: Organization
+  ): Boolean = {
+    findAll(
+      Authorization.All,
+      organizationGuid = Some(organization.guid),
+      userGuid = Some(user.guid),
+      limit = 1
+    ).headOption match {
       case None => false
       case Some(_) => true
     }
   }
 
-  def findByOrganizationAndUserAndRole(organization: Organization, user: User, role: Role): Option[Membership] = {
-    findAll(organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
+  def findByOrganizationAndUserAndRole(
+    authorization: Authorization,
+    organization: Organization,
+    user: User,
+    role: Role
+  ): Option[Membership] = {
+    findAll(authorization, organizationGuid = Some(organization.guid), userGuid = Some(user.guid), role = Some(role.key)).headOption
   }
 
-  def findAll(guid: Option[String] = None,
-              organizationGuid: Option[UUID] = None,
-              organizationKey: Option[String] = None,
-              userGuid: Option[UUID] = None,
-              role: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[Membership] = {
+  def findByGuid(authorization: Authorization, guid: UUID): Option[Membership] = {
+    findAll(authorization, guid = Some(guid), limit = 1).headOption
+  }
+
+  def findAll(
+    authorization: Authorization,
+    guid: Option[UUID] = None,
+    organizationGuid: Option[UUID] = None,
+    organizationKey: Option[String] = None,
+    userGuid: Option[UUID] = None,
+    role: Option[String] = None,
+    limit: Long = 25,
+    offset: Long = 0
+  ): Seq[Membership] = {
+    // TODO Implement authorization
+
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and memberships.guid = {guid}::uuid" },
@@ -120,7 +149,7 @@ object Membership {
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _ ),
+      guid.map('guid -> _.toString ),
       organizationGuid.map('organization_guid -> _.toString ),
       organizationKey.map('organization_key -> _ ),
       userGuid.map('user_guid -> _.toString),
@@ -130,9 +159,9 @@ object Membership {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         Membership(
-          guid = row[String]("guid"),
-          organization = OrganizationDao.summaryFromRow(row, Some("organization")),
-          user = UserDao.fromRow(row, Some("user")),
+          guid = row[UUID]("guid"),
+          organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
+          user = UsersDao.fromRow(row, Some("user")),
           role = row[String]("role")
         )
       }.toSeq

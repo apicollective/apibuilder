@@ -4,7 +4,7 @@ import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 import lib.Role
 
-class UserDaoSpec extends FunSpec with Matchers {
+class UsersDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
@@ -21,13 +21,13 @@ class UserDaoSpec extends FunSpec with Matchers {
   }
 
   it("return empty list without error guid is not a valid format") {
-    UserDao.findByGuid("ASDF") should be(None)
+    UsersDao.findByGuid("ASDF") should be(None)
   }
 
   it("findByGuid") {
     val user = Util.upsertUser("michael@mailinator.com")
-    UserDao.findByGuid(UUID.randomUUID.toString) should be(None)
-    UserDao.findByGuid(user.guid) should be(Some(user))
+    UsersDao.findByGuid(UUID.randomUUID.toString) should be(None)
+    UsersDao.findByGuid(user.guid) should be(Some(user))
   }
 
   it("user can login after creation") {
@@ -35,9 +35,9 @@ class UserDaoSpec extends FunSpec with Matchers {
       email = UUID.randomUUID.toString + "@gilttest.com",
       password = "testing"
     )
-    val user = UserDao.create(form)
-    UserPasswordDao.isValid(user.guid, "testing") should be(true)
-    UserPasswordDao.isValid(user.guid, "password") should be(false)
+    val user = UsersDao.create(form)
+    UserPasswordsDao.isValid(user.guid, "testing") should be(true)
+    UserPasswordsDao.isValid(user.guid, "password") should be(false)
   }
 
   describe("users and orgs") {
@@ -46,27 +46,27 @@ class UserDaoSpec extends FunSpec with Matchers {
       val gilt = Util.gilt
 
       if (gilt.domains.find(_.name == "gilt.com").isEmpty) {
-        OrganizationDomainDao.create(Util.createdBy, gilt, "gilt.com")
+        OrganizationDomainsDao.create(Util.createdBy, gilt, "gilt.com")
       }
 
-      val user = UserDao.create(UserForm(
+      val user = UsersDao.create(UserForm(
         email = UUID.randomUUID.toString + "@gilt.com",
         password = "testing"
       ))
 
-      MembershipRequestDao.findByOrganizationAndUserAndRole(gilt, user, Role.Member).isEmpty should be(false)
-      MembershipRequestDao.findByOrganizationAndUserAndRole(gilt, user, Role.Admin) should be(None)
+      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Member).isEmpty should be(false)
+      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Admin) should be(None)
     }
 
     it("are not linked if the email domain is different") {
       val gilt = Util.gilt
-      val user = UserDao.create(UserForm(
+      val user = UsersDao.create(UserForm(
         email = UUID.randomUUID.toString + "@gilttest.com",
         password = "testing"
       ))
 
-      Membership.findByOrganizationAndUserAndRole(gilt, user, Role.Member) should be(None)
-      Membership.findByOrganizationAndUserAndRole(gilt, user, Role.Admin) should be(None)
+      MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Member) should be(None)
+      MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Admin) should be(None)
     }
 
 

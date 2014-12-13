@@ -48,17 +48,17 @@ class ScalaPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
     describe("generates valid case classes") {
 
       it("singleton") {
-        val code = ScalaCaseClasses.generate(ssd("object"))
+        val code = ScalaCaseClasses.generate(ssd("object"), addHeader = false)
         TestHelper.assertEqualsFile("test/resources/generators/scala-primitive-object-singleton.txt", code)
       }
 
       it("list") {
-        val code = ScalaCaseClasses.generate(ssd("[object]"))
+        val code = ScalaCaseClasses.generate(ssd("[object]"), addHeader = false)
         TestHelper.assertEqualsFile("test/resources/generators/scala-primitive-object-list.txt", code)
       }
 
       it("map") {
-        val code = ScalaCaseClasses.generate(ssd("map[object]"))
+        val code = ScalaCaseClasses.generate(ssd("map[object]"), addHeader = false)
         TestHelper.assertEqualsFile("test/resources/generators/scala-primitive-object-map.txt", code)
       }
 

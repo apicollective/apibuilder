@@ -1,9 +1,11 @@
+import com.gilt.apidocgenerator.models.json._
+import lib.Validation
+import com.gilt.apidoc.models.json._
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.mvc.Results._
 import scala.concurrent.Future
-import lib.Validation
 
 object Global extends WithFilters(LoggingFilter) {
 

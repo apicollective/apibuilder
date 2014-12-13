@@ -16,7 +16,7 @@ case class OrganizationDomain(guid: String, organization_guid: UUID, domain: Str
 
 }
 
-object OrganizationDomainDao {
+object OrganizationDomainsDao {
 
   private val BaseQuery = """
     select guid::varchar, organization_guid, domain

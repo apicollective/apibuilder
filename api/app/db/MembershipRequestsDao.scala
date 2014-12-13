@@ -11,7 +11,7 @@ import play.api.libs.json._
 import java.util.UUID
 
 
-object MembershipRequestDao {
+object MembershipRequestsDao {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]
 
@@ -39,7 +39,7 @@ object MembershipRequestDao {
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
-    findByOrganizationAndUserAndRole(organization, user, role) match {
+    findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
       case Some(r: MembershipRequest) => r
       case None => {
         create(createdBy, organization, user, role)
@@ -61,7 +61,7 @@ object MembershipRequestDao {
 
     global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestCreated(guid)
 
-    findByGuid(guid).getOrElse {
+    findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create membership_request")
     }
   }
@@ -79,9 +79,9 @@ object MembershipRequestDao {
 
     val message = s"Accepted membership request for ${request.user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
-      OrganizationLog.create(createdBy, request.organization, message)
-      MembershipRequestDao.softDelete(createdBy, request)
-      Membership.upsert(createdBy, request.organization, request.user, r)
+      OrganizationLogsDao.create(createdBy, request.organization, message)
+      MembershipRequestsDao.softDelete(createdBy, request)
+      MembershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
   }
 
@@ -97,14 +97,14 @@ object MembershipRequestDao {
 
     val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
-      OrganizationLog.create(createdBy, request.organization, message)
-      MembershipRequestDao.softDelete(createdBy, request)
+      OrganizationLogsDao.create(createdBy, request.organization, message)
+      MembershipRequestsDao.softDelete(createdBy, request)
     }
   }
 
   private def assertUserCanReview(user: User, request: MembershipRequest) {
     require(
-      Membership.isUserAdmin(user, request.organization),
+      MembershipsDao.isUserAdmin(user, request.organization),
       s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"
     )
   }
@@ -113,24 +113,36 @@ object MembershipRequestDao {
     SoftDelete.delete("membership_requests", user, membershipRequest.guid)
   }
 
-  private[db] def findByOrganizationAndUserAndRole(org: Organization, user: User, role: Role): Option[MembershipRequest] = {
-    findAll(organizationGuid = Some(org.guid),
-            userGuid = Some(user.guid),
-            role = Some(role.key),
-            limit = 1).headOption
+  private[db] def findByOrganizationAndUserAndRole(
+    authorization: Authorization,
+    org: Organization,
+    user: User,
+    role: Role
+  ): Option[MembershipRequest] = {
+    findAll(
+      authorization,
+      organizationGuid = Some(org.guid),
+      userGuid = Some(user.guid),
+      role = Some(role.key),
+      limit = 1
+    ).headOption
   }
 
-  def findByGuid(guid: UUID): Option[MembershipRequest] = {
-    findAll(guid = Some(guid)).headOption
+  def findByGuid(authorization: Authorization, guid: UUID): Option[MembershipRequest] = {
+    findAll(authorization, guid = Some(guid)).headOption
   }
 
-  def findAll(guid: Option[UUID] = None,
-              organizationGuid: Option[UUID] = None,
-              organizationKey: Option[String] = None,
-              userGuid: Option[UUID] = None,
-              role: Option[String] = None,
-              limit: Int = 50,
-              offset: Int = 0): Seq[MembershipRequest] = {
+  def findAll(
+    authorization: Authorization,
+    guid: Option[UUID] = None,
+    organizationGuid: Option[UUID] = None,
+    organizationKey: Option[String] = None,
+    userGuid: Option[UUID] = None,
+    role: Option[String] = None,
+    limit: Long = 25,
+    offset: Long = 0
+  ): Seq[MembershipRequest] = {
+    // TODO Implement authorization
 
     val sql = Seq(
       Some(BaseQuery.trim),
@@ -154,8 +166,8 @@ object MembershipRequestDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         MembershipRequest(
           guid = row[UUID]("guid"),
-          organization = OrganizationDao.summaryFromRow(row, Some("organization")),
-          user = UserDao.fromRow(row, Some("user")),
+          organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
+          user = UsersDao.fromRow(row, Some("user")),
           role = row[String]("role")
         )
       }.toSeq

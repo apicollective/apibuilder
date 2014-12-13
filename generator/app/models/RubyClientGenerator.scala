@@ -122,6 +122,8 @@ case class RubyClientGenerator(service: ServiceDescription) {
   private val moduleName = RubyUtil.toClassName(service.name)
 
   def generate(): String = {
+    ApidocHeaders(service.userAgent).toRubyString() +
+    "\n\n" +
     RubyHttpClient.require +
     "\n\n" +
     service.description.map { desc => GeneratorUtil.formatComment(desc) + "\n" }.getOrElse("") +

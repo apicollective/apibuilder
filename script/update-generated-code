@@ -8,17 +8,23 @@ def download(data)
   data.each do |service_name, map|
     map.each do |target, path|
       tmpfile = "/tmp/download-#{service_name}-#{target}.tmp"
-      cmd = "curl --silent #{SERVICE_URL}/#{ORG}/code/#{service_name}/latest/#{target} > #{tmpfile}"
+      cmd = "curl --silent #{SERVICE_URL}/#{ORG}/#{service_name}/latest/#{target} > #{tmpfile}"
       puts cmd
       system(cmd)
 
-      if IO.read(tmpfile).match(/<html>/)
+      contents = IO.read(tmpfile).strip
+      if contents == "" || contents.match(/<html>/)
         raise " --> Error downloading URL"
       end
 
-      downloads[tmpfile] = path
+      if `diff #{tmpfile} #{path}`.strip == ""
+        puts " --> Unchanged"
+      else
+        downloads[tmpfile] = path
+      end
     end
   end
+    
   downloads.each do |tmp, path|
     command = "cp #{tmp} #{path}"
     puts command

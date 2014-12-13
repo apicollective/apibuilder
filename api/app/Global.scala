@@ -1,3 +1,4 @@
+import com.gilt.apidoc.models.json._
 import actors.MainActor
 import lib.Validation
 

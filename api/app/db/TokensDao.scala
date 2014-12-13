@@ -8,7 +8,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object TokenDao {
+object TokensDao {
 
   private val BaseQuery = """
     select tokens.guid,
@@ -86,7 +86,7 @@ object TokenDao {
   ) = Token(
     guid = row[UUID]("guid"),
     token = row[String]("token"),
-    user = UserDao.fromRow(row, Some("user"))
+    user = UsersDao.fromRow(row, Some("user"))
   )
 
 }

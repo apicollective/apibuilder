@@ -60,8 +60,9 @@ object Play2ClientGenerator {
 case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaServiceDescription) {
 
   def generate(): String = {
+    ApidocHeaders(ssd.serviceDescription.userAgent).toJavaString + "\n" +
     Seq(
-      Play2Models(ssd),
+      Play2Models(ssd, addHeader = false),
       client()
     ).mkString("\n\n")
   }

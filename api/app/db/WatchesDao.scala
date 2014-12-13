@@ -2,11 +2,13 @@ package db
 
 import com.gilt.apidoc.models.{Error, Organization, Service, Watch, WatchForm, User}
 import anorm._
-import lib.{Validation, ValidationError}
+import lib.Validation
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import org.postgresql.util.PSQLException
+import scala.util.{Try, Success, Failure}
 
 case class FullWatchForm(
   createdBy: User,
@@ -14,14 +16,14 @@ case class FullWatchForm(
 ) {
 
   private val auth = Authorization(Some(createdBy))
-  val org: Option[Organization] = OrganizationDao.findByKey(auth, form.organizationKey)
+  val org: Option[Organization] = OrganizationsDao.findByKey(auth, form.organizationKey)
   val service: Option[Service] = org.flatMap { o =>
-    ServiceDao.findByOrganizationKeyAndServiceKey(auth, o.key, form.serviceKey)
+    ServicesDao.findByOrganizationKeyAndServiceKey(auth, o.key, form.serviceKey)
   }
 
-  val user = UserDao.findByGuid(form.userGuid)
+  val user = UsersDao.findByGuid(form.userGuid)
 
-  lazy val validate: Seq[ValidationError] = {
+  lazy val validate: Seq[Error] = {
     val serviceKeyErrors = service match {
       case None => Seq(s"Service[${form.serviceKey}] not found")
       case Some(service) => Seq.empty
@@ -37,7 +39,7 @@ case class FullWatchForm(
 
 }
 
-object WatchDao {
+object WatchesDao {
 
   private val BaseQuery = """
     select watches.guid,
@@ -66,7 +68,7 @@ object WatchDao {
     ({guid}::uuid, {user_guid}::uuid, {service_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def create(createdBy: User, fullForm: FullWatchForm): Watch = {
+  def upsert(createdBy: User, fullForm: FullWatchForm): Watch = {
     val errors = fullForm.validate
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -76,17 +78,34 @@ object WatchDao {
 
     val guid = UUID.randomUUID
 
-    DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'user_guid -> fullForm.form.userGuid,
-        'service_guid -> service.guid,
-        'created_by_guid -> createdBy.guid
-      ).execute()
-    }
-
-    findByGuid(Authorization.All, guid).getOrElse {
-      sys.error("Failed to create watch")
+    Try(
+      DB.withConnection { implicit c =>
+        SQL(InsertQuery).on(
+          'guid -> guid,
+          'user_guid -> fullForm.form.userGuid,
+          'service_guid -> service.guid,
+          'created_by_guid -> createdBy.guid
+        ).execute()
+      }
+    ) match {
+      case Success(_) => {
+        findByGuid(Authorization.All, guid).getOrElse {
+          sys.error("Failed to create watch")
+        }
+      }
+      case Failure(e) => e match {
+        case e: PSQLException => {
+          findAll(
+            Authorization.All,
+            userGuid = Some(fullForm.form.userGuid),
+            organizationKey = Some(fullForm.org.get.key),
+            service = Some(service),
+            limit = 1
+          ).headOption.getOrElse {
+            sys.error(s"Failed to create watch")
+          }
+        }
+      }
     }
   }
 
@@ -105,6 +124,7 @@ object WatchDao {
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
+    organizationKey: Option[String] = None,
     service: Option[Service] = None,
     serviceKey: Option[String] = None,
     userGuid: Option[UUID] = None,
@@ -113,8 +133,10 @@ object WatchDao {
   ): Seq[Watch] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      authorization.organizationFilter("organizations.guid").map(v => "and " + v),
       guid.map { v => "and watches.guid = {guid}::uuid" },
       userGuid.map { v => "and watches.user_guid = {user_guid}::uuid" },
+      organizationKey.map { v => "and organizations.key = lower(trim({organization_key}))" },
       service.map { v => "and watches.service_guid = {service_guid}::uuid" },
       serviceKey.map { v => "and watches.service_guid = (select guid from services where deleted_at is null and key = lower(trim({service_key})))" },
       Some(s"order by services.key, watches.created_at limit ${limit} offset ${offset}")
@@ -124,9 +146,10 @@ object WatchDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
+      organizationKey.map('organization_key -> _),
       service.map('service_guid -> _.guid.toString),
       serviceKey.map('service_key -> _)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
@@ -138,9 +161,9 @@ object WatchDao {
   ): Watch = {
     Watch(
       guid = row[UUID]("guid"),
-      user = UserDao.fromRow(row, Some("user")),
-      organization = OrganizationDao.summaryFromRow(row, Some("organization")),
-      service = ServiceDao.fromRow(row, Some("service"))
+      user = UsersDao.fromRow(row, Some("user")),
+      organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
+      service = ServicesDao.fromRow(row, Some("service"))
     )
   }
 

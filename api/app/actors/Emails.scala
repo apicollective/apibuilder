@@ -1,7 +1,7 @@
 package actors
 
 import com.gilt.apidoc.models.{Organization, Publication, Subscription}
-import db.{Authorization, SubscriptionDao}
+import db.{Authorization, SubscriptionsDao}
 import lib.{Email, Pager, Person}
 import akka.actor._
 import play.api.Logger
@@ -34,7 +34,7 @@ object Emails {
     f: Subscription => Unit
   ) {
     Pager.eachPage[Subscription] { offset =>
-      SubscriptionDao.findAll(
+      SubscriptionsDao.findAll(
         Authorization.All,
         organization = Some(organization),
         publication = Some(publication),

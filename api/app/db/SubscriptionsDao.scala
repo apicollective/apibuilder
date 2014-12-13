@@ -2,13 +2,15 @@ package db
 
 import com.gilt.apidoc.models.{Error, Organization, Publication, Subscription, SubscriptionForm, User}
 import anorm._
-import lib.{Validation, ValidationError}
+import lib.Validation
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object SubscriptionDao {
+object SubscriptionsDao {
+
+  val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
 
   private val BaseQuery = """
     select subscriptions.guid,
@@ -35,8 +37,8 @@ object SubscriptionDao {
   def validate(
     user: User,
     form: SubscriptionForm
-  ): Seq[ValidationError] = {
-    val org = OrganizationDao.findByKey(Authorization(Some(user)), form.organizationKey)
+  ): Seq[Error] = {
+    val org = OrganizationsDao.findByKey(Authorization(Some(user)), form.organizationKey)
 
     val organizationKeyErrors = org match {
         case None => Seq("Organization not found")
@@ -48,7 +50,7 @@ object SubscriptionDao {
       case _ => Seq.empty
     }
 
-    val userErrors = UserDao.findByGuid(form.userGuid) match {
+    val userErrors = UsersDao.findByGuid(form.userGuid) match {
         case None => Seq("User not found")
         case Some(_) => Seq.empty
     }
@@ -56,7 +58,7 @@ object SubscriptionDao {
     val alreadySubscribed = org match {
       case None => Seq.empty
       case Some(o) => {
-        SubscriptionDao.findAll(
+        SubscriptionsDao.findAll(
           Authorization.All,
           organization = Some(o),
           userGuid = Some(form.userGuid),
@@ -76,7 +78,7 @@ object SubscriptionDao {
     val errors = validate(createdBy, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    val org = OrganizationDao.findByKey(Authorization(Some(createdBy)), form.organizationKey).getOrElse {
+    val org = OrganizationsDao.findByKey(Authorization(Some(createdBy)), form.organizationKey).getOrElse {
       sys.error("Failed to validate org for subscription")
     }
 
@@ -99,6 +101,19 @@ object SubscriptionDao {
 
   def softDelete(deletedBy: User, subscription: Subscription) {
     SoftDelete.delete("subscriptions", deletedBy, subscription.guid)
+  }
+
+  def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User) {
+    PublicationsRequiredAdmin.foreach { publication =>
+      SubscriptionsDao.findAll(
+        Authorization.All,
+        organization = Some(organization),
+        userGuid = Some(user.guid),
+        publication = Some(publication)
+      ).foreach { subscription =>
+        softDelete(user, subscription)
+      }
+    }
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Subscription] = {
@@ -147,8 +162,8 @@ object SubscriptionDao {
   ): Subscription = {
     Subscription(
       guid = row[UUID]("guid"),
-      organization = OrganizationDao.summaryFromRow(row, Some("organization")),
-      user = UserDao.fromRow(row, Some("user")),
+      organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
+      user = UsersDao.fromRow(row, Some("user")),
       publication = Publication(row[String]("publication"))
     )
   }

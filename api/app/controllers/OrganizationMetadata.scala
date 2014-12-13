@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.apidoc.models.OrganizationMetadataForm
 import com.gilt.apidoc.models.json._
-import db.{ OrganizationDao, OrganizationMetadataDao }
+import db.{ OrganizationsDao, OrganizationMetadataDao }
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
@@ -16,7 +16,7 @@ object OrganizationMetadata extends Controller {
       }
       case s: JsSuccess[OrganizationMetadataForm] => {
         val form = s.get
-        OrganizationDao.findByUserAndKey(request.user, key) match {
+        OrganizationsDao.findByUserAndKey(request.user, key) match {
           case None => NotFound
           case Some(org) => {
             request.requireAdmin(org)

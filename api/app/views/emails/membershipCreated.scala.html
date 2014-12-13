@@ -1,0 +1,11 @@
+@(membership: com.gilt.apidoc.models.Membership)
+
+<p>
+  @membership.user.name &lt;@membership.user.email&gt; has joined
+  @membership.organization.name as @membership.role.
+</p>
+
+<p>
+  <a href="@lib.Email.apidocWebHostname/@membership.organization.key/members">View all members</a>
+</p>
+

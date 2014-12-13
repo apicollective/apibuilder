@@ -1,10 +1,10 @@
 package actors
 
-import com.gilt.apidoc.models.Publication
+import com.gilt.apidoc.models.{Membership, Publication, Service}
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
-import db.MembershipRequestDao
-import lib.{Email, Pager, Person}
+import db.{Authorization, MembershipsDao, MembershipRequestsDao, OrganizationsDao, ServicesDao, VersionsDao}
+import lib.{Email, Pager, Person, Role}
 import akka.actor._
 import play.api.Logger
 import play.api.Play.current
@@ -14,6 +14,9 @@ object EmailActor {
 
   object Messages {
     case class MembershipRequestCreated(guid: UUID)
+    case class MembershipCreated(guid: UUID)
+    case class ServiceCreated(guid: UUID)
+    case class VersionCreated(guid: UUID)
   }
 
 }
@@ -24,13 +27,58 @@ class EmailActor extends Actor {
 
     case EmailActor.Messages.MembershipRequestCreated(guid) => Util.withVerboseErrorHandler(
       s"EmailActor.Messages.MembershipRequestCreated($guid)", {
-        MembershipRequestDao.findByGuid(guid).map { request =>
+        MembershipRequestsDao.findByGuid(Authorization.All, guid).map { request =>
           Emails.deliver(
             org = request.organization,
             publication = Publication.MembershipRequestsCreate,
-            subject = s"${request.organization.key}: Membership Request from ${request.user.email}",
+            subject = s"${request.organization.name}: Membership Request from ${request.user.email}",
             body = views.html.emails.membershipRequestCreated(request).toString
           )
+        }
+      }
+    )
+
+    case EmailActor.Messages.MembershipCreated(guid) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.MembershipCreated($guid)", {
+        MembershipsDao.findByGuid(Authorization.All, guid).map { membership =>
+          Emails.deliver(
+            org = membership.organization,
+            publication = Publication.MembershipsCreate,
+            subject = s"${membership.organization.name}: ${membership.user.email} has joined as ${membership.role}",
+            body = views.html.emails.membershipCreated(membership).toString
+          )
+        }
+      }
+    )
+
+    case EmailActor.Messages.ServiceCreated(guid) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.ServiceCreated($guid)", {
+        ServicesDao.findByGuid(Authorization.All, guid).map { service =>
+          OrganizationsDao.findAll(Authorization.All, service = Some(service)).map { org =>
+            Emails.deliver(
+              org = org,
+              publication = Publication.ServicesCreate,
+              subject = s"${org.name}: New Service Created - ${service.name}",
+              body = views.html.emails.serviceCreated(org, service).toString
+            )
+          }
+        }
+      }
+    )
+
+    case EmailActor.Messages.VersionCreated(guid) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.ServiceCreated($guid)", {
+        VersionsDao.findByGuid(Authorization.All, guid).map { version =>
+          ServicesDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { service =>
+            OrganizationsDao.findAll(Authorization.All, service = Some(service), limit = 1).headOption.map { org =>
+              Emails.deliver(
+                org = org,
+                publication = Publication.VersionsCreate,
+                subject = s"${org.name}/${service.name}: New Version Uploaded (${version.version}) ",
+                body = views.html.emails.versionCreated(org, service, version).toString
+              )
+            }
+          }
         }
       }
     )

@@ -32,6 +32,17 @@ GET     /generators/:key                                          controllers.Ge
 POST    /generators/postCreate                                    controllers.Generators.postCreate()
 POST    /generators/postUpdate                                    controllers.Generators.postUpdate(key: String)
 
+GET     /assets/*file                                             controllers.Assets.at(path="/public", file)
+
+# Start dynamic routing by org key
+
+GET     /:orgKey                                                  controllers.Organizations.show(orgKey: String, page: Int ?= 0)
+
+GET     /:orgKey/domains                                          controllers.Domains.index(orgKey: String)
+POST    /:orgKey/domains/:domain/remove                           controllers.Domains.postRemove(orgKey: String, domain: String)
+GET     /:orgKey/domains/create                                   controllers.Domains.create(orgKey: String)
+POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
+
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/add                                      controllers.Members.add(orgKey: String)
 POST    /:orgKey/members/addPost                                  controllers.Members.addPost(orgKey: String)
@@ -39,35 +50,33 @@ POST    /:orgKey/members/postRemove                               controllers.Me
 POST    /:orgKey/members/postRevokeAdmin                          controllers.Members.postRevokeAdmin(orgKey: String, guid: java.util.UUID)
 POST    /:orgKey/members/postMakeAdmin                            controllers.Members.postMakeAdmin(orgKey: String, guid: java.util.UUID)
 
-GET     /:orgKey/domains                                          controllers.Domains.index(orgKey: String)
-POST    /:orgKey/domains/:domain/remove                           controllers.Domains.postRemove(orgKey: String, domain: String)
-GET     /:orgKey/domains/create                                   controllers.Domains.create(orgKey: String)
-POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
+POST    /:orgKey/membership_request_reviews/accept                controllers.MembershipRequestReviews.accept(orgKey: String, membership_request_guid: java.util.UUID)
+POST    /:orgKey/membership_request_reviews/decline               controllers.MembershipRequestReviews.decline(orgKey: String, membership_request_guid: java.util.UUID)
+
+GET     /:orgKey/membership_requests                              controllers.Organizations.membershipRequests(orgKey: String, page: Int ?= 0)
+
+GET     /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
+POST    /:orgKey/memberships/request                              controllers.Organizations.postRequestMembership(orgKey: String)
 
 GET     /:orgKey/metadata                                         controllers.Metadata.show(orgKey: String)
 GET     /:orgKey/metadata/edit                                    controllers.Metadata.edit(orgKey: String)
 POST    /:orgKey/metadata/postEdit                                controllers.Metadata.postEdit(orgKey: String)
 
-GET     /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
-POST    /:orgKey/memberships/request                              controllers.Organizations.postRequestMembership(orgKey: String)
-GET     /:orgKey/membership_requests                              controllers.Organizations.membershipRequests(orgKey: String, page: Int ?= 0)
-
-POST    /:orgKey/membership_request_reviews/accept                controllers.MembershipRequestReviews.accept(orgKey: String, membership_request_guid: java.util.UUID)
-POST    /:orgKey/membership_request_reviews/decline               controllers.MembershipRequestReviews.decline(orgKey: String, membership_request_guid: java.util.UUID)
-
-GET     /:orgKey                                                  controllers.Organizations.show(orgKey: String, page: Int ?= 0)
-
 GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String, service: Option[String] ?= None)
 POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String)
 
-GET     /:orgKey/docs/:serviceKey/:version                        controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/api.json/:serviceKey/:version                    controllers.Versions.apiJson(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/code/:serviceKey/:version/:generatorKey          controllers.Code.generate(orgKey: String, serviceKey: String, version: String, generatorKey: String)
-GET     /:orgKey/settings/:serviceKey/:version                    controllers.ServiceSettings.show(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/settings/:serviceKey/:version/edit               controllers.ServiceSettings.edit(orgKey: String, serviceKey: String, version: String)
-POST     /:orgKey/settings/:serviceKey/:version/postEdit          controllers.ServiceSettings.postEdit(orgKey: String, serviceKey: String, version: String)
-POST     /:orgKey/settings/:serviceKey/:version/postDelete        controllers.ServiceSettings.postDelete(orgKey: String, serviceKey: String, version: String)
+GET     /:orgKey/subscriptions/                                   controllers.Subscriptions.index(orgKey: String)
+POST    /:orgKey/subscriptions/:publication/toggle                controllers.Subscriptions.postToggle(orgKey: String, publication: com.gilt.apidoc.models.Publication)
 
-# Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file                                             controllers.Assets.at(path="/public", file)
+# Start dynamic routing by service key
 
+GET     /:orgKey/:serviceKey/:version/settings                    controllers.ServiceSettings.show(orgKey: String, serviceKey: String, version: String)
+GET     /:orgKey/:serviceKey/:version/settings/edit               controllers.ServiceSettings.edit(orgKey: String, serviceKey: String, version: String)
+POST    /:orgKey/:serviceKey/:version/settings/postEdit           controllers.ServiceSettings.postEdit(orgKey: String, serviceKey: String, version: String)
+POST    /:orgKey/:serviceKey/:version/settings/postDelete         controllers.ServiceSettings.postDelete(orgKey: String, serviceKey: String, version: String)
+
+GET     /:orgKey/:serviceKey                                      controllers.Versions.redirectToLatest(orgKey: String, serviceKey: String)
+GET     /:orgKey/:serviceKey/:version                             controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
+GET     /:orgKey/:serviceKey/:version/api.json                    controllers.Versions.apiJson(orgKey: String, serviceKey: String, version: String)
+POST    /:orgKey/:serviceKey/:version/watch                       controllers.Versions.postWatch(orgKey: String, serviceKey: String, version: String)
+GET     /:orgKey/:serviceKey/:version/:generatorKey               controllers.Code.generate(orgKey: String, serviceKey: String, version: String, generatorKey: String)

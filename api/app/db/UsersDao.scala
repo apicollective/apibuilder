@@ -15,7 +15,7 @@ object UserForm {
   implicit val userFormReads = Json.reads[UserForm]
 }
 
-object UserDao {
+object UsersDao {
 
   private val BaseQuery = """
     select guid, email, name
@@ -55,15 +55,15 @@ object UserDao {
                           'created_by_guid -> Constants.DefaultUserGuid,
                           'updated_by_guid -> Constants.DefaultUserGuid).execute()
 
-      UserPasswordDao.doCreate(c, guid, guid, form.password)
+      UserPasswordsDao.doCreate(c, guid, guid, form.password)
     }
 
     val user = findByGuid(guid).getOrElse {
       sys.error("Failed to create user")
     }
 
-    OrganizationDao.findByEmailDomain(form.email).foreach { org =>
-      MembershipRequestDao.create(user, org, user, Role.Member)
+    OrganizationsDao.findByEmailDomain(form.email).foreach { org =>
+      MembershipRequestsDao.create(user, org, user, Role.Member)
     }
 
     user

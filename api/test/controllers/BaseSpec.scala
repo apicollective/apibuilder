@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.models._
-import db.{TokenDao, UserDao, UserForm}
+import db.{TokensDao, UsersDao, UserForm}
 import java.util.UUID
 
 import play.api.test._
@@ -15,9 +15,9 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   implicit override lazy val port = 9010
   implicit override lazy val app: FakeApplication = FakeApplication()
 
-  lazy val TestUser = UserDao.create(createUserForm())
+  lazy val TestUser = UsersDao.create(createUserForm())
 
-  lazy val apiToken = TokenDao.create(TestUser, TokenForm(userGuid = TestUser.guid)).token
+  lazy val apiToken = TokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid)).token
 
   lazy val client = new com.gilt.apidoc.Client(s"http://localhost:$port", Some(apiToken)) {
     override def _requestHolder(path: String) = {
@@ -71,7 +71,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     org: Organization
   ): Service = {
     val serviceKey = "z-test-service-" + UUID.randomUUID.toString
-    db.ServiceDao.create(
+    db.ServicesDao.create(
       createdBy = TestUser,
       org = org,
       form = db.ServiceForm(

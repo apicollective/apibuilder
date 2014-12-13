@@ -49,19 +49,22 @@ case class Play2RouteGenerator(scalaService: ScalaServiceDescription) {
       val maxUrlLength = all.map(_.url.length).sorted.last
       val (paramStart, pathStart) = all.partition(_.url.startsWith("/:"))
 
-      Some((pathStart ++ paramStart).map { r =>
-        Seq(
-          r.verb,
-          " " * (maxVerbLength - r.verb.length + GlobalPad),
-          r.url,
-          " " * (maxUrlLength - r.url.length + GlobalPad),
-          r.method,
-          "(",
-          r.params.mkString(", "),
-          ")",
-          r.paramComments.map( c => "\n" + c ).getOrElse("")
-        ).mkString("")
-      }.mkString("\n"))
+      Some(
+        ApidocHeaders(service.userAgent).toRubyString() + "\n\n" +
+        (pathStart ++ paramStart).map { r =>
+          Seq(
+            r.verb,
+            " " * (maxVerbLength - r.verb.length + GlobalPad),
+            r.url,
+            " " * (maxUrlLength - r.url.length + GlobalPad),
+            r.method,
+            "(",
+            r.params.mkString(", "),
+            ")",
+            r.paramComments.map( c => "\n" + c ).getOrElse("")
+          ).mkString("")
+        }.mkString("\n")
+      )
     }
   }
 }

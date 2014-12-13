@@ -37,7 +37,7 @@ lazy val generated = project
 
 lazy val api = project
   .in(file("api"))
-  .dependsOn(generator, core)
+  .dependsOn(generated, core)
   .aggregate(generated, core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
@@ -60,6 +60,9 @@ lazy val www = project
   .aggregate(generated, core)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
+  .settings(
+    routesImport += "com.gilt.apidoc.Bindables._"
+  )
 
 lazy val generator = project
   .in(file("generator"))

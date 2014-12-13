@@ -19,11 +19,11 @@ object Generators extends Controller {
   def get(
     guid: Option[UUID] = None,
     key: Option[String] = None,
-    limit: Int = 100,
-    offset: Int = 0
+    limit: Long = 100,
+    offset: Long = 0
   ) = AnonymousRequest.async { request =>
     fillInGeneratorMeta(
-      GeneratorDao.findAll(
+      GeneratorsDao.findAll(
         user = request.user,
         guid = guid,
         key = key,
@@ -35,7 +35,7 @@ object Generators extends Controller {
 
 
   def getByKey(key: String) = AnonymousRequest.async { request =>
-    GeneratorDao.findAll(user = request.user, key = Some(key)).headOption match {
+    GeneratorsDao.findAll(user = request.user, key = Some(key)).headOption match {
       case Some(g) =>
         fillInGeneratorMeta(g).map {
           case Right(g) => Ok(Json.toJson(g))
@@ -72,9 +72,9 @@ object Generators extends Controller {
       }
       case s: JsSuccess[GeneratorCreateForm] => {
         val form = s.get
-        GeneratorDao.validate(form) match {
+        GeneratorsDao.validate(form) match {
           case Nil => {
-            GeneratorDao.findAll(user = Some(request.user), keyAndUri = Some(form.key -> form.uri)).headOption match {
+            GeneratorsDao.findAll(user = Some(request.user), keyAndUri = Some(form.key -> form.uri)).headOption match {
               case Some(d) =>
                 Future.successful(Conflict(Json.toJson(Validation.error(s"generator ${form.key} already exists"))))
               case None =>
@@ -82,7 +82,7 @@ object Generators extends Controller {
                   case ex: com.gilt.apidoc.FailedRequest => None
                 }.map {
                   case Some(meta) =>
-                    val generator = GeneratorDao.create(request.user, form.key, form.uri, form.visibility, meta.name, meta.description, meta.language)
+                    val generator = GeneratorsDao.create(request.user, form.key, form.uri, form.visibility, meta.name, meta.description, meta.language)
                     Ok(Json.toJson(generator))
                   case None =>
                     NotFound("Generator uri invalid")
@@ -102,14 +102,14 @@ object Generators extends Controller {
       }
       case s: JsSuccess[GeneratorUpdateForm] => {
         val form = s.get
-        GeneratorDao.findAll(user = Some(request.user), key = Some(key)).headOption match {
+        GeneratorsDao.findAll(user = Some(request.user), key = Some(key)).headOption match {
           case Some(g) =>
             fillInGeneratorMeta(g).map {
-              case Right(g) if (form.visibility.isDefined && !GeneratorDao.isOwner(request.user.guid, g.owner)) =>
+              case Right(g) if (form.visibility.isDefined && !GeneratorsDao.isOwner(request.user.guid, g.owner)) =>
                 Unauthorized
               case Right(g) =>
-                val g1 = form.visibility.fold(g)(GeneratorDao.visibilityUpdate(request.user, g, _))
-                val g2 = form.enabled.fold(g1)(GeneratorDao.userEnabledUpdate(request.user, g1, _))
+                val g1 = form.visibility.fold(g)(GeneratorsDao.visibilityUpdate(request.user, g, _))
+                val g2 = form.enabled.fold(g1)(GeneratorsDao.userEnabledUpdate(request.user, g1, _))
                 Ok(Json.toJson(g2))
               case Left(s) =>
                 s
@@ -128,13 +128,13 @@ object Generators extends Controller {
       }
       case s: JsSuccess[GeneratorOrgForm] => {
         val form = s.get
-        val generator = GeneratorDao.findAll(user = Some(request.user), key = Some(key)).headOption
-        val org = OrganizationDao.findAll(Authorization(Some(request.user)), key = Some(orgKey)).headOption
+        val generator = GeneratorsDao.findAll(user = Some(request.user), key = Some(key)).headOption
+        val org = OrganizationsDao.findAll(Authorization(Some(request.user)), key = Some(orgKey)).headOption
         (generator, org) match {
           case (Some(g), Some(o)) =>
             fillInGeneratorMeta(g).map {
               case Right(g) =>
-                GeneratorDao.orgEnabledUpdate(request.user, g.guid, o.guid, form.enabled)
+                GeneratorsDao.orgEnabledUpdate(request.user, g.guid, o.guid, form.enabled)
                 Ok(Json.toJson(g))
               case Left(s) =>
                 s
@@ -147,9 +147,9 @@ object Generators extends Controller {
   }
 
   def deleteByKey(key: String) = Authenticated { request =>
-    GeneratorDao.findAll(user = Some(request.user), key = Some(key)).headOption match {
-      case Some(g) if GeneratorDao.isOwner(request.user.guid, g.owner) =>
-        GeneratorDao.softDelete(request.user, g)
+    GeneratorsDao.findAll(user = Some(request.user), key = Some(key)).headOption match {
+      case Some(g) if GeneratorsDao.isOwner(request.user.guid, g.owner) =>
+        GeneratorsDao.softDelete(request.user, g)
         NoContent
       case Some(g) =>
         Unauthorized

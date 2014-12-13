@@ -1,6 +1,6 @@
 package controllers
 
-import db.{Authorization, SubscriptionDao}
+import db.{Authorization, SubscriptionsDao}
 import lib.Validation
 import com.gilt.apidoc.models.{Publication, Subscription, SubscriptionForm, User}
 import com.gilt.apidoc.models.json._
@@ -21,7 +21,7 @@ trait Subscriptions {
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
-    val subscriptions = SubscriptionDao.findAll(
+    val subscriptions = SubscriptionsDao.findAll(
       Authorization(Some(request.user)),
       guid = guid,
       organizationKey = organizationKey,
@@ -34,7 +34,7 @@ trait Subscriptions {
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>
-    SubscriptionDao.findByUserAndGuid(request.user, guid) match {
+    SubscriptionsDao.findByUserAndGuid(request.user, guid) match {
       case None => NotFound
       case Some(subscription) => Ok(Json.toJson(subscription))
     }
@@ -47,9 +47,9 @@ trait Subscriptions {
       }
       case s: JsSuccess[SubscriptionForm] => {
         val form = s.get
-        SubscriptionDao.validate(request.user, form) match {
+        SubscriptionsDao.validate(request.user, form) match {
           case Nil => {
-            val subscription = SubscriptionDao.create(request.user, form)
+            val subscription = SubscriptionsDao.create(request.user, form)
             Created(Json.toJson(subscription))
           }
           case errors => {
@@ -61,8 +61,8 @@ trait Subscriptions {
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    SubscriptionDao.findByUserAndGuid(request.user, guid).map { subscription =>
-      SubscriptionDao.softDelete(request.user, subscription)
+    SubscriptionsDao.findByUserAndGuid(request.user, guid).map { subscription =>
+      SubscriptionsDao.softDelete(request.user, subscription)
     }
     NoContent
   }

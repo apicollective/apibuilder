@@ -75,7 +75,7 @@
 
     <p><b>Example from Scala:</b></p>
     <pre>
-      val client = com.gilt.apidoc.Client.new("http://localhost:8000")
+      val client = new com.gilt.apidoc.Client("http://localhost:8000")
 
       val organizations = client.organizations.get(limit = Some(10), offset = Some(0))
       organizations.foreach { org =>

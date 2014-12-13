@@ -1,15 +1,17 @@
 package db
 
-import com.gilt.apidoc.models.{Visibility, Generator, GeneratorCreateForm, User}
+import com.gilt.apidoc.models.{Error, Generator, GeneratorCreateForm, User, Visibility}
 import anorm._
 import play.api.db._
 import play.api.Play.current
-import lib.{Validation, ValidationError}
+import lib.Validation
 import java.net.{MalformedURLException, URL}
 import java.util.{Date, UUID}
 import scala.util.{Failure, Success, Try}
 
-object GeneratorDao {
+object GeneratorsDao {
+
+  private val ReservedKeys = Seq("api.json")
 
   private val BaseQuery = s"""
     select generators.guid,
@@ -46,14 +48,22 @@ object GeneratorDao {
 
   private val OrgGeneratorsQuery = """
     select generator_guid from generator_organizations
-      where deleted_at is null
-      and organization_guid in (
-        select organization_guid from memberships
-          where deleted_at is null
-          and user_guid = {user_guid}::uuid
-      )""".stripMargin
+     where deleted_at is null
+       and organization_guid in (
+            select organization_guid from memberships
+             where deleted_at is null
+               and user_guid = {user_guid}::uuid
+           )
+  """.stripMargin
 
-  def validate(form: GeneratorCreateForm): Seq[ValidationError] = {
+  private val InsertQuery = """
+    insert into generators
+    (guid, key, uri, user_guid, visibility, created_by_guid)
+    values
+    ({guid}::uuid, {key}, {uri}, {user_guid}::uuid, {visibility}, {created_by_guid}::uuid)
+  """
+
+  def validate(form: GeneratorCreateForm): Seq[Error] = {
     val urlErrors = Try(new URL(form.uri)) match {
       case Success(url) => {
         if (form.uri.toLowerCase.startsWith("http")) {
@@ -67,7 +77,14 @@ object GeneratorDao {
       }
     }
 
-    Validation.errors(urlErrors)
+    val formattedKey = form.key.trim.toLowerCase
+    val keyErrors = if (ReservedKeys.contains(formattedKey) || OrganizationsDao.ReservedKeys.contains(formattedKey)) {
+      Seq(s"Key ${form.key.trim} is a reserved word and cannot be used as a key for a generator")
+    } else {
+      Seq.empty
+    }
+
+    Validation.errors(urlErrors ++ keyErrors)
   }
 
   def create(createdBy: User,
@@ -92,22 +109,17 @@ object GeneratorDao {
                          language: Option[String]): Generator = {
     val generator = Generator(
       guid = UUID.randomUUID(),
-      key = key,
+      key = key.trim,
       uri = uri,
       visibility = visibility,
-      name = name,
-      description = description,
-      language = language,
+      name = name.trim,
+      description = description.map(_.trim),
+      language = language.map(_.trim),
       owner = createdBy,
       enabled = true
     )
 
-    SQL("""
-      insert into generators
-      (guid, key, uri, user_guid, visibility, created_by_guid)
-      values
-      ({guid}::uuid, {key}, {uri}, {user_guid}::uuid, {visibility}, {created_by_guid}::uuid)
-    """).on(
+    SQL(InsertQuery).on(
       'guid -> generator.guid,
       'key -> generator.key,
       'uri -> generator.uri,
@@ -184,8 +196,8 @@ object GeneratorDao {
     guid: Option[UUID] = None,
     key: Option[String] = None,
     keyAndUri: Option[(String, String)] = None,
-    limit: Int = 50,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ): Seq[Generator] = {
     require(
       key.isEmpty || keyAndUri.isEmpty,

@@ -1,0 +1,17 @@
+@(org: com.gilt.apidoc.models.Organization,
+  service: com.gilt.apidoc.models.Service,
+  version: com.gilt.apidoc.models.Version)
+
+<p>
+  Version @version.version has been uploaded for the service @org.name/@service.name 
+</p>
+
+@service.description.map { desc =>
+  <p>
+    @desc
+  </p>
+}
+
+<p>
+  <a href="@lib.Email.apidocWebHostname/@org.key/@service.key/@version.version">View version</a>
+</p>

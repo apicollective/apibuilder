@@ -1,22 +1,27 @@
 package db
 
-import com.gilt.apidoc.models.{Domain, Organization, OrganizationForm, OrganizationMetadata, OrganizationMetadataForm, User, Version, Visibility}
+import com.gilt.apidoc.models._
 import com.gilt.apidoc.models.json._
-import lib.{Role, Validation, ValidationError, UrlKey}
+import lib.{Role, Validation, UrlKey}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object OrganizationDao {
+object OrganizationsDao {
 
   private val MinNameLength = 4
   val MinKeyLength = 4
   val ReservedKeys = Seq(
-    "_internal_", "account", "accounts", "admin", "assets", "org", "orgs", "organizations",
-    "private", "subaccount", "subaccounts", "team", "teams", "user", "users"
-  )
+    "_internal_", "account", "accounts", "admin", "api", "api.json", "accept", "acceptance", "assets", "bucket", "buckets",
+    "code", "codes", "confirm", "confirmation", "confirmations",
+    "config", "configuration", "doc", "docs", "documentation", "domain", "domains", "generator", "generators", "internal",
+    "login", "logout", "member", "members", "membership", "memberships", "membership_request", "membership_request_review",
+    "membership_request_reviews", "membership_requests", "metadatum", "metadata", "org", "orgs", "organizations", "private", "reject", "rejection",
+    "session", "setting", "settings", "scms", "source", "sources", "subaccount", "subaccounts", "subscription", "subscriptions",
+    "team", "teams", "user", "users", "util", "utility", "utilities", "version", "versions", "watch", "watches"
+  ).map(UrlKey.generate(_))
 
   private val EmptyOrganizationMetadataForm = OrganizationMetadataForm()
 
@@ -34,11 +39,11 @@ object OrganizationDao {
      where organizations.deleted_at is null
   """
 
-  def validate(form: OrganizationForm): Seq[ValidationError] = {
+  def validate(form: OrganizationForm): Seq[com.gilt.apidoc.models.Error] = {
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {
-      OrganizationDao.findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
+      OrganizationsDao.findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
         case None => Seq.empty
         case Some(org: Organization) => Seq("Org with this name already exists")
       }
@@ -50,7 +55,7 @@ object OrganizationDao {
           case Nil => {
             val generated = UrlKey.generate(form.name)
             if (ReservedKeys.contains(generated)) {
-              Seq(s"Key $generated is a reserved word and cannot be used for the name of an organization")
+              Seq(s"Key ${form.name} is a reserved word and cannot be used for the key of an organization")
             } else {
               Seq.empty
             }
@@ -66,9 +71,9 @@ object OrganizationDao {
         } else if (key != generated) {
           Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
         } else if (ReservedKeys.contains(generated)) {
-          Seq(s"Key $generated is a reserved word and cannot be used for the key of an organization")
+          Seq(s"Key $key is a reserved word and cannot be used for the key of an organization")
         } else {
-          OrganizationDao.findByKey(Authorization.All, key) match {
+          OrganizationsDao.findByKey(Authorization.All, key) match {
             case None => Seq.empty
             case Some(existing) => Seq("Org with this key already exists")
           }
@@ -97,8 +102,8 @@ object OrganizationDao {
   def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
     DB.withTransaction { implicit c =>
       val org = create(c, user, form)
-      Membership.create(c, user, org, user, Role.Admin)
-      OrganizationLog.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
+      MembershipsDao.create(c, user, org, user, Role.Admin)
+      OrganizationLogsDao.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
     }
   }
@@ -114,7 +119,7 @@ object OrganizationDao {
 
   private[db] def findByEmailDomain(email: String): Option[Organization] = {
     emailDomain(email).flatMap { domain =>
-      OrganizationDomainDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
+      OrganizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
         findByGuid(Authorization.All, domain.organization_guid)
       }
     }
@@ -160,7 +165,7 @@ object OrganizationDao {
     ).execute()
 
     org.domains.foreach { domain =>
-      OrganizationDomainDao.create(c, createdBy, org, domain.name)
+      OrganizationDomainsDao.create(c, createdBy, org, domain.name)
     }
 
     if (metadataForm != EmptyOrganizationMetadataForm) {
@@ -194,28 +199,23 @@ object OrganizationDao {
     authorization: Authorization,
     guid: Option[UUID] = None,
     userGuid: Option[UUID] = None,
+    service: Option[Service] = None,
     key: Option[String] = None,
     name: Option[String] = None,
-    limit: Int = 50,
-    offset: Int = 0
+    limit: Long = 25,
+    offset: Long = 0
   ): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization match {
-        case Authorization.All => None
-        case Authorization.PublicOnly => Some(s"and organization_metadata.visibility = '${Visibility.Public}'")
-        case Authorization.User(userGuid) => {
-          Some(
-            s"and (organization_metadata.visibility = '${Visibility.Public}'" +
-            "      or organizations.guid in (" +
-            "select organization_guid from memberships where deleted_at is null and user_guid = {authorization_user_guid}::uuid" +
-            "))"
-          )
-        }
-      },
+      authorization.organizationFilter("organizations.guid", Some("organization_metadata")).map(v => "and " + v),
       userGuid.map { v =>
         "and organizations.guid in (" +
         "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
+        ")"
+      },
+      service.map { v =>
+        "and organizations.guid in (" +
+        "select organization_guid from services where deleted_at is null and guid = {service_guid}::uuid" +
         ")"
       },
       guid.map { v => "and organizations.guid = {guid}::uuid" },
@@ -224,18 +224,13 @@ object OrganizationDao {
       Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
-    val authorizationUserGuid = authorization match {
-      case Authorization.User(guid) => Some(guid)
-      case _ => None
-    }
-
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      authorizationUserGuid.map('authorization_user_guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
+      service.map('service_guid -> _.guid.toString),
       key.map('key -> _),
       name.map('name ->_)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
