@@ -6,7 +6,9 @@ import org.junit.Assert._
 import java.util.UUID
 
 class MembershipRequestsDaoSpec extends FlatSpec {
+
   new play.core.StaticApplication(new java.io.File("."))
+
   lazy val org = Util.createOrganization()
   lazy val member = Util.upsertUser("gilt-member@gilt.com")
   lazy val admin = Util.upsertUser("gilt-admin@gilt.com")

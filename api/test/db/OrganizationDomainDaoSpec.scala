@@ -6,6 +6,8 @@ import java.util.UUID
 
 class OrganizationDomainsDaoSpec extends FunSpec with Matchers {
 
+  new play.core.StaticApplication(new java.io.File("."))
+
   it("create") {
     val domainName = UUID.randomUUID.toString + ".org"
     val org = Util.createOrganization()

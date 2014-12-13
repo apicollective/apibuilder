@@ -9,6 +9,8 @@ import org.postgresql.util.PSQLException
 
 class OrganizationMetadataDaoSpec extends FunSpec with Matchers {
 
+  new play.core.StaticApplication(new java.io.File("."))
+
   def upsertOrganizationMetadata(org: Organization): OrganizationMetadata = {
     val form = OrganizationMetadataForm(
       visibility = None,
