@@ -68,9 +68,9 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   )
 
   def createService(
-    org: Organization
+    org: Organization,
+    serviceKey: String = "z-test-service-" + UUID.randomUUID.toString
   ): Service = {
-    val serviceKey = "z-test-service-" + UUID.randomUUID.toString
     db.ServicesDao.create(
       createdBy = TestUser,
       org = org,

@@ -138,7 +138,7 @@ object WatchesDao {
       userGuid.map { v => "and watches.user_guid = {user_guid}::uuid" },
       organizationKey.map { v => "and organizations.key = lower(trim({organization_key}))" },
       service.map { v => "and watches.service_guid = {service_guid}::uuid" },
-      serviceKey.map { v => "and watches.service_guid = (select guid from services where deleted_at is null and key = lower(trim({service_key})))" },
+      serviceKey.map { v => "and services.key = lower(trim({service_key}))" },
       Some(s"order by services.key, watches.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

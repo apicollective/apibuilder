@@ -37,6 +37,7 @@ class ServicesDaoSpec extends FunSpec with Matchers {
 
     def createForm() = ServiceForm(
       name = "Service %s".format(UUID.randomUUID),
+      key = None,
       description = None,
       visibility = Visibility.Organization
     )
@@ -55,6 +56,15 @@ class ServicesDaoSpec extends FunSpec with Matchers {
       val form = createForm()
       val service = ServicesDao.create(Util.createdBy, Util.testOrg, form)
       ServicesDao.validate(Util.testOrg, form, Some(service)) should be(Seq.empty)
+    }
+
+    it("key") {
+      val form = createForm()
+      val service = ServicesDao.create(Util.createdBy, Util.testOrg, form)
+
+      val newForm = form.copy(name = service.name + "2", key = Some(service.key))
+      ServicesDao.validate(Util.testOrg, newForm, None).map(_.message) should be(Seq("Service with this key already exists"))
+      ServicesDao.validate(Util.testOrg, newForm, Some(service)) should be(Seq.empty)
     }
 
   }

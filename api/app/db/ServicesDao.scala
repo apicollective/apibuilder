@@ -10,6 +10,7 @@ import java.util.UUID
 
 case class ServiceForm(
   name: String,
+  key: Option[String] = None,
   description: Option[String] = None,
   visibility: Visibility
 )
@@ -49,7 +50,7 @@ object ServicesDao {
     form: ServiceForm,
     existing: Option[Service]
   ): Seq[Error] = {
-    val nameErrors = findByOrganizationAndName(org, form.name) match {
+    val nameErrors = findByOrganizationAndName(Authorization.All, org, form.name) match {
       case None => Seq.empty
       case Some(service: Service) => {
         if (existing.map(_.guid) == Some(service.guid)) {
@@ -60,7 +61,23 @@ object ServicesDao {
       }
     }
 
-    Validation.errors(nameErrors)
+    val keyErrors = form.key match {
+      case None => Seq.empty
+      case Some(key) => {
+        findByOrganizationKeyAndServiceKey(Authorization.All, org.key, key) match {
+          case None => Seq.empty
+          case Some(service: Service) => {
+            if (existing.map(_.guid) == Some(service.guid)) {
+              Seq.empty
+            } else {
+              Seq("Service with this key already exists")
+            }
+          }
+        }
+      }
+    }
+
+    Validation.errors(nameErrors ++ keyErrors)
   }
 
   def update(updatedBy: User, dao: Service) {
@@ -107,8 +124,8 @@ object ServicesDao {
     SoftDelete.delete("services", deletedBy, service.guid)
   }
 
-  private[db] def findByOrganizationAndName(org: Organization, name: String): Option[Service] = {
-    findAll(Authorization.All, orgKey = Some(org.key), name = Some(name), limit = 1).headOption
+  private[db] def findByOrganizationAndName(authorization: Authorization, org: Organization, name: String): Option[Service] = {
+    findAll(authorization, orgKey = Some(org.key), name = Some(name), limit = 1).headOption
   }
 
   def findByOrganizationKeyAndServiceKey(authorization: Authorization, orgKey: String, serviceKey: String): Option[Service] = {

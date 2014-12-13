@@ -60,4 +60,26 @@ class WatchesSpec extends BaseSpec {
     createWatch(form)
   }
 
+  "GET /watches by service key" in new WithServer {
+    val org1 = createOrganization()
+    val service1 = createService(org1)
+
+    val org2 = createOrganization()
+    val service2 = createService(org1)
+
+    val user = createUser()
+    val service = createService(org)
+    val watch = createWatch(
+      WatchForm(
+        organizationKey = org.key,
+        userGuid = user.guid,
+        serviceKey = service.key
+      )
+    )
+
+    watch.user.guid must be(user.guid)
+    watch.organization.key must be(org.key)
+    watch.service.key must be(service.key)
+  }
+
 }
