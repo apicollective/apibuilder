@@ -30,7 +30,6 @@ class WatchesSpec extends BaseSpec {
     serviceKey = service.getOrElse(createService(org)).key
   )
 
-/*
   "POST /watches" in new WithServer {
     val user = createUser()
     val service = createService(org)
@@ -60,7 +59,6 @@ class WatchesSpec extends BaseSpec {
     val watch = createWatch(form)
     createWatch(form)
   }
- */
 
   "GET /watches by service key" in new WithServer {
     val org1 = createOrganization()
@@ -68,16 +66,17 @@ class WatchesSpec extends BaseSpec {
 
     val org2 = createOrganization()
     val service2 = createService(org2, key = service1.key)
-
-    println("service1: " + service1.key)
-    println("service2: " + service2.key)
+    val service3 = createService(org2)
 
     val user = createUser()
 
     createWatch(WatchForm(user.guid, org1.key, service1.key))
     createWatch(WatchForm(user.guid, org2.key, service2.key))
+    createWatch(WatchForm(user.guid, org2.key, service3.key))
 
-    await(client.watches.get(userGuid = Some(user.guid))).map(_.service.key).sorted must be(Seq(service1.key, service2.key).sorted)
+    await(client.watches.get(userGuid = Some(user.guid))).map(_.service.key).sorted must be(Seq(service1.key, service2.key, service3.key).sorted)
+    await(client.watches.get(userGuid = Some(user.guid), serviceKey = Some(service1.key))).map(_.service.key).sorted must be(Seq(service1.key, service2.key).sorted)
+    await(client.watches.get(userGuid = Some(user.guid), organizationKey = Some(org1.key), serviceKey = Some(service1.key))).map(_.service.key).sorted must be(Seq(service1.key).sorted)
   }
 
 }
