@@ -5,8 +5,8 @@ import com.gilt.apidocgenerator.models.Container
 
 case class ExampleService(key: String) {
 
-  val docsUrl = s"/gilt/docs/$key/latest"
-  val apiJsonUrl = s"/gilt/api.json/$key/latest"
+  val docsUrl = s"/gilt/$key/latest"
+  val apiJsonUrl = s"/gilt/$key/latest/api.json"
 
 }
 
