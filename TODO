@@ -1,14 +1,9 @@
 when asking to login, capture return url
 
-check if bug with smart quotes is fixed
+Cache the generators
 
-add subscriptions:
-
-  - For organizations that I watch, email me whenever a service is created
-
-  - For organizations that I watch, email me whenever a new service version is uploaded
-
-  - For services that I watch, email me whenver a new version is uploaded
+Email verification process, including auto add to orgs based no email
+  domain if there is a membership request pending
 
 Org level setting to enable semver versioning (default on)
   - prevent backwards incompatible changes once at major version 1
