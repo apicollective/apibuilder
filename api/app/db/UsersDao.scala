@@ -44,6 +44,11 @@ object UsersDao {
                           'name -> form.name,
                           'updated_by_guid -> updatingUser.guid).execute()
     }
+
+    if (user.email.trim.toLowerCase != form.email.trim.toLowerCase) {
+      // Upsert a new confirmation email for the new email address
+    }
+
   }
 
   def create(form: UserForm): User = {

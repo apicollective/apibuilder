@@ -20,13 +20,13 @@ object Code extends Controller {
 
   val apidocVersion = Config.requiredString("git.version")
 
-  def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(orgKey: String, serviceKey: String, version: String, generatorKey: String) = Authenticated.async { request =>
-    val auth = Authorization(Some(request.user))
+  def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(orgKey: String, serviceKey: String, version: String, generatorKey: String) = AnonymousRequest.async { request =>
+    val auth = Authorization(request.user)
     OrganizationsDao.findByKey(auth, orgKey) match {
       case None =>
         Future.successful(NotFound)
       case Some(org) => {
-        GeneratorsDao.findAll(user = Some(request.user), key = Some(generatorKey)).headOption match {
+        GeneratorsDao.findAll(user = request.user, key = Some(generatorKey)).headOption match {
           case None =>
             Future.successful(Conflict(Json.toJson(Validation.error(s"Invalid generator key[$generatorKey]."))))
           case Some(generator: Generator) =>

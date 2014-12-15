@@ -3,7 +3,7 @@ package actors
 import com.gilt.apidoc.models.{Membership, Publication, Service}
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
-import db.{Authorization, MembershipsDao, MembershipRequestsDao, OrganizationsDao, ServicesDao, VersionsDao}
+import db._
 import lib.{Email, Pager, Person, Role}
 import akka.actor._
 import play.api.Logger
@@ -17,6 +17,7 @@ object EmailActor {
     case class MembershipCreated(guid: UUID)
     case class ServiceCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
+    case class EmailVerificationCreated(guid: UUID)
   }
 
 }
@@ -78,6 +79,20 @@ class EmailActor extends Actor {
                 body = views.html.emails.versionCreated(org, service, version).toString
               )
             }
+          }
+        }
+      }
+    )
+
+    case EmailActor.Messages.EmailVerificationCreated(guid) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.ServiceCreated($guid)", {
+        EmailVerificationsDao.findByGuid(guid).map { verification =>
+          UsersDao.findByGuid(verification.userGuid).map { user =>
+            Email.sendHtml(
+              to = Person(email = verification.email),
+              subject = s"Verify your email address",
+              body = views.html.emails.emailVerificationCreated(verification).toString
+            )
           }
         }
       }
