@@ -89,7 +89,7 @@ class EmailActor extends Actor {
         EmailVerificationsDao.findByGuid(guid).map { verification =>
           UsersDao.findByGuid(verification.userGuid).map { user =>
             Email.sendHtml(
-              to = Person(email = user.email, name = user.name),
+              to = Person(email = verification.email),
               subject = s"Verify your email address",
               body = views.html.emails.emailVerificationCreated(verification).toString
             )
