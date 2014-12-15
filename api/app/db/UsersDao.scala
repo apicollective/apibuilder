@@ -46,7 +46,7 @@ object UsersDao {
     }
 
     if (user.email.trim.toLowerCase != form.email.trim.toLowerCase) {
-      // Upsert a new confirmation email for the new email address
+      EmailVerificationsDao.upsert(updatingUser, user, form.email)
     }
 
   }
@@ -55,8 +55,8 @@ object UsersDao {
     val guid = UUID.randomUUID
     DB.withTransaction { implicit c =>
       SQL(InsertQuery).on('guid -> guid,
-                          'email -> form.email,
-                          'name -> form.name,
+                          'email -> form.email.trim,
+                          'name -> form.name.map(_.trim),
                           'created_by_guid -> Constants.DefaultUserGuid,
                           'updated_by_guid -> Constants.DefaultUserGuid).execute()
 
@@ -70,6 +70,8 @@ object UsersDao {
     OrganizationsDao.findByEmailDomain(form.email).foreach { org =>
       MembershipRequestsDao.create(user, org, user, Role.Member)
     }
+
+    EmailVerificationsDao.create(user, user, form.email)
 
     user
   }

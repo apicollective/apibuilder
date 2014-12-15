@@ -31,7 +31,7 @@ object Users extends Controller {
     }
   }
 
-  def post() = Action(parse.json) { request =>
+  def post() = AnonymousRequest(parse.json) { request =>
     request.body.validate[UserForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
