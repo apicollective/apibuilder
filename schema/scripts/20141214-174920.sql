@@ -13,7 +13,7 @@ select schema_evolution_manager.create_basic_audit_data('public', 'email_verific
 alter table email_verifications drop column updated_by_guid; -- never updated
 
 create index on email_verifications(user_guid);
-
+create index on email_verifications(lower(email));
 
 comment on table email_verifications is '
   Tracks that we sent an email to verify an email address on behalf of

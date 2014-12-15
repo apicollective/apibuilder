@@ -39,6 +39,12 @@ object EmailVerificationsDao {
     ({guid}::uuid, {user_guid}::uuid, {email}, {token}, {expires_at}, {created_by_guid}::uuid)
   """
 
+  def upsert(createdBy: User, user: User, email: String): EmailVerification = {
+    findAll(userGuid = Some(user.guid), email = Some(email), isExpired = Some(false), limit = 1).headOption.getOrElse {
+      create(createdBy, user, email)
+    }
+  }
+
   def create(createdBy: User, user: User, email: String): EmailVerification = {
     val guid = UUID.randomUUID
     DB.withConnection { implicit c =>
@@ -72,7 +78,10 @@ object EmailVerificationsDao {
 
   private[db] def findAll(
     guid: Option[UUID] = None,
+    userGuid: Option[UUID] = None,
+    email: Option[String] = None,
     token: Option[String] = None,
+    isExpired: Option[Boolean] = None,
     limit: Long = 25,
     offset: Long = 0
   ): Seq[EmailVerification] = {
@@ -80,12 +89,22 @@ object EmailVerificationsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and email_verifications.guid = {guid}::uuid" },
+      userGuid.map { v => "and email_verifications.user_guid = {user_guid}::uuid" },
+      email.map { v => "and lower(email_verifications.email) = lower(trim({email}))" },
       token.map { v => "and email_verifications.token = {token}" },
+      isExpired.map { v =>
+        v match {
+          case true => { "and.email_verifications.expires_at < now()" }
+          case false => { "and.email_verifications.expires_at >= now()" }
+        }
+      },
       Some(s"order by email_verifications.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      userGuid.map('user_guid -> _.toString),
+      email.map('email -> _),
       token.map('token -> _)
     ).flatten
 

@@ -38,6 +38,18 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
     val user2 = Util.createRandomUser()
     val verification2 = EmailVerificationsDao.create(Util.createdBy, user2, user2.email)
 
+    EmailVerificationsDao.findAll(userGuid = Some(user1.guid)).map(_.userGuid) should be(Seq(user1.guid))
+    EmailVerificationsDao.findAll(userGuid = Some(user2.guid)).map(_.userGuid) should be(Seq(user2.guid))
+    EmailVerificationsDao.findAll(userGuid = Some(UUID.randomUUID)).map(_.userGuid) should be(Seq.empty)
+
+    EmailVerificationsDao.findAll(isExpired = Some(false), userGuid = Some(user1.guid)).map(_.userGuid) should be(Seq(user1.guid))
+    EmailVerificationsDao.findAll(isExpired = Some(true), userGuid = Some(user1.guid)).map(_.userGuid) should be(Seq.empty)
+
+    EmailVerificationsDao.findAll(email = Some(user1.email)).map(_.userGuid) should be(Seq(user1.guid))
+    EmailVerificationsDao.findAll(email = Some(user1.email.toUpperCase)).map(_.userGuid) should be(Seq(user1.guid))
+    EmailVerificationsDao.findAll(email = Some(user2.email)).map(_.userGuid) should be(Seq(user2.guid))
+    EmailVerificationsDao.findAll(email = Some(UUID.randomUUID.toString)).map(_.userGuid) should be(Seq.empty)
+
     EmailVerificationsDao.findAll(guid = Some(verification1.guid)).map(_.userGuid) should be(Seq(user1.guid))
     EmailVerificationsDao.findAll(guid = Some(verification2.guid)).map(_.userGuid) should be(Seq(user2.guid))
     EmailVerificationsDao.findAll(guid = Some(UUID.randomUUID)).map(_.userGuid) should be(Seq.empty)
