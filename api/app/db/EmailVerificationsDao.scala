@@ -58,6 +58,8 @@ object EmailVerificationsDao {
       ).execute()
     }
 
+    global.Actors.mainActor ! actors.MainActor.Messages.EmailVerificationCreated(guid)
+
     findByGuid(guid).getOrElse {
       sys.error("Failed to create email verification")
     }
@@ -94,8 +96,8 @@ object EmailVerificationsDao {
       token.map { v => "and email_verifications.token = {token}" },
       isExpired.map { v =>
         v match {
-          case true => { "and.email_verifications.expires_at < now()" }
-          case false => { "and.email_verifications.expires_at >= now()" }
+          case true => { "and email_verifications.expires_at < now()" }
+          case false => { "and email_verifications.expires_at >= now()" }
         }
       },
       Some(s"order by email_verifications.created_at limit ${limit} offset ${offset}")
