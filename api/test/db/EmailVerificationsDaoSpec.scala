@@ -1,6 +1,5 @@
 package db
 
-import com.gilt.apidoc.models.{OrganizationForm, OrganizationMetadataForm, Visibility}
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
@@ -16,12 +15,36 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
     verification.email should be(user.email)
   }
 
-  it("find by token") {
+  it("findByGuid") {
     val user = Util.createRandomUser()
     val verification = EmailVerificationsDao.create(Util.createdBy, user, user.email)
 
-    EmailVerificationsDao.findAll(token = Some(verification.token)).map(_.userGuid) should be(Seq(user.guid))
+    EmailVerificationsDao.findByGuid(verification.guid).map(_.userGuid) should be(Some(user.guid))
+    EmailVerificationsDao.findByGuid(UUID.randomUUID) should be(None)
   }
 
+  it("findByToken") {
+    val user = Util.createRandomUser()
+    val verification = EmailVerificationsDao.create(Util.createdBy, user, user.email)
+
+    EmailVerificationsDao.findByToken(verification.token).map(_.userGuid) should be(Some(user.guid))
+    EmailVerificationsDao.findByToken(UUID.randomUUID.toString) should be(None)
+  }
+
+  it("findAll") {
+    val user1 = Util.createRandomUser()
+    val verification1 = EmailVerificationsDao.create(Util.createdBy, user1, user1.email)
+
+    val user2 = Util.createRandomUser()
+    val verification2 = EmailVerificationsDao.create(Util.createdBy, user2, user2.email)
+
+    EmailVerificationsDao.findAll(guid = Some(verification1.guid)).map(_.userGuid) should be(Seq(user1.guid))
+    EmailVerificationsDao.findAll(guid = Some(verification2.guid)).map(_.userGuid) should be(Seq(user2.guid))
+    EmailVerificationsDao.findAll(guid = Some(UUID.randomUUID)).map(_.userGuid) should be(Seq.empty)
+
+    EmailVerificationsDao.findAll(token = Some(verification1.token)).map(_.userGuid) should be(Seq(user1.guid))
+    EmailVerificationsDao.findAll(token = Some(verification2.token)).map(_.userGuid) should be(Seq(user2.guid))
+    EmailVerificationsDao.findAll(token = Some("bad")).map(_.userGuid) should be(Seq.empty)
+  }
 
 }

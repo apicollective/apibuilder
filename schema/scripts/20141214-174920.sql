@@ -42,7 +42,8 @@ create table email_verification_confirmations (
   email_verification_guid uuid not null references email_verifications unique
 );
 
-select schema_evolution_manager.create_basic_created_audit_data('public', 'email_verification_confirmations');
+select schema_evolution_manager.create_basic_audit_data('public', 'email_verification_confirmations');
+alter table email_verification_confirmations drop column updated_by_guid; -- never updated
 
 comment on table email_verification_confirmations is '
   Records that an email has been verified
