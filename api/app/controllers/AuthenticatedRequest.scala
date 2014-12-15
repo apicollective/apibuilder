@@ -74,7 +74,7 @@ class AuthenticatedRequest[A](val tokenUser: User, val user: User, request: Requ
   }
 
   def requireMember(org: Organization) {
-    require(MembershipsDao.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
+    require(MembershipsDao.isUserMember(user, org), s"Action requires member role. User[${user.guid}] is not a member of Org[${org.key}]")
   }
 
 }
