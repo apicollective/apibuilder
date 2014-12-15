@@ -1,3 +1,7 @@
+MembershipRequestsDao.accept(User, request)
+  ==> Add notes so we can capture that the membership request was
+      automatically approved based on email confirmation
+
 Cache the generators
 
 Email verification process, including auto add to orgs based no email

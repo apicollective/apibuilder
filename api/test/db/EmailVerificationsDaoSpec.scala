@@ -1,5 +1,6 @@
 package db
 
+import lib.Role
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
@@ -8,6 +9,7 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
+/*
   it("create") {
     val user = Util.createRandomUser()
     val verification = EmailVerificationsDao.create(Util.createdBy, user, user.email)
@@ -42,7 +44,6 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
 
     EmailVerificationsDao.confirm(Util.createdBy, verification)
     EmailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)).map(_.emailVerificationGuid) should be(Seq(verification.guid))
-
   }
 
   it("findByGuid") {
@@ -87,6 +88,32 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
     EmailVerificationsDao.findAll(token = Some(verification1.token)).map(_.userGuid) should be(Seq(user1.guid))
     EmailVerificationsDao.findAll(token = Some(verification2.token)).map(_.userGuid) should be(Seq(user2.guid))
     EmailVerificationsDao.findAll(token = Some("bad")).map(_.userGuid) should be(Seq.empty)
+  }
+*/
+
+  describe("membership requests") {
+
+    it("confirm auto approves pending membership requests based on org email domain") {
+      val org = Util.createOrganization()
+      val domain = UUID.randomUUID.toString + ".com"
+
+      OrganizationDomainsDao.create(Util.createdBy, org, domain)
+
+      val user = UsersDao.create(UserForm(
+        email = "person@" + domain,
+        password = "testing"
+      ))
+
+      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, Role.Member).isEmpty should be(false)
+      MembershipsDao.isUserMember(user, org) should be(false)
+
+      val verification = EmailVerificationsDao.upsert(Util.createdBy, user, user.email)
+      EmailVerificationsDao.confirm(Util.createdBy, verification)
+
+      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, Role.Member) should be(Seq.empty)
+      MembershipsDao.isUserMember(user, org) should be(true)
+    }
+
   }
 
 }

@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.User
-import lib.TokenGenerator
+import lib.{Role, TokenGenerator}
 import anorm._
 import AnormHelper._
 import play.api.db._
@@ -78,7 +78,12 @@ object EmailVerificationsDao {
     EmailVerificationConfirmationsDao.upsert(user, verification)
 
     OrganizationsDao.findByEmailDomain(verification.email).foreach { org =>
-      // TODO : review pending membership requests based on email domain
+      UsersDao.findByGuid(verification.userGuid).filter(_.email == verification.email).map { user =>
+        MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, Role.Member).map { request =>
+          // TODO: Add notes that this request was accepted due to email verification
+          MembershipRequestsDao.accept(user, request)
+        }
+      }
     }
   }
 
