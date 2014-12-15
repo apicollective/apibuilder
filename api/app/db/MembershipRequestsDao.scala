@@ -76,8 +76,21 @@ object MembershipRequestsDao {
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
+    doAccept(createdBy, request, s"Accepted membership request for ${request.user.email} to join as ${r.name}")
+  }
 
-    val message = s"Accepted membership request for ${request.user.email} to join as ${r.name}"
+  private[db] def acceptViaEmailVerification(createdBy: User, request: MembershipRequest, email: String) {
+    val r = Role.fromString(request.role).getOrElse {
+      sys.error(s"Invalid role[${request.role}]")
+    }
+    doAccept(createdBy, request, s"$email joined as ${r.name} by verifying their email address")
+  }
+
+  private def doAccept(createdBy: User, request: MembershipRequest, message: String) {
+    val r = Role.fromString(request.role).getOrElse {
+      sys.error(s"Invalid role[${request.role}]")
+    }
+
     DB.withTransaction { implicit conn =>
       OrganizationLogsDao.create(createdBy, request.organization, message)
       MembershipRequestsDao.softDelete(createdBy, request)

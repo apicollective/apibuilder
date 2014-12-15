@@ -80,8 +80,7 @@ object EmailVerificationsDao {
     OrganizationsDao.findByEmailDomain(verification.email).foreach { org =>
       UsersDao.findByGuid(verification.userGuid).filter(_.email == verification.email).map { user =>
         MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, Role.Member).map { request =>
-          // TODO: Add notes that this request was accepted due to email verification
-          MembershipRequestsDao.accept(user, request)
+          MembershipRequestsDao.acceptViaEmailVerification(user, request, verification.email)
         }
       }
     }
