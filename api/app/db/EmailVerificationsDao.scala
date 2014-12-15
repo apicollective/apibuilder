@@ -65,9 +65,25 @@ object EmailVerificationsDao {
     }
   }
 
+  def isExpired(verification: EmailVerification): Boolean = {
+    verification.expiresAt.isBeforeNow
+  }
+
   def confirm(user: User, verification: EmailVerification) = {
+    assert(
+      !EmailVerificationsDao.isExpired(verification),
+      "Token for verificationGuid[${verification.guid}] is expired"
+    )
+
     EmailVerificationConfirmationsDao.upsert(user, verification)
-    // TODO : review pending membership requests based on email domain
+
+    OrganizationsDao.findByEmailDomain(verification.email).foreach { org =>
+      // TODO : review pending membership requests based on email domain
+    }
+  }
+
+  def softDelete(deletedBy: User, verification: EmailVerification) {
+    SoftDelete.delete("email_verifications", deletedBy, verification.guid)
   }
 
   def findByGuid(guid: UUID): Option[EmailVerification] = {

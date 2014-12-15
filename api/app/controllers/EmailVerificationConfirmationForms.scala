@@ -20,8 +20,12 @@ object EmailVerificationConfirmationForms extends Controller {
         EmailVerificationsDao.findByToken(token) match {
           case None => Conflict(Json.toJson("Token not found or has already expired"))
           case Some(verification) => {
-            EmailVerificationsDao.confirm(request.user, verification)
-            NoContent
+            if (EmailVerificationsDao.isExpired(verification)) {
+              Conflict(Json.toJson("Token is expired"))
+            } else {
+              EmailVerificationsDao.confirm(request.user, verification)
+              NoContent
+            }
           }
         }
       }

@@ -15,6 +15,36 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
     verification.email should be(user.email)
   }
 
+  it("upsert") {
+    val user = Util.createRandomUser()
+    val verification1 = EmailVerificationsDao.upsert(Util.createdBy, user, user.email)
+    val verification2 = EmailVerificationsDao.upsert(Util.createdBy, user, user.email)
+    verification2.guid should be(verification1.guid)
+
+    EmailVerificationsDao.softDelete(Util.createdBy, verification1)
+    val verification3 = EmailVerificationsDao.upsert(Util.createdBy, user, user.email)
+    verification3.guid should not be(verification1.guid)
+
+    val verificationWithDifferentEmail = EmailVerificationsDao.upsert(Util.createdBy, user, "other-" + user.email)
+    verificationWithDifferentEmail.guid should not be(verification3.guid)
+  }
+
+  it("isExpired") {
+    val user = Util.createRandomUser()
+    val verification = EmailVerificationsDao.create(Util.createdBy, user, user.email)
+    EmailVerificationsDao.isExpired(verification) should be(false)
+  }
+
+  it("confirm") {
+    val user = Util.createRandomUser()
+    val verification = EmailVerificationsDao.create(Util.createdBy, user, user.email)
+    EmailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) should be(Seq.empty)
+
+    EmailVerificationsDao.confirm(Util.createdBy, verification)
+    EmailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)).map(_.emailVerificationGuid) should be(Seq(verification.guid))
+
+  }
+
   it("findByGuid") {
     val user = Util.createRandomUser()
     val verification = EmailVerificationsDao.create(Util.createdBy, user, user.email)
