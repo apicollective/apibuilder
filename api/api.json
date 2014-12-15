@@ -233,6 +233,13 @@
 	    ]
 	},
 
+	"email_verification_confirmation_form": {
+	    "description": "Data used to confirm an email address. The token is an internal unique identifier used to lookup the specific email address and user account for which we sent an email verification email.",
+	    "fields": [
+		{ "name": "token", "type": "string" }
+	    ]
+	},
+
         "error": {
             "fields": [
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
@@ -767,7 +774,22 @@
 		    "path": "/:guid"
                 }
             ]
-        }
+        },
+
+	"email_verification_confirmation_form": {
+	    "path": "/email_verification_confirmations",
+	    "operations": [
+                {
+                    "method": "POST",
+                    "description": "Validate an email address using a token.",
+                    "body": { "type": "email_verification_confirmation_form" },
+                    "responses": {
+                        "201": { "type": "unit" },
+                        "409": { "type": "[error]" }
+                    }
+                }
+	    ]
+	}
 
     }
 

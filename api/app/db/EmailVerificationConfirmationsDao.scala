@@ -9,13 +9,13 @@ import play.api.Play.current
 import java.util.UUID
 import org.joda.time.DateTime
 
-case class EmailVerificationConfirmation(
+private[db] case class EmailVerificationConfirmation(
   guid: UUID,
   emailVerificationGuid: UUID,
   createdAt: DateTime
 )
 
-object EmailVerificationConfirmationsDao {
+private[db] object EmailVerificationConfirmationsDao {
 
   private val TokenLength = 80
   private val HoursUntilTokenExpires = 168

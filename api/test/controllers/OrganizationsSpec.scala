@@ -11,7 +11,7 @@ import play.api.test.Helpers._
 class OrganizationsSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-/*
+
   "POST /organizations" in new WithServer {
     val name = UUID.randomUUID.toString
     val org = createOrganization(OrganizationForm(name = name))
@@ -36,8 +36,14 @@ class OrganizationsSpec extends BaseSpec {
 
   "POST /organizations validates key is not reserved" in new WithServer {
     intercept[ErrorsResponse] {
+      createOrganization(OrganizationForm(name = "members"))
+    }.errors.map(_.message) must be(Seq(s"Prefix member is a reserved word and cannot be used for the key of an organization"))
+  }
+
+  "POST /organizations validates key is not reserved when just a prefix" in new WithServer {
+    intercept[ErrorsResponse] {
       createOrganization(OrganizationForm(name = "membership_request"))
-    }.errors.map(_.message) must be(Seq(s"Key membership_request is a reserved word and cannot be used for the key of an organization"))
+    }.errors.map(_.message) must be(Seq(s"Prefix member is a reserved word and cannot be used for the key of an organization"))
   }
 
   "DELETE /organizations/:key" in new WithServer {
@@ -60,7 +66,6 @@ class OrganizationsSpec extends BaseSpec {
     await(client.organizations.getByKey(org.key)) must be(Some(org))
     await(client.organizations.getByKey(UUID.randomUUID.toString)) must be(None)
   }
-*/
 
   "GET /organizations for an anonymous user shows only public orgs" in new WithServer {
     val privateOrg = createOrganization(createOrganizationForm().copy(metadata = Some(OrganizationMetadataForm(

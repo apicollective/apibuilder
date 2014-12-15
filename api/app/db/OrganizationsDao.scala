@@ -14,13 +14,11 @@ object OrganizationsDao {
   private val MinNameLength = 4
   val MinKeyLength = 4
   val ReservedKeys = Seq(
-    "_internal_", "account", "accounts", "admin", "api", "api.json", "accept", "acceptance", "assets", "bucket", "buckets",
-    "code", "codes", "confirm", "confirmation", "confirmations",
-    "config", "configuration", "doc", "docs", "documentation", "domain", "domains", "generator", "generators", "internal",
-    "login", "logout", "member", "members", "membership", "memberships", "membership_request", "membership_request_review",
-    "membership_request_reviews", "membership_requests", "metadatum", "metadata", "org", "orgs", "organizations", "private", "reject", "rejection",
-    "session", "setting", "settings", "scms", "source", "sources", "subaccount", "subaccounts", "subscription", "subscriptions",
-    "team", "teams", "user", "users", "util", "utility", "utilities", "version", "versions", "watch", "watches"
+    "_internal_", "account", "admin", "api", "api.json", "accept", "asset", "bucket",
+    "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
+    "internal", "login", "logout", "member", "members", "metadatum", "metadata",
+    "org", "private", "reject", "session", "setting", "scms", "source", "subaccount",
+    "subscription", "team", "user", "util", "version", "watch"
   ).map(UrlKey.generate(_))
 
   private val EmptyOrganizationMetadataForm = OrganizationMetadataForm()
@@ -54,10 +52,9 @@ object OrganizationsDao {
         nameErrors match {
           case Nil => {
             val generated = UrlKey.generate(form.name)
-            if (ReservedKeys.contains(generated)) {
-              Seq(s"Key ${form.name} is a reserved word and cannot be used for the key of an organization")
-            } else {
-              Seq.empty
+            ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
+              case None => Seq.empty
+              case Some(prefix) => Seq(s"Prefix ${prefix} is a reserved word and cannot be used for the key of an organization")
             }
           }
           case errors => Seq.empty
@@ -70,12 +67,15 @@ object OrganizationsDao {
           Seq(s"Key must be at least $MinKeyLength characters")
         } else if (key != generated) {
           Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
-        } else if (ReservedKeys.contains(generated)) {
-          Seq(s"Key $key is a reserved word and cannot be used for the key of an organization")
         } else {
-          OrganizationsDao.findByKey(Authorization.All, key) match {
-            case None => Seq.empty
-            case Some(existing) => Seq("Org with this key already exists")
+          ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
+            case Some(prefix) => Seq(s"Prefix $key is a reserved word and cannot be used for the key of an organization")
+            case None => {
+              OrganizationsDao.findByKey(Authorization.All, key) match {
+                case None => Seq.empty
+                case Some(existing) => Seq("Org with this key already exists")
+              }
+            }
           }
         }
       }

@@ -57,6 +57,11 @@ object EmailVerificationsDao {
     }
   }
 
+  def confirm(user: User, verification: EmailVerification) = {
+    EmailVerificationConfirmationsDao.upsert(user, verification)
+    // TODO : review pending membership requests based on email domain
+  }
+
   def findByGuid(guid: UUID): Option[EmailVerification] = {
     findAll(guid = Some(guid), limit = 1).headOption
   }
