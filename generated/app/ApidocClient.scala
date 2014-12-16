@@ -844,7 +844,7 @@ package com.gilt.apidoc {
         val payload = play.api.libs.json.Json.toJson(emailVerificationConfirmationForm)
 
         _executeRequest("POST", s"/email_verification_confirmations", body = Some(payload)).map {
-          case r if r.status == 201 => Unit
+          case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }

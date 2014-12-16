@@ -25,6 +25,8 @@ GET     /doc/playRoutesFile                                       controllers.Do
 GET     /org/create                                               controllers.Organizations.create
 POST    /org/createPost                                           controllers.Organizations.createPost
 
+GET     /email-verifications/:token                               controllers.EmailVerifications.get(token: String)
+
 GET     /generators                                               controllers.Generators.list()
 POST    /generators/:key/remove                                   controllers.Generators.postRemove(key: String)
 GET     /generators/create                                        controllers.Generators.create()

@@ -69,19 +69,23 @@ object EmailVerificationsDao {
     verification.expiresAt.isBeforeNow
   }
 
-  def confirm(user: User, verification: EmailVerification) = {
+  def confirm(user: Option[User], verification: EmailVerification) = {
     assert(
       !EmailVerificationsDao.isExpired(verification),
       "Token for verificationGuid[${verification.guid}] is expired"
     )
 
-    EmailVerificationConfirmationsDao.upsert(user, verification)
+    val verificationUser = UsersDao.findByGuid(verification.userGuid).getOrElse {
+      sys.error(s"User guid[${verification.userGuid}] does not exist for verification[${verification.guid}]")
+    }
+
+    val updatingUser = user.getOrElse(verificationUser)
+
+    EmailVerificationConfirmationsDao.upsert(updatingUser, verification)
 
     OrganizationsDao.findByEmailDomain(verification.email).foreach { org =>
-      UsersDao.findByGuid(verification.userGuid).filter(_.email == verification.email).map { user =>
-        MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, Role.Member).map { request =>
-          MembershipRequestsDao.acceptViaEmailVerification(user, request, verification.email)
-        }
+      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, verificationUser, Role.Member).map { request =>
+        MembershipRequestsDao.acceptViaEmailVerification(updatingUser, request, verification.email)
       }
     }
   }
