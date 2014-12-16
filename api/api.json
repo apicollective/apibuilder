@@ -784,6 +784,7 @@
                     "description": "Validate an email address using a token.",
                     "body": { "type": "email_verification_confirmation_form" },
                     "responses": {
+                        "204": { "type": "unit" },
                         "409": { "type": "[error]" }
                     }
                 }
