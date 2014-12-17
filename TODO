@@ -12,7 +12,6 @@ http://www.apidoc.me/org/create
  => if not specified, default namespace can be "me.apidoc.org.<org
     name>" or something
 
-
 Make base url optional
   - if included, make it part of the generated client
 

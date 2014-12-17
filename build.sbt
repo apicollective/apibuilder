@@ -71,6 +71,10 @@ lazy val generator = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
 
+lazy val spec = project
+  .in(file("spec"))
+  .enablePlugins(PlayScala)
+
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
   organization := "com.gilt.apidoc",

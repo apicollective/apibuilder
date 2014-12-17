@@ -1,6 +1,6 @@
 {
-    "name": "apidoc api.json",
-    "description": "apidoc api.json schema",
+    "name": "apidoc spec",
+    "description": "Specification of apidoc api.json schema",
     "base_url": "http://api.apidoc.me",
 
     "models": {
