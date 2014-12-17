@@ -42,6 +42,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
+		{ "name": "description", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean", "default": true },
 		{ "name": "example", "type": "string", "required": false },
 		{ "name": "minimum", "type": "long", "required": false },

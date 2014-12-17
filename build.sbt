@@ -74,6 +74,12 @@ lazy val generator = project
 lazy val spec = project
   .in(file("spec"))
   .enablePlugins(PlayScala)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.scalatestplus" %% "play" % "1.2.0" % "test"
+    )
+  )
+
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
