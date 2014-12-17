@@ -1,3 +1,9 @@
+Add link to /generators
+
+rename TypeKind => Kind
+
+make method an enum to make list of http methods explicit
+
 users need nicknames
   - then display nicknames throughout the UI
 
