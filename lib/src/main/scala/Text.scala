@@ -162,11 +162,15 @@ object Text {
 
   private val Capitals = """([A-Z])""".r
   def camelCaseToUnderscore(phrase: String): String = {
-    val word = Capitals.replaceAllIn(phrase, m => s"_${m}").trim
-    if (word.startsWith("_")) {
-      word.slice(1, word.length)
+    if (phrase == phrase.toUpperCase) {
+      phrase.toLowerCase
     } else {
-      word
+      val word = Capitals.replaceAllIn(phrase, m => s"_${m}").trim
+      if (word.startsWith("_")) {
+        word.slice(1, word.length)
+      } else {
+        word
+      }
     }
   }
 

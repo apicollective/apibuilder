@@ -236,6 +236,7 @@ class TextSpec extends FunSpec with Matchers {
     Text.camelCaseToUnderscore("Hey") should be("Hey")
     Text.camelCaseToUnderscore("HeyThere") should be("Hey_There")
     Text.camelCaseToUnderscore("heyThere") should be("hey_There")
+    Text.camelCaseToUnderscore("UUID") should be("uuid")
   }
 
   it("snakeToCamelCase") {
