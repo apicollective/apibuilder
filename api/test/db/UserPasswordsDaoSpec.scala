@@ -30,10 +30,10 @@ class UserPasswordsDaoSpec extends FlatSpec {
     assertEquals(UserPasswordsDao.isValid(user.guid, "test"), false)
     assertEquals(UserPasswordsDao.isValid(user.guid, ""), false)
 
-    UserPasswordsDao.create(user, user.guid, "test")
+    UserPasswordsDao.create(user, user.guid, "testing")
     assertEquals(UserPasswordsDao.isValid(user.guid, "password"), false)
     assertEquals(UserPasswordsDao.isValid(user.guid, "password2"), false)
-    assertEquals(UserPasswordsDao.isValid(user.guid, "test"), true)
+    assertEquals(UserPasswordsDao.isValid(user.guid, "testing"), true)
     assertEquals(UserPasswordsDao.isValid(user.guid, ""), false)
   }
 
