@@ -40,36 +40,29 @@ class UsersDaoSpec extends FunSpec with Matchers {
     UserPasswordsDao.isValid(user.guid, "password") should be(false)
   }
 
-  describe("users and orgs") {
+  it("validates email is unique") {
+    val form = UserForm(
+      email = UUID.randomUUID.toString + "@gilttest.com",
+      password = "testing"
+    )
 
-    it("are linked if the email domain matches") {
-      val gilt = Util.gilt
+    UsersDao.validate(form) should be(Seq.empty)
 
-      if (gilt.domains.find(_.name == "gilt.com").isEmpty) {
-        OrganizationDomainsDao.create(Util.createdBy, gilt, "gilt.com")
-      }
+    val user = UsersDao.create(form)
 
-      val user = UsersDao.create(UserForm(
-        email = UUID.randomUUID.toString + "@gilt.com",
-        password = "testing"
-      ))
+    UsersDao.validate(form).map(_.message) should be(Seq("User with this email address already exists"))
+    UsersDao.validate(form, Some(user)).map(_.message) should be(Seq.empty)
+    UsersDao.validate(form, Some(Util.upsertUser())).map(_.message) should be(Seq("User with this email address already exists"))
+    UsersDao.validate(form.copy(email = "other-" + form.email)).map(_.message) should be(Seq.empty)
+  }
 
-      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Member).isEmpty should be(false)
-      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Admin) should be(None)
-    }
+  it("validates password") {
+    val form = UserForm(
+      email = UUID.randomUUID.toString + "@gilttest.com",
+      password = "bad"
+    )
 
-    it("are not linked if the email domain is different") {
-      val gilt = Util.gilt
-      val user = UsersDao.create(UserForm(
-        email = UUID.randomUUID.toString + "@gilttest.com",
-        password = "testing"
-      ))
-
-      MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Member) should be(None)
-      MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, gilt, user, Role.Admin) should be(None)
-    }
-
-
+    UsersDao.validate(form).map(_.message) should be(Seq("Password must be at least 5 characters"))
   }
 
 }

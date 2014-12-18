@@ -37,10 +37,19 @@ object UsersDao {
    where guid = {guid}
   """
 
-  def validate(form: UserForm): Seq[Error] = {
+  def validate(
+    form: UserForm,
+    existingUser: Option[User] = None
+  ): Seq[Error] = {
     val emailErrors = findByEmail(form.email) match {
       case None => Seq.empty
-      case Some(_) => Seq("User with this email address already exists")
+      case Some(u) => {
+        if (existingUser.map(_.guid) == Some(u.guid)) {
+          Seq.empty
+        } else {
+          Seq("User with this email address already exists")
+        }
+      }
     }
 
     val passwordErrors = UserPasswordsDao.validate(form.password).map(_.message)

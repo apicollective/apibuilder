@@ -12,9 +12,13 @@ object Util {
     UsersDao.create(UserForm(email = email, name = None, password = "test1"))
   }
 
-  def upsertUser(email: String): User = {
+  def upsertUser(
+    email: String = "random-user-" + UUID.randomUUID.toString + "@gilttest.com",
+    name: String = "Admin",
+    password: String = "test1"
+  ): User = {
     UsersDao.findByEmail(email).getOrElse {
-      UsersDao.create(UserForm(email = email, name = Some("Admin"), password = "test1"))
+      UsersDao.create(UserForm(email = email, name = Some(name), password = password))
     }
   }
 

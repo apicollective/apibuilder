@@ -64,12 +64,23 @@ object Users extends Controller {
 
           case Some(u: User) => {
             val existingUser = UsersDao.findByEmail(form.email)
-            if (existingUser.isEmpty || existingUser.get.guid == guid.toString) {
-              UsersDao.update(request.user, u, form)
-              val updatedUser = UsersDao.findByGuid(guid.toString).get
-              Ok(Json.toJson(updatedUser))
-            } else {
-              Conflict(Json.toJson(Validation.error("account with this email already exists")))
+
+            UsersDao.validate(form, existingUser) match {
+              case Nil => {
+                val user = existingUser match {
+                  case None => UsersDao.create(form)
+                  case Some(existing) => {
+                    UsersDao.update(request.user, existing, form)
+                    UsersDao.findByGuid(guid.toString).getOrElse {
+                      sys.error("Failed to update user")
+                    }
+                  }
+                }
+                Ok(Json.toJson(user))
+              }
+              case errors => {
+                Conflict(Json.toJson(errors))
+              }
             }
           }
         }

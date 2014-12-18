@@ -9,7 +9,6 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-/*
   it("create") {
     val user = Util.createRandomUser()
     val verification = EmailVerificationsDao.create(Util.createdBy, user, user.email)
@@ -42,7 +41,7 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
     val verification = EmailVerificationsDao.create(Util.createdBy, user, user.email)
     EmailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) should be(Seq.empty)
 
-    EmailVerificationsDao.confirm(Util.createdBy, verification)
+    EmailVerificationsDao.confirm(None, verification)
     EmailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)).map(_.emailVerificationGuid) should be(Seq(verification.guid))
   }
 
@@ -89,7 +88,6 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
     EmailVerificationsDao.findAll(token = Some(verification2.token)).map(_.userGuid) should be(Seq(user2.guid))
     EmailVerificationsDao.findAll(token = Some("bad")).map(_.userGuid) should be(Seq.empty)
   }
-*/
 
   describe("membership requests") {
 
@@ -114,7 +112,7 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
       MembershipsDao.isUserMember(nonMatchingUser, org) should be(false)
 
       val verification = EmailVerificationsDao.upsert(Util.createdBy, user, user.email)
-      EmailVerificationsDao.confirm(Util.createdBy, verification)
+      EmailVerificationsDao.confirm(Some(Util.createdBy), verification)
 
       MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, Role.Member) should be(None)
       MembershipsDao.isUserMember(user, org) should be(true)
