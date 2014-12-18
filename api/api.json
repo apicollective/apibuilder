@@ -240,6 +240,21 @@
 	    ]
 	},
 
+	"password_reset_request": {
+	    "description": "Create a password reset request - e.g. an email containing a one time URL to change a password",
+	    "fields": [
+		{ "name": "email", "type": "string", "description": "The email address for which we generate the password reset." }
+	    ]
+	},
+
+	"password_reset": {
+	    "description": "Allows a user to change their password with authentication from a token.",
+	    "fields": [
+		{ "name": "token", "type": "string", "description": "Unique one time use token to change a password" },
+		{ "name": "password", "type": "string" }
+	    ]
+	},
+
         "error": {
             "fields": [
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
@@ -788,6 +803,32 @@
                         "409": { "type": "[error]" }
                     }
                 }
+	    ]
+	},
+
+	"password_reset_request": {
+	    "operations": [
+                {
+                    "method": "POST",
+                    "description": "Create a new password reset. This will send the user an email with a link to reset their password.",
+		    "body": { "type": "password_reset_request" },
+                    "responses": {
+                        "204": { "type": "unit" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
+                    "method": "POST",
+		    "path": "/:token",
+                    "description": "Change the password for this token. If the token is invalid, has been used, or otherwise no longer can be applied, errors will be returned as 409s. A 204 represents that the user has successfully changed their password.",
+		    "body": { "type": "password_reset" },
+                    "responses": {
+                        "204": { "type": "unit" },
+                        "409": { "type": "[error]" }
+                    }
+                }
+
 	    ]
 	}
 

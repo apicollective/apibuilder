@@ -9,12 +9,12 @@ object Util {
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@gilttest.com"
-    UsersDao.create(UserForm(email = email, name = None, password = "test"))
+    UsersDao.create(UserForm(email = email, name = None, password = "test1"))
   }
 
   def upsertUser(email: String): User = {
     UsersDao.findByEmail(email).getOrElse {
-      UsersDao.create(UserForm(email = email, name = Some("Admin"), password = "test"))
+      UsersDao.create(UserForm(email = email, name = Some("Admin"), password = "test1"))
     }
   }
 

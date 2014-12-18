@@ -1,7 +1,7 @@
 package db
 
-import com.gilt.apidoc.models.User
-import lib.Constants
+import com.gilt.apidoc.models.{Error, User}
+import lib.{Constants, Validation}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -85,6 +85,8 @@ case class UserPassword(guid: UUID, userGuid: UUID, algorithm: PasswordAlgorithm
 
 object UserPasswordsDao {
 
+  private val MinLength = 5
+
   private val BaseQuery = """
     select guid::varchar, user_guid::varchar, algorithm_key, hash
       from user_passwords
@@ -105,6 +107,16 @@ object UserPasswordsDao {
        and deleted_at is null
   """
 
+  def validate(password: String): Seq[Error] = {
+    val lengthErrors = if (password.trim.length < MinLength) {
+      Seq(s"Password must be at least $MinLength characters")
+    } else {
+      Seq.empty
+    }
+
+    Validation.errors(lengthErrors)
+  }
+
   def create(user: User, userGuid: UUID, cleartextPassword: String) {
     DB.withTransaction { implicit c =>
       softDeleteByUserGuid(c, user, userGuid)
@@ -118,6 +130,9 @@ object UserPasswordsDao {
     userGuid: UUID,
     cleartextPassword: String
   ) {
+    val errors = validate(cleartextPassword)
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+    
     val guid = UUID.randomUUID
     val algorithm = PasswordAlgorithm.Latest
     val hashedPassword = algorithm.hash(cleartextPassword)
