@@ -11,11 +11,13 @@ object MainActor {
   def props() = Props(new MainActor("main"))
 
   object Messages {
+    case class EmailVerificationCreated(guid: UUID)
     case class MembershipRequestCreated(guid: UUID)
     case class MembershipCreated(guid: UUID)
+    case class PasswordResetCreated(guid: UUID)
     case class ServiceCreated(guid: UUID)
+    case class UserCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
-    case class EmailVerificationCreated(guid: UUID)
   }
 }
 
@@ -23,7 +25,8 @@ object MainActor {
 class MainActor(name: String) extends Actor with ActorLogging {
   import scala.concurrent.duration._
 
-  val emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
+  private val emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
+  private val userActor = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor")
 
   def receive = akka.event.LoggingReceive {
 
@@ -54,6 +57,18 @@ class MainActor(name: String) extends Actor with ActorLogging {
     case MainActor.Messages.EmailVerificationCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.EmailVerificationCreated($guid)", {
         emailActor ! EmailActor.Messages.EmailVerificationCreated(guid)
+      }
+    )
+
+    case MainActor.Messages.PasswordResetCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.PasswordResetCreated($guid)", {
+        // TODO emailActor ! EmailActor.Messages.PasswordResetCreated(guid)
+      }
+    )
+
+    case MainActor.Messages.UserCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.UserCreated($guid)", {
+        userActor ! UserActor.Messages.UserCreated(guid)
       }
     )
 
