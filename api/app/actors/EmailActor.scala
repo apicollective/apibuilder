@@ -1,13 +1,10 @@
 package actors
 
 import com.gilt.apidoc.models.{Membership, Publication, Service}
-import play.api.libs.concurrent.Akka
-import play.api.libs.concurrent.Execution.Implicits._
+import lib.{Email, Person}
 import db._
-import lib.{Email, Pager, Person, Role}
-import akka.actor._
 import play.api.Logger
-import play.api.Play.current
+import akka.actor.Actor
 import java.util.UUID
 
 object EmailActor {
