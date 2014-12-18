@@ -58,25 +58,29 @@ class ApiJsonSpec extends FunSpec with Matchers {
         service.baseUrl should be("http://api.apidoc.me")
         service.models.keys.toList.sorted should be(Seq("body", "enum", "enum_value", "field", "header", "model", "operation", "parameter", "resource", "response", "service"))
 
-        val body = validateModel(
-          service.models("body"),
-          fields = Seq("type", "description")
-        )
-
-        validateField(
-          body.fields.find(_.name == "type").get,
-          name = "type",
-          `type` = "string"
-        )
-
-        validateField(
-          body.fields.find(_.name == "description").get,
-          name = "description",
-          `type` = "string",
-          required = Some(false)
-        )
+        validateBody(service.models("body"))
       }
     }
- }
+  }
+
+  def validateBody(body: Model) {
+    validateModel(
+      body,
+      fields = Seq("type", "description")
+    )
+
+    validateField(
+      body.fields.find(_.name == "type").get,
+      name = "type",
+      `type` = "string"
+    )
+
+    validateField(
+      body.fields.find(_.name == "description").get,
+      name = "description",
+      `type` = "string",
+      required = Some(false)
+    )
+  }
 
 }
