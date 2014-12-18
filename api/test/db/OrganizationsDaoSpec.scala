@@ -130,9 +130,9 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
     }
 
     it("raises error if you try to create an org with a short name") {
-      intercept[java.lang.IllegalArgumentException] {
+      intercept[java.lang.AssertionError] {
         OrganizationsDao.createWithAdministrator(Util.createdBy, OrganizationForm("a"))
-      }.getMessage should be("requirement failed: Name too short")
+      }.getMessage should be("assertion failed: name must be at least 4 characters")
     }
 
     it("isDomainValid") {
@@ -154,11 +154,11 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
   describe("Authorization") {
 
     val publicUser = Util.createRandomUser()
-    val publicOrg = Util.createOrganization(publicUser, Some("Public " + UUID.randomUUID().toString))
+    val publicOrg = Util.createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString))
     OrganizationMetadataDao.create(Util.createdBy, publicOrg, OrganizationMetadataForm(visibility = Some(Visibility.Public)))
 
     val privateUser = Util.createRandomUser()
-    val privateOrg = Util.createOrganization(privateUser, Some("Private " + UUID.randomUUID().toString))
+    val privateOrg = Util.createOrganization(privateUser, Some("A Private " + UUID.randomUUID().toString))
 
     describe("All") {
 

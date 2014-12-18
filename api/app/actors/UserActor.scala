@@ -12,6 +12,16 @@ object UserActor {
     case class UserCreated(guid: UUID)
   }
 
+  def userCreated(guid: UUID) {
+    UsersDao.findByGuid(guid).map { user =>
+      OrganizationsDao.findByEmailDomain(user.email).foreach { org =>
+        MembershipRequestsDao.upsert(user, org, user, Role.Member)
+      }
+
+      EmailVerificationsDao.create(user, user, user.email)
+    }
+  }
+
 }
 
 class UserActor extends Actor {
@@ -20,13 +30,7 @@ class UserActor extends Actor {
 
     case UserActor.Messages.UserCreated(guid) => Util.withVerboseErrorHandler(
       s"UserActor.Messages.UserCreated($guid)", {
-        UsersDao.findByGuid(guid).map { user =>
-          OrganizationsDao.findByEmailDomain(user.email).foreach { org =>
-            MembershipRequestsDao.upsert(user, org, user, Role.Member)
-          }
-
-          EmailVerificationsDao.create(user, user, user.email)
-        }
+        UserActor.userCreated(guid)
       }
     )
 

@@ -107,14 +107,15 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
         password = "testing"
       ))
 
-      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, Role.Member).isEmpty should be(false)
+      actors.UserActor.userCreated(user.guid)
+      actors.UserActor.userCreated(nonMatchingUser.guid)
+
       MembershipsDao.isUserMember(user, org) should be(false)
       MembershipsDao.isUserMember(nonMatchingUser, org) should be(false)
 
       val verification = EmailVerificationsDao.upsert(Util.createdBy, user, user.email)
       EmailVerificationsDao.confirm(Some(Util.createdBy), verification)
 
-      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, Role.Member) should be(None)
       MembershipsDao.isUserMember(user, org) should be(true)
       MembershipsDao.isUserMember(nonMatchingUser, org) should be(false)
     }
