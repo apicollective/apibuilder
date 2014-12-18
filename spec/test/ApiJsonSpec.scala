@@ -23,7 +23,7 @@ class ApiJsonSpec extends FunSpec with Matchers {
   }
 
   def validateField(
-    src: Field,
+    model: Model,
     name: String,
     `type`: String,
     description: scala.Option[String] = None,
@@ -33,6 +33,10 @@ class ApiJsonSpec extends FunSpec with Matchers {
     minimum: scala.Option[Long] = None,
     maximum: scala.Option[Long] = None
   ) {
+    val src = model.fields.find(_.name == name).getOrElse {
+      sys.error(s"Model does not have a field named[${name}]")
+    }
+
     src.name should be(name)
     src.description should be(description)
     src.default should be(default)
@@ -58,9 +62,29 @@ class ApiJsonSpec extends FunSpec with Matchers {
         service.baseUrl should be("http://api.apidoc.me")
         service.models.keys.toList.sorted should be(Seq("body", "enum", "enum_value", "field", "header", "model", "operation", "parameter", "resource", "response", "service"))
 
+        validateModel(service.models("service"))
         validateBody(service.models("body"))
       }
     }
+  }
+
+  def validateModel(model: Model) {
+    validateModel(
+      model,
+      fields = Seq("name", "base_url", "description", "headers", "enums", "models", "resources")
+    )
+
+    validateField(
+      model,
+      name = "name",
+      `type` = "string"
+    )
+
+    validateField(
+      model,
+      name = "base_url",
+      `type` = "string"
+    )
   }
 
   def validateBody(body: Model) {
@@ -70,13 +94,13 @@ class ApiJsonSpec extends FunSpec with Matchers {
     )
 
     validateField(
-      body.fields.find(_.name == "type").get,
+      body,
       name = "type",
       `type` = "string"
     )
 
     validateField(
-      body.fields.find(_.name == "description").get,
+      body,
       name = "description",
       `type` = "string",
       required = Some(false)
