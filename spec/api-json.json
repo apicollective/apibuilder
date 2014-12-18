@@ -43,7 +43,8 @@
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "required", "type": "boolean", "default": true },
+		{ "name": "default", "type": "string", "required": false },
+		{ "name": "required", "type": "boolean", "default": "true" },
 		{ "name": "example", "type": "string", "required": false },
 		{ "name": "minimum", "type": "long", "required": false },
 		{ "name": "maximum", "type": "long", "required": false }
@@ -80,7 +81,7 @@
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "required", "type": "boolean", "default": true },
+		{ "name": "required", "type": "boolean", "default": "true" },
 		{ "name": "default", "type": "string", "required": false },
 		{ "name": "example", "type": "string", "required": false }
 	    ]

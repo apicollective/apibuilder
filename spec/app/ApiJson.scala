@@ -23,6 +23,7 @@ package com.gilt.apidocspec.models {
     name: String,
     `type`: String,
     description: scala.Option[String] = None,
+    default: scala.Option[String] = None,
     required: scala.Option[Boolean] = None,
     example: scala.Option[String] = None,
     minimum: scala.Option[Long] = None,
@@ -156,6 +157,7 @@ package com.gilt.apidocspec.models {
         (__ \ "name").read[String] and
         (__ \ "type").read[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "default").readNullable[String] and
         (__ \ "required").readNullable[Boolean] and
         (__ \ "example").readNullable[String] and
         (__ \ "minimum").readNullable[Long] and
@@ -168,6 +170,7 @@ package com.gilt.apidocspec.models {
         (__ \ "name").write[String] and
         (__ \ "type").write[String] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "default").write[scala.Option[String]] and
         (__ \ "required").write[scala.Option[Boolean]] and
         (__ \ "example").write[scala.Option[String]] and
         (__ \ "minimum").write[scala.Option[Long]] and
@@ -304,4 +307,3 @@ package com.gilt.apidocspec.models {
     }
   }
 }
-

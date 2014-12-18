@@ -14,7 +14,7 @@ class ApiJsonSpec extends FunSpec with Matchers {
 
   def validateModel(
     model: Model,
-    description: Option[String],
+    description: Option[String] = None,
     fields: Seq[String]
   ): Model = {
     model.description should be(description)
@@ -22,20 +22,37 @@ class ApiJsonSpec extends FunSpec with Matchers {
     model
   }
 
-  def validateField(src: Field, target: Field) {
-    src.name should be(target.name)
-    src.description should be(target.description)
-    src.`type` should be(target.`type`)
-    src.example should be(target.example)
-    src.minimum should be(target.minimum)
-    src.maximum should be(target.maximum)
+  def validateField(
+    src: Field,
+    name: String,
+    `type`: String,
+    description: scala.Option[String] = None,
+    default: scala.Option[_root_.play.api.libs.json.JsObject] = None,
+    required: scala.Option[Boolean] = None,
+    example: scala.Option[String] = None,
+    minimum: scala.Option[Long] = None,
+    maximum: scala.Option[Long] = None
+  ) {
+    src.name should be(name)
+    src.description should be(description)
+    src.default should be(default)
+    src.`type` should be(`type`)
+    src.example should be(example)
+    src.minimum should be(minimum)
+    src.maximum should be(maximum)
   }
 
   it("spec can parse itself") {
     val contents = scala.io.Source.fromFile("api-json.json").getLines.mkString("\n")
-    Json.parse(contents).asOpt[Service] match {
-      case None => sys.error("Failed to parse")
-      case Some(service) => {
+
+    Json.parse(contents).asOpt[JsValue].getOrElse {
+      sys.error("Invalid json")
+    }.validate[Service] match {
+      case e: JsError => {
+        sys.error(e.errors.toString)
+      }
+      case s: JsSuccess[Service] => {
+        val service = s.get
         service.name should be("apidoc spec")
         service.description should be(Some("Specification of apidoc api.json schema"))
         service.baseUrl should be("http://api.apidoc.me")
@@ -43,32 +60,20 @@ class ApiJsonSpec extends FunSpec with Matchers {
 
         val body = validateModel(
           service.models("body"),
-          description = None,
           fields = Seq("type", "description")
         )
 
         validateField(
           body.fields.find(_.name == "type").get,
-          Field(
-            name = "type",
-            `type` = "string",
-            required = None,
-            example = None,
-            minimum = None,
-            maximum = None
-          )
+          name = "type",
+          `type` = "string"
         )
 
         validateField(
           body.fields.find(_.name == "description").get,
-          Field(
-            name = "description",
-            `type` = "string",
-            required = Some(false),
-            example = None,
-            minimum = None,
-            maximum = None
-          )
+          name = "description",
+          `type` = "string",
+          required = Some(false)
         )
       }
     }
