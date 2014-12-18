@@ -12,19 +12,7 @@ class ApiJsonSpec extends FunSpec with Matchers {
   val Filenames = Seq("svc-iris-hub-0-0-1.json")
   val Dir = "core/src/test/resources"
 
-  def validateModel(
-    model: Model,
-    description: Option[String] = None,
-    fields: Seq[String]
-  ): Model = {
-    model.description should be(description)
-    model.fields.map(_.name) should be(fields)
-    model
-  }
-
-  def validateField(
-    model: Model,
-    name: String,
+  case class FieldValidator(
     `type`: String,
     description: scala.Option[String] = None,
     default: scala.Option[_root_.play.api.libs.json.JsObject] = None,
@@ -32,18 +20,40 @@ class ApiJsonSpec extends FunSpec with Matchers {
     example: scala.Option[String] = None,
     minimum: scala.Option[Long] = None,
     maximum: scala.Option[Long] = None
+  )
+
+  def validateModel(
+    model: Model,
+    description: Option[String] = None,
+    fields: Map[String, FieldValidator]
+  ): Model = {
+    model.description should be(description)
+
+    fields.foreach {
+      case (name, validator) => validateField(model, name, validator)
+    }
+
+    model.fields.map(_.name).sorted should be(fields.keys.toList.sorted)
+
+    model
+  }
+
+  def validateField(
+    model: Model,
+    name: String,
+    validator: FieldValidator
   ) {
     val src = model.fields.find(_.name == name).getOrElse {
       sys.error(s"Model does not have a field named[${name}]")
     }
 
     src.name should be(name)
-    src.description should be(description)
-    src.default should be(default)
-    src.`type` should be(`type`)
-    src.example should be(example)
-    src.minimum should be(minimum)
-    src.maximum should be(maximum)
+    src.description should be(validator.description)
+    src.default should be(validator.default)
+    src.`type` should be(validator.`type`)
+    src.example should be(validator.example)
+    src.minimum should be(validator.minimum)
+    src.maximum should be(validator.maximum)
   }
 
   it("spec can parse itself") {
@@ -71,39 +81,39 @@ class ApiJsonSpec extends FunSpec with Matchers {
   def validateModel(model: Model) {
     validateModel(
       model,
-      fields = Seq("name", "base_url", "description", "headers", "enums", "models", "resources")
+      fields = Map(
+
+        "name" -> FieldValidator(
+          `type` = "string"
+        ),
+
+        "base_url" -> FieldValidator(
+          `type` = "string"
+        ),
+
+        "description" -> FieldValidator(
+          `type` = "string",
+          required = Some(false)
+        )
+
+      )
     )
 
-    validateField(
-      model,
-      name = "name",
-      `type` = "string"
-    )
-
-    validateField(
-      model,
-      name = "base_url",
-      `type` = "string"
-    )
   }
 
   def validateBody(body: Model) {
     validateModel(
       body,
-      fields = Seq("type", "description")
-    )
+      fields = Map(
+        "type" -> FieldValidator(
+          `type` = "string"
+        ),
 
-    validateField(
-      body,
-      name = "type",
-      `type` = "string"
-    )
-
-    validateField(
-      body,
-      name = "description",
-      `type` = "string",
-      required = Some(false)
+        "description" -> FieldValidator(
+          `type` = "string",
+          required = Some(false)
+        )
+      )
     )
   }
 
