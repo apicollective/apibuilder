@@ -1,3 +1,21 @@
+add namespace
+ => rename package name to default namespace for organization
+ => reject services that are uploaded w/out a namespace
+ => Globally validate that namespace uniquely identifies a single service
+ => Add support to resolve types based on the full namespace
+
+add major version number to package name
+
+http://www.apidoc.me/org/create
+ => Ask for org domain and namespace - both optional
+ => use domain as default namespace for the org
+ => if not specified, default namespace can be "me.apidoc.org.<org
+    name>" or something
+
+
+Make base url optional
+  - if included, make it part of the generated client
+
 Add link to /generators
 
 rename TypeKind => Kind
