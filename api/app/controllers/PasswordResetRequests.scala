@@ -3,7 +3,7 @@ package controllers
 import com.gilt.apidoc.models.{PasswordResetRequest, PasswordReset}
 import com.gilt.apidoc.models.json._
 import lib.Validation
-import db.{PasswordResetsDao, UsersDao, UserPasswordsDao}
+import db.{PasswordResetRequestsDao, UsersDao, UserPasswordsDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -17,8 +17,7 @@ object PasswordResetRequests extends Controller {
       }
       case s: JsSuccess[PasswordResetRequest] => {
         UsersDao.findByEmail(s.get.email).map { user =>
-          global.Actors.mainActor ! actors.MainActor.Messages.PasswordResetCreated(user.guid)
-          // TODO: Send email
+          PasswordResetRequestsDao.create(request.user, user)
         }
         NoContent
       }
@@ -31,7 +30,7 @@ object PasswordResetRequests extends Controller {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[PasswordReset] => {
-        PasswordResetsDao.findByToken(s.get.token) match {
+        PasswordResetRequestsDao.findByToken(s.get.token) match {
           case None => {
             Conflict(Json.toJson(Validation.error("Token not found")))
           }
@@ -39,7 +38,7 @@ object PasswordResetRequests extends Controller {
           case Some(pr) => {
             UserPasswordsDao.validate(s.get.password) match {
               case Nil => {
-                PasswordResetsDao.resetPassword(request.user, pr, s.get.password)
+                PasswordResetRequestsDao.resetPassword(request.user, pr, s.get.password)
                 NoContent
               }
               case errors => {

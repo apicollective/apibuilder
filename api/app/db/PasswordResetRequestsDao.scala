@@ -16,7 +16,7 @@ case class PasswordReset(
   expiresAt: DateTime
 )
 
-object PasswordResetsDao {
+object PasswordResetRequestsDao {
 
   private val TokenLength = 80
   private val HoursUntilTokenExpires = 72
@@ -62,7 +62,7 @@ object PasswordResetsDao {
 
   def resetPassword(user: Option[User], pr: PasswordReset, newPassword: String) = {
     assert(
-      !PasswordResetsDao.isExpired(pr),
+      !isExpired(pr),
       "Password reset[${pr.guid}] is expired"
     )
 
@@ -88,8 +88,9 @@ object PasswordResetsDao {
     findAll(token = Some(token), limit = 1).headOption
   }
 
-  private[db] def findAll(
+  def findAll(
     guid: Option[UUID] = None,
+    userGuid: Option[UUID] = None,
     token: Option[String] = None,
     isExpired: Option[Boolean] = None,
     limit: Long = 25,
@@ -99,6 +100,7 @@ object PasswordResetsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and password_resets.guid = {guid}::uuid" },
+      userGuid.map { v => "and password_resets.user_guid = {user_guid}::uuid" },
       token.map { v => "and password_resets.token = {token}" },
       isExpired.map { v =>
         v match {
@@ -111,6 +113,7 @@ object PasswordResetsDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      userGuid.map('user_guid -> _.toString),
       token.map('token -> _)
     ).flatten
 
