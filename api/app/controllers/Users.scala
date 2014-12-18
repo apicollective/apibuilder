@@ -38,15 +38,13 @@ object Users extends Controller {
       }
       case s: JsSuccess[UserForm] => {
         val form = s.get
-        UsersDao.findByEmail(form.email) match {
-
-          case Some(u: User) => {
-            Conflict(Json.toJson(Validation.error("account with this email already exists")))
-          }
-
-          case None => {
+        UsersDao.validate(form) match {
+          case Nil => {
             val user = UsersDao.create(form)
             Ok(Json.toJson(user))
+          }
+          case errors => {
+            Conflict(Json.toJson(errors))
           }
         }
       }
