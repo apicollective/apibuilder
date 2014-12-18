@@ -1,7 +1,7 @@
 package db
 
-import com.gilt.apidoc.models.User
-import lib.{Constants, Role}
+import com.gilt.apidoc.models.{Error, User}
+import lib.{Constants, Role, Validation}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -37,6 +37,17 @@ object UsersDao {
    where guid = {guid}
   """
 
+  def validate(form: UserForm): Seq[Error] = {
+    val emailErrors = findByEmail(form.email) match {
+      case None => Seq.empty
+      case Some(_) => Seq("User with this email address already exists")
+    }
+
+    val passwordErrors = UserPasswordsDao.validate(form.password).map(_.message)
+
+    Validation.errors(emailErrors ++ passwordErrors)
+  }
+
   def update(updatingUser: User, user: User, form: UserForm) {
     DB.withConnection { implicit c =>
       SQL(UpdateQuery).on('guid -> user.guid,
@@ -67,11 +78,7 @@ object UsersDao {
       sys.error("Failed to create user")
     }
 
-    OrganizationsDao.findByEmailDomain(form.email).foreach { org =>
-      MembershipRequestsDao.create(user, org, user, Role.Member)
-    }
-
-    EmailVerificationsDao.create(user, user, form.email)
+    global.Actors.mainActor ! actors.MainActor.Messages.UserCreated(guid)
 
     user
   }
