@@ -17,7 +17,7 @@ object OrganizationsDao {
     "_internal_", "account", "admin", "api", "api.json", "accept", "asset", "bucket",
     "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
     "internal", "login", "logout", "member", "members", "metadatum", "metadata",
-    "org", "private", "reject", "session", "setting", "scms", "source", "subaccount",
+    "org", "password", "private", "reject", "session", "setting", "scms", "source", "subaccount",
     "subscription", "team", "user", "util", "version", "watch"
   ).map(UrlKey.generate(_))
 
@@ -100,6 +100,9 @@ object OrganizationsDao {
    * Creates the org and assigns the user as its administrator.
    */
   def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
+    val errors = validate(form)
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+
     DB.withTransaction { implicit c =>
       val org = create(c, user, form)
       MembershipsDao.create(c, user, org, user, Role.Admin)
@@ -117,7 +120,7 @@ object OrganizationsDao {
     }
   }
 
-  private[db] def findByEmailDomain(email: String): Option[Organization] = {
+  def findByEmailDomain(email: String): Option[Organization] = {
     emailDomain(email).flatMap { domain =>
       OrganizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
         findByGuid(Authorization.All, domain.organization_guid)
