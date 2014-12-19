@@ -1,0 +1,124 @@
+{
+    "name": "apidoc spec",
+    "description": "Specification of apidoc api.json schema",
+    "base_url": "http://api.apidoc.me",
+
+    "enums": {
+	"method": {
+	    "values": [
+		{ "name": "GET" },
+		{ "name": "POST" },
+		{ "name": "PUT" },
+		{ "name": "PATCH" },
+		{ "name": "DELETE" },
+		{ "name": "HEAD" },
+		{ "name": "CONNECT" },
+		{ "name": "OPTIONS" },
+		{ "name": "TRACE" }
+	    ]
+	}
+    },
+
+    "models": {
+	"service": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "base_url", "type": "string" },
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "headers", "type": "[header]" },
+		{ "name": "enums", "type": "map[enum]" },
+		{ "name": "models", "type": "map[model]" },
+		{ "name": "resources", "type": "map[resource]", "description": "keys are the names of a model" }
+	    ]
+	},
+
+	"enum": {
+	    "fields": [
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "values", "type": "[enum_value]" }
+	    ]
+	},
+
+	"enum_value": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "description", "type": "string", "required": false }
+	    ]
+	},
+
+	"model": {
+	    "fields": [
+		{ "name": "plural", "type": "string", "required": false, "description": "Defaults to the plural of the model name. Used to generate resource paths which by default map to the plural of the model name" },
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "fields", "type": "[field]" }
+	    ]
+	},
+
+	"field": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "type", "type": "string" },
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "default", "type": "string", "required": false },
+		{ "name": "required", "type": "boolean", "default": "true" },
+		{ "name": "example", "type": "string", "required": false },
+		{ "name": "minimum", "type": "long", "required": false },
+		{ "name": "maximum", "type": "long", "required": false }
+	    ]
+	},
+
+	"resource": {
+	    "fields": [
+		{ "name": "path", "type": "string", "required": false, "description": "Defaults to the plural of the model name" },
+		{ "name": "operations", "type": "[operation]" }
+	    ]
+	},
+
+	"operation": {
+	    "fields": [
+		{ "name": "method", "type": "method" },
+		{ "name": "path", "type": "string", "required": false },
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "body", "type": "body", "required": false },
+		{ "name": "parameter", "type": "[parameter]", "required": false },
+		{ "name": "responses", "type": "map[response]", "required": false, "description": "Keys are HTTP status codes" }
+	    ]
+	},
+
+	"body": {
+	    "fields": [
+		{ "name": "type", "type": "string" },
+		{ "name": "description", "type": "string", "required": false }
+	    ]
+	},
+
+	"parameter": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "type", "type": "string" },
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "required", "type": "boolean", "default": "true" },
+		{ "name": "default", "type": "string", "required": false },
+		{ "name": "example", "type": "string", "required": false }
+	    ]
+	},
+
+	"response": {
+	    "fields": [
+		{ "name": "type", "type": "string" }
+	    ]
+	},
+
+	"header": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "type", "type": "string" },
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "required", "type": "boolean" },
+		{ "name": "default", "type": "string", "required": false }
+	    ]
+	}
+
+    }
+
+}

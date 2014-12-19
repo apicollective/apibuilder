@@ -3,43 +3,48 @@
 SERVICE_URL = ARGV.shift || "http://www.apidoc.me"
 ORG = "gilt"
 
-def download(data)
+def download(service_name, map)
   downloads = {}
-  data.each do |service_name, map|
-    map.each do |target, path|
-      tmpfile = "/tmp/download-#{service_name}-#{target}.tmp"
-      cmd = "curl --silent #{SERVICE_URL}/#{ORG}/#{service_name}/latest/#{target} > #{tmpfile}"
-      puts cmd
-      system(cmd)
+  map.each do |target, path|
+    tmpfile = "/tmp/download-#{service_name}-#{target}.tmp"
+    cmd = "curl --silent #{SERVICE_URL}/#{ORG}/#{service_name}/latest/#{target} > #{tmpfile}"
+    puts cmd
+    system(cmd)
 
-      contents = IO.read(tmpfile).strip
-      if contents == "" || contents.match(/<html>/)
-        raise " --> Error downloading URL"
-      end
+    contents = IO.read(tmpfile).strip
+    if contents == "" || contents.match(/<html>/)
+      raise " --> Error downloading URL"
+    end
 
-      if `diff #{tmpfile} #{path}`.strip == ""
-        puts " --> Unchanged"
-      else
-        downloads[tmpfile] = path
-      end
+    if `diff #{tmpfile} #{path}`.strip == ""
+      puts " --> Unchanged"
+    else
+      downloads[tmpfile] = path
     end
   end
     
   downloads.each do |tmp, path|
     command = "cp #{tmp} #{path}"
     puts command
-    system(command)
+    #system(command)
   end
 end
 
-download("apidoc" => {
-           "ruby_client" => "client-tests/ruby_client.rb",
-           "play_2_3_client" => "generated/app/ApidocClient.scala",
-           "play_2_x_json" => "core/src/main/scala/core/Generated.scala",
-           "play_2_x_routes" => "api/conf/routes"
-         },
-         "apidoc-generator" => {
-           "scala_models" => "core/src/main/scala/core/ApidocGenerator.scala",
-           "play_2_3_client" => "generated/app/GeneratorClient.scala",
-           "play_2_x_routes" => "generator/conf/routes"
-         })
+subprojects = {
+  "apidoc" => {
+    "ruby_client" => "client-tests/ruby_client.rb",
+    "play_2_3_client" => "generated/app/ApidocClient.scala",
+    "play_2_x_json" => "core/src/main/scala/core/Generated.scala",
+    "play_2_x_routes" => "api/conf/routes"
+  },
+  "apidoc-spec" => {
+    "play_2_x_json" => "spec/app/ApiJson.scala"
+  },
+  "apidoc-generator" => {
+    "scala_models" => "core/src/main/scala/core/ApidocGenerator.scala",
+    "play_2_3_client" => "generated/app/GeneratorClient.scala",
+    "play_2_x_routes" => "generator/conf/routes"
+  }
+}
+
+download("apidoc-spec", subprojects["apidoc-spec"])
