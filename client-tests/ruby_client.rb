@@ -381,8 +381,7 @@ module Apidoc
       # password.
       def post(password_reset)
         HttpClient::Preconditions.assert_class('password_reset', password_reset, Apidoc::Models::PasswordReset)
-        @client.request("/password_resets").with_json(password_reset.to_json).post
-        nil
+        @client.request("/password_resets").with_json(password_reset.to_json).post { |hash| Apidoc::Models::PasswordResetSuccess.new(hash) }
       end
 
     end
@@ -1229,6 +1228,32 @@ module Apidoc
       def to_hash
         {
           :email => email
+        }
+      end
+
+    end
+
+    # On a successful password reset, return some metadata about the user modified.
+    class PasswordResetSuccess
+
+      attr_reader :user_guid
+
+      def initialize(incoming={})
+        opts = HttpClient::Helper.symbolize_keys(incoming)
+        @user_guid = HttpClient::Preconditions.assert_class('user_guid', HttpClient::Helper.to_uuid(opts.delete(:user_guid)), String)
+      end
+
+      def to_json
+        JSON.dump(to_hash)
+      end
+
+      def copy(incoming={})
+        PasswordResetSuccess.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+      end
+
+      def to_hash
+        {
+          :user_guid => user_guid
         }
       end
 

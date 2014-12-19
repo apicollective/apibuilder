@@ -8,6 +8,8 @@ POST    /login/                                                   controllers.Lo
 POST    /login/register                                           controllers.LoginController.registerPost
 GET     /login/forgotPassword                                     controllers.LoginController.forgotPassword
 POST    /login/forgotPassword                                     controllers.LoginController.postForgotPassword
+GET     /login/resetPassword/:token                               controllers.LoginController.resetPassword(token: String)
+POST    /login/resetPassword/:token                               controllers.LoginController.postResetPassword(token: String)
 
 GET     /logout                                                   controllers.LogoutController.logout
 GET     /logged_out                                               controllers.LogoutController.logged_out

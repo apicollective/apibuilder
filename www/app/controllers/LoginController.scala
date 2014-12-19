@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.models.PasswordResetRequest
+import com.gilt.apidoc.models.{PasswordReset, PasswordResetRequest}
 import models.MainTemplate
 import play.api._
 import play.api.mvc._
@@ -88,9 +88,41 @@ object LoginController extends Controller {
         Authenticated.api().passwordResetRequests.post(
           passwordResetRequest = PasswordResetRequest(email = validForm.email)
         ).map { _ =>
-          Ok(views.html.login.forgotPasswordConfirmation(tpl))
+          Ok(views.html.login.forgotPasswordConfirmation(tpl, validForm.email))
         }
 
+      }
+
+    )
+  }
+
+  def resetPassword(token: String) = Action { implicit request =>
+    val tpl = MainTemplate(requestPath = request.path)
+    Ok(views.html.login.resetPassword(tpl, token, resetPasswordForm))
+  }
+
+  def postResetPassword(token: String) = Action.async { implicit request =>
+    val tpl = MainTemplate(requestPath = request.path)
+    val form = resetPasswordForm.bindFromRequest
+    form.fold (
+
+      formWithErrors => Future {
+        Ok(views.html.login.resetPassword(tpl, token, formWithErrors))
+      },
+
+      validForm => {
+        Authenticated.api().passwordResets.post(
+          passwordReset = PasswordReset(token = token, password = validForm.password)
+        ).map { result =>
+          Redirect("/").
+            withSession { "user_guid" -> result.userGuid.toString }.
+            flashing("success" -> "Your password has been reset and you are now logged in")
+        
+        }.recover {
+          case r: com.gilt.apidoc.error.ErrorsResponse => {
+            Ok(views.html.login.resetPassword(tpl, token, form, Some(r.errors.map(_.message).mkString(", "))))
+          }
+        }
       }
 
     )
@@ -123,6 +155,16 @@ object LoginController extends Controller {
     mapping(
       "email" -> nonEmptyText
     )(ForgotPasswordData.apply)(ForgotPasswordData.unapply)
+  )
+
+  case class ResetPasswordData(password: String, passwordVerify: String)
+  val resetPasswordForm = Form(
+    mapping(
+      "password" -> nonEmptyText(minLength=5),
+      "password_verify" -> nonEmptyText
+    )(ResetPasswordData.apply)(ResetPasswordData.unapply) verifying("Password and password verify do not match", { f =>
+      f.password == f.passwordVerify
+    })
   )
 
   sealed trait Tab

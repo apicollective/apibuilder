@@ -153,6 +153,13 @@ package com.gilt.apidoc.models {
   )
 
   /**
+   * On a successful password reset, return some metadata about the user modified.
+   */
+  case class PasswordResetSuccess(
+    userGuid: _root_.java.util.UUID
+  )
+
+  /**
    * A service has a name and multiple versions of an API (Interface).
    */
   case class Service(
@@ -627,6 +634,16 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApidocPasswordResetRequest: play.api.libs.json.Writes[PasswordResetRequest] = new play.api.libs.json.Writes[PasswordResetRequest] {
       def writes(x: PasswordResetRequest) = play.api.libs.json.Json.obj(
         "email" -> play.api.libs.json.Json.toJson(x.email)
+      )
+    }
+
+    implicit def jsonReadsApidocPasswordResetSuccess: play.api.libs.json.Reads[PasswordResetSuccess] = {
+      (__ \ "user_guid").read[_root_.java.util.UUID].map { x => new PasswordResetSuccess(userGuid = x) }
+    }
+
+    implicit def jsonWritesApidocPasswordResetSuccess: play.api.libs.json.Writes[PasswordResetSuccess] = new play.api.libs.json.Writes[PasswordResetSuccess] {
+      def writes(x: PasswordResetSuccess) = play.api.libs.json.Json.obj(
+        "user_guid" -> play.api.libs.json.Json.toJson(x.userGuid)
       )
     }
 

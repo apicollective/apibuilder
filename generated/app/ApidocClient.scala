@@ -153,6 +153,13 @@ package com.gilt.apidoc.models {
   )
 
   /**
+   * On a successful password reset, return some metadata about the user modified.
+   */
+  case class PasswordResetSuccess(
+    userGuid: _root_.java.util.UUID
+  )
+
+  /**
    * A service has a name and multiple versions of an API (Interface).
    */
   case class Service(
@@ -627,6 +634,16 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApidocPasswordResetRequest: play.api.libs.json.Writes[PasswordResetRequest] = new play.api.libs.json.Writes[PasswordResetRequest] {
       def writes(x: PasswordResetRequest) = play.api.libs.json.Json.obj(
         "email" -> play.api.libs.json.Json.toJson(x.email)
+      )
+    }
+
+    implicit def jsonReadsApidocPasswordResetSuccess: play.api.libs.json.Reads[PasswordResetSuccess] = {
+      (__ \ "user_guid").read[_root_.java.util.UUID].map { x => new PasswordResetSuccess(userGuid = x) }
+    }
+
+    implicit def jsonWritesApidocPasswordResetSuccess: play.api.libs.json.Writes[PasswordResetSuccess] = new play.api.libs.json.Writes[PasswordResetSuccess] {
+      def writes(x: PasswordResetSuccess) = play.api.libs.json.Json.obj(
+        "user_guid" -> play.api.libs.json.Json.toJson(x.userGuid)
       )
     }
 
@@ -1158,11 +1175,11 @@ package com.gilt.apidoc {
     }
 
     object PasswordResets extends PasswordResets {
-      override def post(passwordReset: com.gilt.apidoc.models.PasswordReset)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+      override def post(passwordReset: com.gilt.apidoc.models.PasswordReset)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.PasswordResetSuccess] = {
         val payload = play.api.libs.json.Json.toJson(passwordReset)
 
         _executeRequest("POST", s"/password_resets", body = Some(payload)).map {
-          case r if r.status == 204 => Unit
+          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.PasswordResetSuccess]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
@@ -1742,7 +1759,7 @@ package com.gilt.apidoc {
      * otherwise no longer can be applied, errors will be returned as 409s. A 204
      * represents that the user has successfully changed their password.
      */
-    def post(passwordReset: com.gilt.apidoc.models.PasswordReset)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+    def post(passwordReset: com.gilt.apidoc.models.PasswordReset)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.PasswordResetSuccess]
   }
 
   trait Services {

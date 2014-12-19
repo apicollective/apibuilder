@@ -18,10 +18,7 @@ object Emails {
     eachSubscription(org, publication, { subscription =>
       Logger.info(s"Emails: delivering email for subscription[$subscription]")
       Email.sendHtml(
-        to = Person(
-          email = subscription.user.email,
-          name = subscription.user.name
-        ),
+        to = Person(subscription.user),
         subject = subject,
         body = body
       )

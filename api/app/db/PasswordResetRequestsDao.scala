@@ -49,7 +49,7 @@ object PasswordResetRequestsDao {
       ).execute()
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.PasswordResetCreated(guid)
+    global.Actors.mainActor ! actors.MainActor.Messages.PasswordResetRequestCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create password reset")

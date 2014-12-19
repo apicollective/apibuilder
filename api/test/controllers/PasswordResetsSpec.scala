@@ -2,7 +2,7 @@ package controllers
 
 import db.PasswordResetRequestsDao
 import com.gilt.apidoc.FailedRequest
-import com.gilt.apidoc.models.{PasswordReset, PasswordResetRequest, User}
+import com.gilt.apidoc.models.{PasswordReset, PasswordResetSuccess, PasswordResetRequest, User}
 import com.gilt.apidoc.error.ErrorsResponse
 import java.util.UUID
 
@@ -13,7 +13,7 @@ class PasswordResetsSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def resetPassword(token: String, pwd: String) {
+  def resetPassword(token: String, pwd: String): PasswordResetSuccess = {
     await(
       client.passwordResets.post(
         PasswordReset(token = token, password = pwd)
@@ -29,7 +29,8 @@ class PasswordResetsSpec extends BaseSpec {
     val pwd = "some password"
     db.UserPasswordsDao.isValid(user.guid, pwd) must be(false)
 
-    resetPassword(pr.token, pwd)
+    val result = resetPassword(pr.token, pwd)
+    result.userGuid must be(user.guid)
 
     db.UserPasswordsDao.isValid(user.guid, pwd) must be(true)
 

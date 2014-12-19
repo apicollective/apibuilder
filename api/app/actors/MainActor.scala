@@ -14,7 +14,7 @@ object MainActor {
     case class EmailVerificationCreated(guid: UUID)
     case class MembershipRequestCreated(guid: UUID)
     case class MembershipCreated(guid: UUID)
-    case class PasswordResetCreated(guid: UUID)
+    case class PasswordResetRequestCreated(guid: UUID)
     case class ServiceCreated(guid: UUID)
     case class UserCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
@@ -60,9 +60,9 @@ class MainActor(name: String) extends Actor with ActorLogging {
       }
     )
 
-    case MainActor.Messages.PasswordResetCreated(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.PasswordResetCreated($guid)", {
-        // TODO emailActor ! EmailActor.Messages.PasswordResetCreated(guid)
+    case MainActor.Messages.PasswordResetRequestCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.PasswordResetRequestCreated($guid)", {
+        emailActor ! EmailActor.Messages.PasswordResetRequestCreated(guid)
       }
     )
 

@@ -1,5 +1,7 @@
 package lib
 
+import com.gilt.apidoc.models.User
+
 import java.util.UUID
 import java.nio.file.{Path, Paths, Files}
 import java.nio.charset.StandardCharsets
@@ -8,6 +10,13 @@ import org.joda.time.format.ISODateTimeFormat
 import com.sendgrid._
 
 case class Person(email: String, name: Option[String] = None)
+
+object Person {
+  def apply(user: User): Person = Person(
+    email = user.email,
+    name = user.name
+  )
+}
 
 object Email {
 

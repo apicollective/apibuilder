@@ -10,11 +10,12 @@ import java.util.UUID
 object EmailActor {
 
   object Messages {
-    case class MembershipRequestCreated(guid: UUID)
+    case class EmailVerificationCreated(guid: UUID)
     case class MembershipCreated(guid: UUID)
+    case class MembershipRequestCreated(guid: UUID)
+    case class PasswordResetRequestCreated(guid: UUID)
     case class ServiceCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
-    case class EmailVerificationCreated(guid: UUID)
   }
 
 }
@@ -64,6 +65,20 @@ class EmailActor extends Actor {
       }
     )
 
+    case EmailActor.Messages.PasswordResetRequestCreated(guid) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.PasswordResetRequestCreated($guid)", {
+        PasswordResetRequestsDao.findByGuid(guid).map { request =>
+          UsersDao.findByGuid(request.userGuid).map { user =>
+            Email.sendHtml(
+              to = Person(user),
+              subject = s"Reset your password",
+              body = views.html.emails.passwordResetRequestCreated(request.token).toString
+            )
+          }
+        }
+      }
+    )
+
     case EmailActor.Messages.VersionCreated(guid) => Util.withVerboseErrorHandler(
       s"EmailActor.Messages.ServiceCreated($guid)", {
         VersionsDao.findByGuid(Authorization.All, guid).map { version =>
@@ -86,7 +101,7 @@ class EmailActor extends Actor {
         EmailVerificationsDao.findByGuid(guid).map { verification =>
           UsersDao.findByGuid(verification.userGuid).map { user =>
             Email.sendHtml(
-              to = Person(email = verification.email),
+              to = Person(email = verification.email, name = user.name),
               subject = s"Verify your email address",
               body = views.html.emails.emailVerificationCreated(verification).toString
             )
