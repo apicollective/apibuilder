@@ -3,6 +3,22 @@
     "description": "Specification of apidoc api.json schema",
     "base_url": "http://api.apidoc.me",
 
+    "enums": {
+	"method": {
+	    "values": [
+		{ "name": "GET" },
+		{ "name": "POST" },
+		{ "name": "PUT" },
+		{ "name": "PATCH" },
+		{ "name": "DELETE" },
+		{ "name": "HEAD" },
+		{ "name": "CONNECT" },
+		{ "name": "OPTIONS" },
+		{ "name": "TRACE" }
+	    ]
+	}
+    },
+
     "models": {
 	"service": {
 	    "fields": [
@@ -60,7 +76,7 @@
 
 	"operation": {
 	    "fields": [
-		{ "name": "method", "type": "string", "example": "GET" },
+		{ "name": "method", "type": "method" },
 		{ "name": "path", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "body", "type": "body", "required": false },
