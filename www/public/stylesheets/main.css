@@ -108,3 +108,9 @@ body .modal-body .well {
   background-color: #fff;
   width: 400px;
 }
+
+.forgot_password {
+  float: right;
+  padding: 20px;
+  font-style: italic;
+}

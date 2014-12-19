@@ -1,5 +1,6 @@
 package controllers
 
+import com.gilt.apidoc.models.PasswordResetRequest
 import models.MainTemplate
 import play.api._
 import play.api.mvc._
@@ -69,6 +70,32 @@ object LoginController extends Controller {
     )
   }
 
+  def forgotPassword() = Action { implicit request =>
+    val tpl = MainTemplate(requestPath = request.path)
+    Ok(views.html.login.forgotPassword(tpl, forgotPasswordForm))
+  }
+
+  def postForgotPassword = Action.async { implicit request =>
+    val tpl = MainTemplate(requestPath = request.path)
+    val form = forgotPasswordForm.bindFromRequest
+    form.fold (
+
+      formWithErrors => Future {
+        Ok(views.html.login.forgotPassword(tpl, formWithErrors))
+      },
+
+      validForm => {
+        Authenticated.api().passwordResetRequests.post(
+          passwordResetRequest = PasswordResetRequest(email = validForm.email)
+        ).map { _ =>
+          Ok(views.html.login.forgotPasswordConfirmation(tpl))
+        }
+
+      }
+
+    )
+  }
+
   case class LoginData(email: String, password: String, returnUrl: Option[String])
   val loginForm = Form(
     mapping(
@@ -89,6 +116,13 @@ object LoginController extends Controller {
     )(RegisterData.apply)(RegisterData.unapply) verifying("Password and password verify do not match", { f =>
       f.password == f.passwordVerify
     })
+  )
+
+  case class ForgotPasswordData(email: String)
+  val forgotPasswordForm = Form(
+    mapping(
+      "email" -> nonEmptyText
+    )(ForgotPasswordData.apply)(ForgotPasswordData.unapply)
   )
 
   sealed trait Tab

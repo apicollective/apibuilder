@@ -6,6 +6,8 @@ GET     /login                                                    controllers.Lo
 GET     /login/                                                   controllers.LoginController.index(return_url: Option[String] ?= None)
 POST    /login/                                                   controllers.LoginController.indexPost
 POST    /login/register                                           controllers.LoginController.registerPost
+GET     /login/forgotPassword                                     controllers.LoginController.forgotPassword
+POST    /login/forgotPassword                                     controllers.LoginController.postForgotPassword
 
 GET     /logout                                                   controllers.LogoutController.logout
 GET     /logged_out                                               controllers.LogoutController.logged_out
