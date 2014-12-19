@@ -11,6 +11,10 @@ object Code extends Controller {
     request.api.Code.getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(orgKey, serviceKey, version, generatorKey).map {
       case None => Redirect(routes.Versions.show(orgKey, serviceKey, version)).flashing("warning" -> "Version not found")
       case Some(r) => Ok(r.source)
+    }.recover {
+      case r: com.gilt.apidoc.error.ErrorsResponse => {
+        Redirect(routes.Versions.show(orgKey, serviceKey, version)).flashing("warning" -> r.errors.map(_.message).mkString(", "))
+      }
     }
   }
 
