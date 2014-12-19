@@ -140,6 +140,7 @@ package com.gilt.apidoc.models {
    * Allows a user to change their password with authentication from a token.
    */
   case class PasswordReset(
+    token: String,
     password: String
   )
 
@@ -606,13 +607,17 @@ package com.gilt.apidoc.models {
     }
 
     implicit def jsonReadsApidocPasswordReset: play.api.libs.json.Reads[PasswordReset] = {
-      (__ \ "password").read[String].map { x => new PasswordReset(password = x) }
+      (
+        (__ \ "token").read[String] and
+        (__ \ "password").read[String]
+      )(PasswordReset.apply _)
     }
 
-    implicit def jsonWritesApidocPasswordReset: play.api.libs.json.Writes[PasswordReset] = new play.api.libs.json.Writes[PasswordReset] {
-      def writes(x: PasswordReset) = play.api.libs.json.Json.obj(
-        "password" -> play.api.libs.json.Json.toJson(x.password)
-      )
+    implicit def jsonWritesApidocPasswordReset: play.api.libs.json.Writes[PasswordReset] = {
+      (
+        (__ \ "token").write[String] and
+        (__ \ "password").write[String]
+      )(unlift(PasswordReset.unapply _))
     }
 
     implicit def jsonReadsApidocPasswordResetRequest: play.api.libs.json.Reads[PasswordResetRequest] = {
@@ -822,6 +827,8 @@ package com.gilt.apidoc {
     def organizations: Organizations = Organizations
 
     def passwordResetRequests: PasswordResetRequests = PasswordResetRequests
+
+    def passwordResets: PasswordResets = PasswordResets
 
     def services: Services = Services
 
@@ -1148,13 +1155,13 @@ package com.gilt.apidoc {
           case r => throw new FailedRequest(r)
         }
       }
+    }
 
-      override def postByToken(passwordReset: com.gilt.apidoc.models.PasswordReset,
-        token: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+    object PasswordResets extends PasswordResets {
+      override def post(passwordReset: com.gilt.apidoc.models.PasswordReset)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         val payload = play.api.libs.json.Json.toJson(passwordReset)
 
-        _executeRequest("POST", s"/password_reset_requests/${play.utils.UriEncoding.encodePathSegment(token, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("POST", s"/password_resets", body = Some(payload)).map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
@@ -1727,15 +1734,15 @@ package com.gilt.apidoc {
      * reset their password.
      */
     def post(passwordResetRequest: com.gilt.apidoc.models.PasswordResetRequest)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
 
+  trait PasswordResets {
     /**
      * Change the password for this token. If the token is invalid, has been used, or
      * otherwise no longer can be applied, errors will be returned as 409s. A 204
      * represents that the user has successfully changed their password.
      */
-    def postByToken(passwordReset: com.gilt.apidoc.models.PasswordReset,
-      token: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+    def post(passwordReset: com.gilt.apidoc.models.PasswordReset)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   trait Services {

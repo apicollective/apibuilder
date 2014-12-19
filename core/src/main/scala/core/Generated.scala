@@ -140,6 +140,7 @@ package com.gilt.apidoc.models {
    * Allows a user to change their password with authentication from a token.
    */
   case class PasswordReset(
+    token: String,
     password: String
   )
 
@@ -606,13 +607,17 @@ package com.gilt.apidoc.models {
     }
 
     implicit def jsonReadsApidocPasswordReset: play.api.libs.json.Reads[PasswordReset] = {
-      (__ \ "password").read[String].map { x => new PasswordReset(password = x) }
+      (
+        (__ \ "token").read[String] and
+        (__ \ "password").read[String]
+      )(PasswordReset.apply _)
     }
 
-    implicit def jsonWritesApidocPasswordReset: play.api.libs.json.Writes[PasswordReset] = new play.api.libs.json.Writes[PasswordReset] {
-      def writes(x: PasswordReset) = play.api.libs.json.Json.obj(
-        "password" -> play.api.libs.json.Json.toJson(x.password)
-      )
+    implicit def jsonWritesApidocPasswordReset: play.api.libs.json.Writes[PasswordReset] = {
+      (
+        (__ \ "token").write[String] and
+        (__ \ "password").write[String]
+      )(unlift(PasswordReset.unapply _))
     }
 
     implicit def jsonReadsApidocPasswordResetRequest: play.api.libs.json.Reads[PasswordResetRequest] = {

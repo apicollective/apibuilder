@@ -87,4 +87,8 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     )
   }
 
+  def createPasswordRequest(email: String) {
+    await(client.passwordResetRequests.post(PasswordResetRequest(email = email)))
+  }
+
 }

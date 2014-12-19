@@ -250,6 +250,7 @@
 	"password_reset": {
 	    "description": "Allows a user to change their password with authentication from a token.",
 	    "fields": [
+		{ "name": "token", "type": "string", "description": "Unique one time use token to change a password" },
 		{ "name": "password", "type": "string" }
 	    ]
 	},
@@ -815,16 +816,16 @@
                         "204": { "type": "unit" },
                         "409": { "type": "[error]" }
                     }
-                },
+                }
+	    ]
+	},
 
+	"password_reset": {
+	    "operations": [
                 {
                     "method": "POST",
-		    "path": "/:token",
                     "description": "Change the password for this token. If the token is invalid, has been used, or otherwise no longer can be applied, errors will be returned as 409s. A 204 represents that the user has successfully changed their password.",
 		    "body": { "type": "password_reset" },
-		    "parameters": [
-			{ "name": "token", "type": "string", "description": "Unique one time use token to change a password" }
-		    ],
                     "responses": {
                         "204": { "type": "unit" },
                         "409": { "type": "[error]" }

@@ -77,6 +77,10 @@ module Apidoc
       @password_reset_requests ||= Apidoc::Clients::PasswordResetRequests.new(self)
     end
 
+    def password_resets
+      @password_resets ||= Apidoc::Clients::PasswordResets.new(self)
+    end
+
     def services
       @services ||= Apidoc::Clients::Services.new(self)
     end
@@ -363,14 +367,21 @@ module Apidoc
         nil
       end
 
+    end
+
+    class PasswordResets
+
+      def initialize(client)
+        @client = HttpClient::Preconditions.assert_class('client', client, Apidoc::Client)
+      end
+
       # Change the password for this token. If the token is invalid, has been
       # used, or otherwise no longer can be applied, errors will be returned as
       # 409s. A 204 represents that the user has successfully changed their
       # password.
-      def post_by_token(token, password_reset)
-        HttpClient::Preconditions.assert_class('token', token, String)
+      def post(password_reset)
         HttpClient::Preconditions.assert_class('password_reset', password_reset, Apidoc::Models::PasswordReset)
-        @client.request("/password_reset_requests/#{CGI.escape(token)}").with_json(password_reset.to_json).post
+        @client.request("/password_resets").with_json(password_reset.to_json).post
         nil
       end
 
@@ -1171,10 +1182,11 @@ module Apidoc
     # Allows a user to change their password with authentication from a token.
     class PasswordReset
 
-      attr_reader :password
+      attr_reader :token, :password
 
       def initialize(incoming={})
         opts = HttpClient::Helper.symbolize_keys(incoming)
+        @token = HttpClient::Preconditions.assert_class('token', opts.delete(:token), String)
         @password = HttpClient::Preconditions.assert_class('password', opts.delete(:password), String)
       end
 
@@ -1188,6 +1200,7 @@ module Apidoc
 
       def to_hash
         {
+          :token => token,
           :password => password
         }
       end

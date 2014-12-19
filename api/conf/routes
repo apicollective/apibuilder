@@ -23,7 +23,7 @@ GET        /organizations/:key                             controllers.Organizat
 POST       /organizations                                  controllers.Organizations.post()
 DELETE     /organizations/:key                             controllers.Organizations.deleteByKey(key: String)
 POST       /password_reset_requests                        controllers.PasswordResetRequests.post()
-POST       /password_reset_requests/:token                 controllers.PasswordResetRequests.postByToken(token: String)
+POST       /password_resets                                controllers.PasswordResets.post()
 GET        /subscriptions                                  controllers.Subscriptions.get(guid: scala.Option[_root_.java.util.UUID], organization_key: scala.Option[String], user_guid: scala.Option[_root_.java.util.UUID], publication: scala.Option[com.gilt.apidoc.models.Publication], limit: Long ?= 25, offset: Long ?= 0)
 GET        /subscriptions/:guid                            controllers.Subscriptions.getByGuid(guid: _root_.java.util.UUID)
 POST       /subscriptions                                  controllers.Subscriptions.post()
