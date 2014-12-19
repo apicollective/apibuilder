@@ -30,7 +30,7 @@ object PasswordResetRequests extends Controller {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[PasswordReset] => {
-        PasswordResetRequestsDao.findByToken(s.get.token) match {
+        PasswordResetRequestsDao.findByToken(token) match {
           case None => {
             Conflict(Json.toJson(Validation.error("Token not found")))
           }
