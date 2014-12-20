@@ -34,7 +34,6 @@ subprojects = {
   "apidoc" => {
     "ruby_client" => "client-tests/ruby_client.rb",
     "play_2_3_client" => "generated/app/ApidocClient.scala",
-    "play_2_x_json" => "core/src/main/scala/core/Generated.scala",
     "play_2_x_routes" => "api/conf/routes"
   },
   "apidoc-spec" => {
@@ -42,7 +41,6 @@ subprojects = {
     "play_2_3_client" => "generated/app/ApiJson.scala"
   },
   "apidoc-generator" => {
-    "scala_models" => "core/src/main/scala/core/ApidocGenerator.scala",
     "play_2_3_client" => "generated/app/GeneratorClient.scala",
     "play_2_x_routes" => "generator/conf/routes"
   }
