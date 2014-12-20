@@ -144,6 +144,8 @@ package com.gilt.apidocgenerator.models {
     case object Singleton extends Container { override def toString = "singleton" }
     case object List extends Container { override def toString = "list" }
     case object Map extends Container { override def toString = "map" }
+    case object Option extends Container { override def toString = "option" }
+    case object Union extends Container { override def toString = "union" }
 
     /**
      * UNDEFINED captures values that are sent either in error or

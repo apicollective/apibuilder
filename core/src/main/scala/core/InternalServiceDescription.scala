@@ -188,13 +188,7 @@ case class InternalResponse(
   warnings: Seq[String] = Seq.empty
 ) {
 
-  lazy val datatypeLabel: Option[String] = datatype.map { dt =>
-    dt match {
-      case InternalParsedDatatype(Container.List, name) => s"[$name]"
-      case InternalParsedDatatype(Container.Map, name) => s"map[$name]"
-      case InternalParsedDatatype(Container.Singleton, name) => name
-    }
-  }
+  lazy val datatypeLabel: Option[String] = datatype.map(_.label)
 
 }
 
@@ -422,21 +416,38 @@ private[core] object JsonUtil {
 
 private[core] case class InternalParsedDatatype(
   container: Container,
-  name: String
-)
+  names: Seq[String]
+) {
+
+  lazy val label = {
+    val name = names.mkString(", ")
+    container match {
+      case Container.List => s"[$name]"
+      case Container.Map => s"map[$name]"
+      case Container.Option => s"option[$name]"
+      case Container.Union => s"union[$name]"
+      case Container.Singleton | Container.UNDEFINED(_) => name
+    }
+  }
+
+}
 
 private[core] object InternalParsedDatatype {
 
   private val ListRx = "^\\[(.*)\\]$".r
   private val MapRx = "^map\\[(.*)\\]$".r
+  private val OptionRx = "^option\\[(.*)\\]$".r
+  private val UnionRx = "^union\\[(.*)\\]$".r
   private val DefaultMapRx = "^map$".r
 
   def apply(value: String): InternalParsedDatatype = {
     value match {
-      case ListRx(name) => InternalParsedDatatype(Container.List, name)
-      case MapRx(name) => InternalParsedDatatype(Container.Map, name)
-      case DefaultMapRx() => InternalParsedDatatype(Container.Map, Primitives.String.toString)
-      case _ => InternalParsedDatatype(Container.Singleton, value)
+      case ListRx(name) => InternalParsedDatatype(Container.List, Seq(name))
+      case MapRx(name) => InternalParsedDatatype(Container.Map, Seq(name))
+      case OptionRx(name) => InternalParsedDatatype(Container.Option, Seq(name))
+      case UnionRx(name) => InternalParsedDatatype(Container.Union, name.split(",").map(_.trim))
+      case DefaultMapRx() => InternalParsedDatatype(Container.Map, Seq(Primitives.String.toString))
+      case _ => InternalParsedDatatype(Container.Singleton, Seq(value))
     }
   }
 

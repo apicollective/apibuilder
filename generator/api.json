@@ -16,7 +16,9 @@
             "values": [
                 { "name": "singleton" },
                 { "name": "list" },
-                { "name": "map" }
+                { "name": "map" },
+                { "name": "option" },
+                { "name": "union" }
             ]
         },
 
