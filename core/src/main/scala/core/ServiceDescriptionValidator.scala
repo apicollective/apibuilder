@@ -394,7 +394,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
           case Some(datatype) => {
             internalServiceDescription.get.typeResolver.parse(datatype) match {
               case None => {
-                if (datatype.names.isEmpty) {
+                if (datatype.names.isEmpty || (datatype.names.size == 1 && datatype.names.head.trim == "")) {
                   Seq(s"${opLabel(resource, op)}: Body missing type")
                 } else {
                   Seq(s"${opLabel(resource, op)} body: Type[${datatype.label}] not found")
