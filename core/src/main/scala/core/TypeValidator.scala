@@ -50,11 +50,12 @@ case class TypeValidator(
           case Some(json) => {
             json.asOpt[JsArray] match {
               case Some(v) => {
-                Some(
-                  v.value.flatMap { value =>
-                    validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
-                  }.mkString(", ")
-                )
+                v.value.flatMap { value =>
+                  validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                } match {
+                  case Nil => None
+                  case errors => Some(errors.mkString(", "))
+                }
               }
               case None => {
                 Some(s"default[$value] is not a valid JSON Array")
@@ -71,13 +72,14 @@ case class TypeValidator(
           case Some(json) => {
             json.asOpt[JsObject] match {
               case Some(v) => {
-                Some(
-                  v.value.flatMap {
-                    case (key, value) => {
-                      validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
-                    }
-                  }.mkString(", ")
-                )
+                v.value.flatMap {
+                  case (key, value) => {
+                    validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                  }
+                } match {
+                  case Nil => None
+                  case errors => Some(errors.mkString(", "))
+                }
               }
               case None => {
                 Some(s"default[$value] is not a valid JSON Object")
