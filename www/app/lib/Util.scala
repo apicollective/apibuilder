@@ -40,6 +40,8 @@ object Util {
       case Container.Singleton => name
       case Container.List => s"[$name]"
       case Container.Map => s"map[$name]"
+      case Container.Union => s"union[$name]"
+      case Container.Option => s"option[$name]"
       case Container.UNDEFINED(container) => s"$container[$name]"
     }
   }
