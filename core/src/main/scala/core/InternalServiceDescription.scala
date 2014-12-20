@@ -57,7 +57,7 @@ private[core] case class InternalServiceDescription(json: JsValue) {
     (json \ "headers").asOpt[JsArray].map(_.value).getOrElse(Seq.empty).flatMap { el =>
       el match {
         case o: JsObject => {
-          val datatype = JsonUtil.asOptString(o, "type").map(InternalParsedDatatype(_))
+          val datatype = JsonUtil.asOptString(o, "type").map(InternalDatatype(_))
 
           Some(
             InternalHeader(
@@ -131,7 +131,7 @@ case class InternalEnumValue(
 
 case class InternalHeader(
   name: Option[String],
-  datatype: Option[InternalParsedDatatype],
+  datatype: Option[InternalDatatype],
   required: Boolean,
   description: Option[String],
   default: Option[String]
@@ -156,7 +156,7 @@ case class InternalOperation(method: Option[String],
 
 case class InternalField(
   name: Option[String] = None,
-  datatype: Option[InternalParsedDatatype] = None,
+  datatype: Option[InternalDatatype] = None,
   description: Option[String] = None,
   required: Boolean = true,
   default: Option[String] = None,
@@ -168,7 +168,7 @@ case class InternalField(
 
 case class InternalParameter(
   name: Option[String] = None,
-  datatype: Option[InternalParsedDatatype] = None,
+  datatype: Option[InternalDatatype] = None,
   description: Option[String] = None,
   required: Boolean,
   default: Option[String] = None,
@@ -178,13 +178,13 @@ case class InternalParameter(
 )
 
 case class InternalBody(
-  datatype: Option[InternalParsedDatatype] = None,
+  datatype: Option[InternalDatatype] = None,
   description: Option[String] = None
 )
 
 case class InternalResponse(
   code: String,
-  datatype: Option[InternalParsedDatatype] = None,
+  datatype: Option[InternalDatatype] = None,
   warnings: Seq[String] = Seq.empty
 ) {
 
@@ -267,7 +267,7 @@ object InternalResource {
 
 object InternalOperation {
 
-  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(InternalParsedDatatype("unit")))
+  private val NoContentResponse = InternalResponse(code = "204", datatype = Some(InternalDatatype("unit")))
 
   def apply(resourcePath: String, json: JsObject): InternalOperation = {
     val path = resourcePath + (json \ "path").asOpt[String].getOrElse("")
@@ -309,7 +309,7 @@ object InternalOperation {
       case o: JsObject => {
         Some(
           InternalBody(
-            datatype = (o \ "type").asOpt[String].map(InternalParsedDatatype(_)),
+            datatype = (o \ "type").asOpt[String].map(InternalDatatype(_)),
             description = (o \ "description").asOpt[String]
           )
         )
@@ -338,7 +338,7 @@ object InternalResponse {
   def apply(code: String, json: JsObject): InternalResponse = {
     InternalResponse(
       code = code,
-      datatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
+      datatype = (json \ "type").asOpt[String].map( InternalDatatype(_) )
     )
   }
 }
@@ -346,7 +346,7 @@ object InternalResponse {
 object InternalField {
 
   def apply(json: JsObject): InternalField = {
-    val parsedDatatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) )
+    val parsedDatatype = (json \ "type").asOpt[String].map( InternalDatatype(_) )
 
     val warnings = if (JsonUtil.hasKey(json, "enum") || JsonUtil.hasKey(json, "values")) {
       Seq("Enumerations are now first class objects and must be defined in an explicit enum section")
@@ -373,7 +373,7 @@ object InternalParameter {
 
   def apply(json: JsObject): InternalParameter = {
     InternalParameter(name = (json \ "name").asOpt[String],
-                      datatype = (json \ "type").asOpt[String].map( InternalParsedDatatype(_) ),
+                      datatype = (json \ "type").asOpt[String].map( InternalDatatype(_) ),
                       description = (json \ "description").asOpt[String],
                       required = JsonUtil.asOptBoolean(json \ "required").getOrElse(true),
                       default = JsonUtil.asOptString(json, "default"),
@@ -414,42 +414,42 @@ private[core] object JsonUtil {
   }
 }
 
-sealed trait InternalParsedDatatype {
+sealed trait InternalDatatype {
   def names: Seq[String]
   def label: String
 }
 
-private[core] object InternalParsedDatatype {
+private[core] object InternalDatatype {
 
-  case class List(name: String) extends InternalParsedDatatype {
+  case class List(name: String) extends InternalDatatype {
 
     override def names = Seq(name)
     override def label = s"[$name]"
 
   }
 
-  case class Map(name: String) extends InternalParsedDatatype {
+  case class Map(name: String) extends InternalDatatype {
 
     override def names = Seq(name)
     override def label = s"map[$name]"
 
   }
 
-  case class Option(name: String) extends InternalParsedDatatype {
+  case class Option(name: String) extends InternalDatatype {
 
     override def names = Seq(name)
     override def label = s"option[$name]"
 
   }
 
-  case class Singleton(name: String) extends InternalParsedDatatype {
+  case class Singleton(name: String) extends InternalDatatype {
 
     override def names = Seq(name)
     override def label = name
 
   }
 
-  case class Union(names: Seq[String]) extends InternalParsedDatatype {
+  case class Union(names: Seq[String]) extends InternalDatatype {
 
     override def label = names.mkString("union[", ", ", "]")
 
@@ -461,14 +461,14 @@ private[core] object InternalParsedDatatype {
   private val UnionRx = "^union\\[(.*)\\]$".r
   private val DefaultMapRx = "^map$".r
 
-  def apply(value: String): InternalParsedDatatype = {
+  def apply(value: String): InternalDatatype = {
     value match {
-      case ListRx(name) => InternalParsedDatatype.List(name)
-      case MapRx(name) => InternalParsedDatatype.Map(name)
-      case OptionRx(name) => InternalParsedDatatype.Option(name)
-      case UnionRx(name) => InternalParsedDatatype.Union(name.split(",").map(_.trim))
-      case DefaultMapRx() => InternalParsedDatatype.Map(Primitives.String.toString)
-      case _ => InternalParsedDatatype.Singleton(value)
+      case ListRx(name) => InternalDatatype.List(name)
+      case MapRx(name) => InternalDatatype.Map(name)
+      case OptionRx(name) => InternalDatatype.Option(name)
+      case UnionRx(name) => InternalDatatype.Union(name.split(",").map(_.trim))
+      case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString)
+      case _ => InternalDatatype.Singleton(value)
     }
   }
 

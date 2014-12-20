@@ -6,7 +6,7 @@ import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
-import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
+import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
 import scala.util.{Failure, Success, Try}
 
 case class TypeValidatorEnums(name: String, values: Seq[String])
@@ -29,7 +29,7 @@ case class TypeValidator(
     }
   }
 
-  def assertValidDefault(pd: ParsedDatatype, value: String) {
+  def assertValidDefault(pd: Datatype, value: String) {
     validate(pd, value) match {
       case None => ()
       case Some(msg) => sys.error(msg)
@@ -37,12 +37,12 @@ case class TypeValidator(
   }
 
   def validate(
-    pd: ParsedDatatype,
+    pd: Datatype,
     value: String,
     errorPrefix: Option[String] = None
   ): Option[String] = {
     pd match {
-      case ParsedDatatype.List(t) => {
+      case Datatype.List(t) => {
         parseJsonOrNone(value) match {
           case None => {
             Some(s"default[$value] is not valid json")
@@ -63,7 +63,7 @@ case class TypeValidator(
           }
         }
       }
-      case ParsedDatatype.Map(t) => {
+      case Datatype.Map(t) => {
         parseJsonOrNone(value) match {
           case None => {
             Some(s"default[$value] is not valid json")
@@ -86,13 +86,13 @@ case class TypeValidator(
           }
         }
       }
-      case ParsedDatatype.Option(t) => {
+      case Datatype.Option(t) => {
         validateTypes(Seq(Type(TypeKind.Primitive, Primitives.Unit.toString), t), value, errorPrefix)
       }
-      case ParsedDatatype.Singleton(t) => {
+      case Datatype.Singleton(t) => {
         validate(t, value, errorPrefix)
       }
-      case ParsedDatatype.Union(types) => {
+      case Datatype.Union(types) => {
         validateTypes(types, value, errorPrefix)
       }
     }

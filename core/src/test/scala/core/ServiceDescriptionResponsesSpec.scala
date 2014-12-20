@@ -1,7 +1,7 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
+import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionResponsesSpec extends FunSpec with Matchers {
@@ -44,7 +44,7 @@ class ServiceDescriptionResponsesSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val response = validator.serviceDescription.get.resources.head.operations.head.responses.head
     response.code should be(204)
-    response.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.Unit.toString)))
+    response.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Unit.toString)))
   }
 
   it("does not allow explicit definition of 404, 5xx status codes") {

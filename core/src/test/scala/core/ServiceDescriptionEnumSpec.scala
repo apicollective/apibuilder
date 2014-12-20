@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
+import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
@@ -64,7 +64,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
-    ageGroup.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Enum, "age_group")))
+    ageGroup.`type` should be(Datatype.Singleton(Type(TypeKind.Enum, "age_group")))
   }
 
   it("validates that enum values do not start with numbers") {

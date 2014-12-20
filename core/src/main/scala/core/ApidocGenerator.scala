@@ -4,20 +4,20 @@
  */
 package com.gilt.apidocgenerator.models {
 
-  sealed trait ParsedDatatype
+  sealed trait Datatype
 
-  object ParsedDatatype {
+  object Datatype {
 
-    case class List(`type`: Type) extends ParsedDatatype
-    case class Map(`type`: Type) extends ParsedDatatype
-    case class Option(`type`: Type) extends ParsedDatatype
-    case class Singleton(`type`: Type) extends ParsedDatatype
-    case class Union(types: Seq[Type]) extends ParsedDatatype
+    case class List(`type`: Type) extends Datatype
+    case class Map(`type`: Type) extends Datatype
+    case class Option(`type`: Type) extends Datatype
+    case class Singleton(`type`: Type) extends Datatype
+    case class Union(types: Seq[Type]) extends Datatype
 
   }
 
   case class Body(
-    `type`: com.gilt.apidocgenerator.models.ParsedDatatype,
+    `type`: com.gilt.apidocgenerator.models.Datatype,
     description: scala.Option[String] = None
   )
 
@@ -39,7 +39,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Field(
     name: String,
-    `type`: com.gilt.apidocgenerator.models.ParsedDatatype,
+    `type`: com.gilt.apidocgenerator.models.Datatype,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
@@ -60,7 +60,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Header(
     name: String,
-    `type`: com.gilt.apidocgenerator.models.ParsedDatatype,
+    `type`: com.gilt.apidocgenerator.models.Datatype,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None
@@ -96,7 +96,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Parameter(
     name: String,
-    `type`: com.gilt.apidocgenerator.models.ParsedDatatype,
+    `type`: com.gilt.apidocgenerator.models.Datatype,
     location: com.gilt.apidocgenerator.models.ParameterLocation,
     description: scala.Option[String] = None,
     required: Boolean,
@@ -114,7 +114,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Response(
     code: Int,
-    `type`: com.gilt.apidocgenerator.models.ParsedDatatype
+    `type`: com.gilt.apidocgenerator.models.Datatype
   )
 
   /**

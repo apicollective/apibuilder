@@ -1,7 +1,7 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
+import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionMapSpec extends FunSpec with Matchers {
@@ -25,7 +25,7 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val tags = validator.serviceDescription.get.models.head.fields.head
-    tags.`type` should be(ParsedDatatype.Map(Type(TypeKind.Primitive, Primitives.String.toString)))
+    tags.`type` should be(Datatype.Map(Type(TypeKind.Primitive, Primitives.String.toString)))
   }
 
   it("accept defaults for maps") {
@@ -57,7 +57,7 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
   it("rejects invalid json objects for map[integer]") {
     val json = baseJson.format("""{ "name": "tags", "type": "map[integer]", "default": "1" }""")
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("default[1] is not a valid map[integer]")
+    validator.errors.mkString("") should be("default[1] is not a valid JSON Object")
   }
 
   it("rejects invalid defaults for map[integer]") {
@@ -81,7 +81,7 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
   it("rejects invalid json objects for list[integer]") {
     val json = baseJson.format("""{ "name": "tags", "type": "[integer]", "default": "1" }""")
     val validator = ServiceDescriptionValidator(json)
-    validator.errors.mkString("") should be("default[1] is not a valid list[integer]")
+    validator.errors.mkString("") should be("default[1] is not a valid JSON Array")
   }
 
   it("rejects invalid defaults for list[integer]") {

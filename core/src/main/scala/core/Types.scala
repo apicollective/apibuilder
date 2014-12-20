@@ -29,7 +29,7 @@ case class TypeResolver(
     }
   }
 
-  def parseWithError(internal: InternalParsedDatatype): ParsedDatatype = {
+  def parseWithError(internal: InternalDatatype): Datatype = {
     parse(internal).getOrElse {
       sys.error(s"Unrecognized datatype[${internal.label}]")
     }
@@ -38,28 +38,28 @@ case class TypeResolver(
   /**
     * Resolves the type name into instances of a first class Type.
     */
-  def parse(internal: InternalParsedDatatype): Option[ParsedDatatype] = {
+  def parse(internal: InternalDatatype): Option[Datatype] = {
     internal match {
-      case InternalParsedDatatype.List(name) => {
-        toType(name).map { n => ParsedDatatype.List(n) }
+      case InternalDatatype.List(name) => {
+        toType(name).map { n => Datatype.List(n) }
       }
 
-      case InternalParsedDatatype.Map(name) => {
-        toType(name).map { n => ParsedDatatype.Map(n) }
+      case InternalDatatype.Map(name) => {
+        toType(name).map { n => Datatype.Map(n) }
       }
 
-      case InternalParsedDatatype.Option(name) => {
-        toType(name).map { n => ParsedDatatype.Option(n) }
+      case InternalDatatype.Option(name) => {
+        toType(name).map { n => Datatype.Option(n) }
       }
 
-      case InternalParsedDatatype.Singleton(name) => {
-        toType(name).map { n => ParsedDatatype.Singleton(n) }
+      case InternalDatatype.Singleton(name) => {
+        toType(name).map { n => Datatype.Singleton(n) }
       }
 
-      case InternalParsedDatatype.Union(names) => {
+      case InternalDatatype.Union(names) => {
         val types = names.map { n => toType(n) }
         types.filter(!_.isDefined) match {
-          case Nil => Some(ParsedDatatype.Union(types.flatten))
+          case Nil => Some(Datatype.Union(types.flatten))
           case unknowns => None
         }
       }

@@ -167,7 +167,7 @@ object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val typeInstance = model.fields.find(_.name == name).map(_.`type`).getOrElse {
-      ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString))
+      Datatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString))
     }
 
     Parameter(name = name,
@@ -223,7 +223,7 @@ object FieldBuilder {
 
 object ServiceDescriptionBuilderHelper {
 
-  def assertValidDefault(enums: Seq[Enum], pd: ParsedDatatype, value: String) {
+  def assertValidDefault(enums: Seq[Enum], pd: Datatype, value: String) {
     TypeValidator(
       enums = enums.map(e => TypeValidatorEnums(e.name, e.values.map(_.name)))
     ).assertValidDefault(pd, value)

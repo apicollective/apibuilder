@@ -1,7 +1,7 @@
 package core
 
 import lib.{Methods, Primitives, Text}
-import com.gilt.apidocgenerator.models.{Container, Field, ParsedDatatype, ServiceDescription, Type, TypeKind}
+import com.gilt.apidocgenerator.models.{Container, Field, Datatype, ServiceDescription, Type, TypeKind}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
@@ -538,7 +538,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
             op.namedPathParameters.flatMap { name =>
               val parsedDatatype = paramMap.get(name).getOrElse {
                 fieldMap.get(name).getOrElse {
-                  InternalParsedDatatype.Singleton(Primitives.String.toString)
+                  InternalDatatype.Singleton(Primitives.String.toString)
                 }
               }
               val errorTemplate = s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
@@ -546,18 +546,18 @@ case class ServiceDescriptionValidator(apiJson: String) {
               internalServiceDescription.get.typeResolver.parse(parsedDatatype) match {
                 case None => Some(errorTemplate.format(name))
 
-                case Some(ParsedDatatype.List(_)) => Some(errorTemplate.format("list"))
-                case Some(ParsedDatatype.Map(_)) => Some(errorTemplate.format("map"))
-                case Some(ParsedDatatype.Option(_)) => Some(errorTemplate.format("option"))
-                case Some(ParsedDatatype.Singleton(Type(TypeKind.Model, name))) => Some(errorTemplate.format(name))
-                case Some(ParsedDatatype.Singleton(Type(TypeKind.Primitive, name))) => {
+                case Some(Datatype.List(_)) => Some(errorTemplate.format("list"))
+                case Some(Datatype.Map(_)) => Some(errorTemplate.format("map"))
+                case Some(Datatype.Option(_)) => Some(errorTemplate.format("option"))
+                case Some(Datatype.Singleton(Type(TypeKind.Model, name))) => Some(errorTemplate.format(name))
+                case Some(Datatype.Singleton(Type(TypeKind.Primitive, name))) => {
                   if (Primitives.validInPath(name)) {
                     None
                   } else {
                     Some(errorTemplate.format(name))
                   }
                 }
-                case Some(ParsedDatatype.Union(types)) => {
+                case Some(Datatype.Union(types)) => {
                   // TODO : Support union types in paths when all of
                   // the types are valid for path parameters. Requires
                   // a bit of refactoring to be able to ask if a given
@@ -565,12 +565,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
                   Some(errorTemplate.format("union"))
                 }
 
-                case Some(ParsedDatatype.Singleton(Type(TypeKind.Enum, name))) => {
+                case Some(Datatype.Singleton(Type(TypeKind.Enum, name))) => {
                   // Enums serialize to strings
                   None
                 }
 
-                case Some(ParsedDatatype.Singleton(Type(kind, name))) => {
+                case Some(Datatype.Singleton(Type(kind, name))) => {
                   Some(errorTemplate.format(kind))
                 }
 

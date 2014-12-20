@@ -1,7 +1,7 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
+import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
@@ -37,7 +37,7 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
 
       val ct = validator.serviceDescription.get.headers.find(_.name == "Content-Type").get
       ct.name should be("Content-Type")
-      ct.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Enum, ctEnum.name)))
+      ct.`type` should be(Datatype.Singleton(Type(TypeKind.Enum, ctEnum.name)))
       ct.default should be(None)
       ct.required should be(true)
       ct.description should be(None)
@@ -45,21 +45,21 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
 
       val foo = validator.serviceDescription.get.headers.find(_.name == "X-Foo").get
       foo.name should be("X-Foo")
-      foo.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString)))
+      foo.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString)))
       foo.default should be(Some("bar"))
       foo.description should be(Some("test"))
       foo.required should be(true)
 
       val bar = validator.serviceDescription.get.headers.find(_.name == "X-Bar").get
       bar.name should be("X-Bar")
-      bar.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString)))
+      bar.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString)))
       bar.default should be(None)
       bar.description should be(None)
       bar.required should be(false)
 
       val multi = validator.serviceDescription.get.headers.find(_.name == "X-Multi").get
       multi.name should be("X-Multi")
-      multi.`type` should be(ParsedDatatype.List(Type(TypeKind.Primitive, Primitives.String.toString)))
+      multi.`type` should be(Datatype.List(Type(TypeKind.Primitive, Primitives.String.toString)))
       multi.default should be(None)
       multi.description should be(None)
       multi.required should be(true)
