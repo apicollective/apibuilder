@@ -103,9 +103,7 @@ object Body {
         `type` = TypeResolver(
           enumNames = enums.map(_.name),
           modelNames = models.map(_.name)
-        ).toTypeInstance(datatype).getOrElse {
-          sys.error(s"Body[$datatype] is not valid")
-        },
+        ).parseWithError(datatype),
         description = ib.description
       )
     }
@@ -131,9 +129,7 @@ object HeaderBuilder {
   def apply(enums: Seq[Enum], ih: InternalHeader): Header = {
     Header(
       name = ih.name.get,
-      `type` = TypeResolver(enumNames = enums.map(_.name)).toTypeInstance(ih.datatype.get).getOrElse {
-        sys.error(s"Invalid header type[${ih.datatype.get.name}]")
-      },
+      `type` = TypeResolver(enumNames = enums.map(_.name)).parseWithError(ih.datatype.get),
       required = ih.required,
       description = ih.description,
       default = ih.default
@@ -161,9 +157,7 @@ object ResponseBuilder {
       `type` = TypeResolver(
         enumNames = enums.map(_.name),
         modelNames = models.map(_.name)
-      ).toTypeInstance(internal.datatype.get).getOrElse {
-        sys.error("No datatype for response: " + internal)
-      }
+      ).parseWithError(internal.datatype.get)
     )
   }
 
@@ -173,7 +167,7 @@ object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val typeInstance = model.fields.find(_.name == name).map(_.`type`).getOrElse {
-      TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString))
+      ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString))
     }
 
     Parameter(name = name,
@@ -187,11 +181,9 @@ object ParameterBuilder {
       enumNames = enums.map(_.name),
       modelNames = models.map(_.name)
     )
-    val typeInstance = resolver.toTypeInstance(internal.datatype.get).getOrElse {
-      sys.error("Could not resolve type for parameter: " + internal)
-    }
+    val typeInstance = resolver.parseWithError(internal.datatype.get)
 
-    internal.default.map { ServiceDescriptionBuilderHelper.assertValidDefault(enums, typeInstance.`type`, _) }
+    internal.default.map { ServiceDescriptionBuilderHelper.assertValidDefault(enums, typeInstance, _) }
 
     Parameter(name = internal.name.get,
               `type` = typeInstance,
@@ -210,12 +202,11 @@ object FieldBuilder {
 
   def apply(enums: Seq[Enum], im: InternalModel, internal: InternalField): Field = {
     val typeInstance = TypeResolver(
-      enumNames = enums.map(_.name)
-    ).toTypeInstance(internal.datatype.get).getOrElse {
-      TypeInstance(internal.datatype.get.container, Type(TypeKind.Model, internal.datatype.get.name))
-    }
+      enumNames = enums.map(_.name),
+      modelNames = internal.datatype.get.names // assume a model if not an enum
+    ).parseWithError(internal.datatype.get)
 
-    internal.default.map { ServiceDescriptionBuilderHelper.assertValidDefault(enums, typeInstance.`type`, _) }
+    internal.default.map { ServiceDescriptionBuilderHelper.assertValidDefault(enums, typeInstance, _) }
 
     Field(name = internal.name.get,
           `type` = typeInstance,
@@ -232,10 +223,10 @@ object FieldBuilder {
 
 object ServiceDescriptionBuilderHelper {
 
-  def assertValidDefault(enums: Seq[Enum], t: Type, value: String) {
+  def assertValidDefault(enums: Seq[Enum], pd: ParsedDatatype, value: String) {
     TypeValidator(
       enums = enums.map(e => TypeValidatorEnums(e.name, e.values.map(_.name)))
-    ).assertValidDefault(t, value)
+    ).assertValidDefault(pd, value)
   }
 
 }

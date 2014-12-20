@@ -4,8 +4,20 @@
  */
 package com.gilt.apidocgenerator.models {
 
+  sealed trait ParsedDatatype
+
+  object ParsedDatatype {
+
+    case class List(`type`: Type) extends ParsedDatatype
+    case class Map(`type`: Type) extends ParsedDatatype
+    case class Option(`type`: Type) extends ParsedDatatype
+    case class Singleton(`type`: Type) extends ParsedDatatype
+    case class Union(types: Seq[Type]) extends ParsedDatatype
+
+  }
+
   case class Body(
-    `type`: com.gilt.apidocgenerator.models.TypeInstance,
+    `type`: com.gilt.apidocgenerator.models.ParsedDatatype,
     description: scala.Option[String] = None
   )
 
@@ -27,7 +39,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Field(
     name: String,
-    `type`: com.gilt.apidocgenerator.models.TypeInstance,
+    `type`: com.gilt.apidocgenerator.models.ParsedDatatype,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None,
@@ -48,7 +60,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Header(
     name: String,
-    `type`: com.gilt.apidocgenerator.models.TypeInstance,
+    `type`: com.gilt.apidocgenerator.models.ParsedDatatype,
     description: scala.Option[String] = None,
     required: Boolean,
     default: scala.Option[String] = None
@@ -84,7 +96,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Parameter(
     name: String,
-    `type`: com.gilt.apidocgenerator.models.TypeInstance,
+    `type`: com.gilt.apidocgenerator.models.ParsedDatatype,
     location: com.gilt.apidocgenerator.models.ParameterLocation,
     description: scala.Option[String] = None,
     required: Boolean,
@@ -102,7 +114,7 @@ package com.gilt.apidocgenerator.models {
 
   case class Response(
     code: Int,
-    `type`: com.gilt.apidocgenerator.models.TypeInstance
+    `type`: com.gilt.apidocgenerator.models.ParsedDatatype
   )
 
   /**
@@ -126,15 +138,6 @@ package com.gilt.apidocgenerator.models {
   case class Type(
     typeKind: com.gilt.apidocgenerator.models.TypeKind,
     name: String
-  )
-
-  /**
-   * Used to capture the metadata about a single instance of a type - for example, a
-   * model field definition will have a type instance.
-   */
-  case class TypeInstance(
-    container: com.gilt.apidocgenerator.models.Container,
-    `type`: com.gilt.apidocgenerator.models.Type
   )
 
   sealed trait Container

@@ -415,6 +415,7 @@ private[core] object JsonUtil {
 }
 
 sealed trait InternalParsedDatatype {
+  def names: Seq[String]
   def label: String
 }
 
@@ -422,31 +423,35 @@ private[core] object InternalParsedDatatype {
 
   case class List(name: String) extends InternalParsedDatatype {
 
-    def label = s"[$name]"
+    override def names = Seq(name)
+    override def label = s"[$name]"
 
   }
 
   case class Map(name: String) extends InternalParsedDatatype {
 
-    def label = s"map[$name]"
+    override def names = Seq(name)
+    override def label = s"map[$name]"
 
   }
 
   case class Option(name: String) extends InternalParsedDatatype {
 
-    def label = s"option[$name]"
+    override def names = Seq(name)
+    override def label = s"option[$name]"
 
   }
 
   case class Singleton(name: String) extends InternalParsedDatatype {
 
-    def label = name
+    override def names = Seq(name)
+    override def label = name
 
   }
 
   case class Union(names: Seq[String]) extends InternalParsedDatatype {
 
-    def label = names.mkString("union[", ", ", "]")
+    override def label = names.mkString("union[", ", ", "]")
 
   }
 

@@ -6,7 +6,7 @@ import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
-import com.gilt.apidocgenerator.models.{Container, Type, TypeInstance, TypeKind}
+import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
 import scala.util.{Failure, Success, Try}
 
 case class TypeValidatorEnums(name: String, values: Seq[String])
@@ -29,24 +29,20 @@ case class TypeValidator(
     }
   }
 
-  def assertValidDefault(t: Type, value: String) {
-    validate(t, value) match {
+  def assertValidDefault(pd: ParsedDatatype, value: String) {
+    validate(pt, value) match {
       case None => ()
       case Some(msg) => sys.error(msg)
     }
   }
 
-  def validateTypeInstance(
-    typeInstance: TypeInstance,
+  def validate(
+    pd: ParsedDatatype,
     value: String,
     errorPrefix: Option[String] = None
   ): Option[String] = {
-    typeInstance.container match {
-      case Container.Singleton => {
-        validate(typeInstance.`type`, value, errorPrefix)
-      }
-
-      case Container.List => {
+    pd match {
+      case ParsedDatatype.List(t) => {
         parseJsonOrNone(value) match {
           case None => {
             Some(s"default[$value] is not valid json")
@@ -56,7 +52,7 @@ case class TypeValidator(
               case Some(v) => {
                 Some(
                   v.value.flatMap { value =>
-                    validate(typeInstance.`type`, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                    validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
                   }.mkString(", ")
                 )
               }
@@ -67,8 +63,7 @@ case class TypeValidator(
           }
         }
       }
-
-      case Container.Map => {
+      case ParsedDatatype.Map(t) => {
         parseJsonOrNone(value) match {
           case None => {
             Some(s"default[$value] is not valid json")
@@ -79,7 +74,7 @@ case class TypeValidator(
                 Some(
                   v.value.flatMap {
                     case (key, value) => {
-                      validate(typeInstance.`type`, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                      validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
                     }
                   }.mkString(", ")
                 )
@@ -91,12 +86,29 @@ case class TypeValidator(
           }
         }
       }
-
-      case Container.UNDEFINED(container) => {
-        Some(s"container[$container] is not a valid")
+      case ParsedDatatype.Option(t) => {
+        validate(Seq(Primitives.Unit, t), value, errorPrefix)
+      }
+      case ParsedDatatype.Singleton(t) => {
+        validate(t, value, errorPrefix)
+      }
+      case ParsedDatatype.Union(types) => {
+        validate(types, value, errorPrefix)
       }
     }
   }
+
+  def validate(
+    types: Seq[Type],
+    value: String,
+    errorPrefix: Option[String] = None
+  ): Option[String] = {
+    types.map(t => validate(t, value, errorPrefix)).flatten match {
+      case Nil => None
+      case firstError :: errors => Seq(firstError)
+    }
+  }
+
 
   def validate(
     t: Type,

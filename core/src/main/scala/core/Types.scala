@@ -3,19 +3,6 @@ package core
 import lib.{PrimitiveMetadata, Primitives}
 import com.gilt.apidocgenerator.models._
 
-sealed trait ParsedDatatype
-
-private[core] object ParsedDatatype {
-
-  case class List(`type`: Type) extends ParsedDatatype
-  case class Map(`type`: Type) extends ParsedDatatype
-  case class Option(`type`: Type) extends ParsedDatatype
-  case class Singleton(`type`: Type) extends ParsedDatatype
-  case class Union(types: Seq[Type]) extends ParsedDatatype
-
-}
-
-
 case class TypeResolver(
   enumNames: Seq[String] = Seq.empty,
   modelNames: Seq[String] = Seq.empty
@@ -42,10 +29,16 @@ case class TypeResolver(
     }
   }
 
+  def parseWithError(internal: InternalParsedDatatype): ParsedDatatype = {
+    parse(internal).getOrElse {
+      sys.error(s"Unrecognized datatype[${internal.label}]")
+    }
+  }
+
   /**
     * Resolves the type name into instances of a first class Type.
     */
-  def toParsedDatatype(internal: InternalParsedDatatype): Option[ParsedDatatype] = {
+  def parse(internal: InternalParsedDatatype): Option[ParsedDatatype] = {
     internal match {
       case InternalParsedDatatype.List(name) => {
         toType(name).map { n => ParsedDatatype.List(n) }
@@ -71,7 +64,6 @@ case class TypeResolver(
         }
       }
     }
-
   }
 
 }

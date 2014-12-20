@@ -146,8 +146,8 @@ case class ServiceDescriptionValidator(apiJson: String) {
   private def validateFieldDefaults(): Seq[String] = {
     internalServiceDescription.get.models.flatMap { model =>
       model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).filter(!_.default.isEmpty).flatMap { field =>
-        internalServiceDescription.get.typeResolver.toTypeInstance(field.datatype.get).flatMap { ti =>
-          internalServiceDescription.get.typeValidator.validateTypeInstance(ti, field.default.get, Some(s"${model.name}.${field.name.get}"))
+        internalServiceDescription.get.typeResolver.parse(field.datatype.get).flatMap { pd =>
+          internalServiceDescription.get.typeValidator.validate(pd, field.default.get, Some(s"${model.name}.${field.name.get}"))
         }
       }
     }
