@@ -30,7 +30,7 @@ case class TypeValidator(
   }
 
   def assertValidDefault(pd: ParsedDatatype, value: String) {
-    validate(pt, value) match {
+    validate(pd, value) match {
       case None => ()
       case Some(msg) => sys.error(msg)
     }
@@ -57,7 +57,7 @@ case class TypeValidator(
                 )
               }
               case None => {
-                Some(s"default[$value] is not a valid list[${typeInstance.`type`.name}]")
+                Some(s"default[$value] is not a valid JSON Array")
               }
             }
           }
@@ -80,32 +80,32 @@ case class TypeValidator(
                 )
               }
               case None => {
-                Some(s"default[$value] is not a valid map[${typeInstance.`type`.name}]")
+                Some(s"default[$value] is not a valid JSON Object")
               }
             }
           }
         }
       }
       case ParsedDatatype.Option(t) => {
-        validate(Seq(Primitives.Unit, t), value, errorPrefix)
+        validateTypes(Seq(Type(TypeKind.Primitive, Primitives.Unit.toString), t), value, errorPrefix)
       }
       case ParsedDatatype.Singleton(t) => {
         validate(t, value, errorPrefix)
       }
       case ParsedDatatype.Union(types) => {
-        validate(types, value, errorPrefix)
+        validateTypes(types, value, errorPrefix)
       }
     }
   }
 
-  def validate(
+  private def validateTypes(
     types: Seq[Type],
     value: String,
-    errorPrefix: Option[String] = None
+    errorPrefix: Option[String]
   ): Option[String] = {
     types.map(t => validate(t, value, errorPrefix)).flatten match {
       case Nil => None
-      case firstError :: errors => Seq(firstError)
+      case firstError :: errors => Some(firstError)
     }
   }
 
@@ -113,7 +113,7 @@ case class TypeValidator(
   def validate(
     t: Type,
     value: String,
-    errorPrefix: Option[String] = None
+    errorPrefix: Option[String]
   ): Option[String] = {
     t match {
 
