@@ -1,9 +1,8 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Type, TypeKind, TypeInstance}
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
-import org.scalatest.Matchers
+import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
+import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
 
@@ -198,7 +197,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
-    guid.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Uuid.toString)))
+    guid.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.Uuid.toString)))
   }
 
   it("path parameters cannot be optional") {
@@ -264,7 +263,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.head.operations.head
     val idParam = op.parameters.head
     idParam.name should be("id")
-    idParam.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Long.toString)))
+    idParam.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.Long.toString)))
   }
 
   it("lists of models are not valid in parameters") {

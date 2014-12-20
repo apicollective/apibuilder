@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocgenerator.models.{Container, Type, TypeKind, TypeInstance}
+import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
@@ -29,10 +29,10 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
 
     val barField = validator.serviceDescription.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get
-    barField.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Model, "bar")))
+    barField.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Model, "bar")))
 
     val fooField = validator.serviceDescription.get.models.find(_.name == "bar").get.fields.find(_.name == "foo").get
-    fooField.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Model, "foo")))
+    fooField.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Model, "foo")))
   }
 
   it("Is able to parse self reference") {
@@ -63,7 +63,7 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "userVariant").get
     val parentField = model.fields.find(_.name == "parent").get
-    parentField.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Model, "userVariant")))
+    parentField.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Model, "userVariant")))
   }
 
 }

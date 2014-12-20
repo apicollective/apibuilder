@@ -1,9 +1,8 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Type, TypeKind, TypeInstance}
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
-import org.scalatest.Matchers
+import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
+import org.scalatest.{FunSpec, Matchers}
 
 class ServiceDescriptionMapSpec extends FunSpec with Matchers {
 
@@ -26,7 +25,7 @@ class ServiceDescriptionMapSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString("") should be("")
     val tags = validator.serviceDescription.get.models.head.fields.head
-    tags.`type` should be(TypeInstance(Container.Map, Type(TypeKind.Primitive, Primitives.String.toString)))
+    tags.`type` should be(ParsedDatatype.Map(Type(TypeKind.Primitive, Primitives.String.toString)))
   }
 
   it("accept defaults for maps") {

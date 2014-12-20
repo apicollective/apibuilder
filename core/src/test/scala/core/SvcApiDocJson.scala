@@ -1,9 +1,8 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Type, TypeKind, TypeInstance}
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
-import org.scalatest.Matchers
+import com.gilt.apidocgenerator.models.{Container, ParsedDatatype, Type, TypeKind}
+import org.scalatest.{FunSpec, Matchers}
 
 class SvcApiDocJson extends FunSpec with Matchers {
 
@@ -25,8 +24,8 @@ class SvcApiDocJson extends FunSpec with Matchers {
     models.contains("organization") should be(true)
 
     val user = service.models.find(_.name == "user").get
-    user.fields.find(_.name == "guid").get.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.Uuid.toString)))
-    user.fields.find(_.name == "email").get.`type` should be(TypeInstance(Container.Singleton, Type(TypeKind.Primitive, Primitives.String.toString)))
+    user.fields.find(_.name == "guid").get.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.Uuid.toString)))
+    user.fields.find(_.name == "email").get.`type` should be(ParsedDatatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString)))
   }
 
   it("parses resources") {
