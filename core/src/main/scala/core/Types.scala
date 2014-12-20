@@ -3,11 +3,28 @@ package core
 import lib.{PrimitiveMetadata, Primitives}
 import com.gilt.apidocgenerator.models._
 
+sealed trait ParsedDatatype
+
+private[core] object ParsedDatatype {
+
+  case class List(`type`: Type) extends ParsedDatatype
+  case class Map(`type`: Type) extends ParsedDatatype
+  case class Option(`type`: Type) extends ParsedDatatype
+  case class Singleton(`type`: Type) extends ParsedDatatype
+  case class Union(types: Seq[Type]) extends ParsedDatatype
+
+}
+
+
 case class TypeResolver(
   enumNames: Seq[String] = Seq.empty,
   modelNames: Seq[String] = Seq.empty
 ) {
 
+  /**
+    * Takes the name of a simple type - a primitive, model or enum. If
+    * valid - returns a Type/
+    */
   def toType(name: String): Option[Type] = {
     Primitives(name) match {
       case Some(pt) => Some(Type(TypeKind.Primitive, name))
@@ -25,8 +42,36 @@ case class TypeResolver(
     }
   }
 
-  def toTypeInstance(internal: InternalParsedDatatype): Option[TypeInstance] = {
-    toType(internal.name).map { TypeInstance(internal.container, _) }
+  /**
+    * Resolves the type name into instances of a first class Type.
+    */
+  def toParsedDatatype(internal: InternalParsedDatatype): Option[ParsedDatatype] = {
+    internal match {
+      case InternalParsedDatatype.List(name) => {
+        toType(name).map { n => ParsedDatatype.List(n) }
+      }
+
+      case InternalParsedDatatype.Map(name) => {
+        toType(name).map { n => ParsedDatatype.Map(n) }
+      }
+
+      case InternalParsedDatatype.Option(name) => {
+        toType(name).map { n => ParsedDatatype.Option(n) }
+      }
+
+      case InternalParsedDatatype.Singleton(name) => {
+        toType(name).map { n => ParsedDatatype.Singleton(n) }
+      }
+
+      case InternalParsedDatatype.Union(names) => {
+        val types = names.map { n => toType(n) }
+        types.filter(!_.isDefined) match {
+          case Nil => Some(ParsedDatatype.Union(types.flatten))
+          case unknowns => None
+        }
+      }
+    }
+
   }
 
 }
