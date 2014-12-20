@@ -22,7 +22,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
   it("should detect all required fields") {
     val validator = ServiceDescriptionValidator(" { } ")
     validator.isValid should be(false)
-    validator.errors.mkString should be("Missing: base_url, name")
+    validator.errors.mkString should be("Missing: name")
   }
 
   it("service name must be a valid name") {
@@ -81,6 +81,24 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     val validator = ServiceDescriptionValidator(json)
     validator.errors.mkString should be("user.foo has invalid type. There is no model, enum, nor datatype named[foo]")
     validator.isValid should be(false)
+  }
+
+  it("base_url is optional") {
+    val json = """
+    {
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        }
+      }
+    }
+    """
+    val validator = ServiceDescriptionValidator(json)
+    validator.errors.mkString should be("")
+    validator.isValid should be(true)
   }
 
   it("defaults to a NoContent response") {

@@ -9,7 +9,7 @@ import scala.util.{Failure, Success, Try}
 
 case class ServiceDescriptionValidator(apiJson: String) {
 
-  private val RequiredFields = Seq("base_url", "name")
+  private val RequiredFields = Seq("name")
 
   private var parseError: Option[String] = None
 
@@ -95,8 +95,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
   }
 
   private def validateBaseUrl(): Seq[String] = {
-    val baseUrl = internalServiceDescription.get.baseUrl
-    baseUrl match {
+    internalServiceDescription.get.baseUrl match {
       case Some(url) => { 
         if(url.endsWith("/")){
           Seq(s"base_url[$url] must not end with a '/'")  
