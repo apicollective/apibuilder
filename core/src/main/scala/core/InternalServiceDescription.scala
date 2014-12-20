@@ -414,25 +414,41 @@ private[core] object JsonUtil {
   }
 }
 
-private[core] case class InternalParsedDatatype(
-  container: Container,
-  names: Seq[String]
-) {
-
-  lazy val label = {
-    val name = names.mkString(", ")
-    container match {
-      case Container.List => s"[$name]"
-      case Container.Map => s"map[$name]"
-      case Container.Option => s"option[$name]"
-      case Container.Union => s"union[$name]"
-      case Container.Singleton | Container.UNDEFINED(_) => name
-    }
-  }
-
+sealed trait InternalParsedDatatype {
+  def label: String
 }
 
 private[core] object InternalParsedDatatype {
+
+  case class List(name: String) extends InternalParsedDatatype {
+
+    def label = s"[$name]"
+
+  }
+
+  case class Map(name: String) extends InternalParsedDatatype {
+
+    def label = s"map[$name]"
+
+  }
+
+  case class Option(name: String) extends InternalParsedDatatype {
+
+    def label = s"option[$name]"
+
+  }
+
+  case class Singleton(name: String) extends InternalParsedDatatype {
+
+    def label = name
+
+  }
+
+  case class Union(names: Seq[String]) extends InternalParsedDatatype {
+
+    def label = names.mkString("union[", ", ", "]")
+
+  }
 
   private val ListRx = "^\\[(.*)\\]$".r
   private val MapRx = "^map\\[(.*)\\]$".r
@@ -442,12 +458,12 @@ private[core] object InternalParsedDatatype {
 
   def apply(value: String): InternalParsedDatatype = {
     value match {
-      case ListRx(name) => InternalParsedDatatype(Container.List, Seq(name))
-      case MapRx(name) => InternalParsedDatatype(Container.Map, Seq(name))
-      case OptionRx(name) => InternalParsedDatatype(Container.Option, Seq(name))
-      case UnionRx(name) => InternalParsedDatatype(Container.Union, name.split(",").map(_.trim))
-      case DefaultMapRx() => InternalParsedDatatype(Container.Map, Seq(Primitives.String.toString))
-      case _ => InternalParsedDatatype(Container.Singleton, Seq(value))
+      case ListRx(name) => InternalParsedDatatype.List(name)
+      case MapRx(name) => InternalParsedDatatype.Map(name)
+      case OptionRx(name) => InternalParsedDatatype.Option(name)
+      case UnionRx(name) => InternalParsedDatatype.Union(name.split(",").map(_.trim))
+      case DefaultMapRx() => InternalParsedDatatype.Map(Primitives.String.toString)
+      case _ => InternalParsedDatatype.Singleton(value)
     }
   }
 
