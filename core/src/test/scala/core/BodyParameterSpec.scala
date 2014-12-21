@@ -1,6 +1,6 @@
 package core
 
-import lib.Primitives
+import lib.{Methods, Primitives}
 import com.gilt.apidocgenerator.models._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
@@ -99,7 +99,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
   }
 
   it("validates that body cannot be specified for GET, DELETE operations") {
-    Util.MethodsNotAcceptingBodies.foreach { method =>
+    Methods.MethodsNotAcceptingBodies.foreach { method =>
       val validator = ServiceDescriptionValidator(baseJson.format(method, """{ "type": "message" }""", "boolean"))
       validator.errors.mkString("") should be(s"Resource[message] $method /messages/:mimeType: Cannot specify body for HTTP method[$method]")
     }

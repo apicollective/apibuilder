@@ -1,6 +1,6 @@
 package core
 
-import lib.Primitives
+import lib.{PrimitiveMetadata, Primitives}
 import com.gilt.apidocgenerator.models.{Container, Type, TypeKind, TypeInstance}
 import java.util.UUID
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}

@@ -1,6 +1,6 @@
 package core
 
-import lib.Primitives
+import lib.{PrimitiveMetadata, Primitives}
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
@@ -10,12 +10,6 @@ import com.gilt.apidocgenerator.models.{Container, Type, TypeInstance, TypeKind}
 import scala.util.{Failure, Success, Try}
 
 case class TypeValidatorEnums(name: String, values: Seq[String])
-
-object TypeValidator {
-
-  private[core] val BooleanValues = Seq("true", "false")
-
-}
 
 case class TypeValidator(
   enums: Seq[TypeValidatorEnums] = Seq.empty
@@ -143,10 +137,10 @@ case class TypeValidator(
           case Some(pt) => {
             pt match {
               case Primitives.Boolean => {
-                if (TypeValidator.BooleanValues.contains(value)) {
+                if (PrimitiveMetadata.BooleanValues.contains(value)) {
                   None
                 } else {
-                  Some(withPrefix(errorPrefix, s"Value[$value] is not a valid boolean. Must be one of: ${TypeValidator.BooleanValues.mkString(", ")}"))
+                  Some(withPrefix(errorPrefix, s"Value[$value] is not a valid boolean. Must be one of: ${PrimitiveMetadata.BooleanValues.mkString(", ")}"))
                 }
               }
 
