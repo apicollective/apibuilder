@@ -1,12 +1,14 @@
 package controllers
 
 import com.gilt.apidoc.models.{Organization, Service, User, Visibility}
-import core.ServiceDescriptionBuilder
+import com.gilt.apidocspec.models.{Service => SpecService}
+import com.gilt.apidocspec.models.json._
 import models._
 import play.api._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
+import play.api.libs.json._
 import scala.concurrent.Future
 
 object ServiceSettings extends Controller {
@@ -26,12 +28,11 @@ object ServiceSettings extends Controller {
       val service = serviceResponse.headOption.getOrElse {
         sys.error("Service not found")
       }
-      val sd = ServiceDescriptionBuilder(versionOption.get.json)
       base.copy(
         title = Some(service.name + " Settings"),
         service = Some(service),
         version = versionOption.map(_.version),
-        serviceDescription = Some(sd)
+        specService = Json.parse(versionOption.get.json).asOpt[SpecService]
       )
     }
   }
