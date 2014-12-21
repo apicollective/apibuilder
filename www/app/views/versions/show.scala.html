@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  service: com.gilt.apidocgenerator.models.ServiceDescription,
+  service: com.gilt.apidocspec.models.Service,
   isWatching: Boolean
 )(implicit flash: Flash)
 
@@ -30,13 +30,13 @@
     }
 
     <h2>Resources</h2>
-    @service.resources.map { resource =>
-      <div id="resource-@lib.UrlKey.generate(resource.model.name)"></div>
-      <a name="resource-@lib.UrlKey.generate(resource.model.name)"></a>
+    @service.resources.map { case (modelName, resource) =>
+      <div id="resource-@lib.UrlKey.generate(modelName)"></div>
+      <a name="resource-@lib.UrlKey.generate(modelName)"></a>
       <div class="version_resource">
-        <h3><a href="#model-@lib.UrlKey.generate(resource.model.name)">@resource.model.name</a></h3>
+        <h3><a href="#model-@lib.UrlKey.generate(modelName)">@modelName</a></h3>
 
-        @resource.model.description.getOrElse("")
+        @resource.description.getOrElse("")
 
         <h4>Operations</h4>
         @if(resource.operations.isEmpty) {
@@ -52,11 +52,11 @@
             <tbody>
              @resource.operations.zipWithIndex.map { case(operation, index) =>
                <tr>
-                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.method</a></td>
-                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.path</a></td>
+                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(modelName)-@index').toggle()">@operation.method</a></td>
+                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(modelName)-@index').toggle()">@operation.path</a></td>
                  <td>@operation.description.getOrElse("")</td>
                </tr>
-               <tr id="operation-@lib.UrlKey.generate(resource.model.name)-@index" style="display:none">
+               <tr id="operation-@lib.UrlKey.generate(modelName)-@index" style="display:none">
                  <td></td>
                  <td colspan="2">
                    @operation.method @service.baseUrl@operation.path
@@ -74,11 +74,11 @@
                    }
 
                    <h4>Response</h4>
-                   @operation.responses.map { response =>
+                   @operation.responses.map { case (code, response) =>
 
                      <p>
-                       HTTP @response.code:
-                       @typeInstance(tpl.org.get, tpl.service.get, tpl.version.get, service, response.`type`)
+                       HTTP @code:
+                       @datatype(tpl.org.get, tpl.service.get, tpl.version.get, service, response.`type`)
                      </p>
                    }
                  </td>
@@ -96,11 +96,11 @@
     @if(service.enums.isEmpty) {
       <em>None</em>
     } else {
-      @service.enums.map { enum =>
-        <div id="enum-@lib.UrlKey.generate(enum.name)"></div>
-        <a name="enum-@lib.UrlKey.generate(enum.name)"></a>
+      @service.enums.map { case (enumName, enum) =>
+        <div id="enum-@lib.UrlKey.generate(enumName)"></div>
+        <a name="enum-@lib.UrlKey.generate(enumName)"></a>
         <div class="version_model">
-          <h3>@enum.name</h3>
+          <h3>@enumName</h3>
 
           @enum.description.getOrElse("")
 
@@ -113,11 +113,11 @@
     @if(service.models.isEmpty) {
       <em>None</em>
     } else {
-      @service.models.map { model =>
-        <div id="model-@lib.UrlKey.generate(model.name)"></div>
-        <a name="model-@lib.UrlKey.generate(model.name)"></a>
+      @service.models.map { case (modelName, model) =>
+        <div id="model-@lib.UrlKey.generate(modelName)"></div>
+        <a name="model-@lib.UrlKey.generate(modelName)"></a>
         <div class="version_model">
-          <h3>@model.name</h3>
+          <h3>@modelName</h3>
 
           @model.description.getOrElse("")
 

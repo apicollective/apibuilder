@@ -1,4 +1,9 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: com.gilt.apidocgenerator.models.ServiceDescription, headers: Seq[com.gilt.apidocgenerator.models.Header])
+@(org: com.gilt.apidoc.models.Organization,
+  service: com.gilt.apidoc.models.Service,
+  version: String,
+  specService: com.gilt.apidocspec.models.Service,
+  headers: Seq[com.gilt.apidocspec.models.Header]
+)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -14,7 +19,7 @@
    @headers.map { header =>
      <tr>
        <td>@header.name</td>
-       <td>@typeInstance(org, service, version, sd, header.`type`)</td>
+       <td>@datatype(org, service, version, specService, header.`type`)</td>
        <td>@if(header.required && header.default.isEmpty) { Yes } else { No }</td>
        <td>@header.default.getOrElse("-")</td>
        <td>@header.description.getOrElse("")</td>

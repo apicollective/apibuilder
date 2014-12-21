@@ -1,4 +1,9 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: com.gilt.apidocgenerator.models.ServiceDescription, body: com.gilt.apidocgenerator.models.Body)
+@(org: com.gilt.apidoc.models.Organization,
+ service: com.gilt.apidoc.models.Service,
+ version: String,
+ specService: com.gilt.apidocspec.models.Service,
+ body: com.gilt.apidocspec.models.Body
+)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -9,7 +14,7 @@
   </thead>
   <tbody>
    <tr>
-     <td>@typeInstance(org, service, version, sd, body.`type`)</td>
+     <td>@datatype(org, service, version, specService, body.`type`)</td>
      <td>@body.description.getOrElse("N/A")</td>
    </tr>
   </tbody>

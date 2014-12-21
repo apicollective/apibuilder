@@ -1,7 +1,0 @@
-@(org: com.gilt.apidoc.models.Organization,
-  service: com.gilt.apidoc.models.Service,
-  version: String,
-  container: com.gilt.apidocgenerator.models.Container,
-  enumName: String)
-
-<a href="@routes.Versions.show(org.key, service.key, version)#enum-@lib.UrlKey.generate(enumName)">@lib.Util.formatType(container, enumName)</a>

@@ -1,4 +1,4 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, sd: com.gilt.apidocgenerator.models.ServiceDescription, fields: Iterable[com.gilt.apidocgenerator.models.Field])
+@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, specService: com.gilt.apidocspec.models.Service, fields: Iterable[com.gilt.apidocspec.models.Field])
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -14,16 +14,11 @@
    @fields.map { field =>
      <tr>
        <td>@field.name</td>
-       <td>@{typeInstance(org, service, version, sd, field.`type`)}</td>
+       <td>@{datatype(org, service, version, specService, field.`type`)}</td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
            <p>
-             @{field.`type`.`type` match {
-               case com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Enum, name) => s"Acceptable values: ${sd.enums.find(_.name == name).get.values.map(_.name).mkString(", ")}"
-               case _ => ""
-             }}
-
              @field.minimum.map { v => Minimum: @v<br/> }
              @field.maximum.map { v => Maximum: @v<br/> }
 

@@ -3,6 +3,8 @@ package controllers
 import models.MainTemplate
 import lib.{UrlKey, Util}
 import com.gilt.apidoc.models.{Organization, User, Version, Visibility, WatchForm}
+import com.gilt.apidocspec.models.{Service => SpecService}
+import com.gilt.apidocspec.models.json._
 import play.api._
 import play.api.mvc._
 import play.api.libs.json.Json
@@ -46,15 +48,18 @@ object Versions extends Controller {
             sys.error(s"Could not find service for orgKey[$orgKey] and key[$serviceKey]")
           }
 
-          val sd = ServiceDescriptionBuilder(v.json)
+          val specService = Json.parse(v.json).asOpt[SpecService].getOrElse {
+            sys.error(s"Failed to parse service description for service[$service]: ${v.json}")
+          }
+
           val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
             service = Some(service),
             version = Some(v.version),
             allServiceVersions = versionsResponse.map(_.version),
-            serviceDescription = Some(sd),
+            specService = Some(specService),
             generators = generators.filter(_.enabled)
           )
-          Ok(views.html.versions.show(tpl, sd, watches))
+          Ok(views.html.versions.show(tpl, specService, watches))
         }
       }
     }
@@ -184,25 +189,30 @@ object Versions extends Controller {
             file.ref.moveTo(path, true)
             val contents = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n")
 
-            val validator = ServiceDescriptionValidator(contents)
-            if (validator.isValid) {
-              val serviceKey = UrlKey.generate(validator.serviceDescription.get.name)
-              request.api.Versions.putByOrgKeyAndServiceKeyAndVersion(
-                request.org.key,
-                serviceKey,
-                valid.version,
-                contents,
-                Some(Visibility(valid.visibility))
-              ).map { version =>
-                Redirect(routes.Versions.show(request.org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
-              }.recover {
-                case r: com.gilt.apidoc.error.ErrorsResponse => {
-                  Ok(views.html.versions.form(tpl, boundForm, r.errors.map(_.message)))
+            Json.parse(contents).asOpt[SpecService] match {
+              case None => {
+                Future {
+                  Ok(views.html.versions.form(tpl, boundForm,
+                    Seq("Invalid JSON - please make sure JSON includes at least a top level name element.")))
                 }
               }
-            } else {
-              Future {
-                Ok(views.html.versions.form(tpl, boundForm, validator.errors))
+
+              case Some(specService) => {
+                val serviceKey = UrlKey.generate(specService.name)
+
+                request.api.Versions.putByOrgKeyAndServiceKeyAndVersion(
+                  request.org.key,
+                  serviceKey,
+                  valid.version,
+                  contents,
+                  Some(Visibility(valid.visibility))
+                ).map { version =>
+                  Redirect(routes.Versions.show(request.org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
+                }.recover {
+                  case r: com.gilt.apidoc.error.ErrorsResponse => {
+                    Ok(views.html.versions.form(tpl, boundForm, r.errors.map(_.message)))
+                  }
+                }
               }
             }
           }

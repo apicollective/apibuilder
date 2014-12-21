@@ -16,6 +16,14 @@
 		{ "name": "OPTIONS" },
 		{ "name": "TRACE" }
 	    ]
+	},
+
+	"parameter_location": {
+	    "values": [
+		{ "name": "Path" },
+		{ "name": "Query" },
+		{ "name": "Form" }
+	    ]
 	}
     },
 
@@ -61,14 +69,15 @@
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "default", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean", "default": "true" },
-		{ "name": "example", "type": "string", "required": false },
 		{ "name": "minimum", "type": "long", "required": false },
-		{ "name": "maximum", "type": "long", "required": false }
+		{ "name": "maximum", "type": "long", "required": false },
+		{ "name": "example", "type": "string", "required": false }
 	    ]
 	},
 
 	"resource": {
 	    "fields": [
+		{ "name": "description", "type": "string", "required": false },
 		{ "name": "path", "type": "string", "required": false, "description": "Defaults to the plural of the model name" },
 		{ "name": "operations", "type": "[operation]" }
 	    ]
@@ -80,7 +89,7 @@
 		{ "name": "path", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "body", "type": "body", "required": false },
-		{ "name": "parameter", "type": "[parameter]", "required": false },
+		{ "name": "parameters", "type": "[parameter]", "required": false },
 		{ "name": "responses", "type": "map[response]", "required": false, "description": "Keys are HTTP status codes" }
 	    ]
 	},
@@ -96,9 +105,12 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
+		{ "name": "location", "type": "parameter_location", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean", "default": "true" },
 		{ "name": "default", "type": "string", "required": false },
+		{ "name": "minimum", "type": "long", "required": false },
+		{ "name": "maximum", "type": "long", "required": false },
 		{ "name": "example", "type": "string", "required": false }
 	    ]
 	},
