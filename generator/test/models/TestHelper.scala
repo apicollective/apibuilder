@@ -4,7 +4,7 @@ import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
 
 import lib.Text
-import core.ServiceDescriptionValidator
+import core.ServiceValidator
 
 object TestHelper {
 
@@ -18,9 +18,9 @@ object TestHelper {
     scala.io.Source.fromFile(path).getLines.mkString("\n")
   }
 
-  def parseFile(filename: String): ServiceDescriptionValidator = {
+  def parseFile(filename: String): ServiceValidator = {
     val contents = readFile(filename)
-    val validator = ServiceDescriptionValidator(contents)
+    val validator = ServiceValidator(contents)
     if (!validator.isValid) {
       sys.error(s"Invalid api.json file[${filename}]: " + validator.errors.mkString("\n"))
     }

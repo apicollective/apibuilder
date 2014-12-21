@@ -2,7 +2,7 @@ package generator
 
 case class ScalaClientMethodGenerator(
   config: ScalaClientMethodConfig,
-  ssd: ScalaServiceDescription
+  ssd: ScalaService
 ) {
   import lib.Text
   import lib.Text._

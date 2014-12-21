@@ -1,7 +1,7 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
+import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class SvcApiDocJson extends FunSpec with Matchers {

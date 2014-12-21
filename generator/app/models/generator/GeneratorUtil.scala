@@ -1,6 +1,6 @@
 package generator
 
-import com.gilt.apidocgenerator.models.{Container, Type, TypeInstance, TypeKind}
+import com.gilt.apidocspec.models.{Container, Type, TypeInstance, TypeKind}
 import lib.Primitives
 import lib.Text._
 

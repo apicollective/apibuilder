@@ -1,14 +1,14 @@
 package models
 
-import com.gilt.apidocgenerator.models.ServiceDescription
-import generator.ScalaServiceDescription
-import core.{ServiceDescriptionBuilder}
+import com.gilt.apidocspec.models.Service
+import generator.ScalaService
+import core.{ServiceBuilder}
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2BindablesSpec extends FunSpec with ShouldMatchers {
 
   lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
-  lazy val ssd = new ScalaServiceDescription(service)
+  lazy val ssd = new ScalaService(service)
   lazy val ageGroup = ssd.enums.find(_.name == "AgeGroup").getOrElse {
     sys.error("No age group enum found")
   }

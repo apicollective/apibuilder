@@ -1,9 +1,9 @@
 package core
 
-import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
+import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
-class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
+class ServiceEnumSpec extends FunSpec with Matchers {
 
     val baseJson = """
     {
@@ -45,7 +45,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
 
     it("supports a known default") {
       val json = baseJson.format("", """, "default": "Twenties" """)
-      val validator = ServiceDescriptionValidator(json)
+      val validator = ServiceValidator(json)
       validator.errors.mkString("") should be("")
       val field = validator.serviceDescription.get.models.head.fields.find(_.name == "age_group").get
       field.default should be(Some("Twenties"))
@@ -53,7 +53,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
 
     it("validates unknown defaults") {
       val json = baseJson.format("", """, "default": "other" """)
-      val validator = ServiceDescriptionValidator(json)
+      val validator = ServiceValidator(json)
       validator.errors.mkString("") should be("user.age_group default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
     }
 
@@ -61,7 +61,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
 
   it("field can be defined as an enum") {
     val json = baseJson.format("", "")
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.head.fields.find { _.name == "age_group" }.get
     ageGroup.`type` should be(Datatype.Singleton(Type(TypeKind.Enum, "age_group")))
@@ -69,7 +69,7 @@ class ServiceDescriptionEnumSpec extends FunSpec with Matchers {
 
   it("validates that enum values do not start with numbers") {
     val json = baseJson.format(""", { "name": "1" } """, "")
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("Enum[age_group] value[1] is invalid: must start with a letter")
   }
 

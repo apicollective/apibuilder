@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.apidocgenerator.models.Error
+import com.gilt.apidocspec.models.Error
 import play.api.libs.json.Json
 import play.api.libs.json.JsError
 

@@ -1,6 +1,6 @@
 package models
 
-import com.gilt.apidocgenerator.models._
+import com.gilt.apidocspec.models._
 import core._
 import lib.{Methods, Primitives}
 import lib.Text._
@@ -47,7 +47,7 @@ object RubyUtil {
 
 object RubyClientGenerator extends CodeGenerator {
 
-  override def generate(sd: ServiceDescription): String = {
+  override def generate(sd: Service): String = {
     new RubyClientGenerator(sd).generate
   }
 
@@ -110,7 +110,7 @@ object RubyClientGenerator extends CodeGenerator {
     }
   }
 
-  def apply(sd: ServiceDescription, userAgent: String): RubyClientGenerator = RubyClientGenerator(sd)
+  def apply(sd: Service, userAgent: String): RubyClientGenerator = RubyClientGenerator(sd)
 
 }
 
@@ -118,7 +118,7 @@ object RubyClientGenerator extends CodeGenerator {
  * Generates a Ruby Client file based on the service description
  * from api.json
  */
-case class RubyClientGenerator(service: ServiceDescription) {
+case class RubyClientGenerator(service: Service) {
   private val moduleName = RubyUtil.toClassName(service.name)
 
   def generate(): String = {

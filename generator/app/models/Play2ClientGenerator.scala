@@ -1,9 +1,9 @@
 package models
 
-import com.gilt.apidocgenerator.models.ServiceDescription
+import com.gilt.apidocspec.models.Service
 import core._
 import lib.Text._
-import generator.{ScalaClientMethodGenerator, ScalaServiceDescription, CodeGenerator, ScalaClientMethodConfigs, ScalaClientMethodConfig}
+import generator.{ScalaClientMethodGenerator, ScalaService, CodeGenerator, ScalaClientMethodConfigs, ScalaClientMethodConfig}
 
 case class PlayFrameworkVersion(
   name: String,
@@ -33,31 +33,31 @@ object PlayFrameworkVersions {
 }
 
 object Play22ClientGenerator extends CodeGenerator {
-  override def generate(sd: ServiceDescription): String = {
+  override def generate(sd: Service): String = {
     Play2ClientGenerator.generate(PlayFrameworkVersions.V2_2_x, sd)
   }
 }
 
 object Play23ClientGenerator extends CodeGenerator {
-  override def generate(sd: ServiceDescription): String = {
+  override def generate(sd: Service): String = {
     Play2ClientGenerator.generate(PlayFrameworkVersions.V2_3_x, sd)
   }
 }
 
 object Play2ClientGenerator {
 
-  def generate(version: PlayFrameworkVersion, sd: ServiceDescription): String = {
-    val ssd = new ScalaServiceDescription(sd)
+  def generate(version: PlayFrameworkVersion, sd: Service): String = {
+    val ssd = new ScalaService(sd)
     generate(version, ssd)
   }
 
-  def generate(version: PlayFrameworkVersion, ssd: ScalaServiceDescription): String = {
+  def generate(version: PlayFrameworkVersion, ssd: ScalaService): String = {
     Play2ClientGenerator(version, ssd).generate()
   }
 
 }
 
-case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaServiceDescription) {
+case class Play2ClientGenerator(version: PlayFrameworkVersion, ssd: ScalaService) {
 
   def generate(): String = {
     ApidocHeaders(ssd.serviceDescription.userAgent).toJavaString + "\n" +

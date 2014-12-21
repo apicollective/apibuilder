@@ -1,19 +1,19 @@
 package models
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Operation, Resource, ServiceDescription, Type, TypeKind, TypeInstance}
-import generator.ScalaServiceDescription
+import com.gilt.apidocspec.models.{Container, Operation, Resource, Service, Type, TypeKind, TypeInstance}
+import generator.ScalaService
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
-  def getResource(service: ServiceDescription, name: String): Resource = {
+  def getResource(service: Service, name: String): Resource = {
     service.resources.find { _.model.name == name }.getOrElse {
       sys.error(s"Could not find $name resource")
     }
   }
 
-  def getMethod(service: ServiceDescription, resourceName: String, method: String, path: String): Operation = {
+  def getMethod(service: Service, resourceName: String, method: String, path: String): Operation = {
     val resource = getResource(service, resourceName)
     resource.operations.filter { op => op.method == method && op.path == path }.headOption.getOrElse {
       val errorMsg = s"Operations found for $resourceName\n" + resource.operations.map { op =>
@@ -25,7 +25,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
   describe("with apidoc service") {
     lazy val service = TestHelper.parseFile(s"../api/api.json").serviceDescription.get
-    lazy val ssd = new ScalaServiceDescription(service)
+    lazy val ssd = new ScalaService(service)
 
     describe("users resource") {
       lazy val userResource = service.resources.find { _.model.name == "user" }.getOrElse {
@@ -96,7 +96,7 @@ class Play2RouteGeneratorSpec extends FunSpec with ShouldMatchers {
 
   describe("with reference-api service") {
     lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
-    lazy val ssd = new ScalaServiceDescription(service)
+    lazy val ssd = new ScalaService(service)
 
     it("normalizes explicit paths that match resource name") {
       val resource = getResource(service, "organization")

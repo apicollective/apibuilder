@@ -3,7 +3,7 @@ package core
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
-class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
+class ServiceDefaultsSpec extends FunSpec with Matchers {
 
   it("accepts defaults for date-iso8601") {
     val json = """
@@ -19,7 +19,7 @@ class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
 
     val createdAt = validator.serviceDescription.get.models.head.fields.find { _.name == "created_at" }.get
@@ -41,7 +41,7 @@ class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
 
     val isActiveField = validator.serviceDescription.get.models.head.fields.find { _.name == "is_active" }.get
@@ -67,7 +67,7 @@ class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("user.is_active Value[1] is not a valid boolean. Must be one of: true, false")
   }
 
@@ -103,7 +103,7 @@ class ServiceDescriptionDefaultsSpec extends FunSpec with Matchers {
       ]
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString should be("Model[user] cannot be mapped to more than one resource")
   }
 

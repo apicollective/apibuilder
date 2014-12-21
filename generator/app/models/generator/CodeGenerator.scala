@@ -1,7 +1,7 @@
 package generator
 
-import com.gilt.apidocgenerator.models.ServiceDescription
+import com.gilt.apidocspec.models.Service
 
 trait CodeGenerator {
-  def generate(sd: ServiceDescription): String
+  def generate(sd: Service): String
 }

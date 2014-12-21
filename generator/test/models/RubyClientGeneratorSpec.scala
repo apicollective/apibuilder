@@ -1,7 +1,7 @@
 package models
 
 import java.io.File
-import com.gilt.apidocgenerator.models.{Enum, EnumValue}
+import com.gilt.apidocspec.models.{Enum, EnumValue}
 import core._
 
 import org.scalatest.{ FunSpec, Matchers }
@@ -56,7 +56,7 @@ class RubyClientGeneratorSpec extends FunSpec with Matchers {
 
   it("generate ruby") {
     val json = io.Source.fromFile(new File("reference-api/api.json")).getLines.mkString("\n")
-    val generator = RubyClientGenerator(ServiceDescriptionBuilder(json), "gilt 0.0.1-test")
+    val generator = RubyClientGenerator(ServiceBuilder(json), "gilt 0.0.1-test")
     TestHelper.assertEqualsFile("test/resources/ruby-client-generator-gilt-0.0.1-test.txt", generator.generate())
   }
 }

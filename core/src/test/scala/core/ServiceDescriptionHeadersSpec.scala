@@ -1,10 +1,10 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
+import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
-class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
+class ServiceHeadersSpec extends FunSpec with Matchers {
 
   describe("valid service") {
     val baseJson = """
@@ -31,7 +31,7 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
   """
 
     it("parses headers") {
-      val validator = ServiceDescriptionValidator(baseJson)
+      val validator = ServiceValidator(baseJson)
       validator.errors.mkString("") should be("")
       val ctEnum = validator.serviceDescription.get.enums.find(_.name == "content_type").get
 
@@ -80,25 +80,25 @@ class ServiceDescriptionHeadersSpec extends FunSpec with Matchers {
 
     it("requires name") {
       val json = baseJson.format("""{ "type": "string" }""")
-      val validator = ServiceDescriptionValidator(json)
+      val validator = ServiceValidator(json)
       validator.errors.mkString("") should be("All headers must have a name")
     }
 
     it("requires type") {
       val json = baseJson.format("""{ "name": "no_type" }""")
-      val validator = ServiceDescriptionValidator(json)
+      val validator = ServiceValidator(json)
       validator.errors.mkString("") should be("All headers must have a type")
     }
 
     it("validates type") {
       val json = baseJson.format("""{ "name": "invalid_type", "type": "integer" }""")
-      val validator = ServiceDescriptionValidator(json)
+      val validator = ServiceValidator(json)
       validator.errors.mkString("") should be("Header[invalid_type] type[integer] is invalid: Must be a string or the name of an enum")
     }
 
     it("validates duplicates") {
       val json = baseJson.format("""{ "name": "dup", "type": "string" }, { "name": "dup", "type": "string" }""")
-      val validator = ServiceDescriptionValidator(json)
+      val validator = ServiceValidator(json)
       validator.errors.mkString("") should be("Header[dup] appears more than once")
     }
 

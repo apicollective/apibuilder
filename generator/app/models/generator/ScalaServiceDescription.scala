@@ -1,7 +1,7 @@
 package generator
 
 import lib.{Methods, Primitives}
-import com.gilt.apidocgenerator.models._
+import com.gilt.apidocspec.models._
 import core._
 import lib.Text._
 
@@ -89,7 +89,7 @@ object ScalaUtil {
   }
 }
 
-class ScalaServiceDescription(val serviceDescription: ServiceDescription) {
+class ScalaService(val serviceDescription: Service) {
 
   val name = ScalaUtil.toClassName(serviceDescription.name)
 
@@ -141,7 +141,7 @@ case class ScalaHeader(name: String, value: String) {
 }
 
 
-class ScalaModel(val ssd: ScalaServiceDescription, val model: Model) {
+class ScalaModel(val ssd: ScalaService, val model: Model) {
 
   val name: String = ScalaUtil.toClassName(model.name)
 
@@ -190,7 +190,7 @@ class ScalaEnumValue(value: EnumValue) {
 
 }
 
-class ScalaResource(ssd: ScalaServiceDescription, resource: Resource) {
+class ScalaResource(ssd: ScalaService, resource: Resource) {
   val model = new ScalaModel(ssd, resource.model)
 
   val packageName: String = ssd.packageName
@@ -202,7 +202,7 @@ class ScalaResource(ssd: ScalaServiceDescription, resource: Resource) {
   }
 }
 
-class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operation: Operation, resource: ScalaResource) {
+class ScalaOperation(val ssd: ScalaService, model: ScalaModel, operation: Operation, resource: ScalaResource) {
 
   val method: String = operation.method
 
@@ -272,7 +272,7 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
 
 }
 
-class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Response) {
+class ScalaResponse(ssd: ScalaService, method: String, response: Response) {
 
   val isOption = response.`type`.container match {
     case Container.Singleton | Container.Option => !Methods.isJsonDocumentMethod(method)
@@ -306,7 +306,7 @@ class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Resp
 
 }
 
-class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) {
+class ScalaField(ssd: ScalaService, modelName: String, field: Field) {
 
   def name: String = ScalaUtil.quoteNameIfKeyword(snakeToCamelCase(field.name))
 
@@ -327,7 +327,7 @@ class ScalaField(ssd: ScalaServiceDescription, modelName: String, field: Field) 
   def definition: String = datatype.definition(field.`type`, name, isOption)
 }
 
-class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
+class ScalaParameter(ssd: ScalaService, param: Parameter) {
 
   def name: String = ScalaUtil.toVariable(param.name)
 

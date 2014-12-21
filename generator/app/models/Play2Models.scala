@@ -1,22 +1,22 @@
 package models
 
-import com.gilt.apidocgenerator.models.ServiceDescription
+import com.gilt.apidocspec.models.Service
 import core._
 import lib.Text._
-import generator.{ScalaEnums, ScalaCaseClasses, ScalaServiceDescription, CodeGenerator}
+import generator.{ScalaEnums, ScalaCaseClasses, ScalaService, CodeGenerator}
 
 object Play2Models extends CodeGenerator {
 
-  override def generate(sd: ServiceDescription): String = {
+  override def generate(sd: Service): String = {
     apply(sd)
   }
 
-  def apply(sd: ServiceDescription): String = {
-    apply(new ScalaServiceDescription(sd))
+  def apply(sd: Service): String = {
+    apply(new ScalaService(sd))
   }
 
   def apply(
-    ssd: ScalaServiceDescription,
+    ssd: ScalaService,
     addHeader: Boolean = true
   ): String = {
     val caseClasses = ScalaCaseClasses.generate(ssd, addHeader = false)

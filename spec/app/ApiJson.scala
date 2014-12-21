@@ -77,7 +77,7 @@ package com.gilt.apidocspec.models {
 
   case class Service(
     name: String,
-    baseUrl: String,
+    baseUrl: scala.Option[String] = None,
     description: scala.Option[String] = None,
     headers: Seq[com.gilt.apidocspec.models.Header],
     enums: Map[String, com.gilt.apidocspec.models.Enum],
@@ -381,7 +381,7 @@ package com.gilt.apidocspec.models {
     implicit def jsonReadsApidocspecService: play.api.libs.json.Reads[Service] = {
       (
         (__ \ "name").read[String] and
-        (__ \ "base_url").read[String] and
+        (__ \ "base_url").readNullable[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "headers").readNullable[Seq[com.gilt.apidocspec.models.Header]].map(_.getOrElse(Nil)) and
         (__ \ "enums").readNullable[Map[String, com.gilt.apidocspec.models.Enum]].map(_.getOrElse(Map.empty)) and
@@ -393,7 +393,7 @@ package com.gilt.apidocspec.models {
     implicit def jsonWritesApidocspecService: play.api.libs.json.Writes[Service] = {
       (
         (__ \ "name").write[String] and
-        (__ \ "base_url").write[String] and
+        (__ \ "base_url").write[scala.Option[String]] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "headers").write[Seq[com.gilt.apidocspec.models.Header]] and
         (__ \ "enums").write[Map[String, com.gilt.apidocspec.models.Enum]] and

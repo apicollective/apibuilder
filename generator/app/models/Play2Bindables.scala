@@ -1,12 +1,12 @@
 package models
 
 import lib.Text
-import generator.{ScalaEnum, ScalaServiceDescription}
+import generator.{ScalaEnum, ScalaService}
 
 object Play2Bindables {
 
   def build(
-    ssd: ScalaServiceDescription
+    ssd: ScalaService
   ): String = {
     import lib.Text._
 

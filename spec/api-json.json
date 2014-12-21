@@ -31,7 +31,7 @@
 	"service": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
-		{ "name": "base_url", "type": "string" },
+		{ "name": "base_url", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "headers", "type": "[header]" },
 		{ "name": "enums", "type": "map[enum]" },

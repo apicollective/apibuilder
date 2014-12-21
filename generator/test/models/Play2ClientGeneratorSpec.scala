@@ -1,6 +1,6 @@
 package models
 
-import generator.{ScalaDataType, ScalaServiceDescription, ScalaClientMethodGenerator, ScalaClientMethodConfigs}
+import generator.{ScalaDataType, ScalaService, ScalaClientMethodGenerator, ScalaClientMethodConfigs}
 import core._
 import org.scalatest.{ShouldMatchers, FunSpec}
 
@@ -12,7 +12,7 @@ class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
 
   it("errorTypeClass") {
     val service = TestHelper.parseFile("../api/api.json").serviceDescription.get
-    val ssd = new ScalaServiceDescription(service)
+    val ssd = new ScalaService(service)
     val resource = ssd.resources.find(_.model.name == "Organization").get
     val operation = resource.operations.find(_.method == "POST").get
     val errorResponse = operation.responses.find(_.code == 409).get
@@ -53,9 +53,9 @@ class Play2ClientGeneratorSpec extends FunSpec with ShouldMatchers {
 
     """
 
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val ssd = new ScalaServiceDescription(validator.serviceDescription.get)
+    val ssd = new ScalaService(validator.serviceDescription.get)
     ScalaClientMethodGenerator(clientMethodConfig, ssd).errorPackage() should be("")
   }
 

@@ -1,9 +1,9 @@
 package core
 
-import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
+import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
-class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
+class ServiceInternalReferencesSpec extends FunSpec with Matchers {
 
   it("Validates circular reference") {
     val json = """
@@ -25,7 +25,7 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
 
     val barField = validator.serviceDescription.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get
@@ -59,7 +59,7 @@ class ServiceDescriptionInternalReferencesSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models.find(_.name == "userVariant").get
     val parentField = model.fields.find(_.name == "parent").get

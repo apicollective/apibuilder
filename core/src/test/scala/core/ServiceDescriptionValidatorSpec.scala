@@ -1,25 +1,25 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
+import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
-class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
+class ServiceValidatorSpec extends FunSpec with Matchers {
 
   it("should detect empty inputs") {
-    val validator = ServiceDescriptionValidator("")
+    val validator = ServiceValidator("")
     validator.isValid should be(false)
     validator.errors.mkString should be("No Data")
   }
 
   it("should detect invalid json") {
-    val validator = ServiceDescriptionValidator(" { ")
+    val validator = ServiceValidator(" { ")
     validator.isValid should be(false)
     validator.errors.mkString.indexOf("expected close marker") should be >= 0
   }
 
   it("should detect all required fields") {
-    val validator = ServiceDescriptionValidator(" { } ")
+    val validator = ServiceValidator(" { } ")
     validator.isValid should be(false)
     validator.errors.mkString should be("Missing: name")
   }
@@ -31,7 +31,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000"
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString should be("Name[5@4] must start with a letter")
   }
 
@@ -43,7 +43,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString should be("base_url[http://localhost:9000/] must not end with a '/'")
   }
 
@@ -58,7 +58,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString should be("Model[user] must have at least one field")
     validator.isValid should be(false)
   }
@@ -77,7 +77,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString should be("user.foo has invalid type. There is no model, enum, nor datatype named[foo]")
     validator.isValid should be(false)
   }
@@ -95,7 +95,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString should be("")
     validator.isValid should be(true)
   }
@@ -125,7 +125,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       ]
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
     val response = validator.serviceDescription.get.resources.head.operations.head.responses.head
     response.code should be(204)
@@ -163,8 +163,8 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    ServiceDescriptionValidator(json.format("user")).isValid should be(true)
-    ServiceDescriptionValidator(json.format("unknown_model")).isValid should be(false)
+    ServiceValidator(json.format("user")).isValid should be(true)
+    ServiceValidator(json.format("unknown_model")).isValid should be(false)
   }
 
   it("includes path parameter in operations") {
@@ -192,7 +192,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
       ]
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
     val op = validator.serviceDescription.get.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
@@ -228,7 +228,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("Resource[user] GET path parameter[id] is specified as optional. All path parameters are required")
   }
 
@@ -258,7 +258,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
     val op = validator.serviceDescription.get.resources.head.operations.head
     val idParam = op.parameters.head
@@ -297,7 +297,7 @@ class ServiceDescriptionValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("Resource[tag] POST /tags: Parameter[tags] has an invalid type[tags]")
   }
 

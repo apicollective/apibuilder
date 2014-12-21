@@ -1,4 +1,4 @@
-import com.gilt.apidocgenerator.models.json._
+import com.gilt.apidocspec.models.json._
 import lib.Validation
 import com.gilt.apidoc.models.json._
 import play.api._

@@ -1,7 +1,7 @@
 package models
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Model, Parameter, ParameterLocation, Operation, Resource, Type, TypeInstance, TypeKind}
+import com.gilt.apidocspec.models.{Container, Model, Parameter, ParameterLocation, Operation, Resource, Type, TypeInstance, TypeKind}
 import core._
 import generator._
 import org.scalatest.{ ShouldMatchers, FunSpec }
@@ -9,7 +9,7 @@ import org.scalatest.{ ShouldMatchers, FunSpec }
 class GeneratorUtilSpec extends FunSpec with ShouldMatchers {
 
   private lazy val service = TestHelper.parseFile("reference-api/api.json").serviceDescription.get
-  private lazy val ssd = new ScalaServiceDescription(service)
+  private lazy val ssd = new ScalaService(service)
 
   private val play2Util = GeneratorUtil(new ScalaClientMethodConfigs.Play {
     override def responseClass = PlayFrameworkVersions.V2_2_x.config.responseClass

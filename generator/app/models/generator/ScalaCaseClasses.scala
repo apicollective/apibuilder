@@ -1,18 +1,18 @@
 package generator
 
 import models.ApidocHeaders
-import com.gilt.apidocgenerator.models.ServiceDescription
+import com.gilt.apidocspec.models.Service
 import core._
 import lib.Text._
 
 object ScalaCaseClasses extends CodeGenerator {
 
-  def generate(sd: ServiceDescription): String = {
-    generate(new ScalaServiceDescription(sd))
+  def generate(sd: Service): String = {
+    generate(new ScalaService(sd))
   }
 
   def generate(
-    ssd: ScalaServiceDescription,
+    ssd: ScalaService,
     genEnums: Seq[ScalaEnum] => String = generatePlayEnums,
     addHeader: Boolean = true
   ): String = {

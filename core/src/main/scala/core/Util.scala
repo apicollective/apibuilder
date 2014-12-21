@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocgenerator.models.Enum
+import com.gilt.apidocspec.models.Enum
 
 object Util {
 
@@ -17,10 +17,6 @@ object Util {
 
   def isValidEnumValue(enum: Enum, value: String): Boolean = {
     enum.values.map(_.name).contains(value)
-  }
-
-  def assertValidEnumValue(enum: Enum, value: String) {
-    require(isValidEnumValue(enum, value), s"Enum[${enum.name}] does not have a value[${value}]. Valid values are: " + enum.values.map(_.name).mkString(", "))
   }
 
 }

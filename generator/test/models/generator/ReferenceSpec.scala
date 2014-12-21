@@ -1,13 +1,13 @@
 package generator
 
 import models.TestHelper
-import core.ServiceDescriptionValidator
+import core.ServiceValidator
 import org.scalatest.{ FunSpec, Matchers }
 
 class ReferenceSpec extends FunSpec with Matchers {
 
   lazy val service = TestHelper.parseFile(s"reference-api/api.json").serviceDescription.get
-  lazy val ssd = new ScalaServiceDescription(service)
+  lazy val ssd = new ScalaService(service)
 
   it("user case classes") {
     val model = ssd.models.find(_.name == "User").getOrElse { sys.error("Failed to find user model") }

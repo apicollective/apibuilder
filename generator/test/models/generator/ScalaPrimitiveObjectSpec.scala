@@ -1,9 +1,9 @@
 package generator
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models._
+import com.gilt.apidocspec.models._
 import models.TestHelper
-import core.ServiceDescriptionBuilder
+import core.ServiceBuilder
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class ScalaPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
@@ -25,8 +25,8 @@ class ScalaPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
     }
     """
 
-    def ssd(typeString: String): ScalaServiceDescription = {
-      new ScalaServiceDescription(ServiceDescriptionBuilder(baseJson.format(typeString)))
+    def ssd(typeString: String): ScalaService = {
+      new ScalaService(ServiceBuilder(baseJson.format(typeString)))
     }
 
     def dataField(typeString: String): ScalaField = {
@@ -98,8 +98,8 @@ class ScalaPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
     }
     """
 
-    def ssd(typeString: String): ScalaServiceDescription = {
-      new ScalaServiceDescription(ServiceDescriptionBuilder(baseJson.format(typeString)))
+    def ssd(typeString: String): ScalaService = {
+      new ScalaService(ServiceBuilder(baseJson.format(typeString)))
     }
 
     def operation(typeString: String): ScalaOperation = {

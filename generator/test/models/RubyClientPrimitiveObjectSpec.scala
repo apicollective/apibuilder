@@ -1,8 +1,8 @@
 package models
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models._
-import core.ServiceDescriptionBuilder
+import com.gilt.apidocspec.models._
+import core.ServiceBuilder
 import org.scalatest.{ ShouldMatchers, FunSpec }
 
 class RubyClientPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
@@ -24,8 +24,8 @@ class RubyClientPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
     }
     """
 
-    def sd(typeString: String): ServiceDescription = {
-      ServiceDescriptionBuilder(baseJson.format(typeString))
+    def sd(typeString: String): Service = {
+      ServiceBuilder(baseJson.format(typeString))
     }
 
     def model(typeString: String): Model = {
@@ -101,8 +101,8 @@ class RubyClientPrimitiveObjectSpec extends FunSpec with ShouldMatchers {
     }
     """
 
-    def sd(typeString: String): ServiceDescription = {
-      ServiceDescriptionBuilder(baseJson.format(typeString))
+    def sd(typeString: String): Service = {
+      ServiceBuilder(baseJson.format(typeString))
     }
 
     def operation(typeString: String): Operation = {

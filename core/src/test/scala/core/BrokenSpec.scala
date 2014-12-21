@@ -1,7 +1,7 @@
 package core
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
+import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
@@ -22,7 +22,7 @@ class BrokenSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString should be("")
     val fields = validator.serviceDescription.get.models.head.fields
     fields.find { _.name == "guid" }.get.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Uuid.toString)))
@@ -61,7 +61,7 @@ class BrokenSpec extends FunSpec with Matchers {
       ]
     }
     """
-    val validator = ServiceDescriptionValidator(json)
+    val validator = ServiceValidator(json)
     validator.errors.mkString should be("")
 
     val operation = validator.serviceDescription.get.resources.head.operations.head

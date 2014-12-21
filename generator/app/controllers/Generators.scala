@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidocgenerator.models.Generator
-import com.gilt.apidocgenerator.models.json._
+import com.gilt.apidocspec.models.Generator
+import com.gilt.apidocspec.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import generator.{CodeGenerator, CodeGenTarget}

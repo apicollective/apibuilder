@@ -1,11 +1,10 @@
 package core
 
-import lib.{PrimitiveMetadata, Primitives}
-import com.gilt.apidocgenerator.models._
+import lib.{Datatype, PrimitiveMetadata, Primitives, Type, TypeKind}
 
 case class TypeResolver(
-  enumNames: Seq[String] = Seq.empty,
-  modelNames: Seq[String] = Seq.empty
+  enumNames: Iterable[String] = Seq.empty,
+  modelNames: Iterable[String] = Seq.empty
 ) {
 
   /**

@@ -1,6 +1,6 @@
 package models.ning
 
-import com.gilt.apidocgenerator.models.ServiceDescription
+import com.gilt.apidocspec.models.Service
 import core._
 import generator._
 import models._
@@ -24,25 +24,25 @@ object NingVersions {
  * http client.
  */
 object Ning18ClientGenerator extends CodeGenerator {
-  override def generate(sd: ServiceDescription): String = {
+  override def generate(sd: Service): String = {
     NingClientGenerator.generate(NingVersions.V1_8_x, sd)
   }
 }
 
 object NingClientGenerator {
 
-  def generate(version: NingVersion, sd: ServiceDescription): String = {
-    val ssd = new ScalaServiceDescription(sd)
+  def generate(version: NingVersion, sd: Service): String = {
+    val ssd = new ScalaService(sd)
     generate(version, ssd)
   }
 
-  def generate(version: NingVersion, ssd: ScalaServiceDescription): String = {
+  def generate(version: NingVersion, ssd: ScalaService): String = {
     NingClientGenerator(version, ssd).generate()
   }
 
 }
 
-case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescription) {
+case class NingClientGenerator(version: NingVersion, ssd: ScalaService) {
 
   def generate(): String = {
     ApidocHeaders(ssd.serviceDescription.userAgent).toJavaString + "\n" +

@@ -1,12 +1,11 @@
 package core
 
-import lib.{PrimitiveMetadata, Primitives}
+import lib.{Datatype, PrimitiveMetadata, Primitives, Type, TypeKind}
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
-import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
 import scala.util.{Failure, Success, Try}
 
 case class TypeValidatorEnums(name: String, values: Seq[String])

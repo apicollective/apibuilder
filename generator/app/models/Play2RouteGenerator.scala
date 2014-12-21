@@ -1,26 +1,26 @@
 package models
 
 import lib.Primitives
-import com.gilt.apidocgenerator.models._
+import com.gilt.apidocspec.models._
 import core._
-import generator.{ScalaDataType, GeneratorUtil, ScalaServiceDescription, ScalaUtil, CodeGenerator}
+import generator.{ScalaDataType, GeneratorUtil, ScalaService, ScalaUtil, CodeGenerator}
 
 object Play2RouteGenerator extends CodeGenerator {
 
   def apply(json: String): String = {
-    generate(ServiceDescriptionBuilder(json))
+    generate(ServiceBuilder(json))
   }
 
-  def apply(sd: ServiceDescription): Play2RouteGenerator = {
-    Play2RouteGenerator(new ScalaServiceDescription(sd))
+  def apply(sd: Service): Play2RouteGenerator = {
+    Play2RouteGenerator(new ScalaService(sd))
   }
 
-  override def generate(sd: ServiceDescription): String = {
-    val ssd = new ScalaServiceDescription(sd)
+  override def generate(sd: Service): String = {
+    val ssd = new ScalaService(sd)
     generate(ssd)
   }
 
-  def generate(ssd: ScalaServiceDescription): String = {
+  def generate(ssd: ScalaService): String = {
     new Play2RouteGenerator(ssd).generate.getOrElse("")
   }
 }
@@ -30,7 +30,7 @@ object Play2RouteGenerator extends CodeGenerator {
  * Generates a Play routes file based on the service description
  * from api.json
  */
-case class Play2RouteGenerator(scalaService: ScalaServiceDescription) {
+case class Play2RouteGenerator(scalaService: ScalaService) {
 
   private val GlobalPad = 5
 
@@ -69,7 +69,7 @@ case class Play2RouteGenerator(scalaService: ScalaServiceDescription) {
   }
 }
 
-private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operation, resource: Resource) {
+private[models] case class Play2Route(ssd: ScalaService, op: Operation, resource: Resource) {
 
   val verb = op.method
   val url = op.path
@@ -150,11 +150,11 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
     }
   }
 
-  private def parameterWithType(ssd: ScalaServiceDescription, param: Parameter): String = {
+  private def parameterWithType(ssd: ScalaService, param: Parameter): String = {
     s"${param.name}: ${scalaDataType(ssd, param)}"
   }
 
-  private def scalaDataType(ssd: ScalaServiceDescription, param: Parameter): String = {
+  private def scalaDataType(ssd: ScalaService, param: Parameter): String = {
     val datatype = ssd.scalaDataType(param.`type`)
     param.`type`.container match {
       case Container.Singleton | Container.List | Container.Map | Container.Union => {

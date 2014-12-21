@@ -1,26 +1,25 @@
 package core
 
 import lib.{Primitives, Text}
-import com.gilt.apidocgenerator.models.Container
 import play.api.libs.json._
 
 /**
  * Just parses json with minimal validation - build to provide a way to
  * generate meaningful validation messages back to user. Basic flow
  *
- * JSON => InternalServiceDescription => ServiceDescription
+ * JSON => InternalService => Service
  *
  */
-private[core] object InternalServiceDescription {
+private[core] object InternalService {
 
-  def apply(apiJson: String): InternalServiceDescription = {
+  def apply(apiJson: String): InternalService = {
     val jsValue = Json.parse(apiJson)
-    InternalServiceDescription(jsValue)
+    InternalService(jsValue)
   }
 
 }
 
-private[core] case class InternalServiceDescription(json: JsValue) {
+private[core] case class InternalService(json: JsValue) {
 
   lazy val name = (json \ "name").asOpt[String]
   lazy val baseUrl = (json \ "base_url").asOpt[String]

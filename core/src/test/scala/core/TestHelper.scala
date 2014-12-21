@@ -16,9 +16,9 @@ object TestHelper {
     scala.io.Source.fromFile(path).getLines.mkString("\n")
   }
 
-  def parseFile(filename: String): ServiceDescriptionValidator = {
+  def parseFile(filename: String): ServiceValidator = {
     val contents = readFile(filename)
-    val validator = ServiceDescriptionValidator(contents)
+    val validator = ServiceValidator(contents)
     if (!validator.isValid) {
       sys.error(s"Invalid api.json file[${filename}]: " + validator.errors.mkString("\n"))
     }

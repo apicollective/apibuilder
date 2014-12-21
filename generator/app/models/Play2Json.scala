@@ -1,6 +1,6 @@
 package models
 
-import com.gilt.apidocgenerator.models.Container
+import com.gilt.apidocspec.models.Container
 import lib.Text._
 import generator.ScalaModel
 

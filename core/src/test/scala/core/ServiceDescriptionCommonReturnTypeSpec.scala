@@ -3,7 +3,7 @@ package core
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
-class ServiceDescriptionCommonReturnTypeSpec extends FunSpec with Matchers {
+class ServiceCommonReturnTypeSpec extends FunSpec with Matchers {
 
   it("all 2xx return types must share a common types") {
     val json = """
@@ -39,8 +39,8 @@ class ServiceDescriptionCommonReturnTypeSpec extends FunSpec with Matchers {
       ]
     }
     """
-    ServiceDescriptionValidator(json.format("user")).errors.mkString should be("")
-    ServiceDescriptionValidator(json.format("[user]")).errors.mkString should be("Resource[user] cannot have varying response types for 2xx response codes: [user], user")
+    ServiceValidator(json.format("user")).errors.mkString should be("")
+    ServiceValidator(json.format("[user]")).errors.mkString should be("Resource[user] cannot have varying response types for 2xx response codes: [user], user")
   }
 
 }

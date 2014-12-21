@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocgenerator.models.{Container, Datatype, Type, TypeKind}
+import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class InternalDatatypeSpec extends FunSpec with Matchers {
