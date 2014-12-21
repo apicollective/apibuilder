@@ -1,6 +1,5 @@
 package lib
 
-import core.VersionTag
 import com.gilt.apidocgenerator.models.Container
 
 case class ExampleService(key: String) {

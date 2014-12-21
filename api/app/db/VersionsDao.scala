@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.{Service, User, Version, Visibility}
-import core.VersionTag
+import lib.VersionTag
 import anorm._
 import play.api.db._
 import play.api.libs.json._

@@ -12,19 +12,6 @@ class UtilSpec extends FunSpec with Matchers {
     sys.error("No visibility enum found")
   }
 
-  it("isJsonDocumentMethod") {
-    Util.isJsonDocumentMethod("GET") should be(false)
-    Util.isJsonDocumentMethod("get") should be(false)
-    Util.isJsonDocumentMethod("DELETE") should be(false)
-    Util.isJsonDocumentMethod("delete") should be(false)
-    Util.isJsonDocumentMethod("POST") should be(true)
-    Util.isJsonDocumentMethod("post") should be(true)
-    Util.isJsonDocumentMethod("PUT") should be(true)
-    Util.isJsonDocumentMethod("put") should be(true)
-    Util.isJsonDocumentMethod("PATCH") should be(true)
-    Util.isJsonDocumentMethod("patch") should be(true)
-  }
-
   it("namedParametersInPath") {
     Util.namedParametersInPath("/users") should be(Seq.empty)
     Util.namedParametersInPath("/users/:guid") should be(Seq("guid"))

@@ -1,6 +1,6 @@
 package generator
 
-import lib.Primitives
+import lib.{Methods, Primitives}
 import com.gilt.apidocgenerator.models._
 import core._
 import lib.Text._
@@ -275,7 +275,7 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
 class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Response) {
 
   val isOption = response.`type`.container match {
-    case Container.Singleton => !Util.isJsonDocumentMethod(method)
+    case Container.Singleton => !Methods.isJsonDocumentMethod(method)
     case Container.List | Container.Map => false
     case Container.UNDEFINED(_) => false
   }

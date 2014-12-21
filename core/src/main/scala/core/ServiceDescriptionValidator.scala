@@ -1,6 +1,6 @@
 package core
 
-import lib.{Primitives, Text}
+import lib.{Methods, Primitives, Text}
 import com.gilt.apidocgenerator.models.{Container, Field, ServiceDescription, Type, TypeInstance, TypeKind}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
@@ -403,7 +403,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
     }
 
     val invalidMethods = internalServiceDescription.get.resources.flatMap { resource =>
-      resource.operations.filter(op => !op.body.isEmpty && !op.method.isEmpty && !Util.isJsonDocumentMethod(op.method.get)).map { op =>
+      resource.operations.filter(op => !op.body.isEmpty && !op.method.isEmpty && !Methods.isJsonDocumentMethod(op.method.get)).map { op =>
         s"${opLabel(resource, op)}: Cannot specify body for HTTP method[${op.method.get}]"
       }
     }

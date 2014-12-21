@@ -2,7 +2,7 @@ package models
 
 import com.gilt.apidocgenerator.models._
 import core._
-import lib.Primitives
+import lib.{Methods, Primitives}
 import lib.Text._
 import generator.{GeneratorUtil, CodeGenerator, ScalaUtil}
 import scala.collection.mutable.ListBuffer
@@ -243,7 +243,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
       val paramStrings = ListBuffer[String]()
       pathParams.map(_.name).foreach { n => paramStrings.append(RubyUtil.toVariable(n)) }
 
-      if (Util.isJsonDocumentMethod(op.method)) {
+      if (Methods.isJsonDocumentMethod(op.method)) {
         op.body.map(_.`type`) match {
           case None => paramStrings.append("hash")
 
@@ -298,7 +298,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
         requestBuilder.append(".with_query(query)")
       }
 
-      if (Util.isJsonDocumentMethod(op.method)) {
+      if (Methods.isJsonDocumentMethod(op.method)) {
         op.body.map(_.`type`) match {
           case None => {
             sb.append("        HttpClient::Preconditions.assert_class('hash', hash, Hash)")
