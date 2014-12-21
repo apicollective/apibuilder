@@ -275,8 +275,8 @@ class ScalaOperation(val ssd: ScalaServiceDescription, model: ScalaModel, operat
 class ScalaResponse(ssd: ScalaServiceDescription, method: String, response: Response) {
 
   val isOption = response.`type`.container match {
-    case Container.Singleton => !Methods.isJsonDocumentMethod(method)
-    case Container.List | Container.Map => false
+    case Container.Singleton | Container.Option => !Methods.isJsonDocumentMethod(method)
+    case Container.List | Container.Map | Container.Union => false
     case Container.UNDEFINED(_) => false
   }
 
@@ -339,8 +339,13 @@ class ScalaParameter(ssd: ScalaServiceDescription, param: Parameter) {
   def description: String = param.description.getOrElse(name)
 
   val isSingleton = param.`type`.container match {
-    case Container.Singleton => true
+    case Container.Singleton | Container.Option => true
     case Container.List | Container.Map => false
+    case Container.Union => {
+      // TODO: union type
+      // TODO: If all of the union types are singletons, then this is a singleton
+      false
+    }
     case Container.UNDEFINED(_) => false
   }
 
@@ -365,8 +370,9 @@ sealed abstract class ScalaDataType(val name: String) {
     val varName = ScalaUtil.quoteNameIfKeyword(originalVarName)
     if (optional) {
       typeInstance.container match {
-        case Container.Singleton => s"$varName: scala.Option[$name]" + " = " + nilValue(typeInstance)
+        case Container.Singleton | Container.Option => s"$varName: scala.Option[$name]" + " = " + nilValue(typeInstance)
         case Container.List | Container.Map => s"$varName: $name = " + nilValue(typeInstance)
+        case Container.Union => sys.error("TODO: union type")
         case Container.UNDEFINED(container) => sys.error(s"Unknown container[$container]")
       }
     } else {
@@ -375,9 +381,12 @@ sealed abstract class ScalaDataType(val name: String) {
   }
 
   def nilValue(typeInstance: TypeInstance): String = typeInstance.container match {
-    case Container.Singleton => "None"
+    case Container.Singleton | Container.Option => "None"
     case Container.List => "Nil"
     case Container.Map => "Map.empty"
+    case Container.Union => {
+      sys.error("TODO: union type")
+    }
     case Container.UNDEFINED(container) => sys.error(s"Invalid container[$container]")
   }
 

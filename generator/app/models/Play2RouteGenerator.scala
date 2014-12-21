@@ -157,12 +157,16 @@ private[models] case class Play2Route(ssd: ScalaServiceDescription, op: Operatio
   private def scalaDataType(ssd: ScalaServiceDescription, param: Parameter): String = {
     val datatype = ssd.scalaDataType(param.`type`)
     param.`type`.container match {
-      case Container.Singleton | Container.List | Container.Map => {
+      case Container.Singleton | Container.List | Container.Map | Container.Union => {
         if (param.required) {
           datatype.name
         } else {
           s"scala.Option[${datatype.name}]"
         }
+      }
+
+      case Container.Option => {
+        s"scala.Option[${datatype.name}]"
       }
 
       case Container.UNDEFINED(container) => {

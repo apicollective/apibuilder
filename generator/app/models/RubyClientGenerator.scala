@@ -590,42 +590,6 @@ case class RubyClientGenerator(service: ServiceDescription) {
     )
   }
 
-  private def parseModelArgument(name: String, container: Container, modelName: String, required: Boolean): String = {
-    val value = s"opts.delete(:$name)"
-    val klass = qualifiedClassName(modelName)
-
-    val methodName = container match {
-      case Container.Singleton => "to_instance_singleton"
-      case Container.List => "to_instance_list"
-      case Container.Map => "to_instance_map"
-      case Container.UNDEFINED(container) => {
-        sys.error(s"Invalid container[$container]")
-      }
-    }
-
-    s"HttpClient::Helper.$methodName('$name', ${klass}, ${value}, :required => $required)"
-  }
-
-  private def parseEnumArgument(name: String, container: Container, enumName: String, required: Boolean, default: Option[String]): String = {
-    val value = default match {
-      case None => s"opts.delete(:$name)"
-      case Some(defaultValue) => s"opts.delete(:$name) || \'$defaultValue\'"
-    }
-
-    val klass = qualifiedClassName(enumName)
-
-    val methodName = container match {
-      case Container.Singleton => "to_klass_singleton"
-      case Container.List => "to_klass_list"
-      case Container.Map => "to_klass_map"
-      case Container.UNDEFINED(container) => {
-        sys.error(s"Invalid container[$container]")
-      }
-    }
-
-    s"HttpClient::Helper.$methodName('$name', $klass.apply($value), $klass, :required => $required)"
-  }
-
   private def rubyClass(pt: Primitives): String = {
     pt match {
       case Primitives.Boolean => "String"
@@ -709,8 +673,12 @@ case class RubyClientGenerator(service: ServiceDescription) {
 
     val assertStub = instance.container match {
       case Container.Singleton => "assert_class"
+      case Container.Option => "assert_class_or_nil"
       case Container.List => "assert_collection_of_class"
       case Container.Map => "assert_hash_of_class"
+      case Container.Union => {
+        sys.error("TODO: union type not yet supported in ruby clients")
+      }
       case Container.UNDEFINED(container) => {
         sys.error(s"Invalid container[$container]")
       }
@@ -771,7 +739,7 @@ case class RubyClientGenerator(service: ServiceDescription) {
     val varName = qualifiedClassName(name)
     val mapSingleObject = s" { |hash| $varName.new(hash) }"
     container match {
-      case Container.Singleton => {
+      case Container.Singleton | Container.Option => {
         mapSingleObject
       }
       case Container.List => {
@@ -779,6 +747,9 @@ case class RubyClientGenerator(service: ServiceDescription) {
       }
       case Container.Map => {
         s".inject({}) { |hash, o| hash[o[0]] = o[1].nil? ? nil : $varName.new(hash); hash }"
+      }
+      case Container.Union => {
+        sys.error("TODO: union type")
       }
       case Container.UNDEFINED(container) => {
         sys.error(s"Invalid container[$container]")

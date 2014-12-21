@@ -72,7 +72,7 @@ case class Play2Json(serviceName: String) {
                 case Container.Singleton => {
                   s"""(__ \\ "${field.originalName}").write[scala.Option[${field.datatype.name}]]"""
                 }
-                case Container.List | Container.Map => {
+                case Container.List | Container.Map | Container.Option | Container.Union => {
                   s"""(__ \\ "${field.originalName}").write[${field.datatype.name}]"""
                 }
                 case Container.UNDEFINED(container) => {
