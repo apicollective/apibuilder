@@ -1,7 +1,6 @@
 package controllers
 
 import models.MainTemplate
-import core.{ServiceDescriptionBuilder, ServiceDescriptionValidator}
 import lib.{UrlKey, Util}
 import com.gilt.apidoc.models.{Organization, User, Version, Visibility, WatchForm}
 import play.api._
@@ -30,6 +29,7 @@ object Versions extends Controller {
       versionsResponse <- request.api.versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
       versionOption <- request.api.versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
       generators <- request.api.Generators.get()
+      watches <- isWatching(request.api, request.user, orgKey, serviceKey)
     } yield {
       versionOption match {
 
@@ -45,9 +45,6 @@ object Versions extends Controller {
           val service = serviceResponse.headOption.getOrElse {
             sys.error(s"Could not find service for orgKey[$orgKey] and key[$serviceKey]")
           }
-
-          // TODO: Move this earlier based on user guid
-          val watches = isWatching(request.api, request.user, orgKey, serviceKey)
 
           val sd = ServiceDescriptionBuilder(v.json)
           val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
@@ -219,17 +216,19 @@ object Versions extends Controller {
     user: Option[User],
     orgKey: String,
     serviceKey: String
-  ): Boolean = {
+  ): Future[Boolean] = {
     user match {
-      case None => false
+      case None => Future { false }
       case Some(u) => {
-        Await.result(api.watches.get(
+        api.watches.get(
           userGuid = Some(u.guid),
           organizationKey = Some(orgKey),
           serviceKey = Some(serviceKey)
-        ), 5000.millis).headOption match {
-          case None => false
-          case Some(_) => true
+        ).map { watches =>
+          watches match {
+            case Nil => false
+            case _ => true
+          }
         }
       }
     }
