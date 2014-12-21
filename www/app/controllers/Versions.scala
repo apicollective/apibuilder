@@ -7,7 +7,7 @@ import com.gilt.apidocspec.models.{Service => SpecService}
 import com.gilt.apidocspec.models.json._
 import play.api._
 import play.api.mvc._
-import play.api.libs.json.Json
+import play.api.libs.json._
 import play.api.data._
 import play.api.data.Forms._
 import scala.concurrent.{Await, Future}
@@ -44,22 +44,29 @@ object Versions extends Controller {
         }
 
         case Some(v: Version) => {
-          val service = serviceResponse.headOption.getOrElse {
-            sys.error(s"Could not find service for orgKey[$orgKey] and key[$serviceKey]")
+          serviceResponse.headOption match {
+            case None => {
+              Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion)).flashing("warning" -> s"Service not found: ${serviceKey}")
+            }
+            case Some(service) => {
+              Json.parse(v.json).validate[SpecService] match {
+                case e: JsError => {
+                  sys.error("Invalid service json: " + e)
+                }
+                case s: JsSuccess[SpecService] => {
+                  val specService = s.get
+                  val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
+                    service = Some(service),
+                    version = Some(v.version),
+                    allServiceVersions = versionsResponse.map(_.version),
+                    specService = Some(specService),
+                    generators = generators.filter(_.enabled)
+                  )
+                  Ok(views.html.versions.show(tpl, specService, watches))
+                }
+              }
+            }
           }
-
-          val specService = Json.parse(v.json).asOpt[SpecService].getOrElse {
-            sys.error(s"Failed to parse service description for service[$service]: ${v.json}")
-          }
-
-          val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
-            service = Some(service),
-            version = Some(v.version),
-            allServiceVersions = versionsResponse.map(_.version),
-            specService = Some(specService),
-            generators = generators.filter(_.enabled)
-          )
-          Ok(views.html.versions.show(tpl, specService, watches))
         }
       }
     }
