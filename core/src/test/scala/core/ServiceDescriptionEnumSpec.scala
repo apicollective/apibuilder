@@ -1,6 +1,5 @@
 package core
 
-import lib.{Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceEnumSpec extends FunSpec with Matchers {
@@ -64,7 +63,7 @@ class ServiceEnumSpec extends FunSpec with Matchers {
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.serviceDescription.get.models.values.head.fields.find { _.name == "age_group" }.get
-    ageGroup.`type` should be(Datatype.Singleton(Type(TypeKind.Enum, "age_group")))
+    ageGroup.`type` should be("age_group")
   }
 
   it("validates that enum values do not start with numbers") {

@@ -1,6 +1,5 @@
 package core
 
-import lib.{Datatype, Primitives, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceResponsesSpec extends FunSpec with Matchers {
@@ -42,7 +41,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
     val response = validator.serviceDescription.get.resources.values.head.operations.head.responses("204")
-    response.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Unit.toString)))
+    response.`type` should be("unit")
   }
 
   it("does not allow explicit definition of 404, 5xx status codes") {
