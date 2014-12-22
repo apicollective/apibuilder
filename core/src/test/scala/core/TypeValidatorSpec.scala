@@ -1,7 +1,6 @@
 package core
 
-import lib.{PrimitiveMetadata, Primitives}
-import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
+import lib.{Datatype, PrimitiveMetadata, Primitives, Type, TypeKind}
 import java.util.UUID
 import org.scalatest.{FunSpec, Matchers}
 

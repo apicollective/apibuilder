@@ -8,7 +8,7 @@ import org.scalatest.Matchers
 class UtilSpec extends FunSpec with Matchers {
 
   lazy val service = TestHelper.parseFile(s"api/api.json").serviceDescription.get
-  private lazy val visibilityEnum = service.enums.find(_.name == "visibility").getOrElse {
+  private lazy val visibilityEnum = service.enums.get("visibility").getOrElse {
     sys.error("No visibility enum found")
   }
 
