@@ -1,7 +1,6 @@
 package core
 
 import com.gilt.apidocspec.models.Method
-import lib.{Datatype, Primitives, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class SvcIrisHubSpec extends FunSpec with Matchers {

@@ -1,6 +1,5 @@
 package core
 
-import lib.{Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class InternalDatatypeSpec extends FunSpec with Matchers {
