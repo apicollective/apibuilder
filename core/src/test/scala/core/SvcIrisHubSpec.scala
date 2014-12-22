@@ -20,7 +20,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
   it("parses models") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
-    val modelNames = service.models.map(_.name).toSet
+    val modelNames = service.models.keys.toSet
     modelNames.contains("foo") should be(false)
     modelNames.contains("agreement") should be(true)
     modelNames.contains("vendor") should be(true)
@@ -36,22 +36,20 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
       sys.error("Could not find item resource")
     }
 
-    val gets = itemResource.operations.filter(op => op.method == "GET" && op.path == "/items")
+    val gets = itemResource.operations.filter(op => op.method == Method.Get && op.path == "/items")
     gets.size should be(1)
     gets.head.parameters.map(_.name).mkString(" ") should be("vendor_guid agreement_guid number limit offset")
-    val response = gets.head.responses.head
-    response.code should be(200)
-    response.`type` should be(Datatype.List(Type(TypeKind.Model, "item")))
+    gets.head.responses("200").`type` should be(Datatype.List(Type(TypeKind.Model, "item")))
 
-    val getsByGuid = itemResource.operations.filter(op => op.method == "GET" && op.path == "/items/:guid")
+    val getsByGuid = itemResource.operations.filter(op => op.method == Method.Get && op.path == "/items/:guid")
     getsByGuid.size should be(1)
     getsByGuid.head.parameters.map(_.name).mkString(" ") should be("guid")
-    getsByGuid.head.responses.map(_.code) should be(Seq(200))
+    getsByGuid.head.responses.keys.toSeq should be(Seq("200"))
 
-    val deletes = itemResource.operations.filter(op => op.method == "DELETE" )
+    val deletes = itemResource.operations.filter(op => op.method == Method.Delete )
     deletes.size should be(1)
     deletes.head.parameters.map(_.name).mkString(" ") should be("guid")
-    deletes.head.responses.map(_.code) should be(Seq(204))
+    deletes.head.responses.keys.toSeq should be(Seq("204"))
   }
 
   it("all POST operations return either a 201 or a 409") {

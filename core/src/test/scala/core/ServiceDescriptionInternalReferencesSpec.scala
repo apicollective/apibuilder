@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
+import lib.{Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceInternalReferencesSpec extends FunSpec with Matchers {
@@ -28,10 +28,10 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
 
-    val barField = validator.serviceDescription.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get
+    val barField = validator.serviceDescription.get.models("foo").fields.find(_.name == "bar").get
     barField.`type` should be(Datatype.Singleton(Type(TypeKind.Model, "bar")))
 
-    val fooField = validator.serviceDescription.get.models.find(_.name == "bar").get.fields.find(_.name == "foo").get
+    val fooField = validator.serviceDescription.get.models("bar").fields.find(_.name == "foo").get
     fooField.`type` should be(Datatype.Singleton(Type(TypeKind.Model, "foo")))
   }
 
@@ -41,16 +41,16 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000",
       "name": "svc-reference",
       "models": {
-        "userVariant": {
+        "user_variant": {
             "description": "variant set a user belongs to for a particular test.",
             "fields": [
                 {
-                    "name": "variantKey",
+                    "name": "variant_key",
                     "type": "string"
                 },
                 {
                     "name": "parent",
-                    "type": "userVariant",
+                    "type": "user_variant",
                     "required": "false"
                 }
             ]
@@ -61,9 +61,9 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
 
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val model = validator.serviceDescription.get.models.find(_.name == "userVariant").get
+    val model = validator.serviceDescription.get.models("user_variant")
     val parentField = model.fields.find(_.name == "parent").get
-    parentField.`type` should be(Datatype.Singleton(Type(TypeKind.Model, "userVariant")))
+    parentField.`type` should be(Datatype.Singleton(Type(TypeKind.Model, "user_variant")))
   }
 
 }

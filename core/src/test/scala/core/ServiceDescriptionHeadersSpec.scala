@@ -1,7 +1,6 @@
 package core
 
-import lib.Primitives
-import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
+import lib.{Datatype, Primitives, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceHeadersSpec extends FunSpec with Matchers {
@@ -33,11 +32,11 @@ class ServiceHeadersSpec extends FunSpec with Matchers {
     it("parses headers") {
       val validator = ServiceValidator(baseJson)
       validator.errors.mkString("") should be("")
-      val ctEnum = validator.serviceDescription.get.enums.find(_.name == "content_type").get
+      val ctEnum = validator.serviceDescription.get.enums("content_type")
 
       val ct = validator.serviceDescription.get.headers.find(_.name == "Content-Type").get
       ct.name should be("Content-Type")
-      ct.`type` should be(Datatype.Singleton(Type(TypeKind.Enum, ctEnum.name)))
+      ct.`type` should be(Datatype.Singleton(Type(TypeKind.Enum, "content_type")))
       ct.default should be(None)
       ct.required should be(true)
       ct.description should be(None)

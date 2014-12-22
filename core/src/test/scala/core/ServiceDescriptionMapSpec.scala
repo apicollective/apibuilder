@@ -1,7 +1,6 @@
 package core
 
-import lib.Primitives
-import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
+import lib.{Datatype, Primitives, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceMapSpec extends FunSpec with Matchers {
@@ -24,7 +23,7 @@ class ServiceMapSpec extends FunSpec with Matchers {
     val json = baseJson.format("""{ "name": "tags", "type": "map" }""")
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val tags = validator.serviceDescription.get.models.head.fields.head
+    val tags = validator.serviceDescription.get.models.values.head.fields.head
     tags.`type` should be(Datatype.Map(Type(TypeKind.Primitive, Primitives.String.toString)))
   }
 
@@ -32,7 +31,7 @@ class ServiceMapSpec extends FunSpec with Matchers {
     val json = baseJson.format("""{ "name": "tags", "type": "map", "default": "{ }" }""")
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val tags = validator.serviceDescription.get.models.head.fields.head
+    val tags = validator.serviceDescription.get.models.values.head.fields.head
     tags.default shouldBe Some("{ }")
   }
 

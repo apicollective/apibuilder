@@ -1,7 +1,6 @@
 package core
 
-import lib.Primitives
-import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
+import lib.{Datatype, Primitives, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceResponsesSpec extends FunSpec with Matchers {
@@ -42,8 +41,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
     val json = baseJson.format("")
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val response = validator.serviceDescription.get.resources.head.operations.head.responses.head
-    response.code should be(204)
+    val response = validator.serviceDescription.get.resources.values.head.operations.head.responses("204")
     response.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Unit.toString)))
   }
 

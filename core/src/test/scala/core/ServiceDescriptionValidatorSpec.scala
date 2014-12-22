@@ -1,7 +1,6 @@
 package core
 
-import lib.Primitives
-import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
+import lib.{Datatype, Primitives, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceValidatorSpec extends FunSpec with Matchers {
@@ -127,8 +126,9 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val response = validator.serviceDescription.get.resources.head.operations.head.responses.head
-    response.code should be(204)
+    validator.serviceDescription.get.resources.values.head.operations.head.responses.get("204").getOrElse {
+      sys.error("Missing 204 response")
+    }
   }
 
   it("operations w/ a valid response validates correct") {
@@ -194,7 +194,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val op = validator.serviceDescription.get.resources.head.operations.head
+    val op = validator.serviceDescription.get.resources.values.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
     guid.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Uuid.toString)))
@@ -260,7 +260,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val op = validator.serviceDescription.get.resources.head.operations.head
+    val op = validator.serviceDescription.get.resources.values.head.operations.head
     val idParam = op.parameters.head
     idParam.name should be("id")
     idParam.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Long.toString)))
