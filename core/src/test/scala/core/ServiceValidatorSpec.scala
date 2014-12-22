@@ -1,6 +1,5 @@
 package core
 
-import lib.{Datatype, Primitives, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceValidatorSpec extends FunSpec with Matchers {
@@ -197,7 +196,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.values.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
-    guid.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Uuid.toString)))
+    guid.`type` should be("uuid")
   }
 
   it("path parameters cannot be optional") {
@@ -263,7 +262,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val op = validator.serviceDescription.get.resources.values.head.operations.head
     val idParam = op.parameters.head
     idParam.name should be("id")
-    idParam.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Long.toString)))
+    idParam.`type` should be("long")
   }
 
   it("lists of models are not valid in parameters") {
