@@ -1,6 +1,5 @@
 package core
 
-import lib.{Datatype, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceInternalReferencesSpec extends FunSpec with Matchers {
@@ -29,10 +28,10 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
 
     val barField = validator.serviceDescription.get.models("foo").fields.find(_.name == "bar").get
-    barField.`type` should be(Datatype.Singleton(Type(TypeKind.Model, "bar")))
+    barField.`type` should be("bar")
 
     val fooField = validator.serviceDescription.get.models("bar").fields.find(_.name == "foo").get
-    fooField.`type` should be(Datatype.Singleton(Type(TypeKind.Model, "foo")))
+    fooField.`type` should be("foo")
   }
 
   it("Is able to parse self reference") {
@@ -63,7 +62,7 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val model = validator.serviceDescription.get.models("user_variant")
     val parentField = model.fields.find(_.name == "parent").get
-    parentField.`type` should be(Datatype.Singleton(Type(TypeKind.Model, "user_variant")))
+    parentField.`type` should be("user_variant")
   }
 
 }
