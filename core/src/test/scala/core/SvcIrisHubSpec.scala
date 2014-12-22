@@ -1,7 +1,7 @@
 package core
 
-import lib.Primitives
-import com.gilt.apidocspec.models.{Container, Datatype, Type, TypeKind}
+import com.gilt.apidocspec.models.Method
+import lib.{Datatype, Primitives, Type, TypeKind}
 import org.scalatest.{FunSpec, Matchers}
 
 class SvcIrisHubSpec extends FunSpec with Matchers {
@@ -25,14 +25,14 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
     modelNames.contains("agreement") should be(true)
     modelNames.contains("vendor") should be(true)
 
-    val item = service.models.find(_.name == "item").get
+    val item = service.models.get("item").get
     item.fields.map(_.name).mkString(" ") should be("guid vendor_guid number quantity prices attributes return_policy metadata identifiers dimensions content images videos")
     item.fields.find(_.name == "number").get.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString)))
   }
 
   it("parses operations") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
-    val itemResource = service.resources.find { _.model.name == "item" }.getOrElse {
+    val itemResource = service.resources.get("item").getOrElse {
       sys.error("Could not find item resource")
     }
 
@@ -56,11 +56,13 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
   it("all POST operations return either a 201 or a 409") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").serviceDescription.get
-    service.resources.flatMap(_.operations.filter(_.method == "POST")).foreach { op =>
-      if (op.responses.map(_.code).sorted != Seq(201, 409)) {
-        fail("POST operation should return a 201 or a 409: " + op)
+    service.resources.foreach { case (modelName, resource) =>
+      resource.operations.filter(_.method == Method.Post).foreach { op =>
+        if (op.responses.keys.toSeq.sorted != Seq("201", "409")) {
+          fail("POST operation should return a 201 or a 409: " + op)
+        }
       }
-     }
+    }
   }
 
 }
