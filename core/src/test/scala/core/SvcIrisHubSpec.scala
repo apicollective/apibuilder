@@ -27,7 +27,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
     val item = service.models.get("item").get
     item.fields.map(_.name).mkString(" ") should be("guid vendor_guid number quantity prices attributes return_policy metadata identifiers dimensions content images videos")
-    item.fields.find(_.name == "number").get.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.String.toString)))
+    item.fields.find(_.name == "number").get.`type` should be("string")
   }
 
   it("parses operations") {
@@ -36,12 +36,12 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
       sys.error("Could not find item resource")
     }
 
-    val gets = itemResource.operations.filter(op => op.method == Method.Get && op.path == "/items")
+    val gets = itemResource.operations.filter(op => op.method == Method.Get && op.path == Some("/items"))
     gets.size should be(1)
     gets.head.parameters.map(_.name).mkString(" ") should be("vendor_guid agreement_guid number limit offset")
-    gets.head.responses("200").`type` should be(Datatype.List(Type(TypeKind.Model, "item")))
+    gets.head.responses("200").`type` should be("[item]")
 
-    val getsByGuid = itemResource.operations.filter(op => op.method == Method.Get && op.path == "/items/:guid")
+    val getsByGuid = itemResource.operations.filter(op => op.method == Method.Get && op.path == Some("/items/:guid"))
     getsByGuid.size should be(1)
     getsByGuid.head.parameters.map(_.name).mkString(" ") should be("guid")
     getsByGuid.head.responses.keys.toSeq should be(Seq("200"))
