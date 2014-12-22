@@ -1,6 +1,6 @@
 package core
 
-import lib.{Datatype, Primitives, Type, TypeKind}
+import com.gilt.apidocspec.models.Method
 import org.scalatest.{FunSpec, Matchers}
 
 class BrokenSpec extends FunSpec with Matchers {
@@ -23,8 +23,8 @@ class BrokenSpec extends FunSpec with Matchers {
     val validator = ServiceValidator(json)
     validator.errors.mkString should be("")
     val fields = validator.serviceDescription.get.models.values.head.fields
-    fields.find { _.name == "guid" }.get.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Uuid.toString)))
-    fields.find { _.name == "tags" }.get.`type` should be(Datatype.List(Type(TypeKind.Primitive, Primitives.String.toString)))
+    fields.find { _.name == "guid" }.get.`type` should be("uuid")
+    fields.find { _.name == "tags" }.get.`type` should be("[string]")
   }
 
 
@@ -63,15 +63,15 @@ class BrokenSpec extends FunSpec with Matchers {
     validator.errors.mkString should be("")
 
     val operation = validator.serviceDescription.get.resources.values.head.operations.head
-    operation.method should be("POST")
-    operation.parameters.find { _.name == "guid" }.get.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Uuid.toString)))
+    operation.method should be(Method.Post)
+    operation.parameters.find { _.name == "guid" }.get.`type` should be("uuid")
 
     val guid = operation.parameters.find { _.name == "guid" }.get
-    guid.`type` should be(Datatype.Singleton(Type(TypeKind.Primitive, Primitives.Uuid.toString)))
+    guid.`type` should be("uuid")
     guid.required should be(Some(true))
 
     val tag = operation.parameters.find { _.name == "tag" }.get
-    tag.`type` should be(Datatype.List(Type(TypeKind.Primitive, Primitives.String.toString)))
+    tag.`type` should be("[string]")
     tag.required should be(Some(false))
   }
 
