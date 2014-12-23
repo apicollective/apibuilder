@@ -532,7 +532,7 @@ case class ServiceValidator(apiJson: String) {
             op.namedPathParameters.flatMap { name =>
               val parsedDatatype = paramMap.get(name).getOrElse {
                 fieldMap.get(name).getOrElse {
-                  InternalDatatype.Singleton(Primitives.String.toString)
+                  InternalDatatype(Primitives.String.toString)
                 }
               }
               val errorTemplate = s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
@@ -543,35 +543,34 @@ case class ServiceValidator(apiJson: String) {
                 case Some(Datatype.List(_)) => Some(errorTemplate.format("list"))
                 case Some(Datatype.Map(_)) => Some(errorTemplate.format("map"))
                 case Some(Datatype.Option(_)) => Some(errorTemplate.format("option"))
-                case Some(Datatype.Singleton(Type(TypeKind.Model, name))) => Some(errorTemplate.format(name))
-                case Some(Datatype.Singleton(Type(TypeKind.Primitive, name))) => {
-                  if (Primitives.validInPath(name)) {
-                    None
-                  } else {
-                    Some(errorTemplate.format(name))
+                case Some(Datatype.Singleton(types)) => {
+                  types.filter( t => !isTypeValidInPath(t) ) match {
+                    case Nil => None
+                    case invalidTypes => {
+                      Some(errorTemplate.format(invalidTypes.map(_.name).mkString(", ")))
+                    }
                   }
                 }
-                case Some(Datatype.Union(types)) => {
-                  // TODO : Support union types in paths when all of
-                  // the types are valid for path parameters. Requires
-                  // a bit of refactoring to be able to ask if a given
-                  // Type is valid in a path.
-                  Some(errorTemplate.format("union"))
-                }
-
-                case Some(Datatype.Singleton(Type(TypeKind.Enum, name))) => {
-                  // Enums serialize to strings
-                  None
-                }
-
-                case Some(Datatype.Singleton(Type(kind, name))) => {
-                  Some(errorTemplate.format(kind))
-                }
-
               }
             }
           }
         }
+      }
+    }
+  }
+
+  private def isTypeValidInPath(t: Type): Boolean = {
+    t.typeKind match {
+      case TypeKind.Primitive => {
+        Primitives.validInPath(t.name)
+      }
+      case TypeKind.Model => {
+        // We do not support models in path parameters
+        false
+      }
+      case TypeKind.Enum => {
+        // Serializes as a string
+        true
       }
     }
   }

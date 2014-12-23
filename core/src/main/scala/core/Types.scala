@@ -39,29 +39,29 @@ case class TypeResolver(
     */
   def parse(internal: InternalDatatype): Option[Datatype] = {
     internal match {
-      case InternalDatatype.List(name) => {
-        toType(name).map { n => Datatype.List(n) }
+      case InternalDatatype.List(names) => {
+        toTypesIfAllFound(names).map { Datatype.List(_) }
       }
 
-      case InternalDatatype.Map(name) => {
-        toType(name).map { n => Datatype.Map(n) }
+      case InternalDatatype.Map(names) => {
+        toTypesIfAllFound(names).map { Datatype.Map(_) }
       }
 
-      case InternalDatatype.Option(name) => {
-        toType(name).map { n => Datatype.Option(n) }
+      case InternalDatatype.Option(names) => {
+        toTypesIfAllFound(names).map { Datatype.Option(_) }
       }
 
-      case InternalDatatype.Singleton(name) => {
-        toType(name).map { n => Datatype.Singleton(n) }
+      case InternalDatatype.Singleton(names) => {
+        toTypesIfAllFound(names).map { Datatype.Singleton(_) }
       }
+    }
+  }
 
-      case InternalDatatype.Union(names) => {
-        val types = names.map { n => toType(n) }
-        types.filter(!_.isDefined) match {
-          case Nil => Some(Datatype.Union(types.flatten))
-          case unknowns => None
-        }
-      }
+  private def toTypesIfAllFound(names: Seq[String]): Option[Seq[Type]] = {
+    val types = names.map { n => toType(n) }
+    types.filter(!_.isDefined) match {
+      case Nil => Some(types.flatten)
+      case unknowns => None
     }
   }
 

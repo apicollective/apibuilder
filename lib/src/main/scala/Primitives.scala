@@ -21,9 +21,9 @@ object Primitives {
   val ValidInPath = All.filter(p => p != Unit && p != Object)
 
   def validInPath(name: String): Boolean = {
-    ValidInPath.find(_.toString == name) match {
+    Primitives(name) match {
       case None => false
-      case Some(_) => true
+      case Some(p) => ValidInPath.contains(p)
     }
   }
 

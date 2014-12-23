@@ -4,7 +4,7 @@ import org.scalatest.{FunSpec, Matchers}
 
 class UnionTypeSpec extends FunSpec with Matchers {
 
-  it("accepts defaults for date-iso8601") {
+  it("accepts union types for singletons and lists") {
     val json = """
     {
       "name": "Union Types Test",
@@ -26,7 +26,8 @@ class UnionTypeSpec extends FunSpec with Matchers {
         "order": {
           "fields": [
             { "name": "id", "type": "uuid" },
-            { "name": "user", "type": "union[guest, registered_user]" }
+            { "name": "user", "type": "guest | registered_user" },
+            { "name": "friends", "type": "[guest | registered_user]" }
           ]
         }
 

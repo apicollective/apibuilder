@@ -1,29 +1,28 @@
 package lib
 
 sealed trait Datatype {
+  def types: Seq[Type]
   def label: String
 }
 
 object Datatype {
 
-  case class List(`type`: Type) extends Datatype {
-    override def label = s"[${`type`.name}]"
+  private val Divider = " | "
+
+  case class List(types: Seq[Type]) extends Datatype {
+    override def label = types.map(_.name).mkString("[", Divider, "]")
   }
 
-  case class Map(`type`: Type) extends Datatype {
-    override def label = s"map[${`type`.name}]"
+  case class Map(types: Seq[Type]) extends Datatype {
+    override def label = types.map(_.name).mkString("map[", Divider, "]")
   }
 
-  case class Option(`type`: Type) extends Datatype {
-    override def label = s"option[${`type`.name}]"
+  case class Option(types: Seq[Type]) extends Datatype {
+    override def label = types.map(_.name).mkString("option[", Divider, "]")
   }
 
-  case class Singleton(`type`: Type) extends Datatype {
-    override def label = `type`.name
-  }
-
-  case class Union(types: Seq[Type]) extends Datatype {
-    override def label = types.mkString("union[", ", ", "]")
+  case class Singleton(types: Seq[Type]) extends Datatype {
+    override def label = types.map(_.name).mkString(Divider)
   }
 
 }

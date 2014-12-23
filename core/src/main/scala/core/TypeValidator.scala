@@ -50,7 +50,7 @@ case class TypeValidator(
             json.asOpt[JsArray] match {
               case Some(v) => {
                 v.value.flatMap { value =>
-                  validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                  validateTypes(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
                 } match {
                   case Nil => None
                   case errors => Some(errors.mkString(", "))
@@ -73,7 +73,7 @@ case class TypeValidator(
               case Some(v) => {
                 v.value.flatMap {
                   case (key, value) => {
-                    validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                    validateTypes(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
                   }
                 } match {
                   case Nil => None
@@ -88,13 +88,11 @@ case class TypeValidator(
         }
       }
       case Datatype.Option(t) => {
-        validateTypes(Seq(Type(TypeKind.Primitive, Primitives.Unit.toString), t), value, errorPrefix)
+        val typesWithUnit = t ++ Seq(Type(TypeKind.Primitive, Primitives.Unit.toString))
+        validateTypes(typesWithUnit, value, errorPrefix)
       }
       case Datatype.Singleton(t) => {
-        validate(t, value, errorPrefix)
-      }
-      case Datatype.Union(types) => {
-        validateTypes(types, value, errorPrefix)
+        validateTypes(t, value, errorPrefix)
       }
     }
   }
@@ -106,7 +104,7 @@ case class TypeValidator(
   ): Option[String] = {
     types.map(t => validate(t, value, errorPrefix)).flatten match {
       case Nil => None
-      case firstError :: errors => Some(firstError)
+      case errors => Some(errors.mkString(", "))
     }
   }
 

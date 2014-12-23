@@ -414,61 +414,49 @@ private[core] object JsonUtil {
 }
 
 sealed trait InternalDatatype {
+
   def names: Seq[String]
   def label: String
+
+  protected def makeLabel(prefix: String = "", postfix: String = ""): String = {
+    prefix + names.mkString(" | ") + postfix
+  }
+
 }
 
 private[core] object InternalDatatype {
 
-  case class List(name: String) extends InternalDatatype {
-
-    override def names = Seq(name)
-    override def label = s"[$name]"
-
+  case class List(names: Seq[String]) extends InternalDatatype {
+    override def label = makeLabel("[", "]")
   }
 
-  case class Map(name: String) extends InternalDatatype {
-
-    override def names = Seq(name)
-    override def label = s"map[$name]"
-
+  case class Map(names: Seq[String]) extends InternalDatatype {
+    override def label = makeLabel("map[", "]")
   }
 
-  case class Option(name: String) extends InternalDatatype {
-
-    override def names = Seq(name)
-    override def label = s"option[$name]"
-
+  case class Option(names: Seq[String]) extends InternalDatatype {
+    override def label = makeLabel("option[", "]")
   }
 
-  case class Singleton(name: String) extends InternalDatatype {
-
-    override def names = Seq(name)
-    override def label = name
-
-  }
-
-  case class Union(names: Seq[String]) extends InternalDatatype {
-
-    override def label = names.mkString("union[", ", ", "]")
-
+  case class Singleton(names: Seq[String]) extends InternalDatatype {
+    override def label = makeLabel()
   }
 
   private val ListRx = "^\\[(.*)\\]$".r
   private val MapRx = "^map\\[(.*)\\]$".r
   private val OptionRx = "^option\\[(.*)\\]$".r
-  private val UnionRx = "^union\\[(.*)\\]$".r
   private val DefaultMapRx = "^map$".r
 
   def apply(value: String): InternalDatatype = {
     value match {
-      case ListRx(name) => InternalDatatype.List(name)
-      case MapRx(name) => InternalDatatype.Map(name)
-      case OptionRx(name) => InternalDatatype.Option(name)
-      case UnionRx(name) => InternalDatatype.Union(name.split(",").map(_.trim))
-      case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString)
-      case _ => InternalDatatype.Singleton(value)
+      case ListRx(name) => InternalDatatype.List(parse(name))
+      case MapRx(name) => InternalDatatype.Map(parse(name))
+      case OptionRx(name) => InternalDatatype.Option(parse(name))
+      case DefaultMapRx() => InternalDatatype.Map(parse("string"))
+      case _ => InternalDatatype.Singleton(parse(value))
     }
   }
+
+  private def parse(value: String): Seq[String] = value.split("\\|").map(_.trim)
 
 }

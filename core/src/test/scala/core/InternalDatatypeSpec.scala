@@ -15,8 +15,8 @@ class InternalDatatypeSpec extends FunSpec with Matchers {
   }
 
   it("union reformated spaces") {
-    val dt = InternalDatatype("union[unit,  string]")
-    dt.label should be("union[unit, string]")
+    val dt = InternalDatatype("unit   |    string")
+    dt.label should be("unit | string")
   }
 
   it("handles malformed input") {

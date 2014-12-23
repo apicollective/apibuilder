@@ -67,7 +67,7 @@
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "default", "type": "union[boolean, date-iso8601, date-time-iso8601, decimal, double, integer, long, object, string, uuid]", "required": false },
+		{ "name": "default", "type": "boolean | date-iso8601 | date-time-iso8601 | decimal | double | integer | long | object | string | uuid", "required": false },
 		{ "name": "required", "type": "boolean", "default": true },
 		{ "name": "minimum", "type": "long", "required": false },
 		{ "name": "maximum", "type": "long", "required": false },
@@ -108,7 +108,7 @@
 		{ "name": "location", "type": "parameter_location", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean", "default": true },
-		{ "name": "default", "type": "union[boolean, date-iso8601, date-time-iso8601, decimal, double, integer, long, object, string, uuid]", "required": false },
+		{ "name": "default", "type": "boolean | date-iso8601 | date-time-iso8601 | decimal | double | integer | long | object | string | uuid", "required": false },
 		{ "name": "minimum", "type": "long", "required": false },
 		{ "name": "maximum", "type": "long", "required": false },
 		{ "name": "example", "type": "string", "required": false }
