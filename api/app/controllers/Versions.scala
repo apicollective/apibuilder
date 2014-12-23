@@ -3,7 +3,7 @@ package controllers
 import com.gilt.apidoc.models.{Organization, User, Version, Visibility}
 import com.gilt.apidoc.models.json._
 import lib.Validation
-import core.ServiceDescriptionValidator
+import core.ServiceValidator
 import db.{Authorization, OrganizationsDao, ServicesDao, ServiceForm, VersionsDao, VersionForm}
 import play.api.mvc._
 import play.api.libs.json._
@@ -47,7 +47,7 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceDescriptionValidator(form.json)
+            val validator = ServiceValidator(form.json)
 
             if (validator.isValid) {
               val visibility = form.visibility.getOrElse(Visibility.Organization)
