@@ -1,3 +1,33 @@
+/web/apidoc/www/app/views/versions/datatype.scala.html
+  add links based on type
+  <a href="@routes.DocController.types#@name">@lib.Util.formatType(container, name)</a>
+  <a href="@routes.Versions.show(org.key, service.key, version)#model-@lib.UrlKey.generate(model.name)">@lib.Util.formatType(container, model.name)</a>
+  <a href="@routes.Versions.show(org.key, service.key, version)#enum-@lib.UrlKey.generate(enumName)">@lib.Util.formatType(container, enumName)</a>
+
+
+@{ti match {
+  case com.gilt.apidocgenerator.models.TypeInstance(container, com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Primitive, name)) => primitive(container, name)
+  case com.gilt.apidocgenerator.models.TypeInstance(container, com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Model, name)) => modelTypeByName(org, service, version, sd, container, name)
+  case com.gilt.apidocgenerator.models.TypeInstance(container, com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Enum, name)) => enumType(org, service, version, container, name)
+}}
+
+generator:
+  ==> TODO: union type
+
+www/app/lib/Util.scala
+  ==> formatType is wrong now
+
+spec:
+  - introduce service_form distinct from service
+  - resources.path should be required
+  - operations.path should be required
+  - models.plural should be required
+  - parameters.location should be required
+
+Parse Resource description
+
+ParsedDatatype => Datatype
+
 add namespace
  => rename package name to default namespace for organization
  => reject services that are uploaded w/out a namespace
