@@ -64,13 +64,6 @@ lazy val www = project
     routesImport += "com.gilt.apidoc.Bindables._"
   )
 
-lazy val generator = project
-  .in(file("generator"))
-  .dependsOn(generated, lib, core) // goal is to remove core dependency here
-  .aggregate(generated, lib, core) // goal is to remove core dependency here
-  .enablePlugins(PlayScala)
-  .settings(commonSettings: _*)
-
 lazy val spec = project
   .in(file("spec"))
   .enablePlugins(PlayScala)
