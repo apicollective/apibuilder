@@ -19,11 +19,6 @@ www/app/lib/Util.scala
 
 spec:
   - introduce service_form distinct from service
-  - resources.path should be required
-  - operations.path should be required
-  - resources.path should be required
-  - models.plural should be required
-  - parameters.location should be required
 
 Parse Resource description
 
