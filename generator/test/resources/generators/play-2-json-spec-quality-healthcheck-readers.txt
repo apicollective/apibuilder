@@ -1,3 +1,0 @@
-implicit def jsonReadsQualityHealthcheck: play.api.libs.json.Reads[Healthcheck] = {
-  (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
-}

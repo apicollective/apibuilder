@@ -1,7 +1,0 @@
-package apidoctest.models {
-
-  case class Content(
-    data: _root_.play.api.libs.json.JsObject
-  )
-
-}
