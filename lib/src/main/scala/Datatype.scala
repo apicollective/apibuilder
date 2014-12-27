@@ -3,6 +3,8 @@ package lib
 sealed trait Datatype {
   def types: Seq[Type]
   def label: String
+
+  assert(!types.isEmpty, "Datatype requires at least 1 type")
 }
 
 object Datatype {
