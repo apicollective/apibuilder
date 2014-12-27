@@ -1,25 +1,25 @@
 {
     "name": "apidoc",
-    "description": "Host API documentation for REST services, facilitating the design of good resource first APIs.",
+    "description": "Host API documentation for applications providing REST APIs, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
 
     "enums": {
 	"visibility": {
 	    "description": "Controls who is able to view this version",
 	    "values": [
-		{ "name": "user", "description": "Only the creator can view this service" },
-		{ "name": "organization", "description": "Any member of the organization can view this service" },
-		{ "name": "public", "description": "Anybody, including non logged in users, can view this service" }
+		{ "name": "user", "description": "Only the creator can view this application" },
+		{ "name": "organization", "description": "Any member of the organization can view this application" },
+		{ "name": "public", "description": "Anybody, including non logged in users, can view this application" }
 	    ]
 	},
 
 	"publication": {
-	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing to an email alert whenever a new version of a service is created.",
+	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing to an email alert whenever a new version of a application is created.",
 	    "values": [
 		{ "name": "membership_requests.create", "description": "For organizations for which I am an administrator, email me whenever a user applies to join the org." },
 		{ "name": "memberships.create", "description": "For organizations for which I am a member, email me whenever a user joins the org." },
-		{ "name": "services.create", "description": "For organizations for which I am a member, email me whenever a service is created." },
-		{ "name": "versions.create", "description": "For services that I watch, email me whenever a version is created." }
+		{ "name": "applications.create", "description": "For organizations for which I am a member, email me whenever a application is created." },
+		{ "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." }
 	    ]
 	}
 
@@ -68,7 +68,7 @@
         },
 
         "organization": {
-            "description": "An organization is used to group a set of services together.",
+            "description": "An organization is used to group a set of applications together.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this organization." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the organization name." },
@@ -129,23 +129,23 @@
             ]
         },
 
-        "service": {
-            "description": "A service has a name and multiple versions of an API (Interface).",
+        "application": {
+            "description": "An application has a name and multiple versions of a Service API.",
             "fields": [
-                { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this service." },
-                { "name": "name", "type": "string", "description": "The unique name for this service." },
-                { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the service name." },
-                { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this service" },
+                { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this application." },
+                { "name": "name", "type": "string", "description": "The unique name for this application." },
+                { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the application name." },
+                { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this application" },
                 { "name": "description", "type": "string", "required": false }
             ]
         },
 
         "version": {
-            "description": "Represents a unique version of the service.",
+            "description": "Represents a unique version of the application.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this version." },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
-                { "name": "json", "type": "string", "description": "JSON description of the service." }
+                { "name": "service", "type": "service" }
             ]
         },
 
@@ -163,7 +163,7 @@
           "fields": [
             { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this generator." },
             { "name": "key", "type": "string", "description": "A human readable key identifying this generator." },
-            { "name": "uri", "type": "string", "description": "The uri of the generator service" },
+            { "name": "uri", "type": "string", "description": "The uri of the generator" },
             { "name": "name", "type": "string" },
             { "name": "language", "type": "string", "required": false },
             { "name": "description", "type": "string", "required": false },
@@ -216,12 +216,12 @@
 	},
 
 	"watch": {
-	    "description": "Users can watch individual services which enables features like receiving an email notification when there is a new version of a service.",
+	    "description": "Users can watch individual applications which enables features like receiving an email notification when there is a new version of a application.",
 	    "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this watch" },
 		{ "name": "user", "type": "user" },
 		{ "name": "organization", "type": "organization" },
-		{ "name": "service", "type": "service" }
+		{ "name": "application", "type": "application" }
 	    ]
 	},
 
@@ -229,7 +229,7 @@
 	    "fields": [
 		{ "name": "user_guid", "type": "uuid" },
 		{ "name": "organization_key", "type": "string" },
-		{ "name": "service_key", "type": "string" }
+		{ "name": "application_key", "type": "string" }
 	    ]
 	},
 
@@ -407,7 +407,7 @@
                 {
                     "method": "DELETE",
                     "path": "/:key",
-                    "description": "Deletes an organization and all of its associated services."
+                    "description": "Deletes an organization and all of its associated applications."
                 }
             ]
         },
@@ -537,28 +537,28 @@
             ]
         },
 
-        "service": {
+        "application": {
             "path": "/:orgKey",
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Search all services. Results are always paginated.",
+                    "description": "Search all applications. Results are always paginated.",
                     "parameters": [
-                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search services" },
-                        { "name": "name", "type": "string", "required": false, "description": "The name of a service. Case in-sensitive. Exact match", "required": false },
-                        { "name": "key", "type": "string", "required": false, "description": "The key of a service. Case in-sensitive. Exact match", "required": false },
+                        { "name": "orgKey", "type": "string", "description": "The organization key for which to search applications" },
+                        { "name": "name", "type": "string", "required": false, "description": "The name of a application. Case in-sensitive. Exact match", "required": false },
+                        { "name": "key", "type": "string", "required": false, "description": "The key of a application. Case in-sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[service]" }
+                        "200": { "type": "[application]" }
                     }
                 },
 
                 {
                     "method": "PUT",
-                    "description": "Updates a service.",
-                    "path": "/:serviceKey",
+                    "description": "Updates a application.",
+                    "path": "/:applicationKey",
                     "parameters": [
                         { "name": "name", "type": "string" },
                         { "name": "description", "type": "string", "required": false },
@@ -568,24 +568,24 @@
 
                 {
                     "method": "DELETE",
-                    "description": "Deletes a specific service and its associated versions.",
-                    "path": "/:serviceKey"
+                    "description": "Deletes a specific application and its associated versions.",
+                    "path": "/:applicationKey"
                 }
 
             ]
         },
 
         "code": {
-	    "path": "/:orgKey/:serviceKey/:version/:generatorKey",
+	    "path": "/:orgKey/:applicationKey/:version/:generatorKey",
 
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Generate code for a specific version of a service.",
+                    "description": "Generate code for a specific version of a application.",
                     "parameters": [
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
-                        { "name": "serviceKey", "type": "string", "description": "The service key for which to generate code" },
-                        { "name": "version", "type": "string", "description": "The version of this service. Can be 'latest'" },
+                        { "name": "applicationKey", "type": "string", "description": "The application key for which to generate code" },
+                        { "name": "version", "type": "string", "description": "The version of this application. Can be 'latest'" },
                         { "name": "generatorKey", "type": "string", "description": "The key of the generator to invoke" }
 		    ],
                     "responses": {
@@ -597,15 +597,15 @@
         },
 
         "version": {
-            "path": "/:orgKey/:serviceKey",
+            "path": "/:orgKey/:applicationKey",
 
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Search all versions of this service. Results are always paginated.",
+                    "description": "Search all versions of this application. Results are always paginated.",
                     "parameters": [
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" },
-                        { "name": "serviceKey", "type": "string", "description": "The service key for which to search versions" },
+                        { "name": "applicationKey", "type": "string", "description": "The application key for which to search versions" },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -616,7 +616,7 @@
 
                 {
                     "method": "GET",
-                    "description": "Retrieve a specific version of a service.",
+                    "description": "Retrieve a specific version of a application.",
                     "path": "/:version",
                     "responses": {
                         "200": { "type": "version" }
@@ -625,11 +625,11 @@
 
                 {
                     "method": "PUT",
-                    "description": "Create or update the service with the specified version.",
+                    "description": "Create or update the application with the specified version.",
                     "path": "/:version",
                     "parameters": [
                         { "name": "json", "type": "string", "description": "The actual full contents of the json schema" },
-                        { "name": "visibility", "type": "visibility", "description": "The visibility of this service.", "default": "organization" }
+                        { "name": "visibility", "type": "visibility", "description": "The visibility of this application.", "default": "organization" }
 		    ],
                     "responses": {
                         "200": { "type": "version" }
@@ -749,7 +749,7 @@
                         { "name": "guid", "type": "uuid", "description": "Find the watch with this guid.", "required": false },
                         { "name": "user_guid", "type": "uuid", "description": "Find watches for this user.", "required": false },
                         { "name": "organization_key", "type": "string", "description": "Find watches for this organization.", "required": false },
-                        { "name": "service_key", "type": "string", "description": "Find watches for this service.", "required": false },
+                        { "name": "application_key", "type": "string", "description": "Find watches for this application.", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -769,12 +769,12 @@
 
                 {
                     "method": "GET",
-                    "description": "Quick check if a user is watching a specific service.",
+                    "description": "Quick check if a user is watching a specific application.",
                     "path": "/check",
 		    "parameters": [
                         { "name": "user_guid", "type": "uuid", "description": "The user for which we are checking. API returns false if the user guid is not provided", "required": false },
                         { "name": "organization_key", "type": "string" },
-                        { "name": "service_key", "type": "string" }
+                        { "name": "application_key", "type": "string" }
 		    ],
                     "responses": {
                         "200": { "type": "boolean" }
