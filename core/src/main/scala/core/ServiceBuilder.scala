@@ -8,30 +8,15 @@ import org.joda.time.format.ISODateTimeFormat
 object ServiceBuilder {
 
   def apply(apiJson: String): Service = {
-    apply(apiJson, None, None)
-  }
-
-  def apply(apiJson: String, packageName: Option[String], userAgent: Option[String]): Service = {
     val jsValue = Json.parse(apiJson)
-    ServiceBuilder(jsValue, packageName, userAgent)
+    apply(InternalServiceForm(jsValue))
   }
 
-  def apply(json: JsValue): Service = {
-    apply(json, None, None)
-  }
-
-  def apply(json: JsValue, packageName: Option[String], userAgent: Option[String]): Service = {
-    val internal = InternalServiceForm(json)
-    ServiceBuilder(internal, packageName, userAgent)
-  }
-
-  def apply(internal: InternalServiceForm, packageName: Option[String] = None, userAgent: Option[String] = None): Service = {
+  def apply(internal: InternalServiceForm): Service = {
     val enums = internal.enums.map { EnumBuilder(_) }
     val models = internal.models.map { ModelBuilder(enums, _) }
     val headers = internal.headers.map { HeaderBuilder(enums, _) }
     val resources = internal.resources.map { ResourceBuilder(enums, models, _) }
-
-    // TODO: packageName, userAgent
 
     Service(
       name = internal.name.getOrElse(sys.error("Missing name")),
