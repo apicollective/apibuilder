@@ -31,7 +31,7 @@ class ServiceHeadersSpec extends FunSpec with Matchers {
     it("parses headers") {
       val validator = ServiceValidator(baseJson)
       validator.errors.mkString("") should be("")
-      val ctEnum = validator.serviceDescription.get.enums("content_type")
+      val ctEnum = validator.serviceDescription.get.enums.find(_.name == "content_type").get
 
       val ct = validator.serviceDescription.get.headers.find(_.name == "Content-Type").get
       ct.name should be("Content-Type")

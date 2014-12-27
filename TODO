@@ -1,3 +1,6 @@
+service_form:
+  - validation error if method is unknown
+
 /web/apidoc/www/app/views/versions/datatype.scala.html
   add links based on type
   <a href="@routes.DocController.types#@name">@lib.Util.formatType(container, name)</a>

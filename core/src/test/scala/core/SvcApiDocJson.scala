@@ -9,25 +9,25 @@ class SvcApiDocJson extends FunSpec with Matchers {
   private lazy val service = TestHelper.parseFile(Path).serviceDescription.get
 
   it("parses models") {
-    val models = service.models.keys.toSet
+    val models = service.models.map(_.name)
     models.contains("foo") should be(false)
     models.contains("user") should be(true)
     models.contains("organization") should be(true)
 
-    val user = service.models("user")
+    val user = service.models.find(_.name == "user").get
     user.fields.find(_.name == "guid").get.`type` should be("uuid")
     user.fields.find(_.name == "email").get.`type` should be("string")
   }
 
   it("parses resources") {
-    val resources = service.resources.keys.toSet
+    val resources = service.resources.map(_.model.name)
     resources.contains("foo") should be(false)
     resources.contains("user") should be(true)
     resources.contains("organization") should be(true)
   }
 
   it("has defaults for all limit and offset parameters") {
-    service.resources.values.flatMap(_.operations.filter(_.method == Method.Get)).foreach { op =>
+    service.resources.flatMap(_.operations.filter(_.method == Method.Get)).foreach { op =>
 
       op.parameters.find { _.name == "limit" }.map { p =>
         p.default match {
@@ -44,10 +44,10 @@ class SvcApiDocJson extends FunSpec with Matchers {
   }
 
   it("all POST operations return either a 200, 201, 204 or a 409") {
-    val validCodes = Seq("200", "201", "204", "409")
-    service.resources.values.flatMap(_.operations.filter(_.method == Method.Post)).foreach { op =>
-      op.responses.keys.find { code => !validCodes.contains(code)}.foreach { code =>
-        fail(s"POST operation should return a 200, 204 or a 409 - invalid response for op[$op] response[$code]")
+    val validCodes = Seq(200, 201, 204, 409)
+    service.resources.flatMap(_.operations.filter(_.method == Method.Post)).foreach { op =>
+      op.responses.find { r => !validCodes.contains(r.code)}.foreach { code =>
+        fail(s"POST operation should return a ${validCodes.mkString(", ")} - invalid response for op[$op] response[$code]")
       }
     }
   }

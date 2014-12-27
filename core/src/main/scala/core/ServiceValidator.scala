@@ -1,7 +1,7 @@
 package core
 
 import lib.{Datatype, Methods, Primitives, Text, Type, TypeKind}
-import com.gilt.apidocspec.models.{Field, Service}
+import com.gilt.apidocspec.models.{Enum, Field, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
@@ -25,8 +25,8 @@ case class ServiceValidator(apiJson: String) {
     }
   }
 
-  private lazy val internalService: Option[InternalService] = {
-    val tryDescription = Try(Some(InternalService(apiJson))) recover {
+  private lazy val internalService: Option[InternalServiceForm] = {
+    val tryDescription = Try(Some(InternalServiceForm(apiJson))) recover {
       case e: JsonParseException => {
         parseError = Some(e.getMessage)
         None
@@ -52,7 +52,7 @@ case class ServiceValidator(apiJson: String) {
         }
       }
 
-      case Some(sd: InternalService) => {
+      case Some(sd: InternalServiceForm) => {
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
@@ -416,7 +416,7 @@ case class ServiceValidator(apiJson: String) {
     typesNotFound ++ invalidMethods
   }
 
-  private def opLabel(resource: InternalResource, op: InternalOperation): String = {
+  private def opLabel(resource: InternalResourceForm, op: InternalOperationForm): String = {
     s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}"
   }
 
@@ -524,7 +524,7 @@ case class ServiceValidator(apiJson: String) {
     internalService.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
       internalService.get.models.find(_.name == resource.modelName.get) match {
         case None => None
-        case Some(model: InternalModel) => {
+        case Some(model: InternalModelForm) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
             val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.names).isEmpty).map(f => (f.name.get -> f.datatype.get)).toMap
             val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.names).isEmpty).map(p => (p.name.get -> p.datatype.get)).toMap
@@ -579,7 +579,7 @@ case class ServiceValidator(apiJson: String) {
     internalService.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
       internalService.get.models.find(_.name == resource.modelName.get) match {
         case None => None
-        case Some(model: InternalModel) => {
+        case Some(model: InternalModelForm) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
             val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.names).isEmpty).map(f => (f.name.get -> f.required)).toMap
             val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.names).isEmpty).map(p => (p.name.get -> p.required)).toMap

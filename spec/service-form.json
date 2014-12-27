@@ -1,73 +1,49 @@
 {
-    "name": "apidoc spec",
-    "description": "Specification of apidoc api.json schema",
+    "name": "apidoc form",
+    "description": "Specification of the form used to define services in apidoc",
     "base_url": "http://api.apidoc.me",
 
-    "enums": {
-	"method": {
-	    "values": [
-		{ "name": "GET" },
-		{ "name": "POST" },
-		{ "name": "PUT" },
-		{ "name": "PATCH" },
-		{ "name": "DELETE" },
-		{ "name": "HEAD" },
-		{ "name": "CONNECT" },
-		{ "name": "OPTIONS" },
-		{ "name": "TRACE" }
-	    ]
-	},
-
-	"parameter_location": {
-	    "values": [
-		{ "name": "Path" },
-		{ "name": "Query" },
-		{ "name": "Form" }
-	    ]
-	}
-    },
-
     "models": {
-	"service": {
+	"service_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "base_url", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "headers", "type": "[header]" },
-		{ "name": "enums", "type": "map[enum]" },
-		{ "name": "models", "type": "map[model]" },
-		{ "name": "resources", "type": "map[resource]", "description": "keys are the names of a model" }
+		{ "name": "headers", "type": "[header_form]" },
+		{ "name": "enums", "type": "map[enum_form]" },
+		{ "name": "models", "type": "map[model_form]" },
+		{ "name": "resources", "type": "map[resource_form]", "description": "keys are the names of a model" }
 	    ]
 	},
 
-	"enum": {
+	"enum_form": {
 	    "fields": [
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "values", "type": "[enum_value]" }
+		{ "name": "values", "type": "[enum_value_form]" }
 	    ]
 	},
 
-	"enum_value": {
+	"enum_value_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
 
-	"model": {
+	"model_form": {
 	    "fields": [
 		{ "name": "plural", "type": "string", "required": false, "description": "Defaults to the plural of the model name. Used to generate resource paths which by default map to the plural of the model name" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "fields", "type": "[field]" }
+		{ "name": "fields", "type": "[field_form]" }
 	    ]
 	},
 
-	"field": {
+	"field_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "default", "type": "boolean | date-iso8601 | date-time-iso8601 | decimal | double | integer | long | object | string | uuid", "required": false },
+		{ "name": "default", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean", "default": true },
 		{ "name": "minimum", "type": "long", "required": false },
 		{ "name": "maximum", "type": "long", "required": false },
@@ -75,53 +51,52 @@
 	    ]
 	},
 
-	"resource": {
+	"resource_form": {
 	    "fields": [
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "path", "type": "string", "required": false, "description": "Defaults to the plural of the model name" },
-		{ "name": "operations", "type": "[operation]" }
+		{ "name": "operations", "type": "[operation_form]" }
 	    ]
 	},
 
-	"operation": {
+	"operation_form": {
 	    "fields": [
-		{ "name": "method", "type": "method" },
+		{ "name": "method", "type": "string", "example": "GET" },
 		{ "name": "path", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "body", "type": "body", "required": false },
-		{ "name": "parameters", "type": "[parameter]", "required": false },
-		{ "name": "responses", "type": "map[response]", "required": false, "description": "Keys are HTTP status codes" }
+		{ "name": "body", "type": "body_form", "required": false },
+		{ "name": "parameters", "type": "[parameter_form]", "required": false },
+		{ "name": "responses", "type": "map[response_form]", "required": false, "description": "Keys are HTTP status codes" }
 	    ]
 	},
 
-	"body": {
+	"body_form": {
 	    "fields": [
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
 
-	"parameter": {
+	"parameter_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
-		{ "name": "location", "type": "parameter_location", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean", "default": true },
-		{ "name": "default", "type": "boolean | date-iso8601 | date-time-iso8601 | decimal | double | integer | long | object | string | uuid", "required": false },
+		{ "name": "default", "type": "string", "required": false },
 		{ "name": "minimum", "type": "long", "required": false },
 		{ "name": "maximum", "type": "long", "required": false },
 		{ "name": "example", "type": "string", "required": false }
 	    ]
 	},
 
-	"response": {
+	"response_form": {
 	    "fields": [
 		{ "name": "type", "type": "string" }
 	    ]
 	},
 
-	"header": {
+	"header_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },

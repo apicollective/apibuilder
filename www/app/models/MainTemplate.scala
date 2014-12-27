@@ -2,7 +2,7 @@ package models
 
 import com.gilt.apidocgenerator.models.ServiceDescription
 import com.gilt.apidoc.models.{ Organization, Service, User, Generator }
-import com.gilt.apidocspec
+import com.gilt.apidocgenerator
 import play.api.Play.current
 
 case class MainTemplate(

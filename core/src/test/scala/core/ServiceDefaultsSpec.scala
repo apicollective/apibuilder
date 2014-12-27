@@ -21,7 +21,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
 
-    val createdAt = validator.serviceDescription.get.models.values.head.fields.find { _.name == "created_at" }.get
+    val createdAt = validator.serviceDescription.get.models.head.fields.find { _.name == "created_at" }.get
     createdAt.default should be(Some("2014-01-01"))
   }
 
@@ -43,13 +43,13 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
 
-    val isActiveField = validator.serviceDescription.get.models.values.head.fields.find { _.name == "is_active" }.get
+    val isActiveField = validator.serviceDescription.get.models.head.fields.find { _.name == "is_active" }.get
     isActiveField.default should be(Some("true"))
-    isActiveField.required should be(Some(true))
+    isActiveField.required should be(true)
 
-    val isAthleteField = validator.serviceDescription.get.models.values.head.fields.find { _.name == "is_athlete" }.get
+    val isAthleteField = validator.serviceDescription.get.models.head.fields.find { _.name == "is_athlete" }.get
     isAthleteField.default should be(Some("false"))
-    isAthleteField.required should be(Some(false))
+    isAthleteField.required should be(false)
   }
 
   it("rejects invalid boolean defaults") {

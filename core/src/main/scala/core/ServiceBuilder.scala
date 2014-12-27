@@ -21,15 +21,15 @@ object ServiceBuilder {
   }
 
   def apply(json: JsValue, packageName: Option[String], userAgent: Option[String]): Service = {
-    val internal = InternalService(json)
+    val internal = InternalServiceForm(json)
     ServiceBuilder(internal, packageName, userAgent)
   }
 
-  def apply(internal: InternalService, packageName: Option[String] = None, userAgent: Option[String] = None): Service = {
-    val enums = internal.enums.map { enum => (enum.name -> EnumBuilder(enum)) }.toMap
-    val models = internal.models.map { model => (model.name -> ModelBuilder(enums, model)) }.toMap
-    val headers = internal.headers.map(HeaderBuilder(enums, _))
-    val resources = internal.resources.map { resource => (resource.modelName.get -> ResourceBuilder(enums, models, resource)) }.toMap
+  def apply(internal: InternalServiceForm, packageName: Option[String] = None, userAgent: Option[String] = None): Service = {
+    val enums = internal.enums.map { EnumBuilder(_) }
+    val models = internal.models.map { ModelBuilder(enums, _) }
+    val headers = internal.headers.map { HeaderBuilder(enums, _) }
+    val resources = internal.resources.map { ResourceBuilder(enums, models, _) }
 
     // TODO: packageName, userAgent
 
@@ -47,12 +47,13 @@ object ServiceBuilder {
 
 object ResourceBuilder {
 
-  def apply(enums: Map[String, Enum], models: Map[String, Model], internal: InternalResource): Resource = {
-    val model = models.get(internal.modelName.get).getOrElse {
+  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResourceForm): Resource = {
+    val model = models.find(m => Some(m.name) == internal.modelName).getOrElse {
       sys.error(s"Could not find model for resource[${internal.modelName.getOrElse("")}]")
     }
     Resource(
-      path = Some(internal.path),
+      model = model,
+      description = internal.description,
       operations = internal.operations.map(op => OperationBuilder(enums, models, model, op))
     )
   }
@@ -61,7 +62,7 @@ object ResourceBuilder {
 
 object OperationBuilder {
 
-  def apply(enums: Map[String, Enum], models: Map[String, Model], model: Model, internal: InternalOperation): Operation = {
+  def apply(enums: Seq[Enum], models: Seq[Model], model: Model, internal: InternalOperationForm): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
 
@@ -85,25 +86,25 @@ object OperationBuilder {
 
     Operation(
       method = Method(method),
-      path = Some(internal.path),
+      path = internal.path,
       description = internal.description,
-      body = internal.body.map { ib => Body(enums, models, ib) },
+      body = internal.body.map { ib => BodyBuilder(enums, models, ib) },
       parameters = pathParameters ++ internalParams,
-      responses = internal.responses.map { response => (response.code -> ResponseBuilder(enums, models, response)) }.toMap
+      responses = internal.responses.map { ResponseBuilder(enums, models, _) }
     )
   }
 
 }
 
-object Body {
+object BodyBuilder {
 
-  def apply(enums: Map[String, Enum], models: Map[String, Model], ib: InternalBody): Body = {
+  def apply(enums: Seq[Enum], models: Seq[Model], ib: InternalBodyForm): Body = {
     ib.datatype match {
       case None => sys.error("Body missing type: " + ib)
-      case Some(datatype) => com.gilt.apidocspec.models.Body(
+      case Some(datatype) => Body(
         `type` = TypeResolver(
-          enumNames = enums.keys,
-          modelNames = models.keys
+          enumNames = enums.map(_.name),
+          modelNames = models.map(_.name)
         ).parseWithError(datatype).label,
         description = ib.description
       )
@@ -115,8 +116,9 @@ object Body {
 
 object EnumBuilder {
 
-  def apply(ie: InternalEnum): Enum = {
+  def apply(ie: InternalEnumForm): Enum = {
     Enum(
+      name = ie.name,
       description = ie.description,
       values = ie.values.map { iv => EnumValue(name = iv.name.get, description = iv.description) }
     )
@@ -126,10 +128,10 @@ object EnumBuilder {
 
 object HeaderBuilder {
 
-  def apply(enums: Map[String, Enum], ih: InternalHeader): Header = {
+  def apply(enums: Seq[Enum], ih: InternalHeaderForm): Header = {
     Header(
       name = ih.name.get,
-      `type` = TypeResolver(enumNames = enums.keys).parseWithError(ih.datatype.get).label,
+      `type` = TypeResolver(enumNames = enums.map(_.name)).parseWithError(ih.datatype.get).label,
       required = ih.required,
       description = ih.description,
       default = ih.default
@@ -140,11 +142,12 @@ object HeaderBuilder {
 
 object ModelBuilder {
 
-  def apply(enums: Map[String, Enum], im: InternalModel): Model = {
+  def apply(enums: Seq[Enum], im: InternalModelForm): Model = {
     Model(
-      plural = Some(im.plural),
+      name = im.name,
+      plural = im.plural,
       description = im.description,
-      fields = im.fields.map { FieldBuilder(enums, im, _) }
+      fields = im.fields.map { FieldBuilder(enums, _) }
     )
   }
 
@@ -152,11 +155,12 @@ object ModelBuilder {
 
 object ResponseBuilder {
 
-  def apply(enums: Map[String, Enum], models: Map[String, Model], internal: InternalResponse): Response = {
+  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResponseForm): Response = {
     Response(
+      code = internal.code.toInt,
       `type` = TypeResolver(
-        enumNames = enums.keys,
-        modelNames = models.keys
+        enumNames = enums.map(_.name),
+        modelNames = models.map(_.name)
       ).parseWithError(internal.datatype.get).label
     )
   }
@@ -173,15 +177,15 @@ object ParameterBuilder {
     Parameter(
       name = name,
       `type` = datatypeLabel,
-      location = Some(ParameterLocation.Path),
-      required = Some(true)
+      location = ParameterLocation.Path,
+      required = true
     )
   }
 
-  def apply(enums: Map[String, Enum], models: Map[String, Model], internal: InternalParameter, location: ParameterLocation): Parameter = {
+  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalParameterForm, location: ParameterLocation): Parameter = {
     val resolver = TypeResolver(
-      enumNames = enums.keys,
-      modelNames = models.keys
+      enumNames = enums.map(_.name),
+      modelNames = models.map(_.name)
     )
     val typeInstance = resolver.parseWithError(internal.datatype.get)
 
@@ -190,9 +194,9 @@ object ParameterBuilder {
     Parameter(
       name = internal.name.get,
       `type` = typeInstance.label,
-      location = Some(location),
+      location = location,
       description = internal.description,
-      required = Some(internal.required),
+      required = internal.required,
       default = internal.default,
       minimum = internal.minimum,
       maximum = internal.maximum,
@@ -204,9 +208,12 @@ object ParameterBuilder {
 
 object FieldBuilder {
 
-  def apply(enums: Map[String, Enum], im: InternalModel, internal: InternalField): Field = {
+  def apply(
+    enums: Seq[Enum],
+    internal: InternalFieldForm
+  ): Field = {
     val datatype = TypeResolver(
-      enumNames = enums.keys,
+      enumNames = enums.map(_.name),
       modelNames = internal.datatype.get.names // assume a model if not an enum
     ).parseWithError(internal.datatype.get)
 
@@ -216,7 +223,7 @@ object FieldBuilder {
       name = internal.name.get,
       `type` = datatype.label,
       description = internal.description,
-      required = Some(internal.required),
+      required = internal.required,
       default = internal.default,
       minimum = internal.minimum,
       maximum = internal.maximum,
@@ -229,9 +236,9 @@ object FieldBuilder {
 
 object ServiceBuilderHelper {
 
-  def assertValidDefault(enums: Map[String, Enum], pd: Datatype, value: String) {
+  def assertValidDefault(enums: Seq[Enum], pd: Datatype, value: String) {
     TypeValidator(
-      enums = enums.map { case(enumName, enum) => TypeValidatorEnums(enumName, enum.values.map(_.name)) }.toSeq
+      enums = enums.map { enum => TypeValidatorEnums(enum.name, enum.values.map(_.name)) }.toSeq
     ).assertValidDefault(pd, value)
   }
 

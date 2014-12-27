@@ -1,8 +1,8 @@
 package controllers
 
 import com.gilt.apidoc.models.{Organization, Service, User, Visibility}
-import com.gilt.apidocspec.models.{Service => SpecService}
-import com.gilt.apidocspec.models.json._
+import com.gilt.apidocgenerator.models.{Service => SpecService}
+import com.gilt.apidocgenerator.models.json._
 import models._
 import play.api._
 import play.api.mvc._
