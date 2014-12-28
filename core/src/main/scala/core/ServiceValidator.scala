@@ -1,6 +1,6 @@
 package core
 
-import lib.{Datatype, Methods, Primitives, Text, Type, TypeKind}
+import lib.{Datatype, Methods, Primitives, Text, Type, TypeKind, UrlKey}
 import com.gilt.apidocspec.models.{Enum, Field, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
@@ -57,6 +57,7 @@ case class ServiceValidator(apiJson: String) {
 
         if (requiredFieldErrors.isEmpty) {
           validateName ++
+          validateKey ++
           validateBaseUrl ++
           validateModels ++
           validateEnums ++
@@ -91,6 +92,20 @@ case class ServiceValidator(apiJson: String) {
       Seq.empty
     } else {
       Seq(s"Name[${name}] must start with a letter")
+    }
+  }
+
+  private def validateKey(): Seq[String] = {
+    internalService.get.key match {
+      case None => Seq.empty
+      case Some(key) => {
+        val generated = UrlKey.generate(key)
+        if (generated == key) {
+          Seq.empty
+        } else {
+          Seq(s"Invalid url key. A valid key would be $generated")
+        }
+      }
     }
   }
 
