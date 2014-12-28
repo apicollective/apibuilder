@@ -20,13 +20,13 @@ object Domains extends Controller {
           case None => NotFound
           case Some(org) => {
             request.requireAdmin(org)
-            OrganizationDomainsDao.findAll(organizationGuid = Some(org.guid), domain = Some(form.name)).headOption match {
+            OrganizationDomainsDao.findAll(domain = Some(form.name)).headOption match {
               case None => {
                 val od = OrganizationDomainsDao.create(request.user, org, form.name)
                 Ok(Json.toJson(od.toDomain))
               }
               case Some(d) => {
-                Conflict(Json.toJson(Validation.error("domain already exists for this org")))
+                Conflict(Json.toJson(Validation.error("domain has already been registered")))
               }
             }
           }
