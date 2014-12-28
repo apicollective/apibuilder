@@ -20,8 +20,6 @@ object Person {
 
 object Email {
 
-  val apidocWebHostname = Config.requiredString("apidoc.webHostname")
-
   private val subjectPrefix = Config.requiredString("mail.subjectPrefix")
 
   private val from = Person(

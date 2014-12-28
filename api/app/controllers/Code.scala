@@ -10,7 +10,7 @@ import com.gilt.apidocgenerator.models.InvocationForm
 
 import core.ServiceBuilder
 import db.{GeneratorsDao, Authorization, VersionsDao}
-import lib.{Config, Validation}
+import lib.{Config, AppConfig, Validation}
 
 import play.api.mvc._
 import play.api.libs.json._
@@ -41,7 +41,7 @@ object Code extends Controller {
           }
 
           case Some(generator: Generator) => {
-            val userAgent = s"apidoc:$apidocVersion http://www.apidoc.me/${orgKey}/${serviceKey}/${v.version}/${generator.key}"
+            val userAgent = s"apidoc:$apidocVersion http://${AppConfig.apidocWebHostname}/${orgKey}/${serviceKey}/${v.version}/${generator.key}"
             val service = ServiceBuilder(v.json)
             new Client(generator.uri).invocations.postByKey(
               key = generator.key,
