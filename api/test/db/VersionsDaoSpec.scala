@@ -22,21 +22,21 @@ class VersionsDaoSpec extends FlatSpec {
   }
 
   it should "create" in {
-    val version = VersionsDao.create(Util.createdBy, application, "1.0.0", EmptyJsObject)
+    val version = VersionsDao.create(Util.createdBy, application, "1.0.0", "{}", EmptyJsObject)
     assertEquals("1.0.0", version.version)
   }
 
   it should "findByApplicationAndVersion" in {
-    val version = VersionsDao.create(Util.createdBy, application, "1.0.1", EmptyJsObject)
-    assertEquals(Version(version.guid, version.version, EmptyJsObject),
+    val version = VersionsDao.create(Util.createdBy, application, "1.0.1", "{}", EmptyJsObject)
+    assertEquals(Version(version.guid, version.version, "{}", EmptyJsObject),
                  VersionsDao.findByApplicationAndVersion(Authorization.All, application, version.version).get)
   }
 
   it should "soft delete" in {
-    val version1 = VersionsDao.create(Util.createdBy, application, "1.0.2", EmptyJsObject)
-    VersionsDao.softDelete(Util.createdBy, Version(guid = version1.guid, version = version1.version, json = EmptyJsObject))
+    val version1 = VersionsDao.create(Util.createdBy, application, "1.0.2", "{}", EmptyJsObject)
+    VersionsDao.softDelete(Util.createdBy, version1)
 
-    val version2 = VersionsDao.create(Util.createdBy, application, "1.0.2", EmptyJsObject)
+    val version2 = VersionsDao.create(Util.createdBy, application, "1.0.2", "{}", EmptyJsObject)
     assertEquals(version1, version2.copy(guid = version1.guid))
     assertNotEquals(version1.guid, version2.guid)
   }

@@ -49,7 +49,7 @@ object Versions extends Controller {
               Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Application not found: ${applicationKey}")
             }
             case Some(application) => {
-              v.json.validate[Service] match {
+              v.service.validate[Service] match {
                 case e: JsError => {
                   sys.error("Invalid service json: " + e)
                 }
@@ -83,7 +83,23 @@ object Versions extends Controller {
         }
       }
       case Some(version) => {
-        Ok(version.json).withHeaders("Content-Type" -> "application/json")
+        Ok(version.original).withHeaders("Content-Type" -> "application/json")
+      }
+    }
+  }
+
+  def serviceJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+    request.api.Versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName).map {
+      case None => {
+        if (LatestVersion == versionName) {
+          Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
+        } else {
+          Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))
+            .flashing("warning" -> s"Version not found: ${versionName}")
+        }
+      }
+      case Some(version) => {
+        Ok(version.service).withHeaders("Content-Type" -> "application/json")
       }
     }
   }

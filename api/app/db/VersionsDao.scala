@@ -21,18 +21,19 @@ object VersionsDao {
 
   private val InsertQuery = """
     insert into versions
-    (guid, application_guid, version, version_sort_key, json, created_by_guid)
+    (guid, application_guid, version, version_sort_key, original, service, created_by_guid)
     values
-    ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {json}::json, {created_by_guid}::uuid)
+    ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {original}, {service}::json, {created_by_guid}::uuid)
   """
 
-  def create(user: User, application: Application, version: String, json: JsObject): Version = {
+  def create(user: User, application: Application, version: String, original: String, json: JsObject): Version = {
     val guid = UUID.randomUUID
 
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'application_guid -> application.guid,
+        'original -> original,
         'version -> version.trim,
         'version_sort_key -> VersionTag(version.trim).sortKey,
         'json -> json.toString.trim,
@@ -51,10 +52,10 @@ object VersionsDao {
     SoftDelete.delete("versions", deletedBy, version.guid)
   }
 
-  def replace(user: User, version: Version, application: Application, newJson: JsObject): Version = {
+  def replace(user: User, version: Version, application: Application, original: String, json: JsObject): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user, version)
-      VersionsDao.create(user, application, version.version, newJson)
+      VersionsDao.create(user, application, version.version, original, json)
     }
   }
 
@@ -105,11 +106,22 @@ object VersionsDao {
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
+      // TEMPORARY DURING DATA MIGRATION
       SQL(sql).on(bind: _*)().toList.map { row =>
+        val original = row[Option[String]]("original").getOrElse {
+          row[String]("json")
+        }
+        val service: JsObject = Json.parse(
+          row[Option[String]]("service").getOrElse {
+            core.ServiceValidator(row[String]("json")).serviceDescription.toString
+          }
+        ).as[JsObject]
+
         Version(
           guid = row[UUID]("guid"),
           version = row[String]("version"),
-          json = Json.parse(row[String]("json")).as[JsObject]
+          original = original,
+          service = service
         )
       }.toSeq
     }

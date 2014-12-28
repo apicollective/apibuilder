@@ -154,7 +154,8 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this version." },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
-		{ "name": "json", "type": "object", "description": "api.json description of this API" }
+		{ "name": "original", "type": "string" },
+		{ "name": "service", "type": "object", "description": "spec/service.json description of this API" }
             ]
         },
 

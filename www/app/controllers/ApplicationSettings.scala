@@ -32,7 +32,7 @@ object ApplicationSettings extends Controller {
         title = Some(application.name + " Settings"),
         application = Some(application),
         version = versionOption.map(_.version),
-        service = versionOption.flatMap(_.json.asOpt[Service])
+        service = versionOption.flatMap(_.service.asOpt[Service])
       )
     }
   }

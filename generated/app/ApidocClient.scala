@@ -232,7 +232,8 @@ package com.gilt.apidoc.models {
   case class Version(
     guid: _root_.java.util.UUID,
     version: String,
-    json: _root_.play.api.libs.json.JsObject
+    original: String,
+    service: _root_.play.api.libs.json.JsObject
   )
 
   case class VersionForm(
@@ -797,7 +798,8 @@ package com.gilt.apidoc.models {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "version").read[String] and
-        (__ \ "json").read[_root_.play.api.libs.json.JsObject]
+        (__ \ "original").read[String] and
+        (__ \ "service").read[_root_.play.api.libs.json.JsObject]
       )(Version.apply _)
     }
 
@@ -805,7 +807,8 @@ package com.gilt.apidoc.models {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "version").write[String] and
-        (__ \ "json").write[_root_.play.api.libs.json.JsObject]
+        (__ \ "original").write[String] and
+        (__ \ "service").write[_root_.play.api.libs.json.JsObject]
       )(unlift(Version.unapply _))
     }
 

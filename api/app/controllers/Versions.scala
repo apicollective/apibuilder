@@ -66,8 +66,8 @@ object Versions extends Controller {
                 }
 
                 val resultingVersion = VersionsDao.findByApplicationAndVersion(Authorization(Some(request.user)), application, version) match {
-                  case None => VersionsDao.create(request.user, application, version, form.json)
-                  case Some(existing: Version) => VersionsDao.replace(request.user, existing, application, form.json)
+                  case None => VersionsDao.create(request.user, application, version, request.body.toString, form.json)
+                  case Some(existing: Version) => VersionsDao.replace(request.user, existing, application, request.body.toString, form.json)
                 }
 
                 Ok(Json.toJson(resultingVersion))
