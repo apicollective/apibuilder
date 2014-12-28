@@ -28,6 +28,13 @@ object VersionsDao {
     ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {original}, {service}::json, {created_by_guid}::uuid)
   """
 
+  private val MigrateQuery = """
+    update versions
+       set original = {original},
+           service = {service}::json
+     where guid = {guid}::uuid
+  """
+
   def create(user: User, application: Application, version: String, original: String, service: JsObject): Version = {
     val guid = UUID.randomUUID
 
@@ -132,6 +139,45 @@ object VersionsDao {
         )
       }.toSeq
     }
+  }
+
+  def migrate(): Map[String, Int] = {
+    val sql = BaseQuery.trim + " and (versions.original is null or versions.service is null) and versions.json is not null"
+
+    var good = 0
+    var bad = 0
+
+    DB.withConnection { implicit c =>
+      val versions = SQL(sql)().toList
+      versions.map { row =>
+        val guid = row[UUID]("guid")
+        val original = row[Option[String]]("original").getOrElse {
+          row[String]("old_json")
+        }
+
+        try {
+          val service = core.ServiceValidator(original).serviceDescription.get
+
+          SQL(MigrateQuery).on(
+            'guid -> guid,
+            'original -> original,
+            'service -> Json.toJson(service).as[JsObject].toString.trim
+          ).execute()
+
+          good += 1
+        } catch {
+          case e: Throwable => {
+            println(s"Error migrationg version[${guid}]: $e")
+            bad += 1
+          }
+        }
+      }
+    }
+
+    Map(
+      "number_migrated" -> good,
+      "number_errors" -> bad
+    )
   }
 
 }
