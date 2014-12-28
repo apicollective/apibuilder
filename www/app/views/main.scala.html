@@ -31,7 +31,7 @@
                 <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@service.name</a></li>
                 @metadata.version.map { version =>
                   @if(metadata.isOrgMember) {
-                    <li><a href="@routes.ServiceSettings.show(orgKey = org.key, applicationKey = service.key, version = version)">Settings</a></li>
+                    <li><a href="@routes.ApplicationSettings.show(orgKey = org.key, applicationKey = service.key, version = version)">Settings</a></li>
                   }
                   <li><a href="@routes.Versions.apiJson(orgKey = org.key, applicationKey = service.key, version = version)">api.json</a></li>
                 }
@@ -47,29 +47,29 @@
             }
           </ul>
 
-          @metadata.serviceDescription.map { sd =>
-            @if(!sd.resources.isEmpty) {
+          @metadata.service.map { service =>
+            @if(!service.resources.isEmpty) {
               <b>Resources</b>
               <ul class="nav nav-sidebar">
-                @sd.resources.map { resource =>
+                @service.resources.map { resource =>
                   <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@lib.UrlKey.generate(resource.model.name)">@resource.model.plural</a></li>
                 }
               </ul>
             }
 
-            @if(!sd.enums.isEmpty) {
+            @if(!service.enums.isEmpty) {
               <b>Enums</b>
               <ul class="nav nav-sidebar">
-                @sd.enums.map { enum =>
+                @service.enums.map { enum =>
                   <li><a href="#enum-@lib.UrlKey.generate(enum.name)">@enum.name</a></li>
                 }
               </ul>
             }
 
-            @if(!sd.models.isEmpty) {
+            @if(!service.models.isEmpty) {
               <b>Models</b>
               <ul class="nav nav-sidebar">
-                @sd.models.map { model =>
+                @service.models.map { model =>
                   <li><a href="#model-@lib.UrlKey.generate(model.name)">@model.name</a></li>
                 }
               </ul>

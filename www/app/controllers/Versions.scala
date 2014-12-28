@@ -62,7 +62,7 @@ object Versions extends Controller {
                     service = Some(service),
                     generators = generators.filter(_.enabled)
                   )
-                  Ok(views.html.versions.show(tpl, service, watches))
+                  Ok(views.html.versions.show(tpl, application, service, watches))
                 }
               }
             }

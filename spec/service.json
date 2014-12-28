@@ -31,6 +31,7 @@
 	"service": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
+		{ "name": "key", "type": "string", "description": "Unique key to identify this service. URL friendly" },
 		{ "name": "base_url", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "headers", "type": "[header]" },
