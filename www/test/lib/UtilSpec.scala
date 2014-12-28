@@ -1,7 +1,6 @@
 package lib
 
-import com.gilt.apidocgenerator.models.Container
-import org.scalatest.{ ShouldMatchers, FunSpec }
+import org.scalatest.{FunSpec, ShouldMatchers}
 
 class UtilSpec extends FunSpec with ShouldMatchers {
 
