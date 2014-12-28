@@ -1,6 +1,8 @@
 package db
 
 import com.gilt.apidoc.models.{Application, User, Version, VersionForm, Visibility}
+import com.gilt.apidocspec.models.Service
+import com.gilt.apidocspec.models.json._
 import lib.VersionTag
 import anorm._
 import play.api.db._
@@ -13,7 +15,7 @@ object VersionsDao {
   private val LatestVersion = "latest"
 
   private val BaseQuery = """
-    select versions.guid, versions.version, versions.json::varchar
+    select versions.guid, versions.version, versions.original, versions.service::varchar, versions.old_json::varchar
      from versions
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
     where versions.deleted_at is null
@@ -26,7 +28,7 @@ object VersionsDao {
     ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {original}, {service}::json, {created_by_guid}::uuid)
   """
 
-  def create(user: User, application: Application, version: String, original: String, json: JsObject): Version = {
+  def create(user: User, application: Application, version: String, original: String, service: JsObject): Version = {
     val guid = UUID.randomUUID
 
     DB.withConnection { implicit c =>
@@ -36,7 +38,8 @@ object VersionsDao {
         'original -> original,
         'version -> version.trim,
         'version_sort_key -> VersionTag(version.trim).sortKey,
-        'json -> json.toString.trim,
+        'original -> original,
+        'service -> service.toString.trim,
         'created_by_guid -> user.guid
       ).execute()
     }
@@ -52,10 +55,10 @@ object VersionsDao {
     SoftDelete.delete("versions", deletedBy, version.guid)
   }
 
-  def replace(user: User, version: Version, application: Application, original: String, json: JsObject): Version = {
+  def replace(user: User, version: Version, application: Application, original: String, service: JsObject): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user, version)
-      VersionsDao.create(user, application, version.version, original, json)
+      VersionsDao.create(user, application, version.version, original, service)
     }
   }
 
@@ -109,13 +112,17 @@ object VersionsDao {
       // TEMPORARY DURING DATA MIGRATION
       SQL(sql).on(bind: _*)().toList.map { row =>
         val original = row[Option[String]]("original").getOrElse {
-          row[String]("json")
+          row[String]("old_json")
         }
-        val service: JsObject = Json.parse(
-          row[Option[String]]("service").getOrElse {
-            core.ServiceValidator(row[String]("json")).serviceDescription.toString
+        val service: JsObject = row[Option[String]]("service") match {
+          case Some(service) => {
+            Json.parse(service).as[JsObject]
           }
-        ).as[JsObject]
+          case None => {
+            val service = core.ServiceValidator(original).serviceDescription.get
+            Json.toJson(service).as[JsObject]
+          }
+        }
 
         Version(
           guid = row[UUID]("guid"),
