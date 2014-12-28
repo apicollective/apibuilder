@@ -6,7 +6,7 @@ import java.util.UUID
 import play.api._
 import play.api.mvc._
 
-object Application extends Controller {
+object ApplicationController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

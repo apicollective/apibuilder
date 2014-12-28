@@ -54,7 +54,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
         Some(request.uri)
       } else {
         orgKey match {
-          case None => Some(routes.Application.index().url)
+          case None => Some(routes.ApplicationController.index().url)
           case Some(key) => Some(routes.Organizations.show(key).url)
         }
       }

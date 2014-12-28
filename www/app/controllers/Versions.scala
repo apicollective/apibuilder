@@ -2,9 +2,9 @@ package controllers
 
 import models.MainTemplate
 import lib.{UrlKey, Util}
-import com.gilt.apidoc.models.{Organization, User, Version, Visibility, WatchForm}
-import com.gilt.apidocgenerator.models.{Service => SpecService}
-import com.gilt.apidocgenerator.models.json._
+import com.gilt.apidoc.models.{Application, Organization, User, Version, VersionForm, Visibility, WatchForm}
+import com.gilt.apidocspec.models.Service
+import com.gilt.apidocspec.models.json._
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._
@@ -21,48 +21,48 @@ object Versions extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def redirectToLatest(orgKey: String, serviceKey: String) = Action {
-    Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion))
+  def redirectToLatest(orgKey: String, applicationKey: String) = Action {
+    Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))
   }
 
-  def show(orgKey: String, serviceKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+  def show(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     for {
-      serviceResponse <- request.api.services.getByOrgKey(orgKey = orgKey, key = Some(serviceKey))
-      versionsResponse <- request.api.versions.getByOrgKeyAndServiceKey(orgKey, serviceKey)
-      versionOption <- request.api.versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName)
+      applicationResponse <- request.api.applications.getByOrgKey(orgKey = orgKey, key = Some(applicationKey))
+      versionsResponse <- request.api.versions.getByOrgKeyAndApplicationKey(orgKey, applicationKey)
+      versionOption <- request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
       generators <- request.api.Generators.get()
-      watches <- isWatching(request.api, request.user, orgKey, serviceKey)
+      watches <- isWatching(request.api, request.user, orgKey, applicationKey)
     } yield {
       versionOption match {
 
         case None => {
           if (LatestVersion == versionName) {
-            Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
+            Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
           } else {
-            Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion)).flashing("warning" -> s"Version not found: $versionName")
+            Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Version not found: $versionName")
           }
         }
 
         case Some(v: Version) => {
-          serviceResponse.headOption match {
+          applicationResponse.headOption match {
             case None => {
-              Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion)).flashing("warning" -> s"Service not found: ${serviceKey}")
+              Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Application not found: ${applicationKey}")
             }
-            case Some(service) => {
-              Json.parse(v.json).validate[SpecService] match {
+            case Some(application) => {
+              v.json.validate[Service] match {
                 case e: JsError => {
                   sys.error("Invalid service json: " + e)
                 }
-                case s: JsSuccess[SpecService] => {
-                  val specService = s.get
+                case s: JsSuccess[Service] => {
+                  val service = s.get
+                  // TODO: For updates, inculde application in the template
                   val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
-                    service = Some(service),
                     version = Some(v.version),
                     allServiceVersions = versionsResponse.map(_.version),
-                    specService = Some(specService),
+                    service = Some(service),
                     generators = generators.filter(_.enabled)
                   )
-                  Ok(views.html.versions.show(tpl, specService, watches))
+                  Ok(views.html.versions.show(tpl, service, watches))
                 }
               }
             }
@@ -72,13 +72,13 @@ object Versions extends Controller {
     }
   }
 
-  def apiJson(orgKey: String, serviceKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
-    request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(orgKey, serviceKey, versionName).map {
+  def apiJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+    request.api.Versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName).map {
       case None => {
         if (LatestVersion == versionName) {
-          Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
+          Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
         } else {
-          Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion))
+          Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))
             .flashing("warning" -> s"Version not found: ${versionName}")
         }
       }
@@ -88,16 +88,16 @@ object Versions extends Controller {
     }
   }
 
-  def postWatch(orgKey: String, serviceKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
-    request.api.Versions.getByOrgKeyAndServiceKeyAndVersion(request.org.key, serviceKey, versionName).flatMap {
+  def postWatch(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+    request.api.Versions.getByOrgKeyAndApplicationKeyAndVersion(request.org.key, applicationKey, versionName).flatMap {
       case None => {
         if (LatestVersion == versionName) {
           Future {
-            Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${serviceKey}")
+            Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
           }
         } else {
           Future {
-            Redirect(routes.Versions.show(orgKey, serviceKey, LatestVersion))
+            Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))
               .flashing("warning" -> s"Version not found: ${versionName}")
           }
         }
@@ -106,22 +106,22 @@ object Versions extends Controller {
         Await.result(request.api.watches.get(
           userGuid = Some(request.user.guid),
           organizationKey = Some(orgKey),
-          serviceKey = Some(serviceKey)
+          applicationKey = Some(applicationKey)
         ), 5000.millis).headOption match {
           case None => {
             request.api.watches.post(
               WatchForm(
                 userGuid = request.user.guid,
                 organizationKey = orgKey,
-                serviceKey = serviceKey
+                applicationKey = applicationKey
               )
             ).map { _ =>
-              Redirect(routes.Versions.show(orgKey, serviceKey, versionName)).flashing("success" -> "You are now watching this service")
+              Redirect(routes.Versions.show(orgKey, applicationKey, versionName)).flashing("success" -> "You are now watching this application")
             }
           }
           case Some(watch) => {
             request.api.watches.deleteByGuid(watch.guid).map { _ =>
-              Redirect(routes.Versions.show(orgKey, serviceKey, versionName)).flashing("success" -> "You are no longer watching this service")
+              Redirect(routes.Versions.show(orgKey, applicationKey, versionName)).flashing("success" -> "You are no longer watching this application")
             }
           }
         }
@@ -129,13 +129,13 @@ object Versions extends Controller {
     }
   }
 
-  def create(orgKey: String, serviceKey: Option[String] = None) = AuthenticatedOrg.async { implicit request =>
+  def create(orgKey: String, applicationKey: Option[String] = None) = AuthenticatedOrg.async { implicit request =>
     request.requireMember()
 
-    serviceKey match {
+    applicationKey match {
 
       case None => Future {
-        val tpl = request.mainTemplate(Some(Util.AddServiceText))
+        val tpl = request.mainTemplate(Some(Util.AddApplicationText))
         val filledForm = uploadForm.fill(
           UploadData(
             version = DefaultVersion,
@@ -147,22 +147,22 @@ object Versions extends Controller {
 
       case Some(key) => {
         for {
-          serviceResponse <- request.api.Services.getByOrgKey(orgKey = orgKey, key = Some(key))
-          versionsResponse <- request.api.Versions.getByOrgKeyAndServiceKey(orgKey, key, limit = Some(1))
+          applicationResponse <- request.api.Applications.getByOrgKey(orgKey = orgKey, key = Some(key))
+          versionsResponse <- request.api.Versions.getByOrgKeyAndApplicationKey(orgKey, key, limit = Some(1))
         } yield {
-          serviceResponse.headOption match {
+          applicationResponse.headOption match {
             case None => {
-              Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Service not found: ${key}")
+              Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${key}")
             }
-            case Some(service) => {
-              val tpl = request.mainTemplate(Some(s"${service.name}: Upload new version")).copy(
-                service = Some(service),
+            case Some(application) => {
+              val tpl = request.mainTemplate(Some(s"${application.name}: Upload new version")).copy(
+                application = Some(application),
                 version = versionsResponse.headOption.map(_.version)
               )
               val filledForm = uploadForm.fill(
                 UploadData(
                   version = versionsResponse.headOption.map(v => Util.calculateNextVersion(v.version)).getOrElse(DefaultVersion),
-                  visibility = service.visibility.toString
+                  visibility = application.visibility.toString
                 )
               )
               Ok(views.html.versions.form(tpl, filledForm))
@@ -176,7 +176,7 @@ object Versions extends Controller {
   def createPost(orgKey: String) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
     request.requireMember()
 
-    val tpl = request.mainTemplate(Some("Add Service"))
+    val tpl = request.mainTemplate(Some(Util.AddApplicationText))
     val boundForm = uploadForm.bindFromRequest
     boundForm.fold (
 
@@ -185,6 +185,10 @@ object Versions extends Controller {
       },
 
       valid => {
+
+        // TODO: Need to figure out how to get the service key out of
+        // the form or offer a different way to upload / create
+        // service versions
 
         request.body.file("file") match {
           case None => Future {
@@ -196,28 +200,42 @@ object Versions extends Controller {
             file.ref.moveTo(path, true)
             val contents = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n")
 
-            Json.parse(contents).asOpt[SpecService] match {
+            Json.parse(contents).asOpt[JsObject] match {
               case None => {
                 Future {
                   Ok(views.html.versions.form(tpl, boundForm,
-                    Seq("Invalid JSON - please make sure JSON includes at least a top level name element.")))
+                    Seq("Invalid JSON - please make sure the file defines a JSON Object"))
+                  )
                 }
               }
 
-              case Some(specService) => {
-                val serviceKey = UrlKey.generate(specService.name)
+              case Some(json) => {
+                (json \ "name").asOpt[String] match {
+                  case None => {
+                    Future {
+                      Ok(views.html.versions.form(tpl, boundForm,
+                        Seq("Invalid JSON - please make sure JSON includes at least a top level name element."))
+                      )
+                    }
+                  }
+                  case Some(name) => {
+                    val applicationKey = UrlKey.generate(name)
 
-                request.api.Versions.putByOrgKeyAndServiceKeyAndVersion(
-                  request.org.key,
-                  serviceKey,
-                  valid.version,
-                  contents,
-                  Some(Visibility(valid.visibility))
-                ).map { version =>
-                  Redirect(routes.Versions.show(request.org.key, serviceKey, valid.version)).flashing( "success" -> "Service description uploaded" )
-                }.recover {
-                  case r: com.gilt.apidoc.error.ErrorsResponse => {
-                    Ok(views.html.versions.form(tpl, boundForm, r.errors.map(_.message)))
+                    request.api.Versions.putByOrgKeyAndApplicationKeyAndVersion(
+                      orgKey = request.org.key,
+                      applicationKey = applicationKey,
+                      version = valid.version,
+                      versionForm = VersionForm(
+                        json = json,
+                        Some(Visibility(valid.visibility))
+                      )
+                    ).map { version =>
+                      Redirect(routes.Versions.show(request.org.key, applicationKey, valid.version)).flashing( "success" -> "Service uploaded" )
+                    }.recover {
+                      case r: com.gilt.apidoc.error.ErrorsResponse => {
+                        Ok(views.html.versions.form(tpl, boundForm, r.errors.map(_.message)))
+                      }
+                    }
                   }
                 }
               }
@@ -232,7 +250,7 @@ object Versions extends Controller {
     api: com.gilt.apidoc.Client,
     user: Option[User],
     orgKey: String,
-    serviceKey: String
+    applicationKey: String
   ): Future[Boolean] = {
     user match {
       case None => Future { false }
@@ -240,7 +258,7 @@ object Versions extends Controller {
         api.watches.get(
           userGuid = Some(u.guid),
           organizationKey = Some(orgKey),
-          serviceKey = Some(serviceKey)
+          applicationKey = Some(applicationKey)
         ).map { watches =>
           watches match {
             case Nil => false

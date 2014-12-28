@@ -1,7 +1,5 @@
 package lib
 
-import com.gilt.apidocgenerator.models.Container
-
 case class ExampleService(key: String) {
 
   val docsUrl = s"/gilt/$key/latest"
@@ -11,7 +9,7 @@ case class ExampleService(key: String) {
 
 object Util {
 
-  val AddServiceText = "Add Service"
+  val AddApplicationText = "Add Application"
   val OrgSettingsText = "Org Settings"
 
   val ApidocExample = ExampleService("apidoc")
@@ -32,17 +30,6 @@ object Util {
         }
       }
       case _ => version
-    }
-  }
-
-  def formatType(container: Container, name: String) = {
-    container match {
-      case Container.Singleton => name
-      case Container.List => s"[$name]"
-      case Container.Map => s"map[$name]"
-      case Container.Union => s"union[$name]"
-      case Container.Option => s"option[$name]"
-      case Container.UNDEFINED(container) => s"$container[$name]"
     }
   }
 

@@ -1,7 +1,7 @@
 @(org: com.gilt.apidoc.models.Organization,
- service: com.gilt.apidoc.models.Service,
+ app: com.gilt.apidoc.models.Application,
  version: String,
- specService: com.gilt.apidocgenerator.models.Service,
+ service: com.gilt.apidocspec.models.Service,
  body: com.gilt.apidocgenerator.models.Body
 )
 
@@ -14,7 +14,7 @@
   </thead>
   <tbody>
    <tr>
-     <td>@datatype(org, service, version, specService, body.`type`)</td>
+     <td>@datatype(org, app, version, service, body.`type`)</td>
      <td>@body.description.getOrElse("N/A")</td>
    </tr>
   </tbody>

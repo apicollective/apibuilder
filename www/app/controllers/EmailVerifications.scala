@@ -12,10 +12,10 @@ object EmailVerifications extends Controller {
     request.api.emailVerificationConfirmationForms.post(
       EmailVerificationConfirmationForm(token = token)
     ).map { _ =>
-      Redirect(routes.Application.index()).flashing("success" -> "Email confirmed")
+      Redirect(routes.ApplicationController.index()).flashing("success" -> "Email confirmed")
     }.recover {
       case r: com.gilt.apidoc.error.ErrorsResponse => {
-        Redirect(routes.Application.index()).flashing("warning" -> r.errors.map(_.message).mkString(", "))
+        Redirect(routes.ApplicationController.index()).flashing("warning" -> r.errors.map(_.message).mkString(", "))
       }
     }
   }

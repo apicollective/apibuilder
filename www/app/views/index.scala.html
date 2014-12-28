@@ -42,10 +42,10 @@
       @if(organizations.hasPrevious || organizations.hasNext) {
         <ul class="pager">
           @if(organizations.hasPrevious) {
-            <li><a href="@routes.Application.index(organizations.page - 1, membershipRequests.page, publicOrganizations.page)">Previous</a></li>
+            <li><a href="@routes.ApplicationController.index(organizations.page - 1, membershipRequests.page, publicOrganizations.page)">Previous</a></li>
           }
           @if(organizations.hasNext) {
-            <li><a href="@routes.Application.index(organizations.page + 1, membershipRequests.page, publicOrganizations.page)">Next</a></li>
+            <li><a href="@routes.ApplicationController.index(organizations.page + 1, membershipRequests.page, publicOrganizations.page)">Next</a></li>
           }
         </ul>
       }
@@ -66,10 +66,10 @@
       @if(membershipRequests.hasPrevious || membershipRequests.hasNext) {
         <ul class="pager">
           @if(membershipRequests.hasPrevious) {
-            <li><a href="@routes.Application.index(organizations.page, membershipRequests.page - 1, publicOrganizations.page)">Previous</a></li>
+            <li><a href="@routes.ApplicationController.index(organizations.page, membershipRequests.page - 1, publicOrganizations.page)">Previous</a></li>
           }
           @if(membershipRequests.hasNext) {
-            <li><a href="@routes.Application.index(organizations.page, membershipRequests.page + 1, publicOrganizations.page)">Next</a></li>
+            <li><a href="@routes.ApplicationController.index(organizations.page, membershipRequests.page + 1, publicOrganizations.page)">Next</a></li>
           }
         </ul>
       }
@@ -94,10 +94,10 @@
     @if(publicOrganizations.hasPrevious || publicOrganizations.hasNext) {
       <ul class="pager">
         @if(publicOrganizations.hasPrevious) {
-          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page, publicOrganizations.page - 1)">Previous</a></li>
+          <li><a href="@routes.ApplicationController.index(organizations.page, membershipRequests.page, publicOrganizations.page - 1)">Previous</a></li>
         }
         @if(publicOrganizations.hasNext) {
-          <li><a href="@routes.Application.index(organizations.page, membershipRequests.page, publicOrganizations.page + 1)">Next</a></li>
+          <li><a href="@routes.ApplicationController.index(organizations.page, membershipRequests.page, publicOrganizations.page + 1)">Next</a></li>
         }
       </ul>
     }

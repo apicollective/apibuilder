@@ -1,6 +1,6 @@
 GET     /_internal_/healthcheck                                   controllers.Healthchecks.index()
 
-GET     /                                                         controllers.Application.index(orgsPage: Int ?= 0, membershipRequestsPage: Int ?= 0, publicOrganizationsPage: Int ?= 0)
+GET     /                                                         controllers.ApplicationController.index(orgsPage: Int ?= 0, membershipRequestsPage: Int ?= 0, publicOrganizationsPage: Int ?= 0)
 
 GET     /login                                                    controllers.LoginController.redirect
 GET     /login/                                                   controllers.LoginController.index(return_url: Option[String] ?= None)
@@ -76,13 +76,13 @@ POST    /:orgKey/subscriptions/:publication/toggle                controllers.Su
 
 # Start dynamic routing by service key
 
-GET     /:orgKey/:serviceKey/:version/settings                    controllers.ServiceSettings.show(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/:serviceKey/:version/settings/edit               controllers.ServiceSettings.edit(orgKey: String, serviceKey: String, version: String)
-POST    /:orgKey/:serviceKey/:version/settings/postEdit           controllers.ServiceSettings.postEdit(orgKey: String, serviceKey: String, version: String)
-POST    /:orgKey/:serviceKey/:version/settings/postDelete         controllers.ServiceSettings.postDelete(orgKey: String, serviceKey: String, version: String)
+GET     /:orgKey/:applicationKey/:version/settings                controllers.ApplicationSettings.show(orgKey: String, applicationKey: String, version: String)
+GET     /:orgKey/:applicationKey/:version/settings/edit           controllers.ApplicationSettings.edit(orgKey: String, applicationKey: String, version: String)
+POST    /:orgKey/:applicationKey/:version/settings/postEdit       controllers.ApplicationSettings.postEdit(orgKey: String, applicationKey: String, version: String)
+POST    /:orgKey/:applicationKey/:version/settings/postDelete     controllers.ApplicationSettings.postDelete(orgKey: String, applicationKey: String, version: String)
 
-GET     /:orgKey/:serviceKey                                      controllers.Versions.redirectToLatest(orgKey: String, serviceKey: String)
-GET     /:orgKey/:serviceKey/:version                             controllers.Versions.show(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/:serviceKey/:version/api.json                    controllers.Versions.apiJson(orgKey: String, serviceKey: String, version: String)
-POST    /:orgKey/:serviceKey/:version/watch                       controllers.Versions.postWatch(orgKey: String, serviceKey: String, version: String)
-GET     /:orgKey/:serviceKey/:version/:generatorKey               controllers.Code.generate(orgKey: String, serviceKey: String, version: String, generatorKey: String)
+GET     /:orgKey/:applicationKey                                  controllers.Versions.redirectToLatest(orgKey: String, applicationKey: String)
+GET     /:orgKey/:applicationKey/:version                         controllers.Versions.show(orgKey: String, applicationKey: String, version: String)
+GET     /:orgKey/:applicationKey/:version/api.json                controllers.Versions.apiJson(orgKey: String, applicationKey: String, version: String)
+POST    /:orgKey/:applicationKey/:version/watch                   controllers.Versions.postWatch(orgKey: String, applicationKey: String, version: String)
+GET     /:orgKey/:applicationKey/:version/:generatorKey           controllers.Code.generate(orgKey: String, applicationKey: String, version: String, generatorKey: String)

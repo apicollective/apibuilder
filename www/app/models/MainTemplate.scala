@@ -1,31 +1,29 @@
 package models
 
-import com.gilt.apidocgenerator.models.ServiceDescription
-import com.gilt.apidoc.models.{ Organization, Service, User, Generator }
-import com.gilt.apidocgenerator
+import com.gilt.apidoc.models.{Application, Generator, Organization, User}
+import com.gilt.apidocspec.models.{Resource, Service}
 import play.api.Play.current
 
 case class MainTemplate(
   title: Option[String] = None,
   headTitle: Option[String] = None,
   org: Option[Organization] = None,
-  service: Option[Service] = None,
+  application: Option[Application] = None,
   version: Option[String] = None,
-  serviceDescription: Option[ServiceDescription] = None,
   allServiceVersions: Seq[String] = Seq.empty,
   user: Option[User] = None,
-  resource: Option[apidocspec.models.Resource] = None,
+  resource: Option[Resource] = None,
   settings: Option[SettingsMenu] = None,
   generators: Seq[Generator] = Seq.empty,
   isOrgAdmin: Boolean = false,
   isOrgMember: Boolean = false,
-  specService: Option[apidocspec.models.Service] = None,
+  service: Option[Service] = None,
   requestPath: String
 ) {
 
-  def canEditService(service: String): Boolean = isOrgMember
+  def canEditApplication(applicationKey: String): Boolean = isOrgMember
 
-  def canDeleteService(service: String): Boolean = isOrgMember
+  def canDeleteApplication(applicationKey: String): Boolean = isOrgMember
 
 }
 

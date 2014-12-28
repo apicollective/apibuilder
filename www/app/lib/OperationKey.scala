@@ -1,19 +1,24 @@
 package lib
 
-import com.gilt.apidocgenerator.models.{Operation, ServiceDescription}
+import com.gilt.apidocspec.models.{Model, Operation, Resource, Service}
 
 object OperationKey {
 
-  def lookup(service: ServiceDescription, key: String): Option[Operation] = {
-    service.resources.flatMap(_.operations).find { op =>
-      OperationKey(op).key == key
-    }
+  def lookup(service: Service, key: String): Option[Operation] = {
+    service.resources.flatMap { resource =>
+      resource.operations.find { op =>
+        OperationKey(resource, op).key == key
+      }
+    }.headOption
   }
 
 }
 
-case class OperationKey(op: Operation) {
+case class OperationKey(
+  resource: Resource,
+  op: Operation
+) {
 
-  lazy val key = lib.UrlKey.generate(s"${op.model.name} ${op.method} ${op.path}")
+  lazy val key = lib.UrlKey.generate(s"${resource.model.name} ${op.method} ${op.path}")
 
 }

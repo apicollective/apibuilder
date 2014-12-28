@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  service: com.gilt.apidocgenerator.models.Service,
+  service: com.gilt.apidocspec.models.Service,
   isWatching: Boolean
 )(implicit flash: Flash)
 
@@ -12,9 +12,9 @@
       }
 
       @if(isWatching) {
-        <a class="postForm" href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, serviceKey = svc.key, version = tpl.version.get)">Watching</a>
+        <a class="postForm" href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, applicationKey = svc.key, version = tpl.version.get)">Watching</a>
       } else {
-        <a class="postForm" href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, serviceKey = svc.key, version = tpl.version.get)">Not Watching</a>
+        <a class="postForm" href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, applicationKey = svc.key, version = tpl.version.get)">Not Watching</a>
       }
     </div>
   }
@@ -96,11 +96,11 @@
     @if(service.enums.isEmpty) {
       <em>None</em>
     } else {
-      @service.enums.map { case (enumName, enum) =>
-        <div id="enum-@lib.UrlKey.generate(enumName)"></div>
-        <a name="enum-@lib.UrlKey.generate(enumName)"></a>
+      @service.enums.map { enum =>
+        <div id="enum-@lib.UrlKey.generate(enum.name)"></div>
+        <a name="enum-@lib.UrlKey.generate(enum.name)"></a>
         <div class="version_model">
-          <h3>@enumName</h3>
+          <h3>@enum.name</h3>
 
           @enum.description.getOrElse("")
 
@@ -113,11 +113,11 @@
     @if(service.models.isEmpty) {
       <em>None</em>
     } else {
-      @service.models.map { case (modelName, model) =>
-        <div id="model-@lib.UrlKey.generate(modelName)"></div>
-        <a name="model-@lib.UrlKey.generate(modelName)"></a>
+      @service.models.map { model =>
+        <div id="model-@lib.UrlKey.generate(model.name)"></div>
+        <a name="model-@lib.UrlKey.generate(model.name)"></a>
         <div class="version_model">
-          <h3>@modelName</h3>
+          <h3>@model.name</h3>
 
           @model.description.getOrElse("")
 

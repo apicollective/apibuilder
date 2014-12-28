@@ -17,7 +17,7 @@ object Organizations extends Controller {
 
   def show(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
     for {
-      services <- request.api.Services.getByOrgKey(
+      applications <- request.api.Applications.getByOrgKey(
         orgKey = orgKey,
         limit = Some(Pagination.DefaultLimit+1),
         offset = Some(page * Pagination.DefaultLimit)
@@ -32,7 +32,7 @@ object Organizations extends Controller {
 
       Ok(views.html.organizations.show(
         request.mainTemplate(),
-        services = PaginatedCollection(page, services),
+        applications = PaginatedCollection(page, applications),
         haveRequests = haveRequests)
       )
     }

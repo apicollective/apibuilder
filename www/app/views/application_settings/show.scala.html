@@ -1,0 +1,24 @@
+@(
+  tpl: models.MainTemplate,
+  application: com.gilt.apidoc.models.Application
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  @tpl.org.map { org =>
+    @if(tpl.canEditApplication(application.key)) {
+      <div class="pull-right">
+        <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ApplicationSettings.edit(orgKey = org.key, applicationKey = application.key, version = tpl.version.get)">Edit</a>
+      </div>
+    }
+
+    <ul>
+      <li>Visibility: @application.visibility</li>
+    </ul>
+
+    @if(tpl.canDeleteApplication(application.key)) {
+      <a href="@routes.ApplicationSettings.postDelete(org.key, application.key, tpl.version.get)" class="delete" data-confirm="Are you sure?">Delete this application</a>
+    }
+  }
+
+}

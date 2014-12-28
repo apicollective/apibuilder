@@ -31,9 +31,9 @@
                 <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@service.name</a></li>
                 @metadata.version.map { version =>
                   @if(metadata.isOrgMember) {
-                    <li><a href="@routes.ServiceSettings.show(orgKey = org.key, serviceKey = service.key, version = version)">Settings</a></li>
+                    <li><a href="@routes.ServiceSettings.show(orgKey = org.key, applicationKey = service.key, version = version)">Settings</a></li>
                   }
-                  <li><a href="@routes.Versions.apiJson(orgKey = org.key, serviceKey = service.key, version = version)">api.json</a></li>
+                  <li><a href="@routes.Versions.apiJson(orgKey = org.key, applicationKey = service.key, version = version)">api.json</a></li>
                 }
               }
 
@@ -78,7 +78,7 @@
             <b>Clients</b>
             <ul class="nav nav-sidebar">
                 @metadata.generators.map { generator =>
-                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, serviceKey = metadata.service.get.key, version = metadata.version.get, generator.key)">@generator.name</a>
+                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, applicationKey = metadata.service.get.key, version = metadata.version.get, generator.key)">@generator.name</a>
               }
             </ul>
           }

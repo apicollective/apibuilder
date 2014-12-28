@@ -1,4 +1,9 @@
-@(org: com.gilt.apidoc.models.Organization, service: com.gilt.apidoc.models.Service, version: String, specService: com.gilt.apidocgenerator.models.Service, fields: Iterable[com.gilt.apidocgenerator.models.Field])
+@(org: com.gilt.apidoc.models.Organization,
+  app: com.gilt.apidoc.models.Application,
+  version: String,
+  service: com.gilt.apidocspec.models.Service,
+  fields: Iterable[com.gilt.apidocspec.models.Field]
+)
 
 <table class="table table-hover table-condensed">
   <thead>
@@ -14,7 +19,7 @@
    @fields.map { field =>
      <tr>
        <td>@field.name</td>
-       <td>@{datatype(org, service, version, specService, field.`type`)}</td>
+       <td>@{datatype(org, app, version, service, field.`type`)}</td>
        <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
        <td>@field.default.getOrElse("-")</td>
        <td>@field.description.getOrElse("")
