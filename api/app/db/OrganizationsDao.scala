@@ -202,7 +202,7 @@ object OrganizationsDao {
     authorization: Authorization,
     guid: Option[UUID] = None,
     userGuid: Option[UUID] = None,
-    service: Option[Service] = None,
+    application: Option[Application] = None,
     key: Option[String] = None,
     name: Option[String] = None,
     limit: Long = 25,
@@ -216,9 +216,9 @@ object OrganizationsDao {
         "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
         ")"
       },
-      service.map { v =>
+      application.map { v =>
         "and organizations.guid in (" +
-        "select organization_guid from services where deleted_at is null and guid = {service_guid}::uuid" +
+        "select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid" +
         ")"
       },
       guid.map { v => "and organizations.guid = {guid}::uuid" },
@@ -230,7 +230,7 @@ object OrganizationsDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
-      service.map('service_guid -> _.guid.toString),
+      application.map('application_guid -> _.guid.toString),
       key.map('key -> _),
       name.map('name ->_)
     ).flatten ++ authorization.bindVariables

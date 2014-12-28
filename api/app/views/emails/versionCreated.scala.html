@@ -1,17 +1,17 @@
 @(org: com.gilt.apidoc.models.Organization,
-  service: com.gilt.apidoc.models.Service,
+  application: com.gilt.apidoc.models.Application,
   version: com.gilt.apidoc.models.Version)
 
 <p>
-  Version @version.version has been uploaded for the service @org.name/@service.name 
+  Version @version.version has been uploaded for the application @org.name/@application.name 
 </p>
 
-@service.description.map { desc =>
+@application.description.map { desc =>
   <p>
     @desc
   </p>
 }
 
 <p>
-  <a href="@lib.AppConfig.apidocWebHostname/@org.key/@service.key/@version.version">View version</a>
+  <a href="@lib.AppConfig.apidocWebHostname/@org.key/@application.key/@version.version">View version</a>
 </p>

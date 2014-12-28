@@ -22,11 +22,11 @@ sealed trait Authorization {
 
   /**
     * Generates a sql filter to restrict the returned set of
-    * services to those that are able to be seen by this
+    * applications to those that are able to be seen by this
     * authorization.
     */
-  def serviceFilter(
-    servicesTableName: String = "services"
+  def applicationFilter(
+    applicationsTableName: String = "applications"
   ): Option[String]
 
   def bindVariables(): Seq[NamedParameter] = Seq.empty
@@ -41,7 +41,7 @@ object Authorization {
   private val UserQuery =
     s"select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid"
 
-  private val PublicServicesQuery = s"%s.visibility = '${Visibility.Public.toString}'"
+  private val PublicApplicationsQuery = s"%s.visibility = '${Visibility.Public.toString}'"
 
   case object PublicOnly extends Authorization {
 
@@ -55,10 +55,10 @@ object Authorization {
       }
     }
 
-    def serviceFilter(
-      servicesTableName: String = "services"
+    def applicationFilter(
+      applicationsTableName: String = "applications"
     ) = {
-      Some(PublicServicesQuery.format(servicesTableName))
+      Some(PublicApplicationsQuery.format(applicationsTableName))
     }
 
   }
@@ -70,8 +70,8 @@ object Authorization {
       organizationMetadataTableName: Option[String] = None
     ) = None
 
-    def serviceFilter(
-      servicesTableName: String = "services"
+    def applicationFilter(
+      applicationsTableName: String = "applications"
     ) = None
 
   }
@@ -88,11 +88,11 @@ object Authorization {
       }
     }
 
-    def serviceFilter(
-      servicesTableName: String = "services"
+    def applicationFilter(
+      applicationsTableName: String = "applications"
     ) = {
       Some(
-        "(" + PublicServicesQuery.format(servicesTableName) + " or " + organizationFilter(s"$servicesTableName.organization_guid").get + ")"
+        "(" + PublicApplicationsQuery.format(applicationsTableName) + " or " + organizationFilter(s"$applicationsTableName.organization_guid").get + ")"
       )
     }
 

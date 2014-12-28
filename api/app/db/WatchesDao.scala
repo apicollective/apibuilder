@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Error, Organization, Service, Watch, WatchForm, User}
+import com.gilt.apidoc.models.{Error, Organization, Application, Watch, WatchForm, User}
 import anorm._
 import lib.Validation
 import play.api.db._
@@ -17,16 +17,16 @@ case class FullWatchForm(
 
   private val auth = Authorization(Some(createdBy))
   val org: Option[Organization] = OrganizationsDao.findByKey(auth, form.organizationKey)
-  val service: Option[Service] = org.flatMap { o =>
-    ServicesDao.findByOrganizationKeyAndServiceKey(auth, o.key, form.serviceKey)
+  val application: Option[Application] = org.flatMap { o =>
+    ApplicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
   }
 
   val user = UsersDao.findByGuid(form.userGuid)
 
   lazy val validate: Seq[Error] = {
-    val serviceKeyErrors = service match {
-      case None => Seq(s"Service[${form.serviceKey}] not found")
-      case Some(service) => Seq.empty
+    val applicationKeyErrors = application match {
+      case None => Seq(s"Application[${form.applicationKey}] not found")
+      case Some(application) => Seq.empty
     }
 
     val userErrors = user match {
@@ -34,7 +34,7 @@ case class FullWatchForm(
         case Some(_) => Seq.empty
     }
 
-    Validation.errors(serviceKeyErrors ++ userErrors)
+    Validation.errors(applicationKeyErrors ++ userErrors)
   }
 
 }
@@ -46,34 +46,34 @@ object WatchesDao {
            users.guid as user_guid,
            users.email as user_email,
            users.name as user_name,
-           services.guid as service_guid,
-           services.name as service_name,
-           services.key as service_key,
-           services.visibility as service_visibility,
-           services.description as service_description,
+           applications.guid as application_guid,
+           applications.name as application_name,
+           applications.key as application_key,
+           applications.visibility as application_visibility,
+           applications.description as application_description,
            organizations.guid as organization_guid,
            organizations.key as organization_key,
            organizations.name as organization_name
       from watches
       join users on users.guid = watches.user_guid and users.deleted_at is null
-      join services on services.guid = watches.service_guid and services.deleted_at is null
-      join organizations on organizations.guid = services.organization_guid and organizations.deleted_at is null
+      join applications on applications.guid = watches.application_guid and applications.deleted_at is null
+      join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
      where watches.deleted_at is null
   """
 
   private val InsertQuery = """
     insert into watches
-    (guid, user_guid, service_guid, created_by_guid)
+    (guid, user_guid, application_guid, created_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {service_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {user_guid}::uuid, {application_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def upsert(createdBy: User, fullForm: FullWatchForm): Watch = {
     val errors = fullForm.validate
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    val service = fullForm.service.getOrElse {
-      sys.error(s"Cannot find service[${fullForm.form.organizationKey}/${fullForm.form.serviceKey}]")
+    val application = fullForm.application.getOrElse {
+      sys.error(s"Cannot find application[${fullForm.form.organizationKey}/${fullForm.form.applicationKey}]")
     }
 
     val guid = UUID.randomUUID
@@ -83,7 +83,7 @@ object WatchesDao {
         SQL(InsertQuery).on(
           'guid -> guid,
           'user_guid -> fullForm.form.userGuid,
-          'service_guid -> service.guid,
+          'application_guid -> application.guid,
           'created_by_guid -> createdBy.guid
         ).execute()
       }
@@ -99,7 +99,7 @@ object WatchesDao {
             Authorization.All,
             userGuid = Some(fullForm.form.userGuid),
             organizationKey = Some(fullForm.org.get.key),
-            service = Some(service),
+            application = Some(application),
             limit = 1
           ).headOption.getOrElse {
             sys.error(s"Failed to create watch")
@@ -125,8 +125,8 @@ object WatchesDao {
     authorization: Authorization,
     guid: Option[UUID] = None,
     organizationKey: Option[String] = None,
-    service: Option[Service] = None,
-    serviceKey: Option[String] = None,
+    application: Option[Application] = None,
+    applicationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     limit: Long = 25,
     offset: Long = 0
@@ -137,9 +137,9 @@ object WatchesDao {
       guid.map { v => "and watches.guid = {guid}::uuid" },
       userGuid.map { v => "and watches.user_guid = {user_guid}::uuid" },
       organizationKey.map { v => "and organizations.key = lower(trim({organization_key}))" },
-      service.map { v => "and watches.service_guid = {service_guid}::uuid" },
-      serviceKey.map { v => "and services.key = lower(trim({service_key}))" },
-      Some(s"order by services.key, watches.created_at limit ${limit} offset ${offset}")
+      application.map { v => "and watches.application_guid = {application_guid}::uuid" },
+      applicationKey.map { v => "and applications.key = lower(trim({application_key}))" },
+      Some(s"order by applications.key, watches.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
 
@@ -147,8 +147,8 @@ object WatchesDao {
       guid.map('guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
       organizationKey.map('organization_key -> _),
-      service.map('service_guid -> _.guid.toString),
-      serviceKey.map('service_key -> _)
+      application.map('application_guid -> _.guid.toString),
+      applicationKey.map('application_key -> _)
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
@@ -163,7 +163,7 @@ object WatchesDao {
       guid = row[UUID]("guid"),
       user = UsersDao.fromRow(row, Some("user")),
       organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
-      service = ServicesDao.fromRow(row, Some("service"))
+      application = ApplicationsDao.fromRow(row, Some("application"))
     )
   }
 

@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.apidoc.models.{Membership, Publication, Service}
+import com.gilt.apidoc.models.{Membership, Publication, Application}
 import lib.{Email, Person}
 import db._
 import play.api.Logger
@@ -14,7 +14,7 @@ object EmailActor {
     case class MembershipCreated(guid: UUID)
     case class MembershipRequestCreated(guid: UUID)
     case class PasswordResetRequestCreated(guid: UUID)
-    case class ServiceCreated(guid: UUID)
+    case class ApplicationCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
   }
 
@@ -50,15 +50,15 @@ class EmailActor extends Actor {
       }
     )
 
-    case EmailActor.Messages.ServiceCreated(guid) => Util.withVerboseErrorHandler(
-      s"EmailActor.Messages.ServiceCreated($guid)", {
-        ServicesDao.findByGuid(Authorization.All, guid).map { service =>
-          OrganizationsDao.findAll(Authorization.All, service = Some(service)).map { org =>
+    case EmailActor.Messages.ApplicationCreated(guid) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.ApplicationCreated($guid)", {
+        ApplicationsDao.findByGuid(Authorization.All, guid).map { application =>
+          OrganizationsDao.findAll(Authorization.All, application = Some(application)).map { org =>
             Emails.deliver(
               org = org,
-              publication = Publication.ServicesCreate,
-              subject = s"${org.name}: New Service Created - ${service.name}",
-              body = views.html.emails.serviceCreated(org, service).toString
+              publication = Publication.ApplicationsCreate,
+              subject = s"${org.name}: New Application Created - ${application.name}",
+              body = views.html.emails.applicationCreated(org, application).toString
             )
           }
         }
@@ -80,15 +80,15 @@ class EmailActor extends Actor {
     )
 
     case EmailActor.Messages.VersionCreated(guid) => Util.withVerboseErrorHandler(
-      s"EmailActor.Messages.ServiceCreated($guid)", {
+      s"EmailActor.Messages.ApplicationCreated($guid)", {
         VersionsDao.findByGuid(Authorization.All, guid).map { version =>
-          ServicesDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { service =>
-            OrganizationsDao.findAll(Authorization.All, service = Some(service), limit = 1).headOption.map { org =>
+          ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
+            OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
               Emails.deliver(
                 org = org,
                 publication = Publication.VersionsCreate,
-                subject = s"${org.name}/${service.name}: New Version Uploaded (${version.version}) ",
-                body = views.html.emails.versionCreated(org, service, version).toString
+                subject = s"${org.name}/${application.name}: New Version Uploaded (${version.version}) ",
+                body = views.html.emails.versionCreated(org, application, version).toString
               )
             }
           }
@@ -97,7 +97,7 @@ class EmailActor extends Actor {
     )
 
     case EmailActor.Messages.EmailVerificationCreated(guid) => Util.withVerboseErrorHandler(
-      s"EmailActor.Messages.ServiceCreated($guid)", {
+      s"EmailActor.Messages.ApplicationCreated($guid)", {
         EmailVerificationsDao.findByGuid(guid).map { verification =>
           UsersDao.findByGuid(verification.userGuid).map { user =>
             Email.sendHtml(

@@ -23,13 +23,13 @@ object Code extends Controller {
 
   val apidocVersion = Config.requiredString("git.version")
 
-  def getByOrgKeyAndServiceKeyAndVersionAndGeneratorKey(
+  def getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(
     orgKey: String,
-    serviceKey: String,
+    applicationKey: String,
     version: String,
     generatorKey: String
   ) = AnonymousRequest.async { request =>
-    VersionsDao.findVersion(Authorization(request.user), orgKey, serviceKey, version) match {
+    VersionsDao.findVersion(Authorization(request.user), orgKey, applicationKey, version) match {
       case None => {
         Future.successful(NotFound)
       }
@@ -41,7 +41,11 @@ object Code extends Controller {
           }
 
           case Some(generator: Generator) => {
-            val userAgent = s"apidoc:$apidocVersion http://${AppConfig.apidocWebHostname}/${orgKey}/${serviceKey}/${v.version}/${generator.key}"
+            val userAgent = s"apidoc:$apidocVersion http://${AppConfig.apidocWebHostname}/${orgKey}/${applicationKey}/${v.version}/${generator.key}"
+
+            sys.error("TODO: Finish imports for application")
+
+            /*
             val service = ServiceBuilder(v.json)
             new Client(generator.uri).invocations.postByKey(
               key = generator.key,
@@ -49,6 +53,7 @@ object Code extends Controller {
             ).map { invocation =>
               Ok(Json.toJson(com.gilt.apidoc.models.Code(generator, invocation.source)))
             }
+             */
           }
         }
       }

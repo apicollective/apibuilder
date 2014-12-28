@@ -17,7 +17,7 @@ trait Watches {
     guid: Option[UUID],
     userGuid: Option[java.util.UUID],
     organizationKey: Option[String],
-    serviceKey: Option[String],
+    applicationKey: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
@@ -26,7 +26,7 @@ trait Watches {
       guid = guid,
       userGuid = userGuid,
       organizationKey =  organizationKey,
-      serviceKey = serviceKey,
+      applicationKey = applicationKey,
       limit = limit,
       offset = offset
     )
@@ -43,13 +43,13 @@ trait Watches {
   def getCheck(
     userGuid: scala.Option[_root_.java.util.UUID],
     organizationKey: String,
-    serviceKey: String
+    applicationKey: String
   ) = Authenticated { request =>
     WatchesDao.findAll(
       Authorization(Some(request.user)),
       userGuid = userGuid,
       organizationKey =  Some(organizationKey),
-      serviceKey = Some(serviceKey),
+      applicationKey = Some(applicationKey),
       limit = 1
     ).headOption match {
       case None => Ok(Json.toJson(false))

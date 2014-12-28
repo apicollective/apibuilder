@@ -71,14 +71,14 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     publication = Publication.MembershipRequestsCreate
   )
 
-  def createService(
+  def createApplication(
     org: Organization,
-    key: String = "z-test-service-" + UUID.randomUUID.toString
-  ): Service = {
-    db.ServicesDao.create(
+    key: String = "z-test-app-" + UUID.randomUUID.toString
+  ): Application = {
+    db.ApplicationsDao.create(
       createdBy = TestUser,
       org = org,
-      form = db.ServiceForm(
+      form = ApplicationForm(
         name = key,
         key = Some(key),
         description = None,

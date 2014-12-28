@@ -129,7 +129,7 @@ class SubscriptionsSpec extends BaseSpec {
       SubscriptionForm(
         organizationKey = org2.key,
         userGuid = user2.guid,
-        publication = Publication.ServicesCreate
+        publication = Publication.ApplicationsCreate
       )
     )
 
@@ -142,7 +142,7 @@ class SubscriptionsSpec extends BaseSpec {
     await(client.subscriptions.get(userGuid = Some(user2.guid))).map(_.guid) must be(Seq(subscription2.guid))
 
     await(client.subscriptions.get(userGuid = Some(user1.guid), publication = Some(Publication.MembershipRequestsCreate))).map(_.guid) must be(Seq(subscription1.guid))
-    await(client.subscriptions.get(userGuid = Some(user2.guid), publication = Some(Publication.ServicesCreate))).map(_.guid) must be(Seq(subscription2.guid))
+    await(client.subscriptions.get(userGuid = Some(user2.guid), publication = Some(Publication.ApplicationsCreate))).map(_.guid) must be(Seq(subscription2.guid))
 
     intercept[FailedRequest] {
       await(client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))) must be(Seq.empty)

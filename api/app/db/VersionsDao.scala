@@ -1,22 +1,12 @@
 package db
 
-import com.gilt.apidoc.models.{Service, User, Version, Visibility}
+import com.gilt.apidoc.models.{Application, User, Version, VersionForm, Visibility}
 import lib.VersionTag
 import anorm._
 import play.api.db._
 import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
-
-case class VersionForm(
-  json: String,
-  visibility: Option[Visibility] = None
-)
-
-object VersionForm {
-  import com.gilt.apidoc.models.json._
-  implicit val versionFormReads = Json.reads[VersionForm]
-}
 
 object VersionsDao {
 
@@ -25,63 +15,63 @@ object VersionsDao {
   private val BaseQuery = """
     select versions.guid, versions.version, versions.json::varchar
      from versions
-     join services on services.deleted_at is null and services.guid = versions.service_guid
+     join applications on applications.deleted_at is null and applications.guid = versions.application_guid
     where versions.deleted_at is null
   """
 
   private val InsertQuery = """
     insert into versions
-    (guid, service_guid, version, version_sort_key, json, created_by_guid)
+    (guid, application_guid, version, version_sort_key, json, created_by_guid)
     values
-    ({guid}::uuid, {service_guid}::uuid, {version}, {version_sort_key}, {json}::json, {created_by_guid}::uuid)
+    ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {json}::json, {created_by_guid}::uuid)
   """
 
-  def create(user: User, service: Service, version: String, json: String): Version = {
-    val v = Version(guid = UUID.randomUUID,
-                    version = version,
-                    json = json)
+  def create(user: User, application: Application, version: String, json: JsObject): Version = {
+    val guid = UUID.randomUUID
 
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'guid -> v.guid,
-        'service_guid -> service.guid,
-        'version -> v.version,
-        'version_sort_key -> VersionTag(v.version).sortKey,
-        'json -> v.json,
+        'guid -> guid,
+        'application_guid -> application.guid,
+        'version -> version.trim,
+        'version_sort_key -> VersionTag(version.trim).sortKey,
+        'json -> json.toString.trim,
         'created_by_guid -> user.guid
       ).execute()
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.VersionCreated(v.guid)
+    global.Actors.mainActor ! actors.MainActor.Messages.VersionCreated(guid)
 
-    v
+    findAll(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {
+      sys.error("Failed to create version")
+    }
   }
 
   def softDelete(deletedBy: User, version: Version) {
     SoftDelete.delete("versions", deletedBy, version.guid)
   }
 
-  def replace(user: User, version: Version, service: Service, newJson: String): Version = {
+  def replace(user: User, version: Version, application: Application, newJson: JsObject): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user, version)
-      VersionsDao.create(user, service, version.version, newJson)
+      VersionsDao.create(user, application, version.version, newJson)
     }
   }
 
-  def findVersion(authorization: Authorization, orgKey: String, serviceKey: String, version: String): Option[Version] = {
-    ServicesDao.findByOrganizationKeyAndServiceKey(authorization, orgKey, serviceKey).flatMap { service =>
+  def findVersion(authorization: Authorization, orgKey: String, applicationKey: String, version: String): Option[Version] = {
+    ApplicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
       if (version == LatestVersion) {
-        VersionsDao.findAll(authorization, serviceGuid = Some(service.guid), limit = 1).headOption
+        VersionsDao.findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
       } else {
-        VersionsDao.findByServiceAndVersion(authorization, service, version)
+        VersionsDao.findByApplicationAndVersion(authorization, application, version)
       }
     }
   }
 
-  def findByServiceAndVersion(authorization: Authorization, service: Service, version: String): Option[Version] = {
+  def findByApplicationAndVersion(authorization: Authorization, application: Application, version: String): Option[Version] = {
     VersionsDao.findAll(
       authorization,
-      serviceGuid = Some(service.guid),
+      applicationGuid = Some(application.guid),
       version = Some(version),
       limit = 1
     ).headOption
@@ -93,7 +83,7 @@ object VersionsDao {
 
   def findAll(
     authorization: Authorization,
-    serviceGuid: Option[UUID] = None,
+    applicationGuid: Option[UUID] = None,
     guid: Option[UUID] = None,
     version: Option[String] = None,
     limit: Long = 25,
@@ -101,16 +91,16 @@ object VersionsDao {
   ): Seq[Version] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.serviceFilter("services").map(v => "and " + v),
+      authorization.applicationFilter("applications").map(v => "and " + v),
       guid.map { v => "and versions.guid = {guid}::uuid" },
-      serviceGuid.map { _ => "and versions.service_guid = {service_guid}::uuid" },
+      applicationGuid.map { _ => "and versions.application_guid = {application_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },
       Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      serviceGuid.map('service_guid -> _.toString),
+      applicationGuid.map('application_guid -> _.toString),
       version.map('version ->_)
     ).flatten ++ authorization.bindVariables
 
@@ -119,7 +109,7 @@ object VersionsDao {
         Version(
           guid = row[UUID]("guid"),
           version = row[String]("version"),
-          json = row[String]("json")
+          json = Json.parse(row[String]("json")).as[JsObject]
         )
       }.toSeq
     }

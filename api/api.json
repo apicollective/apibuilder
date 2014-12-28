@@ -14,11 +14,11 @@
 	},
 
 	"publication": {
-	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing to an email alert whenever a new version of a application is created.",
+	    "description": "A publication represents something that a user can subscribe to. An example would be subscribing to an email alert whenever a new version of an application is created.",
 	    "values": [
 		{ "name": "membership_requests.create", "description": "For organizations for which I am an administrator, email me whenever a user applies to join the org." },
 		{ "name": "memberships.create", "description": "For organizations for which I am a member, email me whenever a user joins the org." },
-		{ "name": "applications.create", "description": "For organizations for which I am a member, email me whenever a application is created." },
+		{ "name": "applications.create", "description": "For organizations for which I am a member, email me whenever an application is created." },
 		{ "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." }
 	    ]
 	}
@@ -140,11 +140,28 @@
             ]
         },
 
+        "application_form": {
+            "fields": [
+                { "name": "name", "type": "string" },
+                { "name": "key", "type": "string", "required": false, "description": "Defaults to a key generated from the application name" },
+                { "name": "description", "type": "string", "required": false },
+                { "name": "visibility", "type": "visibility" }
+            ]
+        },
+
         "version": {
             "description": "Represents a unique version of the application.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this version." },
-                { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" }
+                { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
+		{ "name": "json", "type": "object", "description": "api.json description of this API" }
+            ]
+        },
+
+        "version_form": {
+            "fields": [
+		{ "name": "json", "type": "object" },
+		{ "name": "visibility", "type": "visibility", "required": false, "description": "If provided, updates the visibility for all versions of this service" }
             ]
         },
 
@@ -215,7 +232,7 @@
 	},
 
 	"watch": {
-	    "description": "Users can watch individual applications which enables features like receiving an email notification when there is a new version of a application.",
+	    "description": "Users can watch individual applications which enables features like receiving an email notification when there is a new version of an application.",
 	    "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this watch" },
 		{ "name": "user", "type": "user" },
@@ -544,8 +561,8 @@
                     "description": "Search all applications. Results are always paginated.",
                     "parameters": [
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to search applications" },
-                        { "name": "name", "type": "string", "required": false, "description": "The name of a application. Case in-sensitive. Exact match", "required": false },
-                        { "name": "key", "type": "string", "required": false, "description": "The key of a application. Case in-sensitive. Exact match", "required": false },
+                        { "name": "name", "type": "string", "required": false, "description": "The name of an application. Case in-sensitive. Exact match", "required": false },
+                        { "name": "key", "type": "string", "required": false, "description": "The key of an application. Case in-sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -555,14 +572,22 @@
                 },
 
                 {
+                    "method": "POST",
+                    "description": "Create an application.",
+		    "body": { "type": "application_form" },
+                    "responses": {
+                        "200": { "type": "application" }
+                    }
+                },
+
+                {
                     "method": "PUT",
-                    "description": "Updates a application.",
+                    "description": "Updates an application.",
                     "path": "/:applicationKey",
-                    "parameters": [
-                        { "name": "name", "type": "string" },
-                        { "name": "description", "type": "string", "required": false },
-                        { "name": "visibility", "type": "visibility" }
-		    ]
+		    "body": { "type": "application_form" },
+                    "responses": {
+                        "200": { "type": "application" }
+                    }
                 },
 
                 {
@@ -580,7 +605,7 @@
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Generate code for a specific version of a application.",
+                    "description": "Generate code for a specific version of an application.",
                     "parameters": [
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to generate code" },
                         { "name": "applicationKey", "type": "string", "description": "The application key for which to generate code" },
@@ -615,7 +640,7 @@
 
                 {
                     "method": "GET",
-                    "description": "Retrieve a specific version of a application.",
+                    "description": "Retrieve a specific version of an application.",
                     "path": "/:version",
                     "responses": {
                         "200": { "type": "version" }
@@ -624,12 +649,9 @@
 
                 {
                     "method": "PUT",
-                    "description": "Create or update the application with the specified version.",
+                    "description": "Upsert this version of the service api",
                     "path": "/:version",
-                    "parameters": [
-                        { "name": "json", "type": "string", "description": "The actual full contents of the json schema" },
-                        { "name": "visibility", "type": "visibility", "description": "The visibility of this application.", "default": "organization" }
-		    ],
+		    "body": { "type": "version_form" },
                     "responses": {
                         "200": { "type": "version" }
                     }
