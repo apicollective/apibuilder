@@ -33,7 +33,8 @@
                   @if(metadata.isOrgMember) {
                     <li><a href="@routes.ApplicationSettings.show(orgKey = org.key, applicationKey = service.key, version = version)">Settings</a></li>
                   }
-                  <li><a href="@routes.Versions.apiJson(orgKey = org.key, applicationKey = service.key, version = version)">api.json</a></li>
+                  <li><a href="@routes.Versions.originalJson(orgKey = org.key, applicationKey = service.key, version = version)">original.json</a></li>
+                  <li><a href="@routes.Versions.serviceJson(orgKey = org.key, applicationKey = service.key, version = version)">service.json</a></li>
                 }
               }
 

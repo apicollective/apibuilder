@@ -83,6 +83,7 @@ POST    /:orgKey/:applicationKey/:version/settings/postDelete     controllers.Ap
 
 GET     /:orgKey/:applicationKey                                  controllers.Versions.redirectToLatest(orgKey: String, applicationKey: String)
 GET     /:orgKey/:applicationKey/:version                         controllers.Versions.show(orgKey: String, applicationKey: String, version: String)
-GET     /:orgKey/:applicationKey/:version/api.json                controllers.Versions.apiJson(orgKey: String, applicationKey: String, version: String)
+GET     /:orgKey/:applicationKey/:version/original.json           controllers.Versions.originalJson(orgKey: String, applicationKey: String, version: String)
+GET     /:orgKey/:applicationKey/:version/service.json            controllers.Versions.serviceJson(orgKey: String, applicationKey: String, version: String)
 POST    /:orgKey/:applicationKey/:version/watch                   controllers.Versions.postWatch(orgKey: String, applicationKey: String, version: String)
 GET     /:orgKey/:applicationKey/:version/:generatorKey           controllers.Code.generate(orgKey: String, applicationKey: String, version: String, generatorKey: String)
