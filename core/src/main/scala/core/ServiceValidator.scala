@@ -13,13 +13,13 @@ case class ServiceValidator(apiJson: String) {
 
   private var parseError: Option[String] = None
 
-  lazy val serviceDescription: Option[Service] = {
+  lazy val service: Option[Service] = {
     internalService.map { ServiceBuilder(_) }
   }
 
   def validate(): Either[Seq[String], Service] = {
     if (isValid) {
-      Right(serviceDescription.get)
+      Right(service.get)
     } else {
       Left(errors)
     }

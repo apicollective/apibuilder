@@ -22,7 +22,7 @@ class ServiceMapSpec extends FunSpec with Matchers {
     val json = baseJson.format("""{ "name": "tags", "type": "map" }""")
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val tags = validator.serviceDescription.get.models.head.fields.head
+    val tags = validator.service.get.models.head.fields.head
     tags.`type` should be("map[string]")
   }
 
@@ -30,7 +30,7 @@ class ServiceMapSpec extends FunSpec with Matchers {
     val json = baseJson.format("""{ "name": "tags", "type": "map", "default": "{ }" }""")
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val tags = validator.serviceDescription.get.models.head.fields.head
+    val tags = validator.service.get.models.head.fields.head
     tags.default shouldBe Some("{ }")
   }
 

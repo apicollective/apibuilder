@@ -40,7 +40,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
     val json = baseJson.format("")
     val validator = ServiceValidator(json)
     validator.errors.mkString("") should be("")
-    val response = validator.serviceDescription.get.resources.head.operations.head.responses.find(_.code == 204).get
+    val response = validator.service.get.resources.head.operations.head.responses.find(_.code == 204).get
     response.`type` should be("unit")
   }
 

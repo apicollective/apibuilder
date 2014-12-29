@@ -35,7 +35,7 @@ object VersionsDao {
      where guid = {guid}::uuid
   """
 
-  def create(user: User, application: Application, version: String, original: String, service: JsObject): Version = {
+  def create(user: User, application: Application, version: String, original: String, service: Service): Version = {
     val guid = UUID.randomUUID
 
     DB.withConnection { implicit c =>
@@ -46,7 +46,7 @@ object VersionsDao {
         'version -> version.trim,
         'version_sort_key -> VersionTag(version.trim).sortKey,
         'original -> original,
-        'service -> service.toString.trim,
+        'service -> Json.toJson(service).as[JsObject].toString,
         'created_by_guid -> user.guid
       ).execute()
     }
@@ -62,7 +62,7 @@ object VersionsDao {
     SoftDelete.delete("versions", deletedBy, version.guid)
   }
 
-  def replace(user: User, version: Version, application: Application, original: String, service: JsObject): Version = {
+  def replace(user: User, version: Version, application: Application, original: String, service: Service): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user, version)
       VersionsDao.create(user, application, version.version, original, service)
@@ -126,7 +126,7 @@ object VersionsDao {
             Json.parse(service).as[JsObject]
           }
           case None => {
-            val service = core.ServiceValidator(original).serviceDescription.get
+            val service = core.ServiceValidator(original).service.get
             Json.toJson(service).as[JsObject]
           }
         }
@@ -156,7 +156,7 @@ object VersionsDao {
         }
 
         try {
-          val service = core.ServiceValidator(original).serviceDescription.get
+          val service = core.ServiceValidator(original).service.get
 
           SQL(MigrateQuery).on(
             'guid -> guid,
