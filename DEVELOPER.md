@@ -30,42 +30,43 @@ SBT
 ==========
 Memory settings for SBT:
 
-  exec java -Xms512M -Xmx2048M -XX:MaxPermSize=1G -Xss1M -XX:+CMSClassUnloadingEnabled ${SBT_OPTS} -jar /usr/local/Cellar/sbt/0.13.5/libexec/sbt-launch.jar "$@"
+    exec java -Xms512M -Xmx2048M -XX:MaxPermSize=1G -Xss1M -XX:+CMSClassUnloadingEnabled \ 
+      ${SBT_OPTS} -jar /usr/local/Cellar/sbt/0.13.5/libexec/sbt-launch.jar "$@"
 
 Developing
 ==========
 
 You'll need to get the api schema into your dev postgresql database; to do that:
 
-$ psql
-psql> CREATE DATABASE api;
+    $ psql
+    psql> CREATE DATABASE api;
 
 Then you'll need to create the database schema using [schema evolution manager](https://github.com/gilt/schema-evolution-manager#installation)
 
-$ cd /web/apidoc/schema
-$ ./dev.rb
+    $ cd /web/apidoc/schema
+    $ ./dev.rb
 
 The application consists of a service on port 9001, and a web app on port 9000.
 
 One way to do this is to run a screen session, and in one screen do:
 
-  $ sbt
-  sbt> project api
-  sbt> run 9001
+    $ sbt
+    sbt> project api
+    sbt> run 9001
 
 ...then in another screen, do:
 
-  $ sbt
-  sbt> project www
-  sbt> run
+    $ sbt
+    sbt> project www
+    sbt> run
 
 Goto http://localhost:9000 in your browser
 
 If you want to run the standard code generators:
 
-  $ sbt
-  sbt> project generator
-  sbt> run 9002
+    $ sbt
+    sbt> project generator
+    sbt> run 9002
 
 Goto http://localhost:9002/generators in your browser
 
@@ -74,13 +75,16 @@ in situ for a nice development experience.
 
 Updating generated code
 =======================
-script/update-generated-code
+
+    script/update-generated-code
 
 Releasing code
 ==============
 
 Install ionblaster:
-  curl -s https://s3.amazonaws.com/ionblaster/install | sh
+
+    curl -s https://s3.amazonaws.com/ionblaster/install | sh
 
 Release to ec2:
-  /web/metadata-architecture/exec script/release-and-deploy [--tag x.y.z] api www
+
+    /web/metadata-architecture/exec script/release-and-deploy [--tag x.y.z] api www
