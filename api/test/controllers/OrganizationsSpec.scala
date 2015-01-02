@@ -1,7 +1,7 @@
 package controllers
 
 import db.OrganizationsDao
-import com.gilt.apidoc.models.{Organization, OrganizationForm, OrganizationMetadataForm, Visibility}
+import com.gilt.apidoc.models.{Organization, OrganizationForm, Visibility}
 import com.gilt.apidoc.error.ErrorsResponse
 import java.util.UUID
 
@@ -14,35 +14,35 @@ class OrganizationsSpec extends BaseSpec {
 
   "POST /organizations" in new WithServer {
     val name = UUID.randomUUID.toString
-    val org = createOrganization(OrganizationForm(name = name))
+    val org = createOrganization(createOrganizationForm(name = name))
     org.name must be(name)
   }
 
   "POST /organizations trims whitespace in name" in new WithServer {
     val name = UUID.randomUUID.toString
-    val org = createOrganization(OrganizationForm(name = " " + name + " "))
+    val org = createOrganization(createOrganizationForm(name = " " + name + " "))
     org.name must be(name)
   }
 
   "POST /organizations validates key is valid" in new WithServer {
     intercept[ErrorsResponse] {
-      createOrganization(OrganizationForm(name = UUID.randomUUID.toString, key = Some("a")))
+      createOrganization(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a")))
     }.errors.map(_.message) must be(Seq(s"Key must be at least ${db.OrganizationsDao.MinKeyLength} characters"))
 
     intercept[ErrorsResponse] {
-      createOrganization(OrganizationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
+      createOrganization(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
     }.errors.map(_.message) must be(Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: a-bad-key"))
   }
 
   "POST /organizations validates key is not reserved" in new WithServer {
     intercept[ErrorsResponse] {
-      createOrganization(OrganizationForm(name = "members"))
+      createOrganization(createOrganizationForm(name = "members"))
     }.errors.map(_.message) must be(Seq(s"Prefix member is a reserved word and cannot be used for the key of an organization"))
   }
 
   "POST /organizations validates key is not reserved when just a prefix" in new WithServer {
     intercept[ErrorsResponse] {
-      createOrganization(OrganizationForm(name = "membership_request"))
+      createOrganization(createOrganizationForm(name = "membership_request"))
     }.errors.map(_.message) must be(Seq(s"Prefix member is a reserved word and cannot be used for the key of an organization"))
   }
 
@@ -68,14 +68,8 @@ class OrganizationsSpec extends BaseSpec {
   }
 
   "GET /organizations for an anonymous user shows only public orgs" in new WithServer {
-    val privateOrg = createOrganization(createOrganizationForm().copy(metadata = Some(OrganizationMetadataForm(
-      visibility = Some(Visibility.Organization)
-    ))))
-
-    val publicOrg = createOrganization(createOrganizationForm().copy(metadata = Some(OrganizationMetadataForm(
-      visibility = Some(Visibility.Public)
-    ))))
-
+    val privateOrg = createOrganization(createOrganizationForm().copy(visibility = Some(Visibility.Organization)))
+    val publicOrg = createOrganization(createOrganizationForm().copy(visibility = Some(Visibility.Public)))
     val anonymous = createUser()
 
     val client = newClient(anonymous)

@@ -53,7 +53,9 @@ object WatchesDao {
            applications.description as application_description,
            organizations.guid as organization_guid,
            organizations.key as organization_key,
-           organizations.name as organization_name
+           organizations.name as organization_name,
+           organizations.namespace as organization_namespace,
+           organizations.visibility as organization_visibility
       from watches
       join users on users.guid = watches.user_guid and users.deleted_at is null
       join applications on applications.guid = watches.application_guid and applications.deleted_at is null
@@ -133,7 +135,7 @@ object WatchesDao {
   ): Seq[Watch] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.organizationFilter("organizations.guid").map(v => "and " + v),
+      authorization.organizationFilter().map(v => "and " + v),
       guid.map { v => "and watches.guid = {guid}::uuid" },
       userGuid.map { v => "and watches.user_guid = {user_guid}::uuid" },
       organizationKey.map { v => "and organizations.key = lower(trim({organization_key}))" },

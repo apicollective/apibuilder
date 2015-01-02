@@ -32,6 +32,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "key", "type": "string", "description": "Unique key to identify this service. URL friendly" },
+		{ "name": "namespace", "type": "string", "description", "Fully qualified namespace for this service - e.g. com.gilt.apidoc." },
 		{ "name": "base_url", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "headers", "type": "[header]" },

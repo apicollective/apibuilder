@@ -18,6 +18,7 @@ object VersionsDao {
     select versions.guid, versions.version, versions.original, versions.service::varchar, versions.old_json::varchar
      from versions
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
+     join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
     where versions.deleted_at is null
   """
 
@@ -102,7 +103,7 @@ object VersionsDao {
   ): Seq[Version] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.applicationFilter("applications").map(v => "and " + v),
+      authorization.applicationFilter().map(v => "and " + v),
       guid.map { v => "and versions.guid = {guid}::uuid" },
       applicationGuid.map { _ => "and versions.application_guid = {application_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },

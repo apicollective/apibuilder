@@ -35,8 +35,14 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     await(client.organizations.post(form))
   }
 
-  def createOrganizationForm() = OrganizationForm(
-    name = "z-test-org-" + UUID.randomUUID.toString
+  def createOrganizationForm(
+    name: String = "z-test-org-" + UUID.randomUUID.toString,
+    key: Option[String] = None,
+    namespace: String = "test." + UUID.randomUUID.toString
+  ) = OrganizationForm(
+    name = name,
+    key = key,
+    namespace = namespace
   )
 
   def createUser(): User = {

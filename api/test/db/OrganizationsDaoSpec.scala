@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{OrganizationForm, OrganizationMetadataForm, Visibility}
+import com.gilt.apidoc.models.{OrganizationForm, Visibility}
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
@@ -25,16 +25,10 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
   it("user that creates org should be an admin") {
     val user = Util.upsertUser(UUID.randomUUID.toString + "@gilttest.com")
     val name = UUID.randomUUID.toString
-    val org = OrganizationsDao.createWithAdministrator(user, OrganizationForm(name = name))
+    val org = OrganizationsDao.createWithAdministrator(user, Util.createOrganizationForm(name = name))
     org.name should be(name)
 
     MembershipsDao.isUserAdmin(user, org) should be(true)
-  }
-
-  it("reverseDomain") {
-    OrganizationsDao.reverseDomain("gilt.com") should be("com.gilt")
-    OrganizationsDao.reverseDomain("foo.gilt.com") should be("com.gilt.foo")
-
   }
 
   describe("domain") {
@@ -45,7 +39,8 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
       Util.createdBy,
       OrganizationForm(
         name = "Test Org " + UUID.randomUUID.toString,
-        domains = domains
+        domains = domains,
+        namespace = "test." +UUID.randomUUID.toString
       )
     )
 
@@ -55,29 +50,11 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
       fetched.domains.map(_.name).sorted.mkString(" ") should be(domains.sorted.mkString(" "))
     }
 
-    it("defaults metadata.package_name to reverse of first domain if provided") {
+    it("defaults visibility to organization") {
       val fetched = OrganizationsDao.findByGuid(Authorization.All, org.guid).get
-      fetched.metadata.get.packageName should be(Some("com." + domainName))
+      fetched.visibility should be(Visibility.Organization)
     }
 
-  }
-
-  it("creates with metadata") {
-    val org = OrganizationsDao.createWithAdministrator(
-      Util.createdBy,
-      OrganizationForm(
-        name = "Test Org " + UUID.randomUUID.toString,
-        metadata = Some(
-          OrganizationMetadataForm(
-            packageName = Some("com.gilt")
-          )
-        )
-      )
-    )
-
-    org.metadata.get.packageName should be(Some("com.gilt"))
-    val fetched = OrganizationsDao.findByGuid(Authorization.All, org.guid).get
-    fetched.metadata.get.packageName should be(Some("com.gilt"))
   }
 
   it("find by guid") {
@@ -124,14 +101,14 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
   describe("validation") {
 
     it("validates name") {
-      OrganizationsDao.validate(OrganizationForm(name = "this is a long name")) should be(Seq.empty)
-      OrganizationsDao.validate(OrganizationForm(name = "a")).head.message should be("name must be at least 4 characters")
-      OrganizationsDao.validate(OrganizationForm(name = Util.gilt.name)).head.message should be("Org with this name already exists")
+      OrganizationsDao.validate(Util.createOrganizationForm(name = "this is a long name")) should be(Seq.empty)
+      OrganizationsDao.validate(Util.createOrganizationForm(name = "a")).head.message should be("name must be at least 4 characters")
+      OrganizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name)).head.message should be("Org with this name already exists")
     }
 
     it("raises error if you try to create an org with a short name") {
       intercept[java.lang.AssertionError] {
-        OrganizationsDao.createWithAdministrator(Util.createdBy, OrganizationForm("a"))
+        OrganizationsDao.createWithAdministrator(Util.createdBy, Util.createOrganizationForm("a"))
       }.getMessage should be("assertion failed: name must be at least 4 characters")
     }
 
@@ -145,17 +122,15 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
 
     it("validates domains") {
       val name = UUID.randomUUID.toString
-      OrganizationsDao.validate(OrganizationForm(name = name, domains = Seq.empty)) should be(Seq.empty)
-      OrganizationsDao.validate(OrganizationForm(name = name, domains = Seq.empty)) should be(Seq.empty)
-      OrganizationsDao.validate(OrganizationForm(name = name, domains = Seq("bad name"))).head.message should be("Domain bad name is not valid. Expected a domain name like apidoc.me")
+      OrganizationsDao.validate(Util.createOrganizationForm(name = name, domains = Seq.empty)) should be(Seq.empty)
+      OrganizationsDao.validate(Util.createOrganizationForm(name = name, domains = Seq("bad name"))).head.message should be("Domain bad name is not valid. Expected a domain name like apidoc.me")
     }
   }
 
   describe("Authorization") {
 
     val publicUser = Util.createRandomUser()
-    val publicOrg = Util.createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString))
-    OrganizationMetadataDao.create(Util.createdBy, publicOrg, OrganizationMetadataForm(visibility = Some(Visibility.Public)))
+    val publicOrg = Util.createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString), visibility = Some(Visibility.Public))
 
     val privateUser = Util.createRandomUser()
     val privateOrg = Util.createOrganization(privateUser, Some("A Private " + UUID.randomUUID().toString))

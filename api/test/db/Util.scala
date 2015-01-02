@@ -31,14 +31,32 @@ object Util {
   def createOrganization(
     createdBy: User = Util.createdBy,
     name: Option[String] = None,
-    key: Option[String] = None
+    key: Option[String] = None,
+    namespace: Option[String] = None,
+    visibility: Option[Visibility] = None
   ): Organization = {
-    val form = OrganizationForm(
+    val form = createOrganizationForm(
       name = name.getOrElse(UUID.randomUUID.toString),
-      key = key
+      key = key,
+      namespace = namespace.getOrElse("test." + UUID.randomUUID.toString),
+      visibility = visibility
     )
     OrganizationsDao.createWithAdministrator(createdBy, form)
   }
+
+  def createOrganizationForm(
+    name: String = UUID.randomUUID.toString,
+    key: Option[String] = None,
+    namespace: String = "test." + UUID.randomUUID.toString,
+    visibility: Option[Visibility] = None,
+    domains: Seq[String] = Nil
+  ) = OrganizationForm(
+    name = name,
+    key = key,
+    namespace = namespace,
+    visibility = visibility,
+    domains = domains
+  )
 
   def createMembership(
     org: Organization,

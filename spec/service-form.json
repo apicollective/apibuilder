@@ -8,6 +8,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "base_url", "type": "string", "required": false },
+		{ "name": "namespace", "type": "string", "required": false, "description": "Defaults to the organization's namepace plus a generated namespace from the name of this service." },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "headers", "type": "[header_form]" },
 		{ "name": "enums", "type": "map[enum_form]" },

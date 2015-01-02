@@ -73,8 +73,9 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this organization." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the organization name." },
                 { "name": "name", "type": "string", "description": "The name of this organization." },
-                { "name": "domains", "type": "[domain]", "required": false },
-                { "name": "metadata", "type": "organization_metadata", "required": false }
+                { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.gilt" },
+                { "name": "visibility", "type": "visibility" },
+                { "name": "domains", "type": "[domain]", "required": false }
             ]
         },
 
@@ -82,8 +83,9 @@
             "fields": [
                 { "name": "name", "type": "string" },
                 { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" },
-                { "name": "domains", "type": "[string]", "required": false, "example": "apidoc.me" },
-                { "name": "metadata", "type": "organization_metadata_form", "required": false }
+                { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.gilt" },
+                { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "required": false, "default": "organization" },
+                { "name": "domains", "type": "[string]", "required": false, "example": "apidoc.me" }
             ]
         },
 
@@ -91,21 +93,6 @@
             "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@gilt.com, we will automatically create a membership request on your behalf to join the organization with domain gilt.com.",
             "fields": [
                 { "name": "name", "type": "string", "description": "The domain name", "example": "www.apidoc.me" }
-            ]
-        },
-
-        "organization_metadata": {
-            "description": "Supplemental (non-required) information about an organization",
-            "fields": [
-                { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "required": false, "default": "organization" },
-                { "name": "package_name", "type": "string", "description": "The package name when used by code generators (e.g. scala package name for the clients)", "required": false }
-            ]
-        },
-
-        "organization_metadata_form": {
-            "fields": [
-                { "name": "visibility", "type": "visibility", "required": false },
-                { "name": "package_name", "type": "string", "required": false }
             ]
         },
 
@@ -428,21 +415,6 @@
                 }
             ]
         },
-
-        "organization_metadata": {
-	    "path": "/organizations/:key/metadata",
-	    "operations": [
-		{
-		    "method": "PUT",
-		    "description": "Update metadata for this organization",
-		    "body": { "type": "organization_metadata" },
-                    "responses": {
-                        "200": { "type": "organization_metadata" },
-                        "409": { "type": "[error]" }
-                    }
-                }
-	    ]
-	},
 
 	"domain": {
             "path": "/domains/:orgKey",

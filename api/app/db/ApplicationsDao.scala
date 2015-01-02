@@ -172,9 +172,9 @@ object ApplicationsDao {
   ): Seq[Application] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.applicationFilter("applications").map(v => "and " + v),
+      authorization.applicationFilter().map(v => "and " + v),
       guid.map { v => "and applications.guid = {guid}::uuid" },
-      orgKey.map { v => "and applications.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
+      orgKey.map { v => "and organizations.key = {organization_key}" },
       name.map { v => "and lower(trim(applications.name)) = lower(trim({name}))" },
       key.map { v => "and applications.key = lower(trim({key}))" },
       version.map { v => "and applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)" },

@@ -22,6 +22,8 @@ object MembershipRequestsDao {
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
+           organizations.visibility as organization_visibility,
+           organizations.namespace as organization_namespace,
            users.guid as user_guid,
            users.email as user_email,
            users.name as user_name

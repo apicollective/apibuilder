@@ -20,7 +20,9 @@ object SubscriptionsDao {
            users.name as user_name,
            organizations.guid as organization_guid,
            organizations.key as organization_key,
-           organizations.name as organization_name
+           organizations.name as organization_name,
+           organizations.namespace as organization_namespace,
+           organizations.visibility as organization_visibility
       from subscriptions
       join users on users.guid = subscriptions.user_guid and users.deleted_at is null
       join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null

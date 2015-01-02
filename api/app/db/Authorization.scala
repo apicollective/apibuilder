@@ -11,13 +11,10 @@ sealed trait Authorization {
     * organizations to those that are able to be seen by this
     * authorization.
     * 
-    * @param organizationGuidColumn e.g "organizations.guid"
-    * @param organizationMetadataTableName e.g "organization_metadata" - if speciied,
-    *        we can avoid the subquery on the metadata table
+    * @param organizationsTableName e.g "organizations"
     */
   def organizationFilter(
-    organizationGuidColumn: String,
-    organizationMetadataTableName: Option[String] = None
+    organizationsTableName: String = "organizations"
   ): Option[String]
 
   /**
@@ -26,7 +23,8 @@ sealed trait Authorization {
     * authorization.
     */
   def applicationFilter(
-    applicationsTableName: String = "applications"
+    applicationsTableName: String = "applications",
+    organizationsTableName: String = "organizations"
   ): Option[String]
 
   def bindVariables(): Seq[NamedParameter] = Seq.empty
@@ -34,9 +32,6 @@ sealed trait Authorization {
 }
 
 object Authorization {
-
-  private val MetadataQuery =
-    s"select organization_guid from organization_metadata where organization_metadata.deleted_at is null and organization_metadata.visibility = '${Visibility.Public}'"
 
   private val UserQuery =
     s"select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid"
@@ -46,17 +41,14 @@ object Authorization {
   case object PublicOnly extends Authorization {
 
     override def organizationFilter(
-      organizationGuidColumn: String,
-      organizationMetadataTableName: Option[String] = None
+      organizationsTableName: String = "organizations"
     ) = {
-      organizationMetadataTableName match {
-        case None => Some(s"$organizationGuidColumn in ($MetadataQuery)")
-        case Some(table) => Some(s"$table.visibility = '${Visibility.Public}'")
-      }
+      Some(s"$organizationsTableName.visibility = '${Visibility.Public}'")
     }
 
     def applicationFilter(
-      applicationsTableName: String = "applications"
+      applicationsTableName: String = "applications",
+      organizationsTableName: String = "organizations"
     ) = {
       Some(PublicApplicationsQuery.format(applicationsTableName))
     }
@@ -66,12 +58,12 @@ object Authorization {
   case object All extends Authorization {
 
     override def organizationFilter(
-      organizationGuidColumn: String,
-      organizationMetadataTableName: Option[String] = None
+      organizationsTableName: String = "organizations"
     ) = None
 
-    def applicationFilter(
-      applicationsTableName: String = "applications"
+    override def applicationFilter(
+      applicationsTableName: String = "applications",
+      organizationsTableName: String = "organizations"
     ) = None
 
   }
@@ -79,20 +71,17 @@ object Authorization {
   case class User(userGuid: UUID) extends Authorization {
 
     override def organizationFilter(
-      organizationGuidColumn: String,
-      organizationMetadataTableName: Option[String] = None
+      organizationsTableName: String = "organizations"
     ) = {
-      organizationMetadataTableName match {
-        case None => Some(s"$organizationGuidColumn in ($MetadataQuery union all $UserQuery)")
-        case Some(table) => Some(s"($table.visibility = '${Visibility.Public}' or $organizationGuidColumn in ($UserQuery))")
-      }
+      Some(s"($organizationsTableName.visibility = '${Visibility.Public}' or $organizationsTableName.guid in ($UserQuery))")
     }
 
-    def applicationFilter(
-      applicationsTableName: String = "applications"
+    override def applicationFilter(
+      applicationsTableName: String = "applications",
+      organizationsTableName: String = "organizations"
     ) = {
       Some(
-        "(" + PublicApplicationsQuery.format(applicationsTableName) + " or " + organizationFilter(s"$applicationsTableName.organization_guid").get + ")"
+        "(" + PublicApplicationsQuery.format(applicationsTableName) + " or " + organizationFilter(organizationsTableName).get + ")"
       )
     }
 

@@ -130,28 +130,17 @@ package com.gilt.apidoc.models {
     guid: _root_.java.util.UUID,
     key: String,
     name: String,
-    domains: Seq[com.gilt.apidoc.models.Domain] = Nil,
-    metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadata] = None
+    namespace: String,
+    visibility: com.gilt.apidoc.models.Visibility,
+    domains: Seq[com.gilt.apidoc.models.Domain] = Nil
   )
 
   case class OrganizationForm(
     name: String,
     key: scala.Option[String] = None,
-    domains: Seq[String] = Nil,
-    metadata: scala.Option[com.gilt.apidoc.models.OrganizationMetadataForm] = None
-  )
-
-  /**
-   * Supplemental (non-required) information about an organization
-   */
-  case class OrganizationMetadata(
+    namespace: String,
     visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
-    packageName: scala.Option[String] = None
-  )
-
-  case class OrganizationMetadataForm(
-    visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None,
-    packageName: scala.Option[String] = None
+    domains: Seq[String] = Nil
   )
 
   /**
@@ -603,8 +592,9 @@ package com.gilt.apidoc.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "key").read[String] and
         (__ \ "name").read[String] and
-        (__ \ "domains").readNullable[Seq[com.gilt.apidoc.models.Domain]].map(_.getOrElse(Nil)) and
-        (__ \ "metadata").readNullable[com.gilt.apidoc.models.OrganizationMetadata]
+        (__ \ "namespace").read[String] and
+        (__ \ "visibility").read[com.gilt.apidoc.models.Visibility] and
+        (__ \ "domains").readNullable[Seq[com.gilt.apidoc.models.Domain]].map(_.getOrElse(Nil))
       )(Organization.apply _)
     }
 
@@ -613,8 +603,9 @@ package com.gilt.apidoc.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "key").write[String] and
         (__ \ "name").write[String] and
-        (__ \ "domains").write[Seq[com.gilt.apidoc.models.Domain]] and
-        (__ \ "metadata").write[scala.Option[com.gilt.apidoc.models.OrganizationMetadata]]
+        (__ \ "namespace").write[String] and
+        (__ \ "visibility").write[com.gilt.apidoc.models.Visibility] and
+        (__ \ "domains").write[Seq[com.gilt.apidoc.models.Domain]]
       )(unlift(Organization.unapply _))
     }
 
@@ -622,8 +613,9 @@ package com.gilt.apidoc.models {
       (
         (__ \ "name").read[String] and
         (__ \ "key").readNullable[String] and
-        (__ \ "domains").readNullable[Seq[String]].map(_.getOrElse(Nil)) and
-        (__ \ "metadata").readNullable[com.gilt.apidoc.models.OrganizationMetadataForm]
+        (__ \ "namespace").read[String] and
+        (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
+        (__ \ "domains").readNullable[Seq[String]].map(_.getOrElse(Nil))
       )(OrganizationForm.apply _)
     }
 
@@ -631,37 +623,10 @@ package com.gilt.apidoc.models {
       (
         (__ \ "name").write[String] and
         (__ \ "key").write[scala.Option[String]] and
-        (__ \ "domains").write[Seq[String]] and
-        (__ \ "metadata").write[scala.Option[com.gilt.apidoc.models.OrganizationMetadataForm]]
+        (__ \ "namespace").write[String] and
+        (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
+        (__ \ "domains").write[Seq[String]]
       )(unlift(OrganizationForm.unapply _))
-    }
-
-    implicit def jsonReadsApidocOrganizationMetadata: play.api.libs.json.Reads[OrganizationMetadata] = {
-      (
-        (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
-        (__ \ "package_name").readNullable[String]
-      )(OrganizationMetadata.apply _)
-    }
-
-    implicit def jsonWritesApidocOrganizationMetadata: play.api.libs.json.Writes[OrganizationMetadata] = {
-      (
-        (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
-        (__ \ "package_name").write[scala.Option[String]]
-      )(unlift(OrganizationMetadata.unapply _))
-    }
-
-    implicit def jsonReadsApidocOrganizationMetadataForm: play.api.libs.json.Reads[OrganizationMetadataForm] = {
-      (
-        (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility] and
-        (__ \ "package_name").readNullable[String]
-      )(OrganizationMetadataForm.apply _)
-    }
-
-    implicit def jsonWritesApidocOrganizationMetadataForm: play.api.libs.json.Writes[OrganizationMetadataForm] = {
-      (
-        (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]] and
-        (__ \ "package_name").write[scala.Option[String]]
-      )(unlift(OrganizationMetadataForm.unapply _))
     }
 
     implicit def jsonReadsApidocPasswordReset: play.api.libs.json.Reads[PasswordReset] = {
@@ -887,8 +852,6 @@ package com.gilt.apidoc {
     def membershipRequests: MembershipRequests = MembershipRequests
 
     def memberships: Memberships = Memberships
-
-    def organizationMetadata: OrganizationMetadata = OrganizationMetadata
 
     def organizations: Organizations = Organizations
 
@@ -1191,20 +1154,6 @@ package com.gilt.apidoc {
         _executeRequest("DELETE", s"/memberships/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
-        }
-      }
-    }
-
-    object OrganizationMetadata extends OrganizationMetadata {
-      override def put(organizationMetadata: com.gilt.apidoc.models.OrganizationMetadata,
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.OrganizationMetadata] = {
-        val payload = play.api.libs.json.Json.toJson(organizationMetadata)
-
-        _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/metadata", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.OrganizationMetadata]
-          case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
         }
       }
@@ -1786,15 +1735,6 @@ package com.gilt.apidoc {
     def deleteByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[scala.Option[Unit]]
-  }
-
-  trait OrganizationMetadata {
-    /**
-     * Update metadata for this organization
-     */
-    def put(organizationMetadata: com.gilt.apidoc.models.OrganizationMetadata,
-      key: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.OrganizationMetadata]
   }
 
   trait Organizations {
