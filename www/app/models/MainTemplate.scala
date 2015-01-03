@@ -45,8 +45,8 @@ case class SettingsMenu(
 
 case class SettingSection(name: String)
 object SettingSection {
+  val Details = SettingSection("details")
   val Domains = SettingSection("domains")
   val Members = SettingSection("members")
-  val Metadata = SettingSection("metadata")
   val Generators = SettingSection("generators")
 }

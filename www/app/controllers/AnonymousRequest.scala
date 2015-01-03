@@ -149,7 +149,7 @@ object AnonymousOrg extends ActionBuilder[AnonymousOrgRequest] {
 
       if (resources.isMember) {
         block(anonRequest)
-      } else if (resources.org.get.metadata.flatMap(_.visibility) == Some(Visibility.Public)) {
+      } else if (resources.org.map(_.visibility) == Some(Visibility.Public)) {
         block(anonRequest)
       } else {
         Future.successful(Redirect("/").flashing("warning" -> "Org not found or access denied"))

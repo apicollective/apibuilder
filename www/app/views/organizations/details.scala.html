@@ -1,0 +1,19 @@
+@(
+  tpl: models.MainTemplate,
+  org: com.gilt.apidoc.models.Organization
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.details(org.key)">Edit</a>
+  </div>
+
+  <ul>
+    <li>Name: @org.name</li>
+    <li>Key: @org.key</li>
+    <li>Namespace: @org.namespace</li>
+    <li>Visibility: @org.visibility.toString</li>
+  </ul>
+
+}

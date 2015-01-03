@@ -3,7 +3,7 @@ package controllers
 import lib.Role
 import lib.{Pagination, PaginatedCollection, Role}
 import models.MainTemplate
-import com.gilt.apidoc.models.{Organization, OrganizationForm}
+import com.gilt.apidoc.models.{Organization, OrganizationForm, Visibility}
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -36,6 +36,10 @@ object Organizations extends Controller {
         haveRequests = haveRequests)
       )
     }
+  }
+
+  def details(orgKey: String) = AuthenticatedOrg { implicit request =>
+    Ok(views.html.organizations.details(request.mainTemplate(), request.org))
   }
 
   def membershipRequests(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
@@ -110,9 +114,18 @@ object Organizations extends Controller {
   }
 
   def create() = Authenticated { implicit request =>
+    val filledForm = orgForm.fill(
+      OrgData(
+        name = "",
+        namespace = "",
+        key = None,
+        visibility = Visibility.Organization.toString
+      )
+    )
+
     Ok(views.html.organizations.form(
       request.mainTemplate(Some("Add Organization")),
-      orgForm
+      filledForm
     ))
   }
 
@@ -130,7 +143,9 @@ object Organizations extends Controller {
         request.api.Organizations.post(
           OrganizationForm(
             name = valid.name,
-            key = valid.key
+            namespace = valid.namespace,
+            key = valid.key,
+            visibility = Some(Visibility(valid.visibility))
           )
         ).map { org =>
           Redirect(routes.Organizations.show(org.key))
@@ -146,12 +161,16 @@ object Organizations extends Controller {
 
   case class OrgData(
     name: String,
-    key: Option[String]
+    namespace: String,
+    key: Option[String],
+    visibility: String
   )
   private val orgForm = Form(
     mapping(
       "name" -> nonEmptyText,
-      "key" -> optional(nonEmptyText)
+      "namespace" -> nonEmptyText,
+      "key" -> optional(nonEmptyText),
+      "visibility" -> nonEmptyText
     )(OrgData.apply)(OrgData.unapply)
   )
 

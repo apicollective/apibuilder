@@ -40,8 +40,8 @@
 
               @if(metadata.isOrgMember) {
                 @metadata.settings.map { settings =>
+                  <li><a@if(settings.section == Some(models.SettingSection.Details)) { class="active" } href="@routes.Organizations.details(orgKey = org.key)">Metadata</a></li>
                   <li><a@if(settings.section == Some(models.SettingSection.Domains)) { class="active" } href="@routes.Domains.index(orgKey = org.key)">Domains</a></li>
-                  <li><a@if(settings.section == Some(models.SettingSection.Metadata)) { class="active" } href="@routes.Metadata.show(orgKey = org.key)">Metadata</a></li>
                   <li><a@if(settings.section == Some(models.SettingSection.Members)) { class="active" } href="@routes.Members.show(orgKey = org.key)">Members</a></li>
                 }
               }

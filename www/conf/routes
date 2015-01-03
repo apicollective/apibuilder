@@ -43,6 +43,7 @@ GET     /assets/*file                                             controllers.As
 # Start dynamic routing by org key
 
 GET     /:orgKey                                                  controllers.Organizations.show(orgKey: String, page: Int ?= 0)
+GET     /:orgKey/details                                          controllers.Organizations.details(orgKey: String)
 
 GET     /:orgKey/domains                                          controllers.Domains.index(orgKey: String)
 POST    /:orgKey/domains/:domain/remove                           controllers.Domains.postRemove(orgKey: String, domain: String)
@@ -63,10 +64,6 @@ GET     /:orgKey/membership_requests                              controllers.Or
 
 GET     /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 POST    /:orgKey/memberships/request                              controllers.Organizations.postRequestMembership(orgKey: String)
-
-GET     /:orgKey/metadata                                         controllers.Metadata.show(orgKey: String)
-GET     /:orgKey/metadata/edit                                    controllers.Metadata.edit(orgKey: String)
-POST    /:orgKey/metadata/postEdit                                controllers.Metadata.postEdit(orgKey: String)
 
 GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String, service: Option[String] ?= None)
 POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String)

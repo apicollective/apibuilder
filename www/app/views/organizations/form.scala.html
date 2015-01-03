@@ -27,6 +27,21 @@
               '_error -> form.error("key")
           )
 
+          @helper.select(
+              form("visibility"),
+              Seq( ("" -> "-- select --") ) ++ com.gilt.apidoc.models.Visibility.all.map( v => (v.toString -> v.toString) ),
+              '_label -> "Visibility",
+              '_error -> form.error("visibility"),
+              '_help -> "Determines whether or not this organization shows up in the public directory."
+          )
+
+          @helper.inputText(
+              form("namespace"),
+              '_label -> "Namespace",
+              '_error -> form.error("namespace"),
+              '_help -> "The namespace must be globally unique. It is used to identify your services. JVM based clients use the namespace as a prefix for the package name. For example, a namepsace of 'me.apidoc' would result in a class named 'me.apidoc.models.User'. Namespaces are also required when importing service definitions."
+          )
+
       </fieldset>
 
       <button class="btn btn-large btn-primary" type="submit">Submit</button>
