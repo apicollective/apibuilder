@@ -1,0 +1,19 @@
+@(tpl: models.MainTemplate,
+  form: Form[controllers.Organizations.OrgData],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some("Create Organization")), errorMessages = errorMessages) {
+
+  <div class="container">
+
+    @helper.form(action = routes.Organizations.createPost()) {
+
+      @orgForm(form, routes.ApplicationController.index())
+
+    }
+
+  </div>
+
+}
+

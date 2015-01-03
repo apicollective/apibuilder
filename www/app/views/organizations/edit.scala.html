@@ -1,0 +1,20 @@
+@(tpl: models.MainTemplate,
+  org: com.gilt.apidoc.models.Organization,
+  form: Form[controllers.Organizations.OrgData],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some("Edit Organization")), errorMessages = errorMessages) {
+
+  <div class="container">
+
+    @helper.form(action = routes.Organizations.editPost(org.key)) {
+
+      @orgForm(form, routes.Organizations.show(org.key))
+
+    }
+
+  </div>
+
+}
+
