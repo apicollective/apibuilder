@@ -10,7 +10,7 @@ case class ExampleService(key: String) {
 object Util {
 
   val AddApplicationText = "Add Application"
-  val OrgSettingsText = "Org Settings"
+  val OrgDetailsText = "Org Details"
 
   val ApidocExample = ExampleService("apidoc")
   val ApidocGeneratorExample = ExampleService("apidoc-generator")

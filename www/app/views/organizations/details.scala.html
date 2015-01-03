@@ -3,7 +3,7 @@
   org: com.gilt.apidoc.models.Organization
 )(implicit flash: Flash)
 
-@main(tpl) {
+@main(tpl.copy(title = Some("Org Details"))) {
 
   <div class="pull-right">
     <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.details(org.key)">Edit</a>

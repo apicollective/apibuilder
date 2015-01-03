@@ -2,7 +2,7 @@ package controllers
 
 import lib.Role
 import lib.{Pagination, PaginatedCollection, Role}
-import models.MainTemplate
+import models.{MainTemplate, SettingSection, SettingsMenu}
 import com.gilt.apidoc.models.{Organization, OrganizationForm, Visibility}
 import play.api._
 import play.api.mvc._
@@ -39,7 +39,8 @@ object Organizations extends Controller {
   }
 
   def details(orgKey: String) = AuthenticatedOrg { implicit request =>
-    Ok(views.html.organizations.details(request.mainTemplate(), request.org))
+    val tpl = request.mainTemplate().copy(settings = Some(SettingsMenu(section = Some(SettingSection.Details))))
+    Ok(views.html.organizations.details(tpl, request.org))
   }
 
   def membershipRequests(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
