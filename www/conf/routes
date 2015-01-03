@@ -26,9 +26,6 @@ GET     /doc/releaseNotes                                         controllers.Do
 GET     /doc/todo                                                 controllers.DocController.todo
 GET     /doc/playRoutesFile                                       controllers.DocController.playRoutesFile
 
-GET     /org/create                                               controllers.Organizations.create
-POST    /org/createPost                                           controllers.Organizations.createPost
-
 GET     /email-verifications/:token                               controllers.EmailVerifications.get(token: String)
 
 GET     /generators                                               controllers.Generators.list()
@@ -39,6 +36,11 @@ POST    /generators/postCreate                                    controllers.Ge
 POST    /generators/postUpdate                                    controllers.Generators.postUpdate(key: String)
 
 GET     /assets/*file                                             controllers.Assets.at(path="/public", file)
+
+GET     /org/create                                               controllers.Organizations.create
+POST    /org/createPost                                           controllers.Organizations.createPost
+GET     /org/edit                                                 controllers.Organizations.edit(org_key: String)
+POST    /org/editPost                                             controllers.Organizations.editPost(org_key: String)
 
 # Start dynamic routing by org key
 

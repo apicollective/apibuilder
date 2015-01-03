@@ -39,17 +39,38 @@ object OrganizationsDao {
 
   private val InsertQuery = """
     insert into organizations
-    (guid, name, key, namespace, visibility, created_by_guid)
+    (guid, name, key, namespace, visibility, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {name}, {key}, {namespace}, {visibility}, {created_by_guid}::uuid)
+    ({guid}::uuid, {name}, {key}, {namespace}, {visibility}, {user_guid}::uuid, {user_guid}::uuid)
   """
-  def validate(form: OrganizationForm): Seq[com.gilt.apidoc.models.Error] = {
+
+  private val UpdateQuery = """
+    update organizations
+       set name = {name},
+           key = {key},
+           namespace = {namespace},
+           visibility = {visibility},
+           updated_by_guid = {user_guid}::uuid
+     where guid = {guid}::uuid
+  """
+
+  def validate(
+    form: OrganizationForm,
+    existing: Option[Organization] = None
+  ): Seq[com.gilt.apidoc.models.Error] = {
+
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {
       OrganizationsDao.findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
         case None => Seq.empty
-        case Some(org: Organization) => Seq("Org with this name already exists")
+        case Some(org: Organization) => {
+          if (existing.map(_.guid) == Some(org.guid)) {
+            Seq.empty
+          } else {
+            Seq("Org with this name already exists")
+          }
+        }
       }
     }
 
@@ -79,7 +100,13 @@ object OrganizationsDao {
             case None => {
               OrganizationsDao.findByKey(Authorization.All, key) match {
                 case None => Seq.empty
-                case Some(existing) => Seq("Org with this key already exists")
+                case Some(found) => {
+                  if (existing.map(_.guid) == Some(found.guid)) {
+                    Seq.empty
+                  } else {
+                    Seq("Org with this key already exists")
+                  }
+                }
               }
             }
           }
@@ -95,7 +122,13 @@ object OrganizationsDao {
           case false => Seq("Namespace is not valid. Expected a name like com.gilt or me.apidoc")
         }
       }
-      case Some(org: Organization) => Seq("This namespace is already registered to another organization")
+      case Some(org: Organization) => {
+        if (existing.map(_.guid) == Some(org.guid)) {
+          Seq.empty
+        } else {
+          Seq("This namespace is already registered to another organization")
+        }
+      }
     }
 
     val visibilityErrors = form.visibility match {
@@ -136,11 +169,11 @@ object OrganizationsDao {
   }
 
   private[db] def emailDomain(email: String): Option[String] = {
-    val parts = email.split("@")
-    if (parts.length == 2) {
-      Some(parts(1).toLowerCase)
-    } else {
-      None
+    email.split("@").toList match {
+      case username :: domain :: Nil => {
+        Some(domain.toLowerCase.trim)
+      }
+      case _ => None
     }
   }
 
@@ -152,7 +185,30 @@ object OrganizationsDao {
     }
   }
 
-  private def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): Organization = {
+  def update(user: User, existing: Organization, form: OrganizationForm): Organization = {
+    val errors = validate(form, Some(existing))
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+
+    DB.withConnection { implicit c =>
+      SQL(UpdateQuery).on(
+        'guid -> existing.guid,
+        'name -> form.name.trim,
+        'key -> form.key.getOrElse(UrlKey.generate(form.name)).trim,
+        'namespace -> form.namespace.trim,
+        'visibility -> form.visibility.getOrElse(DefaultVisibility).toString,
+        'user_guid -> user.guid
+      ).execute()
+    }
+
+    // TODO: Figure out how we want to handle domains. Best option
+    // might be to remove domains from organization_form
+
+    findByGuid(Authorization.All, existing.guid).getOrElse {
+      sys.error("Update failed")
+    }
+  }
+
+  private def create(implicit c: java.sql.Connection, user: User, form: OrganizationForm): Organization = {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -171,11 +227,11 @@ object OrganizationsDao {
       'namespace -> org.namespace,
       'visibility -> org.visibility.toString,
       'key -> org.key,
-      'created_by_guid -> createdBy.guid
+      'user_guid -> user.guid
     ).execute()
 
     org.domains.foreach { domain =>
-      OrganizationDomainsDao.create(c, createdBy, org, domain.name)
+      OrganizationDomainsDao.create(c, user, org, domain.name)
     }
 
     org

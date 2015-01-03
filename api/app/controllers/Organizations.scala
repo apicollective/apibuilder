@@ -58,6 +58,29 @@ object Organizations extends Controller {
     }
   }
 
+  def putByKey(key: String) = Authenticated(parse.json) { request =>
+    request.body.validate[OrganizationForm] match {
+      case e: JsError => {
+        Conflict(Json.toJson(Validation.invalidJson(e)))
+      }
+      case s: JsSuccess[OrganizationForm] => { 
+        OrganizationsDao.findByKey(Authorization(Some(request.user)), key) match {
+          case None => NotFound
+          case Some(existing) => {
+            val form = s.get
+            val errors = OrganizationsDao.validate(form, Some(existing))
+            if (errors.isEmpty) {
+              val org = OrganizationsDao.update(request.user, existing, form)
+              Ok(Json.toJson(org))
+            } else {
+              Conflict(Json.toJson(errors))
+            }
+          }
+        }
+      }
+    }
+  }
+
   def deleteByKey(key: String) = Authenticated { request =>
     OrganizationsDao.findByUserAndKey(request.user, key).map { organization =>
       request.requireAdmin(organization)

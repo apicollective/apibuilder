@@ -1,4 +1,5 @@
 @(metadata: models.MainTemplate,
+  errorMessages: Seq[String] = Nil,
   jsFiles: Seq[String] = Seq.empty
 )(content: Html)(implicit flash: Flash)
 
@@ -113,6 +114,10 @@
           @flash.get("error").map { msg => <span class="label label-error">@msg</span> }
 
           @metadata.title.map { title => <h2>@title</h2> }
+
+          @if(!errorMessages.isEmpty) {
+            @errorMessages.map { msg => <dd class="error">@msg</dd> }
+          }
 
           <p>@content</p>
 

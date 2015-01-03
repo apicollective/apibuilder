@@ -124,10 +124,7 @@ object Organizations extends Controller {
       )
     )
 
-    Ok(views.html.organizations.form(
-      request.mainTemplate(Some("Add Organization")),
-      filledForm
-    ))
+    Ok(views.html.organizations.create(request.mainTemplate(), filledForm))
   }
 
   def createPost = Authenticated.async { implicit request =>
@@ -137,7 +134,7 @@ object Organizations extends Controller {
     form.fold (
 
       errors => Future {
-        Ok(views.html.organizations.form(tpl, errors))
+        Ok(views.html.organizations.create(tpl, errors))
       },
 
       valid => {
@@ -149,15 +146,74 @@ object Organizations extends Controller {
             visibility = Some(Visibility(valid.visibility))
           )
         ).map { org =>
-          Redirect(routes.Organizations.show(org.key))
+          Redirect(routes.Organizations.show(org.key)).flashing("success" -> "Org created")
         }.recover {
           case r: com.gilt.apidoc.error.ErrorsResponse => {
-            Ok(views.html.organizations.form(tpl, form, Some(r.errors.map(_.message).mkString(", "))))
+            Ok(views.html.organizations.create(tpl, form, r.errors.map(_.message)))
           }
         }
       }
 
     )
+  }
+
+  def edit(orgKey: String) = Authenticated.async { implicit request =>
+    request.api.Organizations.getByKey(orgKey).map { orgOption =>
+      orgOption match {
+        case None => {
+          Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")
+        }
+        case Some(org) => {
+          val filledForm = orgForm.fill(
+            OrgData(
+              name = org.name,
+              namespace = org.namespace,
+              key = Some(org.key),
+              visibility = org.visibility.toString
+            )
+          )
+          Ok(views.html.organizations.edit(request.mainTemplate().copy(org = Some(org)), org, filledForm))
+        }
+      }
+    }
+  }
+
+  def editPost(orgKey: String) = Authenticated.async { implicit request =>
+    request.api.Organizations.getByKey(orgKey).flatMap { orgOption =>
+      orgOption match {
+        case None => Future {
+          Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")
+        }
+        case Some(org) => {
+          val tpl = request.mainTemplate(Some("Edit Organization"))
+
+          val form = orgForm.bindFromRequest
+          form.fold (
+
+            errors => Future {
+              Ok(views.html.organizations.edit(tpl, org, errors))
+            },
+
+            valid => {
+              request.api.Organizations.post(
+                OrganizationForm(
+                  name = valid.name,
+                  namespace = valid.namespace,
+                  key = valid.key,
+                  visibility = Some(Visibility(valid.visibility))
+                )
+              ).map { org =>
+                Redirect(routes.Organizations.show(org.key)).flashing("success" -> "Org updated")
+              }.recover {
+                case r: com.gilt.apidoc.error.ErrorsResponse => {
+                  Ok(views.html.organizations.edit(tpl, org, form, r.errors.map(_.message)))
+                }
+              }
+            }
+          )
+        }
+      }
+    }
   }
 
   case class OrgData(

@@ -409,6 +409,17 @@
                 },
 
                 {
+                    "method": "PUT",
+		    "path": "/:key",
+                    "description": "Update an organization.",
+                    "body": { "type": "organization_form" },
+                    "responses": {
+                        "200": { "type": "organization" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
                     "method": "DELETE",
                     "path": "/:key",
                     "description": "Deletes an organization and all of its associated applications."

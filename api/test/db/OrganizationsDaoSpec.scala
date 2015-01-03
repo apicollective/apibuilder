@@ -22,6 +22,41 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
     org.key should be(key)
   }
 
+  describe("update") {
+
+    lazy val org = Util.createOrganization()
+    lazy val form = OrganizationForm(
+      name = org.name,
+      key = Some(org.key),
+      visibility = Some(org.visibility),
+      namespace = org.namespace
+    )
+
+    it("name") {
+      val updated = OrganizationsDao.update(Util.createdBy, org, form.copy(name = org.name + "2"))
+      updated.name should be(org.name + "2")
+    }
+
+    it("key") {
+      val updated = OrganizationsDao.update(Util.createdBy, org, form.copy(key = Some(org.key + "2")))
+      updated.key should be(org.key + "2")
+    }
+
+    it("namespace") {
+      val updated = OrganizationsDao.update(Util.createdBy, org, form.copy(namespace = org.namespace + "2"))
+      updated.namespace should be(org.namespace + "2")
+    }
+  
+    it("visibility") {
+      val updated = OrganizationsDao.update(Util.createdBy, org, form.copy(visibility = Some(Visibility.Public)))
+      updated.visibility should be(Visibility.Public)
+
+      val updated2 = OrganizationsDao.update(Util.createdBy, org, form.copy(visibility = Some(Visibility.Organization)))
+      updated2.visibility should be(Visibility.Organization)
+    }
+
+  }
+
   it("user that creates org should be an admin") {
     val user = Util.upsertUser(UUID.randomUUID.toString + "@gilttest.com")
     val name = UUID.randomUUID.toString
@@ -104,6 +139,14 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
       OrganizationsDao.validate(Util.createOrganizationForm(name = "this is a long name")) should be(Seq.empty)
       OrganizationsDao.validate(Util.createOrganizationForm(name = "a")).head.message should be("name must be at least 4 characters")
       OrganizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name)).head.message should be("Org with this name already exists")
+
+      OrganizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name), Some(Util.gilt)) should be(Seq.empty)
+    }
+
+    it("validates key") {
+      OrganizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message should be("Key must be at least 4 characters")
+      OrganizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key))).head.message should be("Org with this key already exists")
+      OrganizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key)), Some(Util.gilt)) should be(Seq.empty)
     }
 
     it("raises error if you try to create an org with a short name") {
