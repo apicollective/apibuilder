@@ -6,7 +6,13 @@
 @main(tpl.copy(title = Some("Org Details"))) {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Organizations.edit(org.key)">Edit</a>
+    <span class="glyphicon glyphicon-plus"></span>
+    <a href="@routes.Organizations.edit(org.key)">Edit</a>
+
+    @if(tpl.canDeleteOrganization()) {
+      <span class="glyphicon glyphicon-plus"></span> 
+      <a href="@routes.Organizations.deletePost(org.key)" class="delete" data-confirm="Are you sure?">Delete</a>
+    }
   </div>
 
   <ul>

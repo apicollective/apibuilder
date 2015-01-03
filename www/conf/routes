@@ -41,6 +41,7 @@ GET     /org/create                                               controllers.Or
 POST    /org/createPost                                           controllers.Organizations.createPost
 GET     /org/edit                                                 controllers.Organizations.edit(org_key: String)
 POST    /org/editPost                                             controllers.Organizations.editPost(org_key: String)
+POST    /org/deletePost                                           controllers.Organizations.deletePost(org_key: String)
 
 # Start dynamic routing by org key
 

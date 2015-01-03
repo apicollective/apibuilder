@@ -219,6 +219,14 @@ object Organizations extends Controller {
     }
   }
 
+  def deletePost(orgKey: String) = Authenticated.async { implicit request =>
+    for {
+      result <- request.api.Organizations.deleteByKey(orgKey)
+    } yield {
+      Redirect(routes.ApplicationController.index()).flashing("success" -> "Org deleted")
+    }
+  }
+
   case class OrgData(
     name: String,
     namespace: String,

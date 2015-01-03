@@ -25,6 +25,8 @@ case class MainTemplate(
 
   def canDeleteApplication(applicationKey: String): Boolean = isOrgMember
 
+  def canDeleteOrganization(): Boolean = isOrgAdmin
+
 }
 
 object MainTemplate {
