@@ -116,7 +116,13 @@
           @metadata.title.map { title => <h2>@title</h2> }
 
           @if(!errorMessages.isEmpty) {
-            @errorMessages.map { msg => <dd class="error">@msg</dd> }
+	    @if(errorMessages.size == 1) {
+              @errorMessages.map { msg => <dd class="error">@msg</dd> }
+            } else {
+              <ul>
+                @errorMessages.map { msg => <li><dd class="error">@msg</dd></li> }
+              </ul>
+            }
           }
 
           <p>@content</p>

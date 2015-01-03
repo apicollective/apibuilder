@@ -195,15 +195,18 @@ object Organizations extends Controller {
             },
 
             valid => {
-              request.api.Organizations.post(
-                OrganizationForm(
+              val updatedKey = valid.key.map(_.trim).getOrElse(org.key)
+
+              request.api.Organizations.putByKey(
+                key = org.key,
+                organizationForm = OrganizationForm(
                   name = valid.name,
                   namespace = valid.namespace,
-                  key = valid.key,
+                  key = Some(updatedKey),
                   visibility = Some(Visibility(valid.visibility))
                 )
               ).map { org =>
-                Redirect(routes.Organizations.show(org.key)).flashing("success" -> "Org updated")
+                Redirect(routes.Organizations.details(updatedKey)).flashing("success" -> "Org updated")
               }.recover {
                 case r: com.gilt.apidoc.error.ErrorsResponse => {
                   Ok(views.html.organizations.edit(tpl, org, form, r.errors.map(_.message)))
