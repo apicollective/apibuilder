@@ -31,7 +31,7 @@ object Organizations extends Controller {
       }
 
       Ok(views.html.organizations.show(
-        request.mainTemplate(),
+        request.mainTemplate().copy(title = Some(request.org.name)),
         applications = PaginatedCollection(page, applications),
         haveRequests = haveRequests)
       )
