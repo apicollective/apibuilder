@@ -1,20 +1,28 @@
 package core
 
 import lib.{Datatype, Primitives, Type, TypeKind, UrlKey}
+import com.gilt.apidoc.models.Organization
 import com.gilt.apidocspec.models._
 import play.api.libs.json._
 import org.joda.time.format.ISODateTimeFormat
 
 object ServiceBuilder {
 
-  def apply(apiJson: String): Service = {
+  def apply(
+    config: ServiceConfiguration,
+    apiJson: String
+  ): Service = {
     val jsValue = Json.parse(apiJson)
-    apply(InternalServiceForm(jsValue))
+    apply(config, InternalServiceForm(jsValue))
   }
 
-  def apply(internal: InternalServiceForm): Service = {
+  def apply(
+    config: ServiceConfiguration,
+    internal: InternalServiceForm
+  ): Service = {
     val name = internal.name.getOrElse(sys.error("Missing name"))
     val key = internal.key.getOrElse { UrlKey.generate(name) }
+    val namespace = internal.namespace.getOrElse { s"${config.orgNamespace}.${key}" }
     val enums = internal.enums.map { EnumBuilder(_) }
     val models = internal.models.map { ModelBuilder(enums, _) }
     val headers = internal.headers.map { HeaderBuilder(enums, _) }
@@ -22,6 +30,7 @@ object ServiceBuilder {
 
     Service(
       name = name,
+      namespace = namespace,
       key = key,
       description = internal.description,
       baseUrl = internal.baseUrl,

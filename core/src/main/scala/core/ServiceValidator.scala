@@ -7,14 +7,17 @@ import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException 
 import com.fasterxml.jackson.databind.JsonMappingException
 import scala.util.{Failure, Success, Try}
 
-case class ServiceValidator(apiJson: String) {
+case class ServiceValidator(
+  config: ServiceConfiguration,
+  apiJson: String
+) {
 
   private val RequiredFields = Seq("name")
 
   private var parseError: Option[String] = None
 
   lazy val service: Option[Service] = {
-    internalService.map { ServiceBuilder(_) }
+    internalService.map { ServiceBuilder(config, _) }
   }
 
   def validate(): Either[Seq[String], Service] = {

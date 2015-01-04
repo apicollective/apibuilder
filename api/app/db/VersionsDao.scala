@@ -1,5 +1,6 @@
 package db
 
+import core.ServiceConfiguration
 import com.gilt.apidoc.models.{Application, User, Version, VersionForm, Visibility}
 import com.gilt.apidocspec.models.Service
 import com.gilt.apidocspec.models.json._
@@ -15,7 +16,8 @@ object VersionsDao {
   private val LatestVersion = "latest"
 
   private val BaseQuery = """
-    select versions.guid, versions.version, versions.original, versions.service::varchar, versions.old_json::varchar
+    select versions.guid, versions.version, versions.original, versions.service::varchar, versions.old_json::varchar,
+           organizations.namespace
      from versions
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
@@ -127,7 +129,10 @@ object VersionsDao {
             Json.parse(service).as[JsObject]
           }
           case None => {
-            val service = core.ServiceValidator(original).service.get
+            val config = ServiceConfiguration(
+              orgNamespace = row[String]("namespace")
+            )
+            val service = core.ServiceValidator(config, original).service.get
             Json.toJson(service).as[JsObject]
           }
         }
@@ -152,12 +157,16 @@ object VersionsDao {
       val versions = SQL(sql)().toList
       versions.map { row =>
         val guid = row[UUID]("guid")
+        val config = ServiceConfiguration(
+          orgNamespace = row[String]("namespace")
+        )
+
         val original = row[Option[String]]("original").getOrElse {
           row[String]("old_json")
         }
 
         try {
-          val service = core.ServiceValidator(original).service.get
+          val service = core.ServiceValidator(config, original).service.get
 
           SQL(MigrateQuery).on(
             'guid -> guid,

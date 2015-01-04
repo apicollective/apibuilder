@@ -23,6 +23,7 @@ private[core] case class InternalServiceForm(json: JsValue) {
 
   lazy val name = (json \ "name").asOpt[String]
   lazy val key = (json \ "key").asOpt[String]
+  lazy val namespace = (json \ "namespace").asOpt[String]
   lazy val baseUrl = (json \ "base_url").asOpt[String]
   lazy val basePath = (json \ "base_path").asOpt[String]
   lazy val description = (json \ "description").asOpt[String]
