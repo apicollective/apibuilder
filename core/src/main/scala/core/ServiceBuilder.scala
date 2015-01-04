@@ -4,7 +4,6 @@ import lib.{Datatype, Primitives, Type, TypeKind, UrlKey}
 import com.gilt.apidoc.models.Organization
 import com.gilt.apidocspec.models._
 import play.api.libs.json._
-import org.joda.time.format.ISODateTimeFormat
 
 object ServiceBuilder {
 
