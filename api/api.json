@@ -560,7 +560,8 @@
                     "description": "Create an application.",
 		    "body": { "type": "application_form" },
                     "responses": {
-                        "200": { "type": "application" }
+                        "200": { "type": "application" },
+			"409": { "type": "[error]" }
                     }
                 },
 
@@ -570,7 +571,8 @@
                     "path": "/:applicationKey",
 		    "body": { "type": "application_form" },
                     "responses": {
-                        "200": { "type": "application" }
+                        "200": { "type": "application" },
+			"409": { "type": "[error]" }
                     }
                 },
 
@@ -637,7 +639,8 @@
                     "path": "/:version",
 		    "body": { "type": "version_form" },
                     "responses": {
-                        "200": { "type": "version" }
+                        "200": { "type": "version" },
+                        "409": { "type": "[error]" }
                     }
                 },
 
