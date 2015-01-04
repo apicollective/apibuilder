@@ -29,7 +29,7 @@ object Text {
     alphaNumericError ++ startsWithLetterError
   }
 
-  private val AlphaNumericRx = "^[a-zA-Z0-9_]*$".r
+  private val AlphaNumericRx = "^[a-zA-Z0-9_.\\.]*$".r
 
   def isAlphaNumeric(value: String): Boolean = {
     value match {

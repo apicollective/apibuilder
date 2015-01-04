@@ -33,6 +33,8 @@ class TextSpec extends FunSpec with Matchers {
     Text.validateName("_") should be(Seq("Name must start with a letter"))
     Text.validateName("vendor") should be(Seq.empty)
     Text.validateName("Vendor") should be(Seq.empty)
+    Text.validateName("some service") should be(Seq("Name can only contain a-z, A-Z, 0-9 and _ characters"))
+    Text.validateName("me.apidoc.models.service") should be(Seq.empty)
   }
 
   describe("isAlphaNumeric") {
@@ -42,12 +44,14 @@ class TextSpec extends FunSpec with Matchers {
       Text.isAlphaNumeric("this_dog") should be(true)
       Text.isAlphaNumeric("this_DOG") should be(true)
       Text.isAlphaNumeric("this_dog_1") should be(true)
+      Text.isAlphaNumeric("foo.bar") should be(true)
     }
 
     it("for non alpha numeric strings") {
       Text.isAlphaNumeric("-") should be(false)
       Text.isAlphaNumeric("this!") should be(false)
       Text.isAlphaNumeric(" this") should be(false)
+      Text.isAlphaNumeric("foo bar") should be(false)
     }
 
   }
