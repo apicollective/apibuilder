@@ -1,4 +1,5 @@
-Use JsonUtil.asOptString instead of name = (json \ "name").asOpt[String],
+service spec:
+  - add full_name or qualified_name to models and enums to import (?)
 
 http://localhost:9000/gilt/version/create?service=apidoc-generator
   - Validation for uploading invalid json
