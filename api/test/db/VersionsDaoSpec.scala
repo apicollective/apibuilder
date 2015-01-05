@@ -27,6 +27,7 @@ class VersionsDaoSpec extends FlatSpec {
   private lazy val service = Service(
     name = key,
     key = key,
+    namespace = "test." + key,
     headers = Nil,
     enums = Nil,
     models = Nil,

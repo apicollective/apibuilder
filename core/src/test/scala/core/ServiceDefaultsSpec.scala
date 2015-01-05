@@ -18,7 +18,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString("") should be("")
 
     val createdAt = validator.service.get.models.head.fields.find { _.name == "created_at" }.get
@@ -40,7 +40,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString("") should be("")
 
     val isActiveField = validator.service.get.models.head.fields.find { _.name == "is_active" }.get
@@ -66,7 +66,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString("") should be("user.is_active Value[1] is not a valid boolean. Must be one of: true, false")
   }
 
@@ -102,7 +102,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       ]
     }
     """
-    val validator = ServiceValidator(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString should be("Model[user] cannot be mapped to more than one resource")
   }
 

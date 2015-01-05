@@ -34,7 +34,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString("") should be("")
   }
 

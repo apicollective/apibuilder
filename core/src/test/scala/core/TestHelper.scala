@@ -6,6 +6,10 @@ import java.nio.charset.StandardCharsets
 
 object TestHelper {
 
+  val serviceConfig = ServiceConfiguration(
+    orgNamespace = "test.apidoc"
+  )
+
   def writeToFile(path: String, contents: String) {
     val outputPath = Paths.get(path)
     val bytes = contents.getBytes(StandardCharsets.UTF_8)
@@ -18,7 +22,7 @@ object TestHelper {
 
   def parseFile(filename: String): ServiceValidator = {
     val contents = readFile(filename)
-    val validator = ServiceValidator(contents)
+    val validator = ServiceValidator(TestHelper.serviceConfig, contents)
     if (!validator.isValid) {
       sys.error(s"Invalid api.json file[${filename}]: " + validator.errors.mkString("\n"))
     }

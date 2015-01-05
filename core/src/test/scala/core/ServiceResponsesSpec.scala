@@ -31,14 +31,14 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
   it("Returns error message if user specifies non Unit Response type") {
     Seq(204, 304).foreach { code =>
       val json = baseJson.format(s""", "responses": { "$code": { "type": "user" } } """)
-      val validator = ServiceValidator(json)
+      val validator = ServiceValidator(TestHelper.serviceConfig, json)
       validator.errors.mkString("") should be(s"Resource[user] DELETE /users/:id Responses w/ code[$code] must return unit and not[user]")
     }
   }
 
   it("verifies that response defaults to type 204 Unit") {
     val json = baseJson.format("")
-    val validator = ServiceValidator(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString("") should be("")
     val response = validator.service.get.resources.head.operations.head.responses.find(_.code == 204).get
     response.`type` should be("unit")
@@ -47,20 +47,20 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
   it("does not allow explicit definition of 404, 5xx status codes") {
     Seq(404, 500, 501, 502).foreach { code =>
       val json = baseJson.format(s""", "responses": { "$code": { "type": "unit" } } """)
-      val validator = ServiceValidator(json)
+      val validator = ServiceValidator(TestHelper.serviceConfig, json)
       validator.errors.mkString("") should be(s"Resource[user] DELETE /users/:id has a response with code[$code] - this code cannot be explicitly specified")
     }
   }
 
   it("validates that responses is map from string to object") {
     val json = baseJson.format(s""", "responses": { "204": "unit" } """)
-    val validator = ServiceValidator(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.contains(s"Resource[user] DELETE 204: Value must be a JsObject") should be(true)
   }
 
   it("generates a single error message for invalid 404 specification") {
     val json = baseJson.format(s""", "responses": { "404": { "type": "user" } } """)
-    val validator = ServiceValidator(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString(" ") should be(s"Resource[user] DELETE /users/:id has a response with code[404] - this code cannot be explicitly specified")
   }
 
