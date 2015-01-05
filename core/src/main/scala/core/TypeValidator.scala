@@ -8,7 +8,7 @@ import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException 
 import com.fasterxml.jackson.databind.JsonMappingException
 import scala.util.{Failure, Success, Try}
 
-case class TypeValidator(
+private[core] case class TypeValidator(
   enums: Iterable[TypesProviderEnum] = Seq.empty
 ) {
 

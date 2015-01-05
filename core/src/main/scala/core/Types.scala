@@ -2,17 +2,17 @@ package core
 
 import lib.{Datatype, DatatypeResolver, Type}
 
-case class TypesProviderEnum(
+private[core] case class TypesProviderEnum(
   name: String,
   values: Seq[String]
 )
 
-sealed trait TypesProvider {
+private[core] sealed trait TypesProvider {
   def enums: Iterable[TypesProviderEnum] = Seq.empty
   def modelNames: Iterable[String] = Seq.empty
 }
 
-case class InternalServiceFormTypesProvider(
+private[core] case class InternalServiceFormTypesProvider(
   internal: InternalServiceForm
 ) extends TypesProvider {
 
@@ -29,7 +29,7 @@ case class InternalServiceFormTypesProvider(
 
 }
 
-case class TypeResolver(
+private[core] case class TypeResolver(
   provider: TypesProvider
 ) {
 
