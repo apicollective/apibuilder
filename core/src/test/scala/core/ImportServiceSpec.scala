@@ -42,14 +42,27 @@ class ImportServiceSpec extends FunSpec with Matchers {
     {
       "name": "Import Shared",
       "namespace": "test.apidoc.import-shared",
+      "key": "import-shared",
 
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "id", "type": "long" }
+      "enums": [
+        {
+          "name": "age_group",
+          "values": [
+            { "name": "youth" },
+            { "name": "adult" }
           ]
         }
-      }
+      ],
+
+      "models": [
+        {
+          "name": "user",
+          "plural": "users",
+          "fields": [
+            { "name": "id", "type": "long", "required": true }
+          ]
+        }
+      ]
     }
   """
 
@@ -67,7 +80,8 @@ class ImportServiceSpec extends FunSpec with Matchers {
         "membership": {
           "fields": [
             { "name": "id", "type": "long" },
-            { "name": "user", "type": "test.apidoc.import-shared.user" }
+            { "name": "user", "type": "test.apidoc.import-shared.models.user" },
+            { "name": "age_group", "type": "test.apidoc.import-shared.enums.age_group" }
           ]
         }
       }

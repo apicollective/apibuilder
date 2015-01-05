@@ -1,5 +1,6 @@
 package core
 
+import com.gilt.apidocspec.models.Service
 import lib.{Datatype, DatatypeResolver, Type}
 
 private[core] case class TypesProviderEnum(
@@ -12,20 +13,46 @@ private[core] sealed trait TypesProvider {
   def modelNames: Iterable[String] = Seq.empty
 }
 
+private[core] case class ServiceTypesProvider(
+  service: Service
+) extends TypesProvider {
+
+  private def qualifiedName(prefix: String, name: String): String = {
+    s"${service.namespace}.$prefix.$name"
+  }
+
+  override def enums: Iterable[TypesProviderEnum] = service.enums.map { enum =>
+    TypesProviderEnum(
+      name = qualifiedName("enums", enum.name),
+      values = enum.values.map(_.name)
+    )
+  }
+
+  override def modelNames: Iterable[String] = service.models.map(n => qualifiedName("models", n.name))
+
+}
+
 private[core] case class InternalServiceFormTypesProvider(
   internal: InternalServiceForm
 ) extends TypesProvider {
 
-  override def enums = {
-    internal.enums.map { enum =>
-      TypesProviderEnum(
-        name = enum.name,
-        values = enum.values.flatMap(_.name)
-      )
-    }
+  private val internalEnums: Seq[TypesProviderEnum] = internal.enums.map { enum =>
+    TypesProviderEnum(
+      name = enum.name,
+      values = enum.values.flatMap(_.name)
+    )
   }
 
-  override def modelNames = internal.models.map(_.name)
+  private val internaModelNames: Seq[String] = internal.models.map(_.name)
+
+  private val imports: Seq[Import] = internal.imports.flatMap(_.uri).map(Import(_))
+  private val importedServices: Seq[ServiceTypesProvider] = imports.map { imp =>
+    ServiceTypesProvider(imp.service)
+  }
+
+  override def enums = internalEnums ++ importedServices.map(_.enums).flatten
+
+  override def modelNames = internaModelNames ++ importedServices.map(_.modelNames).flatten
 
 }
 
