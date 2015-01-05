@@ -235,7 +235,7 @@ object Versions extends Controller {
                     }
                   }
                   case Some(name) => {
-                    val applicationKey = UrlKey.generate(name)
+                    val applicationKey = UrlKey.generate(name.trim)
 
                     request.api.Versions.putByOrgKeyAndApplicationKeyAndVersion(
                       orgKey = request.org.key,
