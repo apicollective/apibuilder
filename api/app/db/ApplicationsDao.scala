@@ -19,16 +19,14 @@ object ApplicationsDao {
 
   private val InsertQuery = """
     insert into applications
-    (guid, organization_guid, name, description, namespace, key, visibility, created_by_guid, updated_by_guid)
+    (guid, organization_guid, name, description, key, visibility, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {name}, {description}, {namespace}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {name}, {description}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private val UpdateQuery = """
     update applications
        set name = {name},
-           namespace = {namespace},
-           key = {key},
            visibility = {visibility},
            description = {description},
            updated_by_guid = {updated_by_guid}::uuid
@@ -91,8 +89,6 @@ object ApplicationsDao {
       SQL(UpdateQuery).on(
         'guid -> app.guid,
         'name -> form.name.trim,
-        'namespace -> form.namespace.trim,
-        'key -> form.key.trim,
         'visibility -> form.visibility.toString,
         'description -> form.description.map(_.trim),
         'updated_by_guid -> updatedBy.guid
@@ -127,13 +123,12 @@ object ApplicationsDao {
     keyOption: Option[String] = None
   ): Application = {
     val guid = UUID.randomUUID
-    val key = keyOption.getOrElse(UrlKey.generate(form.name)).trim.toLowerCase
+    val key = keyOption.getOrElse(UrlKey.generate(form.name))
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> org.guid,
-        'name -> form.name.trim,
-        'namespace -> form.namespace.trim.toLowerCase,
+        'name -> form.name,
         'description -> form.description,
         'key -> key,
         'visibility -> form.visibility.toString,
