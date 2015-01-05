@@ -2,6 +2,7 @@ package core
 
 import com.gilt.apidocspec.models.Service
 import lib.{Datatype, DatatypeResolver, Type}
+import scala.annotation.tailrec
 
 private[core] case class TypesProviderEnum(
   name: String,
@@ -13,52 +14,73 @@ private[core] sealed trait TypesProvider {
   def modelNames: Iterable[String] = Seq.empty
 }
 
-private[core] case class ServiceTypesProvider(
-  service: Service
-) extends TypesProvider {
+private[core] object TypesProvider {
 
-  private def qualifiedName(prefix: String, name: String): String = {
-    s"${service.namespace}.$prefix.$name"
+  case class ServiceProvider(service: Service) extends TypesProvider {
+
+    private def qualifiedName(prefix: String, name: String): String = {
+      s"${service.namespace}.$prefix.$name"
+    }
+
+    override def enums: Iterable[TypesProviderEnum] = service.enums.map { enum =>
+      TypesProviderEnum(
+        name = qualifiedName("enums", enum.name),
+        values = enum.values.map(_.name)
+      )
+    }
+
+    override def modelNames: Iterable[String] = service.models.map(n => qualifiedName("models", n.name))
+
   }
 
-  override def enums: Iterable[TypesProviderEnum] = service.enums.map { enum =>
-    TypesProviderEnum(
-      name = qualifiedName("enums", enum.name),
-      values = enum.values.map(_.name)
-    )
+  case class InternalServiceFormProvider(internal: InternalServiceForm) extends TypesProvider {
+
+    override def enums = internal.enums.map { enum =>
+      TypesProviderEnum(
+        name = enum.name,
+        values = enum.values.flatMap(_.name)
+      )
+    }
+
+    override def modelNames = internal.models.map(_.name)
+
   }
-
-  override def modelNames: Iterable[String] = service.models.map(n => qualifiedName("models", n.name))
-
 }
 
-private[core] case class InternalServiceFormTypesProvider(
-  internal: InternalServiceForm
-) extends TypesProvider {
-
-  override def enums = internal.enums.map { enum =>
-    TypesProviderEnum(
-      name = enum.name,
-      values = enum.values.flatMap(_.name)
-    )
-  }
-
-  override def models = internal.models.map(_.name)
-
-}
-
+/**
+  * Takes an internal service form and recursively builds up a type
+  * provider for all enums and all models specified in the service or
+  * in any of the imports. Takes care to avoid importing the same
+  * service multiple times (based on uniqueness of the import URIs)
+  */
 private[core] case class RecursiveTypesProvider(
   internal: InternalServiceForm
 ) extends TypesProvider {
 
+  override def enums = providers.map(_.enums).flatten
+
+  override def modelNames = providers.map(_.modelNames).flatten
+
   private val imports: Seq[Import] = internal.imports.flatMap(_.uri).map(Import(_))
-  private val importedServices: Seq[ServiceTypesProvider] = imports.map { imp =>
-    ServiceTypesProvider(imp.service)
+
+  private lazy val providers = Seq(TypesProvider.InternalServiceFormProvider(internal)) ++ resolve(imports)
+
+  private def resolve(
+    imports: Seq[Import],
+    imported: Set[String] = Set.empty
+  ): Seq[TypesProvider] = {
+    imports.headOption match {
+      case None => Seq.empty
+      case Some(imp) => {
+        if (imported.contains(imp.uri.toLowerCase.trim)) {
+          // already imported
+          resolve(imports.drop(1), imported)
+        } else {
+          Seq(TypesProvider.ServiceProvider(imp.service)) ++ resolve(imports.drop(1), imported ++ Set(imp.uri))
+        }
+      }
+    }
   }
-
-  override def enums = importedServices.map(_.enums).flatten
-
-  override def modelNames = importedServices.map(_.modelNames).flatten
 
 }
 

@@ -20,7 +20,7 @@ object ServiceBuilder {
     internal: InternalServiceForm
   ): Service = {
     val resolver = TypeResolver(
-      InternalServiceFormTypesProvider(internal)
+      RecursiveTypesProvider(internal)
     )
 
     val name = internal.name.getOrElse(sys.error("Missing name"))

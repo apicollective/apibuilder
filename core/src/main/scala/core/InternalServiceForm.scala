@@ -111,7 +111,7 @@ private[core] case class InternalServiceForm(json: JsValue) {
     }
   }
 
-  lazy val typeResolver = TypeResolver(InternalServiceFormTypesProvider(this))
+  lazy val typeResolver = TypeResolver(RecursiveTypesProvider(this))
 }
 
 case class InternalImportForm(
