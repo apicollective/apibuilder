@@ -19,4 +19,9 @@ object Util {
     enum.values.map(_.name).contains(value)
   }
 
+  def isValidUri(value: String): Boolean = {
+    val formatted = value.trim.toLowerCase
+    formatted.startsWith("http://") || formatted.startsWith("https://") || formatted.startsWith("file://")
+  }
+
 }

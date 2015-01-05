@@ -25,4 +25,26 @@ class UtilSpec extends FunSpec with Matchers {
     Util.isValidEnumValue(visibilityEnum, "foobar") should be(false)
   }
 
+  it("isValidUri") {
+    Seq(
+      "http://www.apidoc.me",
+      "https://www.apidoc.me",
+      "  http://www.apidoc.me   ",
+      " HTTPS://WWW.APIDOC.ME  ",
+      "http://apidoc.me",
+      "https://api.apidoc.me",
+      "file:///tmp/foo.json"
+    ).foreach { uri =>
+      Util.isValidUri(uri) should be(true)
+    }
+
+    Seq(
+      "www.apidoc.me",
+      "apidoc",
+      "bar baz"
+    ).foreach { uri =>
+      Util.isValidUri(uri) should be(false)
+    }
+  }
+
 }

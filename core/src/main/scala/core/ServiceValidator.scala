@@ -62,6 +62,7 @@ case class ServiceValidator(
           validateName ++
           validateKey ++
           validateBaseUrl ++
+          validateImports ++
           validateModels ++
           validateEnums ++
           validateHeaders ++
@@ -168,6 +169,20 @@ case class ServiceValidator(
       model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).filter(!_.default.isEmpty).flatMap { field =>
         internalService.get.typeResolver.parse(field.datatype.get).flatMap { pd =>
           internalService.get.typeValidator.validate(pd, field.default.get, Some(s"${model.name}.${field.name.get}"))
+        }
+      }
+    }
+  }
+
+  private def validateImports(): Seq[String] = {
+    internalService.get.imports.flatMap { imp =>
+      imp.uri match {
+        case None => Seq("imports.uri is required")
+        case Some(value) => {
+          Util.isValidUri(value) match {
+            case true => Seq.empty
+            case false => Seq(s"imports.uri[$value] is not a valid URI")
+          }
         }
       }
     }

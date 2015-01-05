@@ -28,6 +28,15 @@ private[core] case class InternalServiceForm(json: JsValue) {
   lazy val basePath = (json \ "base_path").asOpt[String]
   lazy val description = (json \ "description").asOpt[String]
 
+  lazy val imports: Seq[InternalImportForm] = {
+    (json \ "imports").asOpt[JsArray] match {
+      case None => Seq.empty
+      case Some(values) => {
+        values.value.flatMap { _.asOpt[JsObject].map { InternalImportForm(_) } }
+      }
+    }
+  }
+
   lazy val models: Seq[InternalModelForm] = {
     (json \ "models").asOpt[JsValue] match {
       case Some(models: JsObject) => {
@@ -112,6 +121,10 @@ private[core] case class InternalServiceForm(json: JsValue) {
   )
 }
 
+case class InternalImportForm(
+  uri: Option[String]
+)
+
 case class InternalModelForm(
   name: String,
   plural: String,
@@ -195,6 +208,16 @@ case class InternalResponseForm(
 ) {
 
   lazy val datatypeLabel: Option[String] = datatype.map(_.label)
+
+}
+
+object InternalImportForm {
+
+  def apply(value: JsObject): InternalImportForm = {
+    InternalImportForm(
+      uri = JsonUtil.asOptString(value \ "uri")
+    )
+  }
 
 }
 
@@ -395,36 +418,6 @@ object InternalParameterForm {
     )
   }
 
-}
-
-/**
- * Parse numbers and string json values as strings
- */
-private[core] object JsonUtil {
-
-  def asOptString(json: JsValue, field: String): Option[String] = {
-    val value = (json \ field)
-    asOptString(value)
-  }
-
-  def asOptString(value: JsValue): Option[String] = {
-    value match {
-      case (_: JsUndefined) => None
-      case (v: JsString) => Some(v.value)
-      case (v: JsValue) => Some(v.toString)
-    }
-  }
-
-  def asOptBoolean(value: JsValue): Option[Boolean] = {
-    asOptString(value).map(_ == "true")
-  }
-
-  def hasKey(json: JsValue, field: String): Boolean = {
-    (json \ field) match {
-      case (_: JsUndefined) => false
-      case _ => true
-    }
-  }
 }
 
 sealed trait InternalDatatype {

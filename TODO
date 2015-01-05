@@ -1,3 +1,5 @@
+Use JsonUtil.asOptString instead of name = (json \ "name").asOpt[String],
+
 http://localhost:9000/gilt/version/create?service=apidoc-generator
   - Validation for uploading invalid json
   - Validation for uploading valid json w/ invalid model names
