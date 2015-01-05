@@ -7,7 +7,10 @@ case class TypeResolver(
   modelNames: Iterable[String] = Seq.empty
 ) {
 
-  private val resolver = DatatypeResolver(enumNames = enumNames, modelNames = modelNames)
+  private val resolver = DatatypeResolver(
+    enumNames = enumNames,
+    modelNames = modelNames
+  )
 
   def toType(name: String): Option[Type] = {
     resolver.toType(name)
