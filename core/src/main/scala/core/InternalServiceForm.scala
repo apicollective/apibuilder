@@ -117,7 +117,7 @@ private[core] case class InternalServiceForm(json: JsValue) {
   )
 
   lazy val typeValidator = TypeValidator(
-    enums = enums.map(e => TypeValidatorEnums(e.name, e.values.filter(!_.name.isEmpty).map(_.name.get)))
+    enums = enums.map(e => TypeValidatorEnums(e.name, e.values.flatMap(_.name)))
   )
 }
 
