@@ -3,12 +3,19 @@ package core
 import lib.Text
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 object TestHelper {
 
   val serviceConfig = ServiceConfiguration(
     orgNamespace = "test.apidoc"
   )
+
+  def writeToTempFile(contents: String): String = {
+    val tmpPath = "/tmp/apidoc.tmp." + UUID.randomUUID.toString
+    writeToFile(tmpPath, contents)
+    tmpPath
+  }
 
   def writeToFile(path: String, contents: String) {
     val outputPath = Paths.get(path)
