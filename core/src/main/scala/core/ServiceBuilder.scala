@@ -184,7 +184,7 @@ object ParameterBuilder {
   def apply(resolver: TypeResolver, internal: InternalParameterForm, location: ParameterLocation): Parameter = {
     val typeInstance = resolver.parseWithError(internal.datatype.get)
 
-    internal.default.map { ServiceBuilderHelper.assertValidDefault(resolver, typeInstance, _) }
+    internal.default.map { resolver.assertValidDefault(typeInstance, _) }
 
     Parameter(
       name = internal.name.get,
@@ -209,7 +209,7 @@ object FieldBuilder {
   ): Field = {
     val datatype = resolver.parseWithError(internal.datatype.get)
 
-    internal.default.map { ServiceBuilderHelper.assertValidDefault(resolver, datatype, _) }
+    internal.default.map { resolver.assertValidDefault(datatype, _) }
 
     Field(
       name = internal.name.get,
@@ -221,19 +221,6 @@ object FieldBuilder {
       maximum = internal.maximum,
       example = internal.example
     )
-  }
-
-}
-
-
-object ServiceBuilderHelper {
-
-  def assertValidDefault(
-    resolver: TypeResolver,
-    pd: Datatype,
-    value: String
-  ) {
-    resolver.assertValidDefault(pd, value)
   }
 
 }
