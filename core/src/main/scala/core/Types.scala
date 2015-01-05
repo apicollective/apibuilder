@@ -36,23 +36,29 @@ private[core] case class InternalServiceFormTypesProvider(
   internal: InternalServiceForm
 ) extends TypesProvider {
 
-  private val internalEnums: Seq[TypesProviderEnum] = internal.enums.map { enum =>
+  override def enums = internal.enums.map { enum =>
     TypesProviderEnum(
       name = enum.name,
       values = enum.values.flatMap(_.name)
     )
   }
 
-  private val internaModelNames: Seq[String] = internal.models.map(_.name)
+  override def models = internal.models.map(_.name)
+
+}
+
+private[core] case class RecursiveTypesProvider(
+  internal: InternalServiceForm
+) extends TypesProvider {
 
   private val imports: Seq[Import] = internal.imports.flatMap(_.uri).map(Import(_))
   private val importedServices: Seq[ServiceTypesProvider] = imports.map { imp =>
     ServiceTypesProvider(imp.service)
   }
 
-  override def enums = internalEnums ++ importedServices.map(_.enums).flatten
+  override def enums = importedServices.map(_.enums).flatten
 
-  override def modelNames = internaModelNames ++ importedServices.map(_.modelNames).flatten
+  override def modelNames = importedServices.map(_.modelNames).flatten
 
 }
 
