@@ -111,14 +111,7 @@ private[core] case class InternalServiceForm(json: JsValue) {
     }
   }
 
-  lazy val typeResolver = TypeResolver(
-    enumNames = enums.map(_.name),
-    modelNames = models.map(_.name)
-  )
-
-  lazy val typeValidator = TypeValidator(
-    enums = enums.map(e => TypeValidatorEnums(e.name, e.values.flatMap(_.name)))
-  )
+  lazy val typeResolver = TypeResolver(InternalServiceFormTypesProvider(this))
 }
 
 case class InternalImportForm(

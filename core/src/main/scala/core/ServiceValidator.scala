@@ -168,7 +168,7 @@ case class ServiceValidator(
     internalService.get.models.flatMap { model =>
       model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).filter(!_.default.isEmpty).flatMap { field =>
         internalService.get.typeResolver.parse(field.datatype.get).flatMap { pd =>
-          internalService.get.typeValidator.validate(pd, field.default.get, Some(s"${model.name}.${field.name.get}"))
+          internalService.get.typeResolver.validate(pd, field.default.get, Some(s"${model.name}.${field.name.get}"))
         }
       }
     }

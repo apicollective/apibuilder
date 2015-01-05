@@ -8,7 +8,7 @@ class TypeValidatorSpec extends FunSpec with Matchers {
 
   val validator = TypeValidator(
     enums = Seq(
-      TypeValidatorEnums("age_group", Seq("youth", "adult"))
+      TypesProviderEnum("age_group", Seq("youth", "adult"))
     )
   )
 
@@ -136,10 +136,10 @@ class TypeValidatorSpec extends FunSpec with Matchers {
   it("PrimitiveMetadata examples are valid") {
     PrimitiveMetadata.All.foreach { pm =>
       pm.examples.foreach { example =>
-        validator.assertValidDefault(
+        validator.validate(
           Datatype.Singleton(Seq(Type(TypeKind.Primitive, pm.primitive.toString))),
           example
-        )
+        ) should be(None)
       }
     }
   }

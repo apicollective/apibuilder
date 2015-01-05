@@ -8,10 +8,8 @@ import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException 
 import com.fasterxml.jackson.databind.JsonMappingException
 import scala.util.{Failure, Success, Try}
 
-case class TypeValidatorEnums(name: String, values: Seq[String])
-
 case class TypeValidator(
-  enums: Seq[TypeValidatorEnums] = Seq.empty
+  enums: Iterable[TypesProviderEnum] = Seq.empty
 ) {
 
   private[this] val dateTimeISOParser = ISODateTimeFormat.dateTimeParser()
@@ -25,13 +23,6 @@ case class TypeValidator(
         case e: JsonProcessingException => None
         case e: Throwable => throw e
       }
-    }
-  }
-
-  def assertValidDefault(pd: Datatype, value: String) {
-    validate(pd, value) match {
-      case None => ()
-      case Some(msg) => sys.error(msg)
     }
   }
 

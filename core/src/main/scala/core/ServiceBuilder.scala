@@ -19,13 +19,17 @@ object ServiceBuilder {
     config: ServiceConfiguration,
     internal: InternalServiceForm
   ): Service = {
+    val resolver = TypeResolver(
+      InternalServiceFormTypesProvider(internal)
+    )
+
     val name = internal.name.getOrElse(sys.error("Missing name"))
     val key = internal.key.getOrElse { UrlKey.generate(name) }
     val namespace = internal.namespace.getOrElse { s"${config.orgNamespace}.${key}" }
     val enums = internal.enums.map { EnumBuilder(_) }
-    val models = internal.models.map { ModelBuilder(enums, _) }
-    val headers = internal.headers.map { HeaderBuilder(enums, _) }
-    val resources = internal.resources.map { ResourceBuilder(enums, models, _) }
+    val models = internal.models.map { ModelBuilder(resolver, _) }
+    val headers = internal.headers.map { HeaderBuilder(resolver, _) }
+    val resources = internal.resources.map { ResourceBuilder(resolver, models, _) }
 
     Service(
       name = name,
@@ -41,16 +45,21 @@ object ServiceBuilder {
   }
 }
 
+
 object ResourceBuilder {
 
-  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResourceForm): Resource = {
+  def apply(
+    resolver: TypeResolver,
+    models: Iterable[Model],
+    internal: InternalResourceForm
+  ): Resource = {
     val model = models.find(m => Some(m.name) == internal.modelName).getOrElse {
       sys.error(s"Could not find model for resource[${internal.modelName.getOrElse("")}]")
     }
     Resource(
       model = model,
       description = internal.description,
-      operations = internal.operations.map(op => OperationBuilder(enums, models, model, op))
+      operations = internal.operations.map(op => OperationBuilder(resolver, model, op))
     )
   }
 
@@ -58,7 +67,7 @@ object ResourceBuilder {
 
 object OperationBuilder {
 
-  def apply(enums: Seq[Enum], models: Seq[Model], model: Model, internal: InternalOperationForm): Operation = {
+  def apply(resolver: TypeResolver, model: Model, internal: InternalOperationForm): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
 
@@ -71,22 +80,22 @@ object OperationBuilder {
           // Path parameter was declared in the parameters
           // section. Use the explicit information provided in the
           // specification
-          ParameterBuilder(enums, models, declared, ParameterLocation.Path)
+          ParameterBuilder(resolver, declared, ParameterLocation.Path)
         }
       }
     }
 
     val internalParams = internal.parameters.filter(p => pathParameters.find(_.name == p.name.get).isEmpty).map { p =>
-      ParameterBuilder(enums, models, p, location)
+      ParameterBuilder(resolver, p, location)
     }
 
     Operation(
       method = Method(method),
       path = internal.path,
       description = internal.description,
-      body = internal.body.map { ib => BodyBuilder(enums, models, ib) },
+      body = internal.body.map { ib => BodyBuilder(resolver, ib) },
       parameters = pathParameters ++ internalParams,
-      responses = internal.responses.map { ResponseBuilder(enums, models, _) }
+      responses = internal.responses.map { ResponseBuilder(resolver, _) }
     )
   }
 
@@ -94,14 +103,11 @@ object OperationBuilder {
 
 object BodyBuilder {
 
-  def apply(enums: Seq[Enum], models: Seq[Model], ib: InternalBodyForm): Body = {
+  def apply(resolver: TypeResolver, ib: InternalBodyForm): Body = {
     ib.datatype match {
       case None => sys.error("Body missing type: " + ib)
       case Some(datatype) => Body(
-        `type` = TypeResolver(
-          enumNames = enums.map(_.name),
-          modelNames = models.map(_.name)
-        ).parseWithError(datatype).label,
+        `type` = resolver.parseWithError(datatype).label,
         description = ib.description
       )
     }
@@ -124,10 +130,10 @@ object EnumBuilder {
 
 object HeaderBuilder {
 
-  def apply(enums: Seq[Enum], ih: InternalHeaderForm): Header = {
+  def apply(resolver: TypeResolver, ih: InternalHeaderForm): Header = {
     Header(
       name = ih.name.get,
-      `type` = TypeResolver(enumNames = enums.map(_.name)).parseWithError(ih.datatype.get).label,
+      `type` = resolver.parseWithError(ih.datatype.get).label,
       required = ih.required,
       description = ih.description,
       default = ih.default
@@ -138,12 +144,12 @@ object HeaderBuilder {
 
 object ModelBuilder {
 
-  def apply(enums: Seq[Enum], im: InternalModelForm): Model = {
+  def apply(resolver: TypeResolver, im: InternalModelForm): Model = {
     Model(
       name = im.name,
       plural = im.plural,
       description = im.description,
-      fields = im.fields.map { FieldBuilder(enums, _) }
+      fields = im.fields.map { FieldBuilder(resolver, _) }
     )
   }
 
@@ -151,13 +157,10 @@ object ModelBuilder {
 
 object ResponseBuilder {
 
-  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalResponseForm): Response = {
+  def apply(resolver: TypeResolver, internal: InternalResponseForm): Response = {
     Response(
       code = internal.code.toInt,
-      `type` = TypeResolver(
-        enumNames = enums.map(_.name),
-        modelNames = models.map(_.name)
-      ).parseWithError(internal.datatype.get).label
+      `type` = resolver.parseWithError(internal.datatype.get).label
     )
   }
 
@@ -178,14 +181,10 @@ object ParameterBuilder {
     )
   }
 
-  def apply(enums: Seq[Enum], models: Seq[Model], internal: InternalParameterForm, location: ParameterLocation): Parameter = {
-    val resolver = TypeResolver(
-      enumNames = enums.map(_.name),
-      modelNames = models.map(_.name)
-    )
+  def apply(resolver: TypeResolver, internal: InternalParameterForm, location: ParameterLocation): Parameter = {
     val typeInstance = resolver.parseWithError(internal.datatype.get)
 
-    internal.default.map { ServiceBuilderHelper.assertValidDefault(enums, typeInstance, _) }
+    internal.default.map { ServiceBuilderHelper.assertValidDefault(resolver, typeInstance, _) }
 
     Parameter(
       name = internal.name.get,
@@ -205,15 +204,12 @@ object ParameterBuilder {
 object FieldBuilder {
 
   def apply(
-    enums: Seq[Enum],
+    resolver: TypeResolver,
     internal: InternalFieldForm
   ): Field = {
-    val datatype = TypeResolver(
-      enumNames = enums.map(_.name),
-      modelNames = internal.datatype.get.names // assume a model if not an enum
-    ).parseWithError(internal.datatype.get)
+    val datatype = resolver.parseWithError(internal.datatype.get)
 
-    internal.default.map { ServiceBuilderHelper.assertValidDefault(enums, datatype, _) }
+    internal.default.map { ServiceBuilderHelper.assertValidDefault(resolver, datatype, _) }
 
     Field(
       name = internal.name.get,
@@ -232,10 +228,12 @@ object FieldBuilder {
 
 object ServiceBuilderHelper {
 
-  def assertValidDefault(enums: Seq[Enum], pd: Datatype, value: String) {
-    TypeValidator(
-      enums = enums.map { enum => TypeValidatorEnums(enum.name, enum.values.map(_.name)) }.toSeq
-    ).assertValidDefault(pd, value)
+  def assertValidDefault(
+    resolver: TypeResolver,
+    pd: Datatype,
+    value: String
+  ) {
+    resolver.assertValidDefault(pd, value)
   }
 
 }
