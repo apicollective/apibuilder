@@ -20,7 +20,7 @@ object OrganizationsDao {
     "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
     "internal", "login", "logout", "member", "members", "metadatum", "metadata",
     "org", "password", "private", "reject", "session", "setting", "scms", "source", "subaccount",
-    "subscription", "team", "user", "util", "version", "watch"
+    "subscription", "team", "types", "user", "util", "version", "watch"
   ).map(UrlKey.generate(_))
 
   private[db] val BaseQuery = """

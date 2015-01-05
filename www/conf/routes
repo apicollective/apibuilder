@@ -14,6 +14,8 @@ POST    /login/resetPassword/:token                               controllers.Lo
 GET     /logout                                                   controllers.LogoutController.logout
 GET     /logged_out                                               controllers.LogoutController.logged_out
 
+GET     /types/resolve/:typeName                                  controllers.TypesController.resolve(typeName: String)
+
 GET     /doc                                                      controllers.DocController.redirect
 GET     /doc/                                                     controllers.DocController.index
 GET     /doc/gettingStarted                                       controllers.DocController.gettingStarted

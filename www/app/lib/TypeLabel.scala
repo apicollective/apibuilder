@@ -18,8 +18,7 @@ case class TypeLabel(
     modelNames = service.models.map(_.name)
   ).parse(typeName) match {
     case None => {
-      // TODO: probably an imported type
-      typeName
+      href(typeName, s"/types/resolve/$typeName")
     }
     case Some(Datatype.List(t)) => "[" + types(t) + "]"
     case Some(Datatype.Map(t)) => "map[" + types(t) + "]"
