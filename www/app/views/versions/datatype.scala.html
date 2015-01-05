@@ -1,7 +1,7 @@
 @(org: com.gilt.apidoc.models.Organization,
   app: com.gilt.apidoc.models.Application,
   version: String,
-  ervice: com.gilt.apidocspec.models.Service,
+  service: com.gilt.apidocspec.models.Service,
   typeName: String)
 
-@typeName
+@Html(lib.TypeLabel(org, app, version, service, typeName).link)
