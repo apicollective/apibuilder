@@ -8,7 +8,7 @@
 
   <div class="pull-right">
     @if(tpl.isOrgMember) {
-      <a href="@routes.Versions.create(orgKey = tpl.org.get.key, service = Some(service.key))">Upload new version</a> |
+      <a href="@routes.Versions.create(orgKey = tpl.org.get.key, application = Some(application.key))">Upload new version</a> |
     }
 
     @if(isWatching) {

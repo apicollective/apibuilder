@@ -70,13 +70,13 @@ GET     /:orgKey/membership_requests                              controllers.Or
 GET     /:orgKey/memberships/request                              controllers.Organizations.requestMembership(orgKey: String)
 POST    /:orgKey/memberships/request                              controllers.Organizations.postRequestMembership(orgKey: String)
 
-GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String, service: Option[String] ?= None)
+GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String, application: Option[String] ?= None)
 POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String)
 
 GET     /:orgKey/subscriptions/                                   controllers.Subscriptions.index(orgKey: String)
 POST    /:orgKey/subscriptions/:publication/toggle                controllers.Subscriptions.postToggle(orgKey: String, publication: com.gilt.apidoc.models.Publication)
 
-# Start dynamic routing by service key
+# Start dynamic routing by application key
 
 GET     /:orgKey/:applicationKey/:version/settings                controllers.ApplicationSettings.show(orgKey: String, applicationKey: String, version: String)
 GET     /:orgKey/:applicationKey/:version/settings/edit           controllers.ApplicationSettings.edit(orgKey: String, applicationKey: String, version: String)
