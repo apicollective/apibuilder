@@ -16,7 +16,7 @@ case class TypeLabel(
     modelNames = service.models.map(_.name)
   ).parse(typeName) match {
     case None => {
-      Href(typeName, s"/types/resolve/$typeName").html
+      Href(typeName, s"/types/resolve/$typeName?version=$version").html
     }
     case Some(Datatype.List(t)) => "[" + types(t) + "]"
     case Some(Datatype.Map(t)) => "map[" + types(t) + "]"

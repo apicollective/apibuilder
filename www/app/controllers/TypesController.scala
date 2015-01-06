@@ -13,7 +13,10 @@ object TypesController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def resolve(typeName: String) = Anonymous.async { implicit request =>
+  def resolve(
+    typeName: String,
+    versionName: String
+  ) = Anonymous.async { implicit request =>
     TypeNameResolver(typeName).resolve match {
       case None => Future {
         Ok(views.html.types.resolve(
@@ -35,7 +38,6 @@ object TypesController extends Controller {
               }
             }
             case Some(org) => {
-              val versionName = "latest"
               request.api.Versions.getByOrgKeyAndApplicationKeyAndVersion(org.key, resolution.applicationKey, versionName).map { r =>
                 r match {
                   case None => {
