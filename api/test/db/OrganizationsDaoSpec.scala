@@ -107,6 +107,7 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
     it("by key") {
       OrganizationsDao.findAll(Authorization.All, key = Some(org1.key)).map(_.guid) should be(Seq(org1.guid))
       OrganizationsDao.findAll(Authorization.All, key = Some(org2.key)).map(_.guid) should be(Seq(org2.guid))
+      OrganizationsDao.findAll(Authorization.All, key = Some(UUID.randomUUID.toString)) should be(Seq.empty)
     }
 
     it("by name") {
@@ -114,16 +115,27 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
       OrganizationsDao.findAll(Authorization.All, name = Some(org1.name.toUpperCase)).map(_.guid) should be(Seq(org1.guid))
       OrganizationsDao.findAll(Authorization.All, name = Some(org1.name.toLowerCase)).map(_.guid) should be(Seq(org1.guid))
       OrganizationsDao.findAll(Authorization.All, name = Some(org2.name)).map(_.guid) should be(Seq(org2.guid))
+      OrganizationsDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString)) should be(Seq.empty)
+    }
+
+    it("by namespace") {
+      OrganizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toUpperCase)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationsDao.findAll(Authorization.All, namespace = Some(org1.namespace.toLowerCase)).map(_.guid) should be(Seq(org1.guid))
+      OrganizationsDao.findAll(Authorization.All, namespace = Some(org2.namespace)).map(_.guid) should be(Seq(org2.guid))
+      OrganizationsDao.findAll(Authorization.All, namespace = Some(UUID.randomUUID.toString)) should be(Seq.empty)
     }
 
     it("by guid") {
       OrganizationsDao.findAll(Authorization.All, guid = Some(org1.guid)).map(_.guid) should be(Seq(org1.guid))
       OrganizationsDao.findAll(Authorization.All, guid = Some(org2.guid)).map(_.guid) should be(Seq(org2.guid))
+      OrganizationsDao.findAll(Authorization.All, guid = Some(UUID.randomUUID)) should be(Seq.empty)
     }
 
     it("by userGuid") {
       OrganizationsDao.findAll(Authorization.All, userGuid = Some(user1.guid)).map(_.guid) should be(Seq(org1.guid))
       OrganizationsDao.findAll(Authorization.All, userGuid = Some(user2.guid)).map(_.guid) should be(Seq(org2.guid))
+      OrganizationsDao.findAll(Authorization.All, userGuid = Some(UUID.randomUUID)) should be(Seq.empty)
     }
   }
 
