@@ -2,7 +2,7 @@ package lib
 
 case class TypeNameResolution(
   orgNamespace: String,
-  serviceKey: String,
+  applicationKey: String,
   kind: TypeKind,
   name: String
 )
@@ -14,11 +14,11 @@ case class TypeNameResolver(name: String) {
 
   def resolve(): Option[TypeNameResolution] = {
     name match {
-      case EnumRx(orgNamespace, serviceKey, n)  => {
-        Some(TypeNameResolution(orgNamespace, serviceKey, TypeKind.Enum, n))
+      case EnumRx(orgNamespace, applicationKey, n)  => {
+        Some(TypeNameResolution(orgNamespace, applicationKey, TypeKind.Enum, n))
       }
-      case ModelRx(orgNamespace, serviceKey, n)  => {
-        Some(TypeNameResolution(orgNamespace, serviceKey, TypeKind.Model, n))
+      case ModelRx(orgNamespace, applicationKey, n)  => {
+        Some(TypeNameResolution(orgNamespace, applicationKey, TypeKind.Model, n))
       }
       case _ => None
     }

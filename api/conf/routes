@@ -19,7 +19,7 @@ POST       /membership_requests/:guid/decline                  controllers.Membe
 GET        /memberships                                        controllers.Memberships.get(org_guid: scala.Option[_root_.java.util.UUID], org_key: scala.Option[String], user_guid: scala.Option[_root_.java.util.UUID], role: scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /memberships/:guid                                  controllers.Memberships.getByGuid(guid: _root_.java.util.UUID)
 DELETE     /memberships/:guid                                  controllers.Memberships.deleteByGuid(guid: _root_.java.util.UUID)
-GET        /organizations                                      controllers.Organizations.get(guid: scala.Option[_root_.java.util.UUID], user_guid: scala.Option[_root_.java.util.UUID], key: scala.Option[String], name: scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
+GET        /organizations                                      controllers.Organizations.get(guid: scala.Option[_root_.java.util.UUID], user_guid: scala.Option[_root_.java.util.UUID], key: scala.Option[String], name: scala.Option[String], namespace: scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /organizations/:key                                 controllers.Organizations.getByKey(key: String)
 POST       /organizations                                      controllers.Organizations.post()
 PUT        /organizations/:key                                 controllers.Organizations.putByKey(key: String)

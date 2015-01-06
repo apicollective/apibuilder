@@ -11,14 +11,12 @@ case class TypeLabel(
   typeName: String
 ) {
 
-  private val urlPrefix = s"/${org.key}/${app.key}/${version}"
-
   val link = DatatypeResolver(
     enumNames = service.enums.map(_.name),
     modelNames = service.models.map(_.name)
   ).parse(typeName) match {
     case None => {
-      href(typeName, s"/types/resolve/$typeName")
+      Href(typeName, s"/types/resolve/$typeName").html
     }
     case Some(Datatype.List(t)) => "[" + types(t) + "]"
     case Some(Datatype.Map(t)) => "map[" + types(t) + "]"
@@ -27,22 +25,34 @@ case class TypeLabel(
   }
 
   private def types(types: Seq[Type]): String = {
-    types.map { t =>
-      t match {
-        case Type(TypeKind.Primitive, name) => {
-          href(name, s"/doc/types#$name")
-        }
-        case Type(TypeKind.Enum, name) => {
-          href(name, s"$urlPrefix#enum-$name")
-        }
-        case Type(TypeKind.Model, name) => {
-          href(name, s"$urlPrefix#model-$name")
-        }
-      }
-    }.mkString(" | ")
+    types.map { t => Href(org.key, app.key, version, t).html }.mkString(" | ")
   }
 
-  private def href(label: String, url: String) = s"""<a href="$url">$label</a>"""
+}
+
+case class Href(label: String, url: String) {
+  def html: String = s"""<a href="$url">$label</a>"""
+}
+
+object Href {
+
+  def prefix(orgKey: String, appKey: String, version: String): String = {
+    s"/${orgKey}/${appKey}/${version}"
+  }
+
+  def apply(orgKey: String, appKey: String, version: String, t: Type): Href = {
+    t match {
+      case Type(TypeKind.Primitive, name) => {
+        Href(name, s"/doc/types#$name")
+      }
+      case Type(TypeKind.Enum, name) => {
+        Href(name, prefix(orgKey, appKey, version) + s"#enum-$name")
+      }
+      case Type(TypeKind.Model, name) => {
+        Href(name, prefix(orgKey, appKey, version) + s"#model-$name")
+      }
+    }
+  }
 
 }
 

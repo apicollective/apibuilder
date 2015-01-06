@@ -14,9 +14,9 @@ class TypeNameResolverSpec extends FunSpec with ShouldMatchers {
       sys.error("Failed to resolve")
     }
     res.orgNamespace should be("com.gilt")
-    res.serviceKey should be("apidoc")
+    res.applicationKey should be("apidoc")
     res.kind should be(TypeKind.Model)
-    res.name should be("service")
+    res.name should be("application")
   }
 
   it("resolves enums") {
@@ -30,7 +30,7 @@ class TypeNameResolverSpec extends FunSpec with ShouldMatchers {
     }
     res.orgNamespace should be("com.gilt")
     res.kind should be(TypeKind.Enum)
-    res.serviceKey should be("apidoc")
+    res.applicationKey should be("apidoc")
     res.name should be("age_group")
   }
 

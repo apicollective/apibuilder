@@ -15,6 +15,7 @@ object Organizations extends Controller {
     userGuid: Option[UUID],
     key: Option[String],
     name: Option[String],
+    namespace: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
@@ -26,6 +27,7 @@ object Organizations extends Controller {
           guid = guid,
           key = key,
           name = name,
+          namespace = namespace,
           limit = limit,
           offset = offset
         )
