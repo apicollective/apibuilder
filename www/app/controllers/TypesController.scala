@@ -33,7 +33,8 @@ object TypesController extends Controller {
               Future {
                 Ok(views.html.types.resolve(
                   request.mainTemplate(),
-                  typeName
+                  typeName,
+                  Seq(s"No organization found that maps to the namespace ${resolution.orgNamespace}")
                 ))
               }
             }
@@ -41,9 +42,16 @@ object TypesController extends Controller {
               request.api.Versions.getByOrgKeyAndApplicationKeyAndVersion(org.key, resolution.applicationKey, versionName).map { r =>
                 r match {
                   case None => {
+                    val error = if (versionName == "latest") {
+                      "Application not found"
+                    } else {
+                      s"Version $versionName not found"
+                    }
+
                     Ok(views.html.types.resolve(
                       request.mainTemplate(),
-                      typeName
+                      typeName,
+                      Seq(error)
                     ))
                   }
                   case Some(v) => {
@@ -54,10 +62,14 @@ object TypesController extends Controller {
                       modelNames = service.models.map(_.name)
                     ).toType(resolution.name) match {
                       case None => {
-                        sys.error(s"NONE: ${resolution.name}")
+                        Ok(views.html.types.resolve(
+                          request.mainTemplate(),
+                          typeName,
+                          Seq(s"Application does not have a type named ${resolution.name}")
+                        ))
                       }
                       case Some(t) => {
-                        sys.error(Href(org.key, resolution.applicationKey, versionName, t).url)
+                        Redirect(Href(org.key, resolution.applicationKey, versionName, t).url)
                       }
                     }
                   }

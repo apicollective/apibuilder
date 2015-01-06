@@ -1,11 +1,12 @@
 @(tpl: models.MainTemplate,
-  typeName: String
+  typeName: String,
+  errorMessages: Seq[String] = Nil
 )(implicit flash: Flash)
 
-@main(tpl.copy(title = Some(typeName))) {
+@main(tpl, errorMessages = errorMessages) {
 
   <p>
-    @typeName is not a recognized type. No further information is available.
+    @typeName is not a recognized type.
   </p>
 
 }
