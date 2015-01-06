@@ -4,13 +4,19 @@ import lib.TypeNameResolver
 
 import play.api._
 import play.api.mvc._
+import scala.concurrent.Future
 
 object TypesController extends Controller {
 
-  def resolve(typeName: String) = Action { implicit request =>
+  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+
+  def resolve(typeName: String) = Anonymous.async { implicit request =>
     TypeNameResolver(typeName).resolve match {
-      case None => {
-        sys.error("typeName: " + typeName + " could not be resolved")
+      case None => Future {
+        Ok(views.html.types.resolve(
+          request.mainTemplate(),
+          typeName
+        ))
       }
       case Some(resolution) => {
         sys.error(resolution.toString)

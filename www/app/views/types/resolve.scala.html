@@ -1,0 +1,11 @@
+@(tpl: models.MainTemplate,
+  typeName: String
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some(typeName))) {
+
+  <p>
+    @typeName is not a recognized type. No further information is available.
+  </p>
+
+}
