@@ -5,6 +5,12 @@ import java.util.UUID
 import com.gilt.apidoc.models.{Generator, Version}
 import com.gilt.apidoc.models.json._
 
+//import com.gilt.apidocspec.models.{Service}
+//import com.gilt.apidocspec.models.json._
+
+import com.gilt.apidocgenerator.models.{Service}
+import com.gilt.apidocgenerator.models.json._
+
 import com.gilt.apidocgenerator.Client
 import com.gilt.apidocgenerator.models.InvocationForm
 
@@ -26,34 +32,30 @@ object Code extends Controller {
   def getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(
     orgKey: String,
     applicationKey: String,
-    version: String,
+    versionName: String,
     generatorKey: String
   ) = AnonymousRequest.async { request =>
-    VersionsDao.findVersion(Authorization(request.user), orgKey, applicationKey, version) match {
+    VersionsDao.findVersion(Authorization(request.user), orgKey, applicationKey, versionName) match {
       case None => {
         Future.successful(NotFound)
       }
 
-      case Some(v) => {
+      case Some(version) => {
         GeneratorsDao.findAll(user = request.user, key = Some(generatorKey)).headOption match {
           case None => {
             Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
           }
 
           case Some(generator: Generator) => {
-            val userAgent = s"apidoc:$apidocVersion http://${AppConfig.apidocWebHostname}/${orgKey}/${applicationKey}/${v.version}/${generator.key}"
+            val userAgent = s"apidoc:$apidocVersion http://${AppConfig.apidocWebHostname}/${orgKey}/${applicationKey}/${version.version}/${generator.key}"
+            val service = Json.parse(version.service.toString).as[Service]
 
-            sys.error("TODO: Finish imports for application")
-
-            /*
-            val service = ServiceBuilder(v.json)
             new Client(generator.uri).invocations.postByKey(
               key = generator.key,
               invocationForm = InvocationForm(service = service, userAgent = Some(userAgent))
             ).map { invocation =>
               Ok(Json.toJson(com.gilt.apidoc.models.Code(generator, invocation.source)))
             }
-             */
           }
         }
       }
