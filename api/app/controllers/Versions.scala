@@ -47,7 +47,7 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org), form.json.toString)
+            val validator = ServiceValidator(ServiceConfiguration(org, version), form.json.toString)
             validator.errors match {
               case Nil => {
                 val visibility = form.visibility.getOrElse(Visibility.Organization)

@@ -121,6 +121,7 @@ object VersionsDao {
     DB.withConnection { implicit c =>
       // TEMPORARY DURING DATA MIGRATION
       SQL(sql).on(bind: _*)().toList.map { row =>
+        val version = row[String]("version")
         val original = row[Option[String]]("original").getOrElse {
           row[String]("old_json")
         }
@@ -130,7 +131,8 @@ object VersionsDao {
           }
           case None => {
             val config = ServiceConfiguration(
-              orgNamespace = row[String]("namespace")
+              orgNamespace = row[String]("namespace"),
+              version = version
             )
             val service = core.ServiceValidator(config, original).service.get
             Json.toJson(service).as[JsObject]
@@ -139,7 +141,7 @@ object VersionsDao {
 
         Version(
           guid = row[UUID]("guid"),
-          version = row[String]("version"),
+          version = version,
           original = original,
           service = service
         )
@@ -158,7 +160,8 @@ object VersionsDao {
       versions.map { row =>
         val guid = row[UUID]("guid")
         val config = ServiceConfiguration(
-          orgNamespace = row[String]("namespace")
+          orgNamespace = row[String]("namespace"),
+          version = row[String]("version")
         )
 
         val original = row[Option[String]]("original").getOrElse {

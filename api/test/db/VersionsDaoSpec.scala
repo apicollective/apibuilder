@@ -28,6 +28,7 @@ class VersionsDaoSpec extends FlatSpec {
     name = key,
     key = key,
     namespace = "test." + key,
+    version = "0.0.1-dev",
     headers = Nil,
     enums = Nil,
     models = Nil,

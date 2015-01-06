@@ -9,7 +9,8 @@ import play.api.libs.json._
 object Validations extends Controller {
 
   private val config = ServiceConfiguration(
-    orgNamespace = "tmp.validations"
+    orgNamespace = "tmp.validations",
+    version = "0.0.1-dev"
   )
 
   def post() = Action(parse.temporaryFile) { request =>

@@ -35,6 +35,7 @@ object ServiceBuilder {
       name = name,
       namespace = namespace,
       key = key,
+      version = config.version,
       description = internal.description,
       baseUrl = internal.baseUrl,
       enums = enums,

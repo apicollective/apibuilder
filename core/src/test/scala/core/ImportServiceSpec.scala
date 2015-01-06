@@ -43,6 +43,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
       "name": "Import Shared",
       "namespace": "test.apidoc.import-shared",
       "key": "import-shared",
+      "version": "1.0.0",
 
       "enums": [
         {

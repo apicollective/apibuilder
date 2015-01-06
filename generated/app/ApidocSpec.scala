@@ -82,6 +82,7 @@ package com.gilt.apidocspec.models {
     name: String,
     key: String,
     namespace: String,
+    version: String,
     baseUrl: scala.Option[String] = None,
     description: scala.Option[String] = None,
     headers: Seq[com.gilt.apidocspec.models.Header],
@@ -396,6 +397,7 @@ package com.gilt.apidocspec.models {
         (__ \ "name").read[String] and
         (__ \ "key").read[String] and
         (__ \ "namespace").read[String] and
+        (__ \ "version").read[String] and
         (__ \ "base_url").readNullable[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "headers").readNullable[Seq[com.gilt.apidocspec.models.Header]].map(_.getOrElse(Nil)) and
@@ -410,6 +412,7 @@ package com.gilt.apidocspec.models {
         (__ \ "name").write[String] and
         (__ \ "key").write[String] and
         (__ \ "namespace").write[String] and
+        (__ \ "version").write[String] and
         (__ \ "base_url").write[scala.Option[String]] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "headers").write[Seq[com.gilt.apidocspec.models.Header]] and
