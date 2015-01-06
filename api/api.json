@@ -380,6 +380,7 @@
 			{ "name": "user_guid", "type": "uuid", "required": false, "description": "If specified, restricts to organizations that this user is specifically a member of (e.g. will exclude public organizations with which the user does not have a direct membership)." },
 
                         { "name": "key", "type": "string", "description": "Find organizations with this key. Case in-sensitive. Exact match", "required": false },
+                        { "name": "namespace", "type": "string", "description": "Find organizations with this namespace. Case in-sensitive. Exact match", "required": false },
                         { "name": "name", "type": "string", "description": "Find organizations with this name. Case in-sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
