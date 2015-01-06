@@ -34,7 +34,6 @@ class ModelsAsParametersSpec extends FunSpec with Matchers {
 
     it("supports specifying a query parameter with model type") {
       val json = baseJson.format("tag", "tag")
-println(ServiceValidator(TestHelper.serviceConfig, json).errors.mkString(""))
       ServiceValidator(TestHelper.serviceConfig, json).errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tag] has an invalid type[tag]. Models are not supported as query parameters.")
     }
   }
