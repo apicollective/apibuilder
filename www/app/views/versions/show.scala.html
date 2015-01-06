@@ -21,13 +21,6 @@
   <div class="pull-left">
     @service.description.getOrElse("")
 
-    <h2>Headers</h2>
-    @if(service.headers.isEmpty) {
-      <em>No headers</em>
-    } else {
-      @headers(tpl.org.get, application, tpl.version.get, service, service.headers)
-    }
-
     <h2>Resources</h2>
     @service.resources.map { resource =>
       <div id="resource-@lib.UrlKey.generate(resource.model.name)"></div>
@@ -88,6 +81,20 @@
         }
 
       </div>
+    }
+
+    <h2>Headers</h2>
+    @if(service.headers.isEmpty) {
+      <em>No headers</em>
+    } else {
+      @headers(tpl.org.get, application, tpl.version.get, service, service.headers)
+    }
+
+    <h2>Imports</h2>
+    @if(service.imports.isEmpty) {
+      <em>No imports</em>
+    } else {
+      @imports(service.imports)
     }
 
     <h2>Enums</h2>

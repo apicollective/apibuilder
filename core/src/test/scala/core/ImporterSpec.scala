@@ -1,8 +1,9 @@
 package core
 
+import com.gilt.apidocspec.models.Import
 import org.scalatest.{FunSpec, Matchers}
 
-class ImportSpec extends FunSpec with Matchers {
+class ImporterSpec extends FunSpec with Matchers {
 
   describe("with an invalid service") {
     val json = """
@@ -12,7 +13,7 @@ class ImportSpec extends FunSpec with Matchers {
     """
 
     val path = TestHelper.writeToTempFile(json)
-    val imp = Import(s"file://$path")
+    val imp = Importer(Import(s"file://$path"))
     imp.validate.size should be > 0
   }
 
@@ -39,7 +40,7 @@ class ImportSpec extends FunSpec with Matchers {
 
     it("parses service") {
       val path = TestHelper.writeToTempFile(json)
-      val imp = Import(s"file://$path")
+      val imp = Importer(Import(s"file://$path"))
       imp.validate should be(Seq.empty)
 
       val service = imp.service

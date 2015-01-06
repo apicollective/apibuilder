@@ -26,9 +26,10 @@ object ServiceBuilder {
     val name = internal.name.getOrElse(sys.error("Missing name"))
     val key = internal.key.getOrElse { UrlKey.generate(name) }
     val namespace = internal.namespace.getOrElse { s"${config.orgNamespace}.${key}" }
+    val imports = internal.imports.map { ImportBuilder(_) }
+    val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val enums = internal.enums.map { EnumBuilder(_) }
     val models = internal.models.map { ModelBuilder(resolver, _) }
-    val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val resources = internal.resources.map { ResourceBuilder(resolver, models, _) }
 
     Service(
@@ -36,6 +37,7 @@ object ServiceBuilder {
       namespace = namespace,
       key = key,
       version = config.version,
+      imports = imports,
       description = internal.description,
       baseUrl = internal.baseUrl,
       enums = enums,
@@ -138,6 +140,16 @@ object HeaderBuilder {
       required = ih.required,
       description = ih.description,
       default = ih.default
+    )
+  }
+
+}
+
+object ImportBuilder {
+
+  def apply(internal: InternalImportForm): Import = {
+    Import(
+      uri = internal.uri.get
     )
   }
 

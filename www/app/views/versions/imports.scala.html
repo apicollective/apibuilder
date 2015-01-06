@@ -1,0 +1,11 @@
+@(imports: Seq[com.gilt.apidocspec.models.Import])
+
+<table class="table table-hover table-condensed">
+  <tbody>
+   @imports.map { imp =>
+     <tr>
+       <td><a href="@imp.uri">@imp.uri</a></td>
+     </tr>
+   }
+  </tbody>
+</table>

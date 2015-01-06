@@ -37,6 +37,7 @@
 		{ "name": "base_url", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "headers", "type": "[header]" },
+		{ "name": "imports", "type": "[import]" },
 		{ "name": "enums", "type": "[enum]" },
 		{ "name": "models", "type": "[model]" },
 		{ "name": "resources", "type": "[resource]", "description": "keys are the names of a model" }
@@ -134,6 +135,13 @@
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean" },
 		{ "name": "default", "type": "string", "required": false }
+	    ]
+	},
+
+	"import": {
+	    "description": "An import is used to declare a dependency on another service. This allows you to reference the models and or enums from that service in your own service.",
+	    "fields": [
+		{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "http://www.apidoc.me/gilt/apidoc-spec/0.7.38/service.json"  }
 	    ]
 	}
 

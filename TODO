@@ -1,8 +1,7 @@
-/web/apidoc/www/app/controllers/TypesController.scala
-  - clean up the error conditions
+document service imports in apiJson
 
 /web/apidoc/api/app/controllers/Versions.scala
-  - finsih
+  - finish
 
 service spec:
   - add full_name or qualified_name to models and enums to import (?)
@@ -10,31 +9,17 @@ service spec:
 http://localhost:9000/gilt/version/create?service=apidoc-generator
   - Validation for uploading invalid json
   - Validation for uploading valid json w/ invalid model names
+  - Validation for imports with a URL to a service that doesn't exist
 
 service_form:
   - validation error if method is unknown
 
-/web/apidoc/www/app/views/versions/datatype.scala.html
-  add links based on type
-  <a href="@routes.DocController.types#@name">@lib.Util.formatType(container, name)</a>
-  <a href="@routes.Versions.show(org.key, service.key, version)#model-@lib.UrlKey.generate(model.name)">@lib.Util.formatType(container, model.name)</a>
-  <a href="@routes.Versions.show(org.key, service.key, version)#enum-@lib.UrlKey.generate(enumName)">@lib.Util.formatType(container, enumName)</a>
-
-
-@{ti match {
-  case com.gilt.apidocgenerator.models.TypeInstance(container, com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Primitive, name)) => primitive(container, name)
-  case com.gilt.apidocgenerator.models.TypeInstance(container, com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Model, name)) => modelTypeByName(org, service, version, sd, container, name)
-  case com.gilt.apidocgenerator.models.TypeInstance(container, com.gilt.apidocgenerator.models.Type(com.gilt.apidocgenerator.models.TypeKind.Enum, name)) => enumType(org, service, version, container, name)
-}}
-
 generator:
   ==> TODO: union type
 
-www/app/lib/Util.scala
-  ==> formatType is wrong now
-
 spec:
-  - introduce service_form distinct from service
+  - introduce service_form distinct from service. Replaces JsObject in
+    version.service
 
 Parse Resource description
 

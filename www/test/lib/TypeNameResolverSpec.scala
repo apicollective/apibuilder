@@ -16,7 +16,7 @@ class TypeNameResolverSpec extends FunSpec with ShouldMatchers {
     res.orgNamespace should be("com.gilt")
     res.applicationKey should be("apidoc")
     res.kind should be(TypeKind.Model)
-    res.name should be("application")
+    res.name should be("service")
   }
 
   it("resolves enums") {

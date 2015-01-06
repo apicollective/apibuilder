@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocspec.models.Service
+import com.gilt.apidocspec.models.{Import, Service}
 import lib.{Datatype, DatatypeResolver, Type}
 import scala.annotation.tailrec
 
@@ -61,7 +61,7 @@ private[core] case class RecursiveTypesProvider(
 
   override def modelNames = providers.map(_.modelNames).flatten
 
-  private val imports: Seq[Import] = internal.imports.flatMap(_.uri).map(Import(_))
+  private val imports = internal.imports.filter(!_.uri.isEmpty).map(ImportBuilder(_))
 
   private lazy val providers = Seq(TypesProvider.InternalServiceFormProvider(internal)) ++ resolve(imports)
 
@@ -76,7 +76,8 @@ private[core] case class RecursiveTypesProvider(
           // already imported
           resolve(imports.drop(1), imported)
         } else {
-          Seq(TypesProvider.ServiceProvider(imp.service)) ++ resolve(imports.drop(1), imported ++ Set(imp.uri))
+          val service = Importer(imp).service
+          Seq(TypesProvider.ServiceProvider(service)) ++ resolve(imports.drop(1), imported ++ Set(imp.uri))
         }
       }
     }
