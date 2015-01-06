@@ -1,7 +1,7 @@
 package controllers
 
 import models.MainTemplate
-import lib.{UrlKey, Util}
+import lib.{UrlKey, Util, VersionedName}
 import com.gilt.apidoc.models.{Application, Organization, User, Version, VersionForm, Visibility, WatchForm}
 import com.gilt.apidocspec.models.Service
 import com.gilt.apidocspec.models.json._
@@ -33,22 +33,22 @@ object Versions extends Controller {
       generators <- request.api.Generators.get()
       watches <- isWatching(request.api, request.user, orgKey, applicationKey)
     } yield {
-      versionOption match {
-
+      applicationResponse.headOption match {
         case None => {
-          if (LatestVersion == versionName) {
-            Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
-          } else {
-            Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Version not found: $versionName")
-          }
+          Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Application not found: ${applicationKey}")
         }
+        case Some(application) => {
+          versionOption match {
 
-        case Some(v: Version) => {
-          applicationResponse.headOption match {
             case None => {
-              Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Application not found: ${applicationKey}")
+              if (LatestVersion == versionName) {
+                Redirect(routes.Versions.create(orgKey, application = Some(applicationKey))).flashing("success" -> s"Application does not yet have any versions")
+              } else {
+                Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Version not found: $versionName")
+              }
             }
-            case Some(application) => {
+
+            case Some(v: Version) => {
               v.service.validate[Service] match {
                 case e: JsError => {
                   sys.error("Invalid service json: " + e)
