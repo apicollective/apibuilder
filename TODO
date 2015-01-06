@@ -1,3 +1,9 @@
+/web/apidoc/www/app/controllers/TypesController.scala
+  - clean up the error conditions
+
+/web/apidoc/api/app/controllers/Versions.scala
+  - finsih
+
 service spec:
   - add full_name or qualified_name to models and enums to import (?)
 
