@@ -636,7 +636,7 @@
 
                 {
                     "method": "PUT",
-                    "description": "Upsert this version of the service api",
+                    "description": "Upsert this version of the application",
                     "path": "/:version",
 		    "body": { "type": "version_form" },
                     "responses": {
