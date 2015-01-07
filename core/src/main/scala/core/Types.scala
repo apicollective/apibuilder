@@ -76,7 +76,7 @@ private[core] case class RecursiveTypesProvider(
           // already imported
           resolve(imports.drop(1), imported)
         } else {
-          val service = Importer(imp).service
+          val service = Importer(imp.uri).service
           Seq(TypesProvider.ServiceProvider(service)) ++ resolve(imports.drop(1), imported ++ Set(imp.uri))
         }
       }

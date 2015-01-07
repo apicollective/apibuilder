@@ -1,17 +1,17 @@
 package core
 
-import com.gilt.apidocspec.models.{Import, Service}
+import com.gilt.apidocspec.models.Service
 import com.gilt.apidocspec.models.json._
 import play.api.libs.json.Json
 import java.net.URI
 import scala.util.{Failure, Success, Try}
 
-case class Importer(imp: Import) {
+case class Importer(uri: String) {
 
-  private val client = new com.gilt.apidoc.Client(imp.uri)
+  private val client = new com.gilt.apidoc.Client(uri)
 
   lazy val service: Service = fetched match {
-    case Left(error) => sys.error(s"Error fetching uri[${imp.uri}]: $error")
+    case Left(error) => sys.error(s"Error fetching uri[$uri]: $error")
     case Right(service) => service
   }
 
@@ -30,7 +30,7 @@ case class Importer(imp: Import) {
   }
 
   def fetchContents(): Service = {
-    if (imp.uri.trim.toLowerCase.startsWith("file://")) {
+    if (uri.trim.toLowerCase.startsWith("file://")) {
       fetchContentsFromFile()
     } else {
       fetchContentsFromUri()
@@ -38,7 +38,7 @@ case class Importer(imp: Import) {
   }
 
   private def fetchContentsFromFile(): Service = {
-    val contents = scala.io.Source.fromURI(new URI(imp.uri)).getLines.mkString
+    val contents = scala.io.Source.fromURI(new URI(uri)).getLines.mkString
     Json.parse(contents).as[Service]
   }
 

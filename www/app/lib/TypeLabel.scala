@@ -16,7 +16,18 @@ case class TypeLabel(
     modelNames = service.models.map(_.name)
   ).parse(typeName) match {
     case None => {
-      Href(typeName, s"/types/resolve/$typeName?version=$version").html
+      TypeNameResolver(typeName).resolve match {
+        case None => typeName
+        case Some(res) => {
+          service.imports.find { _.namespace == res.namespace } match {
+            case None => typeName
+            case Some(imp) => {
+              // handle list/map/option/singleton here
+              s"<a href='/${imp.organizationKey}/${imp.applicationKey}/${imp.version}'>$typeName:$version</a>"
+            }
+          }
+        }
+      }
     }
     case Some(Datatype.List(t)) => "[" + types(t) + "]"
     case Some(Datatype.Map(t)) => "map[" + types(t) + "]"

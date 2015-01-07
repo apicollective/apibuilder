@@ -55,7 +55,7 @@ object Versions extends Controller {
                 }
                 case s: JsSuccess[Service] => {
                   val service = s.get
-                  // TODO: For updates, inculde application in the template
+                  // TODO: For updates, include application in the template
                   val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
                     version = Some(v.version),
                     allServiceVersions = versionsResponse.map(_.version),
@@ -73,7 +73,7 @@ object Versions extends Controller {
   }
 
   def originalJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
-    request.api.Versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName).map {
+    request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName).map {
       case None => {
         if (LatestVersion == versionName) {
           Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
@@ -89,7 +89,7 @@ object Versions extends Controller {
   }
 
   def serviceJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
-    request.api.Versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName).map {
+    request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName).map {
       case None => {
         if (LatestVersion == versionName) {
           Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
@@ -105,7 +105,7 @@ object Versions extends Controller {
   }
 
   def postWatch(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
-    request.api.Versions.getByOrgKeyAndApplicationKeyAndVersion(request.org.key, applicationKey, versionName).flatMap {
+    request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(request.org.key, applicationKey, versionName).flatMap {
       case None => {
         if (LatestVersion == versionName) {
           Future {
@@ -164,7 +164,7 @@ object Versions extends Controller {
       case Some(key) => {
         for {
           applicationResponse <- request.api.Applications.getByOrgKey(orgKey = orgKey, key = Some(key))
-          versionsResponse <- request.api.Versions.getByOrgKeyAndApplicationKey(orgKey, key, limit = Some(1))
+          versionsResponse <- request.api.versions.getByOrgKeyAndApplicationKey(orgKey, key, limit = Some(1))
         } yield {
           applicationResponse.headOption match {
             case None => {
@@ -237,7 +237,7 @@ object Versions extends Controller {
                   case Some(name) => {
                     val applicationKey = UrlKey.generate(name.trim)
 
-                    request.api.Versions.putByOrgKeyAndApplicationKeyAndVersion(
+                    request.api.versions.putByOrgKeyAndApplicationKeyAndVersion(
                       orgKey = request.org.key,
                       applicationKey = applicationKey,
                       version = valid.version,

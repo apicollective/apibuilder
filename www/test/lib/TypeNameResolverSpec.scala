@@ -13,8 +13,7 @@ class TypeNameResolverSpec extends FunSpec with ShouldMatchers {
     val res = TypeNameResolver("com.gilt.apidoc.models.service").resolve.getOrElse {
       sys.error("Failed to resolve")
     }
-    res.orgNamespace should be("com.gilt")
-    res.applicationKey should be("apidoc")
+    res.namespace should be("com.gilt.apidoc")
     res.kind should be(TypeKind.Model)
     res.name should be("service")
   }
@@ -28,9 +27,8 @@ class TypeNameResolverSpec extends FunSpec with ShouldMatchers {
     val res = TypeNameResolver("com.gilt.apidoc.enums.age_group").resolve.getOrElse {
       sys.error("Failed to resolve")
     }
-    res.orgNamespace should be("com.gilt")
+    res.namespace should be("com.gilt.apidoc")
     res.kind should be(TypeKind.Enum)
-    res.applicationKey should be("apidoc")
     res.name should be("age_group")
   }
 

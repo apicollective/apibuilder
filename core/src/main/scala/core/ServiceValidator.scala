@@ -178,10 +178,10 @@ case class ServiceValidator(
     internalService.get.imports.flatMap { imp =>
       imp.uri match {
         case None => Seq("imports.uri is required")
-        case Some(value) => {
-          Util.isValidUri(value) match {
-            case true => Seq.empty
-            case false => Seq(s"imports.uri[$value] is not a valid URI")
+        case Some(uri) => {
+          Util.isValidUri(uri) match {
+            case false => Seq(s"imports.uri[$uri] is not a valid URI")
+            case true => Importer(uri).validate  // TODO. need to cache somewhere to avoid a second lookup when parsing later
           }
         }
       }

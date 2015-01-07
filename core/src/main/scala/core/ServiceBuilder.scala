@@ -148,8 +148,15 @@ object HeaderBuilder {
 object ImportBuilder {
 
   def apply(internal: InternalImportForm): Import = {
+    val importer = Importer(internal.uri.get)
+    val service = importer.service
+
     Import(
-      uri = internal.uri.get
+      uri = internal.uri.get,
+      organizationKey = "gilt",
+      applicationKey = "apidoc-spec", // TODO
+      namespace = service.namespace,
+      version = service.version
     )
   }
 

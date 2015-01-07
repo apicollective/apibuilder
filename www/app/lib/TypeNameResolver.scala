@@ -1,24 +1,23 @@
 package lib
 
 case class TypeNameResolution(
-  orgNamespace: String,
-  applicationKey: String,
+  namespace: String,
   kind: TypeKind,
   name: String
 )
 
-case class TypeNameResolver(name: String) {
+case class TypeNameResolver(value: String) {
 
-  private val EnumRx = "^(.+)\\.(.+)\\.enums\\.(.+)$".r
-  private val ModelRx = "^(.+)\\.(.+)\\.models\\.(.+)$".r
+  private val EnumRx = "^(.+)\\.enums\\.(.+)$".r
+  private val ModelRx = "^(.+)\\.models\\.(.+)$".r
 
   def resolve(): Option[TypeNameResolution] = {
-    name match {
-      case EnumRx(orgNamespace, applicationKey, n)  => {
-        Some(TypeNameResolution(orgNamespace, applicationKey, TypeKind.Enum, n))
+    value match {
+      case EnumRx(namespace, name)  => {
+        Some(TypeNameResolution(namespace, TypeKind.Enum, name))
       }
-      case ModelRx(orgNamespace, applicationKey, n)  => {
-        Some(TypeNameResolution(orgNamespace, applicationKey, TypeKind.Model, n))
+      case ModelRx(namespace, name)  => {
+        Some(TypeNameResolution(namespace, TypeKind.Model, name))
       }
       case _ => None
     }
