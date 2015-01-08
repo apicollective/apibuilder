@@ -1,5 +1,6 @@
 import com.gilt.apidoc.models.json._
 import actors.MainActor
+import db.VersionsDao
 import lib.Validation
 
 import play.api._
@@ -13,6 +14,7 @@ object Global extends WithFilters(LoggingFilter) {
 
   override def onStart(app: Application): Unit = {
     global.Actors.mainActor
+    ensureServices()
   }
 
   override def onHandlerNotFound(request: RequestHeader) = {
@@ -26,6 +28,12 @@ object Global extends WithFilters(LoggingFilter) {
   override def onError(request: RequestHeader, ex: Throwable) = {
     Logger.error(ex.toString, ex)
     Future.successful(InternalServerError(Json.toJson(Validation.serverError())))
+  }
+
+  private def ensureServices() {
+    Logger.info("Starting ensureServices()")
+    val result = VersionsDao.migrate()
+    Logger.info("ensureServices() completed: " + result)
   }
 
 }
