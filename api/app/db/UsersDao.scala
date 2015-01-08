@@ -17,6 +17,8 @@ object UserForm {
 
 object UsersDao {
 
+  val AdminUserEmail = "admin@apidoc.me"
+
   private val BaseQuery = """
     select guid, email, name
       from users
