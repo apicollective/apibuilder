@@ -142,10 +142,10 @@
 	    "description": "An import is used to declare a dependency on another service. This allows you to reference the models and or enums from that service in your own service.",
 	    "fields": [
 		{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "http://www.apidoc.me/gilt/apidoc-spec/0.7.38/service.json"  },
-		{ "name": "namespace", "type": "string" },
-		{ "name": "organization_key", "type": "string" },
-		{ "name": "application_key", "type": "string" },
-		{ "name": "version", "type": "string" }
+		{ "name": "namespace", "type": "string", "description": "the fully qualified namespace that we have imported", "example": "com.gilt.apidoc" },
+		{ "name": "organization_key", "type": "string", "description": "The apidoc organization key to which this imported service belongs", "example": "gilt" },
+		{ "name": "application_key", "type": "string", "description": "The apidoc application key to which this imported service belongs", "example": "apidoc" },
+		{ "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" }
 	    ]
 	}
 
