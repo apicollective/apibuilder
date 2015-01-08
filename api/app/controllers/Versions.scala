@@ -2,6 +2,7 @@ package controllers
 
 import com.gilt.apidoc.models.{ApplicationForm, Organization, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.models.json._
+import com.gilt.apidocspec.models.Service
 import lib.Validation
 import core.{ServiceConfiguration, ServiceValidator}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionsDao}
@@ -9,6 +10,8 @@ import play.api.mvc._
 import play.api.libs.json._
 
 object Versions extends Controller {
+
+  private val DefaultVisibility = Visibility.Organization
 
   def getByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
     val versions = ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization(request.user), orgKey, applicationKey).map { application =>
@@ -29,10 +32,41 @@ object Versions extends Controller {
     }
   }
 
+  def postByOrgKeyAndVersion(
+    orgKey: String,
+    versionName: String
+  ) = Authenticated(parse.json) { request =>
+    OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
+      case None => {
+        Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
+      }
+      case Some(org) => {
+        request.body.validate[VersionForm] match {
+          case e: JsError => {
+            Conflict(Json.toJson(Validation.invalidJson(e)))
+          }
+          case s: JsSuccess[VersionForm] => {
+            val form = s.get
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.json.toString)
+            validator.errors match {
+              case Nil => {
+                val version = upsertVersion(request.user, org, versionName, form, validator.service.get)
+                Ok(Json.toJson(version))
+              }
+              case errors => {
+                Conflict(Json.toJson(Validation.errors(validator.errors)))
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   def putByOrgKeyAndApplicationKeyAndVersion(
     orgKey: String,
     applicationKey: String,
-    version: String
+    versionName: String
   ) = Authenticated(parse.json) { request =>
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
@@ -47,30 +81,11 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, version), form.json.toString)
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.json.toString)
             validator.errors match {
               case Nil => {
-                val visibility = form.visibility.getOrElse(Visibility.Organization)
-
-                val application = ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.User(request.user.guid), org.key, applicationKey).getOrElse {
-                  val form = ApplicationForm(
-                    name = validator.service.get.name,
-                    description = None,
-                    visibility = visibility
-                  )
-                  ApplicationsDao.create(request.user, org, form, Some(applicationKey))
-                }
-
-                if (application.visibility != visibility) {
-                  ApplicationsDao.setVisibility(request.user, application, visibility)
-                }
-
-                val resultingVersion = VersionsDao.findByApplicationAndVersion(Authorization(Some(request.user)), application, version) match {
-                  case None => VersionsDao.create(request.user, application, version, form.json, validator.service.get)
-                  case Some(existing: Version) => VersionsDao.replace(request.user, existing, application, form.json, validator.service.get)
-                }
-
-                Ok(Json.toJson(resultingVersion))
+                val version = upsertVersion(request.user, org, versionName, form, validator.service.get, Some(applicationKey))
+                Ok(Json.toJson(version))
               }
               case errors => {
                 Conflict(Json.toJson(Validation.errors(validator.errors)))
@@ -91,6 +106,39 @@ object Versions extends Controller {
       }
     }
     NoContent
+  }
+
+  private def upsertVersion(
+    user: User,
+    org: Organization,
+    versionName: String,
+    form: VersionForm,
+    service: Service,
+    applicationKey: Option[String] = None
+  ): Version = {
+    val application = applicationKey.flatMap { key => ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.User(user.guid), org.key, key) } match {
+      case None => {
+        val appForm = ApplicationForm(
+          name = service.name,
+          description = service.description,
+          visibility = form.visibility.getOrElse(DefaultVisibility)
+        )
+        ApplicationsDao.create(user, org, appForm, applicationKey)
+      }
+      case Some(app) => {
+        form.visibility.map { v =>
+          if (app.visibility != v) {
+            ApplicationsDao.setVisibility(user, app, v)
+          }
+        }
+        app
+      }
+    }
+
+    VersionsDao.findByApplicationAndVersion(Authorization(Some(user)), application, versionName) match {
+      case None => VersionsDao.create(user, application, versionName, form.json, service)
+      case Some(existing: Version) => VersionsDao.replace(user, existing, application, form.json, service)
+    }
   }
 
 }

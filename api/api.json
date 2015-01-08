@@ -380,8 +380,8 @@
 			{ "name": "user_guid", "type": "uuid", "required": false, "description": "If specified, restricts to organizations that this user is specifically a member of (e.g. will exclude public organizations with which the user does not have a direct membership)." },
 
                         { "name": "key", "type": "string", "description": "Find organizations with this key. Case in-sensitive. Exact match", "required": false },
-                        { "name": "namespace", "type": "string", "description": "Find organizations with this namespace. Case in-sensitive. Exact match", "required": false },
                         { "name": "name", "type": "string", "description": "Find organizations with this name. Case in-sensitive. Exact match", "required": false },
+                        { "name": "namespace", "type": "string", "description": "Find organizations with this namespace. Case in-sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -608,11 +608,12 @@
         },
 
         "version": {
-            "path": "/:orgKey/:applicationKey",
+            "path": "/:orgKey",
 
             "operations": [
                 {
                     "method": "GET",
+		    "path": "/:applicationKey",
                     "description": "Search all versions of this application. Results are always paginated.",
                     "parameters": [
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to search versions" },
@@ -628,16 +629,27 @@
                 {
                     "method": "GET",
                     "description": "Retrieve a specific version of an application.",
-                    "path": "/:version",
+		    "path": "/:applicationKey/:version",
                     "responses": {
                         "200": { "type": "version" }
                     }
                 },
 
                 {
+                    "method": "POST",
+		    "path": "/:version",
+                    "description": "Create a new version for an application",
+		    "body": { "type": "version_form" },
+                    "responses": {
+                        "200": { "type": "version" },
+                        "409": { "type": "[error]" }
+                    }
+                },
+
+                {
                     "method": "PUT",
-                    "description": "Upsert this version of the application",
-                    "path": "/:version",
+                    "description": "Upsert a version of an application",
+                    "path": "/:applicationKey/:version",
 		    "body": { "type": "version_form" },
                     "responses": {
                         "200": { "type": "version" },
@@ -648,7 +660,7 @@
                 {
                     "method": "DELETE",
                     "description": "Deletes a specific version.",
-                    "path": "/:version"
+                    "path": "/:applicationKey/:version"
                 }
 
             ]

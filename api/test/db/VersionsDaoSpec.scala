@@ -24,6 +24,8 @@ class VersionsDaoSpec extends FlatSpec {
     ApplicationsDao.create(Util.createdBy, Util.testOrg, applicationForm)
   }
 
+  private val OriginalJson = Json.obj("name" -> UUID.randomUUID.toString)
+
   private lazy val service = Service(
     name = key,
     key = key,
@@ -37,12 +39,12 @@ class VersionsDaoSpec extends FlatSpec {
   )
 
   it should "create" in {
-    val version = VersionsDao.create(Util.createdBy, application, "1.0.0", "{}", service)
+    val version = VersionsDao.create(Util.createdBy, application, "1.0.0", OriginalJson, service)
     assertEquals("1.0.0", version.version)
   }
 
   it should "findByApplicationAndVersion" in {
-    VersionsDao.create(Util.createdBy, application, "1.0.1", "{}", service)
+    VersionsDao.create(Util.createdBy, application, "1.0.1", OriginalJson, service)
     assertEquals(
       Some(Json.toJson(service).as[JsObject]),
       VersionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service)
@@ -50,10 +52,10 @@ class VersionsDaoSpec extends FlatSpec {
   }
 
   it should "soft delete" in {
-    val version1 = VersionsDao.create(Util.createdBy, application, "1.0.2", "{}", service)
+    val version1 = VersionsDao.create(Util.createdBy, application, "1.0.2", OriginalJson, service)
     VersionsDao.softDelete(Util.createdBy, version1)
 
-    val version2 = VersionsDao.create(Util.createdBy, application, "1.0.2", "{}", service)
+    val version2 = VersionsDao.create(Util.createdBy, application, "1.0.2", OriginalJson, service)
     assertEquals(version1, version2.copy(guid = version1.guid))
     assertNotEquals(version1.guid, version2.guid)
   }
