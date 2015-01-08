@@ -7,6 +7,7 @@ import com.gilt.apidocspec.models.json._
 import lib.VersionTag
 import anorm._
 import play.api.db._
+import play.api.Logger
 import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
@@ -15,10 +16,14 @@ object VersionsDao {
 
   private val LatestVersion = "latest"
 
-  private val BaseQuery = """
-    select versions.guid, versions.version, versions.original, versions.service::varchar, versions.old_json::varchar,
-           organizations.namespace
+  private val ServiceVersionNumber = 1
+
+  private val BaseQuery = s"""
+    select versions.guid, versions.version, versions.original, versions.old_json::varchar,
+           organizations.namespace,
+           services.json::varchar as service_json
      from versions
+     left join cache.services on services.deleted_at is null and services.version_guid = versions.guid and services.version_number = $ServiceVersionNumber
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
     where versions.deleted_at is null
@@ -26,32 +31,47 @@ object VersionsDao {
 
   private val InsertQuery = """
     insert into versions
-    (guid, application_guid, version, version_sort_key, original, service, created_by_guid)
+    (guid, application_guid, version, version_sort_key, original, created_by_guid)
     values
-    ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {original}, {service}::json, {created_by_guid}::uuid)
+    ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {original}, {created_by_guid}::uuid)
   """
 
-  private val MigrateQuery = """
-    update versions
-       set original = {original},
-           service = {service}::json
-     where guid = {guid}::uuid
+  private val InsertServiceQuery = """
+    insert into cache.services
+    (guid, version_guid, version_number, json, created_by_guid)
+    values
+    ({guid}::uuid, {version_guid}::uuid, {version_number}, {json}::json, {user_guid}::uuid)
   """
 
-  def create(user: User, application: Application, version: String, original: String, service: Service): Version = {
+  private val SoftDeleteServiceByVersionGuidAndVersionNumberQuery = """
+    update cache.services
+       set deleted_at = now(),
+           deleted_by_guid = {user_guid}::uuid
+     where deleted_at is null
+       and version_guid = {version_guid}::uuid
+       and version_number = {version_number}
+  """
+
+  def create(user: User, application: Application, version: String, original: JsObject, service: Service): Version = {
+    assert(
+      !(original \ "name").asOpt[String].isEmpty,
+      "original is missing name"
+    )
+
     val guid = UUID.randomUUID
 
-    DB.withConnection { implicit c =>
+    DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'application_guid -> application.guid,
-        'original -> original,
+        'original -> original.toString,
         'version -> version.trim,
         'version_sort_key -> VersionTag(version.trim).sortKey,
-        'original -> original,
-        'service -> Json.toJson(service).as[JsObject].toString,
         'created_by_guid -> user.guid
       ).execute()
+
+      softDeleteService(c, user, guid)
+      insertService(c, user, guid, service)
     }
 
     global.Actors.mainActor ! actors.MainActor.Messages.VersionCreated(guid)
@@ -65,7 +85,7 @@ object VersionsDao {
     SoftDelete.delete("versions", deletedBy, version.guid)
   }
 
-  def replace(user: User, version: Version, application: Application, original: String, service: Service): Version = {
+  def replace(user: User, version: Version, application: Application, original: JsObject, service: Service): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user, version)
       VersionsDao.create(user, application, version.version, original, service)
@@ -104,7 +124,7 @@ object VersionsDao {
     offset: Long = 0
   ): Seq[Version] = {
     val sql = Seq(
-      Some(BaseQuery.trim),
+      Some(BaseQuery.trim + " and services.guid is not null "),
       authorization.applicationFilter().map(v => "and " + v),
       guid.map { v => "and versions.guid = {guid}::uuid" },
       applicationGuid.map { _ => "and versions.application_guid = {application_guid}::uuid" },
@@ -119,38 +139,26 @@ object VersionsDao {
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
-      // TEMPORARY DURING DATA MIGRATION
       SQL(sql).on(bind: _*)().toList.map { row =>
         val version = row[String]("version")
         val original = row[Option[String]]("original").getOrElse {
           row[String]("old_json")
         }
-        val service: JsObject = row[Option[String]]("service") match {
-          case Some(service) => {
-            Json.parse(service).as[JsObject]
-          }
-          case None => {
-            val config = ServiceConfiguration(
-              orgNamespace = row[String]("namespace"),
-              version = version
-            )
-            val service = core.ServiceValidator(config, original).service.get
-            Json.toJson(service).as[JsObject]
-          }
-        }
+        val service = Json.parse(row[String]("service_json")).as[Service]
 
         Version(
           guid = row[UUID]("guid"),
           version = version,
-          original = original,
-          service = service
+          original = original.toString,
+          service = Json.toJson(service).as[JsObject]
         )
       }.toSeq
     }
   }
 
   def migrate(): Map[String, Int] = {
-    val sql = BaseQuery.trim + " and (versions.original is null or versions.service is null) and versions.json is not null"
+    var user: Option[User] = None
+    val sql = BaseQuery.trim + " and services.guid is null and versions.original != '{}' "
 
     var good = 0
     var bad = 0
@@ -158,7 +166,9 @@ object VersionsDao {
     DB.withConnection { implicit c =>
       val versions = SQL(sql)().toList
       versions.map { row =>
-        val guid = row[UUID]("guid")
+        val versionGuid = row[UUID]("guid")
+        Logger.info(s"Migrating version[${versionGuid}]")
+
         val config = ServiceConfiguration(
           orgNamespace = row[String]("namespace"),
           version = row[String]("version")
@@ -170,17 +180,17 @@ object VersionsDao {
 
         try {
           val service = core.ServiceValidator(config, original).service.get
+          if (user.isEmpty) {
+            user = Some(UsersDao.findByEmail(UsersDao.AdminUserEmail).getOrElse {
+              sys.error(s"Failed to create background user w/ email[${UsersDao.AdminUserEmail}]")
+            })
+          }
 
-          SQL(MigrateQuery).on(
-            'guid -> guid,
-            'original -> original,
-            'service -> Json.toJson(service).as[JsObject].toString.trim
-          ).execute()
-
+          insertService(c, user.get, versionGuid, service)
           good += 1
         } catch {
           case e: Throwable => {
-            println(s"Error migrationg version[${guid}]: $e")
+            Logger.error(s"Error migrating version[${versionGuid}] to service versionNumber[$ServiceVersionNumber]: $e")
             bad += 1
           }
         }
@@ -191,6 +201,33 @@ object VersionsDao {
       "number_migrated" -> good,
       "number_errors" -> bad
     )
+  }
+
+  private def softDeleteService(
+    implicit c: java.sql.Connection,
+    user: User,
+    versionGuid: UUID
+  ) {
+    SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
+      'version_guid -> versionGuid,
+      'version_number -> ServiceVersionNumber,
+      'user_guid -> user.guid
+    )
+  }
+
+  private def insertService(
+    implicit c: java.sql.Connection,
+    user: User,
+    versionGuid: UUID,
+    service: Service
+  ) {
+    SQL(InsertServiceQuery).on(
+      'guid -> UUID.randomUUID,
+      'version_guid -> versionGuid,
+      'version_number -> ServiceVersionNumber,
+      'json -> Json.toJson(service).as[JsObject].toString.trim,
+      'user_guid -> user.guid
+    ).execute()
   }
 
 }
