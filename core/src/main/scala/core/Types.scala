@@ -61,23 +61,29 @@ private[core] case class RecursiveTypesProvider(
 
   override def modelNames = providers.map(_.modelNames).flatten
 
-  private val imports = internal.imports.filter(!_.uri.isEmpty).map(ImportBuilder(_))
-
-  private lazy val providers = Seq(TypesProvider.InternalServiceFormProvider(internal)) ++ resolve(imports)
+  private lazy val providers = Seq(TypesProvider.InternalServiceFormProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
 
   private def resolve(
-    imports: Seq[Import],
+    importUris: Seq[String],
     imported: Set[String] = Set.empty
   ): Seq[TypesProvider] = {
-    imports.headOption match {
+    importUris.headOption match {
       case None => Seq.empty
-      case Some(imp) => {
-        if (imported.contains(imp.uri.toLowerCase.trim)) {
+      case Some(uri) => {
+        if (imported.contains(uri.toLowerCase.trim)) {
           // already imported
-          resolve(imports.drop(1), imported)
+          resolve(importUris.drop(1), imported)
         } else {
-          val service = Importer(imp.uri).service
-          Seq(TypesProvider.ServiceProvider(service)) ++ resolve(imports.drop(1), imported ++ Set(imp.uri))
+          val importer = Importer(uri)
+          importer.validate match {
+            case Nil => {
+              Seq(TypesProvider.ServiceProvider(importer.service)) ++ resolve(importUris.drop(1), imported ++ Set(uri))
+            }
+            case errors => {
+              // There are errors w/ this import - skip it
+              resolve(importUris.drop(1), imported ++ Set(uri))
+            }
+          }
         }
       }
     }
