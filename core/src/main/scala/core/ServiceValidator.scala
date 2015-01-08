@@ -1,7 +1,7 @@
 package core
 
 import lib.{Datatype, Methods, Primitives, Text, Type, TypeKind, UrlKey}
-import com.gilt.apidocspec.models.{Enum, Field, Service}
+import com.gilt.apidocspec.models.{Enum, Field, Method, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
@@ -318,6 +318,20 @@ case class ServiceValidator(
   }
 
   private def validateResponses(): Seq[String] = {
+    val invalidMethods = internalService.get.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.method match {
+          case None => Seq("Resource[user] missing HTTP method")
+          case Some(m) => {
+            Method.fromString(m) match {
+              case None => Seq(s"Resource[user] has an invalid HTTP method[$m]. Must be one of: " + Method.all.mkString(", "))
+              case Some(_) => Seq.empty
+            }
+          }
+        }
+      }
+    }
+
     val invalidCodes = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
@@ -416,7 +430,7 @@ case class ServiceValidator(
       }
     }
 
-    invalidCodes ++ missingMethods ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
+    invalidMethods ++ missingMethods ++ invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
   }
 
   private def validateParameterBodies(): Seq[String] = {

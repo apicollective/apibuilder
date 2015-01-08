@@ -1,18 +1,9 @@
 document service imports in apiJson
 
-/web/apidoc/api/app/controllers/Versions.scala
-  - finish
-
-service spec:
-  - add full_name or qualified_name to models and enums to import (?)
-
 http://localhost:9000/gilt/version/create?service=apidoc-generator
   - Validation for uploading invalid json
   - Validation for uploading valid json w/ invalid model names
   - Validation for imports with a URL to a service that doesn't exist
-
-service_form:
-  - validation error if method is unknown
 
 generator:
   ==> TODO: union type
