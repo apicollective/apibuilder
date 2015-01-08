@@ -1,3 +1,5 @@
+update release notes
+
 document service imports in apiJson
 
 http://localhost:9000/gilt/version/create?service=apidoc-generator
@@ -13,8 +15,6 @@ spec:
 
 Parse Resource description
 
-ParsedDatatype => Datatype
-
 add namespace
  => rename package name to default namespace for organization
  => reject services that are uploaded w/out a namespace
@@ -23,28 +23,14 @@ add namespace
 
 add major version number to package name
 
-http://www.apidoc.me/org/create
- => Ask for org domain and namespace - both optional
- => use domain as default namespace for the org
- => if not specified, default namespace can be "me.apidoc.org.<org
-    name>" or something
-
-Make base url optional
-  - if included, make it part of the generated client
-
 Add link to /generators
 
 rename TypeKind => Kind
-
-make method an enum to make list of http methods explicit
 
 users need nicknames
   - then display nicknames throughout the UI
 
 Cache the generators
-
-Email verification process, including auto add to orgs based no email
-  domain if there is a membership request pending
 
 UX:
 
@@ -57,10 +43,6 @@ UX:
 
 Org level setting to enable semver versioning (default on)
   - prevent backwards incompatible changes once at major version 1
-
-Support for testing
-
-Replace ValidationError with com.gilt.apidoc.models.Error
 
 Email user when their membership request has been processed
 
