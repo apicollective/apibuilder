@@ -40,7 +40,7 @@ case class TypeLabel(
         service.imports.find { _.namespace == res.namespace } match {
           case None => typeName
           case Some(imp) => {
-            s"<a href='/${imp.organizationKey}/${imp.applicationKey}/${imp.version}'>$typeName:$version</a>"
+            s"<a href='/${imp.organizationKey}/${imp.applicationKey}/${imp.version}#${res.kind}-${res.name}'>$typeName:$version</a>"
           }
         }
       }
