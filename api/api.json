@@ -117,9 +117,10 @@
         },
 
         "application": {
-            "description": "An application has a name and multiple versions of a Service API.",
+            "description": "An application has a name and multiple versions of its API.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this application." },
+                { "name": "organization", "type": "reference" },
                 { "name": "name", "type": "string", "description": "The unique name for this application." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the application name." },
                 { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this application" },
@@ -140,6 +141,8 @@
             "description": "Represents a unique version of the application.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this version." },
+                { "name": "organization", "type": "reference" },
+                { "name": "application", "type": "reference" },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
 		{ "name": "original", "type": "string" },
 		{ "name": "service", "type": "object", "description": "spec/service.json description of this API" }
@@ -148,10 +151,18 @@
 
         "version_form": {
             "fields": [
-		{ "name": "json", "type": "object" },
-		{ "name": "visibility", "type": "visibility", "required": false, "description": "If provided, updates the visibility for all versions of this service" }
+		{ "name": "service_form", "type": "string" },
+		{ "name": "visibility", "type": "visibility", "required": false, "description": "If provided, updates the visibility for all versions of this application" }
             ]
         },
+
+        "reference": {
+            "description": "Represents a reference to another model.",
+            "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "key", "type": "string" }
+	    ]
+	},
 
         "code": {
             "description": "Generated source code.",

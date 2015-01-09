@@ -47,10 +47,10 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.json.toString)
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
             validator.errors match {
               case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, validator.service.get)
+                val version = upsertVersion(request.user, org, versionName, form, validator.serviceForm.get, validator.service.get)
                 Ok(Json.toJson(version))
               }
               case errors => {
@@ -81,10 +81,10 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.json.toString)
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
             validator.errors match {
               case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, validator.service.get, Some(applicationKey))
+                val version = upsertVersion(request.user, org, versionName, form, validator.serviceForm.get, validator.service.get, Some(applicationKey))
                 Ok(Json.toJson(version))
               }
               case errors => {
@@ -113,6 +113,7 @@ object Versions extends Controller {
     org: Organization,
     versionName: String,
     form: VersionForm,
+    serviceForm: JsObject, // TODO: Change to ServiceForm once ready
     service: Service,
     applicationKey: Option[String] = None
   ): Version = {
@@ -136,8 +137,8 @@ object Versions extends Controller {
     }
 
     VersionsDao.findByApplicationAndVersion(Authorization(Some(user)), application, versionName) match {
-      case None => VersionsDao.create(user, application, versionName, form.json, service)
-      case Some(existing: Version) => VersionsDao.replace(user, existing, application, form.json, service)
+      case None => VersionsDao.create(user, application, versionName, serviceForm, service)
+      case Some(existing: Version) => VersionsDao.replace(user, existing, application, serviceForm, service)
     }
   }
 

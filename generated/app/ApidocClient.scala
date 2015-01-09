@@ -5,10 +5,11 @@
 package com.gilt.apidoc.models {
 
   /**
-   * An application has a name and multiple versions of a Service API.
+   * An application has a name and multiple versions of its API.
    */
   case class Application(
     guid: _root_.java.util.UUID,
+    organization: com.gilt.apidoc.models.Reference,
     name: String,
     key: String,
     visibility: com.gilt.apidoc.models.Visibility,
@@ -167,6 +168,14 @@ package com.gilt.apidoc.models {
   )
 
   /**
+   * Represents a reference to another model.
+   */
+  case class Reference(
+    guid: _root_.java.util.UUID,
+    key: String
+  )
+
+  /**
    * Represents a user that is currently subscribed to a publication
    */
   case class Subscription(
@@ -220,13 +229,15 @@ package com.gilt.apidoc.models {
    */
   case class Version(
     guid: _root_.java.util.UUID,
+    organization: com.gilt.apidoc.models.Reference,
+    application: com.gilt.apidoc.models.Reference,
     version: String,
     original: String,
     service: _root_.play.api.libs.json.JsObject
   )
 
   case class VersionForm(
-    json: _root_.play.api.libs.json.JsObject,
+    serviceForm: String,
     visibility: scala.Option[com.gilt.apidoc.models.Visibility] = None
   )
 
@@ -390,6 +401,7 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApidocApplication: play.api.libs.json.Reads[Application] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Reference] and
         (__ \ "name").read[String] and
         (__ \ "key").read[String] and
         (__ \ "visibility").read[com.gilt.apidoc.models.Visibility] and
@@ -400,6 +412,7 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApidocApplication: play.api.libs.json.Writes[Application] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Reference] and
         (__ \ "name").write[String] and
         (__ \ "key").write[String] and
         (__ \ "visibility").write[com.gilt.apidoc.models.Visibility] and
@@ -663,6 +676,20 @@ package com.gilt.apidoc.models {
       )
     }
 
+    implicit def jsonReadsApidocReference: play.api.libs.json.Reads[Reference] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "key").read[String]
+      )(Reference.apply _)
+    }
+
+    implicit def jsonWritesApidocReference: play.api.libs.json.Writes[Reference] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "key").write[String]
+      )(unlift(Reference.unapply _))
+    }
+
     implicit def jsonReadsApidocSubscription: play.api.libs.json.Reads[Subscription] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -762,6 +789,8 @@ package com.gilt.apidoc.models {
     implicit def jsonReadsApidocVersion: play.api.libs.json.Reads[Version] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.gilt.apidoc.models.Reference] and
+        (__ \ "application").read[com.gilt.apidoc.models.Reference] and
         (__ \ "version").read[String] and
         (__ \ "original").read[String] and
         (__ \ "service").read[_root_.play.api.libs.json.JsObject]
@@ -771,6 +800,8 @@ package com.gilt.apidoc.models {
     implicit def jsonWritesApidocVersion: play.api.libs.json.Writes[Version] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.gilt.apidoc.models.Reference] and
+        (__ \ "application").write[com.gilt.apidoc.models.Reference] and
         (__ \ "version").write[String] and
         (__ \ "original").write[String] and
         (__ \ "service").write[_root_.play.api.libs.json.JsObject]
@@ -779,14 +810,14 @@ package com.gilt.apidoc.models {
 
     implicit def jsonReadsApidocVersionForm: play.api.libs.json.Reads[VersionForm] = {
       (
-        (__ \ "json").read[_root_.play.api.libs.json.JsObject] and
+        (__ \ "service_form").read[String] and
         (__ \ "visibility").readNullable[com.gilt.apidoc.models.Visibility]
       )(VersionForm.apply _)
     }
 
     implicit def jsonWritesApidocVersionForm: play.api.libs.json.Writes[VersionForm] = {
       (
-        (__ \ "json").write[_root_.play.api.libs.json.JsObject] and
+        (__ \ "service_form").write[String] and
         (__ \ "visibility").write[scala.Option[com.gilt.apidoc.models.Visibility]]
       )(unlift(VersionForm.unapply _))
     }
@@ -1166,8 +1197,8 @@ package com.gilt.apidoc {
         guid: scala.Option[_root_.java.util.UUID] = None,
         userGuid: scala.Option[_root_.java.util.UUID] = None,
         key: scala.Option[String] = None,
-        namespace: scala.Option[String] = None,
         name: scala.Option[String] = None,
+        namespace: scala.Option[String] = None,
         limit: scala.Option[Long] = None,
         offset: scala.Option[Long] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Organization]] = {
@@ -1175,8 +1206,8 @@ package com.gilt.apidoc {
           guid.map("guid" -> _.toString),
           userGuid.map("user_guid" -> _.toString),
           key.map("key" -> _),
-          namespace.map("namespace" -> _),
           name.map("name" -> _),
+          namespace.map("namespace" -> _),
           limit.map("limit" -> _.toString),
           offset.map("offset" -> _.toString)
         ).flatten
@@ -1430,13 +1461,13 @@ package com.gilt.apidoc {
         }
       }
 
-      override def postByOrgKeyAndApplicationKey(versionForm: com.gilt.apidoc.models.VersionForm,
+      override def postByOrgKeyAndVersion(versionForm: com.gilt.apidoc.models.VersionForm,
         orgKey: String,
-        applicationKey: String
+        version: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version] = {
         val payload = play.api.libs.json.Json.toJson(versionForm)
 
-        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => r.json.as[com.gilt.apidoc.models.Version]
           case r if r.status == 409 => throw new com.gilt.apidoc.error.ErrorsResponse(r)
           case r => throw new FailedRequest(r)
@@ -1775,8 +1806,8 @@ package com.gilt.apidoc {
       guid: scala.Option[_root_.java.util.UUID] = None,
       userGuid: scala.Option[_root_.java.util.UUID] = None,
       key: scala.Option[String] = None,
-      namespace: scala.Option[String] = None,
       name: scala.Option[String] = None,
+      namespace: scala.Option[String] = None,
       limit: scala.Option[Long] = None,
       offset: scala.Option[Long] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.models.Organization]]
@@ -1929,9 +1960,9 @@ package com.gilt.apidoc {
     /**
      * Create a new version for an application
      */
-    def postByOrgKeyAndApplicationKey(versionForm: com.gilt.apidoc.models.VersionForm,
+    def postByOrgKeyAndVersion(versionForm: com.gilt.apidoc.models.VersionForm,
       orgKey: String,
-      applicationKey: String
+      version: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version]
 
     /**

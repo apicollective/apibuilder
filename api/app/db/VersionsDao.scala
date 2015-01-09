@@ -1,7 +1,7 @@
 package db
 
 import core.ServiceConfiguration
-import com.gilt.apidoc.models.{Application, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.models.{Application, Reference, User, Version, VersionForm, Visibility}
 import com.gilt.apidocspec.models.Service
 import com.gilt.apidocspec.models.json._
 import lib.VersionTag
@@ -20,7 +20,11 @@ object VersionsDao {
 
   private val BaseQuery = s"""
     select versions.guid, versions.version, versions.original, versions.old_json::varchar,
-           organizations.namespace,
+           organizations.guid as organization_guid,
+           organizations.key as organization_key,
+           organizations.namespace as organization_namespace,
+           applications.guid as application_guid,
+           applications.key as application_key,
            services.json::varchar as service_json
      from versions
      left join cache.services on services.deleted_at is null and services.version_guid = versions.guid and services.version_number = $ServiceVersionNumber
@@ -148,6 +152,14 @@ object VersionsDao {
 
         Version(
           guid = row[UUID]("guid"),
+          organization = Reference(
+            guid = row[UUID]("organization_guid"),
+            key = row[String]("organization_key")
+          ),
+          application = Reference(
+            guid = row[UUID]("application_guid"),
+            key = row[String]("application_key")
+          ),
           version = version,
           original = original.toString,
           service = Json.toJson(service).as[JsObject]
@@ -170,7 +182,7 @@ object VersionsDao {
         Logger.info(s"Migrating version[${versionGuid}]")
 
         val config = ServiceConfiguration(
-          orgNamespace = row[String]("namespace"),
+          orgNamespace = row[String]("organization_namespace"),
           version = row[String]("version")
         )
 

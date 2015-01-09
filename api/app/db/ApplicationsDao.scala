@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Error, Organization, Application, ApplicationForm, User, Version, Visibility}
+import com.gilt.apidoc.models.{Application, ApplicationForm, Error, Organization, Reference, User, Version, Visibility}
 import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._
@@ -11,7 +11,9 @@ import java.util.UUID
 object ApplicationsDao {
 
   private val BaseQuery = """
-    select applications.guid, applications.name, applications.key, applications.description, applications.visibility
+    select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
+           organizations.guid as organization_guid,
+           organizations.key as organization_key
       from applications
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
      where applications.deleted_at is null
@@ -206,6 +208,10 @@ object ApplicationsDao {
     val p = prefix.map( _ + "_").getOrElse("")
     Application(
       guid = row[UUID](s"${p}guid"),
+      organization = Reference(
+        guid = row[UUID]("organization_guid"),
+        key = row[String]("organization_key")
+      ),
       name = row[String](s"${p}name"),
       key = row[String](s"${p}key"),
       visibility = Visibility(row[String](s"${p}visibility")),
