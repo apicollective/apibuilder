@@ -82,23 +82,17 @@ case class DatatypeResolver(
     }
   }
 
-  private val ListRx = "^\\[(.*)\\]$".r
-  private val MapRx = "^map\\[(.*)\\]$".r
-  private val MapDefaultRx = "^map$".r
-  private val OptionRx = "^option\\[(.*)\\]$".r
-
   /**
     * Parses a type string into an instance of a Datatype.
     * 
     * @param value: Examples: "string", "string | uuid", "map[long]", "option[string | uuid]"
     */
   def parse(value: String): Option[Datatype] = {
-    value match {
-      case ListRx(names) => toTypesIfAllFound(names).map { Datatype.List(_) }
-      case MapRx(names) => toTypesIfAllFound(names).map { Datatype.Map(_) }
-      case MapDefaultRx() => toTypesIfAllFound(Primitives.String.toString).map { Datatype.Map(_) }
-      case OptionRx(names) => toTypesIfAllFound(names).map { Datatype.Option(_) }
-      case _ => toTypesIfAllFound(value).map { Datatype.Singleton(_) }
+    TextDatatype(value) match {
+      case TextDatatype.List(typeName) => toTypesIfAllFound(typeName).map { Datatype.List(_) }
+      case TextDatatype.Map(typeName) => toTypesIfAllFound(typeName).map { Datatype.Map(_) }
+      case TextDatatype.Option(typeName) => toTypesIfAllFound(typeName).map { Datatype.Option(_) }
+      case TextDatatype.Singleton(typeName) => toTypesIfAllFound(typeName).map { Datatype.Singleton(_) }
     }
   }
 
