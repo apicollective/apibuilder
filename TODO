@@ -3,7 +3,6 @@ update release notes
 document service imports in apiJson
 
 http://localhost:9000/gilt/version/create?service=apidoc-generator
-  - Validation for uploading invalid json
   - Validation for uploading valid json w/ invalid model names
 
 generator:

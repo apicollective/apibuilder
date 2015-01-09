@@ -145,7 +145,10 @@ object Versions extends Controller {
     }
   }
 
-  def create(orgKey: String, applicationKey: Option[String] = None) = AuthenticatedOrg.async { implicit request =>
+  def create(
+    orgKey: String,
+    applicationKey: Option[String] = None
+  ) = AuthenticatedOrg.async { implicit request =>
     request.requireMember()
 
     applicationKey match {
@@ -158,7 +161,7 @@ object Versions extends Controller {
             visibility = Visibility.Organization.toString
           )
         )
-        Ok(views.html.versions.form(tpl, filledForm))
+        Ok(views.html.versions.form(tpl, applicationKey, filledForm))
       }
 
       case Some(key) => {
@@ -181,7 +184,7 @@ object Versions extends Controller {
                   visibility = application.visibility.toString
                 )
               )
-              Ok(views.html.versions.form(tpl, filledForm))
+              Ok(views.html.versions.form(tpl, applicationKey, filledForm))
             }
           }
         }
@@ -189,7 +192,10 @@ object Versions extends Controller {
     }
   }
 
-  def createPost(orgKey: String) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
+  def createPost(
+    orgKey: String,
+    applicationKey: Option[String] = None
+  ) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
     request.requireMember()
 
     val tpl = request.mainTemplate(Some(Util.AddApplicationText))
@@ -197,7 +203,7 @@ object Versions extends Controller {
     boundForm.fold (
 
       errors => Future {
-        Ok(views.html.versions.form(tpl, errors))
+        Ok(views.html.versions.form(tpl, applicationKey, errors))
       },
 
       valid => {
@@ -208,50 +214,43 @@ object Versions extends Controller {
 
         request.body.file("file") match {
           case None => Future {
-            Ok(views.html.versions.form(tpl, boundForm, Seq("Please select a non empty file to upload")))
+            Ok(views.html.versions.form(tpl, applicationKey, boundForm, Seq("Please select a non empty file to upload")))
           }
 
           case Some(file) => {
             val path = File.createTempFile("api", "json")
             file.ref.moveTo(path, true)
-            val contents = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n")
+            val versionForm = VersionForm(
+              serviceForm = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n").trim,
+              Some(Visibility(valid.visibility))
+            )
 
-            Json.parse(contents).asOpt[JsObject] match {
+            applicationKey  match {
               case None => {
-                Future {
-                  Ok(views.html.versions.form(tpl, boundForm,
-                    Seq("Invalid JSON - please make sure the file defines a JSON Object"))
-                  )
+                request.api.versions.postByOrgKeyAndVersion(
+                  orgKey = request.org.key,
+                  version = valid.version,
+                  versionForm = versionForm
+                ).map { version =>
+                  Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version updated" )
+                }.recover {
+                  case r: com.gilt.apidoc.error.ErrorsResponse => {
+                    Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
+                  }
                 }
               }
 
-              case Some(json) => {
-                (json \ "name").asOpt[String] match {
-                  case None => {
-                    Future {
-                      Ok(views.html.versions.form(tpl, boundForm,
-                        Seq("Invalid JSON - please make sure JSON includes at least a top level name element."))
-                      )
-                    }
-                  }
-                  case Some(name) => {
-                    val applicationKey = UrlKey.generate(name.trim)
-
-                    request.api.versions.putByOrgKeyAndApplicationKeyAndVersion(
-                      orgKey = request.org.key,
-                      applicationKey = applicationKey,
-                      version = valid.version,
-                      versionForm = VersionForm(
-                        json = json,
-                        Some(Visibility(valid.visibility))
-                      )
-                    ).map { version =>
-                      Redirect(routes.Versions.show(request.org.key, applicationKey, valid.version)).flashing( "success" -> "Service uploaded" )
-                    }.recover {
-                      case r: com.gilt.apidoc.error.ErrorsResponse => {
-                        Ok(views.html.versions.form(tpl, boundForm, r.errors.map(_.message)))
-                      }
-                    }
+              case Some(key) => {
+                request.api.versions.putByOrgKeyAndApplicationKeyAndVersion(
+                  orgKey = request.org.key,
+                  applicationKey = key,
+                  version = valid.version,
+                  versionForm = versionForm
+                ).map { version =>
+                  Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version created" )
+                }.recover {
+                  case r: com.gilt.apidoc.error.ErrorsResponse => {
+                    Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }
               }

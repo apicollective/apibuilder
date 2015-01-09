@@ -69,7 +69,7 @@ GET     /:orgKey/memberships/request                              controllers.Or
 POST    /:orgKey/memberships/request                              controllers.Organizations.postRequestMembership(orgKey: String)
 
 GET     /:orgKey/version/create                                   controllers.Versions.create(orgKey: String, application: Option[String] ?= None)
-POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String)
+POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String, application: Option[String] ?= None)
 
 GET     /:orgKey/subscriptions/                                   controllers.Subscriptions.index(orgKey: String)
 POST    /:orgKey/subscriptions/:publication/toggle                controllers.Subscriptions.postToggle(orgKey: String, publication: com.gilt.apidoc.models.Publication)
