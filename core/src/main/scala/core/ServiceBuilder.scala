@@ -25,7 +25,7 @@ object ServiceBuilder {
 
     val name = internal.name.getOrElse(sys.error("Missing name"))
     val key = internal.key.getOrElse { UrlKey.generate(name) }
-    val namespace = internal.namespace.getOrElse { s"${config.orgNamespace}.${key}" }
+    val namespace = internal.namespace.getOrElse { config.applicationNamespace(key) }
     val imports = internal.imports.map { ImportBuilder(_) }
     val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val enums = internal.enums.map { EnumBuilder(_) }
