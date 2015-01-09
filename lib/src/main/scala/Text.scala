@@ -134,7 +134,7 @@ object Text {
   private val WordDelimeterRx = "_|\\-|\\.|:".r
 
   def splitIntoWords(value: String): Seq[String] = {
-    WordDelimeterRx.split(value)
+    WordDelimeterRx.split(value).map(_.trim).filter(!_.isEmpty)
   }
 
   def snakeToCamelCase(value: String) = {

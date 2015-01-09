@@ -5,12 +5,28 @@ import org.scalatest.Matchers
 
 class TextSpec extends FunSpec with Matchers {
 
-  it("splitIntoWords") {
-    Text.splitIntoWords("foo") should be(Seq("foo"))
-    Text.splitIntoWords("foo_bar") should be(Seq("foo", "bar"))
-    Text.splitIntoWords("foo-bar") should be(Seq("foo", "bar"))
-    Text.splitIntoWords("foo.bar") should be(Seq("foo", "bar"))
-    Text.splitIntoWords("foo:bar") should be(Seq("foo", "bar"))
+  describe("splitIntoWords") {
+
+    it("handles basic separators") {
+      Text.splitIntoWords("foo") should be(Seq("foo"))
+      Text.splitIntoWords("foo_bar") should be(Seq("foo", "bar"))
+      Text.splitIntoWords("foo-bar") should be(Seq("foo", "bar"))
+      Text.splitIntoWords("foo.bar") should be(Seq("foo", "bar"))
+      Text.splitIntoWords("Foo.Bar") should be(Seq("Foo", "Bar"))
+      Text.splitIntoWords("foo:bar") should be(Seq("foo", "bar"))
+    }
+
+    it("flattens multiple delimiters") {
+      Text.splitIntoWords("foo__bar") should be(Seq("foo", "bar"))
+      Text.splitIntoWords("foo--bar") should be(Seq("foo", "bar"))
+      Text.splitIntoWords("foo...bar") should be(Seq("foo", "bar"))
+      Text.splitIntoWords("foo:::bar") should be(Seq("foo", "bar"))
+    }
+
+    it("flattens trims whitespace") {
+      Text.splitIntoWords("  foo_  _bar  ") should be(Seq("foo", "bar"))
+    }
+
   }
 
   it("isValidName") {
