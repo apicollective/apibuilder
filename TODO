@@ -6,22 +6,20 @@ update release notes
 
 document service imports in apiJson
 
-http://localhost:9000/gilt/version/create?service=apidoc-generator
-  - Validation for uploading valid json w/ invalid model names
-
-generator:
+apidoc-generator:
   ==> TODO: union type
 
-spec:
+api + spec:
   - introduce service_form distinct from service. Replaces JsObject in
     version.service
 
-Add link to /generators
+Generators:
 
-users need nicknames
-  - then display nicknames throughout the UI
+  - Add link to /generators
+  - Cache the generators
 
-Cache the generators
+users:
+  - add nickname that users can modify, and display that nickname throughout the API
 
 UX:
 
