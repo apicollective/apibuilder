@@ -14,8 +14,6 @@ case class ServiceValidator(
 
   private val RequiredFields = Seq("name")
 
-  private var parseError: Option[String] = None
-
   lazy val service: Option[Service] = {
     internalService.map { ServiceBuilder(config, _) }
   }
@@ -28,21 +26,35 @@ case class ServiceValidator(
     }
   }
 
-  private lazy val internalService: Option[InternalServiceForm] = {
-    val tryDescription = Try(Some(InternalServiceForm(apiJson))) recover {
-      case e: JsonParseException => {
-        parseError = Some(e.getMessage)
-        None
+  private var parseError: Option[String] = None
+
+  lazy val serviceForm: Option[JsObject] = {
+    Try(Json.parse(apiJson)) match {
+      case Success(v) => {
+        v.asOpt[JsObject] match {
+          case Some(o) => {
+            Some(o)
+          }
+          case None => {
+            parseError = Some("Must upload a Json Object")
+            None
+          }
+        }
       }
-      case e: JsonProcessingException => {
-        parseError = Some(e.getMessage)
-        None
+      case Failure(ex) => ex match {
+        case e: JsonParseException => {
+          parseError = Some(e.getMessage)
+          None
+        }
+        case e: JsonProcessingException => {
+          parseError = Some(e.getMessage)
+          None
+        }
       }
     }
-
-    // Throw any unhandled exceptions
-    tryDescription.get
   }
+
+  private lazy val internalService: Option[InternalServiceForm] = serviceForm.map(InternalServiceForm(_))
 
   lazy val errors: Seq[String] = {
     internalService match {

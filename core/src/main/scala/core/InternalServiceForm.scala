@@ -10,15 +10,6 @@ import play.api.libs.json._
  * JSON => InternalService => Service
  *
  */
-private[core] object InternalServiceForm {
-
-  def apply(apiJson: String): InternalServiceForm = {
-    val jsValue = Json.parse(apiJson)
-    InternalServiceForm(jsValue)
-  }
-
-}
-
 private[core] case class InternalServiceForm(json: JsValue) {
 
   lazy val name = JsonUtil.asOptString(json \ "name")
