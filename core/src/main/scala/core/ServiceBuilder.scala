@@ -1,6 +1,6 @@
 package core
 
-import lib.{Datatype, Primitives, Type, TypeKind, UrlKey}
+import lib.{Datatype, Primitives, Type, Kind, UrlKey}
 import com.gilt.apidoc.models.Organization
 import com.gilt.apidocspec.models._
 import play.api.libs.json._
@@ -190,7 +190,7 @@ object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val datatypeLabel = model.fields.find(_.name == name).map(_.`type`).getOrElse {
-      Datatype.Singleton(Seq(Type(TypeKind.Primitive, Primitives.String.toString))).label
+      Datatype.Singleton(Seq(Type(Kind.Primitive, Primitives.String.toString))).label
     }
 
     Parameter(

@@ -53,13 +53,13 @@ object Href {
 
   def apply(orgKey: String, appKey: String, version: String, t: Type): Href = {
     t match {
-      case Type(TypeKind.Primitive, name) => {
+      case Type(Kind.Primitive, name) => {
         Href(name, s"/doc/types#$name")
       }
-      case Type(TypeKind.Enum, name) => {
+      case Type(Kind.Enum, name) => {
         Href(name, prefix(orgKey, appKey, version) + s"#enum-$name")
       }
-      case Type(TypeKind.Model, name) => {
+      case Type(Kind.Model, name) => {
         Href(name, prefix(orgKey, appKey, version) + s"#model-$name")
       }
     }

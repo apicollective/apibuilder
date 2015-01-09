@@ -1,6 +1,6 @@
 package core
 
-import lib.{Datatype, PrimitiveMetadata, Primitives, Type, TypeKind}
+import lib.{Datatype, PrimitiveMetadata, Primitives, Type, Kind}
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
@@ -79,7 +79,7 @@ private[core] case class TypeValidator(
         }
       }
       case Datatype.Option(t) => {
-        val typesWithUnit = t ++ Seq(Type(TypeKind.Primitive, Primitives.Unit.toString))
+        val typesWithUnit = t ++ Seq(Type(Kind.Primitive, Primitives.Unit.toString))
         validateTypes(typesWithUnit, value, errorPrefix)
       }
       case Datatype.Singleton(t) => {
@@ -107,7 +107,7 @@ private[core] case class TypeValidator(
   ): Option[String] = {
     t match {
 
-      case Type(TypeKind.Enum, name) => {
+      case Type(Kind.Enum, name) => {
         enums.find(_.name == name) match {
           case None => Some(s"could not find enum named[$name]")
           case Some(enum) => {
@@ -126,11 +126,11 @@ private[core] case class TypeValidator(
         }
       }
       
-      case Type(TypeKind.Model, name) => {
+      case Type(Kind.Model, name) => {
         Some(withPrefix(errorPrefix, s"default[$value] is not valid for model[$name]. apidoc does not support default values for models"))
       }
 
-      case Type(TypeKind.Primitive, name) => {
+      case Type(Kind.Primitive, name) => {
         Primitives(name) match {
           case None => {
             Some(withPrefix(errorPrefix, s"there is no primitive datatype[$name]"))

@@ -68,21 +68,21 @@ class DatatypeSpec extends FunSpec with Matchers {
       modelNames = Seq("user", "uuid")
     )
 
-    resolver.parse("age_group") should be(Some(Datatype.Singleton(Seq(Type(TypeKind.Enum, "age_group")))))
-    resolver.parse("string") should be(Some(Datatype.Singleton(Seq(Type(TypeKind.Primitive, "string")))))
+    resolver.parse("age_group") should be(Some(Datatype.Singleton(Seq(Type(Kind.Enum, "age_group")))))
+    resolver.parse("string") should be(Some(Datatype.Singleton(Seq(Type(Kind.Primitive, "string")))))
     resolver.parse("age_group | string") should be(Some(Datatype.Singleton(
       Seq(
-        Type(TypeKind.Enum, "age_group"),
-        Type(TypeKind.Primitive, "string")
+        Type(Kind.Enum, "age_group"),
+        Type(Kind.Primitive, "string")
       )
     )))
 
-    resolver.parse("user") should be(Some(Datatype.Singleton(Seq(Type(TypeKind.Model, "user")))))
-    resolver.parse("uuid") should be(Some(Datatype.Singleton(Seq(Type(TypeKind.Primitive, "uuid")))))
+    resolver.parse("user") should be(Some(Datatype.Singleton(Seq(Type(Kind.Model, "user")))))
+    resolver.parse("uuid") should be(Some(Datatype.Singleton(Seq(Type(Kind.Primitive, "uuid")))))
     resolver.parse("user | uuid") should be(Some(Datatype.Singleton(
       Seq(
-        Type(TypeKind.Model, "user"),
-        Type(TypeKind.Primitive, "uuid")
+        Type(Kind.Model, "user"),
+        Type(Kind.Primitive, "uuid")
       )
     )))
 

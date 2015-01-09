@@ -30,17 +30,17 @@ object Datatype {
 }
 
 case class Type(
-  typeKind: TypeKind,
+  typeKind: Kind,
   name: String
 )
 
-sealed trait TypeKind
+sealed trait Kind
 
-object TypeKind {
+object Kind {
 
-  case object Primitive extends TypeKind { override def toString = "primitive" }
-  case object Model extends TypeKind { override def toString = "model" }
-  case object Enum extends TypeKind { override def toString = "enum" }
+  case object Primitive extends Kind { override def toString = "primitive" }
+  case object Model extends Kind { override def toString = "model" }
+  case object Enum extends Kind { override def toString = "enum" }
 
 }
 
@@ -67,13 +67,13 @@ case class DatatypeResolver(
     */
   def toType(name: String): Option[Type] = {
     Primitives(name) match {
-      case Some(pt) => Some(Type(TypeKind.Primitive, name))
+      case Some(pt) => Some(Type(Kind.Primitive, name))
       case None => {
         enumNames.find(_ == name) match {
-          case Some(et) => Some(Type(TypeKind.Enum, name))
+          case Some(et) => Some(Type(Kind.Enum, name))
           case None => {
             modelNames.find(_ == name) match {
-              case Some(mt) => Some(Type(TypeKind.Model, name))
+              case Some(mt) => Some(Type(Kind.Model, name))
               case None => None
             }
           }

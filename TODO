@@ -1,3 +1,7 @@
+Breaking changes:
+  - Add major version number to package name
+  - Change 404s to be explicit
+
 update release notes
 
 document service imports in apiJson
@@ -12,19 +16,7 @@ spec:
   - introduce service_form distinct from service. Replaces JsObject in
     version.service
 
-Parse Resource description
-
-add namespace
- => rename package name to default namespace for organization
- => reject services that are uploaded w/out a namespace
- => Globally validate that namespace uniquely identifies a single service
- => Add support to resolve types based on the full namespace
-
-add major version number to package name
-
 Add link to /generators
-
-rename TypeKind => Kind
 
 users need nicknames
   - then display nicknames throughout the UI

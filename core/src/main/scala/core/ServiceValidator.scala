@@ -1,6 +1,6 @@
 package core
 
-import lib.{Datatype, Methods, Primitives, Text, Type, TypeKind, UrlKey}
+import lib.{Datatype, Methods, Primitives, Text, Type, Kind, UrlKey}
 import com.gilt.apidocspec.models.{Enum, Field, Method, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
@@ -502,8 +502,8 @@ case class ServiceValidator(
             case typeNames => {
               typeNames.flatMap { typeName =>
                 internalService.get.typeResolver.toType(typeName) match {
-                  case Some(Type(TypeKind.Primitive | TypeKind.Enum, _)) => None
-                  case Some(Type(TypeKind.Model, name)) => {
+                  case Some(Type(Kind.Primitive | Kind.Enum, _)) => None
+                  case Some(Type(Kind.Model, name)) => {
                     Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Models are not supported as query parameters.")
                   }
                   case None => {
@@ -527,7 +527,7 @@ case class ServiceValidator(
             case datatypeNames => {
               datatypeNames.flatMap { datatypeName =>
                 internalService.get.typeResolver.toType(datatypeName) match {
-                  case Some(Type(TypeKind.Model | TypeKind.Primitive | TypeKind.Enum, _)) => None
+                  case Some(Type(Kind.Model | Kind.Primitive | Kind.Enum, _)) => None
                   case None => {
                     Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$datatypeName]")
                   }
@@ -620,14 +620,14 @@ case class ServiceValidator(
 
   private def isTypeValidInPath(t: Type): Boolean = {
     t.typeKind match {
-      case TypeKind.Primitive => {
+      case Kind.Primitive => {
         Primitives.validInPath(t.name)
       }
-      case TypeKind.Model => {
+      case Kind.Model => {
         // We do not support models in path parameters
         false
       }
-      case TypeKind.Enum => {
+      case Kind.Enum => {
         // Serializes as a string
         true
       }

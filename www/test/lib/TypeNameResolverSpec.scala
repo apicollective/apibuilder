@@ -14,7 +14,7 @@ class TypeNameResolverSpec extends FunSpec with ShouldMatchers {
       sys.error("Failed to resolve")
     }
     res.namespace should be("com.gilt.apidoc")
-    res.kind should be(TypeKind.Model)
+    res.kind should be(Kind.Model)
     res.name should be("service")
   }
 
@@ -28,7 +28,7 @@ class TypeNameResolverSpec extends FunSpec with ShouldMatchers {
       sys.error("Failed to resolve")
     }
     res.namespace should be("com.gilt.apidoc")
-    res.kind should be(TypeKind.Enum)
+    res.kind should be(Kind.Enum)
     res.name should be("age_group")
   }
 

@@ -2,7 +2,7 @@ package lib
 
 case class TypeNameResolution(
   namespace: String,
-  kind: TypeKind,
+  kind: Kind,
   name: String
 )
 
@@ -14,10 +14,10 @@ case class TypeNameResolver(value: String) {
   def resolve(): Option[TypeNameResolution] = {
     value match {
       case EnumRx(namespace, name)  => {
-        Some(TypeNameResolution(namespace, TypeKind.Enum, name))
+        Some(TypeNameResolution(namespace, Kind.Enum, name))
       }
       case ModelRx(namespace, name)  => {
-        Some(TypeNameResolution(namespace, TypeKind.Model, name))
+        Some(TypeNameResolution(namespace, Kind.Model, name))
       }
       case _ => None
     }
