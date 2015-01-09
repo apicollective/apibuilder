@@ -1,3 +1,6 @@
+http://localhost:9000/gilt/version/latest
+  -- redirect loop
+
 Breaking changes:
   - Add major version number to package name
   - Change 404s to be explicit
