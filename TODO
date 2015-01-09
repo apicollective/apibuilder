@@ -1,3 +1,6 @@
+generator:
+  -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
+
 http://localhost:9000/gilt/version/latest
   -- redirect loop
 
