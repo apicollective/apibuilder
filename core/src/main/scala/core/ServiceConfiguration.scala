@@ -4,6 +4,7 @@ import com.gilt.apidoc.models.Organization
 import lib.Text
 
 case class ServiceConfiguration(
+  orgKey: String,
   orgNamespace: String,
   version: String
 ) {
@@ -29,6 +30,7 @@ object ServiceConfiguration {
   ): ServiceConfiguration = {
     ServiceConfiguration(
       orgNamespace = org.namespace,
+      orgKey = org.key,
       version = version
     )
   }

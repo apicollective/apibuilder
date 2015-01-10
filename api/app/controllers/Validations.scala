@@ -9,6 +9,7 @@ import play.api.libs.json._
 object Validations extends Controller {
 
   private val config = ServiceConfiguration(
+    orgKey = "tmp",
     orgNamespace = "tmp.validations",
     version = "0.0.1-dev"
   )

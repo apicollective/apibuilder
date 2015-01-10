@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocspec.models.Import
+import com.gilt.apidocspec.models.{Application, Organization, Import}
 import org.scalatest.{FunSpec, Matchers}
 
 class ImporterSpec extends FunSpec with Matchers {
@@ -22,8 +22,9 @@ class ImporterSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Import Shared",
+      "organization": { "key": "test" },
+      "application": { "key": "import-shared" },
       "namespace": "test.apidoc.import-shared",
-      "key": "import-shared",
       "version": "1.0.0",
 
       "models": [
@@ -45,7 +46,8 @@ class ImporterSpec extends FunSpec with Matchers {
 
       val service = imp.service
       service.name should be("Import Shared")
-      service.key should be("import-shared")
+      service.organization should be(Organization(key = "test"))
+      service.application should be(Application(key = "import-shared"))
       service.namespace should be("test.apidoc.import-shared")
 
       service.models.map(_.name) should be(Seq("user"))

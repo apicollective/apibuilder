@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.apidoc.models.{ApplicationForm, Version, Visibility}
-import com.gilt.apidocspec.models.Service
+import com.gilt.apidocspec.models.{Application, Organization, Service}
 import com.gilt.apidocspec.models.json._
 import org.scalatest.FlatSpec
 import org.junit.Assert._
@@ -28,7 +28,8 @@ class VersionsDaoSpec extends FlatSpec {
 
   private lazy val service = Service(
     name = key,
-    key = key,
+    organization = Organization(key = "test"),
+    application = Application(key = key),
     namespace = "test." + key,
     version = "0.0.1-dev",
     headers = Nil,

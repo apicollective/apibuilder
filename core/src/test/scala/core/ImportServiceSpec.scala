@@ -41,8 +41,9 @@ class ImportServiceSpec extends FunSpec with Matchers {
     val json1 = """
     {
       "name": "Import Shared",
+      "organization": { "key": "test" },
+      "application": { "key": "import-shared" },
       "namespace": "test.apidoc.import-shared",
-      "key": "import-shared",
       "version": "1.0.0",
 
       "enums": [

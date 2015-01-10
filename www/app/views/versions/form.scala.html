@@ -54,7 +54,7 @@
         @if(tpl.service.isEmpty) {
           <a href="@routes.Organizations.show(tpl.org.get.key)" class="btn">Cancel</a>
         } else {
-          <a href="@routes.Versions.show(tpl.org.get.key, tpl.service.get.key, "latest")" class="btn">Cancel</a>
+          <a href="@routes.Versions.show(tpl.service.get.organization.key, tpl.service.get.application.key, "latest")" class="btn">Cancel</a>
         }
       </div>
 

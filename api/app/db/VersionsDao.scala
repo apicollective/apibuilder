@@ -182,6 +182,7 @@ object VersionsDao {
         Logger.info(s"Migrating version[${versionGuid}]")
 
         val config = ServiceConfiguration(
+          orgKey = row[String]("organization_key"),
           orgNamespace = row[String]("organization_namespace"),
           version = row[String]("version")
         )

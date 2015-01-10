@@ -8,6 +8,7 @@ import java.util.UUID
 object TestHelper {
 
   val serviceConfig = ServiceConfiguration(
+    orgKey = "test",
     orgNamespace = "test.apidoc",
     version = "0.0.1-dev"
   )

@@ -36,13 +36,13 @@
               }
 
               @metadata.service.map { service =>
-                <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@service.name</a></li>
+                <li><a href="@routes.Versions.show(service.organization.key, service.application.key, "latest")">@service.name</a></li>
                 @metadata.version.map { version =>
                   @if(metadata.isOrgMember) {
-                    <li><a href="@routes.ApplicationSettings.show(orgKey = org.key, applicationKey = service.key, version = version)">Settings</a></li>
+                    <li><a href="@routes.ApplicationSettings.show(service.organization.key, service.application.key, version)">Settings</a></li>
                   }
-                  <li><a href="@routes.Versions.originalJson(orgKey = org.key, applicationKey = service.key, version = version)">original.json</a></li>
-                  <li><a href="@routes.Versions.serviceJson(orgKey = org.key, applicationKey = service.key, version = version)">service.json</a></li>
+                  <li><a href="@routes.Versions.originalJson(service.organization.key, service.application.key, version)">original.json</a></li>
+                  <li><a href="@routes.Versions.serviceJson(service.organization.key, service.application.key, version)">service.json</a></li>
                 }
               }
 
@@ -79,9 +79,11 @@
 
             <b>Clients</b>
             <ul class="nav nav-sidebar">
-                @metadata.generators.map { generator =>
-                <li><a href="@routes.Code.generate(orgKey = metadata.org.get.key, applicationKey = metadata.service.get.key, version = metadata.version.get, generator.key)">@generator.name</a>
-              }
+                @metadata.service.map { service =>
+                  @metadata.generators.map { generator =>
+                    <li><a href="@routes.Code.generate(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, generator.key)">@generator.name</a>
+                  }
+                }
             </ul>
           }
         </div>
@@ -95,14 +97,12 @@
               }
 
               <ul class="dropdown-menu" role="menu">
-                @metadata.org.map { org =>
-                  @metadata.service.map { service =>
-                    @metadata.allServiceVersions.zipWithIndex.map { case(version, index) =>
-                      @if(index == 0) {
-                        <li><a href="@routes.Versions.show(org.key, service.key, "latest")">@version</a></li>
-                      } else {
-                        <li><a href="@routes.Versions.show(org.key, service.key, version)">@version</a></li>
-                      }
+                @metadata.service.map { service =>
+                  @metadata.allServiceVersions.zipWithIndex.map { case(version, index) =>
+                    @if(index == 0) {
+                      <li><a href="@routes.Versions.show(service.organization.key, service.application.key, "latest")">@version</a></li>
+                    } else {
+                      <li><a href="@routes.Versions.show(service.organization.key, service.application.key, version)">@version</a></li>
                     }
                   }
                 }

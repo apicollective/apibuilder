@@ -1,7 +1,7 @@
 package lib
 
 import com.gilt.apidoc.models.{Application, Organization}
-import com.gilt.apidocspec.models.Service
+import com.gilt.apidocspec.models.{Import, Service}
 
 case class TypeLabel(
   org: Organization,
@@ -17,10 +17,10 @@ case class TypeLabel(
   ).parse(typeName) match {
     case None => {
       TextDatatype(typeName) match {
-        case TextDatatype.List(t) => "[" + resolveImportedType(t) + "]"
-        case TextDatatype.Map(t) => "map[" + resolveImportedType(t) + "]"
-        case TextDatatype.Option(t) => "option[" + resolveImportedType(t) + "]"
-        case TextDatatype.Singleton(t) => resolveImportedType(t)
+        case TextDatatype.List(t) => "[" + resolveImportedType(t).getOrElse(typeName) + "]"
+        case TextDatatype.Map(t) => "map[" + resolveImportedType(t).getOrElse(typeName) + "]"
+        case TextDatatype.Option(t) => "option[" + resolveImportedType(t).getOrElse(typeName) + "]"
+        case TextDatatype.Singleton(t) => resolveImportedType(t).getOrElse(typeName)
       }
     }
     case Some(Datatype.List(t)) => "[" + types(t) + "]"
@@ -33,18 +33,23 @@ case class TypeLabel(
     types.map { t => Href(org.key, app.key, version, t).html }.mkString(" | ")
   }
 
-  private def resolveImportedType(typeName: String): String = {
-    TypeNameResolver(typeName).resolve match {
-      case None => typeName
-      case Some(res) => {
-        service.imports.find { _.namespace == res.namespace } match {
-          case None => typeName
-          case Some(imp) => {
-            s"<a href='/${imp.organizationKey}/${imp.applicationKey}/${imp.version}#${res.kind}-${res.name}'>$typeName:$version</a>"
+  private def resolveImportedType(typeName: String): Option[String] = {
+    service.imports.flatMap { imp =>
+      imp.enums.find { name => s"${imp.namespace}.enums.name" == typeName } match {
+        case Some(shortName) => Some(importLink(imp, Kind.Enum, shortName, typeName))
+        case None => {
+          imp.models.find { name => s"${imp.namespace}.models.name" == typeName } match {
+            case Some(shortName) => Some(importLink(imp, Kind.Model, shortName, typeName))
+            case None => None
           }
         }
       }
-    }
+    }.headOption
+  }
+
+  private def importLink(imp: Import, kind: Kind, shortName: String, fullName: String): String = {
+    s"<a href='/${imp.organization.key}/${imp.application.key}/${imp.version}#$kind-$shortName'>$fullName:${imp.version}</a>"
+
   }
 
 }

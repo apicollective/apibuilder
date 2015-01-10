@@ -1,7 +1,6 @@
 package core
 
 import lib.{Datatype, Primitives, Type, Kind, UrlKey}
-import com.gilt.apidoc.models.Organization
 import com.gilt.apidocspec.models._
 import play.api.libs.json._
 
@@ -35,7 +34,8 @@ object ServiceBuilder {
     Service(
       name = name,
       namespace = namespace,
-      key = key,
+      organization = Organization(key = config.orgKey),
+      application = Application(key = key),
       version = config.version,
       imports = imports,
       description = internal.description,
@@ -153,10 +153,12 @@ object ImportBuilder {
 
     Import(
       uri = internal.uri.get,
-      organizationKey = "gilt",
-      applicationKey = "apidoc-spec", // TODO
+      organization = service.organization,
+      application = service.application,
       namespace = service.namespace,
-      version = service.version
+      version = service.version,
+      models = service.models.map(_.name),
+      enums = service.enums.map(_.name)
     )
   }
 

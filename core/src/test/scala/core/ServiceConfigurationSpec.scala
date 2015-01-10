@@ -6,7 +6,11 @@ import org.scalatest.Matchers
 class ServiceConfigurationSpec extends FunSpec with Matchers {
 
   def createServiceConfiguration(orgNamespace: String) = {
-    ServiceConfiguration(orgNamespace = orgNamespace, version = "1.0")
+    ServiceConfiguration(
+      orgKey = "apidoc",
+      orgNamespace = orgNamespace,
+      version = "1.0"
+    )
   }
 
   it("applicationNamespace") {

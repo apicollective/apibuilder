@@ -8,13 +8,13 @@
 
   <div class="pull-right">
     @if(tpl.isOrgMember) {
-      <a href="@routes.Versions.create(orgKey = tpl.org.get.key, application = Some(application.key))">Upload new version</a> |
+      <a href="@routes.Versions.create(orgKey = tpl.org.get.key, application = Some(service.application.key))">Upload new version</a> |
     }
 
     @if(isWatching) {
-      <a class="postForm" href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, applicationKey = service.key, version = tpl.version.get)">Watching</a>
+      <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Watching</a>
     } else {
-      <a class="postForm" href="@routes.Versions.postWatch(orgKey = tpl.org.get.key, applicationKey = service.key, version = tpl.version.get)">Not Watching</a>
+      <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Not Watching</a>
     }
   </div>
  
