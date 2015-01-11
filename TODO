@@ -1,5 +1,4 @@
 generator:
-  -- add imports for json._ in generated client for all imported namespaces
   -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
 
 http://localhost:9000/gilt/version/latest
