@@ -5,11 +5,8 @@ import java.util.UUID
 import com.gilt.apidoc.models.{Generator, Version}
 import com.gilt.apidoc.models.json._
 
-//import com.gilt.apidocspec.models.{Service}
-//import com.gilt.apidocspec.models.json._
-
-import com.gilt.apidocgenerator.models.{Service}
-import com.gilt.apidocgenerator.models.json._
+import com.gilt.apidocspec.models.{Service}
+import com.gilt.apidocspec.models.json._
 
 import com.gilt.apidocgenerator.Client
 import com.gilt.apidocgenerator.models.InvocationForm
@@ -47,7 +44,7 @@ object Code extends Controller {
           }
 
           case Some(generator: Generator) => {
-            val userAgent = s"apidoc:$apidocVersion http://${AppConfig.apidocWebHostname}/${orgKey}/${applicationKey}/${version.version}/${generator.key}"
+            val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWebHostname}/${orgKey}/${applicationKey}/${version.version}/${generator.key}"
             val service = Json.parse(version.service.toString).as[Service]
 
             new Client(generator.uri).invocations.postByKey(
