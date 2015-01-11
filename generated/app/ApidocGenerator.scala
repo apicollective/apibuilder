@@ -66,7 +66,7 @@ package com.gilt.apidocgenerator.models {
   )
 
   case class InvocationForm(
-    service: com.gilt.apidocgenerator.models.Service,
+    service: com.gilt.apidocspec.models.Service,
     userAgent: scala.Option[String] = None
   )
 
@@ -203,6 +203,7 @@ package com.gilt.apidocgenerator.models {
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
+    import com.gilt.apidocspec.models.json._
 
     private[apidocgenerator] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
@@ -376,14 +377,14 @@ package com.gilt.apidocgenerator.models {
 
     implicit def jsonReadsApidocGeneratorInvocationForm: play.api.libs.json.Reads[InvocationForm] = {
       (
-        (__ \ "service").read[com.gilt.apidocgenerator.models.Service] and
+        (__ \ "service").read[com.gilt.apidocspec.models.Service] and
         (__ \ "user_agent").readNullable[String]
       )(InvocationForm.apply _)
     }
 
     implicit def jsonWritesApidocGeneratorInvocationForm: play.api.libs.json.Writes[InvocationForm] = {
       (
-        (__ \ "service").write[com.gilt.apidocgenerator.models.Service] and
+        (__ \ "service").write[com.gilt.apidocspec.models.Service] and
         (__ \ "user_agent").write[scala.Option[String]]
       )(unlift(InvocationForm.unapply _))
     }
