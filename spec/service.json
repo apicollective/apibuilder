@@ -33,7 +33,7 @@
 		{ "name": "name", "type": "string" },
 		{ "name": "organization", "type": "organization" },
 		{ "name": "application", "type": "application" },
-		{ "name": "namespace", "type": "string", "description": "Fully qualified namespace for this service - e.g. com.gilt.apidoc." },
+		{ "name": "namespace", "type": "string", "description": "Fully qualified namespace for this service", "example": "com.gilt.apidoc" },
 		{ "name": "version", "type": "string", "example": "1.0.0" },
 		{ "name": "base_url", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
@@ -41,7 +41,7 @@
 		{ "name": "imports", "type": "[import]" },
 		{ "name": "enums", "type": "[enum]" },
 		{ "name": "models", "type": "[model]" },
-		{ "name": "resources", "type": "[resource]", "description": "keys are the names of a model" }
+		{ "name": "resources", "type": "[resource]" }
 	    ]
 	},
 

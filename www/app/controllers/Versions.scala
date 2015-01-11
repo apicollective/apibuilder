@@ -35,7 +35,7 @@ object Versions extends Controller {
     } yield {
       applicationResponse.headOption match {
         case None => {
-          Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Application not found: ${applicationKey}")
+          Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
         }
         case Some(application) => {
           versionOption match {
