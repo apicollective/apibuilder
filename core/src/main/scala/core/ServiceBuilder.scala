@@ -25,11 +25,11 @@ object ServiceBuilder {
     val name = internal.name.getOrElse(sys.error("Missing name"))
     val key = internal.key.getOrElse { UrlKey.generate(name) }
     val namespace = internal.namespace.getOrElse { config.applicationNamespace(key) }
-    val imports = internal.imports.map { ImportBuilder(_) }
+    val imports = internal.imports.map { ImportBuilder(_) }.sortWith(_.uri.toLowerCase < _.uri.toLowerCase)
     val headers = internal.headers.map { HeaderBuilder(resolver, _) }
-    val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name < _.name)
-    val models = internal.models.map { ModelBuilder(resolver, _) }.sortWith(_.name < _.name)
-    val resources = internal.resources.map { ResourceBuilder(resolver, models, _) }.sortWith(_.model.name < _.model.name)
+    val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    val models = internal.models.map { ModelBuilder(resolver, _) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    val resources = internal.resources.map { ResourceBuilder(resolver, models, _) }.sortWith(_.model.name.toLowerCase < _.model.name.toLowerCase)
 
     Service(
       name = name,
