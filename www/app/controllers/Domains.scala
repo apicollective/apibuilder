@@ -35,7 +35,7 @@ object Domains extends Controller {
       },
 
       valid => {
-        request.api.Domains.post(
+        request.api.Domains.postByOrgKey(
           orgKey = request.org.key,
           domain = Domain(valid.name)
         ).map { d =>
@@ -55,7 +55,7 @@ object Domains extends Controller {
     request.requireAdmin
 
     for {
-      response <- request.api.Domains.deleteByName(orgKey, domain)
+      response <- request.api.Domains.deleteByOrgKeyAndName(orgKey, domain)
     } yield {
       Redirect(routes.Domains.index(request.org.key)).flashing("success" -> s"Domain removed")
     }

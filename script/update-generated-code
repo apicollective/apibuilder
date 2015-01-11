@@ -37,12 +37,10 @@ subprojects = {
     "play_2_x_routes" => "api/conf/routes"
   },
   "apidoc-spec" => {
-    "play_2_x_json" => "spec/app/ApiJson.scala",
-    "play_2_3_client" => "generated/app/ApiJson.scala"
+    "play_2_3_client" => "generated/app/ApidocSpec.scala"
   },
   "apidoc-generator" => {
-#    "play_2_3_client" => "generated/app/GeneratorClient.scala",
-    "play_2_x_routes" => "generator/conf/routes"
+    "play_2_3_client" => "generated/app/ApidocGenerator.scala"
   }
 }
 

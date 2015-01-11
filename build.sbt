@@ -66,6 +66,8 @@ lazy val www = project
 
 lazy val spec = project
   .in(file("spec"))
+  .dependsOn(generated)
+  .aggregate(generated)
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(

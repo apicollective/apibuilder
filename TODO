@@ -1,3 +1,10 @@
+reorder params so form is last
+      override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
+        orgKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
+
+
+
 generator:
   -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
 

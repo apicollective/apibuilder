@@ -9,7 +9,7 @@ object Healthchecks extends Controller {
 
   private val Result = Json.toJson(Map("status" -> "healthy"))
 
-  def get() = Action { request =>
+  def getInternalAndHealthcheck() = Action { request =>
     OrganizationsDao.findAll(Authorization.PublicOnly, limit = 1).headOption
     Ok(Result)
   }
