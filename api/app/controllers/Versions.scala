@@ -48,7 +48,7 @@ object Versions extends Controller {
           case s: JsSuccess[VersionForm] => {
             val form = s.get
             val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
-            val errors = validator.errors ++ validateAppDoesNotExist(validator, org)
+            val errors = validator.errors ++ VersionFormValidator(request.user, validator, org).validate
 
             errors match {
               case Nil => {
@@ -84,7 +84,9 @@ object Versions extends Controller {
           case s: JsSuccess[VersionForm] => {
             val form = s.get
             val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
-            val errors = validator.errors ++ validateAuthorization(validator, request.user, org) ++ validateKey(validator, applicationKey)
+
+            val errors = validator.errors ++ VersionFormValidator(request.user, validator, org, Some(applicationKey)).validate
+
             errors match {
               case Nil => {
                 val version = upsertVersion(request.user, org, versionName, form, validator.serviceForm.get, validator.service.get, Some(applicationKey))
@@ -148,10 +150,26 @@ object Versions extends Controller {
     }
   }
 
-  private def validateAppDoesNotExist(
-    validator: ServiceValidator,
-    org: Organization
-  ): Seq[String] = {
+}
+
+
+case class VersionFormValidator(
+  user: User,
+  validator: ServiceValidator,
+  org: Organization,
+  key: Option[String] = None
+) {
+
+  val validate: Seq[String] = {
+    existing match {
+      case None => validateAppDoesNotExist()
+      case Some(app) => validateCanUpdate(app) ++ validateKey()
+    }
+  }
+
+  private lazy val existing = key.flatMap { ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, _) }
+
+  private def validateAppDoesNotExist(): Seq[String] = {
     validator.service match {
       case None => Seq.empty
       case Some(service) => {
@@ -163,40 +181,30 @@ object Versions extends Controller {
     }
   }
 
-  private def validateAuthorization(
-    validator: ServiceValidator,
-    user: User,
-    org: Organization
-  ): Seq[String] = {
-    validator.service match {
+  private def validateCanUpdate(app: Application): Seq[String] = {
+    existing match {
       case None => Seq.empty
-      case Some(service) => {
-        val key = service.application.key
-        canUserUpsert(user, org, key) match {
+      case Some(app) => {
+        ApplicationsDao.canUserUpdate(user, app) match {
           case true => Seq.empty
-          case false => Seq("An application with the key[$key] already exists")
+          case false => Seq(s"You are not authorized to update the application[${app.key}]")
         }
       }
     }
   }
 
-  private def canUserUpsert(user: User, org: Organization, appKey: String): Boolean = {
-    ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, appKey) match {
-      case None => true
-      case Some(app) => ApplicationsDao.canUserUpdate(user, app)
-    }
-  }
-
-  private def validateKey(
-    validator: ServiceValidator,
-    key: String
-  ): Seq[String] = {
-    validator.service match {
+  private def validateKey(): Seq[String] = {
+    key match {
       case None => Seq.empty
-      case Some(service) => {
-        (service.application.key == key) match {
-          case true => Seq.empty
-          case false => Seq(s"The key[${service.application.key}] in the uploaded file does not match the existing service key[${key}]. If you would like to change the key of an application, delete the existing application and then create a new one")
+      case Some(k) => {
+        validator.service match {
+          case None => Seq.empty
+          case Some(service) => {
+            (service.application.key == k) match {
+              case true => Seq.empty
+              case false => Seq(s"The key[${service.application.key}] in the uploaded file does not match the existing service key[$k]. If you would like to change the key of an application, delete the existing application and then create a new one")
+            }
+          }
         }
       }
     }
