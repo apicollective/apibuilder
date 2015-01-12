@@ -1,7 +1,6 @@
 {
     "name": "apidoc spec",
     "description": "Specification of apidoc api.json schema",
-    "base_url": "http://api.apidoc.me",
 
     "enums": {
 	"method": {

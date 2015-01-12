@@ -1,7 +1,6 @@
 {
     "name": "apidoc form",
     "description": "Specification of the form used to define services in apidoc",
-    "base_url": "http://api.apidoc.me",
 
     "models": {
 	"service_form": {
