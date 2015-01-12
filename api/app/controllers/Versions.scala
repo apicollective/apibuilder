@@ -196,7 +196,7 @@ object Versions extends Controller {
       case Some(service) => {
         (service.application.key == key) match {
           case true => Seq.empty
-          case false => Seq("The application key does not match the service key. If you would like to change the key of an application, delete the existing application and then create a new one")
+          case false => Seq(s"The key[${service.application.key}] in the uploaded file does not match the existing service key[${key}]. If you would like to change the key of an application, delete the existing application and then create a new one")
         }
       }
     }
