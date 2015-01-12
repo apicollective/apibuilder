@@ -14,15 +14,15 @@ if service_uri.to_s.strip == "" || token.to_s.strip == "" || user_guid.to_s == "
 end
 
 orgs = [] # ['gilt']
-services = []  # ['apidoc']
-services_to_skip_by_org = {
+applications = []  # ['apidoc']
+applications_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }
 
-if !arg_force && (!orgs.empty? || !services.empty?)
+if !arg_force && (!orgs.empty? || !applications.empty?)
   puts "Confirm you would like to limit tests to:"
   puts "  Organization: " + (orgs.empty? ? "All" : orgs.join(", "))
-  puts "      Services: " + (services.empty? ? "All" : services.join(", "))
+  puts "  Applications: " + (applications.empty? ? "All" : applications.join(", "))
   print "Continue? (y/n): "
   response = gets
   if !response.strip.downcase.match(/^y/)
@@ -48,8 +48,8 @@ class RubyTester
     system(cmd)
   end
 
-  def write(platform, org_key, service_key, target_name, code)
-    filename = File.join(platform, CLIENT_DIR, [org_key, service_key, "#{target_name}.downloaded.rb"].join("."))
+  def write(platform, org_key, application_key, target_name, code)
+    filename = File.join(platform, CLIENT_DIR, [org_key, application_key, "#{target_name}.downloaded.rb"].join("."))
     File.open(filename, "w") do |out|
       out << code
     end
@@ -82,8 +82,8 @@ class ScalaTester
     end
   end
 
-  def write(platform, org_key, service_key, target_name, code)
-    filename = File.join(platform, @client_dir, [org_key, service_key, "#{target_name}.downloaded.scala"].join("."))
+  def write(platform, org_key, application_key, target_name, code)
+    filename = File.join(platform, @client_dir, [org_key, application_key, "#{target_name}.downloaded.scala"].join("."))
     ensure_dir!(File.dirname(filename))
 
     File.open(filename, "w") do |out|
@@ -112,8 +112,8 @@ targets = [Target.new('ning_1_8_scala_2_10', ScalaTester.new("src/main/scala"), 
            Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client']),
            Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
 
-def get_code(client, org, service, target)
-  client.code.get_by_org_key_and_service_key_and_version_and_generator_key(org.key, service.key, "latest", target)
+def get_code(client, org, application, target)
+  client.code.get_by_org_key_and_application_key_and_version_and_generator_key(org.key, application.key, "latest", target)
 end
 
 class MyClient < Apidoc::Client
@@ -157,15 +157,15 @@ targets.each do |target|
     target.tester.clean!(target.platform)
     get_in_batches("organizations", lambda { |limit, offset| client.organizations.send(:get, :limit => limit, :offset => offset) }) do |org|
       next if !orgs.empty? && !orgs.include?(org.key)
-      services_to_skip = services_to_skip_by_org[org.key] || []
+      applications_to_skip = applications_to_skip_by_org[org.key] || []
 
-      get_in_batches("services:#{org.key}", lambda { |limit, offset| client.services.get_by_org_key(org.key, :limit => limit, :offset => offset) }) do |service|
-        next if !services.empty? && !services.include?(service.key)
-        next if services_to_skip.include?(service.key)
+      get_in_batches("applications:#{org.key}", lambda { |limit, offset| client.applications.get_by_org_key(org.key, :limit => limit, :offset => offset) }) do |application|
+        next if !applications.empty? && !applications.include?(application.key)
+        next if applications_to_skip.include?(application.key)
 
-        puts "  %s/%s" % [org.key, service.key]
-        if code = get_code(client, org, service, target_name)
-          filename = target.tester.write(target.platform, org.key, service.key, target_name, code.source)
+        puts "  %s/%s" % [org.key, application.key]
+        if code = get_code(client, org, application, target_name)
+          filename = target.tester.write(target.platform, org.key, application.key, target_name, code.source)
         end
       end
     end
