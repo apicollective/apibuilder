@@ -24,10 +24,8 @@ def download(service_name, map)
     end
   end
     
-  downloads.each do |tmp, path|
-    command = "cp #{tmp} #{path}"
-    puts command
-    #system(command)
+  downloads.map do |tmp, path|
+    "cp #{tmp} #{path}"
   end
 end
 
@@ -45,6 +43,12 @@ subprojects = {
   }
 }
 
-subprojects.each do |name, data|
+commands = subprojects.map do |name, data|
   download(name, data)
+end.flatten
+
+commands.each do |command|
+  puts command
+  system(command)
 end
+

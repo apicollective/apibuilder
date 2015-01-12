@@ -921,8 +921,9 @@ package com.gilt.apidoc {
         }
       }
 
-      override def postByOrgKey(applicationForm: com.gilt.apidoc.models.ApplicationForm,
-        orgKey: String
+      override def postByOrgKey(
+        orgKey: String,
+        applicationForm: com.gilt.apidoc.models.ApplicationForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Application] = {
         val payload = play.api.libs.json.Json.toJson(applicationForm)
 
@@ -933,9 +934,10 @@ package com.gilt.apidoc {
         }
       }
 
-      override def putByOrgKeyAndApplicationKey(applicationForm: com.gilt.apidoc.models.ApplicationForm,
+      override def putByOrgKeyAndApplicationKey(
         orgKey: String,
-        applicationKey: String
+        applicationKey: String,
+        applicationForm: com.gilt.apidoc.models.ApplicationForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Application] = {
         val payload = play.api.libs.json.Json.toJson(applicationForm)
 
@@ -975,8 +977,9 @@ package com.gilt.apidoc {
     }
 
     object Domains extends Domains {
-      override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
-        orgKey: String
+      override def postByOrgKey(
+        orgKey: String,
+        domain: com.gilt.apidoc.models.Domain
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
         val payload = play.api.libs.json.Json.toJson(domain)
 
@@ -1000,7 +1003,9 @@ package com.gilt.apidoc {
     }
 
     object EmailVerificationConfirmationForms extends EmailVerificationConfirmationForms {
-      override def postEmailVerificationConfirmations(emailVerificationConfirmationForm: com.gilt.apidoc.models.EmailVerificationConfirmationForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+      override def postEmailVerificationConfirmations(
+        emailVerificationConfirmationForm: com.gilt.apidoc.models.EmailVerificationConfirmationForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         val payload = play.api.libs.json.Json.toJson(emailVerificationConfirmationForm)
 
         _executeRequest("POST", s"/email_verification_confirmations", body = Some(payload)).map {
@@ -1041,7 +1046,9 @@ package com.gilt.apidoc {
         }
       }
 
-      override def post(generatorCreateForm: com.gilt.apidoc.models.GeneratorCreateForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
+      override def post(
+        generatorCreateForm: com.gilt.apidoc.models.GeneratorCreateForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
         val payload = play.api.libs.json.Json.toJson(generatorCreateForm)
 
         _executeRequest("POST", s"/generators", body = Some(payload)).map {
@@ -1051,8 +1058,9 @@ package com.gilt.apidoc {
         }
       }
 
-      override def putByKey(generatorUpdateForm: com.gilt.apidoc.models.GeneratorUpdateForm,
-        key: String
+      override def putByKey(
+        key: String,
+        generatorUpdateForm: com.gilt.apidoc.models.GeneratorUpdateForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator] = {
         val payload = play.api.libs.json.Json.toJson(generatorUpdateForm)
 
@@ -1228,7 +1236,9 @@ package com.gilt.apidoc {
         }
       }
 
-      override def post(organizationForm: com.gilt.apidoc.models.OrganizationForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization] = {
+      override def post(
+        organizationForm: com.gilt.apidoc.models.OrganizationForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization] = {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
         _executeRequest("POST", s"/organizations", body = Some(payload)).map {
@@ -1238,8 +1248,9 @@ package com.gilt.apidoc {
         }
       }
 
-      override def putByKey(organizationForm: com.gilt.apidoc.models.OrganizationForm,
-        key: String
+      override def putByKey(
+        key: String,
+        organizationForm: com.gilt.apidoc.models.OrganizationForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization] = {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
@@ -1262,7 +1273,9 @@ package com.gilt.apidoc {
     }
 
     object PasswordResets extends PasswordResets {
-      override def post(passwordReset: com.gilt.apidoc.models.PasswordReset)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.PasswordResetSuccess] = {
+      override def post(
+        passwordReset: com.gilt.apidoc.models.PasswordReset
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.PasswordResetSuccess] = {
         val payload = play.api.libs.json.Json.toJson(passwordReset)
 
         _executeRequest("POST", s"/password_resets", body = Some(payload)).map {
@@ -1274,7 +1287,9 @@ package com.gilt.apidoc {
     }
 
     object PasswordResetRequests extends PasswordResetRequests {
-      override def post(passwordResetRequest: com.gilt.apidoc.models.PasswordResetRequest)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+      override def post(
+        passwordResetRequest: com.gilt.apidoc.models.PasswordResetRequest
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         val payload = play.api.libs.json.Json.toJson(passwordResetRequest)
 
         _executeRequest("POST", s"/password_reset_requests", body = Some(payload)).map {
@@ -1319,7 +1334,9 @@ package com.gilt.apidoc {
         }
       }
 
-      override def post(subscriptionForm: com.gilt.apidoc.models.SubscriptionForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Subscription] = {
+      override def post(
+        subscriptionForm: com.gilt.apidoc.models.SubscriptionForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Subscription] = {
         val payload = play.api.libs.json.Json.toJson(subscriptionForm)
 
         _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
@@ -1421,7 +1438,9 @@ package com.gilt.apidoc {
     }
 
     object Validations extends Validations {
-      override def post(value: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
+      override def post(
+        value: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation] = {
         val payload = play.api.libs.json.Json.toJson(value)
 
         _executeRequest("POST", s"/validations", body = Some(payload)).map {
@@ -1461,9 +1480,10 @@ package com.gilt.apidoc {
         }
       }
 
-      override def postByOrgKeyAndVersion(versionForm: com.gilt.apidoc.models.VersionForm,
+      override def postByOrgKeyAndVersion(
         orgKey: String,
-        version: String
+        version: String,
+        versionForm: com.gilt.apidoc.models.VersionForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version] = {
         val payload = play.api.libs.json.Json.toJson(versionForm)
 
@@ -1474,10 +1494,11 @@ package com.gilt.apidoc {
         }
       }
 
-      override def putByOrgKeyAndApplicationKeyAndVersion(versionForm: com.gilt.apidoc.models.VersionForm,
+      override def putByOrgKeyAndApplicationKeyAndVersion(
         orgKey: String,
         applicationKey: String,
-        version: String
+        version: String,
+        versionForm: com.gilt.apidoc.models.VersionForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version] = {
         val payload = play.api.libs.json.Json.toJson(versionForm)
 
@@ -1553,7 +1574,9 @@ package com.gilt.apidoc {
         }
       }
 
-      override def post(watchForm: com.gilt.apidoc.models.WatchForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Watch] = {
+      override def post(
+        watchForm: com.gilt.apidoc.models.WatchForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Watch] = {
         val payload = play.api.libs.json.Json.toJson(watchForm)
 
         _executeRequest("POST", s"/watches", body = Some(payload)).map {
@@ -1647,16 +1670,18 @@ package com.gilt.apidoc {
     /**
      * Create an application.
      */
-    def postByOrgKey(applicationForm: com.gilt.apidoc.models.ApplicationForm,
-      orgKey: String
+    def postByOrgKey(
+      orgKey: String,
+      applicationForm: com.gilt.apidoc.models.ApplicationForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Application]
 
     /**
      * Updates an application.
      */
-    def putByOrgKeyAndApplicationKey(applicationForm: com.gilt.apidoc.models.ApplicationForm,
+    def putByOrgKeyAndApplicationKey(
       orgKey: String,
-      applicationKey: String
+      applicationKey: String,
+      applicationForm: com.gilt.apidoc.models.ApplicationForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Application]
 
     /**
@@ -1684,8 +1709,9 @@ package com.gilt.apidoc {
     /**
      * Add a domain to this organization
      */
-    def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
-      orgKey: String
+    def postByOrgKey(
+      orgKey: String,
+      domain: com.gilt.apidoc.models.Domain
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain]
 
     /**
@@ -1701,7 +1727,9 @@ package com.gilt.apidoc {
     /**
      * Validate an email address using a token.
      */
-    def postEmailVerificationConfirmations(emailVerificationConfirmationForm: com.gilt.apidoc.models.EmailVerificationConfirmationForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+    def postEmailVerificationConfirmations(
+      emailVerificationConfirmationForm: com.gilt.apidoc.models.EmailVerificationConfirmationForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   trait Generators {
@@ -1719,10 +1747,13 @@ package com.gilt.apidoc {
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.models.Generator]]
 
-    def post(generatorCreateForm: com.gilt.apidoc.models.GeneratorCreateForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
+    def post(
+      generatorCreateForm: com.gilt.apidoc.models.GeneratorCreateForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
 
-    def putByKey(generatorUpdateForm: com.gilt.apidoc.models.GeneratorUpdateForm,
-      key: String
+    def putByKey(
+      key: String,
+      generatorUpdateForm: com.gilt.apidoc.models.GeneratorUpdateForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Generator]
 
     /**
@@ -1822,13 +1853,16 @@ package com.gilt.apidoc {
     /**
      * Create a new organization.
      */
-    def post(organizationForm: com.gilt.apidoc.models.OrganizationForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization]
+    def post(
+      organizationForm: com.gilt.apidoc.models.OrganizationForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization]
 
     /**
      * Update an organization.
      */
-    def putByKey(organizationForm: com.gilt.apidoc.models.OrganizationForm,
-      key: String
+    def putByKey(
+      key: String,
+      organizationForm: com.gilt.apidoc.models.OrganizationForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Organization]
 
     /**
@@ -1845,7 +1879,9 @@ package com.gilt.apidoc {
      * otherwise no longer can be applied, errors will be returned as 409s. A 204
      * represents that the user has successfully changed their password.
      */
-    def post(passwordReset: com.gilt.apidoc.models.PasswordReset)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.PasswordResetSuccess]
+    def post(
+      passwordReset: com.gilt.apidoc.models.PasswordReset
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.PasswordResetSuccess]
   }
 
   trait PasswordResetRequests {
@@ -1853,7 +1889,9 @@ package com.gilt.apidoc {
      * Create a new password reset. This will send the user an email with a link to
      * reset their password.
      */
-    def post(passwordResetRequest: com.gilt.apidoc.models.PasswordResetRequest)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+    def post(
+      passwordResetRequest: com.gilt.apidoc.models.PasswordResetRequest
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   trait Subscriptions {
@@ -1879,7 +1917,9 @@ package com.gilt.apidoc {
     /**
      * Create a new subscription.
      */
-    def post(subscriptionForm: com.gilt.apidoc.models.SubscriptionForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Subscription]
+    def post(
+      subscriptionForm: com.gilt.apidoc.models.SubscriptionForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Subscription]
 
     def deleteByGuid(
       guid: _root_.java.util.UUID
@@ -1934,7 +1974,9 @@ package com.gilt.apidoc {
   }
 
   trait Validations {
-    def post(value: String)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation]
+    def post(
+      value: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Validation]
   }
 
   trait Versions {
@@ -1960,18 +2002,20 @@ package com.gilt.apidoc {
     /**
      * Create a new version for an application
      */
-    def postByOrgKeyAndVersion(versionForm: com.gilt.apidoc.models.VersionForm,
+    def postByOrgKeyAndVersion(
       orgKey: String,
-      version: String
+      version: String,
+      versionForm: com.gilt.apidoc.models.VersionForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version]
 
     /**
      * Upsert a version of an application
      */
-    def putByOrgKeyAndApplicationKeyAndVersion(versionForm: com.gilt.apidoc.models.VersionForm,
+    def putByOrgKeyAndApplicationKeyAndVersion(
       orgKey: String,
       applicationKey: String,
-      version: String
+      version: String,
+      versionForm: com.gilt.apidoc.models.VersionForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Version]
 
     /**
@@ -2016,7 +2060,9 @@ package com.gilt.apidoc {
     /**
      * Create a new watch.
      */
-    def post(watchForm: com.gilt.apidoc.models.WatchForm)(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Watch]
+    def post(
+      watchForm: com.gilt.apidoc.models.WatchForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Watch]
 
     def deleteByGuid(
       guid: _root_.java.util.UUID

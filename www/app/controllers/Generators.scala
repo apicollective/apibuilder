@@ -49,10 +49,13 @@ object Generators extends Controller {
       },
 
       valid => {
-        request.api.Generators.putByKey(GeneratorUpdateForm(
-          visibility = valid.visibility.map(Visibility(_)),
-          enabled = valid.enabled
-        ), key).map(_ => Ok)
+        request.api.Generators.putByKey(
+          key,
+          GeneratorUpdateForm(
+            visibility = valid.visibility.map(Visibility(_)),
+            enabled = valid.enabled
+          )
+        ).map(_ => Ok)
       }
     )
   }

@@ -189,8 +189,9 @@ package com.gilt.apidoc.generator {
     }
 
     object Invocations extends Invocations {
-      override def postByKey(invocationForm: com.gilt.apidoc.generator.models.InvocationForm,
-        key: String
+      override def postByKey(
+        key: String,
+        invocationForm: com.gilt.apidoc.generator.models.InvocationForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.generator.models.Invocation] = {
         val payload = play.api.libs.json.Json.toJson(invocationForm)
 
@@ -286,8 +287,9 @@ package com.gilt.apidoc.generator {
     /**
      * Invoke a generator
      */
-    def postByKey(invocationForm: com.gilt.apidoc.generator.models.InvocationForm,
-      key: String
+    def postByKey(
+      key: String,
+      invocationForm: com.gilt.apidoc.generator.models.InvocationForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.generator.models.Invocation]
   }
 
