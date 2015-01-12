@@ -5,7 +5,7 @@ import com.gilt.apidoc.models.json._
 import com.gilt.apidocspec.models.Service
 import lib.Validation
 import core.{ServiceConfiguration, ServiceValidator}
-import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionsDao}
+import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
 import play.api.mvc._
 import play.api.libs.json._
 
@@ -48,7 +48,7 @@ object Versions extends Controller {
           case s: JsSuccess[VersionForm] => {
             val form = s.get
             val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
-            val errors = validator.errors ++ VersionFormValidator(request.user, validator, org).validate
+            val errors = validator.errors ++ validate(request.user, org, validator)
 
             errors match {
               case Nil => {
@@ -84,8 +84,7 @@ object Versions extends Controller {
           case s: JsSuccess[VersionForm] => {
             val form = s.get
             val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
-
-            val errors = validator.errors ++ VersionFormValidator(request.user, validator, org, Some(applicationKey)).validate
+            val errors = validator.errors ++ validate(request.user, org, validator, Some(applicationKey))
 
             errors match {
               case Nil => {
@@ -150,62 +149,21 @@ object Versions extends Controller {
     }
   }
 
-}
-
-
-case class VersionFormValidator(
-  user: User,
-  validator: ServiceValidator,
-  org: Organization,
-  key: Option[String] = None
-) {
-
-  val validate: Seq[String] = {
-    existing match {
-      case None => validateAppDoesNotExist()
-      case Some(app) => validateCanUpdate(app) ++ validateKey()
-    }
-  }
-
-  private lazy val existing = key.flatMap { ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, _) }
-
-  private def validateAppDoesNotExist(): Seq[String] = {
+  private def validate(
+    user: User,
+    org: Organization,
+    validator: ServiceValidator,
+    existingKey: Option[String] = None
+  ): Seq[String] = {
     validator.service match {
       case None => Seq.empty
       case Some(service) => {
-        ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, service.application.key) match {
-          case None => Seq.empty
-          case Some(app) => Seq(s"An application with key[${service.application.key}] already exists")
-        }
-      }
-    }
-  }
-
-  private def validateCanUpdate(app: Application): Seq[String] = {
-    existing match {
-      case None => Seq.empty
-      case Some(app) => {
-        ApplicationsDao.canUserUpdate(user, app) match {
-          case true => Seq.empty
-          case false => Seq(s"You are not authorized to update the application[${app.key}]")
-        }
-      }
-    }
-  }
-
-  private def validateKey(): Seq[String] = {
-    key match {
-      case None => Seq.empty
-      case Some(k) => {
-        validator.service match {
-          case None => Seq.empty
-          case Some(service) => {
-            (service.application.key == k) match {
-              case true => Seq.empty
-              case false => Seq(s"The key[${service.application.key}] in the uploaded file does not match the existing service key[$k]. If you would like to change the key of an application, delete the existing application and then create a new one")
-            }
-          }
-        }
+        VersionValidator(
+          user = user,
+          org = org,
+          newApplicationKey = service.application.key,
+          existingApplicationKey = existingKey
+        ).validate
       }
     }
   }
