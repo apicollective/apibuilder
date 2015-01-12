@@ -198,7 +198,10 @@ object Versions extends Controller {
   ) = AuthenticatedOrg.async(parse.multipartFormData) { implicit request =>
     request.requireMember()
 
-    val tpl = request.mainTemplate(Some(Util.AddApplicationText))
+    val tpl = applicationKey match {
+      case None => request.mainTemplate(Some(Util.AddApplicationText))
+      case Some(key) => request.mainTemplate(Some("Upload New Version"))
+    }
     val boundForm = uploadForm.bindFromRequest
     boundForm.fold (
 
