@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, OrganizationForm, Publication, Subscription, SubscriptionForm, User, Visibility}
+import com.gilt.apidoc.models.{Application, ApplicationForm, Organization, OrganizationForm, Publication, Subscription, SubscriptionForm, User, Visibility}
 import lib.Role
 import java.util.UUID
 
@@ -56,6 +56,25 @@ object Util {
     namespace = namespace,
     visibility = visibility,
     domains = domains
+  )
+
+  def createApplication(
+    org: Organization = createOrganization(),
+    form: ApplicationForm = createApplicationForm()
+  ): Application = {
+    ApplicationsDao.create(Util.createdBy, org, form)
+  }
+
+  def createApplicationForm(
+    name: String = UUID.randomUUID.toString,
+    key: Option[String] = None,
+    description: Option[String] = None,
+    visibility: Visibility = Visibility.Organization
+  ) = ApplicationForm(
+    name = name,
+    key = key,
+    description = description,
+    visibility = visibility
   )
 
   def createMembership(

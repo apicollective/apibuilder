@@ -33,6 +33,22 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
     application.name should be(name)
   }
 
+  describe("canUserUpdate") {
+
+    it("for an org I belong to") {
+      val user = Util.createRandomUser()
+      val org = Util.createOrganization(user)
+      val app = Util.createApplication(org)
+      ApplicationsDao.canUserUpdate(user, app) should be(true)
+    }
+
+    it("for an org I do NOT belong to") {
+      val app = Util.createApplication()
+      ApplicationsDao.canUserUpdate(Util.createRandomUser(), app) should be(false)
+    }
+
+  }
+
   describe("validate") {
 
     def createForm() = ApplicationForm(

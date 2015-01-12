@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.models.{ApplicationForm, Organization, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.models.{Application, ApplicationForm, Organization, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.models.json._
 import com.gilt.apidocspec.models.Service
 import lib.Validation
@@ -48,13 +48,15 @@ object Versions extends Controller {
           case s: JsSuccess[VersionForm] => {
             val form = s.get
             val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
-            validator.errors match {
+            val errors = validator.errors ++ validateAppDoesNotExist(validator, org)
+
+            errors match {
               case Nil => {
                 val version = upsertVersion(request.user, org, versionName, form, validator.serviceForm.get, validator.service.get)
                 Ok(Json.toJson(version))
               }
               case errors => {
-                Conflict(Json.toJson(Validation.errors(validator.errors)))
+                Conflict(Json.toJson(Validation.errors(errors)))
               }
             }
           }
@@ -82,13 +84,14 @@ object Versions extends Controller {
           case s: JsSuccess[VersionForm] => {
             val form = s.get
             val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
-            validator.errors match {
+            val errors = validator.errors ++ validateAuthorization(validator, request.user, org) ++ validateKey(validator, applicationKey)
+            errors match {
               case Nil => {
                 val version = upsertVersion(request.user, org, versionName, form, validator.serviceForm.get, validator.service.get, Some(applicationKey))
                 Ok(Json.toJson(version))
               }
               case errors => {
-                Conflict(Json.toJson(Validation.errors(validator.errors)))
+                Conflict(Json.toJson(Validation.errors(errors)))
               }
             }
           }
@@ -117,7 +120,10 @@ object Versions extends Controller {
     service: Service,
     applicationKey: Option[String] = None
   ): Version = {
-    val application = applicationKey.flatMap { key => ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.User(user.guid), org.key, key) } match {
+    println("applicationKey: " + applicationKey)
+    println("service.key: " + service.application.key)
+
+    val application = applicationKey.flatMap { key => ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) } match {
       case None => {
         val appForm = ApplicationForm(
           name = service.name,
@@ -139,6 +145,60 @@ object Versions extends Controller {
     VersionsDao.findByApplicationAndVersion(Authorization(Some(user)), application, versionName) match {
       case None => VersionsDao.create(user, application, versionName, serviceForm, service)
       case Some(existing: Version) => VersionsDao.replace(user, existing, application, serviceForm, service)
+    }
+  }
+
+  private def validateAppDoesNotExist(
+    validator: ServiceValidator,
+    org: Organization
+  ): Seq[String] = {
+    validator.service match {
+      case None => Seq.empty
+      case Some(service) => {
+        ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, service.application.key) match {
+          case None => Seq.empty
+          case Some(app) => Seq(s"An application with key[${service.application.key}] already exists")
+        }
+      }
+    }
+  }
+
+  private def validateAuthorization(
+    validator: ServiceValidator,
+    user: User,
+    org: Organization
+  ): Seq[String] = {
+    validator.service match {
+      case None => Seq.empty
+      case Some(service) => {
+        val key = service.application.key
+        canUserUpsert(user, org, key) match {
+          case true => Seq.empty
+          case false => Seq("An application with the key[$key] already exists")
+        }
+      }
+    }
+  }
+
+  private def canUserUpsert(user: User, org: Organization, appKey: String): Boolean = {
+    ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, appKey) match {
+      case None => true
+      case Some(app) => ApplicationsDao.canUserUpdate(user, app)
+    }
+  }
+
+  private def validateKey(
+    validator: ServiceValidator,
+    key: String
+  ): Seq[String] = {
+    validator.service match {
+      case None => Seq.empty
+      case Some(service) => {
+        (service.application.key == key) match {
+          case true => Seq.empty
+          case false => Seq("The application key does not match the service key. If you would like to change the key of an application, delete the existing application and then create a new one")
+        }
+      }
     }
   }
 

@@ -106,6 +106,11 @@ object ApplicationsDao {
     app: Application,
     visibility: Visibility
   ): Application = {
+    assert(
+      canUserUpdate(updatedBy, app),
+      "User[${user.guid}] not authorized to update app[${app.key}]"
+    )
+
     DB.withConnection { implicit c =>
       SQL(UpdateVisibilityQuery).on(
         'guid -> app.guid,
@@ -148,6 +153,13 @@ object ApplicationsDao {
 
   def softDelete(deletedBy: User, application: Application) {
     SoftDelete.delete("applications", deletedBy, application.guid)
+  }
+
+  def canUserUpdate(user: User, app: Application): Boolean = {
+    ApplicationsDao.findAll(Authorization.User(user.guid), key = Some(app.key)).headOption match {
+      case None => false
+      case Some(a) => true
+    }
   }
 
   private[db] def findByOrganizationAndName(authorization: Authorization, org: Organization, name: String): Option[Application] = {
