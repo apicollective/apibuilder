@@ -92,7 +92,7 @@ object Generators extends Controller {
           }
         }.getOrElse {
           val existingGenF = request.api.Generators.get()
-          val newGenF = new com.gilt.apidocgenerator.Client(valid.uri).generators.get()
+          val newGenF = new com.gilt.apidoc.generator.Client(valid.uri).generators.get()
           (for {
             existingGenerators <- existingGenF
             newGenerators <- newGenF

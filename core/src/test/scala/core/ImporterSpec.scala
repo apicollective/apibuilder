@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocspec.models.{Application, Organization, Import}
+import com.gilt.apidoc.spec.models.{Application, Organization, Import}
 import org.scalatest.{FunSpec, Matchers}
 
 class ImporterSpec extends FunSpec with Matchers {

@@ -2,7 +2,7 @@ package controllers
 
 import com.gilt.apidoc.models.{Application, ApplicationForm, Organization, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.models.json._
-import com.gilt.apidocspec.models.Service
+import com.gilt.apidoc.spec.models.Service
 import lib.Validation
 import core.{ServiceConfiguration, ServiceValidator}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}

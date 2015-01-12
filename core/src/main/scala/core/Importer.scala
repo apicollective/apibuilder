@@ -1,7 +1,7 @@
 package core
 
-import com.gilt.apidocspec.models.Service
-import com.gilt.apidocspec.models.json._
+import com.gilt.apidoc.spec.models.Service
+import com.gilt.apidoc.spec.models.json._
 import play.api.libs.json.Json
 import java.net.URI
 import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}

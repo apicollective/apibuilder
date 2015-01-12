@@ -3,8 +3,8 @@ package controllers
 import models.MainTemplate
 import lib.{UrlKey, Util, VersionedName}
 import com.gilt.apidoc.models.{Application, Organization, User, Version, VersionForm, Visibility, WatchForm}
-import com.gilt.apidocspec.models.Service
-import com.gilt.apidocspec.models.json._
+import com.gilt.apidoc.spec.models.Service
+import com.gilt.apidoc.spec.models.json._
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._

@@ -16,7 +16,8 @@ def download(service_name, map)
       raise " --> Error downloading URL"
     end
 
-    if `diff #{tmpfile} #{path}`.strip == ""
+    diff = `diff #{tmpfile} #{path}`.strip
+    if diff == ""
       puts " --> Unchanged"
     else
       downloads[tmpfile] = path
@@ -44,4 +45,6 @@ subprojects = {
   }
 }
 
-download("apidoc-spec", subprojects["apidoc-spec"])
+subprojects.each do |name, data|
+  download(name, data)
+end

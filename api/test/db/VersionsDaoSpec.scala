@@ -1,8 +1,8 @@
 package db
 
 import com.gilt.apidoc.models.{ApplicationForm, Version, Visibility}
-import com.gilt.apidocspec.models.{Application, Organization, Service}
-import com.gilt.apidocspec.models.json._
+import com.gilt.apidoc.spec.models.{Application, Organization, Service}
+import com.gilt.apidoc.spec.models.json._
 import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID

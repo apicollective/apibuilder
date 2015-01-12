@@ -1,7 +1,7 @@
 package models
 
 import com.gilt.apidoc.models.{Application, Generator, Organization, User}
-import com.gilt.apidocspec.models.{Resource, Service}
+import com.gilt.apidoc.spec.models.{Resource, Service}
 import play.api.Play.current
 
 case class MainTemplate(

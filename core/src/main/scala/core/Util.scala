@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocspec.models.Enum
+import com.gilt.apidoc.spec.models.Enum
 
 object Util {
 

@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocspec.models.{Import, Service}
+import com.gilt.apidoc.spec.models.{Import, Service}
 import lib.{Datatype, DatatypeResolver, Type}
 import scala.annotation.tailrec
 

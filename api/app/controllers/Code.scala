@@ -5,11 +5,11 @@ import java.util.UUID
 import com.gilt.apidoc.models.{Generator, Version}
 import com.gilt.apidoc.models.json._
 
-import com.gilt.apidocspec.models.{Service}
-import com.gilt.apidocspec.models.json._
+import com.gilt.apidoc.spec.models.{Service}
+import com.gilt.apidoc.spec.models.json._
 
-import com.gilt.apidocgenerator.Client
-import com.gilt.apidocgenerator.models.InvocationForm
+import com.gilt.apidoc.generator.Client
+import com.gilt.apidoc.generator.models.InvocationForm
 
 import core.ServiceBuilder
 import db.{GeneratorsDao, Authorization, VersionsDao}

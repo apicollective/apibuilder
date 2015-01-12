@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidocspec.models.Method
+import com.gilt.apidoc.spec.models.Method
 import org.scalatest.{FunSpec, Matchers}
 
 class BrokenSpec extends FunSpec with Matchers {

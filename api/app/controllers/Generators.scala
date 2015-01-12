@@ -4,7 +4,7 @@ import java.util.UUID
 
 import com.gilt.apidoc.models.{GeneratorOrgForm, GeneratorUpdateForm, GeneratorCreateForm, User, Generator}
 import com.gilt.apidoc.models.json._
-import com.gilt.apidocgenerator.Client
+import com.gilt.apidoc.generator.Client
 import db._
 import lib.Validation
 import play.api.libs.json._

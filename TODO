@@ -3,9 +3,7 @@ reorder params so form is last
         orgKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
 
-
-
-generator:
+ruby client generator:
   -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
 
 Breaking changes:
