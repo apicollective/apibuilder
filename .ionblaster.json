@@ -8,10 +8,5 @@
     "service": "www",
     "s3": "s3://gilt-architecture-metadata/ionblaster/apidoc/.ionblaster.json",
     "profile": "architecture"
-  },
-  {
-    "service": "generator",
-    "s3": "s3://gilt-architecture-metadata/ionblaster/apidoc/.ionblaster.json",
-    "profile": "architecture"
   }
 ]
