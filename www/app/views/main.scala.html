@@ -42,7 +42,7 @@
                     <li><a href="@routes.ApplicationSettings.show(service.organization.key, service.application.key, version)">Settings</a></li>
                   }
                   <li><a href="@routes.Versions.originalJson(service.organization.key, service.application.key, version)">original.json</a></li>
-                  <li><a href="@routes.Versions.serviceJson(service.organization.key, service.application.key, version)">service.json</a></li>
+                  <li><a href="@routes.Versions.serviceJson(service.organization.key, service.application.key, version)">@lib.Util.ServiceJsonText</a></li>
                 }
               }
 

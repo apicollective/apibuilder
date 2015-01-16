@@ -8,7 +8,11 @@ Breaking changes:
 
 update release notes
 
-  - imports
+  - new features in api.json:
+    - namespace: specifies the namespace for this service. Namespace is primarily used when other services import definitions from your service and in the code generators when defining things like package names. If not specified, we will automatically generate a namespace based on [organization namespace].[formatted service name].[major version number]. Note that by default apidoc includes the major version number in the package name which allows service authors and clients to interact with multiple versions of the service where changes have been made in a non backwards compatible way.
+
+
+    - imports
 
   - introduction of service.json
 

@@ -1,23 +1,35 @@
 package lib
 
-case class ExampleService(key: String) {
+case class ExampleService(key: String, version: String = "latest") {
 
-  val docsUrl = s"/gilt/$key/latest"
-  val apiJsonUrl = s"/gilt/$key/latest/api.json"
+  val docsUrl = if (version == "latest") {
+    s"/gilt/$key/$version"
+  } else {
+    s"/gilt/$key"
+  }
+
+  val apiJsonUrl = s"/gilt/$key/$version/api.json"
+  val serviceJsonUrl = s"/gilt/$key/$version/service.json"
 
 }
 
 object Util {
 
+  val Host = Config.requiredString("apidoc.www.host")
+
   val AddApplicationText = "Add Application"
   val OrgDetailsText = "Org Details"
+  val ServiceJsonText = "service.json"
 
   val ApidocExample = ExampleService("apidoc")
+  val ApidocExampleWithVersionNumber = ExampleService("apidoc", Config.requiredString("git.version"))
   val ApidocGeneratorExample = ExampleService("apidoc-generator")
   val ApidocSpecExample = ExampleService("apidoc-spec")
   val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
 
   val GitHubUrl = "https://github.com/gilt/apidoc"
+
+  def fullUrl(stub: String): String = s"$Host$stub"
 
   def calculateNextVersion(version: String): String = {
     version.split(VersionTag.Dash).size match {

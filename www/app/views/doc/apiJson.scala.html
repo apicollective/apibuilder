@@ -9,8 +9,9 @@
     {
       "name": <em>string</em>,
       "namespace": <em>string (optional)</em>,
-      "base_url": <em>string</em>,
+      "base_url": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
+      "imports": <em>JSON Array of <a href="#import">Import</a> (optional)</em>,
       "headers": <em>JSON Array of <a href="#header">Header</a> (optional)</em>,
       "enums": <em>JSON Object of <a href="#enum">Enum</a> (optional)</em>,
       "models": <em>JSON Object of <a href="#model">Model</a> (optional)</em>,
@@ -24,8 +25,9 @@
       <li><em>namespace</em>: specifies the namespace for this service. Namespace is primarily used when other services import definitions from your service and in the code generators when defining things like package names. If not specified, we will automatically generate a namespace based on [organization namespace].[formatted service name].[major version number]. Note that by default apidoc includes the major version number in the package name which allows service authors and clients to interact with multiple versions of the service where changes have been made in a non backwards compatible way.</li>
       <li><em>baseUrl</em>: the base URL where this service is hosted. Must start with http.</li>
       <li><em>description</em>: optional description for what this service provides.</li>
-      <li><em>headers</em> JSON array defining any HTTP Headers that the service understands or expects. See <a href="#enum">Enum</a></li>
-      <li><em>enums</em> JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#header">Header</a></li>
+      <li><em>imports</em> JSON array defining any other services whose schema definitions we would like to import into our service.. See <a href="#import">Import</a></li>
+      <li><em>headers</em> JSON array defining any HTTP Headers that the service understands or expects. See <a href="#header">Header</a></li>
+      <li><em>enums</em> JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#enum">Enum</a></li>
       <li><em>models</em> JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
       <li><em>resources</em> JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the Models object. See <a href="#resource">Resource</a></li>
     </ul>
@@ -226,6 +228,23 @@
       <li><em>name</em> the name of the value. Names must start with a letter.</li>
       <li><em>description</em> optional longer description for this enum.</li>
    </ul>
+
+  <a name="import"></a>
+  <h2>Import declaration</h2>
+
+  <p>
+    An import is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "uri": <em>string</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>uri</em> The complete URI to the service specification that we are importing. Within apidoc, you can find the URL to the service specification by clicking on the &quot;service.json&quot; link for a service. Example: <a href="@lib.Util.ApidocExampleWithVersionNumber.serviceJsonUrl">@lib.Util.fullUrl(lib.Util.ApidocExampleWithVersionNumber.serviceJsonUrl)</a>.</li>
+    </ul>
 
   <a name="header"></a>
   <h2>Header declaration</h2>

@@ -1,5 +1,6 @@
 package controllers
 
+import lib.Config
 import models.MainTemplate
 import com.gilt.apidoc.v0.models.User
 import play.api.mvc._
@@ -27,19 +28,14 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private val apiUrl = current.configuration.getString("apidoc.url").getOrElse {
-    sys.error("apidoc.url is required")
-  }
+  private val apiHost = Config.requiredString("apidoc.api.host")
 
-  private val apiToken = current.configuration.getString("apidoc.token").getOrElse {
-    sys.error("apidoc.token is required")
-  }
-  private lazy val apiAuth = com.gilt.apidoc.v0.Authorization.Basic(apiToken)
+  private lazy val apiAuth = com.gilt.apidoc.v0.Authorization.Basic(Config.requiredString("apidoc.api.token"))
 
   def api(user: Option[User] = None): com.gilt.apidoc.v0.Client = {
     user match {
-      case None => new com.gilt.apidoc.v0.Client(apiUrl, Some(apiAuth))
-      case Some(u) => new com.gilt.apidoc.v0.Client(apiUrl, Some(apiAuth)) {
+      case None => new com.gilt.apidoc.v0.Client(apiHost, Some(apiAuth))
+      case Some(u) => new com.gilt.apidoc.v0.Client(apiHost, Some(apiAuth)) {
         override def _requestHolder(path: String) = {
           super._requestHolder(path).withHeaders("X-User-Guid" -> u.guid.toString)
         }
