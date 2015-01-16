@@ -1,5 +1,3 @@
-scala client: fix API for auth
-
 ruby client generator:
   -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
 
@@ -9,8 +7,20 @@ Breaking changes:
 update release notes
 
   - new features in api.json:
-    - namespace: specifies the namespace for this service. Namespace is primarily used when other services import definitions from your service and in the code generators when defining things like package names. If not specified, we will automatically generate a namespace based on [organization namespace].[formatted service name].[major version number]. Note that by default apidoc includes the major version number in the package name which allows service authors and clients to interact with multiple versions of the service where changes have been made in a non backwards compatible way.
 
+    - namespace: specifies the namespace for this service. Namespace
+      is primarily used when other services import definitions from
+      your service and in the code generators when defining things
+      like package names. If not specified, we will automatically
+      generate a namespace based on [organization
+      namespace].[formatted service name].[major version number]. Note
+      that by default apidoc includes the major version number in the
+      package name which allows service authors and clients to
+      interact with multiple versions of the service where changes
+      have been made in a non backwards compatible way.
+
+    - base url is now optional avoiding need to guess the url during
+      initial development (before service is deployed)
 
     - imports
 
@@ -34,6 +44,18 @@ update release notes
         orgKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
 
+      is now
+
+      override def postByOrgKey(
+        orgKey: String,
+        domain: com.gilt.apidoc.models.Domain
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
+
+      parameters in the function list are ordered by:
+        all required query / form parameters first
+        the body, if present
+        remaining parameters
+
   - scala Client API:
 
       From: class Client(apiUrl: String, apiToken: scala.Option[String] = None)
@@ -45,9 +67,6 @@ update release notes
 
        com.gilt.apidoc.v0.Authorization("token")
     
-
-document service imports in apiJson
-
 apidoc-generator:
   ==> TODO: union type
 
@@ -56,8 +75,6 @@ api + spec:
     version.service
 
 Generators:
-
-  - Add link to /generators
   - Cache the generators
 
 users:
@@ -93,4 +110,3 @@ will work across mulitple platforms.
 api.json: Support authentication, documentation
   
 Swagger 2.0 was released in September 2014. Explore if swagger 2.0 can become the input spec for apidoc.
- 
