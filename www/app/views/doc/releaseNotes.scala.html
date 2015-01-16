@@ -2,6 +2,143 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.8.0 - Jan 2015</h3>
+
+<p>This is a big release - a number of significant new features, a few
+breaking changes to increase the quality of the code generated
+clients, and a large internal refactoring as we prepare to add union
+types to apidoc.</p>
+
+<p><b>Breaking Changes</b><p>
+
+  <ul>
+
+    <li>The scala code generators create new package names:
+
+    <ul>
+
+      <li> We have replaced the code that converts a service name to a
+      package name so that it is more consistent. The main change is
+      that camelcased service names will now split into sub packages
+      (so apidocSpec becomes apidoc.spec). We think this change makes
+      the package names more approachable and consistent.</li>
+
+      <li> Code generators automatically include the major version
+      number of each service in the package names being generated. The
+      main goal here is to enable future upgradability of a client
+      application or a service - major version numbers should be
+      incremented each time a backwards incompatible change is
+      made. By including the major version number in the package name
+      we simplify a portion of the upgrade path. Note that you can
+      override this behavior by explicitly providing a namespace in
+      the api.json file you upload to apidoc.</li>
+
+    </ul>
+ 
+    <li>The scala method name geneators may generate new names in some
+    cases. This is primarily a bug fix where in some cases the
+    resource name was duplicated in the path name (e.g. in the play
+    routes code generator). Example: "GET /:org/agenda-items"
+    previously generated a method name
+    &quot;getAgendaItemsByOrg&quot;. This version will generate the
+    name &quot;getByOrg&quot; as we do a better job identifying
+    resource names from paths.</li>
+
+
+  </ul>
+
+<p><b>Non Breaking Changes</b><p>
+  <ul>
+
+    <li> Nomenclature change - Services have been renamed to
+    Applications. We found that it was becoming difficult to
+    differentiate between an application, each of its versions, and
+    the actual REST API (or service). More precisely: Organizations
+    contain applications. Each application can contain one or more
+    versions (users upload versions to apidoc).</li>
+
+    <li> We have introduced a new concept of a Service which is a
+    complete description of a REST service as described by
+    apidoc. Users of apidoc upload api.json files that contain a
+    specification of a REST API. apidoc converts the specification
+    into a service description that we now call a
+    &quot;Service&quot;. A Service is a full description of the REST
+    API. The schema for a service can be found
+    at <a href="#@lib.Util.ApidocSpecExample.docsUrl">@lib.Util.ApidocSpecExample.key</a>.</li>
+
+    <li>Code generators have been moved out of the apidoc code
+    repository and into a separate repository (a
+    href="@lib.Util.GeneratorGitHubUrl">@lib.Util.GeneratorGitHubUrl</a>). Combined
+    with the introduction of the service schema, we now have a much
+    simpler interface to create code generators. Code generators are
+    now esssentially functions that accept an instance of a service
+    and return a string (actual code). For specific information on the
+    API to create a code generator,
+    see <a href="@lib.Util.ApidocGeneratorExample.docsUrl">@lib.Util.ApidocGeneratorExample.key</a>.</li>
+
+    <li> You can now edit your organization via the UI to change your
+    organization key or namespace. Use with care as changing the
+    namespace would change the package names in generated code for all
+    services that rely on the default namespace.</li>
+
+    <li> We renamed the organization &quot;package name&quot; setting
+    as &quot;namespace&quot; and have made it required. The
+    organization namespace is globally unique.</li>
+
+    <li> Services now have a namespace as part of the service
+    specification. When uploading new version of an application, we
+    automatically create a namespace for each major version by
+    following the format:
+
+    <pre>
+      [organization namespace].[formatted service name].[major version number]
+    </pre>
+
+    The service name is converted to a namespace by converting to
+    lower case, under score separated (converting from camel case
+    automatically), and then splitting on underscore. Thus for the
+    organization namespace com.gilt, version 1 of an application named
+    apidoc-spec will result in a namespace of com.gilt.apidoc.spec.v1.
+
+    <ol>
+
+      <li> apidoc now supports importing definitions from other
+      services. The namespace is required in order to resolve a
+      reference to a model or enum imported from another service. See
+      notes <a href="#import">below on importing</a>.</li>
+
+      <li> the namespace continues to be used in code generation,
+      mapping to package names, for example, in scala code
+      generators.</li>
+
+    </ol>
+
+  </ul>
+
+<h3>0.7.39 - December 19, 2014</h3>
+
+  <ul>
+
+    <li> Email subscriptions: You can now subscribe to a number of
+    different email alerts including notification when services are
+    created or updated, and as an org admin, whenever somebody
+    requests to join your organization. We also added email
+    verification - combined with organization level domains, today
+    when a new user joins apidoc they will receive an email message to
+    confirm their email. Upon confirming their email, if their email
+    domain matches a domain that you've setup for your organization,
+    that user will automatically become part of your organization.</li>
+
+    <li> Watch your favorite services: You can now watch your favorite
+    services. There is an email subscription to receive a notification
+    whenever a service that you watch is updated.</li>
+
+    <li> If you forget your password, there is now a password reset
+    flow available in the UI.</li>
+
+  </ul>
+
+
 <h3>0.7.7 - Nov 19, 2014</h3>
 
   <ul>

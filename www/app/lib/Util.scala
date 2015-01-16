@@ -8,7 +8,7 @@ case class ExampleService(key: String, version: String = "latest") {
     s"/gilt/$key/$version"
   }
 
-  val apiJsonUrl = s"/gilt/$key/$version/api.json"
+  val originalJsonUrl = s"/gilt/$key/$version/original.json"
   val serviceJsonUrl = s"/gilt/$key/$version/service.json"
 
 }
@@ -28,6 +28,7 @@ object Util {
   val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
 
   val GitHubUrl = "https://github.com/gilt/apidoc"
+  val GeneratorGitHubUrl = "https://github.com/gilt/apidoc-generator"
 
   def fullUrl(stub: String): String = s"$Host$stub"
 

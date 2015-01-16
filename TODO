@@ -19,6 +19,9 @@ update release notes
       interact with multiple versions of the service where changes
       have been made in a non backwards compatible way.
 
+      organization level package name has been renamed to namespace
+      and is now required.
+
     - base url is now optional avoiding need to guess the url during
       initial development (before service is deployed)
 
