@@ -4,36 +4,6 @@ ruby client generator:
 Breaking changes:
   - Change 404s to be explicit
 
-update release notes
-
-  - reorder params so form is last
-      override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
-        orgKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
-
-      is now
-
-      override def postByOrgKey(
-        orgKey: String,
-        domain: com.gilt.apidoc.models.Domain
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
-
-      parameters in the function list are ordered by:
-        all required query / form parameters first
-        the body, if present
-        remaining parameters
-
-  - scala Client API:
-
-      From: class Client(apiUrl: String, apiToken: scala.Option[String] = None)
-      To: class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.v0.Authorization] = None)
-
-    Allows support of other auth methods rather than just the initial
-    token use case we had. In order to use a token, create an instace
-    of basic authorization with:
-
-       com.gilt.apidoc.v0.Authorization("token")
-    
 apidoc-generator:
   ==> TODO: union type
 

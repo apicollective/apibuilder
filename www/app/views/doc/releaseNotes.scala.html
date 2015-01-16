@@ -13,7 +13,23 @@ types to apidoc.</p>
 
   <ul>
 
-    <li>The scala code generators create new package names:
+    <li>We have replaced apiToken with auth in the Client
+    signature. Users who were previously passing in an API token will
+    need to update their code to base in an instance of
+    Authorization.Basic instead. This lays the foundation to have
+    standard support for more authentication methods.
+
+    <pre>class Client(apiUrl: String, apiToken: scala.Option[String] = None)</pre>
+
+    is now
+
+    <pre>class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.v0.Authorization] = None)</pre>
+
+    In order to use a token, create an instace of basic authorization with:
+
+    <pre>com.gilt.apidoc.v0.Authorization("token")</pre>
+
+    <li>The scala code generators generate new package names:
 
     <ul>
 
@@ -66,18 +82,18 @@ types to apidoc.</p>
     </ol>
 
     <pre>
-      override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
+      def postByOrgKey(domain: com.gilt.apidoc.v0.models.Domain,
         orgKey: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
+      )
     </pre>
 
     is now
 
     <pre>
-      override def postByOrgKey(
+      def postByOrgKey(
         orgKey: String,
         domain: com.gilt.apidoc.models.Domain
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
+      )
     </pre>
 
       </ul>
