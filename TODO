@@ -30,6 +30,17 @@ update release notes
         orgKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
 
+  - scala Client API:
+
+      From: class Client(apiUrl: String, apiToken: scala.Option[String] = None)
+      To: class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.v0.Authorization] = None)
+
+    Allows support of other auth methods rather than just the initial
+    token use case we had. In order to use a token, create an instace
+    of basic authorization with:
+
+       com.gilt.apidoc.v0.Authorization("token")
+    
 
 document service imports in apiJson
 
