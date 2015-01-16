@@ -406,30 +406,30 @@ object InternalParameterForm {
 
 sealed trait InternalDatatype {
 
-  def names: Seq[String]
+  def name: String
   def label: String
 
   protected def makeLabel(prefix: String = "", postfix: String = ""): String = {
-    prefix + names.mkString(" | ") + postfix
+    prefix + name + postfix
   }
 
 }
 
 private[core] object InternalDatatype {
 
-  case class List(names: Seq[String]) extends InternalDatatype {
+  case class List(name: String) extends InternalDatatype {
     override def label = makeLabel("[", "]")
   }
 
-  case class Map(names: Seq[String]) extends InternalDatatype {
+  case class Map(name: String) extends InternalDatatype {
     override def label = makeLabel("map[", "]")
   }
 
-  case class Option(names: Seq[String]) extends InternalDatatype {
+  case class Option(name: String) extends InternalDatatype {
     override def label = makeLabel("option[", "]")
   }
 
-  case class Singleton(names: Seq[String]) extends InternalDatatype {
+  case class Singleton(name: String) extends InternalDatatype {
     override def label = makeLabel()
   }
 
@@ -440,14 +440,12 @@ private[core] object InternalDatatype {
 
   def apply(value: String): InternalDatatype = {
     value match {
-      case ListRx(name) => InternalDatatype.List(parse(name))
-      case MapRx(name) => InternalDatatype.Map(parse(name))
-      case OptionRx(name) => InternalDatatype.Option(parse(name))
-      case DefaultMapRx() => InternalDatatype.Map(parse("string"))
-      case _ => InternalDatatype.Singleton(parse(value))
+      case ListRx(name) => InternalDatatype.List(name)
+      case MapRx(name) => InternalDatatype.Map(name)
+      case OptionRx(name) => InternalDatatype.Option(name)
+      case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString)
+      case _ => InternalDatatype.Singleton(value)
     }
   }
-
-  private def parse(value: String): Seq[String] = value.split("\\|").map(_.trim)
 
 }

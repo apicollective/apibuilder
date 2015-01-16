@@ -192,7 +192,7 @@ object ParameterBuilder {
 
   def fromPath(model: Model, name: String): Parameter = {
     val datatypeLabel = model.fields.find(_.name == name).map(_.`type`).getOrElse {
-      Datatype.Singleton(Seq(Type(Kind.Primitive, Primitives.String.toString))).label
+      Datatype.Singleton(Type(Kind.Primitive, Primitives.String.toString)).label
     }
 
     Parameter(

@@ -23,14 +23,14 @@ case class TypeLabel(
         case TextDatatype.Singleton(t) => resolveImportedType(t).getOrElse(typeName)
       }
     }
-    case Some(Datatype.List(t)) => "[" + types(t) + "]"
-    case Some(Datatype.Map(t)) => "map[" + types(t) + "]"
-    case Some(Datatype.Option(t)) => "option[" + types(t) + "]"
-    case Some(Datatype.Singleton(t)) => types(t)
+    case Some(Datatype.List(t)) => "[" + typeLink(t) + "]"
+    case Some(Datatype.Map(t)) => "map[" + typeLink(t) + "]"
+    case Some(Datatype.Option(t)) => "option[" + typeLink(t) + "]"
+    case Some(Datatype.Singleton(t)) => typeLink(t)
   }
 
-  private def types(types: Seq[Type]): String = {
-    types.map { t => Href(org.key, app.key, version, t).html }.mkString(" | ")
+  private def typeLink(t: Type): String = {
+    Href(org.key, app.key, version, t).html
   }
 
   private def resolveImportedType(typeName: String): Option[String] = {

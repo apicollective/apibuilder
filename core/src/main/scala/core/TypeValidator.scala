@@ -41,7 +41,7 @@ private[core] case class TypeValidator(
             json.asOpt[JsArray] match {
               case Some(v) => {
                 v.value.flatMap { value =>
-                  validateTypes(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                  validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
                 } match {
                   case Nil => None
                   case errors => Some(errors.mkString(", "))
@@ -64,7 +64,7 @@ private[core] case class TypeValidator(
               case Some(v) => {
                 v.value.flatMap {
                   case (key, value) => {
-                    validateTypes(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
+                    validate(t, JsonUtil.asOptString(value).getOrElse(""), errorPrefix)
                   }
                 } match {
                   case Nil => None
@@ -79,26 +79,13 @@ private[core] case class TypeValidator(
         }
       }
       case Datatype.Option(t) => {
-        val typesWithUnit = t ++ Seq(Type(Kind.Primitive, Primitives.Unit.toString))
-        validateTypes(typesWithUnit, value, errorPrefix)
+        validate(t, value, errorPrefix)
       }
       case Datatype.Singleton(t) => {
-        validateTypes(t, value, errorPrefix)
+        validate(t, value, errorPrefix)
       }
     }
   }
-
-  private def validateTypes(
-    types: Seq[Type],
-    value: String,
-    errorPrefix: Option[String]
-  ): Option[String] = {
-    types.map(t => validate(t, value, errorPrefix)).flatten match {
-      case Nil => None
-      case errors => Some(errors.mkString(", "))
-    }
-  }
-
 
   def validate(
     t: Type,

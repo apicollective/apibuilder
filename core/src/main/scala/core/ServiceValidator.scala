@@ -164,14 +164,12 @@ case class ServiceValidator(
   private def validateFieldTypes(): Seq[String] = {
     internalService.get.models.flatMap { model =>
       model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).flatMap { field =>
-        field.datatype.get.names.flatMap { name =>
-          internalService.get.typeResolver.toType(name) match {
-            case None => {
-              Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[$name]")
-            }
-            case _ => {
-              None
-            }
+        internalService.get.typeResolver.toType(field.datatype.get.name) match {
+          case None => {
+            Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[${field.datatype.get.name}]")
+          }
+          case _ => {
+            None
           }
         }
       }
@@ -275,12 +273,11 @@ case class ServiceValidator(
     }
 
     val headersWithInvalidTypes = internalService.get.headers.filter(h => !h.name.isEmpty && !h.datatype.isEmpty).flatMap { header =>
-      header.datatype.get.names.flatMap { htype =>
-        if (htype == Primitives.String.toString || enumNames.contains(htype)) {
-          None
-        } else {
-          Some(s"Header[${header.name.get}] type[$htype] is invalid: Must be a string or the name of an enum")
-        }
+      val htype = header.datatype.get.name
+      if (htype == Primitives.String.toString || enumNames.contains(htype)) {
+        None
+      } else {
+        Some(s"Header[${header.name.get}] type[$htype] is invalid: Must be a string or the name of an enum")
       }
     }
 
@@ -378,16 +375,14 @@ case class ServiceValidator(
     val missingTypes = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
-          r.datatype.map(_.names).getOrElse(Seq.empty) match {
-            case Nil => {
+          r.datatype.map(_.name) match {
+            case None => {
               Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}]: Missing type")
             }
-            case typeNames => {
-              typeNames.flatMap { typeName =>
-                internalService.get.typeResolver.toType(typeName) match {
-                  case None => Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[$typeName].")
-                  case Some(_) => None
-                }
+            case Some(typeName) => {
+              internalService.get.typeResolver.toType(typeName) match {
+                case None => Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[$typeName].")
+                case Some(_) => None
               }
             }
           }
@@ -432,7 +427,7 @@ case class ServiceValidator(
     val noContentWithTypes = if (invalidCodes.isEmpty) {
       internalService.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
         resource.operations.flatMap { op =>
-          op.responses.filter(r => typesRequiringUnit.contains(r.code.toInt) && !r.datatype.isEmpty && r.datatype.get.names != Seq(Primitives.Unit.toString)).map { r =>
+          op.responses.filter(r => typesRequiringUnit.contains(r.code.toInt) && !r.datatype.isEmpty && r.datatype.get.name != Primitives.Unit.toString).map { r =>
             s"""Resource[${resource.modelName.get}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get.label}]"""
           }
         }
@@ -460,7 +455,7 @@ case class ServiceValidator(
           case Some(datatype) => {
             internalService.get.typeResolver.parse(datatype) match {
               case None => {
-                if (datatype.names.isEmpty || (datatype.names.size == 1 && datatype.names.head.trim == "")) {
+                if (datatype.name.isEmpty || datatype.name.trim == "") {
                   Seq(s"${opLabel(resource, op)}: Body missing type")
                 } else {
                   Seq(s"${opLabel(resource, op)} body: Type[${datatype.label}] not found")
@@ -502,20 +497,18 @@ case class ServiceValidator(
     val invalidQueryTypes = internalService.get.resources.flatMap { resource =>
       resource.operations.filter(!_.method.isEmpty).filter(op => !op.body.isEmpty || op.method == Some("GET") ).flatMap { op =>
         op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
-          p.datatype.map(_.names).getOrElse(Seq.empty) match {
-            case Nil => {
+          p.datatype.map(_.name) match {
+            case None => {
               Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] is missing a type.")
             }
-            case typeNames => {
-              typeNames.flatMap { typeName =>
-                internalService.get.typeResolver.toType(typeName) match {
-                  case Some(Type(Kind.Primitive | Kind.Enum, _)) => None
-                  case Some(Type(Kind.Model, name)) => {
-                    Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Models are not supported as query parameters.")
-                  }
-                  case None => {
-                    Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]")
-                  }
+            case Some(typeName) => {
+              internalService.get.typeResolver.toType(typeName) match {
+                case Some(Type(Kind.Primitive | Kind.Enum, _)) => None
+                case Some(Type(Kind.Model, name)) => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Models are not supported as query parameters.")
+                }
+                case None => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]")
                 }
               }
             }
@@ -527,17 +520,15 @@ case class ServiceValidator(
     val unknownTypes = internalService.get.resources.flatMap { resource =>
       resource.operations.filter(!_.method.isEmpty).flatMap { op =>
         op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
-          p.datatype.map(_.names).getOrElse(Seq.empty) match {
-            case Nil => {
+          p.datatype.map(_.name) match {
+            case None => {
               Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] is missing a type.")
             }
-            case datatypeNames => {
-              datatypeNames.flatMap { datatypeName =>
-                internalService.get.typeResolver.toType(datatypeName) match {
-                  case Some(Type(Kind.Model | Kind.Primitive | Kind.Enum, _)) => None
-                  case None => {
-                    Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$datatypeName]")
-                  }
+            case Some(typeName) => {
+              internalService.get.typeResolver.toType(typeName) match {
+                case Some(Type(Kind.Model | Kind.Primitive | Kind.Enum, _)) => None
+                case None => {
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]")
                 }
               }
             }
@@ -592,8 +583,8 @@ case class ServiceValidator(
         case None => None
         case Some(model: InternalModelForm) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
-            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.names).isEmpty).map(f => (f.name.get -> f.datatype.get)).toMap
-            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.names).isEmpty).map(p => (p.name.get -> p.datatype.get)).toMap
+            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.name).isEmpty).map(f => (f.name.get -> f.datatype.get)).toMap
+            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.name).isEmpty).map(p => (p.name.get -> p.datatype.get)).toMap
 
             op.namedPathParameters.flatMap { name =>
               val parsedDatatype = paramMap.get(name).getOrElse {
@@ -609,12 +600,10 @@ case class ServiceValidator(
                 case Some(Datatype.List(_)) => Some(errorTemplate.format("list"))
                 case Some(Datatype.Map(_)) => Some(errorTemplate.format("map"))
                 case Some(Datatype.Option(_)) => Some(errorTemplate.format("option"))
-                case Some(Datatype.Singleton(types)) => {
-                  types.filter( t => !isTypeValidInPath(t) ) match {
-                    case Nil => None
-                    case invalidTypes => {
-                      Some(errorTemplate.format(invalidTypes.map(_.name).mkString(", ")))
-                    }
+                case Some(Datatype.Singleton(t)) => {
+                  isTypeValidInPath(t) match {
+                    case true => None
+                    case false => Some(errorTemplate.format(t.name))
                   }
                 }
               }
@@ -647,8 +636,8 @@ case class ServiceValidator(
         case None => None
         case Some(model: InternalModelForm) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
-            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.names).isEmpty).map(f => (f.name.get -> f.required)).toMap
-            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.names).isEmpty).map(p => (p.name.get -> p.required)).toMap
+            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.name).isEmpty).map(f => (f.name.get -> f.required)).toMap
+            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.name).isEmpty).map(p => (p.name.get -> p.required)).toMap
 
             op.namedPathParameters.flatMap { name =>
               val isRequired = paramMap.get(name).getOrElse {

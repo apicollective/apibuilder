@@ -5,18 +5,13 @@ import org.scalatest.{FunSpec, Matchers}
 class InternalDatatypeSpec extends FunSpec with Matchers {
 
   it("label") {
-    Seq("string", "uuid", "[string]", "[uuid]", "map[string]", "map[uuid]", "option[string]", "union[unit, string]", "union[string, boolean]").foreach { name =>
+    Seq("string", "uuid", "[string]", "[uuid]", "map[string]", "map[uuid]", "option[string]").foreach { name =>
       InternalDatatype(name).label should be(name)
     }
   }
 
   it("map defaults to string type") {
     InternalDatatype("map").label should be("map[string]")
-  }
-
-  it("union reformated spaces") {
-    val dt = InternalDatatype("unit   |    string")
-    dt.label should be("unit | string")
   }
 
   it("handles malformed input") {

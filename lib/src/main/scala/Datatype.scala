@@ -1,30 +1,26 @@
 package lib
 
 sealed trait Datatype {
-  def types: Seq[Type]
+  def `type`: Type
   def label: String
-
-  assert(!types.isEmpty, "Datatype requires at least 1 type")
 }
 
 object Datatype {
 
-  private val Divider = " | "
-
-  case class List(types: Seq[Type]) extends Datatype {
-    override def label = types.map(_.name).mkString("[", Divider, "]")
+  case class List(`type`: Type) extends Datatype {
+    override def label = "[" + `type`.name + "]"
   }
 
-  case class Map(types: Seq[Type]) extends Datatype {
-    override def label = types.map(_.name).mkString("map[", Divider, "]")
+  case class Map(`type`: Type) extends Datatype {
+    override def label = "map[" + `type`.name + "]"
   }
 
-  case class Option(types: Seq[Type]) extends Datatype {
-    override def label = types.map(_.name).mkString("option[", Divider, "]")
+  case class Option(`type`: Type) extends Datatype {
+    override def label = "option[" + `type`.name + "]"
   }
 
-  case class Singleton(types: Seq[Type]) extends Datatype {
-    override def label = types.map(_.name).mkString(Divider)
+  case class Singleton(`type`: Type) extends Datatype {
+    override def label = `type`.name
   }
 
 }
@@ -85,26 +81,14 @@ case class DatatypeResolver(
   /**
     * Parses a type string into an instance of a Datatype.
     * 
-    * @param value: Examples: "string", "string | uuid", "map[long]", "option[string | uuid]"
+    * @param value: Examples: "string", "uuid"
     */
   def parse(value: String): Option[Datatype] = {
     TextDatatype(value) match {
-      case TextDatatype.List(typeName) => toTypesIfAllFound(typeName).map { Datatype.List(_) }
-      case TextDatatype.Map(typeName) => toTypesIfAllFound(typeName).map { Datatype.Map(_) }
-      case TextDatatype.Option(typeName) => toTypesIfAllFound(typeName).map { Datatype.Option(_) }
-      case TextDatatype.Singleton(typeName) => toTypesIfAllFound(typeName).map { Datatype.Singleton(_) }
-    }
-  }
-
-  private def parseTypeNames(value: String): Seq[String] = {
-    value.split("\\|").map(_.trim)
-  }
-
-  private def toTypesIfAllFound(value: String): Option[Seq[Type]] = {
-    val types = parseTypeNames(value).map { n => toType(n) }
-    types.filter(!_.isDefined) match {
-      case Nil => Some(types.flatten)
-      case unknowns => None
+      case TextDatatype.List(typeName) => toType(typeName).map { Datatype.List(_) }
+      case TextDatatype.Map(typeName) => toType(typeName).map { Datatype.Map(_) }
+      case TextDatatype.Option(typeName) => toType(typeName).map { Datatype.Option(_) }
+      case TextDatatype.Singleton(typeName) => toType(typeName).map { Datatype.Singleton(_) }
     }
   }
 
