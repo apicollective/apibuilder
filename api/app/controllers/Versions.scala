@@ -121,9 +121,6 @@ object Versions extends Controller {
     service: Service,
     applicationKey: Option[String] = None
   ): Version = {
-    println("applicationKey: " + applicationKey)
-    println("service.key: " + service.application.key)
-
     val application = applicationKey.flatMap { key => ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) } match {
       case None => {
         val appForm = ApplicationForm(
