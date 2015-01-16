@@ -44,10 +44,45 @@ types to apidoc.</p>
     name &quot;getByOrg&quot; as we do a better job identifying
     resource names from paths.</li>
 
+    <li>We renamed the error package to errors to match other package
+    names. We also moved the FailedRequest class into the errors
+    package.</li>
 
-  </ul>
+    <li>The FailedRequest exception is now simpler (no longer wraps
+    the response object). This allows the failed request object to be
+    serialized, cleaning up stack traces that were otherwise visible
+    in logs/console.</li>
 
-<p><b>Non Breaking Changes</b><p>
+    <li>In the scala clients, for methods with both parameters and a
+    body, we reordered the parameters so that they would be more
+    natural to use. For example, required path parameters will now
+    appear earlier in argument list. Parameters in the function list
+    are now ordered by:
+
+    <ol>
+      <li> all required query / form parameters first</li>
+      <li> the body, if present</li>
+      <li> remaining parameters</li>
+    </ol>
+
+    <pre>
+      override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
+        orgKey: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
+    </pre>
+
+    is now
+
+    <pre>
+      override def postByOrgKey(
+        orgKey: String,
+        domain: com.gilt.apidoc.models.Domain
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.models.Domain] = {
+    </pre>
+
+      </ul>
+
+  <p><b>Major Features</b><p>
   <ul>
 
     <li> Nomenclature change - Services have been renamed to
@@ -76,15 +111,6 @@ types to apidoc.</p>
     API to create a code generator,
     see <a href="@lib.Util.ApidocGeneratorExample.docsUrl">@lib.Util.ApidocGeneratorExample.key</a>.</li>
 
-    <li> You can now edit your organization via the UI to change your
-    organization key or namespace. Use with care as changing the
-    namespace would change the package names in generated code for all
-    services that rely on the default namespace.</li>
-
-    <li> We renamed the organization &quot;package name&quot; setting
-    as &quot;namespace&quot; and have made it required. The
-    organization namespace is globally unique.</li>
-
     <li> Services now have a namespace as part of the service
     specification. When uploading new version of an application, we
     automatically create a namespace for each major version by
@@ -112,6 +138,63 @@ types to apidoc.</p>
       generators.</li>
 
     </ol>
+
+    <a name="import"></a>
+    <li> Imports</a>: You can now import schema
+    definitions from other services into your project. In order to
+    import definitions:
+
+    <ol>
+
+      <li> <a href="/docs/apiJson">Declare your imports</a> your
+      api.json file by providing the full URI to each service.json
+      specification you would like to include.</li>
+
+      <li> To use a type from an imported service, reference that type
+      using the fully qualified name for the type. For example, if the
+      service you are importing has a namespace of
+      &quot;com.gilt.apidoc.spec.v1&quot; and you want to use the type
+      &quot;service&quot;, you would declare the type of your field as
+      &quot;com.gilt.apidoc.spec.v1.service&quot;</li>
+
+    </ol>
+
+    The @lib.Util.ApidocGeneratorExample.key project uses imports as
+    part of its declaration - the simplest way to get started is to
+    look at
+    the <a href="@lib.Util.ApidocGeneratorExample.originalJsonUrl">api.json</a>
+    file for that service.
+
+    </li>
+
+  </ul>
+
+  <p><b>Other enhancements / changes</b><p>
+
+  <ul>
+
+    <li> We added JSON error handling in the play client. This means
+    that you will get a much nicer error message if we are unable to
+    parse the document (we use play json validation here and return
+    the error messages to you via the exception).</li>
+
+    <li> We also provide a much nicer error message when the service
+    returns an HTTP status code that is not defined in the
+    specification (a common mistake). This should make it much easier
+    to identify these errors. The message will be similar to &quot;HTTP
+    xxx: Unupported response code. Expected: 200, 409&quot;</li>
+
+    <li> You can now edit your organization via the UI to change your
+    organization key or namespace. Use with care as changing the
+    namespace would change the package names in generated code for all
+    services that rely on the default namespace.</li>
+
+    <li> We renamed the organization &quot;package name&quot; setting
+    as &quot;namespace&quot; and have made it required. The
+    organization namespace is globally unique.</li>
+
+    <li> Base url is now optional avoiding need to guess the url
+    during initial development (before service is deployed)</li>
 
   </ul>
 

@@ -6,42 +6,6 @@ Breaking changes:
 
 update release notes
 
-  - new features in api.json:
-
-    - namespace: specifies the namespace for this service. Namespace
-      is primarily used when other services import definitions from
-      your service and in the code generators when defining things
-      like package names. If not specified, we will automatically
-      generate a namespace based on [organization
-      namespace].[formatted service name].[major version number]. Note
-      that by default apidoc includes the major version number in the
-      package name which allows service authors and clients to
-      interact with multiple versions of the service where changes
-      have been made in a non backwards compatible way.
-
-      organization level package name has been renamed to namespace
-      and is now required.
-
-    - base url is now optional avoiding need to guess the url during
-      initial development (before service is deployed)
-
-    - imports
-
-  - introduction of service.json
-
-  - package name changes (formatting injects dots now)
-     - "error" is renamed to "errors" to match pluralization of models and enums
-
-  - document addition of major version number to package names
-
-  - FailedRequest class moved to error package
-
-  - FailedRequest changed to have a simpler signature:
-     - Removed full response
-     - Expose HTTP Status code and a message
-     - makes the class serializable as well
-     - moved to "errors" package
-
   - reorder params so form is last
       override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
         orgKey: String
