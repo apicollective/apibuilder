@@ -1,7 +1,7 @@
 package core
 
 import com.gilt.apidoc.v0.models.Organization
-import lib.Text
+import lib.{Text, VersionTag}
 
 case class ServiceConfiguration(
   orgKey: String,
@@ -15,7 +15,8 @@ case class ServiceConfiguration(
   def applicationNamespace(key: String): String = {
     (
       Seq(orgNamespace.trim) ++
-      Text.splitIntoWords(Text.camelCaseToUnderscore(key.trim)).map(_.toLowerCase).map(_.trim)
+      Text.splitIntoWords(Text.camelCaseToUnderscore(key.trim)).map(_.toLowerCase).map(_.trim) ++
+      Seq(VersionTag(version).major.map(num => s"v$num").getOrElse(""))
     ).filter(!_.isEmpty).mkString(".")
   }
 

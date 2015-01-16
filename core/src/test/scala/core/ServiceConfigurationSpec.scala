@@ -1,7 +1,6 @@
 package core
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
-import org.scalatest.Matchers
+import org.scalatest.{FunSpec, Matchers}
 
 class ServiceConfigurationSpec extends FunSpec with Matchers {
 
@@ -15,23 +14,23 @@ class ServiceConfigurationSpec extends FunSpec with Matchers {
 
   it("applicationNamespace") {
     val config = createServiceConfiguration("me.apidoc")
-    config.applicationNamespace("api") should be("me.apidoc.api")
-    config.applicationNamespace("spec") should be("me.apidoc.spec")
-    config.applicationNamespace("fooBar") should be("me.apidoc.foo.bar")
-    config.applicationNamespace("foo-bar") should be("me.apidoc.foo.bar")
-    config.applicationNamespace("foo_bar") should be("me.apidoc.foo.bar")
-    config.applicationNamespace("Foo.Bar") should be("me.apidoc.foo.bar")
-    config.applicationNamespace("fooBarBaz") should be("me.apidoc.foo.bar.baz")
+    config.applicationNamespace("api") should be("me.apidoc.api.v1")
+    config.applicationNamespace("spec") should be("me.apidoc.spec.v1")
+    config.applicationNamespace("fooBar") should be("me.apidoc.foo.bar.v1")
+    config.applicationNamespace("foo-bar") should be("me.apidoc.foo.bar.v1")
+    config.applicationNamespace("foo_bar") should be("me.apidoc.foo.bar.v1")
+    config.applicationNamespace("Foo.bar") should be("me.apidoc.foo.bar.v1")
+    config.applicationNamespace("fooBarBaz") should be("me.apidoc.foo.bar.baz.v1")
   }
 
   it("applicationNamespace is in lower case") {
     val config = createServiceConfiguration("ME.APIDOC")
-    config.applicationNamespace("API") should be("ME.APIDOC.api")
+    config.applicationNamespace("API") should be("ME.APIDOC.api.v1")
   }
 
   it("applicationNamespace is trimmed") {
     val config = createServiceConfiguration("me.apidoc")
-    config.applicationNamespace("  api  ") should be("me.apidoc.api")
+    config.applicationNamespace("  api  ") should be("me.apidoc.api.v1")
   }
 
 }
