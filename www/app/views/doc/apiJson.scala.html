@@ -135,7 +135,7 @@
       <li><em>description</em> optional longer description for this operation.</li>
       <li><em>body</em> optional specification for the type of the body of this request. For all operations that support bodies (e.g. POST, PUT, PATCH), allows you to specify the type of the body. See <a href="#body">Body</a>.</li>
       <li><em>parameters</em> optional JSON Array of the parameters to this method. By default, for @lib.Methods.MethodsNotAcceptingBodies.mkString(" and ") methods, parameters are assumed to be in the path or in the query. For other methods, parameters are assumed to be in the path or form body, unless you have explicitly specified a body in which case parameters can be provided in the path or the query. See <a href="#parameter">Parameter</a>.</li>
-      <li><em>responses</em> optional JSON Object of HTTP Response Code => Response. See <a name="#response"Response></a>. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented.</li>
+      <li><em>responses</em> optional JSON Object of HTTP Response Code => Response. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented. See <a href="#response">Response</a>.</li>
     </ul>
   </p>
 
