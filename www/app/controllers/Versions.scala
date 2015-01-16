@@ -211,10 +211,6 @@ object Versions extends Controller {
 
       valid => {
 
-        // TODO: Need to figure out how to get the service key out of
-        // the form or offer a different way to upload / create
-        // service versions
-
         request.body.file("file") match {
           case None => Future {
             Ok(views.html.versions.form(tpl, applicationKey, boundForm, Seq("Please select a non empty file to upload")))
