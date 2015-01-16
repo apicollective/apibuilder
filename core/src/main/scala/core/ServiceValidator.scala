@@ -15,7 +15,10 @@ case class ServiceValidator(
   private val RequiredFields = Seq("name")
 
   lazy val service: Option[Service] = {
-    internalService.map { ServiceBuilder(config, _) }
+    errors match {
+      case Nil => internalService.map { ServiceBuilder(config, _) }
+      case _ => None
+    }
   }
 
   def validate(): Either[Seq[String], Service] = {
@@ -60,7 +63,7 @@ case class ServiceValidator(
     internalService match {
 
       case None => {
-        if (apiJson == "") {
+        if (apiJson.trim == "") {
           Seq("No Data")
         } else {
           Seq(parseError.getOrElse("Invalid JSON"))
@@ -163,8 +166,12 @@ case class ServiceValidator(
       model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).flatMap { field =>
         field.datatype.get.names.flatMap { name =>
           internalService.get.typeResolver.toType(name) match {
-            case None => Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[$name]")
-            case _ => None
+            case None => {
+              Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[$name]")
+            }
+            case _ => {
+              None
+            }
           }
         }
       }
