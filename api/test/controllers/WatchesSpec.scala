@@ -1,8 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.v0.FailedRequest
 import com.gilt.apidoc.v0.models.{Organization, Application, User, Watch, WatchForm}
-import com.gilt.apidoc.v0.error.ErrorsResponse
+import com.gilt.apidoc.v0.error.{ErrorsResponse, FailedRequest}
 import java.util.UUID
 
 import play.api.test._

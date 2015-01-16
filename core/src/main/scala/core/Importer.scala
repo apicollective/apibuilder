@@ -1,5 +1,6 @@
 package core
 
+import com.gilt.apidoc.v0.error.FailedRequest
 import com.gilt.apidoc.spec.v0.models.{Method, Service}
 import com.gilt.apidoc.spec.v0.models.json._
 import play.api.libs.json.Json
@@ -55,14 +56,14 @@ case class Importer(uri: String) {
             r.json.as[Service]
           } catch {
             case e: JsonParseException => {
-              throw new com.gilt.apidoc.v0.FailedRequest(r, Some(s"Import Uri[$uri] did not return valid JSON"))
+              throw new FailedRequest(r.status, s"Import Uri[$uri] did not return valid JSON")
             }
             case e: JsonProcessingException => {
-              throw new com.gilt.apidoc.v0.FailedRequest(r, Some(s"Import Uri[$uri] did not return valid JSON"))
+              throw new FailedRequest(r.status, s"Import Uri[$uri] did not return valid JSON")
             }
           }
         }
-        case r => throw new com.gilt.apidoc.v0.FailedRequest(r)
+        case r => throw new FailedRequest(r.status, "Expected an HTTP 200 but receieved HTTP ${r.status}")
       },
       1000.millis
     )

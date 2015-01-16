@@ -369,6 +369,7 @@ package com.gilt.apidoc.v0.models {
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
+    import com.gilt.apidoc.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
@@ -916,8 +917,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.Application]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Application]", r, _.validate[Seq[com.gilt.apidoc.v0.models.Application]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -928,9 +929,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(applicationForm)
 
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Application]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Application", r, _.validate[com.gilt.apidoc.v0.models.Application])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -942,9 +943,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(applicationForm)
 
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Application]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Application", r, _.validate[com.gilt.apidoc.v0.models.Application])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -955,7 +956,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -968,10 +969,10 @@ package com.gilt.apidoc.v0 {
         generatorKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.Code]] = {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(generatorKey, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.Code])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Code", r, _.validate[com.gilt.apidoc.v0.models.Code]))
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404, 409")
         }
       }
     }
@@ -984,9 +985,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(domain)
 
         _executeRequest("POST", s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Domain]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Domain", r, _.validate[com.gilt.apidoc.v0.models.Domain])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -997,7 +998,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("DELETE", s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1011,7 +1012,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("POST", s"/email_verification_confirmations", body = Some(payload)).map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 409")
         }
       }
     }
@@ -1031,8 +1032,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/generators", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.Generator]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Generator]", r, _.validate[Seq[com.gilt.apidoc.v0.models.Generator]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1040,9 +1041,9 @@ package com.gilt.apidoc.v0 {
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.Generator]] = {
         _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.Generator])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Generator", r, _.validate[com.gilt.apidoc.v0.models.Generator]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1052,9 +1053,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(generatorCreateForm)
 
         _executeRequest("POST", s"/generators", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Generator]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Generator", r, _.validate[com.gilt.apidoc.v0.models.Generator])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1065,9 +1066,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(generatorUpdateForm)
 
         _executeRequest("PUT", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Generator]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Generator", r, _.validate[com.gilt.apidoc.v0.models.Generator])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1077,7 +1078,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("DELETE", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1085,9 +1086,9 @@ package com.gilt.apidoc.v0 {
     object Healthchecks extends Healthchecks {
       override def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.Healthcheck]] = {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.Healthcheck])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Healthcheck", r, _.validate[com.gilt.apidoc.v0.models.Healthcheck]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
     }
@@ -1111,8 +1112,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/memberships", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.Membership]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Membership]", r, _.validate[Seq[com.gilt.apidoc.v0.models.Membership]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1120,9 +1121,9 @@ package com.gilt.apidoc.v0 {
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.Membership]] = {
         _executeRequest("GET", s"/memberships/${guid}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.Membership])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Membership", r, _.validate[com.gilt.apidoc.v0.models.Membership]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1132,7 +1133,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("DELETE", s"/memberships/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1156,8 +1157,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/membership_requests", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.MembershipRequest]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.MembershipRequest]", r, _.validate[Seq[com.gilt.apidoc.v0.models.MembershipRequest]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1173,9 +1174,9 @@ package com.gilt.apidoc.v0 {
         )
 
         _executeRequest("POST", s"/membership_requests", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.MembershipRequest]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.MembershipRequest", r, _.validate[com.gilt.apidoc.v0.models.MembershipRequest])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1185,7 +1186,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("POST", s"/membership_requests/${guid}/accept").map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 409")
         }
       }
 
@@ -1195,7 +1196,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("POST", s"/membership_requests/${guid}/decline").map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 409")
         }
       }
     }
@@ -1221,8 +1222,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/organizations", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.Organization]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Organization]", r, _.validate[Seq[com.gilt.apidoc.v0.models.Organization]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1230,9 +1231,9 @@ package com.gilt.apidoc.v0 {
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.Organization]] = {
         _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.Organization])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Organization", r, _.validate[com.gilt.apidoc.v0.models.Organization]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1242,9 +1243,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
         _executeRequest("POST", s"/organizations", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Organization]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Organization", r, _.validate[com.gilt.apidoc.v0.models.Organization])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1255,9 +1256,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
         _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Organization]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Organization", r, _.validate[com.gilt.apidoc.v0.models.Organization])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1267,7 +1268,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1279,9 +1280,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(passwordReset)
 
         _executeRequest("POST", s"/password_resets", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.PasswordResetSuccess]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.PasswordResetSuccess", r, _.validate[com.gilt.apidoc.v0.models.PasswordResetSuccess])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
     }
@@ -1295,7 +1296,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("POST", s"/password_reset_requests", body = Some(payload)).map {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 409")
         }
       }
     }
@@ -1319,8 +1320,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.Subscription]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Subscription]", r, _.validate[Seq[com.gilt.apidoc.v0.models.Subscription]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1328,9 +1329,9 @@ package com.gilt.apidoc.v0 {
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.Subscription]] = {
         _executeRequest("GET", s"/subscriptions/${guid}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.Subscription])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Subscription", r, _.validate[com.gilt.apidoc.v0.models.Subscription]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1340,9 +1341,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(subscriptionForm)
 
         _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
-          case r if r.status == 201 => r.json.as[com.gilt.apidoc.v0.models.Subscription]
+          case r if r.status == 201 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Subscription", r, _.validate[com.gilt.apidoc.v0.models.Subscription])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1352,7 +1353,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("DELETE", s"/subscriptions/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1370,8 +1371,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.User]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.User]", r, _.validate[Seq[com.gilt.apidoc.v0.models.User]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1379,9 +1380,9 @@ package com.gilt.apidoc.v0 {
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.User]] = {
         _executeRequest("GET", s"/users/${guid}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.User])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.User", r, _.validate[com.gilt.apidoc.v0.models.User]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1395,9 +1396,9 @@ package com.gilt.apidoc.v0 {
         )
 
         _executeRequest("POST", s"/users/authenticate", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.User]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.User", r, _.validate[com.gilt.apidoc.v0.models.User])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1413,9 +1414,9 @@ package com.gilt.apidoc.v0 {
         )
 
         _executeRequest("POST", s"/users", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.User]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.User", r, _.validate[com.gilt.apidoc.v0.models.User])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1430,9 +1431,9 @@ package com.gilt.apidoc.v0 {
         )
 
         _executeRequest("PUT", s"/users/${guid}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.User]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.User", r, _.validate[com.gilt.apidoc.v0.models.User])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
     }
@@ -1444,8 +1445,8 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(value)
 
         _executeRequest("POST", s"/validations", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Validation]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Validation", r, _.validate[com.gilt.apidoc.v0.models.Validation])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
     }
@@ -1463,8 +1464,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.Version]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Version]", r, _.validate[Seq[com.gilt.apidoc.v0.models.Version]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1474,9 +1475,9 @@ package com.gilt.apidoc.v0 {
         version: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.Version]] = {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.Version])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Version", r, _.validate[com.gilt.apidoc.v0.models.Version]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1488,9 +1489,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(versionForm)
 
         _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Version]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Version", r, _.validate[com.gilt.apidoc.v0.models.Version])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1503,9 +1504,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(versionForm)
 
         _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", body = Some(payload)).map {
-          case r if r.status == 200 => r.json.as[com.gilt.apidoc.v0.models.Version]
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Version", r, _.validate[com.gilt.apidoc.v0.models.Version])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
 
@@ -1517,7 +1518,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1541,8 +1542,8 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/watches", queryParameters = queryParameters).map {
-          case r if r.status == 200 => r.json.as[Seq[com.gilt.apidoc.v0.models.Watch]]
-          case r => throw new FailedRequest(r)
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Watch]", r, _.validate[Seq[com.gilt.apidoc.v0.models.Watch]])
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -1550,9 +1551,9 @@ package com.gilt.apidoc.v0 {
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.Watch]] = {
         _executeRequest("GET", s"/watches/${guid}").map {
-          case r if r.status == 200 => Some(r.json.as[com.gilt.apidoc.v0.models.Watch])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Watch", r, _.validate[com.gilt.apidoc.v0.models.Watch]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1568,9 +1569,9 @@ package com.gilt.apidoc.v0 {
         ).flatten
 
         _executeRequest("GET", s"/watches/check", queryParameters = queryParameters).map {
-          case r if r.status == 200 => Some(r.json.as[Boolean])
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("Boolean", r, _.validate[Boolean]))
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
 
@@ -1580,9 +1581,9 @@ package com.gilt.apidoc.v0 {
         val payload = play.api.libs.json.Json.toJson(watchForm)
 
         _executeRequest("POST", s"/watches", body = Some(payload)).map {
-          case r if r.status == 201 => r.json.as[com.gilt.apidoc.v0.models.Watch]
+          case r if r.status == 201 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Watch", r, _.validate[com.gilt.apidoc.v0.models.Watch])
           case r if r.status == 409 => throw new com.gilt.apidoc.v0.error.ErrorsResponse(r)
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 201, 409")
         }
       }
 
@@ -1592,7 +1593,7 @@ package com.gilt.apidoc.v0 {
         _executeRequest("DELETE", s"/watches/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
-          case r => throw new FailedRequest(r)
+          case r => throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 204, 404")
         }
       }
     }
@@ -1653,6 +1654,21 @@ package com.gilt.apidoc.v0 {
       }
     }
 
+  }
+
+  object Client {
+    def parseJson[T](
+      className: String,
+      r: play.api.libs.ws.WSResponse,
+      f: (play.api.libs.json.JsValue => play.api.libs.json.JsResult[T])
+    ): T = {
+      f(play.api.libs.json.Json.parse(r.body)) match {
+        case play.api.libs.json.JsSuccess(x, _) => x
+        case play.api.libs.json.JsError(errors) => {
+          throw new com.gilt.apidoc.v0.error.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
+        }
+      }
+    }
   }
 
   trait Applications {
@@ -2069,11 +2085,6 @@ package com.gilt.apidoc.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[Unit]]
   }
 
-  case class FailedRequest(
-    response: play.api.libs.ws.WSResponse,
-    message: Option[String] = None
-  ) extends Exception(message.getOrElse(response.status + ": " + response.body))
-
   package error {
 
     import com.gilt.apidoc.v0.models.json._
@@ -2082,9 +2093,11 @@ package com.gilt.apidoc.v0 {
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
-      import com.gilt.apidoc.v0.models.json._
-      lazy val errors = response.json.as[Seq[com.gilt.apidoc.v0.models.Error]]
+      lazy val errors = _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Error]", response, _.validate[Seq[com.gilt.apidoc.v0.models.Error]])
     }
+
+    case class FailedRequest(responseCode: Int, message: String) extends Exception(s"HTTP $responseCode: $message")
+
   }
 
   object Bindables {

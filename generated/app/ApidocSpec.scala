@@ -199,6 +199,7 @@ package com.gilt.apidoc.spec.v0.models {
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
+    import com.gilt.apidoc.spec.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
@@ -568,10 +569,26 @@ package com.gilt.apidoc.spec.v0 {
 
   }
 
-  case class FailedRequest(
-    response: play.api.libs.ws.WSResponse,
-    message: Option[String] = None
-  ) extends Exception(message.getOrElse(response.status + ": " + response.body))
+  object Client {
+    def parseJson[T](
+      className: String,
+      r: play.api.libs.ws.WSResponse,
+      f: (play.api.libs.json.JsValue => play.api.libs.json.JsResult[T])
+    ): T = {
+      f(play.api.libs.json.Json.parse(r.body)) match {
+        case play.api.libs.json.JsSuccess(x, _) => x
+        case play.api.libs.json.JsError(errors) => {
+          throw new com.gilt.apidoc.spec.v0.error.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
+        }
+      }
+    }
+  }
+
+  package error {
+
+    case class FailedRequest(responseCode: Int, message: String) extends Exception(s"HTTP $responseCode: $message")
+
+  }
 
   object Bindables {
 

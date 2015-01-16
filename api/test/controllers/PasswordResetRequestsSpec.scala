@@ -1,7 +1,6 @@
 package controllers
 
 import db.PasswordResetRequestsDao
-import com.gilt.apidoc.v0.FailedRequest
 import com.gilt.apidoc.v0.models.{PasswordReset, PasswordResetRequest, User}
 import com.gilt.apidoc.v0.error.ErrorsResponse
 import java.util.UUID
