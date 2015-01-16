@@ -13,6 +13,7 @@ update release notes
   - introduction of service.json
 
   - package name changes (formatting injects dots now)
+     - "error" is renamed to "errors" to match pluralization of models and enums
 
   - document addition of major version number to package names
 
@@ -22,6 +23,7 @@ update release notes
      - Removed full response
      - Expose HTTP Status code and a message
      - makes the class serializable as well
+     - moved to "errors" package
 
   - reorder params so form is last
       override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
