@@ -16,6 +16,13 @@ update release notes
 
   - document addition of major version number to package names
 
+  - FailedRequest class moved to error package
+
+  - FailedRequest changed to have a simpler signature:
+     - Removed full response
+     - Expose HTTP Status code and a message
+     - makes the class serializable as well
+
   - reorder params so form is last
       override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
         orgKey: String
