@@ -4,7 +4,6 @@ ruby client generator:
   -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
 
 Breaking changes:
-  - Add major version number to package name (?)
   - Change 404s to be explicit
 
 update release notes
