@@ -34,11 +34,12 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
   private val apiToken = current.configuration.getString("apidoc.token").getOrElse {
     sys.error("apidoc.token is required")
   }
+  private lazy val apiAuth = com.gilt.apidoc.v0.Authorization.Basic(apiToken)
 
   def api(user: Option[User] = None): com.gilt.apidoc.v0.Client = {
     user match {
-      case None => new com.gilt.apidoc.v0.Client(apiUrl, Some(apiToken))
-      case Some(u) => new com.gilt.apidoc.v0.Client(apiUrl, Some(apiToken)) {
+      case None => new com.gilt.apidoc.v0.Client(apiUrl, Some(apiAuth))
+      case Some(u) => new com.gilt.apidoc.v0.Client(apiUrl, Some(apiAuth)) {
         override def _requestHolder(path: String) = {
           super._requestHolder(path).withHeaders("X-User-Guid" -> u.guid.toString)
         }

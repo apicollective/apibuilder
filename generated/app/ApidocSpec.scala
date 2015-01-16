@@ -499,7 +499,7 @@ package com.gilt.apidoc.spec.v0.models {
 
 package com.gilt.apidoc.spec.v0 {
 
-  class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
+  class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.spec.v0.Authorization] = None) {
     import com.gilt.apidoc.spec.v0.models.json._
 
     private val UserAgent = "apidoc:0.7.39 http://localhost:9000/gilt/apidoc-spec/0.7.39/play_2_3_client"
@@ -515,8 +515,13 @@ package com.gilt.apidoc.spec.v0 {
       import play.api.Play.current
 
       val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("User-Agent" -> UserAgent)
-      apiToken.fold(holder) { token =>
-        holder.withAuth(token, "", play.api.libs.ws.WSAuthScheme.BASIC)
+      auth.fold(holder) { a =>
+        a match {
+          case Authorization.Basic(username, password) => {
+            holder.withAuth(username, password.getOrElse(""), play.api.libs.ws.WSAuthScheme.BASIC)
+          }
+          case _ => sys.error("Invalid authorization scheme[" + a.getClass + "]")
+        }
       }
     }
 
@@ -526,7 +531,7 @@ package com.gilt.apidoc.spec.v0 {
         value <- values
       } yield name -> value
       val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
-      apiToken.fold(logger.info(s"curl -X $method $url")) { _ =>
+      auth.fold(logger.info(s"curl -X $method $url")) { _ =>
         logger.info(s"curl -X $method -u '[REDACTED]:' $url")
       }
       req
@@ -582,6 +587,11 @@ package com.gilt.apidoc.spec.v0 {
         }
       }
     }
+  }
+
+  sealed trait Authorization
+  object Authorization {
+    case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package errors {
