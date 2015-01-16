@@ -192,15 +192,23 @@ object VersionsDao {
         }
 
         try {
-          val service = core.ServiceValidator(config, original).service.get
-          if (user.isEmpty) {
-            user = Some(UsersDao.findByEmail(UsersDao.AdminUserEmail).getOrElse {
-              sys.error(s"Failed to create background user w/ email[${UsersDao.AdminUserEmail}]")
-            })
-          }
+          val validator = core.ServiceValidator(config, original)
+          validator.service match {
+            case None => {
+              Logger.error(s"Version[${versionGuid}] has invalid JSON: " + validator.errors.mkString(", "))
+              bad += 1
+            }
+            case Some(service) => {
+              if (user.isEmpty) {
+                user = Some(UsersDao.findByEmail(UsersDao.AdminUserEmail).getOrElse {
+                  sys.error(s"Failed to create background user w/ email[${UsersDao.AdminUserEmail}]")
+                })
+              }
 
-          insertService(c, user.get, versionGuid, service)
-          good += 1
+              insertService(c, user.get, versionGuid, service)
+              good += 1
+            }
+          }
         } catch {
           case e: Throwable => {
             Logger.error(s"Error migrating version[${versionGuid}] to service versionNumber[$ServiceVersionNumber]: $e")
