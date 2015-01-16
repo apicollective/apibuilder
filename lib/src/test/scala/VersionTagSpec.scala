@@ -43,4 +43,29 @@ class VersionTagSpec extends FunSpec with Matchers {
     assertSorted(Seq("0.8.6", "0.8.8", "development"), "development 0.8.6 0.8.8")
   }
 
+  it("parses major from semver versions") {
+    VersionTag("0.0.0").major should be(Some(0))
+    VersionTag("0.0.0").major should be(Some(0))
+    VersionTag("0.0.0-dev").major should be(Some(0))
+
+    VersionTag("1.0.0").major should be(Some(1))
+    VersionTag("1.0.0-dev").major should be(Some(1))
+  }
+
+  it("parses major from github versions") {
+    VersionTag("v1").major should be(Some(1))
+    VersionTag("v1.0.0").major should be(Some(1))
+    VersionTag("v1.0.0-dev").major should be(Some(1))
+  }
+
+  it("returns none when no major number") {
+    VersionTag("v").major should be(None)
+    VersionTag("dev").major should be(None)
+  }
+
+  it("major ignores whitespace") {
+    VersionTag(" 1.0").major should be(Some(1))
+    VersionTag(" v2.0").major should be(Some(2))
+  }
+
 }
