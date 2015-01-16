@@ -8,6 +8,7 @@
     <pre>
     {
       "name": <em>string</em>,
+      "namespace": <em>string (optional)</em>,
       "base_url": <em>string</em>,
       "description": <em>string (optional)</em>,
       "headers": <em>JSON Array of <a href="#header">Header</a> (optional)</em>,
@@ -20,6 +21,7 @@
     where:
     <ul>
       <li><em>name</em>: the human readable name of this service. Used for display, and as the basis for generating a unique key for URL.</li>
+      <li><em>namespace</em>: specifies the namespace for this service. Namespace is primarily used when other services import definitions from your service and in the code generators when defining things like package names. If not specified, we will automatically generate a namespace based on [organization namespace].[formatted service name].[major version number]. Note that by default apidoc includes the major version number in the package name which allows service authors and clients to interact with multiple versions of the service where changes have been made in a non backwards compatible way.</li>
       <li><em>baseUrl</em>: the base URL where this service is hosted. Must start with http.</li>
       <li><em>description</em>: optional description for what this service provides.</li>
       <li><em>headers</em> JSON array defining any HTTP Headers that the service understands or expects. See <a href="#enum">Enum</a></li>
