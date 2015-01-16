@@ -58,11 +58,13 @@ private[core] case class InternalServiceForm(json: JsValue) {
     (json \ "headers").asOpt[JsArray].map(_.value).getOrElse(Seq.empty).flatMap { el =>
       el match {
         case o: JsObject => {
+          val datatype = InternalDatatype(o)
+
           Some(
             InternalHeaderForm(
               name = JsonUtil.asOptString(o, "name"),
-              datatype = JsonUtil.asOptString(o, "type").map(InternalDatatype(_)),
-              required = JsonUtil.asOptBoolean(o \ "required").getOrElse(true),
+              datatype = datatype,
+              required = datatype.map(_.required).getOrElse(true),
               description = JsonUtil.asOptString(o, "description"),
               default = JsonUtil.asOptString(o, "default")
             )
@@ -372,11 +374,13 @@ object InternalFieldForm {
       Seq.empty
     }
 
+    val datatype = InternalDatatype(json)
+
     InternalFieldForm(
       name = JsonUtil.asOptString(json \ "name"),
-      datatype = JsonUtil.asOptString(json, "type").map(InternalDatatype(_)),
+      datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
-      required = JsonUtil.asOptBoolean(json \ "required").getOrElse(true),
+      required = datatype.map(_.required).getOrElse(true),
       default = JsonUtil.asOptString(json, "default"),
       minimum = (json \ "minimum").asOpt[Long],
       maximum = (json \ "maximum").asOpt[Long],
@@ -390,11 +394,13 @@ object InternalFieldForm {
 object InternalParameterForm {
 
   def apply(json: JsObject): InternalParameterForm = {
+    val datatype = InternalDatatype(json)
+
     InternalParameterForm(
       name = JsonUtil.asOptString(json \ "name"),
-      datatype = JsonUtil.asOptString(json, "type").map(InternalDatatype(_)),
+      datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
-      required = JsonUtil.asOptBoolean(json \ "required").getOrElse(true),
+      required = datatype.map(_.required).getOrElse(true),
       default = JsonUtil.asOptString(json, "default"),
       minimum = (json \ "minimum").asOpt[Long],
       maximum = (json \ "maximum").asOpt[Long],
@@ -407,6 +413,7 @@ object InternalParameterForm {
 sealed trait InternalDatatype {
 
   def name: String
+  def required: Boolean
   def label: String
 
   protected def makeLabel(prefix: String = "", postfix: String = ""): String = {
@@ -417,19 +424,15 @@ sealed trait InternalDatatype {
 
 private[core] object InternalDatatype {
 
-  case class List(name: String) extends InternalDatatype {
+  case class List(name: String, required: Boolean) extends InternalDatatype {
     override def label = makeLabel("[", "]")
   }
 
-  case class Map(name: String) extends InternalDatatype {
+  case class Map(name: String, required: Boolean) extends InternalDatatype {
     override def label = makeLabel("map[", "]")
   }
 
-  case class Option(name: String) extends InternalDatatype {
-    override def label = makeLabel("option[", "]")
-  }
-
-  case class Singleton(name: String) extends InternalDatatype {
+  case class Singleton(name: String, required: Boolean) extends InternalDatatype {
     override def label = makeLabel()
   }
 
@@ -440,11 +443,45 @@ private[core] object InternalDatatype {
 
   def apply(value: String): InternalDatatype = {
     value match {
-      case ListRx(name) => InternalDatatype.List(name)
-      case MapRx(name) => InternalDatatype.Map(name)
-      case OptionRx(name) => InternalDatatype.Option(name)
-      case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString)
-      case _ => InternalDatatype.Singleton(value)
+      case OptionRx(name) => {
+        name match {
+          case ListRx(n) => InternalDatatype.List(n, false)
+          case MapRx(n) => InternalDatatype.Map(n, false)
+          case _ => InternalDatatype.Singleton(name, false)
+        }
+      }
+      case ListRx(name) => InternalDatatype.List(name, true)
+      case MapRx(name) => InternalDatatype.Map(name, true)
+      case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString, true)
+      case _ => InternalDatatype.Singleton(value, true)
+    }
+  }
+
+  def apply(json: JsObject): Option[InternalDatatype] = {
+    JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)).map { dt =>
+      JsonUtil.asOptBoolean(json \ "required") match {
+        case None => {
+          dt
+        }
+
+        case Some(true) => {
+          // User explicitly marked this required
+          dt match {
+            case InternalDatatype.List(name, _) => InternalDatatype.List(name, true)
+            case InternalDatatype.Map(name, _) => InternalDatatype.Map(name, true)
+            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(name, true)
+          }
+        }
+
+        case Some(false) => {
+          // User explicitly marked this optional
+          dt match {
+            case InternalDatatype.List(name, _) => InternalDatatype.List(name, false)
+            case InternalDatatype.Map(name, _) => InternalDatatype.Map(name, false)
+            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(name, false)
+          }
+        }
+      }
     }
   }
 

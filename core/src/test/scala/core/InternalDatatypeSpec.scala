@@ -5,9 +5,29 @@ import org.scalatest.{FunSpec, Matchers}
 class InternalDatatypeSpec extends FunSpec with Matchers {
 
   it("label") {
-    Seq("string", "uuid", "[string]", "[uuid]", "map[string]", "map[uuid]", "option[string]").foreach { name =>
-      InternalDatatype(name).label should be(name)
+    Seq("string", "uuid", "[string]", "[uuid]", "map[string]", "map[uuid]").foreach { name =>
+      val dt = InternalDatatype(name)
+      dt.label should be(name)
+      dt.required should be(true)
     }
+  }
+
+  it("option[string]") {
+    val dt = InternalDatatype("option[string]")
+    dt.label should be("string")
+    dt.required should be(false)
+  }
+
+  it("option[map[integer]]") {
+    val dt = InternalDatatype("option[map[integer]]")
+    dt.label should be("map[integer]")
+    dt.required should be(false)
+  }
+
+  it("option[[uuid]]") {
+    val dt = InternalDatatype("option[[uuid]]")
+    dt.label should be("[uuid]")
+    dt.required should be(false)
   }
 
   it("map defaults to string type") {
