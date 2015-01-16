@@ -237,7 +237,7 @@ object Versions extends Controller {
                 ).map { version =>
                   Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version updated" )
                 }.recover {
-                  case r: com.gilt.apidoc.v0.error.ErrorsResponse => {
+                  case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
                     Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }
@@ -252,7 +252,7 @@ object Versions extends Controller {
                 ).map { version =>
                   Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version created" )
                 }.recover {
-                  case r: com.gilt.apidoc.v0.error.ErrorsResponse => {
+                  case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
                     Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }

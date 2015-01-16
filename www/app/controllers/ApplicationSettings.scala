@@ -75,7 +75,7 @@ object ApplicationSettings extends Controller {
           ).map { app =>
             Redirect(routes.ApplicationSettings.show(request.org.key, application.key, versionName)).flashing("success" -> s"Settings updated")
           }.recover {
-            case response: com.gilt.apidoc.v0.error.ErrorsResponse => {
+            case response: com.gilt.apidoc.v0.errors.ErrorsResponse => {
               Ok(views.html.application_settings.form(tpl, boundForm, response.errors.map(_.message)))
             }
           }

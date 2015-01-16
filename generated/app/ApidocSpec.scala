@@ -503,9 +503,9 @@ package com.gilt.apidoc.spec.v0 {
     import com.gilt.apidoc.spec.v0.models.json._
 
     private val UserAgent = "apidoc:0.7.39 http://localhost:9000/gilt/apidoc-spec/0.7.39/play_2_3_client"
-    private val logger = play.api.Logger("com.gilt.apidoc.spec.v0.client")
+    private val logger = play.api.Logger("com.gilt.apidoc.spec.v0.Client")
 
-    logger.info(s"Initializing com.gilt.apidoc.spec.v0.client for url $apiUrl")
+    logger.info(s"Initializing com.gilt.apidoc.spec.v0.Client for url $apiUrl")
 
 
 
@@ -578,13 +578,13 @@ package com.gilt.apidoc.spec.v0 {
       f(play.api.libs.json.Json.parse(r.body)) match {
         case play.api.libs.json.JsSuccess(x, _) => x
         case play.api.libs.json.JsError(errors) => {
-          throw new com.gilt.apidoc.spec.v0.error.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
+          throw new com.gilt.apidoc.spec.v0.errors.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
         }
       }
     }
   }
 
-  package error {
+  package errors {
 
     case class FailedRequest(responseCode: Int, message: String) extends Exception(s"HTTP $responseCode: $message")
 

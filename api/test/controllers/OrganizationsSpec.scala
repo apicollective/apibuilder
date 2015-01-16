@@ -2,7 +2,7 @@ package controllers
 
 import db.OrganizationsDao
 import com.gilt.apidoc.v0.models.{Organization, OrganizationForm, Visibility}
-import com.gilt.apidoc.v0.error.ErrorsResponse
+import com.gilt.apidoc.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidoc.v0.error.FailedRequest
+import com.gilt.apidoc.v0.errors.FailedRequest
 import com.gilt.apidoc.spec.v0.models.{Method, Service}
 import com.gilt.apidoc.spec.v0.models.json._
 import play.api.libs.json.Json
@@ -63,7 +63,7 @@ case class Importer(uri: String) {
             }
           }
         }
-        case r => throw new FailedRequest(r.status, "Expected an HTTP 200 but receieved HTTP ${r.status}")
+        case r => throw new FailedRequest(r.status, "Expected HTTP 200 but receieved HTTP ${r.status}")
       },
       1000.millis
     )

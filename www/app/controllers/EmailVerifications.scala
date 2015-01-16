@@ -14,7 +14,7 @@ object EmailVerifications extends Controller {
     ).map { _ =>
       Redirect(routes.ApplicationController.index()).flashing("success" -> "Email confirmed")
     }.recover {
-      case r: com.gilt.apidoc.v0.error.ErrorsResponse => {
+      case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
         Redirect(routes.ApplicationController.index()).flashing("warning" -> r.errors.map(_.message).mkString(", "))
       }
     }

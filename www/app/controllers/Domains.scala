@@ -41,7 +41,7 @@ object Domains extends Controller {
         ).map { d =>
           Redirect(routes.Domains.index(request.org.key)).flashing("success" -> s"Domain added")
         }.recover {
-          case response: com.gilt.apidoc.v0.error.ErrorsResponse => {
+          case response: com.gilt.apidoc.v0.errors.ErrorsResponse => {
             Ok(views.html.domains.form(tpl, boundForm, response.errors.map(_.message)))
           }
         }

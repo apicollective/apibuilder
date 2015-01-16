@@ -37,7 +37,7 @@ object LoginController extends Controller {
         Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { user =>
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
-          case r: com.gilt.apidoc.v0.error.ErrorsResponse => {
+          case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
             Ok(views.html.login.index(tpl, Tab.Login, form, registerForm, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
@@ -61,7 +61,7 @@ object LoginController extends Controller {
         Authenticated.api().Users.post(name = validForm.name, email = validForm.email, password = validForm.password).map { user =>
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
-          case r: com.gilt.apidoc.v0.error.ErrorsResponse => {
+          case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
             Ok(views.html.login.index(tpl, Tab.Register, loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
@@ -119,7 +119,7 @@ object LoginController extends Controller {
             flashing("success" -> "Your password has been reset and you are now logged in")
         
         }.recover {
-          case r: com.gilt.apidoc.v0.error.ErrorsResponse => {
+          case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
             Ok(views.html.login.resetPassword(tpl, token, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }

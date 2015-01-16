@@ -140,9 +140,9 @@ package com.gilt.apidoc.generator.v0 {
     import com.gilt.apidoc.generator.v0.models.json._
 
     private val UserAgent = "apidoc:0.7.39 http://localhost:9000/gilt/apidoc-generator/0.0.2/play_2_3_client"
-    private val logger = play.api.Logger("com.gilt.apidoc.generator.v0.client")
+    private val logger = play.api.Logger("com.gilt.apidoc.generator.v0.Client")
 
-    logger.info(s"Initializing com.gilt.apidoc.generator.v0.client for url $apiUrl")
+    logger.info(s"Initializing com.gilt.apidoc.generator.v0.Client for url $apiUrl")
 
     def generators: Generators = Generators
 
@@ -164,7 +164,7 @@ package com.gilt.apidoc.generator.v0 {
 
         _executeRequest("GET", s"/generators", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.generator.v0.Client.parseJson("Seq[com.gilt.apidoc.generator.v0.models.Generator]", r, _.validate[Seq[com.gilt.apidoc.generator.v0.models.Generator]])
-          case r => throw new com.gilt.apidoc.generator.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200")
+          case r => throw new com.gilt.apidoc.generator.v0.errors.FailedRequest(r.status, s"Unupported response code. Expected: 200")
         }
       }
 
@@ -174,7 +174,7 @@ package com.gilt.apidoc.generator.v0 {
         _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 200 => Some(_root_.com.gilt.apidoc.generator.v0.Client.parseJson("com.gilt.apidoc.generator.v0.models.Generator", r, _.validate[com.gilt.apidoc.generator.v0.models.Generator]))
           case r if r.status == 404 => None
-          case r => throw new com.gilt.apidoc.generator.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
+          case r => throw new com.gilt.apidoc.generator.v0.errors.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
     }
@@ -184,7 +184,7 @@ package com.gilt.apidoc.generator.v0 {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => Some(_root_.com.gilt.apidoc.generator.v0.Client.parseJson("com.gilt.apidoc.generator.v0.models.Healthcheck", r, _.validate[com.gilt.apidoc.generator.v0.models.Healthcheck]))
           case r if r.status == 404 => None
-          case r => throw new com.gilt.apidoc.generator.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
+          case r => throw new com.gilt.apidoc.generator.v0.errors.FailedRequest(r.status, s"Unupported response code. Expected: 200, 404")
         }
       }
     }
@@ -198,8 +198,8 @@ package com.gilt.apidoc.generator.v0 {
 
         _executeRequest("POST", s"/invocations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.generator.v0.Client.parseJson("com.gilt.apidoc.generator.v0.models.Invocation", r, _.validate[com.gilt.apidoc.generator.v0.models.Invocation])
-          case r if r.status == 409 => throw new com.gilt.apidoc.generator.v0.error.ErrorsResponse(r)
-          case r => throw new com.gilt.apidoc.generator.v0.error.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
+          case r if r.status == 409 => throw new com.gilt.apidoc.generator.v0.errors.ErrorsResponse(r)
+          case r => throw new com.gilt.apidoc.generator.v0.errors.FailedRequest(r.status, s"Unupported response code. Expected: 200, 409")
         }
       }
     }
@@ -271,7 +271,7 @@ package com.gilt.apidoc.generator.v0 {
       f(play.api.libs.json.Json.parse(r.body)) match {
         case play.api.libs.json.JsSuccess(x, _) => x
         case play.api.libs.json.JsError(errors) => {
-          throw new com.gilt.apidoc.generator.v0.error.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
+          throw new com.gilt.apidoc.generator.v0.errors.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
         }
       }
     }
@@ -309,7 +309,7 @@ package com.gilt.apidoc.generator.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.generator.v0.models.Invocation]
   }
 
-  package error {
+  package errors {
 
     import com.gilt.apidoc.generator.v0.models.json._
     import com.gilt.apidoc.spec.v0.models.json._
