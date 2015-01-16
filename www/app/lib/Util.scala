@@ -3,9 +3,9 @@ package lib
 case class ExampleService(key: String, version: String = "latest") {
 
   val docsUrl = if (version == "latest") {
-    s"/gilt/$key/$version"
-  } else {
     s"/gilt/$key"
+  } else {
+    s"/gilt/$key/$version"
   }
 
   val apiJsonUrl = s"/gilt/$key/$version/api.json"
