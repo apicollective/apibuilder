@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidoc.spec.v0.models.Service
+import com.gilt.apidoc.spec.v0.models.{Method, Service}
 import com.gilt.apidoc.spec.v0.models.json._
 import play.api.libs.json.Json
 import java.net.URI
@@ -49,7 +49,7 @@ case class Importer(uri: String) {
     import scala.concurrent.duration._
 
     Await.result(
-      client._executeRequest("GET", "").map {
+      client._executeRequest(Method.Get.toString, "").map {
         case r if r.status == 200 => {
           try {
             r.json.as[Service]

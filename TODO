@@ -1,9 +1,3 @@
-lib/src/main/scala/Methods.scala
-  -> Use Method enum
-
-/web/apidoc/core/src/main/scala/core/Importer.scala
-  -> Use method enum instead of string GET
-
 scala client: fix API for auth
 
 ruby client generator:
