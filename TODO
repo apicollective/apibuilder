@@ -15,7 +15,13 @@ Breaking changes:
 
 update release notes
 
-  - package name changes
+  - imports
+
+  - introduction of service.json
+
+  - package name changes (formatting injects dots now)
+
+  - document addition of major version number to package names
 
   - reorder params so form is last
       override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
