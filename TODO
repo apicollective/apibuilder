@@ -1,3 +1,8 @@
+review the option[xxx] syntax to declare types and see if we want to
+announce that in the release or if we should wait
+  if we keep, we probably need to remove option from:
+  /web/apidoc/lib/src/main/scala/Datatype.scala
+
 ruby client generator:
   -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
 
