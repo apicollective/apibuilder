@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.models.EmailVerificationConfirmationForm
-import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.v0.models.EmailVerificationConfirmationForm
+import com.gilt.apidoc.v0.models.json._
 import lib.Validation
 import db.{EmailVerificationsDao, EmailVerificationConfirmationsDao}
 import play.api.mvc._

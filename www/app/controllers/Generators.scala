@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, User}
+import com.gilt.apidoc.v0.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, User}
 import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
@@ -89,13 +89,13 @@ object Generators extends Controller {
           Future.sequence(futures).map { d =>
             Redirect(routes.Generators.list()).flashing("success" -> s"Generator(s) added")
           }.recover {
-            case response: com.gilt.apidoc.error.ErrorsResponse => {
+            case response: com.gilt.apidoc.v0.error.ErrorsResponse => {
               Ok(views.html.generators.form(tpl, 1, boundForm, response.errors.map(_.message)))
             }
           }
         }.getOrElse {
           val existingGenF = request.api.Generators.get()
-          val newGenF = new com.gilt.apidoc.generator.Client(valid.uri).generators.get()
+          val newGenF = new com.gilt.apidoc.generator.v0.Client(valid.uri).generators.get()
           (for {
             existingGenerators <- existingGenF
             newGenerators <- newGenF
@@ -104,7 +104,7 @@ object Generators extends Controller {
             val d = newGenerators.toList.map(gen => GeneratorDetails(gen.key, Visibility.Public.toString, !existingKeys.contains(gen.key)))
             Ok(views.html.generators.form(tpl, 2, generatorCreateForm.fill(valid.copy(details = d))))
           }).recover {
-            case response: com.gilt.apidoc.error.ErrorsResponse => {
+            case response: com.gilt.apidoc.v0.error.ErrorsResponse => {
               Ok(views.html.generators.form(tpl, 1, boundForm, response.errors.map(_.message)))
             }
           }

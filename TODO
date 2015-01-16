@@ -1,3 +1,11 @@
+lib/src/main/scala/Methods.scala
+  -> Use Method enum
+
+/web/apidoc/core/src/main/scala/core/Importer.scala
+  -> Use method enum instead of string GET
+
+scala client: fix API for auth
+
 ruby client generator:
   -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
 
@@ -8,6 +16,7 @@ Breaking changes:
 update release notes
 
   - package name changes
+
   - reorder params so form is last
       override def postByOrgKey(domain: com.gilt.apidoc.models.Domain,
         orgKey: String

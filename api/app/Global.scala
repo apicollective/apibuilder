@@ -1,4 +1,4 @@
-import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.v0.models.json._
 import actors.MainActor
 import db.VersionsDao
 import lib.Validation

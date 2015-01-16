@@ -1,7 +1,7 @@
 package core
 
 import lib.{Datatype, Primitives, Type, Kind, UrlKey}
-import com.gilt.apidoc.spec.models._
+import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
 
 object ServiceBuilder {

@@ -1,7 +1,7 @@
 package controllers
 
 import models.MainTemplate
-import com.gilt.apidoc.models.User
+import com.gilt.apidoc.v0.models.User
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
@@ -35,10 +35,10 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
     sys.error("apidoc.token is required")
   }
 
-  def api(user: Option[User] = None): com.gilt.apidoc.Client = {
+  def api(user: Option[User] = None): com.gilt.apidoc.v0.Client = {
     user match {
-      case None => new com.gilt.apidoc.Client(apiUrl, Some(apiToken))
-      case Some(u) => new com.gilt.apidoc.Client(apiUrl, Some(apiToken)) {
+      case None => new com.gilt.apidoc.v0.Client(apiUrl, Some(apiToken))
+      case Some(u) => new com.gilt.apidoc.v0.Client(apiUrl, Some(apiToken)) {
         override def _requestHolder(path: String) = {
           super._requestHolder(path).withHeaders("X-User-Guid" -> u.guid.toString)
         }

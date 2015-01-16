@@ -1,7 +1,7 @@
 package core
 
-import com.gilt.apidoc.spec.models.Service
-import com.gilt.apidoc.spec.models.json._
+import com.gilt.apidoc.spec.v0.models.Service
+import com.gilt.apidoc.spec.v0.models.json._
 import play.api.libs.json.Json
 import java.net.URI
 import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}
@@ -9,7 +9,7 @@ import scala.util.{Failure, Success, Try}
 
 case class Importer(uri: String) {
 
-  private val client = new com.gilt.apidoc.Client(uri)
+  private val client = new com.gilt.apidoc.v0.Client(uri)
 
   lazy val service: Service = fetched match {
     case Left(error) => sys.error(s"Error fetching uri[$uri]: $error")
@@ -55,14 +55,14 @@ case class Importer(uri: String) {
             r.json.as[Service]
           } catch {
             case e: JsonParseException => {
-              throw new com.gilt.apidoc.FailedRequest(r, Some(s"Import Uri[$uri] did not return valid JSON"))
+              throw new com.gilt.apidoc.v0.FailedRequest(r, Some(s"Import Uri[$uri] did not return valid JSON"))
             }
             case e: JsonProcessingException => {
-              throw new com.gilt.apidoc.FailedRequest(r, Some(s"Import Uri[$uri] did not return valid JSON"))
+              throw new com.gilt.apidoc.v0.FailedRequest(r, Some(s"Import Uri[$uri] did not return valid JSON"))
             }
           }
         }
-        case r => throw new com.gilt.apidoc.FailedRequest(r)
+        case r => throw new com.gilt.apidoc.v0.FailedRequest(r)
       },
       1000.millis
     )

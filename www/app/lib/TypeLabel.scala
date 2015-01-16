@@ -1,7 +1,7 @@
 package lib
 
-import com.gilt.apidoc.models.{Application, Organization}
-import com.gilt.apidoc.spec.models.{Import, Service}
+import com.gilt.apidoc.v0.models.{Application, Organization}
+import com.gilt.apidoc.spec.v0.models.{Import, Service}
 
 case class TypeLabel(
   org: Organization,

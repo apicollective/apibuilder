@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Error, User}
+import com.gilt.apidoc.v0.models.{Error, User}
 import lib.{Constants, Role, Validation}
 import anorm._
 import play.api.db._

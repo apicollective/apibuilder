@@ -2,9 +2,9 @@ package controllers
 
 import java.util.UUID
 
-import com.gilt.apidoc.models.{GeneratorOrgForm, GeneratorUpdateForm, GeneratorCreateForm, User, Generator}
-import com.gilt.apidoc.models.json._
-import com.gilt.apidoc.generator.Client
+import com.gilt.apidoc.v0.models.{GeneratorOrgForm, GeneratorUpdateForm, GeneratorCreateForm, User, Generator}
+import com.gilt.apidoc.v0.models.json._
+import com.gilt.apidoc.generator.v0.Client
 import db._
 import lib.Validation
 import play.api.libs.json._
@@ -79,7 +79,7 @@ object Generators extends Controller {
                 Future.successful(Conflict(Json.toJson(Validation.error(s"generator ${form.key} already exists"))))
               case None =>
                 new Client(form.uri).generators.getByKey(form.key).recover {
-                  case ex: com.gilt.apidoc.FailedRequest => None
+                  case ex: com.gilt.apidoc.v0.FailedRequest => None
                 }.map {
                   case Some(meta) =>
                     val generator = GeneratorsDao.create(request.user, form.key, form.uri, form.visibility, meta.name, meta.description, meta.language)

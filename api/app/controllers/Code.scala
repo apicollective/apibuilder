@@ -2,14 +2,14 @@ package controllers
 
 import java.util.UUID
 
-import com.gilt.apidoc.models.{Generator, Version}
-import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.v0.models.{Generator, Version}
+import com.gilt.apidoc.v0.models.json._
 
-import com.gilt.apidoc.spec.models.{Service}
-import com.gilt.apidoc.spec.models.json._
+import com.gilt.apidoc.spec.v0.models.{Service}
+import com.gilt.apidoc.spec.v0.models.json._
 
-import com.gilt.apidoc.generator.Client
-import com.gilt.apidoc.generator.models.InvocationForm
+import com.gilt.apidoc.generator.v0.Client
+import com.gilt.apidoc.generator.v0.models.InvocationForm
 
 import core.ServiceBuilder
 import db.{GeneratorsDao, Authorization, VersionsDao}
@@ -51,7 +51,7 @@ object Code extends Controller {
               key = generator.key,
               invocationForm = InvocationForm(service = service, userAgent = Some(userAgent))
             ).map { invocation =>
-              Ok(Json.toJson(com.gilt.apidoc.models.Code(generator, invocation.source)))
+              Ok(Json.toJson(com.gilt.apidoc.v0.models.Code(generator, invocation.source)))
             }
           }
         }

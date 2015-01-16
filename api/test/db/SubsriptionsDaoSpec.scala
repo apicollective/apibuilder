@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, Publication}
+import com.gilt.apidoc.v0.models.{Organization, Publication}
 import lib.Role
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID

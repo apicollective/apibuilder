@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.models.{Organization, User}
-import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.v0.models.{Organization, User}
+import com.gilt.apidoc.v0.models.json._
 import lib.{Review, Role, Validation}
 import db.{Authorization, MembershipRequestsDao, OrganizationsDao, UsersDao}
 import play.api.mvc._

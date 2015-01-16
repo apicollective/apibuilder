@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.models.User
-import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.v0.models.User
+import com.gilt.apidoc.v0.models.json._
 import lib.Validation
 import db.{UserForm, UsersDao, UserPasswordsDao}
 import play.api.mvc._

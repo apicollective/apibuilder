@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Error, Generator, GeneratorCreateForm, User, Visibility}
+import com.gilt.apidoc.v0.models.{Error, Generator, GeneratorCreateForm, User, Visibility}
 import anorm._
 import play.api.db._
 import play.api.Play.current

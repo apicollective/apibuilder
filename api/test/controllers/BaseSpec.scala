@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.models._
+import com.gilt.apidoc.v0.models._
 import db.{TokensDao, UsersDao, UserForm}
 import java.util.UUID
 
@@ -22,7 +22,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   lazy val client = newClient(TestUser)
 
   def newClient(user: User) = {
-    new com.gilt.apidoc.Client(s"http://localhost:$port", Some(apiToken)) {
+    new com.gilt.apidoc.v0.Client(s"http://localhost:$port", Some(apiToken)) {
       override def _requestHolder(path: String) = {
         super._requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
       }

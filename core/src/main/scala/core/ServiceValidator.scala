@@ -1,7 +1,7 @@
 package core
 
 import lib.{Datatype, Methods, Primitives, Text, Type, Kind, UrlKey}
-import com.gilt.apidoc.spec.models.{Enum, Field, Method, Service}
+import com.gilt.apidoc.spec.v0.models.{Enum, Field, Method, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException

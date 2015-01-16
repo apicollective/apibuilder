@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Organization, User}
+import com.gilt.apidoc.v0.models.{Organization, User}
 import anorm._
 import play.api.db._
 import play.api.Play.current

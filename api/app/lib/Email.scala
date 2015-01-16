@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.apidoc.models.User
+import com.gilt.apidoc.v0.models.User
 
 import java.util.UUID
 import java.nio.file.{Path, Paths, Files}

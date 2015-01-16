@@ -1,9 +1,9 @@
 package db
 
 import core.ServiceConfiguration
-import com.gilt.apidoc.models.{Application, Reference, User, Version, VersionForm, Visibility}
-import com.gilt.apidoc.spec.models.Service
-import com.gilt.apidoc.spec.models.json._
+import com.gilt.apidoc.v0.models.{Application, Reference, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.spec.v0.models.Service
+import com.gilt.apidoc.spec.v0.models.json._
 import lib.VersionTag
 import anorm._
 import play.api.db._

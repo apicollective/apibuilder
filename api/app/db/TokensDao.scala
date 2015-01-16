@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Token, TokenForm, User}
+import com.gilt.apidoc.v0.models.{Token, TokenForm, User}
 import lib.{Constants, Role, TokenGenerator}
 import anorm._
 import play.api.db._

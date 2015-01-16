@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Application, Organization, User}
+import com.gilt.apidoc.v0.models.{Application, Organization, User}
 import lib.Validation
 import core.ServiceValidator
 

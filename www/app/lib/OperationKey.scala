@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.apidoc.spec.models.{Model, Operation, Resource, Service}
+import com.gilt.apidoc.spec.v0.models.{Model, Operation, Resource, Service}
 
 object OperationKey {
 

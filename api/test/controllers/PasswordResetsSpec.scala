@@ -1,9 +1,9 @@
 package controllers
 
 import db.PasswordResetRequestsDao
-import com.gilt.apidoc.FailedRequest
-import com.gilt.apidoc.models.{PasswordReset, PasswordResetSuccess, PasswordResetRequest, User}
-import com.gilt.apidoc.error.ErrorsResponse
+import com.gilt.apidoc.v0.FailedRequest
+import com.gilt.apidoc.v0.models.{PasswordReset, PasswordResetSuccess, PasswordResetRequest, User}
+import com.gilt.apidoc.v0.error.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

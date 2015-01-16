@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidoc.spec.models.Method
+import com.gilt.apidoc.spec.v0.models.Method
 import org.scalatest.{FunSpec, Matchers}
 
 class SvcIrisHubSpec extends FunSpec with Matchers {

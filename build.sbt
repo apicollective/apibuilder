@@ -42,7 +42,7 @@ lazy val api = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    routesImport += "com.gilt.apidoc.Bindables._",
+    routesImport += "com.gilt.apidoc.v0.Bindables._",
     libraryDependencies ++= Seq(
       ws,
       jdbc,
@@ -61,7 +61,7 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    routesImport += "com.gilt.apidoc.Bindables._"
+    routesImport += "com.gilt.apidoc.v0.Bindables._"
   )
 
 lazy val spec = project

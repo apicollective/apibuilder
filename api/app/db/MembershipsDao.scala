@@ -1,7 +1,7 @@
 package db
 
-import com.gilt.apidoc.models.{Membership, Organization, User}
-import com.gilt.apidoc.models.json._
+import com.gilt.apidoc.v0.models.{Membership, Organization, User}
+import com.gilt.apidoc.v0.models.json._
 import lib.Role
 import anorm._
 import play.api.db._

@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.models.{Application, ApplicationForm, Error, Organization, Reference, User, Version, Visibility}
+import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Error, Organization, Reference, User, Version, Visibility}
 import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._
