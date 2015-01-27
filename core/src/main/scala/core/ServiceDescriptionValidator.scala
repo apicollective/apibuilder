@@ -300,6 +300,12 @@ case class ServiceDescriptionValidator(apiJson: String) {
     val modelNames = internalServiceDescription.get.models.map { _.name }.toSet
     val enumNames = internalServiceDescription.get.enums.map { _.name }.toSet
 
+    val missingMethods = internalServiceDescription.get.resources.flatMap { resource =>
+      resource.operations.filter(_.method.isEmpty).map { op =>
+        s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Missing method"
+      }
+    }
+
     val missingTypes = internalServiceDescription.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
@@ -372,7 +378,7 @@ case class ServiceDescriptionValidator(apiJson: String) {
       }
     }
 
-    invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
+    invalidCodes ++ missingMethods ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
   }
 
   private def validateParameterBodies(): Seq[String] = {
