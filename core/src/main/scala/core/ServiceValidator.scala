@@ -337,10 +337,10 @@ case class ServiceValidator(
     val invalidMethods = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.method match {
-          case None => Seq("Resource[user] missing HTTP method")
+          case None => Seq(s"Resource[${resource.modelName.getOrElse("")}] ${op.path} Missing HTTP method")
           case Some(m) => {
             Method.fromString(m) match {
-              case None => Seq(s"Resource[user] has an invalid HTTP method[$m]. Must be one of: " + Method.all.mkString(", "))
+              case None => Seq(s"Resource[${resource.modelName.getOrElse("")}] ${op.path} Invalid HTTP method[$m]. Must be one of: " + Method.all.mkString(", "))
               case Some(_) => Seq.empty
             }
           }
@@ -365,12 +365,6 @@ case class ServiceValidator(
 
     val modelNames = internalService.get.models.map { _.name }.toSet
     val enumNames = internalService.get.enums.map { _.name }.toSet
-
-    val missingMethods = internalService.get.resources.flatMap { resource =>
-      resource.operations.filter(_.method.isEmpty).map { op =>
-        s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Missing method"
-      }
-    }
 
     val missingTypes = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
@@ -444,7 +438,7 @@ case class ServiceValidator(
       }
     }
 
-    invalidMethods ++ missingMethods ++ invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
+    invalidMethods ++ invalidCodes ++ missingTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
   }
 
   private def validateParameterBodies(): Seq[String] = {

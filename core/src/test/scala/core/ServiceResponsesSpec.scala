@@ -67,7 +67,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
   it("generates an error message for an invalid method") {
     val json = baseJson.format("FOO", "")
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
-    validator.errors.mkString(" ") should be("Resource[user] has an invalid HTTP method[FOO]. Must be one of: GET, POST, PUT, PATCH, DELETE, HEAD, CONNECT, OPTIONS, TRACE")
+    validator.errors.mkString(" ") should be("Resource[user] /users/:id Invalid HTTP method[FOO]. Must be one of: GET, POST, PUT, PATCH, DELETE, HEAD, CONNECT, OPTIONS, TRACE")
   }
 
   it("accepts lower and upper case method names") {
@@ -81,7 +81,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
   it("generates an error message for a missing method") {
     val json = baseJson.format("", "")
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
-    validator.errors.mkString(" ") should be(s"Resource[user] missing HTTP method")
+    validator.errors.mkString(" ") should be(s"Resource[user] /users/:id Missing HTTP method")
   }
 
 }
