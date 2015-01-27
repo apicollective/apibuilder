@@ -33,7 +33,7 @@ class ServiceMethodsSpec extends FunSpec with Matchers {
     """
 
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
-    validator.errors.mkString("") should be("Resource[user] /users: Missing HTTP method")
+    validator.errors.mkString("") should be("Resource[user] /users Missing HTTP method")
   }
 
 }
