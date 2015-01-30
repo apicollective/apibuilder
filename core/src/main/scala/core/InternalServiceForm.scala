@@ -28,6 +28,19 @@ private[core] case class InternalServiceForm(json: JsValue) {
     }
   }
 
+  lazy val unions: Seq[InternalUnionForm] = {
+    (json \ "unions").asOpt[JsValue] match {
+      case Some(unions: JsObject) => {
+        unions.fields.flatMap { v =>
+          v match {
+            case(key, value) => value.asOpt[JsObject].map(InternalUnionForm(key, _))
+          }
+        }
+      }
+      case _ => Seq.empty
+    }
+  }
+
   lazy val models: Seq[InternalModelForm] = {
     (json \ "models").asOpt[JsValue] match {
       case Some(models: JsObject) => {
@@ -116,6 +129,17 @@ case class InternalEnumValueForm(
   description: Option[String]
 )
 
+case class InternalUnionForm(
+  name: String,
+  description: Option[String],
+  types: Seq[InternalUnionTypeForm]
+)
+
+case class InternalUnionTypeForm(
+  datatype: Option[InternalDatatype] = None,
+  description: Option[String]
+)
+
 case class InternalHeaderForm(
   name: Option[String],
   datatype: Option[InternalDatatype],
@@ -181,6 +205,31 @@ case class InternalResponseForm(
 ) {
 
   lazy val datatypeLabel: Option[String] = datatype.map(_.label)
+
+}
+
+object InternalUnionForm {
+
+  def apply(name: String, value: JsObject): InternalUnionForm = {
+    val description = JsonUtil.asOptString(value \ "description")
+    val types = (value \ "types").asOpt[JsArray] match {
+       case None => Seq.empty
+       case Some(a: JsArray) => {
+         a.value.map { json =>
+           InternalUnionTypeForm(
+             datatype = JsonUtil.asOptString(json, "type").map(InternalDatatype(_)),
+             description = JsonUtil.asOptString(json \ "description")
+           )
+         }
+       }
+    }
+
+    InternalUnionForm(
+      name = name,
+      description = description,
+      types = types
+    )
+  }
 
 }
 

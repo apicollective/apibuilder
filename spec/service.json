@@ -39,6 +39,7 @@
 		{ "name": "headers", "type": "[header]" },
 		{ "name": "imports", "type": "[import]" },
 		{ "name": "enums", "type": "[enum]" },
+		{ "name": "unions", "type": "[union]" },
 		{ "name": "models", "type": "[model]" },
 		{ "name": "resources", "type": "[resource]" }
 	    ]
@@ -67,6 +68,22 @@
 	"enum_value": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
+		{ "name": "description", "type": "string", "required": false }
+	    ]
+	},
+
+	"union": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" }
+	    ]
+	},
+
+	"union_type": {
+	    "description": "Metadata about one of the types that is part of a union type",
+	    "fields": [
+		{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
 		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
@@ -158,8 +175,9 @@
 		{ "name": "organization", "type": "organization" },
 		{ "name": "application", "type": "application" },
 		{ "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
-		{ "name": "models", "type": "[string]", "description": "Models made available by this import" },
-		{ "name": "enums", "type": "[string]", "description": "Models made available by this import" }		
+		{ "name": "enums", "type": "[string]", "description": "Models made available by this import" },
+		{ "name": "unions", "type": "[string]", "description": "Unions made available by this import" },
+		{ "name": "models", "type": "[string]", "description": "Models made available by this import" }
 	    ]
 	}
 

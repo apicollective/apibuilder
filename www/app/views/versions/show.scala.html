@@ -129,6 +129,24 @@
           @fields(tpl.org.get, application, tpl.version.get, service, model.fields)
         </div>
       }
+
+    <h2>Unions</h2>
+    @if(service.unions.isEmpty) {
+      <em>None</em>
+    } else {
+      @service.unions.map { union =>
+        <div id="union-@lib.UrlKey.generate(union.name)"></div>
+        <a name="union-@lib.UrlKey.generate(union.name)"></a>
+        <div class="version_union">
+          <h3>@union.name</h3>
+
+          @union.description.getOrElse("")
+
+          @unionTypes(tpl.org.get, application, tpl.version.get, service, union)
+        </div>
+      }
+    }
+
     </div>
   }
 

@@ -35,14 +35,16 @@ sealed trait Kind
 object Kind {
 
   case object Primitive extends Kind { override def toString = "primitive" }
-  case object Model extends Kind { override def toString = "model" }
   case object Enum extends Kind { override def toString = "enum" }
+  case object Union extends Kind { override def toString = "union" }
+  case object Model extends Kind { override def toString = "model" }
 
 }
 
 case class DatatypeResolver(
-  enumNames: Iterable[String] = Seq.empty,
-  modelNames: Iterable[String] = Seq.empty
+  enumNames: Iterable[String],
+  unionNames: Iterable[String],
+  modelNames: Iterable[String]
 ) {
 
   /**
@@ -53,6 +55,7 @@ case class DatatypeResolver(
     *   1. Primitive
     *   2. Enum
     *   3. Model
+    *   4. Union
     * 
     * If the type is not found, returns none.
     * 
@@ -70,7 +73,12 @@ case class DatatypeResolver(
           case None => {
             modelNames.find(_ == name) match {
               case Some(mt) => Some(Type(Kind.Model, name))
-              case None => None
+              case None => {
+                unionNames.find(_ == name) match {
+                  case Some(mt) => Some(Type(Kind.Union, name))
+                  case None => None
+                }
+              }
             }
           }
         }

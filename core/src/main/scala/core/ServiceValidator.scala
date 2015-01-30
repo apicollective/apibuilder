@@ -80,6 +80,7 @@ case class ServiceValidator(
           validateImports ++
           validateModels ++
           validateEnums ++
+          validateUnions ++
           validateHeaders ++
           validateModelAndEnumNamesAreDistinct ++
           validateFields ++
@@ -258,6 +259,41 @@ case class ServiceValidator(
     }
 
     nameErrors ++ valueErrors ++ valuesWithoutNames ++ valuesWithInvalidNames ++ duplicates
+  }
+
+  private def validateUnions(): Seq[String] = {
+    val nameErrors = internalService.get.unions.flatMap { union =>
+      Text.validateName(union.name) match {
+        case Nil => None
+        case errors => {
+          Some(s"Union[${union.name}] name is invalid: ${errors.mkString(" ")}")
+        }
+      }
+    }
+
+    val typeErrors = internalService.get.unions.filter { _.types.isEmpty }.map { union =>
+      s"Union[${union.name}] must have at least one type"
+    }
+
+    val invalidTypes = internalService.get.unions.filter(!_.name.isEmpty).flatMap { union =>
+      union.types.flatMap { t =>
+        t.datatype match {
+          case None => Seq(s"Union[${union.name}] all types must have a name")
+          case Some(dt) => {
+            internalService.get.typeResolver.parse(dt) match {
+              case None => Seq(s"Union[${union.name}] type[${dt.label}] not found")
+              case Some(_) => Seq.empty
+            }
+          }
+        }
+      }
+    }
+
+    val duplicates = internalService.get.unions.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { unionName =>
+      s"Union[$unionName] appears more than once"
+    }
+
+    nameErrors ++ typeErrors ++ invalidTypes ++ duplicates
   }
 
   private def validateHeaders(): Seq[String] = {
@@ -516,7 +552,7 @@ case class ServiceValidator(
             case Some(typeName) => {
               internalService.get.typeResolver.toType(typeName) match {
                 case Some(Type(Kind.Primitive | Kind.Enum, _)) => None
-                case Some(Type(Kind.Model, name)) => {
+                case Some(Type(Kind.Model | Kind.Union, _)) => {
                   Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Models are not supported as query parameters.")
                 }
                 case None => {
@@ -538,7 +574,7 @@ case class ServiceValidator(
             }
             case Some(typeName) => {
               internalService.get.typeResolver.toType(typeName) match {
-                case Some(Type(Kind.Model | Kind.Primitive | Kind.Enum, _)) => None
+                case Some(Type(Kind.Model | Kind.Primitive | Kind.Enum | Kind.Union, _)) => None
                 case None => {
                   Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]")
                 }
@@ -626,7 +662,7 @@ case class ServiceValidator(
       case Kind.Primitive => {
         Primitives.validInPath(t.name)
       }
-      case Kind.Model => {
+      case Kind.Model | Kind.Union => {
         // We do not support models in path parameters
         false
       }

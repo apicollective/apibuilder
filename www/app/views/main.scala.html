@@ -77,6 +77,15 @@
               </ul>
             }
 
+            @if(!service.unions.isEmpty) {
+              <b>Unions</b>
+              <ul class="nav nav-sidebar">
+                @service.unions.map { union =>
+                  <li><a href="#union-@lib.UrlKey.generate(union.name)">@union.name</a></li>
+                }
+              </ul>
+            }
+
             <b>Clients</b>
             <ul class="nav nav-sidebar">
                 @metadata.service.map { service =>

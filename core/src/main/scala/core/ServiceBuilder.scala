@@ -28,6 +28,7 @@ object ServiceBuilder {
     val imports = internal.imports.map { ImportBuilder(_) }.sortWith(_.uri.toLowerCase < _.uri.toLowerCase)
     val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(resolver, _) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val resources = internal.resources.map { ResourceBuilder(resolver, models, _) }.sortWith(_.model.name.toLowerCase < _.model.name.toLowerCase)
 
@@ -41,6 +42,7 @@ object ServiceBuilder {
       description = internal.description,
       baseUrl = internal.baseUrl,
       enums = enums,
+      unions = unions,
       models = models,
       headers = headers,
       resources = resources
@@ -131,6 +133,18 @@ object EnumBuilder {
 
 }
 
+object UnionBuilder {
+
+  def apply(internal: InternalUnionForm): Union = {
+    Union(
+      name = internal.name,
+      description = internal.description,
+      types = internal.types.map { it => UnionType(`type` = it.datatype.get.label, description = it.description) }
+    )
+  }
+
+}
+
 object HeaderBuilder {
 
   def apply(resolver: TypeResolver, ih: InternalHeaderForm): Header = {
@@ -157,8 +171,9 @@ object ImportBuilder {
       application = service.application,
       namespace = service.namespace,
       version = service.version,
-      models = service.models.map(_.name),
-      enums = service.enums.map(_.name)
+      enums = service.enums.map(_.name),
+      unions = service.unions.map(_.name),
+      models = service.models.map(_.name)
     )
   }
 

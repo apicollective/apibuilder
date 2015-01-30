@@ -13,7 +13,8 @@ case class TypeLabel(
 
   val link = DatatypeResolver(
     enumNames = service.enums.map(_.name),
-    modelNames = service.models.map(_.name)
+    modelNames = service.models.map(_.name),
+    unionNames = service.unions.map(_.name)
   ).parse(typeName) match {
     case None => {
       TextDatatype(typeName) match {
@@ -40,7 +41,12 @@ case class TypeLabel(
         case None => {
           imp.models.find { name => s"${imp.namespace}.models.name" == typeName } match {
             case Some(shortName) => Some(importLink(imp, Kind.Model, shortName, typeName))
-            case None => None
+            case None => {
+              imp.unions.find { name => s"${imp.namespace}.unions.name" == typeName } match {
+                case Some(shortName) => Some(importLink(imp, Kind.Model, shortName, typeName))
+                case None => None
+              }
+            }
           }
         }
       }
@@ -74,6 +80,9 @@ object Href {
       }
       case Type(Kind.Model, name) => {
         Href(name, prefix(orgKey, appKey, version) + s"#model-$name")
+      }
+      case Type(Kind.Union, name) => {
+        Href(name, prefix(orgKey, appKey, version) + s"#union-$name")
       }
     }
   }

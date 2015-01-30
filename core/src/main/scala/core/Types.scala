@@ -10,8 +10,9 @@ private[core] case class TypesProviderEnum(
 )
 
 private[core] sealed trait TypesProvider {
-  def enums: Iterable[TypesProviderEnum] = Seq.empty
-  def modelNames: Iterable[String] = Seq.empty
+  def enums: Iterable[TypesProviderEnum]
+  def modelNames: Iterable[String]
+  def unionNames: Iterable[String]
 }
 
 private[core] object TypesProvider {
@@ -29,6 +30,8 @@ private[core] object TypesProvider {
       )
     }
 
+    override def unionNames: Iterable[String] = service.unions.map(n => qualifiedName("unions", n.name))
+
     override def modelNames: Iterable[String] = service.models.map(n => qualifiedName("models", n.name))
 
   }
@@ -41,6 +44,8 @@ private[core] object TypesProvider {
         values = enum.values.flatMap(_.name)
       )
     }
+
+    override def unionNames = internal.unions.map(_.name)
 
     override def modelNames = internal.models.map(_.name)
 
@@ -58,6 +63,8 @@ private[core] case class RecursiveTypesProvider(
 ) extends TypesProvider {
 
   override def enums = providers.map(_.enums).flatten
+
+  override def unionNames = providers.map(_.unionNames).flatten
 
   override def modelNames = providers.map(_.modelNames).flatten
 
@@ -97,7 +104,8 @@ private[core] case class TypeResolver(
 
   private val resolver = DatatypeResolver(
     enumNames = provider.enums.map(_.name),
-    modelNames = provider.modelNames
+    modelNames = provider.modelNames,
+    unionNames = provider.unionNames
   )
 
   private lazy val validator = TypeValidator(provider.enums)

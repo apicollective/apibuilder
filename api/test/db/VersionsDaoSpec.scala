@@ -36,6 +36,7 @@ class VersionsDaoSpec extends FlatSpec {
     imports = Nil,
     enums = Nil,
     models = Nil,
+    unions = Nil,
     resources = Nil
   )
 
