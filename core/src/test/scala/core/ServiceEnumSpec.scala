@@ -59,7 +59,7 @@ class ServiceEnumSpec extends FunSpec with Matchers {
     it("validates unknown defaults in parameters") {
       val json = baseJson.format("", "", """, "default": "other" """)
       val validator = ServiceValidator(TestHelper.serviceConfig, json)
-      validator.errors.mkString("") should be("user.age_group default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
+      validator.errors.mkString("") should be("Resource[user] GET /users param[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
     }
 
   }
