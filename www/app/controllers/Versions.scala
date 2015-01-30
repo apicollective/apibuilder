@@ -1,7 +1,7 @@
 package controllers
 
 import models.MainTemplate
-import lib.{UrlKey, Util, VersionedName}
+import lib.{UrlKey, Util, VersionedName, VersionTag}
 import com.gilt.apidoc.v0.models.{Application, Organization, User, Version, VersionForm, Visibility, WatchForm}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
@@ -180,7 +180,7 @@ object Versions extends Controller {
               )
               val filledForm = uploadForm.fill(
                 UploadData(
-                  version = versionsResponse.headOption.map(v => Util.calculateNextVersion(v.version)).getOrElse(DefaultVersion),
+                  version = versionsResponse.headOption.map(v => VersionTag(v.version).nextMicro().getOrElse(v.version)).getOrElse(DefaultVersion),
                   visibility = application.visibility.toString
                 )
               )

@@ -68,4 +68,11 @@ class VersionTagSpec extends FunSpec with Matchers {
     VersionTag(" v2.0").major should be(Some(2))
   }
 
+  it("nextMicro") {
+    VersionTag("foo").nextMicro should be(None)
+    VersionTag("0.0.1").nextMicro should be(Some("0.0.2"))
+    VersionTag("1.2.3").nextMicro should be(Some("1.2.4"))
+    VersionTag("0.0.5-dev").nextMicro should be(None)
+  }
+
 }

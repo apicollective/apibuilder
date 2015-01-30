@@ -46,6 +46,24 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
     sortKey.compare(that.sortKey)
   }
 
+  /**
+   * Computes the next micro version. If we cannot parse the currency
+   * version number, then returns None.
+   */
+  def nextMicro(): Option[String] = {
+    trimmedVersion.split(VersionTag.Dash).size match {
+      case 1 => {
+        val pieces = version.split(VersionTag.Dot)
+        if (pieces.forall(s => VersionTag.isDigit(s))) {
+          Some((Seq(pieces.last.toInt + 1) ++ pieces.reverse.drop(1)).reverse.mkString("."))
+        } else {
+          None
+        }
+      }
+      case _ => None
+    }
+  }
+
 }
 
 
