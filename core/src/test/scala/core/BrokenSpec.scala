@@ -40,9 +40,8 @@ class BrokenSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "resources": [
-        {
-          "model": "vendor",
+      "resources": {
+        "vendor": {
           "operations": [
             {
               "method": "POST",
@@ -56,7 +55,7 @@ class BrokenSpec extends FunSpec with Matchers {
             }
           ]
         }
-      ]
+      }
     }
     """
     val validator = ServiceValidator(TestHelper.serviceConfig, json)

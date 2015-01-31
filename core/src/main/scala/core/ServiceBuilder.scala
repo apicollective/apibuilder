@@ -56,8 +56,8 @@ object ResourceBuilder {
     models: Iterable[Model],
     internal: InternalResourceForm
   ): Resource = {
-    val model = models.find(m => Some(m.name) == internal.modelName).getOrElse {
-      sys.error(s"Could not find model for resource[${internal.modelName.getOrElse("")}]")
+    val model = models.find(m => m.name == internal.modelName).getOrElse {
+      sys.error(s"Could not find model for resource[${internal.modelName}]")
     }
     Resource(
       model = model,

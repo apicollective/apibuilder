@@ -51,12 +51,12 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
     deletes.head.responses.map(_.code) should be(Seq(204))
   }
 
-  it("all POST operations return either a 201 or a 409") {
+  it("all POST operations return either a 2xx and a 409") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service.get
     service.resources.foreach { resource =>
       resource.operations.filter(_.method == Method.Post).foreach { op =>
-        if (op.responses.map(_.code).toSeq.sorted != Seq(201, 409)) {
-          fail("POST operation should return a 201 and a 409: " + op)
+        if (op.responses.map(_.code).toSeq.sorted != Seq(201, 409) && op.responses.map(_.code).toSeq.sorted != Seq(202, 409)) {
+          fail("POST operation should return a 2xx and a 409: " + op)
         }
       }
     }

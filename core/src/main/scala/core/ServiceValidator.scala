@@ -338,10 +338,10 @@ case class ServiceValidator(
     val invalidMethods = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.method match {
-          case None => Seq(s"Resource[${resource.modelName.getOrElse("")}] ${op.path} Missing HTTP method")
+          case None => Seq(s"Resource[${resource.modelName}] ${op.path} Missing HTTP method")
           case Some(m) => {
             Method.fromString(m) match {
-              case None => Seq(s"Resource[${resource.modelName.getOrElse("")}] ${op.path} Invalid HTTP method[$m]. Must be one of: " + Method.all.mkString(", "))
+              case None => Seq(s"Resource[${resource.modelName}] ${op.path} Invalid HTTP method[$m]. Must be one of: " + Method.all.mkString(", "))
               case Some(_) => Seq.empty
             }
           }
@@ -356,7 +356,7 @@ case class ServiceValidator(
             case Success(v) => None
             case Failure(ex) => ex match {
               case e: java.lang.NumberFormatException => {
-                Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label}: Response code is not an integer[${r.code}]")
+                Some(s"Resource[${resource.modelName}] ${op.label}: Response code is not an integer[${r.code}]")
               }
             }
           }
@@ -372,11 +372,11 @@ case class ServiceValidator(
         op.responses.flatMap { r =>
           r.datatype.map(_.name) match {
             case None => {
-              Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}]: Missing type")
+              Some(s"Resource[${resource.modelName}] ${op.label} with response code[${r.code}]: Missing type")
             }
             case Some(typeName) => {
               internalService.get.typeResolver.toType(typeName) match {
-                case None => Some(s"Resource[${resource.modelName.getOrElse("")}] ${op.label} with response code[${r.code}] has an invalid type[$typeName].")
+                case None => Some(s"Resource[${resource.modelName}] ${op.label} with response code[${r.code}] has an invalid type[$typeName].")
                 case Some(_) => None
               }
             }
@@ -392,7 +392,7 @@ case class ServiceValidator(
           if (types.size <= 1) {
             None
           } else {
-            Some(s"Resource[${resource.modelName.get}] cannot have varying response types for 2xx response codes: ${types.sorted.mkString(", ")}")
+            Some(s"Resource[${resource.modelName}] cannot have varying response types for 2xx response codes: ${types.sorted.mkString(", ")}")
           }
         }
       }
@@ -409,7 +409,7 @@ case class ServiceValidator(
               None
             }
             case Some(r) => {
-              Some(s"Resource[${resource.modelName.get}] ${op.label} has a response with code[${r.code}] - this code cannot be explicitly specified")
+              Some(s"Resource[${resource.modelName}] ${op.label} has a response with code[${r.code}] - this code cannot be explicitly specified")
             }
           }
         }
@@ -423,7 +423,7 @@ case class ServiceValidator(
       internalService.get.resources.filter { !_.modelName.isEmpty }.flatMap { resource =>
         resource.operations.flatMap { op =>
           op.responses.filter(r => typesRequiringUnit.contains(r.code.toInt) && !r.datatype.isEmpty && r.datatype.get.name != Primitives.Unit.toString).map { r =>
-            s"""Resource[${resource.modelName.get}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get.label}]"""
+            s"""Resource[${resource.modelName}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get.label}]"""
           }
         }
       }
@@ -434,7 +434,7 @@ case class ServiceValidator(
     val warnings = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.filter(r => !r.warnings.isEmpty).map { r =>
-          s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} ${r.code}: " + r.warnings.mkString(", ")
+          s"Resource[${resource.modelName}] ${op.method.getOrElse("")} ${r.code}: " + r.warnings.mkString(", ")
         }
       }
     }
@@ -490,7 +490,7 @@ case class ServiceValidator(
   }
 
   private def opLabel(resource: InternalResourceForm, op: InternalOperationForm): String = {
-    s"Resource[${resource.modelName.getOrElse("")}] ${op.method.get} ${op.path}"
+    s"Resource[${resource.modelName}] ${op.method.get} ${op.path}"
   }
 
   private def validateParameters(): Seq[String] = {
@@ -562,19 +562,14 @@ case class ServiceValidator(
 
   private def validateResources(): Seq[String] = {
     val modelNameErrors = internalService.get.resources.flatMap { res =>
-      res.modelName match {
-        case None => Some("All resources must have a model")
-        case Some(name: String) => {
-          internalService.get.models.find { _.name == name } match {
-            case None => Some(s"Resource[${res.modelName.getOrElse("")}] model[$name] not found")
-            case Some(_) => None
-          }
-        }
+      internalService.get.models.find { _.name == res.modelName } match {
+        case None => Some(s"Resource[${res.modelName}] model[${res.modelName}] not found")
+        case Some(_) => None
       }
     }
 
     val missingOperations = internalService.get.resources.filter { _.operations.isEmpty }.map { res =>
-      s"Resource[${res.modelName.getOrElse("")}] must have at least one operation"
+      s"Resource[${res.modelName}] must have at least one operation"
     }
 
     val duplicateModels = internalService.get.resources.filter { !_.modelName.isEmpty }.flatMap { r =>
@@ -582,7 +577,7 @@ case class ServiceValidator(
       if (numberResources <= 1) {
         None
       } else {
-        Some(s"Model[${r.modelName.get}] cannot be mapped to more than one resource")
+        Some(s"Model[${r.modelName}] cannot be mapped to more than one resource")
       }
     }.distinct
 
@@ -591,7 +586,7 @@ case class ServiceValidator(
 
   private def validatePathParameters(): Seq[String] = {
     internalService.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
-      internalService.get.models.find(_.name == resource.modelName.get) match {
+      internalService.get.models.find(_.name == resource.modelName) match {
         case None => None
         case Some(model: InternalModelForm) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
@@ -604,7 +599,7 @@ case class ServiceValidator(
                   InternalDatatype(Primitives.String.toString)
                 }
               }
-              val errorTemplate = s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
+              val errorTemplate = s"Resource[${resource.modelName}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
 
               internalService.get.typeResolver.parse(parsedDatatype) match {
                 case None => Some(errorTemplate.format(name))
@@ -644,7 +639,7 @@ case class ServiceValidator(
 
   private def validatePathParametersAreRequired(): Seq[String] = {
     internalService.get.resources.filter(!_.modelName.isEmpty).flatMap { resource =>
-      internalService.get.models.find(_.name == resource.modelName.get) match {
+      internalService.get.models.find(_.name == resource.modelName) match {
         case None => None
         case Some(model: InternalModelForm) => {
           resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
@@ -661,7 +656,7 @@ case class ServiceValidator(
               if (isRequired) {
                 None
               } else {
-                Some(s"Resource[${resource.modelName.get}] ${op.method.getOrElse("")} path parameter[$name] is specified as optional. All path parameters are required")
+                Some(s"Resource[${resource.modelName}] ${op.method.getOrElse("")} path parameter[$name] is specified as optional. All path parameters are required")
               }
             }
           }

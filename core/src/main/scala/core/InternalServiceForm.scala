@@ -79,23 +79,10 @@ private[core] case class InternalServiceForm(json: JsValue) {
     (json \ "resources").asOpt[JsValue] match {
       case None => Seq.empty
 
-      // Array is deprecated - JsObject is preferred
-      case Some(resources: JsArray) => {
-        resources.value.flatMap { v =>
-          v match {
-            case o: JsObject => {
-              val modelName = JsonUtil.asOptString(o \ "model")
-              Some(InternalResourceForm(modelName, models, o))
-            }
-            case _ => None
-          }
-        }
-      }
-
       case Some(resources: JsObject) => {
         resources.fields.map { v =>
           v match {
-            case(modelName, value) => InternalResourceForm(Some(modelName), models, value.as[JsObject])
+            case(modelName, value) => InternalResourceForm(modelName, models, value.as[JsObject])
           }
         }
       }
@@ -138,7 +125,7 @@ case class InternalHeaderForm(
 )
 
 case class InternalResourceForm(
-  modelName: Option[String],
+  modelName: String,
   description: Option[String],
   path: String,
   operations: Seq[InternalOperationForm]
@@ -260,9 +247,9 @@ object InternalEnumForm {
 
 object InternalResourceForm {
 
-  def apply(modelName: Option[String], models: Seq[InternalModelForm], value: JsObject): InternalResourceForm = {
+  def apply(modelName: String, models: Seq[InternalModelForm], value: JsObject): InternalResourceForm = {
     val path = JsonUtil.asOptString(value \ "path").getOrElse {
-      models.find(m => Some(m.name) == modelName) match {
+      models.find(m => m.name == modelName) match {
         case Some(model: InternalModelForm) => "/" + model.plural
         case None => "/"
       }

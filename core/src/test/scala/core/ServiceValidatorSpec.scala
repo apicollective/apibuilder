@@ -110,9 +110,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "resources": [
-        {
-          "model": "user",
+      "resources": {
+        "user": {
           "operations": [
             {
               "method": "DELETE",
@@ -120,7 +119,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
             }
           ]
         }
-      ]
+      }
     }
     """
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
@@ -142,9 +141,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "resources": [
-        {
-          "model": "user",
+      "resources": {
+        "user": {
           "operations": [
             {
               "method": "GET",
@@ -158,7 +156,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
             }
           ]
         }
-      ]
+      }
     }
     """
 
@@ -178,9 +176,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "resources": [
-        {
-          "model": "user",
+      "resources": {
+        "user": {
           "operations": [
             {
               "method": "DELETE",
@@ -188,7 +185,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
             }
           ]
         }
-      ]
+      }
     }
     """
     val validator = ServiceValidator(TestHelper.serviceConfig, json)

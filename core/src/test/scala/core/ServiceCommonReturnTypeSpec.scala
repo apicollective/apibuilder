@@ -17,8 +17,8 @@ class ServiceCommonReturnTypeSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "resources": [
-        {
+      "resources": {
+        "user": {
           "model": "user",
           "operations": [
             {
@@ -36,7 +36,7 @@ class ServiceCommonReturnTypeSpec extends FunSpec with Matchers {
             }
           ]
         }
-      ]
+      }
     }
     """
     ServiceValidator(TestHelper.serviceConfig, json.format("user")).errors.mkString should be("")

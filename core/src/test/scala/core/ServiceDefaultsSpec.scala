@@ -112,24 +112,22 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
           ]
         }
       },
-      "resources": [
-        {
-          "model": "user",
+      "resources": {
+        "user": {
           "operations": [
             {
               "method": "DELETE"
             }
           ]
         },
-        {
-          "model": "user",
+        "user": {
           "operations": [
             {
               "method": "GET"
             }
           ]
         }
-      ]
+      }
     }
     """
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
