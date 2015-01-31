@@ -1,3 +1,6 @@
+confirm that the default path for a resource for model
+purchase_confirmation is "purchase-confirmations"
+
 review the option[xxx] syntax to declare types and see if we want to
 announce that in the release or if we should wait
   if we keep, we probably need to remove option from:
