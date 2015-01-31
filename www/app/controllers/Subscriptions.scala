@@ -18,7 +18,7 @@ object Subscriptions extends Controller {
     val label = publication match {
       case Publication.MembershipRequestsCreate => "Email me when a user applies to join the org."
       case Publication.MembershipsCreate => "Email me when a user joins the org."
-      case Publication.ApplicationsCreate => "Email me when a application is created."
+      case Publication.ApplicationsCreate => "Email me when an application is created."
       case Publication.VersionsCreate => "For applications that I watch, email me when a version is created."
       case Publication.UNDEFINED(key) => key
     }
