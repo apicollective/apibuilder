@@ -29,7 +29,7 @@
       <li><em>headers</em> JSON array defining any HTTP Headers that the service understands or expects. See <a href="#header">Header</a></li>
       <li><em>enums</em> JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#enum">Enum</a></li>
       <li><em>models</em> JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
-      <li><em>resources</em> JSON object defining all of the resources in this API. The key of each object is the name of the model that this resource represents. This name must be defined in the Models object. See <a href="#resource">Resource</a></li>
+      <li><em>resources</em> JSON object defining all of the resources in this API. The key of each object is the name of a type that this resource represents. The type must be the name of a model or an enum. See <a href="#resource">Resource</a></li>
     </ul>
 
   </p>
@@ -96,7 +96,7 @@
 
     <pre>
     {
-      "modelName" => {
+      "typeName" => {
         "path": <em>string (optional)</em>,
         "operations": <em>JSON Array of <a href="#operation">Operation</a></em>
       }
@@ -105,8 +105,8 @@
 
     where
     <ul>
-      <li><em>modelName</em> the name of the model that this resource represents</li>
-      <li><em>path</em> optional path where this resource is located. If not provided, defaults to the model's plural name. Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that all operations for this path will require a parameter named 'guid' of type 'string'</li>
+      <li><em>typeName</em> the name of the model or enum that this resource represents</li>
+      <li><em>path</em> optional path where this resource is located. If not provided, defaults to the plural of the typeName, with some assumptions of formatting for web (e.g. lower case, dash separated). Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that all operations for this path will require a parameter named 'guid' of type 'string'</li>
       <li><em>operations</em> one or more operations is required. See <a href="#operation">Operation</a>.</li>
     </ul>
   </p>

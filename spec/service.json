@@ -112,7 +112,7 @@
 
 	"resource": {
 	    "fields": [
-		{ "name": "model", "type": "model" },
+		{ "name": "type", "type": "string", "description": "The type of this resource will map to a defined model, enum, or union type" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "operations", "type": "[operation]" }
 	    ]

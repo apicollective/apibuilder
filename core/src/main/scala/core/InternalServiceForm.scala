@@ -95,7 +95,7 @@ private[core] case class InternalServiceForm(json: JsValue) {
       case Some(resources: JsObject) => {
         resources.fields.map { v =>
           v match {
-            case(modelName, value) => InternalResourceForm(modelName, models, value.as[JsObject])
+            case(typeName, value) => InternalResourceForm(typeName, models, value.as[JsObject])
           }
         }
       }
@@ -149,7 +149,7 @@ case class InternalHeaderForm(
 )
 
 case class InternalResourceForm(
-  modelName: String,
+  typeName: String,
   description: Option[String],
   path: String,
   operations: Seq[InternalOperationForm]
@@ -296,9 +296,9 @@ object InternalEnumForm {
 
 object InternalResourceForm {
 
-  def apply(modelName: String, models: Seq[InternalModelForm], value: JsObject): InternalResourceForm = {
+  def apply(typeName: String, models: Seq[InternalModelForm], value: JsObject): InternalResourceForm = {
     val path = JsonUtil.asOptString(value \ "path").getOrElse {
-      models.find(m => m.name == modelName) match {
+      models.find(m => m.name == typeName) match {
         case Some(model: InternalModelForm) => "/" + model.plural
         case None => "/"
       }
@@ -312,7 +312,7 @@ object InternalResourceForm {
     }
 
     InternalResourceForm(
-      modelName = modelName,
+      typeName = typeName,
       description = JsonUtil.asOptString(value \ "description"),
       path = path,
       operations = operations

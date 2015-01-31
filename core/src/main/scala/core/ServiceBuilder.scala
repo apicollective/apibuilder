@@ -50,7 +50,6 @@ object ServiceBuilder {
   }
 }
 
-
 object ResourceBuilder {
 
   def apply(
@@ -58,11 +57,8 @@ object ResourceBuilder {
     models: Iterable[Model],
     internal: InternalResourceForm
   ): Resource = {
-    val model = models.find(m => m.name == internal.modelName).getOrElse {
-      sys.error(s"Could not find model for resource[${internal.modelName}]")
-    }
     Resource(
-      model = model,
+      model = internal.typeName,
       description = internal.description,
       operations = internal.operations.map(op => OperationBuilder(resolver, model, op))
     )
