@@ -30,7 +30,7 @@ object ServiceBuilder {
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(resolver, _) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val resources = internal.resources.map { ResourceBuilder(resolver, models, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
+    val resources = internal.resources.map { ResourceBuilder(resolver, models, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
     Service(
       name = name,
@@ -55,13 +55,35 @@ object ResourceBuilder {
   def apply(
     resolver: TypeResolver,
     models: Seq[Model],
+    unions: Seq[Union],
     internal: InternalResourceForm
   ): Resource = {
-    Resource(
-      `type` = internal.datatype.name,
-      description = internal.description,
-      operations = internal.operations.map(op => OperationBuilder(resolver, op, models.find(_.name == internal.datatype.name)))
-    )
+    models.find(_.name == internal.datatype.name) match {
+      case None => {
+        unions.find(_.name == internal.datatype.name) match {
+          case None => {
+            sys.error(s"Resource type[${internal.datatype.name}] must resolve to a model or a union type")
+          }
+          case Some(union) => {
+            Resource(
+              `type` = internal.datatype.name,
+              plural = union.plural,
+              description = internal.description,
+              operations = internal.operations.map(op => OperationBuilder(resolver, op, None))
+            )
+          }
+        }
+      }
+
+      case Some(model) => {
+        Resource(
+          `type` = internal.datatype.name,
+          plural = model.plural,
+          description = internal.description,
+          operations = internal.operations.map(op => OperationBuilder(resolver, op, Some(model)))
+        )
+      }
+    }
   }
 
 }
@@ -134,6 +156,7 @@ object UnionBuilder {
   def apply(internal: InternalUnionForm): Union = {
     Union(
       name = internal.name,
+      plural = internal.plural,
       description = internal.description,
       types = internal.types.map { it => UnionType(`type` = it.datatype.get.label, description = it.description) }
     )

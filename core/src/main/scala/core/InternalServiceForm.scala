@@ -131,6 +131,7 @@ case class InternalEnumValueForm(
 
 case class InternalUnionForm(
   name: String,
+  plural: String,
   description: Option[String],
   types: Seq[InternalUnionTypeForm]
 )
@@ -226,6 +227,7 @@ object InternalUnionForm {
 
     InternalUnionForm(
       name = name,
+      plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
       description = description,
       types = types
     )

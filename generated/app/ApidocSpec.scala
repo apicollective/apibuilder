@@ -92,6 +92,7 @@ package com.gilt.apidoc.spec.v0.models {
 
   case class Resource(
     `type`: String,
+    plural: String,
     description: _root_.scala.Option[String] = None,
     operations: Seq[com.gilt.apidoc.spec.v0.models.Operation]
   )
@@ -119,6 +120,7 @@ package com.gilt.apidoc.spec.v0.models {
 
   case class Union(
     name: String,
+    plural: String,
     description: _root_.scala.Option[String] = None,
     types: Seq[com.gilt.apidoc.spec.v0.models.UnionType]
   )
@@ -452,6 +454,7 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonReadsApidocspecResource: play.api.libs.json.Reads[Resource] = {
       (
         (__ \ "type").read[String] and
+        (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "operations").readNullable[Seq[com.gilt.apidoc.spec.v0.models.Operation]].map(_.getOrElse(Nil))
       )(Resource.apply _)
@@ -460,6 +463,7 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonWritesApidocspecResource: play.api.libs.json.Writes[Resource] = {
       (
         (__ \ "type").write[String] and
+        (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "operations").write[Seq[com.gilt.apidoc.spec.v0.models.Operation]]
       )(unlift(Resource.unapply _))
@@ -518,6 +522,7 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonReadsApidocspecUnion: play.api.libs.json.Reads[Union] = {
       (
         (__ \ "name").read[String] and
+        (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "types").readNullable[Seq[com.gilt.apidoc.spec.v0.models.UnionType]].map(_.getOrElse(Nil))
       )(Union.apply _)
@@ -526,6 +531,7 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonWritesApidocspecUnion: play.api.libs.json.Writes[Union] = {
       (
         (__ \ "name").write[String] and
+        (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "types").write[Seq[com.gilt.apidoc.spec.v0.models.UnionType]]
       )(unlift(Union.unapply _))

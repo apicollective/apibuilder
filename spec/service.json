@@ -75,6 +75,7 @@
 	"union": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
+		{ "name": "plural", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" }
 	    ]
@@ -113,6 +114,7 @@
 	"resource": {
 	    "fields": [
 		{ "name": "type", "type": "string", "description": "The type of this resource will map to a defined model, enum, or union type" },
+		{ "name": "plural", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "operations", "type": "[operation]" }
 	    ]
