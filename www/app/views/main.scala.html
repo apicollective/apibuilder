@@ -54,7 +54,7 @@
               <b>Resources</b>
               <ul class="nav nav-sidebar">
                 @service.resources.map { resource =>
-                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@lib.UrlKey.generate(resource.model.name)">@resource.model.plural</a></li>
+                  <li@if(metadata.resource == Some(resource)) { class="active" }><a href="#resource-@lib.UrlKey.generate(resource.`type`)">@{resource.`type`}</a></li>
                 }
               </ul>
             }

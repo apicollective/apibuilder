@@ -23,10 +23,10 @@
 
     <h2>Resources</h2>
     @service.resources.map { resource =>
-      <div id="resource-@lib.UrlKey.generate(resource.model.name)"></div>
-      <a name="resource-@lib.UrlKey.generate(resource.model.name)"></a>
+      <div id="resource-@lib.UrlKey.generate(resource.`type`)"></div>
+      <a name="resource-@lib.UrlKey.generate(resource.`type`)"></a>
       <div class="version_resource">
-        <h3><a href="#model-@lib.UrlKey.generate(resource.model.name)">@resource.model.name</a></h3>
+        <h3><a href="#model-@lib.UrlKey.generate(resource.`type`)">@{resource.`type`}</a></h3>
 
         @resource.description.getOrElse("")
 
@@ -44,11 +44,11 @@
             <tbody>
              @resource.operations.zipWithIndex.map { case(operation, index) =>
                <tr>
-                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.method</a></td>
-                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.model.name)-@index').toggle()">@operation.path</a></td>
+                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.`type`)-@index').toggle()">@operation.method</a></td>
+                 <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.`type`)-@index').toggle()">@operation.path</a></td>
                  <td>@operation.description.getOrElse("")</td>
                </tr>
-               <tr id="operation-@lib.UrlKey.generate(resource.model.name)-@index" style="display:none">
+               <tr id="operation-@lib.UrlKey.generate(resource.`type`)-@index" style="display:none">
                  <td></td>
                  <td colspan="2">
                    @operation.method @service.baseUrl@operation.path
