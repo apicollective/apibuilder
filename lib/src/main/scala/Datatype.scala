@@ -35,9 +35,9 @@ sealed trait Kind
 object Kind {
 
   case object Primitive extends Kind { override def toString = "primitive" }
-  case object Enum extends Kind { override def toString = "enum" }
-  case object Union extends Kind { override def toString = "union" }
   case object Model extends Kind { override def toString = "model" }
+  case object Union extends Kind { override def toString = "union" }
+  case object Enum extends Kind { override def toString = "enum" }
 
 }
 
@@ -66,16 +66,18 @@ case class DatatypeResolver(
     */
   def toType(name: String): Option[Type] = {
     Primitives(name) match {
-      case Some(pt) => Some(Type(Kind.Primitive, name))
+      case Some(_) => {
+        Some(Type(Kind.Primitive, name))
+      }
       case None => {
         enumNames.find(_ == name) match {
-          case Some(et) => Some(Type(Kind.Enum, name))
+          case Some(_) => Some(Type(Kind.Enum, name))
           case None => {
             modelNames.find(_ == name) match {
-              case Some(mt) => Some(Type(Kind.Model, name))
+              case Some(_) => Some(Type(Kind.Model, name))
               case None => {
                 unionNames.find(_ == name) match {
-                  case Some(mt) => Some(Type(Kind.Union, name))
+                  case Some(_) => Some(Type(Kind.Union, name))
                   case None => None
                 }
               }
