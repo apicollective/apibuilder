@@ -562,7 +562,7 @@ case class ServiceValidator(
               internalService.get.typeResolver.toType(typeName) match {
                 case Some(Type(Kind.Primitive | Kind.Enum, _)) => None
                 case Some(Type(Kind.Model | Kind.Union, _)) => {
-                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Models are not supported as query parameters.")
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Model and union types are not supported as query parameters.")
                 }
                 case None => {
                   Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type: $typeName")

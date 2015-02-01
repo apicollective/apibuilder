@@ -4,7 +4,6 @@ import org.scalatest.{FunSpec, Matchers}
 
 class ServiceValidatorSpec extends FunSpec with Matchers {
 
-/*
   it("should detect empty inputs") {
     val validator = ServiceValidator(TestHelper.serviceConfig, "")
     validator.isValid should be(false)
@@ -262,11 +261,10 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     idParam.name should be("id")
     idParam.`type` should be("long")
   }
-*/
 
-  it("lists of models are not valid in parameters") {
+  describe("parameter validations") {
 
-    val json = """
+    val baseJson = """
     {
         "base_url": "https://localhost",
         "name": "Test Validation of Parameters",
@@ -280,13 +278,14 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
             }
     
         },
+
         "resources": {
           "tag": {
                 "operations": [
                     {
                         "method": "GET",
                         "parameters": [
-                            { "name": "tags", "type": "[tags]" }
+                            { "name": "tags", "type": "%s" }
                         ]
                     }
                 ]
@@ -295,8 +294,22 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
-    validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [tags]")
+    it("lists are not valid in query parameters") {
+      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[tag]"))
+      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [tag]")
+    }
+
+    it("models are not valid in query parameters") {
+      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("tag"))
+      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
+    }
+
+    it("validates type name in collection") {
+      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[foo]"))
+      validator.errors.contains("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [foo]") should be(true)
+      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [foo]")
+    }
+
   }
 
 }
