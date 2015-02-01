@@ -131,7 +131,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     }
     """
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
-    validator.errors.mkString should be("Model[user] cannot be mapped to more than one resource")
+    validator.errors.mkString should be("Resource[user] cannot appear multiple times")
   }
 
 }

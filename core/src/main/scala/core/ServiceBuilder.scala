@@ -30,7 +30,7 @@ object ServiceBuilder {
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(resolver, _) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val resources = internal.resources.map { ResourceBuilder(resolver, models, _) }.sortWith(_.model.name.toLowerCase < _.model.name.toLowerCase)
+    val resources = internal.resources.map { ResourceBuilder(resolver, models, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
     Service(
       name = name,
@@ -54,13 +54,13 @@ object ResourceBuilder {
 
   def apply(
     resolver: TypeResolver,
-    models: Iterable[Model],
+    models: Seq[Model],
     internal: InternalResourceForm
   ): Resource = {
     Resource(
-      model = internal.typeName,
+      `type` = internal.datatype.name,
       description = internal.description,
-      operations = internal.operations.map(op => OperationBuilder(resolver, model, op))
+      operations = internal.operations.map(op => OperationBuilder(resolver, op, models.find(_.name == internal.datatype.name)))
     )
   }
 
@@ -68,14 +68,14 @@ object ResourceBuilder {
 
 object OperationBuilder {
 
-  def apply(resolver: TypeResolver, model: Model, internal: InternalOperationForm): Operation = {
+  def apply(resolver: TypeResolver, internal: InternalOperationForm, model: Option[Model]): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
 
     val pathParameters = internal.namedPathParameters.map { name =>
       internal.parameters.find(_.name == Some(name)) match {
         case None => {
-          ParameterBuilder.fromPath(model, name)
+          ParameterBuilder.fromPath(name, model)
         }
         case Some(declared) => {
           // Path parameter was declared in the parameters
@@ -201,8 +201,8 @@ object ResponseBuilder {
 
 object ParameterBuilder {
 
-  def fromPath(model: Model, name: String): Parameter = {
-    val datatypeLabel = model.fields.find(_.name == name).map(_.`type`).getOrElse {
+  def fromPath(name: String, model: Option[Model]): Parameter = {
+    val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name).map(_.`type`)).getOrElse {
       Datatype.Singleton(Type(Kind.Primitive, Primitives.String.toString)).label
     }
 

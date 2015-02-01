@@ -91,7 +91,7 @@ package com.gilt.apidoc.spec.v0.models {
   )
 
   case class Resource(
-    model: com.gilt.apidoc.spec.v0.models.Model,
+    `type`: String,
     description: _root_.scala.Option[String] = None,
     operations: Seq[com.gilt.apidoc.spec.v0.models.Operation]
   )
@@ -451,7 +451,7 @@ package com.gilt.apidoc.spec.v0.models {
 
     implicit def jsonReadsApidocspecResource: play.api.libs.json.Reads[Resource] = {
       (
-        (__ \ "model").read[com.gilt.apidoc.spec.v0.models.Model] and
+        (__ \ "type").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "operations").readNullable[Seq[com.gilt.apidoc.spec.v0.models.Operation]].map(_.getOrElse(Nil))
       )(Resource.apply _)
@@ -459,7 +459,7 @@ package com.gilt.apidoc.spec.v0.models {
 
     implicit def jsonWritesApidocspecResource: play.api.libs.json.Writes[Resource] = {
       (
-        (__ \ "model").write[com.gilt.apidoc.spec.v0.models.Model] and
+        (__ \ "type").write[String] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "operations").write[Seq[com.gilt.apidoc.spec.v0.models.Operation]]
       )(unlift(Resource.unapply _))

@@ -31,7 +31,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
   it("parses operations") {
     val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service.get
-    val itemResource = service.resources.find(_.model.name == "item").getOrElse {
+    val itemResource = service.resources.find(_.`type` == "item").getOrElse {
       sys.error("Could not find item resource")
     }
 

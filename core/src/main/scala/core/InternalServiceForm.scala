@@ -149,7 +149,7 @@ case class InternalHeaderForm(
 )
 
 case class InternalResourceForm(
-  typeName: String,
+  datatype: InternalDatatype,
   description: Option[String],
   path: String,
   operations: Seq[InternalOperationForm]
@@ -312,7 +312,7 @@ object InternalResourceForm {
     }
 
     InternalResourceForm(
-      typeName = typeName,
+      datatype = InternalDatatype(typeName),
       description = JsonUtil.asOptString(value \ "description"),
       path = path,
       operations = operations

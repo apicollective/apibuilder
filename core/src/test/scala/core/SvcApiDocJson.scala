@@ -20,7 +20,7 @@ class SvcApiDocJson extends FunSpec with Matchers {
   }
 
   it("parses resources") {
-    val resources = service.resources.map(_.model.name)
+    val resources = service.resources.map(_.`type`)
     resources.contains("foo") should be(false)
     resources.contains("user") should be(true)
     resources.contains("organization") should be(true)
