@@ -284,7 +284,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
           "tag": {
                 "operations": [
                     {
-                        "method": "GET",
+                        "method": "POST",
+                        "body": { "type": "tag" },
                         "parameters": [
                             { "name": "tags", "type": "[tags]" }
                         ]
@@ -296,7 +297,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
-    validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [tags]")
+    validator.errors.mkString("") should be("Resource[tag] POST /tags: Parameter[tags] has an invalid type: [tags]")
   }
 
 }
