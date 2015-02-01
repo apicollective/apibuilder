@@ -294,9 +294,14 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    it("lists are not valid in query parameters") {
+    it("lists of primitives are valid in query parameters") {
+      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[string]"))
+      validator.errors.mkString("") should be("")
+    }
+
+    it("lists of models are not valid in query parameters") {
       val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[tag]"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [tag]")
+      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
     }
 
     it("models are not valid in query parameters") {
@@ -306,8 +311,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     it("validates type name in collection") {
       val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[foo]"))
-      validator.errors.contains("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [foo]") should be(true)
-      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [foo]")
+      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: foo")
     }
 
   }

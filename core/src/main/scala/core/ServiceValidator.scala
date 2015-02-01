@@ -554,20 +554,14 @@ case class ServiceValidator(
     val invalidQueryTypes = internalService.get.resources.flatMap { resource =>
       resource.operations.filter(!_.method.isEmpty).filter(op => !op.body.isEmpty || op.method.map(Method(_)) == Some(Method.Get) ).flatMap { op =>
         op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
-          p.datatype.map(_.label) match {
-            case None => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] is missing a type.")
+          val typeName = p.datatype.get.name
+          internalService.get.typeResolver.toType(typeName) match {
+            case Some(Type(Kind.Primitive | Kind.Enum, _)) => None
+            case Some(Type(Kind.Model | Kind.Union, _)) => {
+              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Model and union types are not supported as query parameters.")
             }
-            case Some(typeName) => {
-              internalService.get.typeResolver.toType(typeName) match {
-                case Some(Type(Kind.Primitive | Kind.Enum, _)) => None
-                case Some(Type(Kind.Model | Kind.Union, _)) => {
-                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Model and union types are not supported as query parameters.")
-                }
-                case None => {
-                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type: $typeName")
-                }
-              }
+            case None => {
+              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type: $typeName")
             }
           }
         }
