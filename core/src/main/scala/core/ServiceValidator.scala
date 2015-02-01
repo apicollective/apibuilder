@@ -552,9 +552,9 @@ case class ServiceValidator(
 
     // Query parameters can only be primitives or enums
     val invalidQueryTypes = internalService.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.method.isEmpty).filter(op => !op.body.isEmpty || op.method == Some("GET") ).flatMap { op =>
+      resource.operations.filter(!_.method.isEmpty).filter(op => !op.body.isEmpty || op.method.map(Method(_)) == Some(Method.Get) ).flatMap { op =>
         op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
-          p.datatype.map(_.name) match {
+          p.datatype.map(_.label) match {
             case None => {
               Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] is missing a type.")
             }
@@ -565,7 +565,7 @@ case class ServiceValidator(
                   Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]. Models are not supported as query parameters.")
                 }
                 case None => {
-                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[$typeName]")
+                  Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type: $typeName")
                 }
               }
             }
