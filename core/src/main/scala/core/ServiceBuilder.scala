@@ -127,8 +127,7 @@ object OperationBuilder {
             }
           }
 
-          println("datatypeLabel: " + datatypeLabel)
-          ParameterBuilder.fromPath(name, model)
+          ParameterBuilder.fromPath(name, datatypeLabel)
         }
         case Some(declared) => {
           // Path parameter was declared in the parameters
@@ -273,11 +272,7 @@ object ResponseBuilder {
 
 object ParameterBuilder {
 
-  def fromPath(name: String, model: Option[Model]): Parameter = {
-    val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name).map(_.`type`)).getOrElse {
-      Datatype.Singleton(Type(Kind.Primitive, Primitives.String.toString)).label
-    }
-
+  def fromPath(name: String, datatypeLabel: String): Parameter = {
     Parameter(
       name = name,
       `type` = datatypeLabel,
