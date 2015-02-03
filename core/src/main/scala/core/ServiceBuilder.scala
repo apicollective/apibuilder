@@ -65,7 +65,7 @@ object ResourceBuilder {
           `type` = internal.datatype.name,
           plural = enum.plural,
           description = internal.description,
-          operations = internal.operations.map(op => OperationBuilder(resolver, op, None))
+          operations = internal.operations.map(op => OperationBuilder(resolver, op))
         )
       }
 
@@ -76,7 +76,7 @@ object ResourceBuilder {
               `type` = internal.datatype.name,
               plural = model.plural,
               description = internal.description,
-              operations = internal.operations.map(op => OperationBuilder(resolver, op, Some(model)))
+              operations = internal.operations.map(op => OperationBuilder(resolver, op, model = Some(model)))
             )
           }
 
@@ -90,7 +90,7 @@ object ResourceBuilder {
                   `type` = internal.datatype.name,
                   plural = union.plural,
                   description = internal.description,
-                  operations = internal.operations.map(op => OperationBuilder(resolver, op, None))
+                  operations = internal.operations.map(op => OperationBuilder(resolver, op, union = None))
                 )
               }
             }
@@ -104,13 +104,25 @@ object ResourceBuilder {
 
 object OperationBuilder {
 
-  def apply(resolver: TypeResolver, internal: InternalOperationForm, model: Option[Model]): Operation = {
+  def apply(resolver: TypeResolver, internal: InternalOperationForm, model: Option[Model] = None, union: Option[Union] = None): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
     val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
 
     val pathParameters = internal.namedPathParameters.map { name =>
       internal.parameters.find(_.name == Some(name)) match {
         case None => {
+          val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {
+            case Some(field) => field.`type`
+            case None => {
+              union.flatMap(commonField(_, name)) match {
+                case Some(field) => field.`type`
+                case None => {
+                  Datatype.Singleton(Type(Kind.Primitive, Primitives.String.toString)).label
+                }
+              }
+            }
+          }
+
           ParameterBuilder.fromPath(name, model)
         }
         case Some(declared) => {
@@ -134,6 +146,15 @@ object OperationBuilder {
       parameters = pathParameters ++ internalParams,
       responses = internal.responses.map { ResponseBuilder(resolver, _) }
     )
+  }
+
+  /**
+    * If all types agree on the datatype for the field with the specified Name,
+    * returns the field. Otherwise, returns None
+    */
+  private def commonField(union: Union, fieldName: String): Option[Field] = {
+    // TODO: Implement
+    None
   }
 
 }
