@@ -338,13 +338,9 @@ case class ServiceValidator(
 
     modelNames.filter { enumNames.contains(_) }.map { name =>
       s"Name[$name] cannot be used as the name of both a model and an enum"
-    }
-
-    modelNames.filter { unionNames.contains(_) }.map { name =>
+    } ++ modelNames.filter { unionNames.contains(_) }.map { name =>
       s"Name[$name] cannot be used as the name of both a model and a union type"
-    }
-
-    enumNames.filter { unionNames.contains(_) }.map { name =>
+    } ++ enumNames.filter { unionNames.contains(_) }.map { name =>
       s"Name[$name] cannot be used as the name of both an enum and a union type"
     }
   }

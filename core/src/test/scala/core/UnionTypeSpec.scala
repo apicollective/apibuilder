@@ -20,7 +20,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
       "models": {
 
-        "registered_user": {
+        "%s": {
           "fields": [
             { "name": "id", "type": "uuid" }
           ]
@@ -44,7 +44,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
   """
 
   it("union types support descriptions") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("string", "uuid"))
+    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("string", "uuid", "registered"))
     validator.errors.mkString("") should be("")
     val union = validator.service.get.unions.head
     union.types.find(_.`type` == "string").get.description should be(Some("foobar"))
@@ -52,31 +52,36 @@ class UnionTypeSpec extends FunSpec with Matchers {
   }
 
   it("union types can have primitives") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("string", "uuid"))
+    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("string", "uuid", "registered"))
     validator.errors.mkString("") should be("")
     validator.service.get.unions.head.types.map(_.`type`) should be(Seq("string", "uuid"))
   }
 
   it("union types can have models") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("guest", "registered_user"))
+    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("guest", "registered", "registered"))
     validator.errors.mkString("") should be("")
-    validator.service.get.unions.head.types.map(_.`type`) should be(Seq("guest", "registered_user"))
+    validator.service.get.unions.head.types.map(_.`type`) should be(Seq("guest", "registered"))
   }
 
   it("union types can have lists") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[guest]", "map[registered_user]"))
+    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[guest]", "map[registered]", "registered"))
     validator.errors.mkString("") should be("")
-    validator.service.get.unions.head.types.map(_.`type`) should be(Seq("[guest]", "map[registered_user]"))
+    validator.service.get.unions.head.types.map(_.`type`) should be(Seq("[guest]", "map[registered]"))
   }
 
   it("rejects blank types") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("guest", ""))
+    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("guest", "", "registered"))
     validator.errors.mkString("") should be("Union[user] all types must have a name")
   }
 
   it("rejects invalid types") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("guest", "another_user"))
+    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("guest", "another_user", "registered"))
     validator.errors.mkString("") should be("Union[user] type[another_user] not found")
+  }
+
+  it("validates that union names do not overlap with model names") {
+    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("string", "uuid", "user"))
+    validator.errors.mkString("") should be("Name[user] cannot be used as the name of both a model and a union type")
   }
 
 }
