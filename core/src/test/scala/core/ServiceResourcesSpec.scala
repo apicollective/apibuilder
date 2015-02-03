@@ -40,16 +40,24 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
     }
   """
 
-  it("models can be resources") {
+  it("models can be resources, with valid paths") {
     val json = baseJson.format("user")
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString("") should be("")
+
+    val resource = validator.service.get.resources.head
+    val op = resource.operations.head
+    op.path should be ("/users/:id")
   }
 
-  it("enums can be resources") {
+  it("enums can be resources, with valid paths") {
     val json = baseJson.format("user_type")
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString("") should be("")
+
+    val resource = validator.service.get.resources.head
+    val op = resource.operations.head
+    op.path should be ("/user_types/:id")
   }
 
   it("lists cannot be resources") {
@@ -61,7 +69,6 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
   it("maps cannot be resources") {
     val json = baseJson.format("[user]")
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
-    println(validator.errors.mkString("") )
     validator.errors.mkString("") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
   }
 

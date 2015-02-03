@@ -30,7 +30,7 @@ object ServiceBuilder {
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(resolver, _) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val resources = internal.resources.map { ResourceBuilder(resolver, models, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
+    val resources = internal.resources.map { ResourceBuilder(resolver, models, enums, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
     Service(
       name = name,
@@ -55,33 +55,47 @@ object ResourceBuilder {
   def apply(
     resolver: TypeResolver,
     models: Seq[Model],
+    enums: Seq[Enum],
     unions: Seq[Union],
     internal: InternalResourceForm
   ): Resource = {
-    models.find(_.name == internal.datatype.name) match {
-      case None => {
-        unions.find(_.name == internal.datatype.name) match {
-          case None => {
-            sys.error(s"Resource type[${internal.datatype.name}] must resolve to a model or a union type")
-          }
-          case Some(union) => {
-            Resource(
-              `type` = internal.datatype.name,
-              plural = union.plural,
-              description = internal.description,
-              operations = internal.operations.map(op => OperationBuilder(resolver, op, None))
-            )
-          }
-        }
-      }
-
-      case Some(model) => {
+    enums.find(_.name == internal.datatype.name) match {
+      case Some(enum) => {
         Resource(
           `type` = internal.datatype.name,
-          plural = model.plural,
+          plural = enum.plural,
           description = internal.description,
-          operations = internal.operations.map(op => OperationBuilder(resolver, op, Some(model)))
+          operations = internal.operations.map(op => OperationBuilder(resolver, op, None))
         )
+      }
+
+      case None => {
+        models.find(_.name == internal.datatype.name) match {
+          case Some(model) => {
+            Resource(
+              `type` = internal.datatype.name,
+              plural = model.plural,
+              description = internal.description,
+              operations = internal.operations.map(op => OperationBuilder(resolver, op, Some(model)))
+            )
+          }
+
+          case None => {
+            unions.find(_.name == internal.datatype.name) match {
+              case None => {
+                sys.error(s"Resource type[${internal.datatype.name}] must resolve to a model, enum or union type")
+              }
+              case Some(union) => {
+                Resource(
+                  `type` = internal.datatype.name,
+                  plural = union.plural,
+                  description = internal.description,
+                  operations = internal.operations.map(op => OperationBuilder(resolver, op, None))
+                )
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -144,6 +158,7 @@ object EnumBuilder {
   def apply(ie: InternalEnumForm): Enum = {
     Enum(
       name = ie.name,
+      plural = ie.plural,
       description = ie.description,
       values = ie.values.map { iv => EnumValue(name = iv.name.get, description = iv.description) }
     )

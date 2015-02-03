@@ -49,6 +49,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
       "enums": [
         {
           "name": "age_group",
+          "plural": "age_groups",
           "values": [
             { "name": "youth" },
             { "name": "adult" }

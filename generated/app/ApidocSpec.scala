@@ -15,6 +15,7 @@ package com.gilt.apidoc.spec.v0.models {
 
   case class Enum(
     name: String,
+    plural: String,
     description: _root_.scala.Option[String] = None,
     values: Seq[com.gilt.apidoc.spec.v0.models.EnumValue]
   )
@@ -274,6 +275,7 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonReadsApidocspecEnum: play.api.libs.json.Reads[Enum] = {
       (
         (__ \ "name").read[String] and
+        (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "values").readNullable[Seq[com.gilt.apidoc.spec.v0.models.EnumValue]].map(_.getOrElse(Nil))
       )(Enum.apply _)
@@ -282,6 +284,7 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonWritesApidocspecEnum: play.api.libs.json.Writes[Enum] = {
       (
         (__ \ "name").write[String] and
+        (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "values").write[Seq[com.gilt.apidoc.spec.v0.models.EnumValue]]
       )(unlift(Enum.unapply _))

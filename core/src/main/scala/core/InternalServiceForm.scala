@@ -95,7 +95,7 @@ private[core] case class InternalServiceForm(json: JsValue) {
       case Some(resources: JsObject) => {
         resources.fields.map { v =>
           v match {
-            case(typeName, value) => InternalResourceForm(typeName, models, value.as[JsObject])
+            case(typeName, value) => InternalResourceForm(typeName, models, enums, unions, value.as[JsObject])
           }
         }
       }
@@ -120,6 +120,7 @@ case class InternalModelForm(
 
 case class InternalEnumForm(
   name: String,
+  plural: String,
   description: Option[String],
   values: Seq[InternalEnumValueForm]
 )
@@ -289,6 +290,7 @@ object InternalEnumForm {
 
     InternalEnumForm(
       name = name,
+      plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
       description = description,
       values = values
     )
@@ -298,11 +300,27 @@ object InternalEnumForm {
 
 object InternalResourceForm {
 
-  def apply(typeName: String, models: Seq[InternalModelForm], value: JsObject): InternalResourceForm = {
+  def apply(
+    typeName: String,
+    models: Seq[InternalModelForm],
+    enums: Seq[InternalEnumForm],
+    unions: Seq[InternalUnionForm],
+    value: JsObject
+  ): InternalResourceForm = {
     val path = JsonUtil.asOptString(value \ "path").getOrElse {
-      models.find(m => m.name == typeName) match {
-        case Some(model: InternalModelForm) => "/" + model.plural
-        case None => "/"
+      enums.find(e => e.name == typeName) match {
+        case Some(enum) => "/" + enum.plural
+        case None => {
+          models.find(m => m.name == typeName) match {
+            case Some(model) => "/" + model.plural
+            case None => {
+              unions.find(u => u.name == typeName) match {
+                case Some(union) => "/" + union.plural
+                case None => "/"
+              }
+            }
+          }
+        }
       }
     }
 
