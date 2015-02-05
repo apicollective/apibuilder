@@ -17,8 +17,13 @@
   <h2>Enums as First Class in Routes</h2>
 
   <p>
-    enums are represented as first class objects in routes. In
-    order to use this feature, you must use the appropriate imports.
+    enums are represented as first class objects in routes. In order
+    to use this feature, you must use the appropriate imports. This
+    means that if you declare a route in play where the path or a
+    parameter includes an enumeration, we will automatically be able
+    to validate that the value provided is actually appropriate for
+    the enumeration. If the value provided is NOT a valid type, play
+    will return an error page listing the appropriate types.
   </p>
 
   <ol>
@@ -31,7 +36,8 @@
 
     </li>
 
-    <li>   
+    <li>
+
       <pre>
       enablePlugins(PlayScala)
       </pre>
@@ -41,7 +47,7 @@
     <li> Update your build.sbt file to include the bindabables:
 
       <pre>
-        routesImport += "&lt;packageName&gt;.&lt;serviceName&gt;.Bindables._"
+        routesImport += "&lt;packageName&gt;.&lt;serviceName&gt;.v&lt;versionNumber&gt;.Bindables._"
       </pre>
 
     </li>
