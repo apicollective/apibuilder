@@ -251,9 +251,30 @@
       <li><em>name</em> specifies the name of the union type. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. The name must be unique in the set of names assigned to enums, models, or other union types.</li>
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
       <li><em>description</em> specifies an optional, longer description for what this model represents.</li>
-      <li><em>types</em> Specifies the individual types that are part of this union type. See <a href="#unionType">Union Type</a>.</li>
+      <li><em>types</em> Specifies the individual types that are part of this union type. See <a href="#unionType">UnionType</a>.</li>
     </ul>
   </p>
+
+  <a name="unionType"></a>
+  <h2>UnionType declaration</h2>
+
+  <p>
+    A UnionType is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "type": <em>string</em>,
+      "description": <em>string (optional)</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>type</em> specifies the type to include in this union
+      type. Acceptable values include the name of either an enum, a model,
+      or a (<a href="@routes.DocController.types">primitive type</a>).</li>
+      <li><em>description</em> optional longer description for this enum.</li>
+   </ul>
 
   <a name="import"></a>
   <h2>Import declaration</h2>
