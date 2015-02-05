@@ -6,8 +6,8 @@
 
 <p>This is a big release - a number of significant new features, a few
 breaking changes to increase the quality of the code generated
-clients, and a large internal refactoring as we prepare to add union
-types to apidoc.</p>
+clients, and a large internal refactoring. The biggest new features
+are support for union types and imports.</p>
 
 <p><b>Breaking Changes</b><p>
 
@@ -105,6 +105,26 @@ types to apidoc.</p>
 
   <p><b>Major Features</b><p>
   <ul>
+
+    <li> <a href="@routes.DocController.apiJson#union">Union types</a> -
+    apidoc provides support for declaring your own union types
+    (sometimes referred to as sum or algebraic types). The basic idea
+    is that you can express that a particular variable is one of a
+    known set of types. As an example, in an ecommerce system, you
+    might want to accept orders from both registered users (people who
+    actually have a username and password with your service) and also
+    from guest users (e.g. people who have never visited your
+    application before). One way to model this is to define two types,
+    Registered User and Guest User, a single union type User that can
+    be either a Registered User or a Guest User, and then to model
+    your order as having a User.
+    </p>
+    <p>
+      More detailed information, with specific examples of how to use
+      union types using the play clients,
+      see <a href="@routes.DocController.playUnionTypes">Play Union types</a>.
+    </p>
+    </li>
 
     <li> Nomenclature change - Services have been renamed to
     Applications. We found that it was becoming difficult to
@@ -513,7 +533,7 @@ types to apidoc.</p>
     131</a></li>
 
     <li>Improved documentation of api.json format -
-    See <a href='/doc/apiJson'>apiJson</a></li>
+    See <a href='@routes.DocController.apiJson'>apiJson</a></li>
 
   </ul>
 
@@ -580,7 +600,7 @@ types to apidoc.</p>
     apidoc. This is a breaking change as the prior implementation
     (using an enum attribute on fields) is no longer supported. You
     will get a validation error message to help with
-    migration. See <a href="/doc/apiJson">apiJson documentation</a>
+    migration. See <a href="@routes.DocController.apiJson">apiJson documentation</a>
     for notes on the new enum support.
     See <a href='@lib.Util.GitHubUrl/pull/131'>PR 131</a>
     </li>

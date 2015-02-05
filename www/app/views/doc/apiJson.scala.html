@@ -15,6 +15,7 @@
       "headers": <em>JSON Array of <a href="#header">Header</a> (optional)</em>,
       "enums": <em>JSON Object of <a href="#enum">Enum</a> (optional)</em>,
       "models": <em>JSON Object of <a href="#model">Model</a> (optional)</em>,
+      "unions": <em>JSON Object of <a href="#union">Union</a> (optional)</em>,
       "resources": <em>JSON Object of <a href="#resource">Resource</a> (optional)</em>
     }
     </pre>
@@ -52,8 +53,8 @@
 
     where:
     <ul>
-      <li><em>name</em> specifies the name of the model. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
-      <li><em>plural</em> specifies the optional, plural form of the name of this model. By default, we will pluralize the name of the model to create the plural. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
+      <li><em>name</em> specifies the name of the model. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. The name must be unique in the set of names assigned to enums, models, or other union types.</li>
+      <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
       <li><em>description</em> specifies an optional, longer description for what this model represents.</li>
       <li><em>fields</em> indicates that one or more fields is required. See <a href="#field">Field</a>.</li>
     </ul>
@@ -197,6 +198,7 @@
     <pre>
     {
       "name": <em>string</em>,
+      "plural": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
       "values": <em>JSON Array of <a href="#enumValue">EnumValue</a></em>
     }
@@ -204,7 +206,8 @@
 
     where
     <ul>
-      <li><em>name</em> the name of the enum. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
+      <li><em>name</em> the name of the enum. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. The name must be unique in the set of names assigned to enums, models, or other union types.</li>
+      <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
       <li><em>description</em> optional longer description for this enum.</li>
       <li><em>values</em> Json Array of EnumValue objects. Each element defines a valid value and an optional description. See <a href="#enumValue">EnumValue</a>.</li>
    </ul>
@@ -228,6 +231,29 @@
       <li><em>name</em> the name of the value. Names must start with a letter.</li>
       <li><em>description</em> optional longer description for this enum.</li>
    </ul>
+
+  <a name="union"></a>
+  <h2>Union declaration</h2>
+
+  <p>
+    <pre>
+    {
+      "name" => {
+        "plural": <em>string (optional)</em>,
+        "description": <em>string (optional)</em>,
+        "types": <em>JSON Array of <a href="#unionType">UnionType</a></em>
+      }
+    }
+    </pre>
+
+    where:
+    <ul>
+      <li><em>name</em> specifies the name of the union type. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. The name must be unique in the set of names assigned to enums, models, or other union types.</li>
+      <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
+      <li><em>description</em> specifies an optional, longer description for what this model represents.</li>
+      <li><em>types</em> Specifies the individual types that are part of this union type. See <a href="#unionType">Union Type</a>.</li>
+    </ul>
+  </p>
 
   <a name="import"></a>
   <h2>Import declaration</h2>
