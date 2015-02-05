@@ -33,6 +33,10 @@ object DocController extends Controller {
     Ok(views.html.doc.examples(request.user))
   }
 
+  def generators = Anonymous { implicit request =>
+    Ok(views.html.doc.generators(request.user))
+  }
+
   def history = Anonymous { implicit request =>
     Ok(views.html.doc.history(request.user))
   }
@@ -47,6 +51,10 @@ object DocController extends Controller {
 
   def playRoutesFile = Anonymous { implicit request =>
     Ok(views.html.doc.playRoutesFile(request.user))
+  }
+
+  def playUnionTypes = Anonymous { implicit request =>
+    Ok(views.html.doc.playUnionTypes(request.user))
   }
 
 }

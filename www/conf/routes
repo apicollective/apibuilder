@@ -21,10 +21,12 @@ GET     /doc/apiJson                                              controllers.Do
 GET     /doc/types                                                controllers.DocController.types
 GET     /doc/clients                                              controllers.DocController.clients
 GET     /doc/examples                                             controllers.DocController.examples
+GET     /doc/generators                                           controllers.DocController.generators
 GET     /doc/history                                              controllers.DocController.history
 GET     /doc/releaseNotes                                         controllers.DocController.releaseNotes
 GET     /doc/todo                                                 controllers.DocController.todo
 GET     /doc/playRoutesFile                                       controllers.DocController.playRoutesFile
+GET     /doc/playUnionTypes                                       controllers.DocController.playUnionTypes
 
 GET     /email-verifications/:token                               controllers.EmailVerifications.get(token: String)
 

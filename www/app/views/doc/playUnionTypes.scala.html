@@ -1,0 +1,66 @@
+@(user: Option[com.gilt.apidoc.v0.models.User])
+
+@doc.main(routes.DocController.playRoutesFile.url, user, Some("Play Union Types")) {
+
+  <p>
+    apidoc provides support for declaring your own union types
+    (sometimes referred to as sum or algebraic types). The basic idea
+    is that you can express that a particular variable is one of a
+    known set of types.
+  </p>
+
+  <p>
+
+    As an example, in an ecommerce system, you might want to accept
+    orders from both registered users (people who actually have a
+    username and password with your service) and also from guest users
+    (e.g. people who have never visited your application before). One
+    way to model this is to define two types, Registered User and
+    Guest User, a single union type User that can be either a
+    Registered User or a Guest User, and then to model your order as
+    having a User.
+  </p>
+
+  <p>
+    Union types, especially when combined with expressive programming
+    languages like Scala, can prove to be very useful and pragmatic
+    tools for modeling problems like this.
+  </p>
+
+  <p>
+    Over the wire, union types in the play 2_x clients are represented
+    as a Json Object with one element. The key is the name of the type
+    and the value is the Json serialization of the actual object.
+  </p>
+
+  <p>
+    Example serializations:
+
+    <pre>
+    {
+      "registered_user": {
+        "guid":"f30dc64e-1793-4d59-aa47-71f000e06851",
+        "email":"registered@@gilttest.com"
+      }
+    }
+    </pre>
+
+    <pre>
+    {
+      "guest_user": {
+        "guid":"f30dc64e-1793-4d59-aa47-71f000e06851",
+        "email":"guest@@gilttest.com"
+      }
+    }
+    </pre>
+
+  </p>
+
+  <p>
+
+    For more information, pls look at the Example api.json file and
+    example controller for interacting with union types.
+
+  </p>
+
+}  

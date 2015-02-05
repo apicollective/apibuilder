@@ -1,0 +1,18 @@
+@(user: Option[com.gilt.apidoc.v0.models.User])
+
+@doc.main(routes.DocController.playRoutesFile.url, user, Some("Code Generators")) {
+
+  <p>
+    General notes / documentation for common code generators provided by apidoc.
+  </p>
+
+  <h2>Play 2.x Client</h2>
+
+  <ul>
+
+    <li> <a href="@routes.DocController.playRoutesFile">Play routes</a></li>
+    <li> <a href="@routes.DocController.playUnionTypes">Play union types</a></li>
+
+  </ul>
+
+}  
