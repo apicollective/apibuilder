@@ -5,7 +5,7 @@ name := "apidoc"
 
 organization := "com.gilt.apidoc"
 
-scalaVersion in ThisBuild := "2.11.4"
+scalaVersion in ThisBuild := "2.11.5"
 
 // required because of issue between scoverage & sbt
 parallelExecution in Test in ThisBuild := true
@@ -22,7 +22,7 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.3.6"
+      "com.typesafe.play" %% "play-json" % "2.3.7"
     )
   )
 
