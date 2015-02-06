@@ -1,10 +1,3 @@
-path parameters that reference fields from a union type:
-  +GET        /users/:guid                                           controllers.Users.getByGuid(guid: String)
-
-  In these cases, find all the possible data types for all the fields
-  named 'guid' from all the union types. IF their type matches, uses
-  it (should allow this to be UUID)
-
 review the option[xxx] syntax to declare types and see if we want to
 announce that in the release or if we should wait
   if we keep, we probably need to remove option from:
