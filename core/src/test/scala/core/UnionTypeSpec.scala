@@ -84,4 +84,9 @@ class UnionTypeSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("Name[user] cannot be used as the name of both a model and a union type")
   }
 
+  it("validates unit type") {
+    val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("unit", "uuid", "registered"))
+    validator.errors.mkString("") should be("Union types cannot contain unit. To make a particular field optional, use the required: true|false property.")
+  }
+
 }

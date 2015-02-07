@@ -282,7 +282,16 @@ case class ServiceValidator(
           case Some(dt) => {
             internalService.get.typeResolver.parse(dt) match {
               case None => Seq(s"Union[${union.name}] type[${dt.label}] not found")
-              case Some(_) => Seq.empty
+              case Some(t: Datatype) => {
+                t.`type` match {
+                  case Type(Kind.Primitive, "unit") => {
+                    Seq("Union types cannot contain unit. To make a particular field optional, use the required: true|false property.")
+                  }
+                  case _ => {
+                    Seq.empty
+                  }
+                }
+              }
             }
           }
         }
