@@ -5,14 +5,9 @@ announce that in the release or if we should wait
 
 ruby client generator:
   -- add support for union types
-  -- api/app/models/RubyClientGenerator.scala -> moduleName needs to take into account service.namespace
 
 Breaking changes:
   - Change 404s to be explicit
-
-api + spec:
-  - introduce service_form distinct from service. Replaces JsObject in
-    version.service
 
 Generators:
   - Cache the generators
@@ -29,12 +24,16 @@ UX:
     note that the service will not be visible until the org is made
     public.
 
+Ability to diff two versions of a service, producing a human readable
+output of the changes. Use this as the basis for determining backwards
+incompatible changes.
+
 Org level setting to enable semver versioning (default on)
   - prevent backwards incompatible changes once at major version 1
 
 Email user when their membership request has been processed
 
-Implement subscriptions.finaAll authorization filter
+Implement subscriptions.findAll authorization filter
 
 Add user_form to api.json and remove db.UserDao.UserForm
 
