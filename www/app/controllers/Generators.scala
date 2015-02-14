@@ -12,7 +12,11 @@ object Generators extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def list() = Authenticated.async { implicit request =>
+  def redirect = Action { implicit request =>
+    Redirect(routes.Generators.index)
+  }
+
+  def index() = Authenticated.async { implicit request =>
     request.api.Generators.get().recover {
       case ex: Exception => Seq.empty
     }.map { generators =>
@@ -28,7 +32,7 @@ object Generators extends Controller {
       generator <- request.api.Generators.getByKey(key)
     } yield {
       generator match {
-        case None => Redirect(routes.Generators.list()).flashing("warning" -> s"Generator not found")
+        case None => Redirect(routes.Generators.index()).flashing("warning" -> s"Generator not found")
         case Some(g) => {
           Ok(views.html.generators.details(request.mainTemplate().copy(
             title = Some("Generator Details"),
@@ -87,7 +91,7 @@ object Generators extends Controller {
             ))
           }
           Future.sequence(futures).map { d =>
-            Redirect(routes.Generators.list()).flashing("success" -> s"Generator(s) added")
+            Redirect(routes.Generators.index()).flashing("success" -> s"Generator(s) added")
           }.recover {
             case response: com.gilt.apidoc.v0.errors.ErrorsResponse => {
               Ok(views.html.generators.form(tpl, 1, boundForm, response.errors.map(_.message)))
@@ -117,7 +121,7 @@ object Generators extends Controller {
     for {
       response <- request.api.Generators.deleteByKey(key)
     } yield {
-      Redirect(routes.Generators.list()).flashing("success" -> s"Generator removed")
+      Redirect(routes.Generators.index()).flashing("success" -> s"Generator removed")
     }
   }
 

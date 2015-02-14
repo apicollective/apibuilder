@@ -1,0 +1,43 @@
+@(tpl: models.MainTemplate,
+  tokens: lib.PaginatedCollection[com.gilt.apidoc.v0.models.Token]
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.TokensController.create">Create new token</a>
+  </div>
+
+  <table class="table table-hover table-condensed">
+    <thead>
+      <tr>
+        <th>Created</th>
+        <th>Token</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @tokens.items.map { token =>
+       <tr>
+         <td>@lib.DateHelper.shortDate(tpl.timeZone, token.audit.createdAt)</td>
+         <td><a href="@routes.TokensController.show(token.guid)">@lib.LabelHelper.token(token.token)</a></td>
+         <td>@token.description.getOrElse(Html("<em>None</em>"))</td>
+       </tr>
+     }
+    </tbody>
+  </table>
+
+  @if(tokens.hasPrevious || tokens.hasNext) {
+    <ul class="pager">
+      @if(tokens.hasPrevious) {
+        <li><a href="@routes.TokensController.index(tokens.page - 1)">Previous</a></li>
+      }
+      @if(tokens.hasNext) {
+        <li><a href="@routes.TokensController.index(tokens.page + 1)">Next</a></li>
+      }
+    </ul>
+  }
+
+
+}

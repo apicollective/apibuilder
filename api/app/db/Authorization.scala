@@ -27,6 +27,16 @@ sealed trait Authorization {
     organizationsTableName: String = "organizations"
   ): Option[String]
 
+  /**
+    * Generates a sql filter to restrict the returned set of
+    * tokens to those that this user is authorized to access.
+    * 
+    * @param tokensTableName e.g "tokens"
+    */
+  def tokenFilter(
+    tokensTableName: String = "tokens"
+  ): Option[String]
+
   def bindVariables(): Seq[NamedParameter] = Seq.empty
 
 }
@@ -46,12 +56,16 @@ object Authorization {
       Some(s"$organizationsTableName.visibility = '${Visibility.Public}'")
     }
 
-    def applicationFilter(
+    override def applicationFilter(
       applicationsTableName: String = "applications",
       organizationsTableName: String = "organizations"
     ) = {
       Some(PublicApplicationsQuery.format(applicationsTableName))
     }
+
+    override def tokenFilter(
+      tokensTableName: String = "tokens"
+    ): Option[String] = Some("false")
 
   }
 
@@ -65,6 +79,10 @@ object Authorization {
       applicationsTableName: String = "applications",
       organizationsTableName: String = "organizations"
     ) = None
+
+    override def tokenFilter(
+      tokensTableName: String = "tokens"
+    ): Option[String] = None
 
   }
 
@@ -83,6 +101,11 @@ object Authorization {
       Some(
         "(" + PublicApplicationsQuery.format(applicationsTableName) + " or " + organizationFilter(organizationsTableName).get + ")"
       )
+    }
+    override def tokenFilter(
+      tokensTableName: String = "tokens"
+    ): Option[String] = {
+      Some(s"${tokensTableName}.user_guid = {authorization_user_guid}::uuid")
     }
 
     override def bindVariables(): Seq[NamedParameter] = {

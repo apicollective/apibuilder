@@ -1,0 +1,35 @@
+@(tpl: models.MainTemplate,
+  form: Form[controllers.TokensController.TokenData],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some("Create Token")), errorMessages = errorMessages) {
+
+  <div class="container">
+
+    @helper.form(action = routes.TokensController.postCreate()) {
+
+      <div class="container">
+
+        @helper.form(action = routes.Organizations.createPost) {
+
+          <fieldset>
+              @helper.inputText(
+                  form("description"),
+                  '_label -> "Description",
+                  '_help -> "Optional description to help you remember where this token is used",
+                  '_error -> form.error("description")
+              )
+
+              <button class="btn btn-large btn-primary" type="submit">Submit</button>
+              <a href="@routes.TokensController.index()" class="btn">Cancel</a>
+        }      
+
+      </div>
+
+    }
+
+  </div>
+
+}
+

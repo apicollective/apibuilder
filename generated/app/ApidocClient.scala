@@ -24,6 +24,13 @@ package com.gilt.apidoc.v0.models {
     visibility: com.gilt.apidoc.v0.models.Visibility
   )
 
+  case class Audit(
+    createdAt: _root_.org.joda.time.DateTime,
+    createdBy: com.gilt.apidoc.v0.models.ReferenceGuid,
+    updatedAt: _root_.org.joda.time.DateTime,
+    updatedBy: com.gilt.apidoc.v0.models.ReferenceGuid
+  )
+
   /**
    * Generated source code.
    */
@@ -176,6 +183,10 @@ package com.gilt.apidoc.v0.models {
     key: String
   )
 
+  case class ReferenceGuid(
+    guid: _root_.java.util.UUID
+  )
+
   /**
    * Represents a user that is currently subscribed to a publication
    */
@@ -199,7 +210,8 @@ package com.gilt.apidoc.v0.models {
     guid: _root_.java.util.UUID,
     user: com.gilt.apidoc.v0.models.User,
     token: String,
-    description: _root_.scala.Option[String] = None
+    description: _root_.scala.Option[String] = None,
+    audit: com.gilt.apidoc.v0.models.Audit
   )
 
   case class TokenForm(
@@ -440,6 +452,24 @@ package com.gilt.apidoc.v0.models {
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "visibility").write[com.gilt.apidoc.v0.models.Visibility]
       )(unlift(ApplicationForm.unapply _))
+    }
+
+    implicit def jsonReadsApidocAudit: play.api.libs.json.Reads[Audit] = {
+      (
+        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
+        (__ \ "created_by").read[com.gilt.apidoc.v0.models.ReferenceGuid] and
+        (__ \ "updated_at").read[_root_.org.joda.time.DateTime] and
+        (__ \ "updated_by").read[com.gilt.apidoc.v0.models.ReferenceGuid]
+      )(Audit.apply _)
+    }
+
+    implicit def jsonWritesApidocAudit: play.api.libs.json.Writes[Audit] = {
+      (
+        (__ \ "created_at").write[_root_.org.joda.time.DateTime] and
+        (__ \ "created_by").write[com.gilt.apidoc.v0.models.ReferenceGuid] and
+        (__ \ "updated_at").write[_root_.org.joda.time.DateTime] and
+        (__ \ "updated_by").write[com.gilt.apidoc.v0.models.ReferenceGuid]
+      )(unlift(Audit.unapply _))
     }
 
     implicit def jsonReadsApidocCode: play.api.libs.json.Reads[Code] = {
@@ -694,6 +724,16 @@ package com.gilt.apidoc.v0.models {
       )(unlift(Reference.unapply _))
     }
 
+    implicit def jsonReadsApidocReferenceGuid: play.api.libs.json.Reads[ReferenceGuid] = {
+      (__ \ "guid").read[_root_.java.util.UUID].map { x => new ReferenceGuid(guid = x) }
+    }
+
+    implicit def jsonWritesApidocReferenceGuid: play.api.libs.json.Writes[ReferenceGuid] = new play.api.libs.json.Writes[ReferenceGuid] {
+      def writes(x: ReferenceGuid) = play.api.libs.json.Json.obj(
+        "guid" -> play.api.libs.json.Json.toJson(x.guid)
+      )
+    }
+
     implicit def jsonReadsApidocSubscription: play.api.libs.json.Reads[Subscription] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -733,7 +773,8 @@ package com.gilt.apidoc.v0.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "user").read[com.gilt.apidoc.v0.models.User] and
         (__ \ "token").read[String] and
-        (__ \ "description").readNullable[String]
+        (__ \ "description").readNullable[String] and
+        (__ \ "audit").read[com.gilt.apidoc.v0.models.Audit]
       )(Token.apply _)
     }
 
@@ -742,7 +783,8 @@ package com.gilt.apidoc.v0.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "user").write[com.gilt.apidoc.v0.models.User] and
         (__ \ "token").write[String] and
-        (__ \ "description").write[scala.Option[String]]
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "audit").write[com.gilt.apidoc.v0.models.Audit]
       )(unlift(Token.unapply _))
     }
 
@@ -897,6 +939,8 @@ package com.gilt.apidoc.v0 {
     def passwordResets: PasswordResets = PasswordResets
 
     def subscriptions: Subscriptions = Subscriptions
+
+    def tokens: Tokens = Tokens
 
     def users: Users = Users
 
@@ -1356,6 +1400,48 @@ package com.gilt.apidoc.v0 {
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[Unit]] = {
         _executeRequest("DELETE", s"/subscriptions/${guid}").map {
+          case r if r.status == 204 => Some(Unit)
+          case r if r.status == 404 => None
+          case r => throw new com.gilt.apidoc.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 404")
+        }
+      }
+    }
+
+    object Tokens extends Tokens {
+      override def getUsersByUserGuid(
+        userGuid: _root_.java.util.UUID,
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        limit: _root_.scala.Option[Long] = None,
+        offset: _root_.scala.Option[Long] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.v0.models.Token]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          limit.map("limit" -> _.toString),
+          offset.map("offset" -> _.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/tokens/users/${userGuid}", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("Seq[com.gilt.apidoc.v0.models.Token]", r, _.validate[Seq[com.gilt.apidoc.v0.models.Token]])
+          case r => throw new com.gilt.apidoc.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+
+      override def post(
+        tokenForm: com.gilt.apidoc.v0.models.TokenForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.v0.models.Token] = {
+        val payload = play.api.libs.json.Json.toJson(tokenForm)
+
+        _executeRequest("POST", s"/tokens", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.Token", r, _.validate[com.gilt.apidoc.v0.models.Token])
+          case r if r.status == 409 => throw new com.gilt.apidoc.v0.errors.ErrorsResponse(r)
+          case r => throw new com.gilt.apidoc.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
+        }
+      }
+
+      override def deleteByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[Unit]] = {
+        _executeRequest("DELETE", s"/tokens/${guid}").map {
           case r if r.status == 204 => Some(Unit)
           case r if r.status == 404 => None
           case r => throw new com.gilt.apidoc.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 404")
@@ -1951,6 +2037,26 @@ package com.gilt.apidoc.v0 {
     def post(
       subscriptionForm: com.gilt.apidoc.v0.models.SubscriptionForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.v0.models.Subscription]
+
+    def deleteByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[Unit]]
+  }
+
+  trait Tokens {
+    def getUsersByUserGuid(
+      userGuid: _root_.java.util.UUID,
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      limit: _root_.scala.Option[Long] = None,
+      offset: _root_.scala.Option[Long] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.v0.models.Token]]
+
+    /**
+     * Create a new API token for this user
+     */
+    def post(
+      tokenForm: com.gilt.apidoc.v0.models.TokenForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.v0.models.Token]
 
     def deleteByGuid(
       guid: _root_.java.util.UUID

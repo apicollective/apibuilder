@@ -4,6 +4,17 @@ import com.gilt.apidoc.v0.models.{Application, Generator, Organization, User}
 import com.gilt.apidoc.spec.v0.models.{Resource, Service}
 import play.api.Play.current
 
+case class UserTimeZone(
+  name: String,
+  label: String
+)
+
+object UserTimeZone {
+
+  val Default = UserTimeZone(name = "US/Eastern", label = "EST")
+
+}
+
 case class MainTemplate(
   title: Option[String] = None,
   headTitle: Option[String] = None,
@@ -20,6 +31,9 @@ case class MainTemplate(
   service: Option[Service] = None,
   requestPath: String
 ) {
+
+  // Placeholder so that we can eventually choose timezone by user
+  def timeZone: UserTimeZone = UserTimeZone.Default
 
   def canEditApplication(applicationKey: String): Boolean = isOrgMember
 

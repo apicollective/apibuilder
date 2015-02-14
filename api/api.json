@@ -33,6 +33,15 @@
 	    ]
 	},
 
+	"audit": {
+	    "fields": [
+		{ "name": "created_at", "type": "date-time-iso8601" },
+		{ "name": "created_by", "type": "reference_guid" },
+		{ "name": "updated_at", "type": "date-time-iso8601" },
+		{ "name": "updated_by", "type": "reference_guid" }
+	    ]
+	},
+
 	"validation": {
 	    "description": "Used only to validate json files - used as a resource where http status code defines success",
 	    "fields": [
@@ -56,7 +65,8 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this token." },
                 { "name": "user", "type": "user", "description": "The user to which this token belongs." },
                 { "name": "token", "type": "string", "description": "The actual token. Guaranteed to be globally unique." },
-                { "name": "description", "type": "string", "description": "optional description to help the user manage the token.", "required": false }
+                { "name": "description", "type": "string", "description": "optional description to help the user manage the token.", "required": false },
+                { "name": "audit", "type": "audit" }
             ]
         },
 
@@ -161,6 +171,12 @@
             "fields": [
                 { "name": "guid", "type": "uuid" },
                 { "name": "key", "type": "string" }
+	    ]
+	},
+
+        "reference_guid": {
+            "fields": [
+                { "name": "guid", "type": "uuid" }
 	    ]
 	},
 
@@ -380,6 +396,39 @@
                 }
             ]
         },
+
+	"token": {
+	    "operations": [
+		{
+		    "method": "GET",
+		    "path": "/users/:user_guid",
+		    "parameters": [
+			{ "name": "user_guid", "type": "uuid" },
+			{ "name": "guid", "type": "uuid", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ],
+                    "responses": {
+                        "200": { "type": "[token]" }
+                    }
+		},
+
+		{
+		    "method": "POST",
+		    "description": "Create a new API token for this user",
+		    "body": { "type": "token_form" },
+                    "responses": {
+                        "201": { "type": "token" },
+                        "409": { "type": "[error]" }
+                    }
+		},
+
+		{
+		    "method": "DELETE",
+		    "path": "/:guid"
+		}
+	    ]
+	},
 
         "organization": {
             "operations": [

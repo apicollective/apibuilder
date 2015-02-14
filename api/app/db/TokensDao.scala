@@ -1,18 +1,21 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Token, TokenForm, User}
+import com.gilt.apidoc.v0.models.{Error, Token, TokenForm, User}
 import lib.{Constants, Role, TokenGenerator}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import lib.Validation
 
 object TokensDao {
 
-  private val BaseQuery = """
+  private val BaseQuery = s"""
     select tokens.guid,
            tokens.token,
+           tokens.description,
+           ${AuditsDao.queryCreation("tokens")},
            users.guid as user_guid,
            users.email as user_email,
            users.name as user_name
@@ -28,7 +31,28 @@ object TokensDao {
     ({guid}::uuid, {user_guid}::uuid, {token}, {description}, {created_by_guid}::uuid)
   """
 
+  def validate(
+    user: User,
+    form: TokenForm
+  ): Seq[Error] = {
+    val authErrors = if (user.guid == form.userGuid) {
+      Seq.empty
+    } else {
+      Seq("You are not authorized to create a token for this user")
+    }
+
+    val userErrors = UsersDao.findByGuid(form.userGuid) match {
+      case None => Seq("User not found")
+      case Some(_) => Seq.empty
+    }
+
+    Validation.errors(authErrors ++ userErrors)
+  }
+
   def create(user: User, form: TokenForm): Token = {
+    val errors = validate(user, form)
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+
     val guid = UUID.randomUUID
 
     DB.withConnection { implicit c =>
@@ -44,6 +68,10 @@ object TokensDao {
     findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create token")
     }
+  }
+
+  def softDelete(deletedBy: User, token: Token) {
+    SoftDelete.delete("tokens", deletedBy, token.guid)
   }
 
   def findByToken(token: String): Option[Token] = {
@@ -64,17 +92,17 @@ object TokensDao {
   ): Seq[Token] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      guid.map { v => "and tokens.guid = {guid}::uuid" },
-      userGuid.map { v => "and tokens.user_guid = {user_guid}::uuid" },
-      token.map { v => "and tokens.token = {token}" },
-      Some(s"order by tokens.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
+      authorization.tokenFilter(),
+      guid.map { v => "tokens.guid = {guid}::uuid" },
+      userGuid.map { v => "tokens.user_guid = {user_guid}::uuid" },
+      token.map { v => "tokens.token = {token}" }
+    ).flatten.mkString("\n   and ") + s" order by tokens.created_at limit ${limit} offset ${offset}"
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
       token.map('token ->_)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
@@ -86,7 +114,9 @@ object TokensDao {
   ) = Token(
     guid = row[UUID]("guid"),
     token = row[String]("token"),
-    user = UsersDao.fromRow(row, Some("user"))
+    description = row[Option[String]]("description"),
+    user = UsersDao.fromRow(row, Some("user")),
+    audit = AuditsDao.fromRowCreation(row)
   )
 
 }

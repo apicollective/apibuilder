@@ -10,6 +10,10 @@ body .navbar-fixed-top {
   padding-left: 220px;
 }
 
+ul.dropdown-menu {
+  z-index: 1001;
+}
+
 body .sidebar {
   top: 0px;
   padding-top: 0px;

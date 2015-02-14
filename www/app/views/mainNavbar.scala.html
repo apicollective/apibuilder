@@ -8,16 +8,17 @@
         <li><a href="@routes.DocController.index()">Documentation</a></li>
         <li><a href="@lib.Util.GitHubUrl">github</a></li>
       </ul>
-	  @if(user.isEmpty) {
+      @if(user.isEmpty) {
         <ul class="nav navbar-nav navbar-right">
           <li><a href="@routes.LoginController.index(return_url = Some(requestPath))">Login/Register</a></li>
         </ul>
       } else {
         <ul class="nav navbar-nav navbar-right">
           <li class="dropdown">
-            <a href="/account" class="dropdown-toggle" data-toggle="dropdown">@user.get.name.getOrElse(user.get.email) <b class="caret"></b></a>
+            <a href="/account" class="dropdown-toggle" data-toggle="dropdown">@lib.LabelHelper.user(user.get) <b class="caret"></b></a>
             <ul class="dropdown-menu">
-              <li><a href="@routes.Generators.list()">Generators</a></li>
+              <li><a href="@routes.Generators.index()">Generators</a></li>
+              <li><a href="@routes.TokensController.index()">Tokens</a></li>
               <li><a href="/logout">Logout</a></li>
             </ul>
           </li>

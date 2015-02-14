@@ -1,0 +1,17 @@
+@(tpl: models.MainTemplate,
+  token: com.gilt.apidoc.v0.models.Token
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  <ul>
+    <li> Full token: @token.token </li>
+    <li> Description: @token.description.getOrElse(Html("<em>none</em>")) </li>
+    <li> Created: @lib.DateHelper.longDateTime(tpl.timeZone, token.audit.createdAt)</li>
+  </ul>
+
+  <ul>
+    <li><a href="@routes.TokensController.postDelete(token.guid)" class="delete" data-confirm="Are you sure?">Delete</a></li>
+  </ul>
+
+}

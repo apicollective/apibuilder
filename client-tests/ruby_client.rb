@@ -91,6 +91,10 @@ module Com
             @subscriptions ||= Com::Gilt::Apidoc::V0::Clients::Subscriptions.new(self)
           end
 
+          def tokens
+            @tokens ||= Com::Gilt::Apidoc::V0::Clients::Tokens.new(self)
+          end
+
           def users
             @users ||= Com::Gilt::Apidoc::V0::Clients::Users.new(self)
           end
@@ -455,6 +459,36 @@ module Com
 
           end
 
+          class Tokens
+
+            def initialize(client)
+              @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
+            end
+
+            def get_users_by_user_guid(user_guid, incoming={})
+              HttpClient::Preconditions.assert_class('user_guid', user_guid, String)
+              opts = HttpClient::Helper.symbolize_keys(incoming)
+              query = {
+                :guid => HttpClient::Preconditions.assert_class_or_nil('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String),
+                :limit => HttpClient::Preconditions.assert_class_or_nil('limit', opts.delete(:limit), Integer),
+                :offset => HttpClient::Preconditions.assert_class_or_nil('offset', opts.delete(:offset), Integer)
+              }.delete_if { |k, v| v.nil? }
+              @client.request("/tokens/users/#{user_guid}").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::Token.new(hash) }
+            end
+
+                # Create a new API token for this user
+            def post(token_form)
+              HttpClient::Preconditions.assert_class('token_form', token_form, Com::Gilt::Apidoc::V0::Models::TokenForm)
+              @client.request("/tokens").with_json(token_form.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Token.new(hash) }
+            end
+
+            def delete_by_guid(guid)
+              HttpClient::Preconditions.assert_class('guid', guid, String)
+              @client.request("/tokens/#{guid}").delete { |hash| Com::Gilt::Apidoc::V0::Models::Value.new(hash) }
+            end
+
+          end
+
           class Users
 
             def initialize(client)
@@ -784,6 +818,37 @@ module Com
                 :key => key,
                 :description => description,
                 :visibility => visibility.nil? ? nil : visibility.value
+              }
+            end
+
+          end
+
+          class Audit
+
+            attr_reader :created_at, :created_by, :updated_at, :updated_by
+
+            def initialize(incoming={})
+              opts = HttpClient::Helper.symbolize_keys(incoming)
+              @created_at = HttpClient::Preconditions.assert_class('created_at', HttpClient::Helper.to_date_time_iso8601(opts.delete(:created_at)), DateTime)
+              @created_by = HttpClient::Preconditions.assert_class('created_by', opts[:created_by].nil? ? nil : (opts[:created_by].is_a?(Com::Gilt::Apidoc::V0::Models::ReferenceGuid) ? opts.delete(:created_by) : Com::Gilt::Apidoc::V0::Models::ReferenceGuid.new(opts.delete(:created_by))), Com::Gilt::Apidoc::V0::Models::ReferenceGuid)
+              @updated_at = HttpClient::Preconditions.assert_class('updated_at', HttpClient::Helper.to_date_time_iso8601(opts.delete(:updated_at)), DateTime)
+              @updated_by = HttpClient::Preconditions.assert_class('updated_by', opts[:updated_by].nil? ? nil : (opts[:updated_by].is_a?(Com::Gilt::Apidoc::V0::Models::ReferenceGuid) ? opts.delete(:updated_by) : Com::Gilt::Apidoc::V0::Models::ReferenceGuid.new(opts.delete(:updated_by))), Com::Gilt::Apidoc::V0::Models::ReferenceGuid)
+            end
+
+            def to_json
+              JSON.dump(to_hash)
+            end
+
+            def copy(incoming={})
+              Audit.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+            end
+
+            def to_hash
+              {
+                :created_at => HttpClient::Helper.date_time_iso8601_to_string(created_at),
+                :created_by => created_by.nil? ? nil : created_by.to_hash,
+                :updated_at => HttpClient::Helper.date_time_iso8601_to_string(updated_at),
+                :updated_by => updated_by.nil? ? nil : updated_by.to_hash
               }
             end
 
@@ -1301,6 +1366,31 @@ module Com
 
           end
 
+          class ReferenceGuid
+
+            attr_reader :guid
+
+            def initialize(incoming={})
+              opts = HttpClient::Helper.symbolize_keys(incoming)
+              @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
+            end
+
+            def to_json
+              JSON.dump(to_hash)
+            end
+
+            def copy(incoming={})
+              ReferenceGuid.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+            end
+
+            def to_hash
+              {
+                :guid => guid
+              }
+            end
+
+          end
+
           # Represents a user that is currently subscribed to a publication
           class Subscription
 
@@ -1365,7 +1455,7 @@ module Com
           # A token gives a user access to the API.
           class Token
 
-            attr_reader :guid, :user, :token, :description
+            attr_reader :guid, :user, :token, :description, :audit
 
             def initialize(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
@@ -1373,6 +1463,7 @@ module Com
               @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Com::Gilt::Apidoc::V0::Models::User) ? opts.delete(:user) : Com::Gilt::Apidoc::V0::Models::User.new(opts.delete(:user))), Com::Gilt::Apidoc::V0::Models::User)
               @token = HttpClient::Preconditions.assert_class('token', opts.delete(:token), String)
               @description = HttpClient::Preconditions.assert_class_or_nil('description', opts.delete(:description), String)
+              @audit = HttpClient::Preconditions.assert_class('audit', opts[:audit].nil? ? nil : (opts[:audit].is_a?(Com::Gilt::Apidoc::V0::Models::Audit) ? opts.delete(:audit) : Com::Gilt::Apidoc::V0::Models::Audit.new(opts.delete(:audit))), Com::Gilt::Apidoc::V0::Models::Audit)
             end
 
             def to_json
@@ -1388,7 +1479,8 @@ module Com
                 :guid => guid,
                 :user => user.nil? ? nil : user.to_hash,
                 :token => token,
-                :description => description
+                :description => description,
+                :audit => audit.nil? ? nil : audit.to_hash
               }
             end
 
