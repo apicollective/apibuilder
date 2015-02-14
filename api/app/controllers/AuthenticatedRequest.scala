@@ -38,8 +38,29 @@ private[controllers] object RequestHelper {
       case _ => None
     }
 
-    val userFromHeader = userGuidHeader.flatMap(UsersDao.findByGuid(_))
-    UserAuth(tokenUser, userFromHeader)
+    userGuidHeader.flatMap(UsersDao.findByGuid(_)) match {
+      case None => {
+        /**
+          * Currently a hack. If the token user is NOT our system user
+          * that is used by the webapp, then we assume this is a user
+          * accessing the API directly and the user is the same as the
+          * token user (if set).
+          */
+        tokenUser match {
+          case None => UserAuth(None, None)
+          case Some(u) => {
+            if (u.email == UsersDao.AdminUserEmail) {
+              UserAuth(Some(u), None)
+            } else {
+              UserAuth(Some(u), Some(u))
+            }
+          }
+        }
+      }
+      case Some(userFromHeader) => {
+        UserAuth(tokenUser, Some(userFromHeader))
+      }
+    }
 
   }
 
