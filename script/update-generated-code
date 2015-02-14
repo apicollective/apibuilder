@@ -1,7 +1,26 @@
 #!/usr/bin/env ruby
 
-SERVICE_URL = ARGV.shift || "http://www.apidoc.me"
+def get_service_url
+  urls = ['http://www.apidoc.me', 'http://localhost:9000']
+
+  puts "Select apidoc URL (defaults to 1): "
+  urls.each_with_index do |url, i|
+    puts "  #{i + 1}: #{url}"
+  end
+
+  input = gets.to_s.strip
+  index = input.to_i - 1
+  if index >= 0
+    if selection = urls[index]
+      return selection
+    end
+  end
+  puts ""
+  get_service_url
+end
+
 ORG = "gilt"
+SERVICE_URL = ARGV.shift || get_service_url
 
 def download(service_name, map)
   downloads = {}
