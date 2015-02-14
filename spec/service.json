@@ -60,7 +60,7 @@
 	"enum": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
-		{ "name": "plural", "type": "string", "required": false },
+		{ "name": "plural", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "values", "type": "[enum_value]" }
 	    ]
