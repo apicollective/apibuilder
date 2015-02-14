@@ -15,10 +15,6 @@ object Datatype {
     override def label = "map[" + `type`.name + "]"
   }
 
-  case class Option(`type`: Type) extends Datatype {
-    override def label = "option[" + `type`.name + "]"
-  }
-
   case class Singleton(`type`: Type) extends Datatype {
     override def label = `type`.name
   }
@@ -97,7 +93,6 @@ case class DatatypeResolver(
     TextDatatype(value) match {
       case TextDatatype.List(typeName) => toType(typeName).map { Datatype.List(_) }
       case TextDatatype.Map(typeName) => toType(typeName).map { Datatype.Map(_) }
-      case TextDatatype.Option(typeName) => toType(typeName).map { Datatype.Option(_) }
       case TextDatatype.Singleton(typeName) => toType(typeName).map { Datatype.Singleton(_) }
     }
   }

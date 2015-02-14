@@ -78,9 +78,6 @@ private[core] case class TypeValidator(
           }
         }
       }
-      case Datatype.Option(t) => {
-        validate(t, value, errorPrefix)
-      }
       case Datatype.Singleton(t) => {
         validate(t, value, errorPrefix)
       }

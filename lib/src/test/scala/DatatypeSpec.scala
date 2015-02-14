@@ -33,13 +33,6 @@ class DatatypeSpec extends FunSpec with Matchers {
     resolver.parse("map[integer]").map(_.label) should be(Some("map[integer]"))
     resolver.parse("map[date-time-iso8601]").map(_.label) should be(Some("map[date-time-iso8601]"))
 
-    resolver.parse("option[string]").map(_.label) should be(Some("option[string]"))
-    resolver.parse("option[long]").map(_.label) should be(Some("option[long]"))
-    resolver.parse("option[uuid]").map(_.label) should be(Some("option[uuid]"))
-    resolver.parse("option[unit]").map(_.label) should be(Some("option[unit]"))
-    resolver.parse("option[integer]").map(_.label) should be(Some("option[integer]"))
-    resolver.parse("option[date-time-iso8601]").map(_.label) should be(Some("option[date-time-iso8601]"))
-
     resolver.parse("user") should be(None)
   }
 

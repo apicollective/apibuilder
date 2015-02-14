@@ -20,13 +20,11 @@ case class TypeLabel(
       TextDatatype(typeName) match {
         case TextDatatype.List(t) => "[" + resolveImportedType(t).getOrElse(typeName) + "]"
         case TextDatatype.Map(t) => "map[" + resolveImportedType(t).getOrElse(typeName) + "]"
-        case TextDatatype.Option(t) => "option[" + resolveImportedType(t).getOrElse(typeName) + "]"
         case TextDatatype.Singleton(t) => resolveImportedType(t).getOrElse(typeName)
       }
     }
     case Some(Datatype.List(t)) => "[" + typeLink(t) + "]"
     case Some(Datatype.Map(t)) => "map[" + typeLink(t) + "]"
-    case Some(Datatype.Option(t)) => "option[" + typeLink(t) + "]"
     case Some(Datatype.Singleton(t)) => typeLink(t)
   }
 

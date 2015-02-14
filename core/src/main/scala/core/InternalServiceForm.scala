@@ -494,18 +494,10 @@ private[core] object InternalDatatype {
 
   private val ListRx = "^\\[(.*)\\]$".r
   private val MapRx = "^map\\[(.*)\\]$".r
-  private val OptionRx = "^option\\[(.*)\\]$".r
   private val DefaultMapRx = "^map$".r
 
   def apply(value: String): InternalDatatype = {
     value match {
-      case OptionRx(name) => {
-        name match {
-          case ListRx(n) => InternalDatatype.List(n, false)
-          case MapRx(n) => InternalDatatype.Map(n, false)
-          case _ => InternalDatatype.Singleton(name, false)
-        }
-      }
       case ListRx(name) => InternalDatatype.List(name, true)
       case MapRx(name) => InternalDatatype.Map(name, true)
       case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString, true)

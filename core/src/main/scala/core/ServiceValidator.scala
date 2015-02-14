@@ -578,13 +578,6 @@ case class ServiceValidator(
               Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[${dt.name}]. Model and union types are not supported as query parameters.")
             }
 
-            case Some(Datatype.Option(Type(Kind.Primitive | Kind.Enum, name))) => {
-              None
-            }
-            case Some(Datatype.Option(Type(Kind.Model | Kind.Union, name))) => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[${dt.name}]. Model and union types are not supported as query parameters.")
-            }
-
             case Some(Datatype.Map(_)) => {
               Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[${dt.label}]. Maps are not supported as query parameters.")
             }
@@ -679,7 +672,6 @@ case class ServiceValidator(
 
                 case Some(Datatype.List(_)) => Some(errorTemplate.format("list"))
                 case Some(Datatype.Map(_)) => Some(errorTemplate.format("map"))
-                case Some(Datatype.Option(_)) => Some(errorTemplate.format("option"))
                 case Some(Datatype.Singleton(t)) => {
                   isTypeValidInPath(t) match {
                     case true => None
