@@ -132,10 +132,9 @@ def get_in_batches(cli_command)
     cache_key = "%s?limit=%s&offset=%s" % [cli_command, limit, offset]
     if CACHE[cache_key].nil?
       cmd = "LIMIT=#{limit} OFFSET=#{offset} APIDOC_API_URI=#{APIDOC_API_URI} #{CLI_PATH} #{cli_command}"
-      puts cmd
-      CACHE[cache_key] = `#{cmd}`.strip.split.map(&:strip)
+      CACHE[cache_key] = `#{cmd}`.strip.split("\n").map(&:strip)
     end
-      
+
     records = CACHE[cache_key]
     records.each do |rec|
       yield rec
