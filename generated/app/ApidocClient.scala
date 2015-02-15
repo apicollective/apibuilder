@@ -32,6 +32,13 @@ package com.gilt.apidoc.v0.models {
   )
 
   /**
+   * Separate resource used only for the few actions that require the full token.
+   */
+  case class CleartextToken(
+    token: String
+  )
+
+  /**
    * Generated source code.
    */
   case class Code(
@@ -209,7 +216,7 @@ package com.gilt.apidoc.v0.models {
   case class Token(
     guid: _root_.java.util.UUID,
     user: com.gilt.apidoc.v0.models.User,
-    token: String,
+    maskedToken: String,
     description: _root_.scala.Option[String] = None,
     audit: com.gilt.apidoc.v0.models.Audit
   )
@@ -470,6 +477,16 @@ package com.gilt.apidoc.v0.models {
         (__ \ "updated_at").write[_root_.org.joda.time.DateTime] and
         (__ \ "updated_by").write[com.gilt.apidoc.v0.models.ReferenceGuid]
       )(unlift(Audit.unapply _))
+    }
+
+    implicit def jsonReadsApidocCleartextToken: play.api.libs.json.Reads[CleartextToken] = {
+      (__ \ "token").read[String].map { x => new CleartextToken(token = x) }
+    }
+
+    implicit def jsonWritesApidocCleartextToken: play.api.libs.json.Writes[CleartextToken] = new play.api.libs.json.Writes[CleartextToken] {
+      def writes(x: CleartextToken) = play.api.libs.json.Json.obj(
+        "token" -> play.api.libs.json.Json.toJson(x.token)
+      )
     }
 
     implicit def jsonReadsApidocCode: play.api.libs.json.Reads[Code] = {
@@ -772,7 +789,7 @@ package com.gilt.apidoc.v0.models {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "user").read[com.gilt.apidoc.v0.models.User] and
-        (__ \ "token").read[String] and
+        (__ \ "masked_token").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "audit").read[com.gilt.apidoc.v0.models.Audit]
       )(Token.apply _)
@@ -782,7 +799,7 @@ package com.gilt.apidoc.v0.models {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "user").write[com.gilt.apidoc.v0.models.User] and
-        (__ \ "token").write[String] and
+        (__ \ "masked_token").write[String] and
         (__ \ "description").write[scala.Option[String]] and
         (__ \ "audit").write[com.gilt.apidoc.v0.models.Audit]
       )(unlift(Token.unapply _))
@@ -1426,6 +1443,16 @@ package com.gilt.apidoc.v0 {
         }
       }
 
+      override def getCleartextByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.CleartextToken]] = {
+        _executeRequest("GET", s"/tokens/${guid}/cleartext").map {
+          case r if r.status == 200 => Some(_root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.CleartextToken", r, _.validate[com.gilt.apidoc.v0.models.CleartextToken]))
+          case r if r.status == 404 => None
+          case r => throw new com.gilt.apidoc.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+        }
+      }
+
       override def post(
         tokenForm: com.gilt.apidoc.v0.models.TokenForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.v0.models.Token] = {
@@ -2050,6 +2077,13 @@ package com.gilt.apidoc.v0 {
       limit: _root_.scala.Option[Long] = None,
       offset: _root_.scala.Option[Long] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.v0.models.Token]]
+
+    /**
+     * Used to fetch the clear text token.
+     */
+    def getCleartextByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.v0.models.CleartextToken]]
 
     /**
      * Create a new API token for this user

@@ -21,7 +21,7 @@
       @tokens.items.map { token =>
        <tr>
          <td>@lib.DateHelper.shortDate(tpl.timeZone, token.audit.createdAt)</td>
-         <td><a href="@routes.TokensController.show(token.guid)">@lib.LabelHelper.token(token.token)</a></td>
+         <td><a href="@routes.TokensController.show(token.guid)">@token.maskedToken</a></td>
          <td>@token.description.getOrElse(Html("<em>None</em>"))</td>
        </tr>
      }

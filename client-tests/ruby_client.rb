@@ -476,6 +476,12 @@ module Com
               @client.request("/tokens/users/#{user_guid}").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::Token.new(hash) }
             end
 
+                # Used to fetch the clear text token.
+            def get_cleartext_by_guid(guid)
+              HttpClient::Preconditions.assert_class('guid', guid, String)
+              @client.request("/tokens/#{guid}/cleartext").get { |hash| Com::Gilt::Apidoc::V0::Models::CleartextToken.new(hash) }
+            end
+
                 # Create a new API token for this user
             def post(token_form)
               HttpClient::Preconditions.assert_class('token_form', token_form, Com::Gilt::Apidoc::V0::Models::TokenForm)
@@ -849,6 +855,32 @@ module Com
                 :created_by => created_by.nil? ? nil : created_by.to_hash,
                 :updated_at => HttpClient::Helper.date_time_iso8601_to_string(updated_at),
                 :updated_by => updated_by.nil? ? nil : updated_by.to_hash
+              }
+            end
+
+          end
+
+          # Separate resource used only for the few actions that require the full token.
+          class CleartextToken
+
+            attr_reader :token
+
+            def initialize(incoming={})
+              opts = HttpClient::Helper.symbolize_keys(incoming)
+              @token = HttpClient::Preconditions.assert_class('token', opts.delete(:token), String)
+            end
+
+            def to_json
+              JSON.dump(to_hash)
+            end
+
+            def copy(incoming={})
+              CleartextToken.new(to_hash.merge(HttpClient::Helper.symbolize_keys(incoming)))
+            end
+
+            def to_hash
+              {
+                :token => token
               }
             end
 
@@ -1455,13 +1487,13 @@ module Com
           # A token gives a user access to the API.
           class Token
 
-            attr_reader :guid, :user, :token, :description, :audit
+            attr_reader :guid, :user, :masked_token, :description, :audit
 
             def initialize(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               @guid = HttpClient::Preconditions.assert_class('guid', HttpClient::Helper.to_uuid(opts.delete(:guid)), String)
               @user = HttpClient::Preconditions.assert_class('user', opts[:user].nil? ? nil : (opts[:user].is_a?(Com::Gilt::Apidoc::V0::Models::User) ? opts.delete(:user) : Com::Gilt::Apidoc::V0::Models::User.new(opts.delete(:user))), Com::Gilt::Apidoc::V0::Models::User)
-              @token = HttpClient::Preconditions.assert_class('token', opts.delete(:token), String)
+              @masked_token = HttpClient::Preconditions.assert_class('masked_token', opts.delete(:masked_token), String)
               @description = HttpClient::Preconditions.assert_class_or_nil('description', opts.delete(:description), String)
               @audit = HttpClient::Preconditions.assert_class('audit', opts[:audit].nil? ? nil : (opts[:audit].is_a?(Com::Gilt::Apidoc::V0::Models::Audit) ? opts.delete(:audit) : Com::Gilt::Apidoc::V0::Models::Audit.new(opts.delete(:audit))), Com::Gilt::Apidoc::V0::Models::Audit)
             end
@@ -1478,7 +1510,7 @@ module Com
               {
                 :guid => guid,
                 :user => user.nil? ? nil : user.to_hash,
-                :token => token,
+                :masked_token => masked_token,
                 :description => description,
                 :audit => audit.nil? ? nil : audit.to_hash
               }

@@ -30,6 +30,7 @@ GET        /subscriptions/:guid                                controllers.Subsc
 POST       /subscriptions                                      controllers.Subscriptions.post()
 DELETE     /subscriptions/:guid                                controllers.Subscriptions.deleteByGuid(guid: _root_.java.util.UUID)
 GET        /tokens/users/:user_guid                            controllers.Tokens.getUsersByUserGuid(user_guid: _root_.java.util.UUID, guid: _root_.scala.Option[_root_.java.util.UUID], limit: Long ?= 25, offset: Long ?= 0)
+GET        /tokens/:guid/cleartext                             controllers.Tokens.getCleartextByGuid(guid: _root_.java.util.UUID)
 POST       /tokens                                             controllers.Tokens.post()
 DELETE     /tokens/:guid                                       controllers.Tokens.deleteByGuid(guid: _root_.java.util.UUID)
 GET        /users                                              controllers.Users.get(guid: _root_.scala.Option[_root_.java.util.UUID], email: _root_.scala.Option[String], token: _root_.scala.Option[String])

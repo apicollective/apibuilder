@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Error, Token, TokenForm, User}
+import com.gilt.apidoc.v0.models.{CleartextToken, Error, Token, TokenForm, User}
 import lib.{Constants, Role, TokenGenerator}
 import anorm._
 import play.api.db._
@@ -22,6 +22,10 @@ object TokensDao {
       from tokens
       join users on users.guid = tokens.user_guid and users.deleted_at is null
      where tokens.deleted_at is null
+  """
+
+  private val FindCleartextQuery = s"""
+    select token from tokens where guid = {guid}::uuid and deleted_at is null
   """
 
   private val InsertQuery = """
@@ -78,6 +82,14 @@ object TokensDao {
     findAll(Authorization.All, token = Some(token)).headOption
   }
 
+  def findCleartextByGuid(guid: UUID): Option[CleartextToken] = {
+    val sql = FindCleartextQuery
+    val bind = Seq[NamedParameter]('guid -> guid.toString)
+    DB.withConnection { implicit c =>
+      SQL(sql).on(bind: _*)().toList.map { row => CleartextToken(row[String]("token")) }.headOption
+    }
+  }
+
   def findByGuid(authorization: Authorization, guid: UUID): Option[Token] = {
     findAll(authorization, guid = Some(guid)).headOption
   }
@@ -113,10 +125,20 @@ object TokensDao {
     row: anorm.Row
   ) = Token(
     guid = row[UUID]("guid"),
-    token = row[String]("token"),
+    maskedToken = obfuscate(row[String]("token")),
     description = row[Option[String]]("description"),
     user = UsersDao.fromRow(row, Some("user")),
     audit = AuditsDao.fromRowCreation(row)
   )
+
+  private[db] def obfuscate(value: String): String = {
+    if (value.size >= 15) {
+      // 1st 3, mask, + last 4
+      val letters = value.split("")
+      letters.slice(0,4).mkString("") + "-XXXX-" + letters.slice(letters.size-4, letters.size).mkString("")
+    } else {
+      "XXXX-XXXX-XXXX"
+    }
+  }
 
 }

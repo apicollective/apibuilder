@@ -17,7 +17,11 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   lazy val TestUser = UsersDao.create(createUserForm())
 
-  lazy val apiToken = TokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid)).token
+  lazy val apiToken = {
+    val token = TokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
+    TokensDao.findCleartextByGuid(token.guid).get.token
+  }
+
   lazy val apiAuth = com.gilt.apidoc.v0.Authorization.Basic(apiToken)
 
   lazy val client = newClient(TestUser)

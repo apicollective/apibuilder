@@ -64,11 +64,18 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this token." },
                 { "name": "user", "type": "user", "description": "The user to which this token belongs." },
-                { "name": "token", "type": "string", "description": "The actual token. Guaranteed to be globally unique." },
+                { "name": "masked_token", "type": "string", "description": "The masked from of the token." },
                 { "name": "description", "type": "string", "description": "optional description to help the user manage the token.", "required": false },
                 { "name": "audit", "type": "audit" }
             ]
         },
+
+        "cleartext_token": {
+            "description": "Separate resource used only for the few actions that require the full token.",
+	    "fields": [
+		{ "name": "token", "type": "string", "description": "The actual token. Guaranteed to be globally unique." }
+	    ]
+	},
 
         "token_form": {
             "fields": [
@@ -410,6 +417,15 @@
 		    ],
                     "responses": {
                         "200": { "type": "[token]" }
+                    }
+		},
+
+		{
+		    "method": "GET",
+		    "description": "Used to fetch the clear text token.",
+		    "path": "/:guid/cleartext",
+                    "responses": {
+                        "200": { "type": "cleartext_token" }
                     }
 		},
 

@@ -29,6 +29,17 @@ trait Tokens {
     Ok(Json.toJson(tokens))
   }
 
+  def getCleartextByGuid(
+    guid: UUID
+  ) = Authenticated { request =>
+    TokensDao.findCleartextByGuid(guid) match {
+      case None => NotFound
+      case Some(token) => {
+        Ok(Json.toJson(token))
+      }
+    }
+  }
+
   def post() = Authenticated(parse.json) { request =>
     request.body.validate[TokenForm] match {
       case e: JsError => {

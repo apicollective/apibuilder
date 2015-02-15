@@ -36,13 +36,15 @@ object TokensController extends Controller {
         request.user.guid,
         guid = Some(guid)
       )
+
+      cleartext <- request.api.tokens.getCleartextByGuid(tokens.headOption.map(_.guid).get)
     } yield {
-      tokens.headOption match {
+      cleartext match {
         case None => {
           Redirect(routes.TokensController.index()).flashing("warnings" -> "Token not found")
         }
-        case Some(token) => {
-          Ok(views.html.tokens.show(request.mainTemplate(Some("View token")), token))
+        case Some(cleartextToken) => {
+          Ok(views.html.tokens.show(request.mainTemplate(Some("View token")), tokens.head, cleartextToken))
         }
       }
     }
