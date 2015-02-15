@@ -1,5 +1,7 @@
 Add support for ning async client 1.9.10
-  value addQueryParameter is not a member of com.ning.http.client.RequestBuilder
+  https://github.com/AsyncHttpClient/async-http-client/blob/master/MIGRATION.md
+    - Rename xxxParameter (add, set, get...) into xxxFormParam
+    - Rename xxxQueryParameter (add, set, get...) into xxxQueryParam
 
 https://github.com/gilt/apidoc/pull/281/files
   --> Apply to new ning client in apidoc-generator
