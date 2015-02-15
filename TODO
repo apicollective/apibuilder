@@ -1,6 +1,8 @@
+Add support for ning async client 1.9.10
+  value addQueryParameter is not a member of com.ning.http.client.RequestBuilder
+
 https://github.com/gilt/apidoc/pull/281/files
   --> Apply to new ning client in apidoc-generator
-
 
 review the option[xxx] syntax to declare types and see if we want to
 announce that in the release or if we should wait
