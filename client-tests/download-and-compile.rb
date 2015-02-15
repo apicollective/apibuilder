@@ -1,16 +1,14 @@
 #!/usr/bin/env ruby
 
-load 'ruby_client.rb'
+CLI_PATH = "/web/apidoc-cli/bin/apidoc-cli"
 
 if arg_force = (ARGV[0] == "--force")
   ARGV.shift
 end
 
-service_uri = ARGV.shift
-token = ARGV.shift
-user_guid = ARGV.shift
-if service_uri.to_s.strip == "" || token.to_s.strip == "" || user_guid.to_s == ""
-  raise "service uri, token and user_guid required"
+APIDOC_API_URI = ARGV.shift.to_s.strip
+if APIDOC_API_URI == ""
+  raise "service uri is required"
 end
 
 orgs = [] # ['gilt']
@@ -112,35 +110,32 @@ targets = [Target.new('ning_1_8_scala_2_10', ScalaTester.new("src/main/scala"), 
            Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client']),
            Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])]
 
-def get_code(client, org, application, target)
-  client.code.get_by_org_key_and_application_key_and_version_and_generator_key(org.key, application.key, "latest", target)
-end
+def get_code(org, application, generator)
+  version = "latest"
 
-class MyClient < Apidoc::Client
-
-  def initialize(url, user_guid, opts={})
-    super(url, opts)
-    @user_guid = user_guid
+  cmd = "APIDOC_API_URI=#{APIDOC_API_URI} #{CLI_PATH} code #{org} #{application} #{version} #{generator}"
+  puts cmd
+  code = `#{cmd}`.to_s.strip
+  if code == ""
+    raise "Failed to fetch code for org[#{org}] application[#{application}] version[#{version}] generator[#{generator}]"
   end
-
-  def request(*args)
-    super.with_header("X-User-Guid", @user_guid)
-  end
-
+  code
 end
-
-
-client = MyClient.new(service_uri, user_guid, :authorization => Apidoc::HttpClient::Authorization.basic(token))
 
 CACHE = {}
 
-def get_in_batches(cache_key, fetcher)
+def get_in_batches(cli_command)
   offset = 0
   limit = 100
   records = nil
   while records.nil? || records.size >= limit
-    cache_key = "%s?limit=%s&offset=%s" % [cache_key, limit, offset]
-    CACHE[cache_key] ||= fetcher.call(limit, offset)
+    cache_key = "%s?limit=%s&offset=%s" % [cli_command, limit, offset]
+    if CACHE[cache_key].nil?
+      cmd = "LIMIT=#{limit} OFFSET=#{offset} APIDOC_API_URI=#{APIDOC_API_URI} #{CLI_PATH} #{cli_command}"
+      puts cmd
+      CACHE[cache_key] = `#{cmd}`.strip.split.map(&:strip)
+    end
+      
     records = CACHE[cache_key]
     records.each do |rec|
       yield rec
@@ -150,22 +145,23 @@ def get_in_batches(cache_key, fetcher)
 end
 
 targets.each do |target|
-  target.names.each do |target_name|
-    puts "Platform: %s, target: %s" % [target.platform, target_name]
+  target.names.each do |generator|
+    puts "Platform: %s, target: %s" % [target.platform, generator]
     puts "--------------------------------------------------"
 
     target.tester.clean!(target.platform)
-    get_in_batches("organizations", lambda { |limit, offset| client.organizations.send(:get, :limit => limit, :offset => offset) }) do |org|
-      next if !orgs.empty? && !orgs.include?(org.key)
-      applications_to_skip = applications_to_skip_by_org[org.key] || []
 
-      get_in_batches("applications:#{org.key}", lambda { |limit, offset| client.applications.get_by_org_key(org.key, :limit => limit, :offset => offset) }) do |application|
-        next if !applications.empty? && !applications.include?(application.key)
-        next if applications_to_skip.include?(application.key)
+    get_in_batches("list organizations") do |org|
+      next if !orgs.empty? && !orgs.include?(org)
+      applications_to_skip = applications_to_skip_by_org[org] || []
 
-        puts "  %s/%s" % [org.key, application.key]
-        if code = get_code(client, org, application, target_name)
-          filename = target.tester.write(target.platform, org.key, application.key, target_name, code.source)
+      get_in_batches("list applications #{org}") do |app|
+        next if !applications.empty? && !applications.include?(app)
+        next if applications_to_skip.include?(app)
+
+        puts "  %s/%s" % [org, app]
+        if code = get_code(org, app, generator)
+          filename = target.tester.write(target.platform, org, app, generator, code)
         end
       end
     end
@@ -174,9 +170,9 @@ targets.each do |target|
     puts "  Testing in ./#{target.platform}"
     Dir.chdir(target.platform) do
       if target.tester.test
-        puts "  - %s: Client tests passed\n\n" % target_name
+        puts "  - %s: Client tests passed\n\n" % generator
       else
-        puts "  - %s: Client tests failed\n\n" % target_name
+        puts "  - %s: Client tests failed\n\n" % generator
         exit 1
       end
     end
