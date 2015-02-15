@@ -1,6 +1,6 @@
 name := "apidoc-ning"
 
-scalaVersion := "2.10.5"
+scalaVersion := "2.10.4"
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % "2.3.7",
