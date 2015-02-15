@@ -120,7 +120,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Search all applications. Results are always paginated.
+            # Search all applications. Results are always paginated.
             def get_by_org_key(org_key, incoming={})
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               opts = HttpClient::Helper.symbolize_keys(incoming)
@@ -133,14 +133,14 @@ module Com
               @client.request("/#{CGI.escape(org_key)}").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::Application.new(hash) }
             end
 
-                # Create an application.
+            # Create an application.
             def post_by_org_key(org_key, application_form)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('application_form', application_form, Com::Gilt::Apidoc::V0::Models::ApplicationForm)
               @client.request("/#{CGI.escape(org_key)}").with_json(application_form.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Application.new(hash) }
             end
 
-                # Updates an application.
+            # Updates an application.
             def put_by_org_key_and_application_key(org_key, application_key, application_form)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('application_key', application_key, String)
@@ -148,7 +148,7 @@ module Com
               @client.request("/#{CGI.escape(org_key)}/#{CGI.escape(application_key)}").with_json(application_form.to_json).put { |hash| Com::Gilt::Apidoc::V0::Models::Application.new(hash) }
             end
 
-                # Deletes a specific application and its associated versions.
+            # Deletes a specific application and its associated versions.
             def delete_by_org_key_and_application_key(org_key, application_key)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('application_key', application_key, String)
@@ -163,7 +163,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Generate code for a specific version of an application.
+            # Generate code for a specific version of an application.
             def get_by_org_key_and_application_key_and_version_and_generator_key(org_key, application_key, version, generator_key)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('application_key', application_key, String)
@@ -180,14 +180,14 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Add a domain to this organization
+            # Add a domain to this organization
             def post_by_org_key(org_key, domain)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('domain', domain, Com::Gilt::Apidoc::V0::Models::Domain)
               @client.request("/domains/#{CGI.escape(org_key)}").with_json(domain.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Domain.new(hash) }
             end
 
-                # Remove this domain from this organization
+            # Remove this domain from this organization
             def delete_by_org_key_and_name(org_key, name)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('name', name, String)
@@ -202,7 +202,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Validate an email address using a token.
+            # Validate an email address using a token.
             def post_email_verification_confirmations(email_verification_confirmation_form)
               HttpClient::Preconditions.assert_class('email_verification_confirmation_form', email_verification_confirmation_form, Com::Gilt::Apidoc::V0::Models::EmailVerificationConfirmationForm)
               @client.request("/email_verification_confirmations").with_json(email_verification_confirmation_form.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Value.new(hash) }
@@ -216,7 +216,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # List all generators visible by this user
+            # List all generators visible by this user
             def get(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               query = {
@@ -244,7 +244,7 @@ module Com
               @client.request("/generators/#{CGI.escape(key)}").with_json(generator_update_form.to_json).put { |hash| Com::Gilt::Apidoc::V0::Models::Generator.new(hash) }
             end
 
-                # Deletes a generator.
+            # Deletes a generator.
             def delete_by_key(key)
               HttpClient::Preconditions.assert_class('key', key, String)
               @client.request("/generators/#{CGI.escape(key)}").delete { |hash| Com::Gilt::Apidoc::V0::Models::Value.new(hash) }
@@ -270,7 +270,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Search all memberships. Results are always paginated.
+            # Search all memberships. Results are always paginated.
             def get(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               query = {
@@ -302,7 +302,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Search all membership requests. Results are always paginated.
+            # Search all membership requests. Results are always paginated.
             def get(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               query = {
@@ -316,22 +316,22 @@ module Com
               @client.request("/membership_requests").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::MembershipRequest.new(hash) }
             end
 
-                # Create a membership request
+            # Create a membership request
             def post(hash)
               HttpClient::Preconditions.assert_class('hash', hash, Hash)
               @client.request("/membership_requests").with_json(hash.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::MembershipRequest.new(hash) }
             end
 
-                # Accepts this membership request. User will become a member of the
-                # specified organization.
+            # Accepts this membership request. User will become a member of the specified
+            # organization.
             def post_accept_by_guid(guid, hash)
               HttpClient::Preconditions.assert_class('guid', guid, String)
               HttpClient::Preconditions.assert_class('hash', hash, Hash)
               @client.request("/membership_requests/#{guid}/accept").with_json(hash.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Value.new(hash) }
             end
 
-                # Declines this membership request. User will NOT become a member of the
-                # specified organization.
+            # Declines this membership request. User will NOT become a member of the
+            # specified organization.
             def post_decline_by_guid(guid, hash)
               HttpClient::Preconditions.assert_class('guid', guid, String)
               HttpClient::Preconditions.assert_class('hash', hash, Hash)
@@ -346,7 +346,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Search all organizations. Results are always paginated.
+            # Search all organizations. Results are always paginated.
             def get(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               query = {
@@ -361,26 +361,26 @@ module Com
               @client.request("/organizations").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::Organization.new(hash) }
             end
 
-                # Returns the organization with this key.
+            # Returns the organization with this key.
             def get_by_key(key)
               HttpClient::Preconditions.assert_class('key', key, String)
               @client.request("/organizations/#{CGI.escape(key)}").get { |hash| Com::Gilt::Apidoc::V0::Models::Organization.new(hash) }
             end
 
-                # Create a new organization.
+            # Create a new organization.
             def post(organization_form)
               HttpClient::Preconditions.assert_class('organization_form', organization_form, Com::Gilt::Apidoc::V0::Models::OrganizationForm)
               @client.request("/organizations").with_json(organization_form.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Organization.new(hash) }
             end
 
-                # Update an organization.
+            # Update an organization.
             def put_by_key(key, organization_form)
               HttpClient::Preconditions.assert_class('key', key, String)
               HttpClient::Preconditions.assert_class('organization_form', organization_form, Com::Gilt::Apidoc::V0::Models::OrganizationForm)
               @client.request("/organizations/#{CGI.escape(key)}").with_json(organization_form.to_json).put { |hash| Com::Gilt::Apidoc::V0::Models::Organization.new(hash) }
             end
 
-                # Deletes an organization and all of its associated applications.
+            # Deletes an organization and all of its associated applications.
             def delete_by_key(key)
               HttpClient::Preconditions.assert_class('key', key, String)
               @client.request("/organizations/#{CGI.escape(key)}").delete { |hash| Com::Gilt::Apidoc::V0::Models::Value.new(hash) }
@@ -394,10 +394,9 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Change the password for this token. If the token is invalid, has been
-                # used, or otherwise no longer can be applied, errors will be returned as
-                # 409s. A 204 represents that the user has successfully changed their
-                # password.
+            # Change the password for this token. If the token is invalid, has been used,
+            # or otherwise no longer can be applied, errors will be returned as 409s. A
+            # 204 represents that the user has successfully changed their password.
             def post(password_reset)
               HttpClient::Preconditions.assert_class('password_reset', password_reset, Com::Gilt::Apidoc::V0::Models::PasswordReset)
               @client.request("/password_resets").with_json(password_reset.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::PasswordResetSuccess.new(hash) }
@@ -411,8 +410,8 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Create a new password reset. This will send the user an email with a
-                # link to reset their password.
+            # Create a new password reset. This will send the user an email with a link to
+            # reset their password.
             def post(password_reset_request)
               HttpClient::Preconditions.assert_class('password_reset_request', password_reset_request, Com::Gilt::Apidoc::V0::Models::PasswordResetRequest)
               @client.request("/password_reset_requests").with_json(password_reset_request.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Value.new(hash) }
@@ -426,7 +425,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Search subscriptions. Always paginated.
+            # Search subscriptions. Always paginated.
             def get(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               query = {
@@ -440,13 +439,13 @@ module Com
               @client.request("/subscriptions").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::Subscription.new(hash) }
             end
 
-                # Returns information about a specific subscription.
+            # Returns information about a specific subscription.
             def get_by_guid(guid)
               HttpClient::Preconditions.assert_class('guid', guid, String)
               @client.request("/subscriptions/#{guid}").get { |hash| Com::Gilt::Apidoc::V0::Models::Subscription.new(hash) }
             end
 
-                # Create a new subscription.
+            # Create a new subscription.
             def post(subscription_form)
               HttpClient::Preconditions.assert_class('subscription_form', subscription_form, Com::Gilt::Apidoc::V0::Models::SubscriptionForm)
               @client.request("/subscriptions").with_json(subscription_form.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Subscription.new(hash) }
@@ -476,13 +475,13 @@ module Com
               @client.request("/tokens/users/#{user_guid}").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::Token.new(hash) }
             end
 
-                # Used to fetch the clear text token.
+            # Used to fetch the clear text token.
             def get_cleartext_by_guid(guid)
               HttpClient::Preconditions.assert_class('guid', guid, String)
               @client.request("/tokens/#{guid}/cleartext").get { |hash| Com::Gilt::Apidoc::V0::Models::CleartextToken.new(hash) }
             end
 
-                # Create a new API token for this user
+            # Create a new API token for this user
             def post(token_form)
               HttpClient::Preconditions.assert_class('token_form', token_form, Com::Gilt::Apidoc::V0::Models::TokenForm)
               @client.request("/tokens").with_json(token_form.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Token.new(hash) }
@@ -501,9 +500,8 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Search for a specific user. You must specify at least 1 parameter -
-                # either a guid, email or token - and will receive back either 0 or 1
-                # users.
+            # Search for a specific user. You must specify at least 1 parameter - either a
+            # guid, email or token - and will receive back either 0 or 1 users.
             def get(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               query = {
@@ -514,28 +512,28 @@ module Com
               @client.request("/users").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::User.new(hash) }
             end
 
-                # Returns information about the user with this guid.
+            # Returns information about the user with this guid.
             def get_by_guid(guid)
               HttpClient::Preconditions.assert_class('guid', guid, String)
               @client.request("/users/#{guid}").get { |hash| Com::Gilt::Apidoc::V0::Models::User.new(hash) }
             end
 
-                # Used to authenticate a user with an email address and password.
-                # Successful authentication returns an instance of the user model. Failed
-                # authorizations of any kind are returned as a generic error with code
-                # user_authorization_failed.
+            # Used to authenticate a user with an email address and password. Successful
+            # authentication returns an instance of the user model. Failed authorizations
+            # of any kind are returned as a generic error with code
+            # user_authorization_failed.
             def post_authenticate(hash)
               HttpClient::Preconditions.assert_class('hash', hash, Hash)
               @client.request("/users/authenticate").with_json(hash.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::User.new(hash) }
             end
 
-                # Create a new user.
+            # Create a new user.
             def post(hash)
               HttpClient::Preconditions.assert_class('hash', hash, Hash)
               @client.request("/users").with_json(hash.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::User.new(hash) }
             end
 
-                # Updates information about the user with the specified guid.
+            # Updates information about the user with the specified guid.
             def put_by_guid(guid, hash)
               HttpClient::Preconditions.assert_class('guid', guid, String)
               HttpClient::Preconditions.assert_class('hash', hash, Hash)
@@ -563,7 +561,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Search all versions of this application. Results are always paginated.
+            # Search all versions of this application. Results are always paginated.
             def get_by_org_key_and_application_key(org_key, application_key, incoming={})
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('application_key', application_key, String)
@@ -575,7 +573,7 @@ module Com
               @client.request("/#{CGI.escape(org_key)}/#{CGI.escape(application_key)}").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::Version.new(hash) }
             end
 
-                # Retrieve a specific version of an application.
+            # Retrieve a specific version of an application.
             def get_by_org_key_and_application_key_and_version(org_key, application_key, version)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('application_key', application_key, String)
@@ -583,7 +581,7 @@ module Com
               @client.request("/#{CGI.escape(org_key)}/#{CGI.escape(application_key)}/#{CGI.escape(version)}").get { |hash| Com::Gilt::Apidoc::V0::Models::Version.new(hash) }
             end
 
-                # Create a new version for an application
+            # Create a new version for an application
             def post_by_org_key_and_version(org_key, version, version_form)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('version', version, String)
@@ -591,7 +589,7 @@ module Com
               @client.request("/#{CGI.escape(org_key)}/#{CGI.escape(version)}").with_json(version_form.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Version.new(hash) }
             end
 
-                # Upsert a version of an application
+            # Upsert a version of an application
             def put_by_org_key_and_application_key_and_version(org_key, application_key, version, version_form)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('application_key', application_key, String)
@@ -600,7 +598,7 @@ module Com
               @client.request("/#{CGI.escape(org_key)}/#{CGI.escape(application_key)}/#{CGI.escape(version)}").with_json(version_form.to_json).put { |hash| Com::Gilt::Apidoc::V0::Models::Version.new(hash) }
             end
 
-                # Deletes a specific version.
+            # Deletes a specific version.
             def delete_by_org_key_and_application_key_and_version(org_key, application_key, version)
               HttpClient::Preconditions.assert_class('org_key', org_key, String)
               HttpClient::Preconditions.assert_class('application_key', application_key, String)
@@ -616,7 +614,7 @@ module Com
               @client = HttpClient::Preconditions.assert_class('client', client, Com::Gilt::Apidoc::V0::Client)
             end
 
-                # Search watches. Always paginated.
+            # Search watches. Always paginated.
             def get(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               query = {
@@ -630,13 +628,13 @@ module Com
               @client.request("/watches").with_query(query).get.map { |hash| Com::Gilt::Apidoc::V0::Models::Watch.new(hash) }
             end
 
-                # Returns information about a specific watch.
+            # Returns information about a specific watch.
             def get_by_guid(guid)
               HttpClient::Preconditions.assert_class('guid', guid, String)
               @client.request("/watches/#{guid}").get { |hash| Com::Gilt::Apidoc::V0::Models::Watch.new(hash) }
             end
 
-                # Quick check if a user is watching a specific application.
+            # Quick check if a user is watching a specific application.
             def get_check(incoming={})
               opts = HttpClient::Helper.symbolize_keys(incoming)
               query = {
@@ -647,7 +645,7 @@ module Com
               @client.request("/watches/check").with_query(query).get { |hash| Com::Gilt::Apidoc::V0::Models::Value.new(hash) }
             end
 
-                # Create a new watch.
+            # Create a new watch.
             def post(watch_form)
               HttpClient::Preconditions.assert_class('watch_form', watch_form, Com::Gilt::Apidoc::V0::Models::WatchForm)
               @client.request("/watches").with_json(watch_form.to_json).post { |hash| Com::Gilt::Apidoc::V0::Models::Watch.new(hash) }
