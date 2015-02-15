@@ -83,16 +83,27 @@ case class NingClientGenerator(version: NingVersion, ssd: ScalaServiceDescriptio
         }
       }
     }
+
+    private lazy val defaultExecutorService = java.util.concurrent.Executors.newCachedThreadPool()
   }
 
-  class Client(apiUrl: String, apiToken: scala.Option[String] = None) {
+  class Client(
+    apiUrl: String,
+    apiToken: scala.Option[String] = None,
+    executorService: java.util.concurrent.ExecutorService = Client.defaultExecutorService
+  ) {
     import ${ssd.modelPackageName}.json._
     import org.slf4j.Logger
     import org.slf4j.LoggerFactory
 
     val logger = LoggerFactory.getLogger(getClass)
 
-    val asyncHttpClient = new AsyncHttpClient()
+    val asyncHttpClient = {
+      new AsyncHttpClient(new AsyncHttpClientConfig.Builder()
+        .setExecutorService(this.executorService)
+        .build())
+    }
+
     private val UserAgent = "${ssd.serviceDescription.userAgent.getOrElse("unknown")}"
 
 ${methodGenerator.accessors().indent(4)}
