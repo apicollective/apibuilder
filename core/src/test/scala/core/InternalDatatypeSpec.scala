@@ -12,24 +12,6 @@ class InternalDatatypeSpec extends FunSpec with Matchers {
     }
   }
 
-  it("option[string]") {
-    val dt = InternalDatatype("option[string]")
-    dt.label should be("string")
-    dt.required should be(false)
-  }
-
-  it("option[map[integer]]") {
-    val dt = InternalDatatype("option[map[integer]]")
-    dt.label should be("map[integer]")
-    dt.required should be(false)
-  }
-
-  it("option[[uuid]]") {
-    val dt = InternalDatatype("option[[uuid]]")
-    dt.label should be("[uuid]")
-    dt.required should be(false)
-  }
-
   it("map defaults to string type") {
     InternalDatatype("map").label should be("map[string]")
   }

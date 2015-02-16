@@ -1,5 +1,6 @@
 package core
 
+import com.gilt.apidoc.spec.v0.models.Service
 import lib.Text
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
@@ -12,6 +13,20 @@ object TestHelper {
     orgNamespace = "test.apidoc",
     version = "0.0.1-dev"
   )
+
+  private lazy val specService: Service = {
+    val config = ServiceConfiguration(
+      orgKey = "gilt",
+      orgNamespace = "com.gilt",
+      version = "0.0.41"
+    )
+
+    val contents = readFile("spec/service.json")
+    val validator = ServiceValidator(config, contents, new MockServiceFetcher())
+    validator.service.getOrElse {
+      sys.error("Failed to read spec/service.json")
+    }
+  }
 
   def writeToTempFile(contents: String): String = {
     val tmpPath = "/tmp/apidoc.tmp." + UUID.randomUUID.toString
@@ -30,8 +45,20 @@ object TestHelper {
   }
 
   def parseFile(filename: String): ServiceValidator = {
+    val fetcher = MockServiceFetcher()
+    if (filename == "api/api.json") {
+      fetcher.add("http://localhost:9000/gilt/apidoc-spec/0.7.41/service.json", specService)
+      fetcher.add("http://www.apidoc.me/gilt/apidoc-spec/0.7.41/service.json", specService)
+    }
+    parseFile(filename, fetcher)
+  }
+
+  private def parseFile(
+    filename: String,
+    fetcher: ServiceFetcher
+  ): ServiceValidator = {
     val contents = readFile(filename)
-    val validator = ServiceValidator(TestHelper.serviceConfig, contents)
+    val validator = ServiceValidator(TestHelper.serviceConfig, contents, fetcher)
     if (!validator.isValid) {
       sys.error(s"Invalid api.json file[${filename}]: " + validator.errors.mkString("\n"))
     }
