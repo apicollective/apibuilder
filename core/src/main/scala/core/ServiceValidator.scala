@@ -9,7 +9,8 @@ import scala.util.{Failure, Success, Try}
 
 case class ServiceValidator(
   config: ServiceConfiguration,
-  apiJson: String
+  apiJson: String,
+  fetcher: ServiceFetcher = new ClientFetcher()
 ) {
 
   private val RequiredFields = Seq("name")
@@ -57,7 +58,7 @@ case class ServiceValidator(
     }
   }
 
-  private lazy val internalService: Option[InternalServiceForm] = serviceForm.map(InternalServiceForm(_))
+  private lazy val internalService: Option[InternalServiceForm] = serviceForm.map(InternalServiceForm(_, fetcher))
 
   lazy val errors: Seq[String] = {
     internalService match {
@@ -200,7 +201,7 @@ case class ServiceValidator(
         case Some(uri) => {
           Util.isValidUri(uri) match {
             case false => Seq(s"imports.uri[$uri] is not a valid URI")
-            case true => Importer(uri).validate  // TODO. need to cache somewhere to avoid a second lookup when parsing later
+            case true => Importer(fetcher, uri).validate  // TODO. need to cache somewhere to avoid a second lookup when parsing later
           }
         }
       }

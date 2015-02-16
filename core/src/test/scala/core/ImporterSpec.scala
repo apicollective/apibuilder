@@ -13,7 +13,7 @@ class ImporterSpec extends FunSpec with Matchers {
     """
 
     val path = TestHelper.writeToTempFile(json)
-    val imp = Importer(s"file://$path")
+    val imp = Importer(ClientFetcher(), s"file://$path")
     imp.validate.size should be > 0
   }
 
@@ -41,7 +41,7 @@ class ImporterSpec extends FunSpec with Matchers {
 
     it("parses service") {
       val path = TestHelper.writeToTempFile(json)
-      val imp = Importer(s"file://$path")
+      val imp = Importer(ClientFetcher(), s"file://$path")
       imp.validate should be(Seq.empty)
 
       val service = imp.service

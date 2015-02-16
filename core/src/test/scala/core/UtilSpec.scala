@@ -4,11 +4,6 @@ import org.scalatest.{FunSpec, Matchers}
 
 class UtilSpec extends FunSpec with Matchers {
 
-  lazy val service = TestHelper.parseFile(s"api/api.json").service.get
-  private lazy val visibilityEnum = service.enums.find(_.name == "visibility").getOrElse {
-    sys.error("No visibility enum found")
-  }
-
   it("namedParametersInPath") {
     Util.namedParametersInPath("/users") should be(Seq.empty)
     Util.namedParametersInPath("/users/:guid") should be(Seq("guid"))
@@ -17,6 +12,10 @@ class UtilSpec extends FunSpec with Matchers {
   }
 
   it("isValidEnumValue") {
+    val service = TestHelper.parseFile(s"api/api.json").service.get
+    val visibilityEnum = service.enums.find(_.name == "visibility").getOrElse {
+      sys.error("No visibility enum found")
+    }
     Util.isValidEnumValue(visibilityEnum, "user") should be(true)
     Util.isValidEnumValue(visibilityEnum, "organization") should be(true)
     Util.isValidEnumValue(visibilityEnum, "foobar") should be(false)

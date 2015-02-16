@@ -8,10 +8,11 @@ object ServiceBuilder {
 
   def apply(
     config: ServiceConfiguration,
-    apiJson: String
+    apiJson: String,
+    fetcher: ServiceFetcher = ClientFetcher()
   ): Service = {
     val jsValue = Json.parse(apiJson)
-    apply(config, InternalServiceForm(jsValue))
+    apply(config, InternalServiceForm(jsValue, fetcher))
   }
 
   def apply(
@@ -25,7 +26,7 @@ object ServiceBuilder {
     val name = internal.name.getOrElse(sys.error("Missing name"))
     val key = internal.key.getOrElse { UrlKey.generate(name) }
     val namespace = internal.namespace.getOrElse { config.applicationNamespace(key) }
-    val imports = internal.imports.map { ImportBuilder(_) }.sortWith(_.uri.toLowerCase < _.uri.toLowerCase)
+    val imports = internal.imports.map { ImportBuilder(internal.fetcher, _) }.sortWith(_.uri.toLowerCase < _.uri.toLowerCase)
     val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
@@ -228,8 +229,8 @@ object HeaderBuilder {
 
 object ImportBuilder {
 
-  def apply(internal: InternalImportForm): Import = {
-    val importer = Importer(internal.uri.get)
+  def apply(fetcher: ServiceFetcher, internal: InternalImportForm): Import = {
+    val importer = Importer(fetcher, internal.uri.get)
     val service = importer.service
 
     Import(

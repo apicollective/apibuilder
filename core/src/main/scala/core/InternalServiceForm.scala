@@ -10,7 +10,10 @@ import play.api.libs.json._
  * JSON => InternalService => Service
  *
  */
-private[core] case class InternalServiceForm(json: JsValue) {
+private[core] case class InternalServiceForm(
+  json: JsValue,
+  fetcher: ServiceFetcher
+) {
 
   lazy val name = JsonUtil.asOptString(json \ "name")
   lazy val key = JsonUtil.asOptString(json \ "key")
