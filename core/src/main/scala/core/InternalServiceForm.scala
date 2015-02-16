@@ -75,11 +75,11 @@ private[core] case class InternalServiceForm(json: JsValue) {
 
           Some(
             InternalHeaderForm(
-              name = JsonUtil.asOptString(o, "name"),
+              name = JsonUtil.asOptString(o \ "name"),
               datatype = datatype,
               required = datatype.map(_.required).getOrElse(true),
-              description = JsonUtil.asOptString(o, "description"),
-              default = JsonUtil.asOptString(o, "default")
+              description = JsonUtil.asOptString(o \ "description"),
+              default = JsonUtil.asOptString(o \ "default")
             )
           )
         }
@@ -219,7 +219,7 @@ object InternalUnionForm {
        case Some(a: JsArray) => {
          a.value.map { json =>
            InternalUnionTypeForm(
-             datatype = JsonUtil.asOptString(json, "type").map(InternalDatatype(_)),
+             datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
              description = JsonUtil.asOptString(json \ "description")
            )
          }
@@ -385,7 +385,7 @@ object InternalOperationForm {
       case o: JsObject => {
         Some(
           InternalBodyForm(
-            datatype = JsonUtil.asOptString(o, "type").map(InternalDatatype(_)),
+            datatype = JsonUtil.asOptString(o \ "type").map(InternalDatatype(_)),
             description = JsonUtil.asOptString(o \ "description")
           )
         )
@@ -416,7 +416,7 @@ object InternalResponseForm {
   def apply(code: String, json: JsObject): InternalResponseForm = {
     InternalResponseForm(
       code = code,
-      datatype = JsonUtil.asOptString(json, "type").map(InternalDatatype(_))
+      datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_))
     )
   }
 }
@@ -437,10 +437,10 @@ object InternalFieldForm {
       datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
       required = datatype.map(_.required).getOrElse(true),
-      default = JsonUtil.asOptString(json, "default"),
-      minimum = (json \ "minimum").asOpt[Long],
-      maximum = (json \ "maximum").asOpt[Long],
-      example = JsonUtil.asOptString(json, "example"),
+      default = JsonUtil.asOptString(json \ "default"),
+      minimum = JsonUtil.asOptLong(json \ "minimum"),
+      maximum = JsonUtil.asOptLong(json \ "maximum"),
+      example = JsonUtil.asOptString(json \ "example"),
       warnings = warnings
     )
   }
@@ -457,10 +457,10 @@ object InternalParameterForm {
       datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
       required = datatype.map(_.required).getOrElse(true),
-      default = JsonUtil.asOptString(json, "default"),
-      minimum = (json \ "minimum").asOpt[Long],
-      maximum = (json \ "maximum").asOpt[Long],
-      example = JsonUtil.asOptString(json, "example")
+      default = JsonUtil.asOptString(json \ "default"),
+      minimum = JsonUtil.asOptLong(json \ "minimum"),
+      maximum = JsonUtil.asOptLong(json \ "maximum"),
+      example = JsonUtil.asOptString(json \ "example")
     )
   }
 

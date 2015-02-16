@@ -1,16 +1,12 @@
 package core
 
 import play.api.libs.json.{JsString, JsValue, JsUndefined}
+import scala.util.{Failure, Success, Try}
 
 /**
  * Parse numbers and string json values as strings
  */
 private[core] object JsonUtil {
-
-  def asOptString(json: JsValue, field: String): Option[String] = {
-    val value = (json \ field)
-    asOptString(value)
-  }
 
   def asOptString(value: JsValue): Option[String] = {
     value match {
@@ -21,7 +17,24 @@ private[core] object JsonUtil {
   }
 
   def asOptBoolean(value: JsValue): Option[Boolean] = {
-    asOptString(value).map(_ == "true")
+    asOptString(value).flatMap { s =>
+      if (s == "true") {
+        Some(true)
+      } else if (s == "false") {
+        Some(false)
+      } else {
+        None
+      }
+    }
+  }
+
+  def asOptLong(value: JsValue): Option[Long] = {
+    asOptString(value).flatMap { s =>
+      Try(s.toLong) match {
+        case Success(v) => Some(v)
+        case Failure(e) => None
+      }
+    }
   }
 
   def hasKey(json: JsValue, field: String): Boolean = {

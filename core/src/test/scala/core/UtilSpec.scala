@@ -1,9 +1,6 @@
 package core
 
-import org.scalatest.FunSpec
-
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
-import org.scalatest.Matchers
+import org.scalatest.{FunSpec, Matchers}
 
 class UtilSpec extends FunSpec with Matchers {
 
