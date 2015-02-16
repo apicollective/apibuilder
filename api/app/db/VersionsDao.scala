@@ -162,7 +162,7 @@ object VersionsDao {
           ),
           version = version,
           original = original.toString,
-          service = Json.toJson(service).as[JsObject]
+          service = service
         )
       }.toSeq
     }

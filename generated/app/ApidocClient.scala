@@ -253,7 +253,7 @@ package com.gilt.apidoc.v0.models {
     application: com.gilt.apidoc.v0.models.Reference,
     version: String,
     original: String,
-    service: _root_.play.api.libs.json.JsObject
+    service: com.gilt.apidoc.spec.v0.models.Service
   )
 
   case class VersionForm(
@@ -390,6 +390,7 @@ package com.gilt.apidoc.v0.models {
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
+    import com.gilt.apidoc.spec.v0.models.json._
     import com.gilt.apidoc.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
@@ -856,7 +857,7 @@ package com.gilt.apidoc.v0.models {
         (__ \ "application").read[com.gilt.apidoc.v0.models.Reference] and
         (__ \ "version").read[String] and
         (__ \ "original").read[String] and
-        (__ \ "service").read[_root_.play.api.libs.json.JsObject]
+        (__ \ "service").read[com.gilt.apidoc.spec.v0.models.Service]
       )(Version.apply _)
     }
 
@@ -867,7 +868,7 @@ package com.gilt.apidoc.v0.models {
         (__ \ "application").write[com.gilt.apidoc.v0.models.Reference] and
         (__ \ "version").write[String] and
         (__ \ "original").write[String] and
-        (__ \ "service").write[_root_.play.api.libs.json.JsObject]
+        (__ \ "service").write[com.gilt.apidoc.spec.v0.models.Service]
       )(unlift(Version.unapply _))
     }
 
@@ -2242,6 +2243,7 @@ package com.gilt.apidoc.v0 {
 
   package errors {
 
+    import com.gilt.apidoc.spec.v0.models.json._
     import com.gilt.apidoc.v0.models.json._
 
     case class ErrorsResponse(

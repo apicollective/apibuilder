@@ -3,6 +3,10 @@
     "description": "Host API documentation for applications providing REST APIs, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
 
+    "imports": [
+	{ "uri": "http://localhost:9000/gilt/apidoc-spec/0.7.41/service.json" }
+    ],
+
     "enums": {
 	"visibility": {
 	    "description": "Controls who is able to view this version",
@@ -162,7 +166,7 @@
                 { "name": "application", "type": "reference" },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
 		{ "name": "original", "type": "string" },
-		{ "name": "service", "type": "object", "description": "spec/service.json description of this API" }
+		{ "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" }
             ]
         },
 

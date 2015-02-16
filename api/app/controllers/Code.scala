@@ -45,11 +45,10 @@ object Code extends Controller {
 
           case Some(generator: Generator) => {
             val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWebHostname}/${orgKey}/${applicationKey}/${version.version}/${generator.key}"
-            val service = Json.parse(version.service.toString).as[Service]
 
             new Client(generator.uri).invocations.postByKey(
               key = generator.key,
-              invocationForm = InvocationForm(service = service, userAgent = Some(userAgent))
+              invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
             ).map { invocation =>
               Ok(Json.toJson(com.gilt.apidoc.v0.models.Code(generator, invocation.source)))
             }

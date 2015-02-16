@@ -49,22 +49,14 @@ object Versions extends Controller {
             }
 
             case Some(v: Version) => {
-              v.service.validate[Service] match {
-                case e: JsError => {
-                  sys.error("Invalid service json: " + e)
-                }
-                case s: JsSuccess[Service] => {
-                  val service = s.get
-                  // TODO: For updates, include application in the template
-                  val tpl = request.mainTemplate(Some(service.name + " " + v.version)).copy(
-                    version = Some(v.version),
-                    allServiceVersions = versionsResponse.map(_.version),
-                    service = Some(service),
-                    generators = generators.filter(_.enabled)
-                  )
-                  Ok(views.html.versions.show(tpl, application, service, watches))
-                }
-              }
+              // TODO: For updates, include application in the template
+              val tpl = request.mainTemplate(Some(v.service.name + " " + v.version)).copy(
+                version = Some(v.version),
+                allServiceVersions = versionsResponse.map(_.version),
+                service = Some(v.service),
+                generators = generators.filter(_.enabled)
+              )
+              Ok(views.html.versions.show(tpl, application, v.service, watches))
             }
           }
         }
@@ -99,7 +91,7 @@ object Versions extends Controller {
         }
       }
       case Some(version) => {
-        Ok(version.service).withHeaders("Content-Type" -> "application/json")
+        Ok(Json.toJson(version.service)).withHeaders("Content-Type" -> "application/json")
       }
     }
   }
