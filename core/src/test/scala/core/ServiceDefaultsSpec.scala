@@ -52,36 +52,6 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     isAthleteField.required should be(false)
   }
 
-  it("respects option type for required fields") {
-    val json = """
-    {
-      "base_url": "http://localhost:9000",
-      "name": "Api Doc",
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "is_active", "type": "boolean" },
-            { "name": "is_athlete", "type": "option[boolean]" },
-            { "name": "friends", "type": "option[[string]]" }
-          ]
-        }
-      }
-    }
-    """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
-    validator.errors.mkString("") should be("")
-
-    val isActiveField = validator.service.get.models.head.fields.find { _.name == "is_active" }.get
-    isActiveField.required should be(true)
-
-    val isAthleteField = validator.service.get.models.head.fields.find { _.name == "is_athlete" }.get
-    isAthleteField.required should be(false)
-
-    val friendsField = validator.service.get.models.head.fields.find { _.name == "friends" }.get
-    friendsField.required should be(false)
-    friendsField.`type` should be("[string]")
-  }
-
   it("rejects invalid boolean defaults") {
     val json = """
     {
