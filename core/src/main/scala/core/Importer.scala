@@ -5,8 +5,6 @@ import scala.util.{Failure, Success, Try}
 
 case class Importer(fetcher: ServiceFetcher, uri: String) {
 
-  println("FETCHER: " + fetcher)
-
   lazy val service: Service = fetched match {
     case Left(error) => sys.error(s"Error fetching uri[$uri]: $error")
     case Right(service) => service
@@ -21,7 +19,7 @@ case class Importer(fetcher: ServiceFetcher, uri: String) {
     Try(
       fetcher.fetch(uri)
     ) match {
-      case Success(service) => println("success: " + service);Right(service)
+      case Success(service) => Right(service)
       case Failure(ex) => Left(ex.getMessage)
     }
   }
