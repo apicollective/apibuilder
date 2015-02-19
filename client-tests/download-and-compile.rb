@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-CLI_PATH = "/web/apidoc-cli/bin/apidoc-cli"
+CLI_PATH = "/web/apidoc-cli/bin/apidoc"
 
 if arg_force = (ARGV[0] == "--force")
   ARGV.shift
