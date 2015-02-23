@@ -561,7 +561,10 @@ package com.gilt.apidoc.spec.v0.models {
 
 package com.gilt.apidoc.spec.v0 {
 
-  class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.spec.v0.Authorization] = None) {
+  class Client(
+    apiUrl: String,
+    auth: scala.Option[com.gilt.apidoc.spec.v0.Authorization] = None
+  ) {
     import com.gilt.apidoc.spec.v0.models.json._
 
     private val UserAgent = "apidoc:0.7.41 http://localhost:9000/gilt/apidoc-spec/0.7.41/play_2_3_client"
@@ -639,6 +642,7 @@ package com.gilt.apidoc.spec.v0 {
   }
 
   object Client {
+
     def parseJson[T](
       className: String,
       r: play.api.libs.ws.WSResponse,
@@ -651,6 +655,7 @@ package com.gilt.apidoc.spec.v0 {
         }
       }
     }
+
   }
 
   sealed trait Authorization
