@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.{PasswordReset, PasswordResetRequest}
+import com.gilt.apidoc.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
 import models.MainTemplate
 import play.api._
 import play.api.mvc._
@@ -58,7 +58,7 @@ object LoginController extends Controller {
 
       validForm => {
         val returnUrl = validForm.returnUrl.getOrElse("/")
-        Authenticated.api().Users.post(name = validForm.name, email = validForm.email, password = validForm.password).map { user =>
+        Authenticated.api().Users.post(UserForm(name = validForm.name, email = validForm.email, password = validForm.password)).map { user =>
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {

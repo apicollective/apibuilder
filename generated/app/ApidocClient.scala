@@ -1547,15 +1547,9 @@ package com.gilt.apidoc.v0 {
       }
 
       override def post(
-        email: String,
-        name: _root_.scala.Option[String] = None,
-        password: String
+        userForm: com.gilt.apidoc.v0.models.UserForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.v0.models.User] = {
-        val payload = play.api.libs.json.Json.obj(
-          "email" -> play.api.libs.json.Json.toJson(email),
-          "name" -> play.api.libs.json.Json.toJson(name),
-          "password" -> play.api.libs.json.Json.toJson(password)
-        )
+        val payload = play.api.libs.json.Json.toJson(userForm)
 
         _executeRequest("POST", s"/users", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.User", r, _.validate[com.gilt.apidoc.v0.models.User])
@@ -2157,9 +2151,7 @@ package com.gilt.apidoc.v0 {
      * Create a new user.
      */
     def post(
-      email: String,
-      name: _root_.scala.Option[String] = None,
-      password: String
+      userForm: com.gilt.apidoc.v0.models.UserForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.v0.models.User]
 
     /**
