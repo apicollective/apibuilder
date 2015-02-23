@@ -63,6 +63,14 @@
             ]
         },
 
+        "user_form": {
+            "fields": [
+                { "name": "email", "type": "string" },
+                { "name": "password", "type": "string" },
+                { "name": "name", "type": "string", "required": false }
+            ]
+        },
+
         "token": {
             "description": "A token gives a user access to the API.",
             "fields": [

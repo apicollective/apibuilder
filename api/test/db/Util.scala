@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Publication, Subscription, SubscriptionForm, User, Visibility}
+import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Publication, Subscription, SubscriptionForm, User, UserForm, Visibility}
 import lib.Role
 import java.util.UUID
 
@@ -9,7 +9,7 @@ object Util {
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@gilttest.com"
-    UsersDao.create(UserForm(email = email, name = None, password = "test1"))
+    UsersDao.create(UserForm(email = email, password = "test1"))
   }
 
   def upsertUser(

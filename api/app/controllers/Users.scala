@@ -1,9 +1,9 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.User
+import com.gilt.apidoc.v0.models.{User, UserForm}
 import com.gilt.apidoc.v0.models.json._
 import lib.Validation
-import db.{UserForm, UsersDao, UserPasswordsDao}
+import db.{UsersDao, UserPasswordsDao}
 import play.api.mvc._
 import play.api.libs.json.{ Json, JsError, JsSuccess }
 import java.util.UUID

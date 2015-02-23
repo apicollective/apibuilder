@@ -235,6 +235,12 @@ package com.gilt.apidoc.v0.models {
     name: _root_.scala.Option[String] = None
   )
 
+  case class UserForm(
+    email: String,
+    password: String,
+    name: _root_.scala.Option[String] = None
+  )
+
   /**
    * Used only to validate json files - used as a resource where http status code
    * defines success
@@ -836,6 +842,22 @@ package com.gilt.apidoc.v0.models {
       )(unlift(User.unapply _))
     }
 
+    implicit def jsonReadsApidocUserForm: play.api.libs.json.Reads[UserForm] = {
+      (
+        (__ \ "email").read[String] and
+        (__ \ "password").read[String] and
+        (__ \ "name").readNullable[String]
+      )(UserForm.apply _)
+    }
+
+    implicit def jsonWritesApidocUserForm: play.api.libs.json.Writes[UserForm] = {
+      (
+        (__ \ "email").write[String] and
+        (__ \ "password").write[String] and
+        (__ \ "name").write[scala.Option[String]]
+      )(unlift(UserForm.unapply _))
+    }
+
     implicit def jsonReadsApidocValidation: play.api.libs.json.Reads[Validation] = {
       (
         (__ \ "valid").read[Boolean] and
@@ -924,7 +946,10 @@ package com.gilt.apidoc.v0.models {
 
 package com.gilt.apidoc.v0 {
 
-  class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.v0.Authorization] = None) {
+  class Client(
+    apiUrl: String,
+    auth: scala.Option[com.gilt.apidoc.v0.Authorization] = None
+  ) {
     import com.gilt.apidoc.v0.models.json._
 
     private val UserAgent = "apidoc:0.7.41 http://localhost:9000/gilt/apidoc/0.7.41/play_2_3_client"
@@ -1781,6 +1806,7 @@ package com.gilt.apidoc.v0 {
   }
 
   object Client {
+
     def parseJson[T](
       className: String,
       r: play.api.libs.ws.WSResponse,
@@ -1793,6 +1819,7 @@ package com.gilt.apidoc.v0 {
         }
       }
     }
+
   }
 
   sealed trait Authorization

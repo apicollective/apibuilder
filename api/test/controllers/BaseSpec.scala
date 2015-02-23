@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.v0.models._
-import db.{TokensDao, UsersDao, UserForm}
+import db.{TokensDao, UsersDao}
 import java.util.UUID
 
 import play.api.test._

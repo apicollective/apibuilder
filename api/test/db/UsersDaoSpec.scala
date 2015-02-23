@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.apidoc.v0.models.UserForm
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 import lib.Role

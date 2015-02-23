@@ -1,5 +1,6 @@
 package db
 
+import com.gilt.apidoc.v0.models.UserForm
 import lib.Role
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._

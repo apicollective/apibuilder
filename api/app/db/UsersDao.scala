@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Error, User}
+import com.gilt.apidoc.v0.models.{Error, User, UserForm}
 import lib.{Constants, Role, Validation}
 import anorm._
 import play.api.db._
@@ -8,12 +8,6 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 import scala.util.{Failure, Success, Try}
-
-case class UserForm(email: String, password: String, name: Option[String] = None)
-
-object UserForm {
-  implicit val userFormReads = Json.reads[UserForm]
-}
 
 object UsersDao {
 
