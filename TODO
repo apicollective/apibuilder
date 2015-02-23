@@ -35,8 +35,6 @@ Email user when their membership request has been processed
 
 Implement subscriptions.findAll authorization filter
 
-Add user_form to api.json and remove db.UserDao.UserForm
-
 Implement backwards compatibility layer - each new version of a
 service should be automatically validated against the latest version
 with the same major version number. Consider if we require semver
