@@ -1,5 +1,6 @@
 package core
 
+import com.gilt.apidoc.spec.v0.models.ParameterLocation
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceValidatorSpec extends FunSpec with Matchers {
@@ -194,6 +195,42 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
     guid.`type` should be("uuid")
+  }
+
+  it("DELETE supports query parameters") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "uuid" }
+          ]
+        }
+      },
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "DELETE",
+              "parameters": [
+                  { "name": "guid", "type": "[uuid]" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    validator.errors.mkString("") should be("")
+    val op = validator.service.get.resources.head.operations.head
+    op.parameters.map(_.name) should be(Seq("guid"))
+    val guid = op.parameters.head
+    guid.`type` should be("[uuid]")
+    guid.location should be(ParameterLocation.Query)
   }
 
   it("path parameters cannot be optional") {

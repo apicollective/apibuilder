@@ -1,6 +1,6 @@
 package core
 
-import lib.{Datatype, Primitives, Type, Kind, UrlKey}
+import lib.{Datatype, Methods, Primitives, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
 
@@ -113,7 +113,7 @@ object OperationBuilder {
     models: Seq[Model] = Nil
   ): Operation = {
     val method = internal.method.getOrElse { sys.error("Missing method") }
-    val location = if (!internal.body.isEmpty || method == "GET") { ParameterLocation.Query } else { ParameterLocation.Form }
+    val location = if (!internal.body.isEmpty || !Methods.isJsonDocumentMethod(method)) { ParameterLocation.Query } else { ParameterLocation.Form }
 
     val pathParameters = internal.namedPathParameters.map { name =>
       internal.parameters.find(_.name == Some(name)) match {
