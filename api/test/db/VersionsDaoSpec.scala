@@ -48,7 +48,7 @@ class VersionsDaoSpec extends FlatSpec {
   it should "findByApplicationAndVersion" in {
     VersionsDao.create(Util.createdBy, application, "1.0.1", OriginalJson, service)
     assertEquals(
-      Some(Json.toJson(service).as[JsObject]),
+      Some(service),
       VersionsDao.findByApplicationAndVersion(Authorization.All, application, "1.0.1").map(_.service)
     )
   }
