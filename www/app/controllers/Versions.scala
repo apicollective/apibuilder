@@ -216,7 +216,7 @@ object Versions extends Controller {
               Some(Visibility(valid.visibility))
             )
 
-            applicationKey  match {
+            applicationKey match {
               case None => {
                 request.api.versions.postByOrgKeyAndVersion(
                   orgKey = request.org.key,
