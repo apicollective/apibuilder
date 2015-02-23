@@ -30,7 +30,7 @@ apidoc. To regenerate code, clone github.com/gilt/apidoc-cli and
 
 In development:
 
-    APIDOC_API_URI = "http://localhost:9001" bin/apidoc update
+    APIDOC_API_URI="http://localhost:9001" /web/apidoc-cli/bin/apidoc update
 
 SBT
 ==========
