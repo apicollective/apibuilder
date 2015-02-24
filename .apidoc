@@ -3,13 +3,13 @@ code:
     apidoc:
       version: latest
       generators:
-        - play_2_3_client: generated/app/ApidocClient.scala
-        - play_2_x_routes: api/conf/routes
+        play_2_3_client: generated/app/ApidocClient.scala
+        play_2_x_routes: api/conf/routes
     apidoc-spec:
       version: latest
       generators:
-        - play_2_3_client: generated/app/ApidocSpec.scala
+        play_2_3_client: generated/app/ApidocSpec.scala
     apidoc-generator:
       version: latest
       generators:
-        - play_2_3_client: generated/app/ApidocGenerator.scala
+        play_2_3_client: generated/app/ApidocGenerator.scala
