@@ -1,12 +1,11 @@
 @(tpl: models.MainTemplate,
-  token: com.gilt.apidoc.v0.models.Token,
-  cleartext: com.gilt.apidoc.v0.models.CleartextToken
+  token: com.gilt.apidoc.v0.models.Token
 )(implicit flash: Flash)
 
 @main(tpl) {
 
   <ul>
-    <li> Full token: @cleartext.token </li>
+    <li> Full token: @token.maskedToken (<a href="@routes.TokensController.cleartext(token.guid)">Show full token</a>) </li>
     <li> Description: @token.description.getOrElse(Html("<em>none</em>")) </li>
     <li> Created: @lib.DateHelper.longDateTime(tpl.timeZone, token.audit.createdAt)</li>
   </ul>

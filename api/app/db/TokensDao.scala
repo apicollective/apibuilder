@@ -82,7 +82,8 @@ object TokensDao {
     findAll(Authorization.All, token = Some(token)).headOption
   }
 
-  def findCleartextByGuid(guid: UUID): Option[CleartextToken] = {
+  def findCleartextByGuid(authorization: Authorization, guid: UUID): Option[CleartextToken] = {
+    // TODO: Authorization
     val sql = FindCleartextQuery
     val bind = Seq[NamedParameter]('guid -> guid.toString)
     DB.withConnection { implicit c =>

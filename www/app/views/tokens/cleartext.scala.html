@@ -1,0 +1,14 @@
+@(tpl: models.MainTemplate,
+  guid: java.util.UUID,
+  cleartext: com.gilt.apidoc.v0.models.CleartextToken
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  @cleartext.token
+
+  <ul>
+    <li><a href="@routes.TokensController.show(guid)">Back</a></li>
+  </ul>
+
+}

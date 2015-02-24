@@ -32,7 +32,7 @@ trait Tokens {
   def getCleartextByGuid(
     guid: UUID
   ) = Authenticated { request =>
-    TokensDao.findCleartextByGuid(guid) match {
+    TokensDao.findCleartextByGuid(Authorization(Some(request.user)), guid) match {
       case None => NotFound
       case Some(token) => {
         Ok(Json.toJson(token))

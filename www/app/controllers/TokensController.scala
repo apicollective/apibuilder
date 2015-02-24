@@ -36,15 +36,28 @@ object TokensController extends Controller {
         request.user.guid,
         guid = Some(guid)
       )
-
-      cleartext <- request.api.tokens.getCleartextByGuid(tokens.headOption.map(_.guid).get)
     } yield {
-      cleartext match {
+      tokens.headOption match {
         case None => {
-          Redirect(routes.TokensController.index()).flashing("warnings" -> "Token not found")
+          Redirect(routes.TokensController.index()).flashing("warning" -> "Token not found")
         }
         case Some(cleartextToken) => {
-          Ok(views.html.tokens.show(request.mainTemplate(Some("View token")), tokens.head, cleartextToken))
+          Ok(views.html.tokens.show(request.mainTemplate(Some("View token")), tokens.head))
+        }
+      }
+    }
+  }
+
+  def cleartext(guid: UUID) = Authenticated.async { implicit request =>
+    for {
+      cleartextOption <- request.api.tokens.getCleartextByGuid(guid)
+    } yield {
+      cleartextOption match {
+        case None => {
+          Redirect(routes.TokensController.index()).flashing("warning" -> "Token not found")
+        }
+        case Some(cleartextToken) => {
+          Ok(views.html.tokens.cleartext(request.mainTemplate(Some("View token")), guid, cleartextToken))
         }
       }
     }

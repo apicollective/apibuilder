@@ -41,6 +41,7 @@ POST    /generators/postUpdate                                    controllers.Ge
 GET     /tokens                                                   controllers.TokensController.redirect()
 GET     /tokens/                                                  controllers.TokensController.index(page: Int ?= 0)
 GET     /tokens/show/:guid                                        controllers.TokensController.show(guid: java.util.UUID)
+GET     /tokens/cleartext/:guid                                   controllers.TokensController.cleartext(guid: java.util.UUID)
 GET     /tokens/create                                            controllers.TokensController.create
 POST    /tokens/postCreate                                        controllers.TokensController.postCreate
 POST    /tokens/postDelete/:guid                                  controllers.TokensController.postDelete(guid: java.util.UUID)

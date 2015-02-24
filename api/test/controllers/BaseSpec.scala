@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.v0.models._
-import db.{TokensDao, UsersDao}
+import db.{Authorization, TokensDao, UsersDao}
 import java.util.UUID
 
 import play.api.test._
@@ -19,7 +19,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   lazy val apiToken = {
     val token = TokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
-    TokensDao.findCleartextByGuid(token.guid).get.token
+    TokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
 
   lazy val apiAuth = com.gilt.apidoc.v0.Authorization.Basic(apiToken)
@@ -52,13 +52,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   def createUser(): User = {
     val form = createUserForm()
-    await(
-      client.users.post(
-        email = form.email,
-        password = form.password,
-        name = form.name
-      )
-    )
+    await(client.users.post(form))
   }
 
   def createUserForm() = UserForm(
