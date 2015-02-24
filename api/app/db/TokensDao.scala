@@ -83,9 +83,12 @@ object TokensDao {
   }
 
   def findCleartextByGuid(authorization: Authorization, guid: UUID): Option[CleartextToken] = {
-    // TODO: Authorization
-    val sql = FindCleartextQuery
-    val bind = Seq[NamedParameter]('guid -> guid.toString)
+    val sql = Seq(
+      Some(FindCleartextQuery.trim),
+      authorization.tokenFilter()
+    ).flatten.mkString("\n   and ")
+
+    val bind = Seq[NamedParameter]('guid -> guid.toString) ++ authorization.bindVariables
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row => CleartextToken(row[String]("token")) }.headOption
     }
