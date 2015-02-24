@@ -8,7 +8,6 @@ body .navbar-fixed-top {
   right: inherit;
   top: inherit;
   padding-left: 220px;
-  z-index: 0;
 }
 
 body .sidebar {
