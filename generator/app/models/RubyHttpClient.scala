@@ -109,6 +109,14 @@ require 'bigdecimal'
         do_request(Net::HTTP::Put, &block)
       end
 
+      class PATCH < Net::HTTP::Put
+        METHOD = "PATCH"
+      end
+
+      def patch(&block)
+        do_request(PATCH, &block)
+      end
+
       def do_request(klass)
         Preconditions.assert_class('klass', klass, Class)
 
