@@ -1,9 +1,45 @@
+@deprecated("02/26/2015", "This will be removed after 03/26/2015. Use jsonReadsTestAgeGroup instead.")
 implicit val jsonReadsTestEnum_AgeGroup = __.read[String].map(AgeGroup.apply)
+@deprecated("02/26/2015", "This will be removed after 03/26/2015. Use jsonWritesTestAgeGroup instead.")
 implicit val jsonWritesTestEnum_AgeGroup = new Writes[AgeGroup] {
   def writes(x: AgeGroup) = JsString(x.toString)
 }
+implicit val jsonReadsTestAgeGroup = __.read[String].map(AgeGroup.apply)
+/**
+ * Reads a valid instance of the enum type, rejecting UNDEFINED results.
+ * NOTE: Not an implicit as it would conflict with the default permissive
+ * Reads instance.
+ */
+val jsonReadsTestAgeGroup_Valid = Reads { jsValue =>
+  jsonReadsTestAgeGroup(jsValue).flatMap {
+    case AgeGroup.UNDEFINED(invalid) =>
+      JsError(s"invalid event_type[${invalid}]")
+    case legal => JsSuccess(legal)
+  }
+}
+implicit val jsonWritesTestAgeGroup = new Writes[AgeGroup] {
+  def writes(x: AgeGroup) = JsString(x.toString)
+}
 
+@deprecated("02/26/2015", "This will be removed after 03/26/2015. Use jsonReadsTestGenre instead.")
 implicit val jsonReadsTestEnum_Genre = __.read[String].map(Genre.apply)
+@deprecated("02/26/2015", "This will be removed after 03/26/2015. Use jsonWritesTestGenre instead.")
 implicit val jsonWritesTestEnum_Genre = new Writes[Genre] {
+  def writes(x: Genre) = JsString(x.toString)
+}
+implicit val jsonReadsTestGenre = __.read[String].map(Genre.apply)
+/**
+ * Reads a valid instance of the enum type, rejecting UNDEFINED results.
+ * NOTE: Not an implicit as it would conflict with the default permissive
+ * Reads instance.
+ */
+val jsonReadsTestGenre_Valid = Reads { jsValue =>
+  jsonReadsTestGenre(jsValue).flatMap {
+    case Genre.UNDEFINED(invalid) =>
+      JsError(s"invalid event_type[${invalid}]")
+    case legal => JsSuccess(legal)
+  }
+}
+implicit val jsonWritesTestGenre = new Writes[Genre] {
   def writes(x: Genre) = JsString(x.toString)
 }
