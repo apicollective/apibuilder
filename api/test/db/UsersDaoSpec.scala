@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.UserForm
+import com.gilt.apidoc.v0.models.{UserForm, UserUpdateForm}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 import lib.Role
@@ -48,20 +48,35 @@ class UsersDaoSpec extends FunSpec with Matchers {
 
   describe("validate") {
 
+    it("email is valid") {
+      UsersDao.validateNewUser(
+        UserForm(
+          email = "bad-email",
+          password = "testing"
+        )
+      ).map(_.message) should be(Seq("Invalid email address"))
+    }
+
     it("email is unique") {
       val form = UserForm(
         email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
         password = "testing"
       )
 
-      UsersDao.validate(form) should be(Seq.empty)
+      UsersDao.validateNewUser(form) should be(Seq.empty)
 
       val user = UsersDao.create(form)
 
-      UsersDao.validate(form).map(_.message) should be(Seq("User with this email address already exists"))
-      UsersDao.validate(form, Some(user)).map(_.message) should be(Seq.empty)
-      UsersDao.validate(form, Some(Util.upsertUser())).map(_.message) should be(Seq("User with this email address already exists"))
-      UsersDao.validate(form.copy(email = "other-" + form.email)).map(_.message) should be(Seq.empty)
+      UsersDao.validateNewUser(form).map(_.message) should be(Seq("User with this email address already exists"))
+      UsersDao.validateNewUser(form.copy(email = "other-" + form.email)).map(_.message) should be(Seq.empty)
+
+      val updateForm = UserUpdateForm(
+        email = form.email,
+        nickname = UUID.randomUUID.toString
+      )
+
+      UsersDao.validate(updateForm, existingUser = Some(user)).map(_.message) should be(Seq.empty)
+      UsersDao.validate(updateForm, existingUser = Some(Util.upsertUser())).map(_.message) should be(Seq("User with this email address already exists"))
     }
 
     it("password") {
@@ -70,11 +85,11 @@ class UsersDaoSpec extends FunSpec with Matchers {
         password = "bad"
       )
 
-      UsersDao.validate(form).map(_.message) should be(Seq("Password must be at least 5 characters"))
+      UsersDao.validateNewUser(form).map(_.message) should be(Seq("Password must be at least 5 characters"))
     }
 
     it("nickname is url friendly") {
-      UsersDao.validate(createUserForm(nickname = Some("bad nickname"))).map(_.message) should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: bad-nickname"))
+      UsersDao.validateNewUser(createUserForm(nickname = Some("bad nickname"))).map(_.message) should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: bad-nickname"))
     }
 
     it("nickname is unique") {
@@ -84,16 +99,20 @@ class UsersDaoSpec extends FunSpec with Matchers {
         nickname = Some(UUID.randomUUID.toString)
       )
 
-      UsersDao.validate(form) should be(Seq.empty)
+      UsersDao.validateNewUser(form) should be(Seq.empty)
+      UsersDao.validateNewUser(form.copy(nickname = form.nickname.map(n => "other-" + n))).map(_.message) should be(Seq.empty)
 
       val user = UsersDao.create(form)
 
-      val formWithUniqueEmail = form.copy(email = "other-" + form.email)
+      val formWithUniqueEmail = UserUpdateForm(
+        email = "other-" + form.email,
+        nickname = user.nickname,
+        name = form.name
+      )
 
       UsersDao.validate(formWithUniqueEmail).map(_.message) should be(Seq("User with this nickname already exists"))
-      UsersDao.validate(formWithUniqueEmail, Some(user)).map(_.message) should be(Seq.empty)
-      UsersDao.validate(formWithUniqueEmail, Some(Util.upsertUser())).map(_.message) should be(Seq("User with this nickname already exists"))
-      UsersDao.validate(formWithUniqueEmail.copy(nickname = form.nickname.map(n => "other-" + n))).map(_.message) should be(Seq.empty)
+      UsersDao.validate(formWithUniqueEmail, existingUser = Some(user)).map(_.message) should be(Seq.empty)
+      UsersDao.validate(formWithUniqueEmail, existingUser = Some(Util.upsertUser())).map(_.message) should be(Seq("User with this nickname already exists"))
     }
 
   }
@@ -110,6 +129,24 @@ class UsersDaoSpec extends FunSpec with Matchers {
     UsersDao.generateNickname(email2) should be(base + "-2")
     val user2 = UsersDao.create(createUserForm(email2))
     user2.nickname should be(base + "-2")
+  }
+
+  it("update") {
+    val user = Util.createRandomUser()
+    val email = "test-email-2@" + UUID.randomUUID.toString
+    val nickname = user.nickname + "-2"
+    val name = "Test User " + UUID.randomUUID.toString
+
+    UsersDao.update(Util.createdBy, user, UserUpdateForm(
+      email = email,
+      nickname = nickname,
+      name = Some(name)
+    ))
+
+    val updated = UsersDao.findByGuid(user.guid).get
+    updated.email should be(email)
+    updated.nickname should be(nickname)
+    updated.name should be(Some(name))
   }
 
 }

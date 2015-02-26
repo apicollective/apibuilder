@@ -561,6 +561,58 @@ package com.gilt.apidoc.spec.v0.models {
 
 package com.gilt.apidoc.spec.v0 {
 
+  object Bindables {
+
+    import play.api.mvc.{PathBindable, QueryStringBindable}
+    import org.joda.time.{DateTime, LocalDate}
+    import org.joda.time.format.ISODateTimeFormat
+    import com.gilt.apidoc.spec.v0.models._
+
+    // Type: date-time-iso8601
+    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[org.joda.time.DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
+    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[org.joda.time.DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
+    // Type: date-iso8601
+    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[org.joda.time.LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
+    )
+
+    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[org.joda.time.LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
+    )
+
+    // Enum: Method
+    private val enumMethodNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.Method.all.mkString(", ")}"
+
+    implicit val pathBindableEnumMethod = new PathBindable.Parsing[com.gilt.apidoc.spec.v0.models.Method] (
+      Method.fromString(_).get, _.toString, enumMethodNotFound
+    )
+
+    implicit val queryStringBindableEnumMethod = new QueryStringBindable.Parsing[com.gilt.apidoc.spec.v0.models.Method](
+      Method.fromString(_).get, _.toString, enumMethodNotFound
+    )
+
+    // Enum: ParameterLocation
+    private val enumParameterLocationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.ParameterLocation.all.mkString(", ")}"
+
+    implicit val pathBindableEnumParameterLocation = new PathBindable.Parsing[com.gilt.apidoc.spec.v0.models.ParameterLocation] (
+      ParameterLocation.fromString(_).get, _.toString, enumParameterLocationNotFound
+    )
+
+    implicit val queryStringBindableEnumParameterLocation = new QueryStringBindable.Parsing[com.gilt.apidoc.spec.v0.models.ParameterLocation](
+      ParameterLocation.fromString(_).get, _.toString, enumParameterLocationNotFound
+    )
+
+  }
+}
+
+package com.gilt.apidoc.spec.v0 {
+
   class Client(
     apiUrl: String,
     auth: scala.Option[com.gilt.apidoc.spec.v0.Authorization] = None
@@ -666,55 +718,6 @@ package com.gilt.apidoc.spec.v0 {
   package errors {
 
     case class FailedRequest(responseCode: Int, message: String) extends Exception(s"HTTP $responseCode: $message")
-
-  }
-
-  object Bindables {
-
-    import play.api.mvc.{PathBindable, QueryStringBindable}
-    import org.joda.time.{DateTime, LocalDate}
-    import org.joda.time.format.ISODateTimeFormat
-    import com.gilt.apidoc.spec.v0.models._
-
-    // Type: date-time-iso8601
-    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
-
-    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
-
-    // Type: date-iso8601
-    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
-
-    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
-
-    // Enum: Method
-    private val enumMethodNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Method.all.mkString(", ")}"
-
-    implicit val pathBindableEnumMethod = new PathBindable.Parsing[Method] (
-      Method.fromString(_).get, _.toString, enumMethodNotFound
-    )
-
-    implicit val queryStringBindableEnumMethod = new QueryStringBindable.Parsing[Method](
-      Method.fromString(_).get, _.toString, enumMethodNotFound
-    )
-
-    // Enum: ParameterLocation
-    private val enumParameterLocationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${ParameterLocation.all.mkString(", ")}"
-
-    implicit val pathBindableEnumParameterLocation = new PathBindable.Parsing[ParameterLocation] (
-      ParameterLocation.fromString(_).get, _.toString, enumParameterLocationNotFound
-    )
-
-    implicit val queryStringBindableEnumParameterLocation = new QueryStringBindable.Parsing[ParameterLocation](
-      ParameterLocation.fromString(_).get, _.toString, enumParameterLocationNotFound
-    )
 
   }
 

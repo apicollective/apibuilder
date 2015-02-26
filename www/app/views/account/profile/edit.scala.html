@@ -1,0 +1,40 @@
+@(tpl: models.MainTemplate,
+  user: com.gilt.apidoc.v0.models.User,
+  form: Form[controllers.AccountProfileController.ProfileData],
+  errors: Seq[String] = Nil
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some("Edit Profile")), errorMessages = errors) {
+
+    @helper.form(action = routes.AccountProfileController.postEdit()) {
+
+      @form.globalErrors.map(_.message).map { msg =>
+        <p><span class="error">@msg</span></p>
+      }
+
+      <fieldset>
+          @helper.inputText(
+              form("email"),
+              '_label -> "Email address",
+              '_error -> form.error("email")
+          )
+
+          @helper.inputText(
+              form("nickname"),
+              '_label -> "Nickname",
+              '_error -> form.error("nickname")
+          )
+
+          @helper.inputText(
+              form("name"),
+              '_label -> "Name",
+              '_error -> form.error("name")
+          )
+
+      </fieldset>
+
+      <button class="btn btn-large btn-primary" type="submit">Save</button>
+      <a href="@routes.AccountProfileController.index()">Cancel</a>
+    }
+
+}

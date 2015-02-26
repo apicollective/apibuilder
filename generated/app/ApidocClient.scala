@@ -243,6 +243,12 @@ package com.gilt.apidoc.v0.models {
     name: _root_.scala.Option[String] = None
   )
 
+  case class UserUpdateForm(
+    email: String,
+    nickname: String,
+    name: _root_.scala.Option[String] = None
+  )
+
   /**
    * Used only to validate json files - used as a resource where http status code
    * defines success
@@ -864,6 +870,22 @@ package com.gilt.apidoc.v0.models {
       )(unlift(UserForm.unapply _))
     }
 
+    implicit def jsonReadsApidocUserUpdateForm: play.api.libs.json.Reads[UserUpdateForm] = {
+      (
+        (__ \ "email").read[String] and
+        (__ \ "nickname").read[String] and
+        (__ \ "name").readNullable[String]
+      )(UserUpdateForm.apply _)
+    }
+
+    implicit def jsonWritesApidocUserUpdateForm: play.api.libs.json.Writes[UserUpdateForm] = {
+      (
+        (__ \ "email").write[String] and
+        (__ \ "nickname").write[String] and
+        (__ \ "name").write[scala.Option[String]]
+      )(unlift(UserUpdateForm.unapply _))
+    }
+
     implicit def jsonReadsApidocValidation: play.api.libs.json.Reads[Validation] = {
       (
         (__ \ "valid").read[Boolean] and
@@ -947,6 +969,58 @@ package com.gilt.apidoc.v0.models {
         (__ \ "application_key").write[String]
       )(unlift(WatchForm.unapply _))
     }
+  }
+}
+
+package com.gilt.apidoc.v0 {
+
+  object Bindables {
+
+    import play.api.mvc.{PathBindable, QueryStringBindable}
+    import org.joda.time.{DateTime, LocalDate}
+    import org.joda.time.format.ISODateTimeFormat
+    import com.gilt.apidoc.v0.models._
+
+    // Type: date-time-iso8601
+    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[org.joda.time.DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
+    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[org.joda.time.DateTime](
+      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
+    )
+
+    // Type: date-iso8601
+    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[org.joda.time.LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
+    )
+
+    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[org.joda.time.LocalDate](
+      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
+    )
+
+    // Enum: Publication
+    private val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.v0.models.Publication.all.mkString(", ")}"
+
+    implicit val pathBindableEnumPublication = new PathBindable.Parsing[com.gilt.apidoc.v0.models.Publication] (
+      Publication.fromString(_).get, _.toString, enumPublicationNotFound
+    )
+
+    implicit val queryStringBindableEnumPublication = new QueryStringBindable.Parsing[com.gilt.apidoc.v0.models.Publication](
+      Publication.fromString(_).get, _.toString, enumPublicationNotFound
+    )
+
+    // Enum: Visibility
+    private val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.v0.models.Visibility.all.mkString(", ")}"
+
+    implicit val pathBindableEnumVisibility = new PathBindable.Parsing[com.gilt.apidoc.v0.models.Visibility] (
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
+    )
+
+    implicit val queryStringBindableEnumVisibility = new QueryStringBindable.Parsing[com.gilt.apidoc.v0.models.Visibility](
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
+    )
+
   }
 }
 
@@ -1566,13 +1640,9 @@ package com.gilt.apidoc.v0 {
 
       override def putByGuid(
         guid: _root_.java.util.UUID,
-        email: String,
-        name: _root_.scala.Option[String] = None
+        userUpdateForm: com.gilt.apidoc.v0.models.UserUpdateForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.v0.models.User] = {
-        val payload = play.api.libs.json.Json.obj(
-          "email" -> play.api.libs.json.Json.toJson(email),
-          "name" -> play.api.libs.json.Json.toJson(name)
-        )
+        val payload = play.api.libs.json.Json.toJson(userUpdateForm)
 
         _executeRequest("PUT", s"/users/${guid}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.v0.Client.parseJson("com.gilt.apidoc.v0.models.User", r, _.validate[com.gilt.apidoc.v0.models.User])
@@ -2165,8 +2235,7 @@ package com.gilt.apidoc.v0 {
      */
     def putByGuid(
       guid: _root_.java.util.UUID,
-      email: String,
-      name: _root_.scala.Option[String] = None
+      userUpdateForm: com.gilt.apidoc.v0.models.UserUpdateForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.v0.models.User]
   }
 
@@ -2279,55 +2348,6 @@ package com.gilt.apidoc.v0 {
     }
 
     case class FailedRequest(responseCode: Int, message: String) extends Exception(s"HTTP $responseCode: $message")
-
-  }
-
-  object Bindables {
-
-    import play.api.mvc.{PathBindable, QueryStringBindable}
-    import org.joda.time.{DateTime, LocalDate}
-    import org.joda.time.format.ISODateTimeFormat
-    import com.gilt.apidoc.v0.models._
-
-    // Type: date-time-iso8601
-    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
-
-    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
-
-    // Type: date-iso8601
-    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
-
-    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
-
-    // Enum: Publication
-    private val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Publication.all.mkString(", ")}"
-
-    implicit val pathBindableEnumPublication = new PathBindable.Parsing[Publication] (
-      Publication.fromString(_).get, _.toString, enumPublicationNotFound
-    )
-
-    implicit val queryStringBindableEnumPublication = new QueryStringBindable.Parsing[Publication](
-      Publication.fromString(_).get, _.toString, enumPublicationNotFound
-    )
-
-    // Enum: Visibility
-    private val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${Visibility.all.mkString(", ")}"
-
-    implicit val pathBindableEnumVisibility = new PathBindable.Parsing[Visibility] (
-      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
-    )
-
-    implicit val queryStringBindableEnumVisibility = new QueryStringBindable.Parsing[Visibility](
-      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
-    )
 
   }
 

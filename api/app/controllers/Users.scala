@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.{User, UserForm}
+import com.gilt.apidoc.v0.models.{User, UserForm, UserUpdateForm}
 import com.gilt.apidoc.v0.models.json._
 import lib.Validation
 import db.{UsersDao, UserPasswordsDao}
@@ -38,7 +38,7 @@ object Users extends Controller {
       }
       case s: JsSuccess[UserForm] => {
         val form = s.get
-        UsersDao.validate(form) match {
+        UsersDao.validateNewUser(form) match {
           case Nil => {
             val user = UsersDao.create(form)
             Ok(Json.toJson(user))
@@ -52,31 +52,34 @@ object Users extends Controller {
   }
 
   def putByGuid(guid: UUID) = Authenticated(parse.json) { request =>
-    request.body.validate[UserForm] match {
+    request.body.validate[UserUpdateForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[UserForm] => {
+      case s: JsSuccess[UserUpdateForm] => {
         val form = s.get
         UsersDao.findByGuid(guid.toString) match {
 
           case None => NotFound
 
           case Some(u: User) => {
-            val existingUser = UsersDao.findByEmail(form.email)
+            val existingUser = UsersDao.findByGuid(guid)
 
-            UsersDao.validate(form, existingUser) match {
+            UsersDao.validate(form, existingUser = existingUser) match {
               case Nil => {
-                val user = existingUser match {
-                  case None => UsersDao.create(form)
+                existingUser match {
+                  case None => {
+                    NotFound
+                  }
+
                   case Some(existing) => {
                     UsersDao.update(request.user, existing, form)
-                    UsersDao.findByGuid(guid.toString).getOrElse {
+                    val user =UsersDao.findByGuid(guid.toString).getOrElse {
                       sys.error("Failed to update user")
                     }
+                    Ok(Json.toJson(user))
                   }
                 }
-                Ok(Json.toJson(user))
               }
               case errors => {
                 Conflict(Json.toJson(errors))

@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Error, User, UserForm}
+import com.gilt.apidoc.v0.models.{Error, User, UserForm, UserUpdateForm}
 import lib.{Constants, Role, UrlKey, Validation}
 import anorm._
 import play.api.db._
@@ -32,11 +32,23 @@ object UsersDao {
      set email = {email},
          name = {name},
          nickname = {nickname}
-   where guid = {guid}
+   where guid = {guid}::uuid
   """
 
+  def validateNewUser(form: UserForm): Seq[Error] = {
+    validate(
+      form = UserUpdateForm(
+        email = form.email,
+        nickname = form.nickname.getOrElse(generateNickname(form.email)),
+        name = form.name
+      ),
+      password = Some(form.password)
+    )
+  }
+
   def validate(
-    form: UserForm,
+    form: UserUpdateForm,
+    password: Option[String] = None,
     existingUser: Option[User] = None
   ): Seq[Error] = {
     val emailErrors = findByEmail(form.email) match {
@@ -50,40 +62,42 @@ object UsersDao {
       }
     }
 
-    val passwordErrors = UserPasswordsDao.validate(form.password).map(_.message)
-    val nicknameErrors = form.nickname match {
-      case None => Seq.empty
-      case Some(nick) => {
-        UrlKey.validate(nick) match {
-          case Nil => {
-            findAll(nickname = Some(nick)).headOption match {
-              case None => Seq.empty
-              case Some(u) => {
-                if (existingUser.map(_.guid) == Some(u.guid)) {
-                  Seq.empty
-                } else {
-                  Seq("User with this nickname already exists")
-                }
-              }
+    val nicknameErrors = UrlKey.validate(form.nickname) match {
+      case Nil => {
+        findAll(nickname = Some(form.nickname)).headOption match {
+          case None => Seq.empty
+          case Some(u) => {
+            if (existingUser.map(_.guid) == Some(u.guid)) {
+              Seq.empty
+            } else {
+              Seq("User with this nickname already exists")
             }
-          }
-          case errors => {
-            errors
           }
         }
       }
+      case errors => {
+        errors
+      }
     }
 
-    Validation.errors(emailErrors ++ passwordErrors ++ nicknameErrors)
+    val passwordErrors = password match {
+      case None => Seq.empty
+      case Some(pwd) => UserPasswordsDao.validate(pwd)
+    }
+
+    Validation.errors(emailErrors ++ nicknameErrors) ++ passwordErrors
   }
 
-  def update(updatingUser: User, user: User, form: UserForm) {
+  def update(updatingUser: User, user: User, form: UserUpdateForm) {
+    val errors = validate(form, existingUser = Some(user))
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+
     DB.withConnection { implicit c =>
       SQL(UpdateQuery).on(
         'guid -> user.guid,
         'email -> form.email,
         'name -> form.name,
-        'nickname -> form.nickname.getOrElse(generateNickname(form.email)),
+        'nickname -> form.nickname,
         'updated_by_guid -> updatingUser.guid
       ).execute()
     }
@@ -95,6 +109,9 @@ object UsersDao {
   }
 
   def create(form: UserForm): User = {
+    val errors = validateNewUser(form)
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+
     val guid = UUID.randomUUID
     DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(

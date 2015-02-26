@@ -73,6 +73,14 @@
             ]
         },
 
+        "user_update_form": {
+            "fields": [
+                { "name": "email", "type": "string" },
+                { "name": "nickname", "type": "string" },
+                { "name": "name", "type": "string", "required": false }
+            ]
+        },
+
         "token": {
             "description": "A token gives a user access to the API.",
             "fields": [
@@ -402,10 +410,7 @@
                     "method": "PUT",
                     "path": "/:guid",
                     "description": "Updates information about the user with the specified guid.",
-                    "parameters": [
-                        { "name": "email", "type": "string" },
-                        { "name": "name", "type": "string", "required": false }
-                    ],
+		    "body": { "type": "user_update_form" },
                     "responses": {
                         "200": { "type": "user" },
                         "409": { "type": "[error]" }

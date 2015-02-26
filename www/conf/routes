@@ -11,6 +11,14 @@ POST    /login/forgotPassword                                     controllers.Lo
 GET     /login/resetPassword/:token                               controllers.LoginController.resetPassword(token: String)
 POST    /login/resetPassword/:token                               controllers.LoginController.postResetPassword(token: String)
 
+GET     /account                                                  controllers.AccountController.redirect
+GET     /account/                                                 controllers.AccountController.index()
+
+GET     /account/profile                                          controllers.AccountProfileController.redirect()
+GET     /account/profile/                                         controllers.AccountProfileController.index()
+GET     /account/profile/edit                                     controllers.AccountProfileController.edit()
+POST    /account/profile/postEdit                                 controllers.AccountProfileController.postEdit()
+
 GET     /logout                                                   controllers.LogoutController.logout
 GET     /logged_out                                               controllers.LogoutController.logged_out
 

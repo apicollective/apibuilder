@@ -1,0 +1,14 @@
+@(tpl: models.MainTemplate,
+  user: com.gilt.apidoc.v0.models.User
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  <ul>
+    <li> Email: @user.email</li>
+    <li> Nickname: @user.nickname</li>
+    <li> Name: @user.name</li>
+  </ul>
+
+}
+  
