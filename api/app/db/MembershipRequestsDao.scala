@@ -26,6 +26,7 @@ object MembershipRequestsDao {
            organizations.namespace as organization_namespace,
            users.guid as user_guid,
            users.email as user_email,
+           users.nickname as user_nickname,
            users.name as user_name
       from membership_requests
       join organizations on organizations.guid = membership_requests.organization_guid

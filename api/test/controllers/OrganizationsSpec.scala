@@ -27,7 +27,7 @@ class OrganizationsSpec extends BaseSpec {
   "POST /organizations validates key is valid" in new WithServer {
     intercept[ErrorsResponse] {
       createOrganization(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a")))
-    }.errors.map(_.message) must be(Seq(s"Key must be at least ${db.OrganizationsDao.MinKeyLength} characters"))
+    }.errors.map(_.message) must be(Seq(s"Key must be at least 4 characters"))
 
     intercept[ErrorsResponse] {
       createOrganization(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))

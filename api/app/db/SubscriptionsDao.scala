@@ -17,6 +17,7 @@ object SubscriptionsDao {
            subscriptions.publication,
            users.guid as user_guid,
            users.email as user_email,
+           users.nickname as user_nickname,
            users.name as user_name,
            organizations.guid as organization_guid,
            organizations.key as organization_key,

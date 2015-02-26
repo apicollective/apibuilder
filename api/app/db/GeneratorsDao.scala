@@ -4,14 +4,12 @@ import com.gilt.apidoc.v0.models.{Error, Generator, GeneratorCreateForm, User, V
 import anorm._
 import play.api.db._
 import play.api.Play.current
-import lib.Validation
+import lib.{UrlKey, Validation}
 import java.net.{MalformedURLException, URL}
 import java.util.{Date, UUID}
 import scala.util.{Failure, Success, Try}
 
 object GeneratorsDao {
-
-  private val ReservedKeys = Seq("api.json")
 
   private val BaseQuery = s"""
     select generators.guid,
@@ -23,7 +21,9 @@ object GeneratorsDao {
            generator_users.enabled,
            users.guid as user_guid,
            users.email as user_email,
-           users.name as user_name
+           users.nickname as user_nickname,
+           users.name as user_name,
+           users.nickname as user_nickname
       from generators
       join users on users.guid = generators.user_guid
       left join memberships on memberships.deleted_at is null
@@ -78,11 +78,7 @@ object GeneratorsDao {
     }
 
     val formattedKey = form.key.trim.toLowerCase
-    val keyErrors = if (ReservedKeys.contains(formattedKey) || OrganizationsDao.ReservedKeys.contains(formattedKey)) {
-      Seq(s"Key ${form.key.trim} is a reserved word and cannot be used as a key for a generator")
-    } else {
-      Seq.empty
-    }
+    val keyErrors = UrlKey.validate(formattedKey)
 
     Validation.errors(urlErrors ++ keyErrors)
   }
@@ -109,7 +105,7 @@ object GeneratorsDao {
                          language: Option[String]): Generator = {
     val generator = Generator(
       guid = UUID.randomUUID(),
-      key = key.trim,
+      key = key.trim.toLowerCase,
       uri = uri,
       visibility = visibility,
       name = name.trim,
@@ -239,11 +235,7 @@ object GeneratorsDao {
         val uri = row[String]("uri")
         val visibility = Visibility(row[String]("visibility"))
         val isEnabled = row[Option[Boolean]]("enabled")
-        val owner = User(
-          guid = row[UUID]("user_guid"),
-          email = row[String]("user_email"),
-          name = row[Option[String]]("user_name")
-        )
+        val owner = UsersDao.fromRow(row, Some("user"))
         Generator(
           guid = genGuid,
           key = row[String]("key"),

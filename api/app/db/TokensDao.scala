@@ -18,6 +18,7 @@ object TokensDao {
            ${AuditsDao.queryCreation("tokens")},
            users.guid as user_guid,
            users.email as user_email,
+           users.nickname as user_nickname,
            users.name as user_name
       from tokens
       join users on users.guid = tokens.user_guid and users.deleted_at is null

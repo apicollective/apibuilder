@@ -9,6 +9,11 @@ class UsersDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
+  def createUserForm(
+    email: String = UUID.randomUUID.toString + "@test.apidoc.me",
+    nickname: Option[String] = None
+  ) = UserForm(email = email, password = UUID.randomUUID.toString, nickname = nickname)
+
   it("upsert") {
     val user1 = Util.upsertUser("michael@mailinator.com")
     val user2 = Util.upsertUser("michael@mailinator.com")
@@ -41,29 +46,51 @@ class UsersDaoSpec extends FunSpec with Matchers {
     UserPasswordsDao.isValid(user.guid, "password") should be(false)
   }
 
-  it("validates email is unique") {
-    val form = UserForm(
-      email = UUID.randomUUID.toString + "@gilttest.com",
-      password = "testing"
+  describe("validate") {
+
+    it("email is unique") {
+      val form = UserForm(
+        email = UUID.randomUUID.toString + "@gilttest.com",
+        password = "testing"
     )
 
-    UsersDao.validate(form) should be(Seq.empty)
+      UsersDao.validate(form) should be(Seq.empty)
 
-    val user = UsersDao.create(form)
+      val user = UsersDao.create(form)
 
-    UsersDao.validate(form).map(_.message) should be(Seq("User with this email address already exists"))
-    UsersDao.validate(form, Some(user)).map(_.message) should be(Seq.empty)
-    UsersDao.validate(form, Some(Util.upsertUser())).map(_.message) should be(Seq("User with this email address already exists"))
-    UsersDao.validate(form.copy(email = "other-" + form.email)).map(_.message) should be(Seq.empty)
+      UsersDao.validate(form).map(_.message) should be(Seq("User with this email address already exists"))
+      UsersDao.validate(form, Some(user)).map(_.message) should be(Seq.empty)
+      UsersDao.validate(form, Some(Util.upsertUser())).map(_.message) should be(Seq("User with this email address already exists"))
+      UsersDao.validate(form.copy(email = "other-" + form.email)).map(_.message) should be(Seq.empty)
+    }
+
+    it("password") {
+      val form = UserForm(
+        email = UUID.randomUUID.toString + "@gilttest.com",
+        password = "bad"
+      )
+
+      UsersDao.validate(form).map(_.message) should be(Seq("Password must be at least 5 characters"))
+    }
+
+    it("nickname is url friendly") {
+      UsersDao.validate(createUserForm(nickname = Some("bad nickname"))).map(_.message) should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: bad-nickname"))
+    }
+
   }
 
-  it("validates password") {
-    val form = UserForm(
-      email = UUID.randomUUID.toString + "@gilttest.com",
-      password = "bad"
-    )
+  it("generateNickname defaults to a unique name based on email") {
+    val base = UUID.randomUUID.toString
+    val email1 = base + "@test1.apidoc.me"
+    val email2 = base + "@test2.apidoc.me"
 
-    UsersDao.validate(form).map(_.message) should be(Seq("Password must be at least 5 characters"))
+    UsersDao.generateNickname(email1) should be(base)
+    val user = UsersDao.create(createUserForm(email1))
+    user.nickname should be(base)
+
+    UsersDao.generateNickname(email2) should be(base + "-2")
+    val user2 = UsersDao.create(createUserForm(email2))
+    user2.nickname should be(base + "-2")
   }
 
 }

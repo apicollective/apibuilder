@@ -14,14 +14,6 @@ object OrganizationsDao {
   private val DefaultVisibility = Visibility.Organization
 
   private val MinNameLength = 4
-  val MinKeyLength = 4
-  val ReservedKeys = Seq(
-    "_internal_", "account", "admin", "api", "api.json", "accept", "asset", "bucket",
-    "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
-    "internal", "login", "logout", "member", "members", "metadatum", "metadata",
-    "org", "password", "private", "reject", "session", "setting", "scms", "source", "subaccount",
-    "subscription", "team", "types", "user", "util", "version", "watch"
-  ).map(UrlKey.generate(_))
 
   private[db] val BaseQuery = """
     select organizations.guid,
@@ -79,7 +71,7 @@ object OrganizationsDao {
         nameErrors match {
           case Nil => {
             val generated = UrlKey.generate(form.name)
-            ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
+            UrlKey.ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
               case None => Seq.empty
               case Some(prefix) => Seq(s"Prefix ${prefix} is a reserved word and cannot be used for the key of an organization")
             }
@@ -89,31 +81,23 @@ object OrganizationsDao {
       }
 
       case Some(key) => {
-        val generated = UrlKey.generate(key)
-        if (key.length < MinKeyLength) {
-          Seq(s"Key must be at least $MinKeyLength characters")
-        } else if (key != generated) {
-          Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
-        } else {
-          ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
-            case Some(prefix) => Seq(s"Prefix $key is a reserved word and cannot be used for the key of an organization")
-            case None => {
-              OrganizationsDao.findByKey(Authorization.All, key) match {
-                case None => Seq.empty
-                case Some(found) => {
-                  if (existing.map(_.guid) == Some(found.guid)) {
-                    Seq.empty
-                  } else {
-                    Seq("Org with this key already exists")
-                  }
+        UrlKey.validate(key) match {
+          case Nil => {
+            OrganizationsDao.findByKey(Authorization.All, key) match {
+              case None => Seq.empty
+              case Some(found) => {
+                if (existing.map(_.guid) == Some(found.guid)) {
+                  Seq.empty
+                } else {
+                  Seq("Org with this key already exists")
                 }
               }
             }
           }
+          case errors => errors
         }
       }
     }
-
 
     val namespaceErrors = OrganizationsDao.findAll(Authorization.All, namespace = Some(form.namespace.trim), limit = 1).headOption match {
       case None => {

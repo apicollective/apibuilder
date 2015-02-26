@@ -232,12 +232,14 @@ package com.gilt.apidoc.v0.models {
   case class User(
     guid: _root_.java.util.UUID,
     email: String,
+    nickname: String,
     name: _root_.scala.Option[String] = None
   )
 
   case class UserForm(
     email: String,
     password: String,
+    nickname: _root_.scala.Option[String] = None,
     name: _root_.scala.Option[String] = None
   )
 
@@ -830,6 +832,7 @@ package com.gilt.apidoc.v0.models {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "email").read[String] and
+        (__ \ "nickname").read[String] and
         (__ \ "name").readNullable[String]
       )(User.apply _)
     }
@@ -838,6 +841,7 @@ package com.gilt.apidoc.v0.models {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "email").write[String] and
+        (__ \ "nickname").write[String] and
         (__ \ "name").write[scala.Option[String]]
       )(unlift(User.unapply _))
     }
@@ -846,6 +850,7 @@ package com.gilt.apidoc.v0.models {
       (
         (__ \ "email").read[String] and
         (__ \ "password").read[String] and
+        (__ \ "nickname").readNullable[String] and
         (__ \ "name").readNullable[String]
       )(UserForm.apply _)
     }
@@ -854,6 +859,7 @@ package com.gilt.apidoc.v0.models {
       (
         (__ \ "email").write[String] and
         (__ \ "password").write[String] and
+        (__ \ "nickname").write[scala.Option[String]] and
         (__ \ "name").write[scala.Option[String]]
       )(unlift(UserForm.unapply _))
     }

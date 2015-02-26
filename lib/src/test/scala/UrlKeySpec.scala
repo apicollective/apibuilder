@@ -1,26 +1,45 @@
 package lib
 
-import org.scalatest.FlatSpec
+import org.scalatest.{FunSpec, Matchers}
 
-class UrlKeySpec extends FlatSpec {
+class UrlKeySpec extends FunSpec with Matchers {
 
-  behavior of "Url Key Generator"
+  describe("generate") {
 
-  it should "leave good urls alone" in {
-    assert("foo" === UrlKey.generate("foo"))
-    assert("foo-bar" === UrlKey.generate("foo-bar"))
+    it("good urls alone") {
+      UrlKey.generate("foo") should be("foo")
+      UrlKey.generate("foo-bar") should be("foo-bar")
+    }
+
+    it("numbers") {
+      UrlKey.generate("foo123") should be("foo123")
+    }
+
+    it("lower case") {
+      UrlKey.generate("FOO-BAR") should be("foo-bar")
+    }
+
+    it("trim") {
+      UrlKey.generate("  foo-bar  ") should be("foo-bar")
+    }
+
   }
 
-  it should "leave numbers alone" in {
-    assert("foo123" === UrlKey.generate("foo123"))
-  }
+  describe("validate") {
 
-  it should "lower case" in {
-    assert("foo-bar" === UrlKey.generate("FOO-BAR"))
-  }
+    it("short") {
+      UrlKey.validate("bad") should be(Seq("Key must be at least 4 characters"))
+    }
 
-  it should "trim" in {
-    assert("foo-bar" === UrlKey.generate("  FOO-BAR  "))
+    it("doesn't match generated") {
+      UrlKey.validate("VALID") should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: valid"))
+      UrlKey.validate("bad nickname") should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: bad-nickname"))
+    }
+
+    it("reserved") {
+      UrlKey.validate("api.json") should be(Seq("Prefix api.json is a reserved word and cannot be used for the key"))
+    }
+
   }
 
 }

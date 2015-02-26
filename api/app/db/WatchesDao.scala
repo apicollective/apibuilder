@@ -45,6 +45,7 @@ object WatchesDao {
     select watches.guid,
            users.guid as user_guid,
            users.email as user_email,
+           users.nickname as user_nickname,
            users.name as user_name,
            applications.guid as application_guid,
            applications.name as application_name,
