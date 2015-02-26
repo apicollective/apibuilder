@@ -98,13 +98,15 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers {
 
       OrganizationDomainsDao.create(Util.createdBy, org, domain)
 
+      val prefix = "test-user-" + UUID.randomUUID.toString
+
       val user = UsersDao.create(UserForm(
-        email = "person@" + domain,
+        email = prefix + "@" + domain,
         password = "testing"
       ))
 
       val nonMatchingUser = UsersDao.create(UserForm(
-        email = "person@other." + domain,
+        email = prefix + "@other." + domain,
         password = "testing"
       ))
 
