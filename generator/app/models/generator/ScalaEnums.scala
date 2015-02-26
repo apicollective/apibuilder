@@ -19,11 +19,37 @@ object ScalaEnums {
     * Returns the implicits for json serialization.
     */
   def buildJson(prefix: String, enum: ScalaEnum): String = {
+    val enumName = enum.name
+    val readsName = s"jsonReads${prefix}${enumName}"
+    val writesName = s"jsonWrites${prefix}${enumName}"
     Seq(
-      s"implicit val jsonReads${prefix}Enum_${enum.name} = __.read[String].map(${enum.name}.apply)",
-      s"implicit val jsonWrites${prefix}Enum_${enum.name} = new Writes[${enum.name}] {",
-      s"  def writes(x: ${enum.name}) = JsString(x.toString)",
-      "}"
+      s"""@deprecated("02/26/2015", "This will be removed after 03/26/2015. Use ${readsName} instead.")""",
+      s"""implicit val jsonReads${prefix}Enum_${enumName} = __.read[String].map(${enumName}.apply)""",
+
+      s"""@deprecated("02/26/2015", "This will be removed after 03/26/2015. Use ${writesName} instead.")""",
+      s"""implicit val jsonWrites${prefix}Enum_${enumName} = new Writes[${enumName}] {""",
+      s"""  def writes(x: ${enumName}) = JsString(x.toString)""",
+      s"""}""",
+
+      s"""implicit val ${readsName} = __.read[String].map(${enumName}.apply)""",
+
+      s"""/**""",
+      s""" * Reads a valid instance of the enum type, rejecting UNDEFINED results.""",
+      s""" * NOTE: Not an implicit as it would conflict with the default permissive""",
+      s""" * Reads instance.""",
+      s""" */""",
+      s"""val ${readsName}_Valid = Reads { jsValue =>""",
+      s"""  ${readsName}(jsValue).flatMap {""",
+      s"""    case ${enumName}.UNDEFINED(invalid) =>""",
+      s"""      JsError(s"invalid event_type[$${invalid}]")""",
+      s"""    case legal => JsSuccess(legal)""",
+      s"""  }""",
+      s"""}""",
+
+
+      s"""implicit val ${writesName} = new Writes[${enumName}] {""",
+      s"""  def writes(x: ${enumName}) = JsString(x.toString)""",
+      s"""}"""
     ).mkString("\n")
   }
 
