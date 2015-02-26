@@ -51,12 +51,30 @@ object UsersDao {
     }
 
     val passwordErrors = UserPasswordsDao.validate(form.password).map(_.message)
-    val keyErrors = form.nickname match {
+    val nicknameErrors = form.nickname match {
       case None => Seq.empty
-      case Some(nick) => UrlKey.validate(nick)
+      case Some(nick) => {
+        UrlKey.validate(nick) match {
+          case Nil => {
+            findAll(nickname = Some(nick)).headOption match {
+              case None => Seq.empty
+              case Some(u) => {
+                if (existingUser.map(_.guid) == Some(u.guid)) {
+                  Seq.empty
+                } else {
+                  Seq("User with this nickname already exists")
+                }
+              }
+            }
+          }
+          case errors => {
+            errors
+          }
+        }
+      }
     }
 
-    Validation.errors(emailErrors ++ passwordErrors ++ keyErrors)
+    Validation.errors(emailErrors ++ passwordErrors ++ nicknameErrors)
   }
 
   def update(updatingUser: User, user: User, form: UserForm) {

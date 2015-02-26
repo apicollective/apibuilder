@@ -10,7 +10,7 @@ class UsersDaoSpec extends FunSpec with Matchers {
   new play.core.StaticApplication(new java.io.File("."))
 
   def createUserForm(
-    email: String = UUID.randomUUID.toString + "@test.apidoc.me",
+    email: String = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
     nickname: Option[String] = None
   ) = UserForm(email = email, password = UUID.randomUUID.toString, nickname = nickname)
 
@@ -38,7 +38,7 @@ class UsersDaoSpec extends FunSpec with Matchers {
 
   it("user can login after creation") {
     val form = UserForm(
-      email = UUID.randomUUID.toString + "@gilttest.com",
+      email = UUID.randomUUID.toString + "@test.apidoc.me",
       password = "testing"
     )
     val user = UsersDao.create(form)
@@ -50,9 +50,9 @@ class UsersDaoSpec extends FunSpec with Matchers {
 
     it("email is unique") {
       val form = UserForm(
-        email = UUID.randomUUID.toString + "@gilttest.com",
+        email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
         password = "testing"
-    )
+      )
 
       UsersDao.validate(form) should be(Seq.empty)
 
@@ -66,7 +66,7 @@ class UsersDaoSpec extends FunSpec with Matchers {
 
     it("password") {
       val form = UserForm(
-        email = UUID.randomUUID.toString + "@gilttest.com",
+        email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
         password = "bad"
       )
 
@@ -75,6 +75,25 @@ class UsersDaoSpec extends FunSpec with Matchers {
 
     it("nickname is url friendly") {
       UsersDao.validate(createUserForm(nickname = Some("bad nickname"))).map(_.message) should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: bad-nickname"))
+    }
+
+    it("nickname is unique") {
+      val form = UserForm(
+        email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
+        password = "testing",
+        nickname = Some(UUID.randomUUID.toString)
+      )
+
+      UsersDao.validate(form) should be(Seq.empty)
+
+      val user = UsersDao.create(form)
+
+      val formWithUniqueEmail = form.copy(email = "other-" + form.email)
+
+      UsersDao.validate(formWithUniqueEmail).map(_.message) should be(Seq("User with this nickname already exists"))
+      UsersDao.validate(formWithUniqueEmail, Some(user)).map(_.message) should be(Seq.empty)
+      UsersDao.validate(formWithUniqueEmail, Some(Util.upsertUser())).map(_.message) should be(Seq("User with this nickname already exists"))
+      UsersDao.validate(formWithUniqueEmail.copy(nickname = form.nickname.map(n => "other-" + n))).map(_.message) should be(Seq.empty)
     }
 
   }
