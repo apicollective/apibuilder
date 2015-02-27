@@ -44,7 +44,7 @@ object Code extends Controller {
           }
 
           case Some(generator: Generator) => {
-            val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWebHostname}/${orgKey}/${applicationKey}/${version.version}/${generator.key}"
+            val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${generator.key}"
 
             new Client(generator.uri).invocations.postByKey(
               key = generator.key,
