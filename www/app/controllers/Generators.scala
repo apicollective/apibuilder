@@ -49,6 +49,7 @@ object Generators extends Controller {
     boundForm.fold (
 
       errors => Future {
+        println("ERRORS: " + errors)
         InternalServerError
       },
 
@@ -98,13 +99,19 @@ object Generators extends Controller {
             }
           }
         }.getOrElse {
+          val uri = if (valid.uri.toLowerCase.trim.startsWith("http")) {
+            valid.uri.trim
+          } else {
+            "http://" + valid.uri.trim
+          }
+
           val existingGenF = request.api.Generators.get()
-          val newGenF = new com.gilt.apidoc.generator.v0.Client(valid.uri).generators.get()
+          val newGenF = new com.gilt.apidoc.generator.v0.Client(uri).generators.get()
           (for {
             existingGenerators <- existingGenF
             newGenerators <- newGenF
           } yield {
-            val existingKeys = existingGenerators.filter(_.uri == valid.uri).map(_.key).toSet
+            val existingKeys = existingGenerators.filter(_.uri == uri).map(_.key).toSet
             val d = newGenerators.toList.map(gen => GeneratorDetails(gen.key, Visibility.Public.toString, !existingKeys.contains(gen.key)))
             Ok(views.html.generators.form(tpl, 2, generatorCreateForm.fill(valid.copy(details = d))))
           }).recover {
