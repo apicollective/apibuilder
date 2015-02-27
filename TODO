@@ -14,9 +14,6 @@ Breaking changes:
 Generators:
   - Cache the generators
 
-users:
-  - add nickname that users can modify, and display that nickname throughout the API
-
 UX:
 
   - On adding watch, check subscription and offer the user to enable
