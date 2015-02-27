@@ -117,18 +117,26 @@ class UsersDaoSpec extends FunSpec with Matchers {
 
   }
 
-  it("generateNickname defaults to a unique name based on email") {
-    val base = UUID.randomUUID.toString
-    val email1 = base + "@test1.apidoc.me"
-    val email2 = base + "@test2.apidoc.me"
+  describe("generateNickname") {
 
-    UsersDao.generateNickname(email1) should be(base)
-    val user = UsersDao.create(createUserForm(email1))
-    user.nickname should be(base)
+    it("defaults to a unique name based on email") {
+      val base = UUID.randomUUID.toString
+      val email1 = base + "@test1.apidoc.me"
+      val email2 = base + "@test2.apidoc.me"
 
-    UsersDao.generateNickname(email2) should be(base + "-2")
-    val user2 = UsersDao.create(createUserForm(email2))
-    user2.nickname should be(base + "-2")
+      UsersDao.generateNickname(email1) should be(base)
+      val user = UsersDao.create(createUserForm(email1))
+      user.nickname should be(base)
+
+      UsersDao.generateNickname(email2) should be(base + "-2")
+      val user2 = UsersDao.create(createUserForm(email2))
+      user2.nickname should be(base + "-2")
+    }
+
+    it("generateNickname creates a url valid token") {
+      UsersDao.generateNickname("  with a SPACE  ") should be("with-a-space")
+    }
+
   }
 
   it("update") {

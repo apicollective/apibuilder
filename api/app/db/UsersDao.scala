@@ -203,8 +203,8 @@ object UsersDao {
     }
 
     val fullPrefix = iteration match {
-      case 1 => prefix
-      case n => s"$prefix-$n"
+      case 1 => UrlKey.generate(prefix)
+      case n => UrlKey.generate(s"$prefix-$n")
     }
 
     findAll(nickname = Some(fullPrefix)).headOption match {
