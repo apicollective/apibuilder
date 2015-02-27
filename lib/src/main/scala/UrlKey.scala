@@ -5,10 +5,13 @@ object UrlKey {
   private val MinKeyLength = 4
 
   // Only want lower case letters and dashes
-  private val Regexp1 = """([^0-9a-z\-\.])""".r
+  private val Regexp1 = """([^0-9a-z\-\_\.])""".r
 
-  // Now turn multiple dashes into single dashes
+  // Turn multiple dashes into single dashes
   private val Regexp2 = """(\-+)""".r
+
+  // Turn multiple underscores into single underscore
+  private val Regexp3 = """(\_+)""".r
 
   private val RegexpLeadingSpaces = """^\-+""".r
   private val RegexpTrailingSpaces = """\-+$""".r
@@ -16,10 +19,12 @@ object UrlKey {
   def generate(value: String): String = {
     RegexpTrailingSpaces.replaceAllIn(
       RegexpLeadingSpaces.replaceAllIn(
-        Regexp2.replaceAllIn(
-          Regexp1.replaceAllIn(value.toLowerCase.trim, m => "-"),
-          m => "-"),
-        m => ""),
+        Regexp3.replaceAllIn(
+          Regexp2.replaceAllIn(
+            Regexp1.replaceAllIn(value.toLowerCase.trim, m => "-"),
+            m => "-"
+          ), m => "_"
+        ), m => ""),
       m => ""
     )
   }
@@ -29,7 +34,7 @@ object UrlKey {
     if (key.length < MinKeyLength) {
       Seq(s"Key must be at least $MinKeyLength characters")
     } else if (key != generated) {
-      Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: $generated")
+      Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: $generated")
     } else {
       ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
         case Some(prefix) => Seq(s"Prefix $key is a reserved word and cannot be used for the key")

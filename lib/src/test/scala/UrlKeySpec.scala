@@ -31,6 +31,10 @@ class UrlKeySpec extends FunSpec with Matchers {
       UrlKey.generate("foo!") should be("foo")
     }
 
+    it("allows underscores") {
+      UrlKey.generate("ning_1_8_client") should be("ning_1_8_client")
+    }
+
   }
 
   describe("validate") {
@@ -40,8 +44,8 @@ class UrlKeySpec extends FunSpec with Matchers {
     }
 
     it("doesn't match generated") {
-      UrlKey.validate("VALID") should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: valid"))
-      UrlKey.validate("bad nickname") should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: bad-nickname"))
+      UrlKey.validate("VALID") should be(Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: valid"))
+      UrlKey.validate("bad nickname") should be(Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: bad-nickname"))
     }
 
     it("reserved") {
