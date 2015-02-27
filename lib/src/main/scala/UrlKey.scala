@@ -10,9 +10,18 @@ object UrlKey {
   // Now turn multiple dashes into single dashes
   private val Regexp2 = """(\-+)""".r
 
+  private val RegexpLeadingSpaces = """^\-+""".r
+  private val RegexpTrailingSpaces = """\-+$""".r
+
   def generate(value: String): String = {
-    val a = Regexp1.replaceAllIn(value.toLowerCase.trim, m => "-")
-    Regexp2.replaceAllIn(a, m => "-")
+    RegexpTrailingSpaces.replaceAllIn(
+      RegexpLeadingSpaces.replaceAllIn(
+        Regexp2.replaceAllIn(
+          Regexp1.replaceAllIn(value.toLowerCase.trim, m => "-"),
+          m => "-"),
+        m => ""),
+      m => ""
+    )
   }
 
   def validate(key: String): Seq[String] = {

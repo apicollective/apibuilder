@@ -23,6 +23,14 @@ class UrlKeySpec extends FunSpec with Matchers {
       UrlKey.generate("  foo-bar  ") should be("foo-bar")
     }
 
+    it("leading garbage") {
+      UrlKey.generate("!foo") should be("foo")
+    }
+
+    it("trailing garbage") {
+      UrlKey.generate("foo!") should be("foo")
+    }
+
   }
 
   describe("validate") {
