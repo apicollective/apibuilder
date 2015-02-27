@@ -5,9 +5,12 @@
 
 @main(tpl) {
 
-  <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Members.add(tpl.org.get.key)">Add member</a>
-  </div>
+  @if(isAdmin) {
+    <div class="pull-right">
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Members.add(tpl.org.get.key)">Add member</a>
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Members.downloadCsv(tpl.org.get.key)">Download</a>
+    </div>
+  }
 
   @if(members.isEmpty) {
     <em>There are no members</em>

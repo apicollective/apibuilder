@@ -1,6 +1,6 @@
 package controllers
 
-import lib.{ Pagination, PaginatedCollection, Review, Role }
+import lib.{DateHelper, MemberDownload, Pagination, PaginatedCollection, Review, Role}
 import com.gilt.apidoc.v0.models.{ Organization, User }
 import models._
 import play.api._
@@ -9,6 +9,7 @@ import play.api.data._
 import play.api.data.Forms._
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
+import org.joda.time.DateTime
 import java.util.UUID
 
 object Members extends Controller {
@@ -133,6 +134,19 @@ object Members extends Controller {
       }
 
       Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"Member granted admin access")
+    }
+  }
+
+  def downloadCsv(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+    request.requireAdmin
+    for {
+      path <- MemberDownload(request.user, orgKey).csv
+    } yield {
+      val date = DateHelper.mediumDateTime(UserTimeZone(request.user), DateTime.now())
+      Ok.sendFile(
+        content = path,
+        fileName = _ => s"apidoc-${orgKey}-members-${date}.csv"
+      )
     }
   }
 

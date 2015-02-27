@@ -13,6 +13,11 @@ object UserTimeZone {
 
   val Default = UserTimeZone(name = "US/Eastern", label = "EST")
 
+  def apply(user: User): UserTimeZone = {
+    // TODO
+    Default
+  }
+
 }
 
 case class MainTemplate(

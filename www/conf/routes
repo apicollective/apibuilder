@@ -73,6 +73,7 @@ GET     /:orgKey/domains/create                                   controllers.Do
 POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
 
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
+GET     /:orgKey/members/downloadCsv                              controllers.Members.downloadCsv(orgKey: String)
 GET     /:orgKey/members/add                                      controllers.Members.add(orgKey: String)
 POST    /:orgKey/members/addPost                                  controllers.Members.addPost(orgKey: String)
 POST    /:orgKey/members/postRemove                               controllers.Members.postRemove(orgKey: String, guid: java.util.UUID)
