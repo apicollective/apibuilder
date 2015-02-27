@@ -16,7 +16,6 @@ case class MemberDownload(
 
   def csv(): Future[File] = {
     val file = File.createTempFile(s"member-download-$orgKey", "csv")
-    println("FILE: " + file)
 
     val writer = CSVWriter.open(file)
     writer.writeRow(Seq("guid", "role", "user_guid", "user_email", "user_nickname", "user_name"))
@@ -30,7 +29,7 @@ case class MemberDownload(
           limit = Some(250),
           offset = Some(offset)
         ),
-        1000.millis
+        5000.millis
       )
     } { membership =>
       writer.writeRow(
