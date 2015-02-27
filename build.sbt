@@ -18,7 +18,8 @@ val avroVersion = "1.7.7"
 
 lazy val avro = project
   .in(file("avro"))
-  .dependsOn(lib)
+  .dependsOn(generated, lib)
+  .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,

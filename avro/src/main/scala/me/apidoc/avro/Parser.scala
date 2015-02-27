@@ -6,11 +6,17 @@ import org.apache.avro.compiler.idl.Idl
 import scala.collection.JavaConversions._
 import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
 
+import lib.Text
+import com.gilt.apidoc.spec.v0.models._
+
 private[avro] case class Builder() {
 
-  private val enums = scala.collection.mutable.Map[String, JsValue]()
+  //private val enums = scala.collection.mutable.Map[String, JsValue]()
+  private val enumBuilder = scala.collection.mutable.ListBuffer[Enum]()
   private val models = scala.collection.mutable.Map[String, JsValue]()
   private val unions = scala.collection.mutable.Map[String, JsValue]()
+
+  def enums(): Seq[Enum] = enumBuilder.toSeq
 
   def toApiJson(
     name: String
@@ -69,18 +75,11 @@ private[avro] case class Builder() {
   }
 
   def addEnum(name: String, description: Option[String], values: Seq[String]) {
-    enums += (Util.formatName(name) ->
-      JsObject(
-        Seq(
-          description.map { v => "description" -> JsString(v) },
-          Some(
-            "values" -> JsArray(values.map { value => Json.obj("name" -> value) })
-          )
-        ).flatten
-      )
+    enumsBuilder += Enum(
+      name = name,
+      plural = Text.pluralize(name)
     )
   }
-
 }
 
 case class Parser() {
