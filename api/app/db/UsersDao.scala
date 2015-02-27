@@ -51,13 +51,18 @@ object UsersDao {
     password: Option[String] = None,
     existingUser: Option[User] = None
   ): Seq[Error] = {
-    val emailErrors = findByEmail(form.email) match {
-      case None => Seq.empty
-      case Some(u) => {
-        if (existingUser.map(_.guid) == Some(u.guid)) {
-          Seq.empty
-        } else {
-          Seq("User with this email address already exists")
+    val emailErrors = isValidEmail(form.email) match {
+      case false => Seq("Invalid email address")
+      case true => {
+        findByEmail(form.email) match {
+          case None => Seq.empty
+          case Some(u) => {
+            if (existingUser.map(_.guid) == Some(u.guid)) {
+              Seq.empty
+            } else {
+              Seq("User with this email address already exists")
+            }
+          }
         }
       }
     }
@@ -219,6 +224,13 @@ object UsersDao {
       nickname = row[String](s"${p}nickname"),
       name = row[Option[String]](s"${p}name")
     )
+  }
+
+  private def isValidEmail(email: String): Boolean = {
+    email.split("@").toList match {
+      case username :: domain :: Nil => true
+      case _ => false
+    }
   }
 
 }
