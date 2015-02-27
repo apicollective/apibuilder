@@ -1,7 +1,7 @@
 package db
 
 import com.gilt.apidoc.v0.models.{Error, User, UserForm, UserUpdateForm}
-import lib.{Constants, Role, UrlKey, Validation}
+import lib.{Constants, Misc, Role, UrlKey, Validation}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -51,7 +51,7 @@ object UsersDao {
     password: Option[String] = None,
     existingUser: Option[User] = None
   ): Seq[Error] = {
-    val emailErrors = isValidEmail(form.email) match {
+    val emailErrors = Misc.isValidEmail(form.email) match {
       case false => Seq("Invalid email address")
       case true => {
         findByEmail(form.email) match {
@@ -224,13 +224,6 @@ object UsersDao {
       nickname = row[String](s"${p}nickname"),
       name = row[Option[String]](s"${p}name")
     )
-  }
-
-  private def isValidEmail(email: String): Boolean = {
-    email.split("@").toList match {
-      case username :: domain :: Nil => true
-      case _ => false
-    }
   }
 
 }
