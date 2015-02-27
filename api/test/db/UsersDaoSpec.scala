@@ -146,7 +146,7 @@ class UsersDaoSpec extends FunSpec with Matchers {
     val name = "Test User " + UUID.randomUUID.toString
 
     UsersDao.update(Util.createdBy, user, UserUpdateForm(
-      email = email,
+      email = " " + email + " ",
       nickname = nickname,
       name = Some(name)
     ))
