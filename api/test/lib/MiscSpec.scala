@@ -8,6 +8,7 @@ class MiscSpec extends FunSpec with ShouldMatchers {
     Misc.isValidEmail("") should be(false)
     Misc.isValidEmail("@") should be(false)
     Misc.isValidEmail("foo@") should be(false)
+    Misc.isValidEmail("@gilt.com") should be(false)
     Misc.isValidEmail("foo@apidoc.me") should be(true)
   }
 

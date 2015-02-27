@@ -4,7 +4,7 @@ object Misc {
 
   def isValidEmail(email: String): Boolean = {
     email.split("@").toList match {
-      case username :: domain :: Nil => true
+      case username :: domain :: Nil => !username.trim.isEmpty && !domain.trim.isEmpty
       case _ => false
     }
   }
