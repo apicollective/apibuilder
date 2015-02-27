@@ -11,4 +11,16 @@ class MiscSpec extends FunSpec with ShouldMatchers {
     Misc.isValidEmail("foo@apidoc.me") should be(true)
   }
 
+  it("emailDomain") {
+    Misc.emailDomain("") should be(None)
+    Misc.emailDomain("@") should be(None)
+    Misc.emailDomain("foo@") should be(None)
+    Misc.emailDomain("foo@apidoc.me") should be(Some("apidoc.me"))
+    Misc.emailDomain("FOO@APIDOC.ME") should be(Some("apidoc.me"))
+    Misc.emailDomain("  FOO@APIDOC.ME  ") should be(Some("apidoc.me"))
+    Misc.emailDomain("mb@gilt.com") should be(Some("gilt.com"))
+    Misc.emailDomain("mb@internal.gilt.com") should be(Some("internal.gilt.com"))
+    Misc.emailDomain("mb") should be(None)
+  }
+
 }

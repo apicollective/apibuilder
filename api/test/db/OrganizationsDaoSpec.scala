@@ -139,12 +139,6 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
     }
   }
 
-  it("emailDomain") {
-    OrganizationsDao.emailDomain("mb@gilt.com") should be(Some("gilt.com"))
-    OrganizationsDao.emailDomain("mb@internal.gilt.com") should be(Some("internal.gilt.com"))
-    OrganizationsDao.emailDomain("mb") should be(None)
-  }
-
   describe("validation") {
 
     it("validates name") {

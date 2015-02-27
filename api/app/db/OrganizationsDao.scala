@@ -2,7 +2,7 @@ package db
 
 import com.gilt.apidoc.v0.models._
 import com.gilt.apidoc.v0.models.json._
-import lib.{Role, Validation, UrlKey}
+import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -152,17 +152,8 @@ object OrganizationsDao {
     }
   }
 
-  private[db] def emailDomain(email: String): Option[String] = {
-    email.split("@").toList match {
-      case username :: domain :: Nil => {
-        Some(domain.toLowerCase.trim)
-      }
-      case _ => None
-    }
-  }
-
   def findByEmailDomain(email: String): Option[Organization] = {
-    emailDomain(email).flatMap { domain =>
+    Misc.emailDomain(email).flatMap { domain =>
       OrganizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
         findByGuid(Authorization.All, domain.organization_guid)
       }
