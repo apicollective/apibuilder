@@ -100,9 +100,9 @@ object UsersDao {
     DB.withConnection { implicit c =>
       SQL(UpdateQuery).on(
         'guid -> user.guid,
-        'email -> form.email,
-        'name -> form.name,
-        'nickname -> form.nickname,
+        'email -> form.email.trim,
+        'name -> form.name.map(_.trim),
+        'nickname -> form.nickname.trim.toLowerCase,
         'updated_by_guid -> updatingUser.guid
       ).execute()
     }
