@@ -4,6 +4,10 @@
 
 @main(tpl) {
 
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.AccountProfileController.edit()">Edit</a>
+  </div>
+
   <ul>
     <li> Email: @user.email</li>
     <li> Nickname: @user.nickname</li>
