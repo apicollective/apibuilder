@@ -1,7 +1,7 @@
 package db
 
 import core.ServiceConfiguration
-import com.gilt.apidoc.v0.models.{Application, Reference, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 import lib.VersionTag
@@ -19,7 +19,9 @@ object VersionsDao {
   private val ServiceVersionNumber = "0.0.1"
 
   private val BaseQuery = s"""
-    select versions.guid, versions.version, versions.original, versions.old_json::varchar,
+    select versions.guid, versions.version,
+           originals.type as original_type,
+           originals.data as original_data,
            organizations.guid as organization_guid,
            organizations.key as organization_key,
            organizations.namespace as organization_namespace,
@@ -28,6 +30,7 @@ object VersionsDao {
            services.json::varchar as service_json
      from versions
      left join cache.services on services.deleted_at is null and services.version_guid = versions.guid and services.version = '$ServiceVersionNumber'
+     left join originals on originals.version_guid = versions.guid and originals.deleted_at is null
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
     where versions.deleted_at is null
@@ -35,9 +38,17 @@ object VersionsDao {
 
   private val InsertQuery = """
     insert into versions
-    (guid, application_guid, version, version_sort_key, original, created_by_guid)
+    (guid, application_guid, version, version_sort_key, created_by_guid)
     values
-    ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {original}, {created_by_guid}::uuid)
+    ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {created_by_guid}::uuid)
+  """
+
+  private val DeleteQuery = """
+    update versions
+       set deleted_at = now(),
+           deleted_by_guid = {deleted_by_guid}::uuid
+     where deleted_at is null
+       and guid = {guid}::uuid
   """
 
   private val InsertServiceQuery = """
@@ -56,24 +67,19 @@ object VersionsDao {
        and version = {version}
   """
 
-  def create(user: User, application: Application, version: String, original: JsObject, service: Service): Version = {
-    assert(
-      !(original \ "name").asOpt[String].isEmpty,
-      "original is missing name"
-    )
-
+  def create(user: User, application: Application, version: String, original: Original, service: Service): Version = {
     val guid = UUID.randomUUID
 
     DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'application_guid -> application.guid,
-        'original -> original.toString,
         'version -> version.trim,
         'version_sort_key -> VersionTag(version.trim).sortKey,
         'created_by_guid -> user.guid
       ).execute()
 
+      OriginalsDao.create(c, user, guid, original)
       softDeleteService(c, user, guid)
       insertService(c, user, guid, service)
     }
@@ -86,10 +92,18 @@ object VersionsDao {
   }
 
   def softDelete(deletedBy: User, version: Version) {
-    SoftDelete.delete("versions", deletedBy, version.guid)
+    DB.withTransaction { implicit c =>
+      softDeleteService(c, deletedBy, version.guid)
+      OriginalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
+
+      SQL(DeleteQuery).on(
+        'guid -> version.guid,
+        'deleted_by_guid -> deletedBy.guid
+      ).execute()
+    }
   }
 
-  def replace(user: User, version: Version, application: Application, original: JsObject, service: Service): Version = {
+  def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
     DB.withTransaction { implicit c =>
       softDelete(user, version)
       VersionsDao.create(user, application, version.version, original, service)
@@ -145,9 +159,14 @@ object VersionsDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
         val version = row[String]("version")
-        val original = row[Option[String]]("original").getOrElse {
-          row[String]("old_json")
+
+        val original = row[Option[String]]("original_data").map { data =>
+          Original(
+            `type` = OriginalType(row[String]("original_type")),
+              data = data
+          )
         }
+
         val service = Json.parse(row[String]("service_json")).as[Service]
 
         Version(
@@ -161,7 +180,7 @@ object VersionsDao {
             key = row[String]("application_key")
           ),
           version = version,
-          original = original.toString,
+          original = original,
           service = service
         )
       }.toSeq
@@ -169,11 +188,12 @@ object VersionsDao {
   }
 
   def migrate(): Map[String, Int] = {
-    var user: Option[User] = None
-    val sql = BaseQuery.trim + " and services.guid is null and versions.original != '{}' "
-
     var good = 0
     var bad = 0
+
+    /* TODO: Verify
+    var user: Option[User] = None
+    val sql = BaseQuery.trim + " and services.guid is null and versions.original != '{}' "
 
     DB.withConnection { implicit c =>
       val versions = SQL(sql)().toList
@@ -217,6 +237,7 @@ object VersionsDao {
         }
       }
     }
+     */
 
     Map(
       "number_migrated" -> good,

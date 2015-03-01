@@ -11,6 +11,7 @@ select schema_evolution_manager.create_basic_audit_data('public', 'originals');
 alter table originals drop column updated_by_guid; -- never updated
 
 create index on originals(version_guid);
+create unique index originals_version_guid_not_del_un_idx on originals(version_guid) where deleted_at is null;
 
 comment on table originals is '
   Tracks the original content uploaded to create versions.

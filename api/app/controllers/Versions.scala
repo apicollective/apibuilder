@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, Original, OriginalType, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.v0.models.json._
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.Validation
@@ -36,6 +36,11 @@ object Versions extends Controller {
     orgKey: String,
     versionName: String
   ) = Authenticated(parse.json) { request =>
+    val original = Original(
+      `type` = OriginalType.ApiJson,
+      data = request.body.toString
+    )
+
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
@@ -52,7 +57,7 @@ object Versions extends Controller {
 
             errors match {
               case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, validator.serviceForm.get, validator.service.get)
+                val version = upsertVersion(request.user, org, versionName, form, original, validator.service.get)
                 Ok(Json.toJson(version))
               }
               case errors => {
@@ -70,6 +75,11 @@ object Versions extends Controller {
     applicationKey: String,
     versionName: String
   ) = Authenticated(parse.json) { request =>
+    val original = Original(
+      `type` = OriginalType.ApiJson,
+      data = request.body.toString
+    )
+
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
@@ -88,7 +98,7 @@ object Versions extends Controller {
 
             errors match {
               case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, validator.serviceForm.get, validator.service.get, Some(applicationKey))
+                val version = upsertVersion(request.user, org, versionName, form, original, validator.service.get, Some(applicationKey))
                 Ok(Json.toJson(version))
               }
               case errors => {
@@ -117,7 +127,7 @@ object Versions extends Controller {
     org: Organization,
     versionName: String,
     form: VersionForm,
-    serviceForm: JsObject, // TODO: Change to ServiceForm once ready
+    original: Original,
     service: Service,
     applicationKey: Option[String] = None
   ): Version = {
@@ -141,8 +151,8 @@ object Versions extends Controller {
     }
 
     VersionsDao.findByApplicationAndVersion(Authorization(Some(user)), application, versionName) match {
-      case None => VersionsDao.create(user, application, versionName, serviceForm, service)
-      case Some(existing: Version) => VersionsDao.replace(user, existing, application, serviceForm, service)
+      case None => VersionsDao.create(user, application, versionName, original, service)
+      case Some(existing: Version) => VersionsDao.replace(user, existing, application, original, service)
     }
   }
 

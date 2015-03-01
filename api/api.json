@@ -25,6 +25,12 @@
 		{ "name": "applications.create", "description": "For organizations for which I am a member, email me whenever an application is created." },
 		{ "name": "versions.create", "description": "For applications that I watch, email me whenever a version is created." }
 	    ]
+	},
+
+	"original_type": {
+	    "values": [
+		{ "name": "api_json", "description": "The original is in the api.json format" }
+	    ]
 	}
 
     },
@@ -176,6 +182,14 @@
             ]
         },
 
+	"original": {
+	    "description": "Represents the original input used to create an application version",
+            "fields": [
+                { "name": "type", "type": "original_type" },
+                { "name": "data", "type": "string" }
+	    ]
+	},
+
         "version": {
             "description": "Represents a unique version of the application.",
             "fields": [
@@ -183,7 +197,7 @@
                 { "name": "organization", "type": "reference" },
                 { "name": "application", "type": "reference" },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
-		{ "name": "original", "type": "string" },
+		{ "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
 		{ "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" }
             ]
         },
