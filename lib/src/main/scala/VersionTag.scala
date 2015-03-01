@@ -25,7 +25,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
       } else {
         "0:%s".format(s.toLowerCase)
       }
-    }.mkString("|")
+    }.mkString("|") + "|9"
   }
 
   val major: Option[Int] = {
