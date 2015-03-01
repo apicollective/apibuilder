@@ -61,6 +61,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "plural", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "values", "type": "[enum_value]" }
 	    ]
@@ -69,6 +70,7 @@
 	"enum_value": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
@@ -77,6 +79,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "plural", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" }
 	    ]
@@ -86,6 +89,7 @@
 	    "description": "Metadata about one of the types that is part of a union type",
 	    "fields": [
 		{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
@@ -94,6 +98,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "plural", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "fields", "type": "[field]" }
 	    ]
@@ -103,6 +108,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "default", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean" },
@@ -116,6 +122,7 @@
 	    "fields": [
 		{ "name": "type", "type": "string", "description": "The type of this resource will map to a defined model, enum, or union type" },
 		{ "name": "plural", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "operations", "type": "[operation]" }
 	    ]
@@ -125,6 +132,7 @@
 	    "fields": [
 		{ "name": "method", "type": "method" },
 		{ "name": "path", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "body", "type": "body", "required": false },
 		{ "name": "parameters", "type": "[parameter]", "required": false },
@@ -135,6 +143,7 @@
 	"body": {
 	    "fields": [
 		{ "name": "type", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
@@ -143,6 +152,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "location", "type": "parameter_location" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean" },
@@ -156,7 +166,8 @@
 	"response": {
 	    "fields": [
 		{ "name": "code", "type": "integer" },
-		{ "name": "type", "type": "string" }
+		{ "name": "type", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false }
 	    ]
 	},
 
@@ -164,6 +175,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "type", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "required", "type": "boolean" },
 		{ "name": "default", "type": "string", "required": false }
@@ -181,6 +193,13 @@
 		{ "name": "enums", "type": "[string]", "description": "Models made available by this import" },
 		{ "name": "unions", "type": "[string]", "description": "Unions made available by this import" },
 		{ "name": "models", "type": "[string]", "description": "Models made available by this import" }
+	    ]
+	},
+
+	"deprecation": {
+	    "description": "Indicates that this particular element is considered deprecated in the API. See the description for details",
+	    "fields": [
+		{ "name": "description", "type": "string", "required": false }
 	    ]
 	}
 
