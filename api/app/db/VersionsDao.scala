@@ -16,7 +16,7 @@ object VersionsDao {
 
   private val LatestVersion = "latest"
 
-  private val ServiceVersionNumber = 1
+  private val ServiceVersionNumber = "0.0.1"
 
   private val BaseQuery = s"""
     select versions.guid, versions.version, versions.original, versions.old_json::varchar,
@@ -27,7 +27,7 @@ object VersionsDao {
            applications.key as application_key,
            services.json::varchar as service_json
      from versions
-     left join cache.services on services.deleted_at is null and services.version_guid = versions.guid and services.version_number = $ServiceVersionNumber
+     left join cache.services on services.deleted_at is null and services.version_guid = versions.guid and services.version = '$ServiceVersionNumber'
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
     where versions.deleted_at is null
@@ -42,9 +42,9 @@ object VersionsDao {
 
   private val InsertServiceQuery = """
     insert into cache.services
-    (guid, version_guid, version_number, json, created_by_guid)
+    (guid, version_guid, version, json, created_by_guid)
     values
-    ({guid}::uuid, {version_guid}::uuid, {version_number}, {json}::json, {user_guid}::uuid)
+    ({guid}::uuid, {version_guid}::uuid, {version}, {json}::json, {user_guid}::uuid)
   """
 
   private val SoftDeleteServiceByVersionGuidAndVersionNumberQuery = """
@@ -53,7 +53,7 @@ object VersionsDao {
            deleted_by_guid = {user_guid}::uuid
      where deleted_at is null
        and version_guid = {version_guid}::uuid
-       and version_number = {version_number}
+       and version = {version}
   """
 
   def create(user: User, application: Application, version: String, original: JsObject, service: Service): Version = {
@@ -231,7 +231,7 @@ object VersionsDao {
   ) {
     SQL(SoftDeleteServiceByVersionGuidAndVersionNumberQuery).on(
       'version_guid -> versionGuid,
-      'version_number -> ServiceVersionNumber,
+      'version -> ServiceVersionNumber,
       'user_guid -> user.guid
     )
   }
@@ -245,7 +245,7 @@ object VersionsDao {
     SQL(InsertServiceQuery).on(
       'guid -> UUID.randomUUID,
       'version_guid -> versionGuid,
-      'version_number -> ServiceVersionNumber,
+      'version -> ServiceVersionNumber,
       'json -> Json.toJson(service).as[JsObject].toString.trim,
       'user_guid -> user.guid
     ).execute()
