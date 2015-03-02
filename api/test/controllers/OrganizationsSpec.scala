@@ -31,7 +31,7 @@ class OrganizationsSpec extends BaseSpec {
 
     intercept[ErrorsResponse] {
       createOrganization(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
-    }.errors.map(_.message) must be(Seq(s"Key must be in all lower case and contain alphanumerics only. A valid key would be: a-bad-key"))
+    }.errors.map(_.message) must be(Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-key"))
   }
 
   "POST /organizations validates key is not reserved" in new WithServer {
