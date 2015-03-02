@@ -2,7 +2,7 @@ package controllers
 
 import models.MainTemplate
 import lib.{UrlKey, Util, VersionedName, VersionTag}
-import com.gilt.apidoc.v0.models.{Application, Organization, User, Version, VersionForm, Visibility, WatchForm}
+import com.gilt.apidoc.v0.models.{Application, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 import play.api._
@@ -75,7 +75,22 @@ object Versions extends Controller {
         }
       }
       case Some(version) => {
-        Ok(version.original).withHeaders("Content-Type" -> "application/json")
+        version.original match {
+          case None => {
+            Redirect(routes.Versions.show(orgKey, applicationKey, versionName))
+              .flashing("warning" -> s"Original not available")
+          }
+          case Some(original) => {
+            original.`type` match {
+              case OriginalType.ApiJson => {
+                Ok(original.data).withHeaders("Content-Type" -> "application/json")
+              }
+              case OriginalType.UNDEFINED(_) => {
+                Ok(original.data).withHeaders("Content-Type" -> "text/plain")
+              }
+            }
+          }
+        }
       }
     }
   }
