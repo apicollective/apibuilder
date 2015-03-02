@@ -58,7 +58,6 @@ class DeprecationSpec extends FunSpec with Matchers {
     ct.values.find(_.name == "application/xml").get.deprecation.flatMap(_.description) should be(None)
   }
 
-
   it("union") {
     val json = """
     {
@@ -103,6 +102,45 @@ class DeprecationSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     validator.service.get.unions.find(_.name == "old_content_type").get.deprecation.flatMap(_.description) should be(Some("blah"))
     validator.service.get.unions.find(_.name == "content_type").get.deprecation.flatMap(_.description) should be(None)
+  }
+
+  it("union type") {
+    val json = """
+    {
+      "name": "Api Doc",
+
+      "unions": {
+        "content_type": {
+          "types": [
+            { "type": "api_json", "deprecation": { "description": "blah" } },
+            { "type": "avro_idl" }
+          ]
+        }
+      },
+
+      "models": {
+
+        "api_json": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        },
+
+        "avro_idl": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        }
+
+      }
+    }
+    """
+
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    validator.errors.mkString("") should be("")
+    val union = validator.service.get.unions.find(_.name == "content_type").get
+    union.types.find(_.`type` == "api_json").get.deprecation.flatMap(_.description) should be(Some("blah"))
+    union.types.find(_.`type` == "avro_idl").get.deprecation.flatMap(_.description) should be(None)
   }
 
 }
