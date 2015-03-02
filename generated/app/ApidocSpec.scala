@@ -11,6 +11,15 @@ package com.gilt.apidoc.spec.v0.models {
 
   case class Body(
     `type`: String,
+    description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None
+  )
+
+  /**
+   * Indicates that this particular element is considered deprecated in the API. See
+   * the description for details
+   */
+  case class Deprecation(
     description: _root_.scala.Option[String] = None
   )
 
@@ -18,18 +27,21 @@ package com.gilt.apidoc.spec.v0.models {
     name: String,
     plural: String,
     description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None,
     values: Seq[com.gilt.apidoc.spec.v0.models.EnumValue]
   )
 
   case class EnumValue(
     name: String,
-    description: _root_.scala.Option[String] = None
+    description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None
   )
 
   case class Field(
     name: String,
     `type`: String,
     description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None,
     default: _root_.scala.Option[String] = None,
     required: Boolean,
     minimum: _root_.scala.Option[Long] = None,
@@ -41,6 +53,7 @@ package com.gilt.apidoc.spec.v0.models {
     name: String,
     `type`: String,
     description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None,
     required: Boolean,
     default: _root_.scala.Option[String] = None
   )
@@ -64,6 +77,7 @@ package com.gilt.apidoc.spec.v0.models {
     name: String,
     plural: String,
     description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None,
     fields: Seq[com.gilt.apidoc.spec.v0.models.Field]
   )
 
@@ -71,6 +85,7 @@ package com.gilt.apidoc.spec.v0.models {
     method: com.gilt.apidoc.spec.v0.models.Method,
     path: String,
     description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None,
     body: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Body] = None,
     parameters: Seq[com.gilt.apidoc.spec.v0.models.Parameter] = Nil,
     responses: Seq[com.gilt.apidoc.spec.v0.models.Response] = Nil
@@ -85,6 +100,7 @@ package com.gilt.apidoc.spec.v0.models {
     `type`: String,
     location: com.gilt.apidoc.spec.v0.models.ParameterLocation,
     description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None,
     required: Boolean,
     default: _root_.scala.Option[String] = None,
     minimum: _root_.scala.Option[Long] = None,
@@ -96,12 +112,14 @@ package com.gilt.apidoc.spec.v0.models {
     `type`: String,
     plural: String,
     description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None,
     operations: Seq[com.gilt.apidoc.spec.v0.models.Operation]
   )
 
   case class Response(
     code: Int,
-    `type`: String
+    `type`: String,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None
   )
 
   case class Service(
@@ -124,6 +142,7 @@ package com.gilt.apidoc.spec.v0.models {
     name: String,
     plural: String,
     description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None,
     types: Seq[com.gilt.apidoc.spec.v0.models.UnionType]
   )
 
@@ -132,7 +151,8 @@ package com.gilt.apidoc.spec.v0.models {
    */
   case class UnionType(
     `type`: String,
-    description: _root_.scala.Option[String] = None
+    description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None
   )
 
   sealed trait Method
@@ -264,15 +284,27 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonReadsApidocspecBody: play.api.libs.json.Reads[Body] = {
       (
         (__ \ "type").read[String] and
-        (__ \ "description").readNullable[String]
+        (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation]
       )(Body.apply _)
     }
 
     implicit def jsonWritesApidocspecBody: play.api.libs.json.Writes[Body] = {
       (
         (__ \ "type").write[String] and
-        (__ \ "description").write[scala.Option[String]]
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]]
       )(unlift(Body.unapply _))
+    }
+
+    implicit def jsonReadsApidocspecDeprecation: play.api.libs.json.Reads[Deprecation] = {
+      (__ \ "description").readNullable[String].map { x => new Deprecation(description = x) }
+    }
+
+    implicit def jsonWritesApidocspecDeprecation: play.api.libs.json.Writes[Deprecation] = new play.api.libs.json.Writes[Deprecation] {
+      def writes(x: Deprecation) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
     }
 
     implicit def jsonReadsApidocspecEnum: play.api.libs.json.Reads[Enum] = {
@@ -280,6 +312,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").read[String] and
         (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation] and
         (__ \ "values").readNullable[Seq[com.gilt.apidoc.spec.v0.models.EnumValue]].map(_.getOrElse(Nil))
       )(Enum.apply _)
     }
@@ -289,6 +322,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").write[String] and
         (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]] and
         (__ \ "values").write[Seq[com.gilt.apidoc.spec.v0.models.EnumValue]]
       )(unlift(Enum.unapply _))
     }
@@ -296,14 +330,16 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonReadsApidocspecEnumValue: play.api.libs.json.Reads[EnumValue] = {
       (
         (__ \ "name").read[String] and
-        (__ \ "description").readNullable[String]
+        (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation]
       )(EnumValue.apply _)
     }
 
     implicit def jsonWritesApidocspecEnumValue: play.api.libs.json.Writes[EnumValue] = {
       (
         (__ \ "name").write[String] and
-        (__ \ "description").write[scala.Option[String]]
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]]
       )(unlift(EnumValue.unapply _))
     }
 
@@ -312,6 +348,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").read[String] and
         (__ \ "type").read[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation] and
         (__ \ "default").readNullable[String] and
         (__ \ "required").read[Boolean] and
         (__ \ "minimum").readNullable[Long] and
@@ -325,6 +362,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").write[String] and
         (__ \ "type").write[String] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]] and
         (__ \ "default").write[scala.Option[String]] and
         (__ \ "required").write[Boolean] and
         (__ \ "minimum").write[scala.Option[Long]] and
@@ -338,6 +376,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").read[String] and
         (__ \ "type").read[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation] and
         (__ \ "required").read[Boolean] and
         (__ \ "default").readNullable[String]
       )(Header.apply _)
@@ -348,6 +387,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").write[String] and
         (__ \ "type").write[String] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]] and
         (__ \ "required").write[Boolean] and
         (__ \ "default").write[scala.Option[String]]
       )(unlift(Header.unapply _))
@@ -384,6 +424,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").read[String] and
         (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation] and
         (__ \ "fields").readNullable[Seq[com.gilt.apidoc.spec.v0.models.Field]].map(_.getOrElse(Nil))
       )(Model.apply _)
     }
@@ -393,6 +434,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").write[String] and
         (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]] and
         (__ \ "fields").write[Seq[com.gilt.apidoc.spec.v0.models.Field]]
       )(unlift(Model.unapply _))
     }
@@ -402,6 +444,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "method").read[com.gilt.apidoc.spec.v0.models.Method] and
         (__ \ "path").read[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation] and
         (__ \ "body").readNullable[com.gilt.apidoc.spec.v0.models.Body] and
         (__ \ "parameters").readNullable[Seq[com.gilt.apidoc.spec.v0.models.Parameter]].map(_.getOrElse(Nil)) and
         (__ \ "responses").readNullable[Seq[com.gilt.apidoc.spec.v0.models.Response]].map(_.getOrElse(Nil))
@@ -413,6 +456,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "method").write[com.gilt.apidoc.spec.v0.models.Method] and
         (__ \ "path").write[String] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]] and
         (__ \ "body").write[scala.Option[com.gilt.apidoc.spec.v0.models.Body]] and
         (__ \ "parameters").write[Seq[com.gilt.apidoc.spec.v0.models.Parameter]] and
         (__ \ "responses").write[Seq[com.gilt.apidoc.spec.v0.models.Response]]
@@ -435,6 +479,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "type").read[String] and
         (__ \ "location").read[com.gilt.apidoc.spec.v0.models.ParameterLocation] and
         (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation] and
         (__ \ "required").read[Boolean] and
         (__ \ "default").readNullable[String] and
         (__ \ "minimum").readNullable[Long] and
@@ -449,6 +494,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "type").write[String] and
         (__ \ "location").write[com.gilt.apidoc.spec.v0.models.ParameterLocation] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]] and
         (__ \ "required").write[Boolean] and
         (__ \ "default").write[scala.Option[String]] and
         (__ \ "minimum").write[scala.Option[Long]] and
@@ -462,6 +508,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "type").read[String] and
         (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation] and
         (__ \ "operations").readNullable[Seq[com.gilt.apidoc.spec.v0.models.Operation]].map(_.getOrElse(Nil))
       )(Resource.apply _)
     }
@@ -471,6 +518,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "type").write[String] and
         (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]] and
         (__ \ "operations").write[Seq[com.gilt.apidoc.spec.v0.models.Operation]]
       )(unlift(Resource.unapply _))
     }
@@ -478,14 +526,16 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonReadsApidocspecResponse: play.api.libs.json.Reads[Response] = {
       (
         (__ \ "code").read[Int] and
-        (__ \ "type").read[String]
+        (__ \ "type").read[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation]
       )(Response.apply _)
     }
 
     implicit def jsonWritesApidocspecResponse: play.api.libs.json.Writes[Response] = {
       (
         (__ \ "code").write[Int] and
-        (__ \ "type").write[String]
+        (__ \ "type").write[String] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]]
       )(unlift(Response.unapply _))
     }
 
@@ -530,6 +580,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").read[String] and
         (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation] and
         (__ \ "types").readNullable[Seq[com.gilt.apidoc.spec.v0.models.UnionType]].map(_.getOrElse(Nil))
       )(Union.apply _)
     }
@@ -539,6 +590,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "name").write[String] and
         (__ \ "plural").write[String] and
         (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]] and
         (__ \ "types").write[Seq[com.gilt.apidoc.spec.v0.models.UnionType]]
       )(unlift(Union.unapply _))
     }
@@ -546,14 +598,16 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonReadsApidocspecUnionType: play.api.libs.json.Reads[UnionType] = {
       (
         (__ \ "type").read[String] and
-        (__ \ "description").readNullable[String]
+        (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation]
       )(UnionType.apply _)
     }
 
     implicit def jsonWritesApidocspecUnionType: play.api.libs.json.Writes[UnionType] = {
       (
         (__ \ "type").write[String] and
-        (__ \ "description").write[scala.Option[String]]
+        (__ \ "description").write[scala.Option[String]] and
+        (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]]
       )(unlift(UnionType.unapply _))
     }
   }
