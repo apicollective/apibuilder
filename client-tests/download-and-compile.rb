@@ -105,7 +105,7 @@ class Target
 end
 
 targets = [
-           Target.new('ning_1_9_scala_2_11', ScalaTester.new("src/main/scala"), ['ning_1_9_client', 'play_2_x_json', 'scala_models']),
+           Target.new('ning_1_9_scala_2_11', ScalaTester.new("src/main/scala"), ['ning_1_9_client', 'scala_models']),
            Target.new('ning_1_8_scala_2_10', ScalaTester.new("src/main/scala"), ['ning_1_8_client']),
            Target.new('ning_1_8_scala_2_11', ScalaTester.new("src/main/scala"), ['ning_1_8_client']),
            Target.new('ruby', RubyTester.new, ['ruby_client']),
