@@ -76,7 +76,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
     VersionsDao.findAll(
       Authorization.All,
       applicationGuid = Some(app.guid)
-    ).map(_.version) should be(Seq("1.0.2", "1.0.2-dev"))
+    ).map(_.version) should be(Seq("1.0.2-dev", "1.0.2"))
   }
 
 }
