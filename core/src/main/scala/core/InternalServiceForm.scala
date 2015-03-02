@@ -82,6 +82,7 @@ private[core] case class InternalServiceForm(
               datatype = datatype,
               required = datatype.map(_.required).getOrElse(true),
               description = JsonUtil.asOptString(o \ "description"),
+              deprecation = InternalDeprecationForm.fromJsValue(o),
               default = JsonUtil.asOptString(o \ "default")
             )
           )
@@ -114,10 +115,15 @@ case class InternalImportForm(
   uri: Option[String]
 )
 
+case class InternalDeprecationForm(
+  description: Option[String]
+)
+
 case class InternalModelForm(
   name: String,
   plural: String,
   description: Option[String],
+  deprecation: Option[InternalDeprecationForm],
   fields: Seq[InternalFieldForm]
 )
 
@@ -125,24 +131,28 @@ case class InternalEnumForm(
   name: String,
   plural: String,
   description: Option[String],
+  deprecation: Option[InternalDeprecationForm],
   values: Seq[InternalEnumValueForm]
 )
 
 case class InternalEnumValueForm(
   name: Option[String],
-  description: Option[String]
+  description: Option[String],
+  deprecation: Option[InternalDeprecationForm]
 )
 
 case class InternalUnionForm(
   name: String,
   plural: String,
   description: Option[String],
+  deprecation: Option[InternalDeprecationForm],
   types: Seq[InternalUnionTypeForm]
 )
 
 case class InternalUnionTypeForm(
   datatype: Option[InternalDatatype] = None,
-  description: Option[String]
+  description: Option[String],
+  deprecation: Option[InternalDeprecationForm]
 )
 
 case class InternalHeaderForm(
@@ -150,12 +160,14 @@ case class InternalHeaderForm(
   datatype: Option[InternalDatatype],
   required: Boolean,
   description: Option[String],
+  deprecation: Option[InternalDeprecationForm],
   default: Option[String]
 )
 
 case class InternalResourceForm(
   datatype: InternalDatatype,
   description: Option[String],
+  deprecation: Option[InternalDeprecationForm],
   path: String,
   operations: Seq[InternalOperationForm]
 )
@@ -164,6 +176,7 @@ case class InternalOperationForm(
   method: Option[String],
   path: String,
   description: Option[String],
+  deprecation: Option[InternalDeprecationForm],
   namedPathParameters: Seq[String],
   parameters: Seq[InternalParameterForm],
   body: Option[InternalBodyForm],
@@ -179,6 +192,7 @@ case class InternalFieldForm(
   name: Option[String] = None,
   datatype: Option[InternalDatatype] = None,
   description: Option[String] = None,
+  deprecation: Option[InternalDeprecationForm],
   required: Boolean = true,
   default: Option[String] = None,
   example: Option[String] = None,
@@ -191,6 +205,7 @@ case class InternalParameterForm(
   name: Option[String] = None,
   datatype: Option[InternalDatatype] = None,
   description: Option[String] = None,
+  deprecation: Option[InternalDeprecationForm],
   required: Boolean,
   default: Option[String] = None,
   example: Option[String] = None,
@@ -200,7 +215,8 @@ case class InternalParameterForm(
 
 case class InternalBodyForm(
   datatype: Option[InternalDatatype] = None,
-  description: Option[String] = None
+  description: Option[String] = None,
+  deprecation: Option[InternalDeprecationForm]
 )
 
 case class InternalResponseForm(
@@ -210,6 +226,20 @@ case class InternalResponseForm(
 ) {
 
   lazy val datatypeLabel: Option[String] = datatype.map(_.label)
+
+}
+
+object InternalDeprecationForm {
+
+  def apply(value: JsValue): InternalDeprecationForm = {
+    InternalDeprecationForm(
+      description = JsonUtil.asOptString(value \ "description")
+    )
+  }
+
+  def fromJsValue(json: JsValue): Option[InternalDeprecationForm] = {
+    (json \ "deprecation").asOpt[JsValue].map(InternalDeprecationForm(_))
+  }
 
 }
 
@@ -223,7 +253,8 @@ object InternalUnionForm {
          a.value.map { json =>
            InternalUnionTypeForm(
              datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
-             description = JsonUtil.asOptString(json \ "description")
+             description = JsonUtil.asOptString(json \ "description"),
+             deprecation = InternalDeprecationForm.fromJsValue(json)
            )
          }
        }
@@ -233,6 +264,7 @@ object InternalUnionForm {
       name = name,
       plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
       description = description,
+      deprecation = InternalDeprecationForm.fromJsValue(value),
       types = types
     )
   }
@@ -269,6 +301,7 @@ object InternalModelForm {
       name = name,
       plural = plural,
       description = description,
+      deprecation = InternalDeprecationForm.fromJsValue(value),
       fields = fields
     )
   }
@@ -285,7 +318,8 @@ object InternalEnumForm {
          a.value.map { json =>
            InternalEnumValueForm(
              name = JsonUtil.asOptString(json \ "name"),
-             description = JsonUtil.asOptString(json \ "description")
+             description = JsonUtil.asOptString(json \ "description"),
+             deprecation = InternalDeprecationForm.fromJsValue(json)
            )
          }
        }
@@ -295,6 +329,7 @@ object InternalEnumForm {
       name = name,
       plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
       description = description,
+      deprecation = InternalDeprecationForm.fromJsValue(value),
       values = values
     )
   }
@@ -340,6 +375,7 @@ object InternalResourceForm {
     InternalResourceForm(
       datatype = InternalDatatype(typeName),
       description = JsonUtil.asOptString(value \ "description"),
+      deprecation = InternalDeprecationForm.fromJsValue(value),
       path = path,
       operations = operations
     )
@@ -394,7 +430,8 @@ object InternalOperationForm {
         Some(
           InternalBodyForm(
             datatype = JsonUtil.asOptString(o \ "type").map(InternalDatatype(_)),
-            description = JsonUtil.asOptString(o \ "description")
+            description = JsonUtil.asOptString(o \ "description"),
+            deprecation = InternalDeprecationForm.fromJsValue(o)
           )
         )
       }
@@ -410,6 +447,7 @@ object InternalOperationForm {
       path = path,
       body = body,
       description = JsonUtil.asOptString(json \ "description"),
+      deprecation = InternalDeprecationForm.fromJsValue(json),
       responses = responses,
       namedPathParameters = namedPathParameters,
       parameters = parameters,
@@ -444,6 +482,7 @@ object InternalFieldForm {
       name = JsonUtil.asOptString(json \ "name"),
       datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
+      deprecation = InternalDeprecationForm.fromJsValue(json),
       required = datatype.map(_.required).getOrElse(true),
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
@@ -464,6 +503,7 @@ object InternalParameterForm {
       name = JsonUtil.asOptString(json \ "name"),
       datatype = datatype,
       description = JsonUtil.asOptString(json \ "description"),
+      deprecation = InternalDeprecationForm.fromJsValue(json),
       required = datatype.map(_.required).getOrElse(true),
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
