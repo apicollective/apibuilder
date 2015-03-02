@@ -186,6 +186,13 @@ object BodyBuilder {
 
 }
 
+object DeprecationBuilder {
+
+  def apply(internal: InternalDeprecationForm): Deprecation = {
+    Deprecation(description = internal.description)
+  }
+
+}
 
 object EnumBuilder {
 
@@ -194,7 +201,14 @@ object EnumBuilder {
       name = ie.name,
       plural = ie.plural,
       description = ie.description,
-      values = ie.values.map { iv => EnumValue(name = iv.name.get, description = iv.description) }
+      deprecation = ie.deprecation.map(DeprecationBuilder(_)),
+      values = ie.values.map { iv =>
+        EnumValue(
+          name = iv.name.get,
+          description = iv.description,
+          deprecation = iv.deprecation.map(DeprecationBuilder(_))
+        )
+      }
     )
   }
 
