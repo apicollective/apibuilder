@@ -89,7 +89,7 @@ class UsersDaoSpec extends FunSpec with Matchers {
     }
 
     it("nickname is url friendly") {
-      UsersDao.validateNewUser(createUserForm(nickname = Some("bad nickname"))).map(_.message) should be(Seq("Key must be in all lower case and contain alphanumerics only. A valid key would be: bad-nickname"))
+      UsersDao.validateNewUser(createUserForm(nickname = Some("bad nickname"))).map(_.message) should be(Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: bad-nickname"))
     }
 
     it("nickname is unique") {
