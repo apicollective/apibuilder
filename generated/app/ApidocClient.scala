@@ -274,7 +274,7 @@ package com.gilt.apidoc.v0.models {
     organization: com.gilt.apidoc.v0.models.Reference,
     application: com.gilt.apidoc.v0.models.Reference,
     version: String,
-    original: Option[com.gilt.apidoc.v0.models.Original],
+    original: _root_.scala.Option[com.gilt.apidoc.v0.models.Original] = None,
     service: com.gilt.apidoc.spec.v0.models.Service
   )
 
@@ -980,7 +980,7 @@ package com.gilt.apidoc.v0.models {
         (__ \ "organization").write[com.gilt.apidoc.v0.models.Reference] and
         (__ \ "application").write[com.gilt.apidoc.v0.models.Reference] and
         (__ \ "version").write[String] and
-        (__ \ "original").write[Option[com.gilt.apidoc.v0.models.Original]] and
+        (__ \ "original").write[scala.Option[com.gilt.apidoc.v0.models.Original]] and
         (__ \ "service").write[com.gilt.apidoc.spec.v0.models.Service]
       )(unlift(Version.unapply _))
     }
@@ -1102,15 +1102,20 @@ package com.gilt.apidoc.v0 {
 
 package com.gilt.apidoc.v0 {
 
+  object Constants {
+
+    val UserAgent = "apidoc:0.8.5 http://localhost:9000/gilt/apidoc/0.7.41/play_2_3_client"
+    val Version = "0.7.41"
+    val VersionMajor = 0
+
+  }
+
   class Client(
     apiUrl: String,
     auth: scala.Option[com.gilt.apidoc.v0.Authorization] = None
   ) {
     import com.gilt.apidoc.v0.models.json._
 
-    private val UserAgent = "apidoc:0.8.5 http://localhost:9000/gilt/apidoc/0.7.41/play_2_3_client"
-    private val Version = "0.7.41"
-    private val VersionMajor = "0"
     private val logger = play.api.Logger("com.gilt.apidoc.v0.Client")
 
     logger.info(s"Initializing com.gilt.apidoc.v0.Client for url $apiUrl")
@@ -1891,7 +1896,11 @@ package com.gilt.apidoc.v0 {
     def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
       import play.api.Play.current
 
-      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders("User-Agent" -> UserAgent, "X-Apidoc-Version" -> Version, "X-Apidoc-Version-Major" -> VersionMajor)
+      val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders(
+        "User-Agent" -> Constants.UserAgent,
+        "X-Apidoc-Version" -> Constants.Version,
+        "X-Apidoc-Version-Major" -> Constants.VersionMajor.toString
+      )
       auth.fold(holder) { a =>
         a match {
           case Authorization.Basic(username, password) => {
