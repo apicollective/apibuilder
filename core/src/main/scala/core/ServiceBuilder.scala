@@ -221,7 +221,14 @@ object UnionBuilder {
       name = internal.name,
       plural = internal.plural,
       description = internal.description,
-      types = internal.types.map { it => UnionType(`type` = it.datatype.get.label, description = it.description) }
+      deprecation = internal.deprecation.map(DeprecationBuilder(_)),
+      types = internal.types.map { it =>
+        UnionType(
+          `type` = it.datatype.get.label,
+          description = it.description,
+          deprecation = it.deprecation.map(DeprecationBuilder(_))
+        )
+      }
     )
   }
 
