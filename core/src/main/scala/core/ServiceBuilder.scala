@@ -66,6 +66,7 @@ object ResourceBuilder {
           `type` = internal.datatype.name,
           plural = enum.plural,
           description = internal.description,
+          deprecation = internal.deprecation.map(DeprecationBuilder(_)),
           operations = internal.operations.map(op => OperationBuilder(resolver, op))
         )
       }
@@ -77,6 +78,7 @@ object ResourceBuilder {
               `type` = internal.datatype.name,
               plural = model.plural,
               description = internal.description,
+              deprecation = internal.deprecation.map(DeprecationBuilder(_)),
               operations = internal.operations.map(op => OperationBuilder(resolver, op, model = Some(model)))
             )
           }
@@ -91,6 +93,7 @@ object ResourceBuilder {
                   `type` = internal.datatype.name,
                   plural = union.plural,
                   description = internal.description,
+                  deprecation = internal.deprecation.map(DeprecationBuilder(_)),
                   operations = internal.operations.map(op => OperationBuilder(resolver, op, union = Some(union), models = models))
                 )
               }

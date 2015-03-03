@@ -4,6 +4,8 @@ import org.scalatest.{FunSpec, Matchers}
 
 class DeprecationSpec extends FunSpec with Matchers {
 
+  private val userModel = """{ "fields": [{ "name": "id", "type": "long" }] }"""
+
   it("enum") {
     val json = """
     {
@@ -196,6 +198,40 @@ class DeprecationSpec extends FunSpec with Matchers {
     val user = validator.service.get.models.find(_.name == "user").get
     user.fields.find(_.name == "id").get.deprecation.flatMap(_.description) should be(None)
     user.fields.find(_.name == "email").get.deprecation.flatMap(_.description) should be(Some("blah"))
+  }
+
+  it("resource") {
+    val json = s"""
+    {
+      "name": "Api Doc",
+
+      "models": {
+        "user": $userModel,
+        "old_user": $userModel
+      },
+
+      "resources": {
+        "user": {
+          "operations": [
+            { "method": "GET" }
+          ]
+        },
+
+        "old_user": {
+          "deprecation": { "description": "blah" },
+          "operations": [
+            { "method": "GET" }
+          ]
+        }
+      }
+    }
+    """
+
+    println(json)
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    validator.errors.mkString("") should be("")
+    validator.service.get.resources.find(_.`type` == "user").get.deprecation.flatMap(_.description) should be(None)
+    validator.service.get.resources.find(_.`type` == "old_user").get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
 
 
