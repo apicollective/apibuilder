@@ -1,5 +1,6 @@
 package core
 
+import com.gilt.apidoc.spec.v0.models.Method
 import org.scalatest.{FunSpec, Matchers}
 
 class DeprecationSpec extends FunSpec with Matchers {
@@ -227,12 +228,40 @@ class DeprecationSpec extends FunSpec with Matchers {
     }
     """
 
-    println(json)
     val validator = ServiceValidator(TestHelper.serviceConfig, json)
     validator.errors.mkString("") should be("")
     validator.service.get.resources.find(_.`type` == "user").get.deprecation.flatMap(_.description) should be(None)
     validator.service.get.resources.find(_.`type` == "old_user").get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
 
+  it("operation") {
+    val json = s"""
+    {
+      "name": "Api Doc",
+
+      "models": {
+        "user": $userModel
+      },
+
+      "resources": {
+        "user": {
+          "operations": [
+            { "method": "GET" },
+            { "method": "DELETE", "deprecation": { "description": "blah" } }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    validator.errors.mkString("") should be("")
+    val resource = validator.service.get.resources.find(_.`type` == "user").get
+    resource.operations.find(_.method == Method.Get).get.deprecation.flatMap(_.description) should be(None)
+    resource.operations.find(_.method == Method.Delete).get.deprecation.flatMap(_.description) should be(Some("blah"))
+  }
+
+
+  // operation, body, parameter, response, header
 
 }
