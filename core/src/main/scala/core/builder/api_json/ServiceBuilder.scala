@@ -185,7 +185,8 @@ object BodyBuilder {
       case None => sys.error("Body missing type: " + ib)
       case Some(datatype) => Body(
         `type` = datatype.label,
-        description = ib.description
+        description = ib.description,
+        deprecation = ib.deprecation.map(DeprecationBuilder(_))
       )
     }
   }

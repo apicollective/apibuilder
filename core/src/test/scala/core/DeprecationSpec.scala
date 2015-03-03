@@ -329,7 +329,41 @@ class DeprecationSpec extends FunSpec with Matchers {
     op.responses.find(_.code == 201).get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
 
+  it("body") {
+    val json = s"""
+    {
+      "name": "Api Doc",
 
-  // response, body, header
+      "models": {
+        "user": $userModel
+      },
+
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "POST",
+              "body": { "type": "user" }
+            },
+            {
+              "method": "Put",
+              "body": { "type": "user", "deprecation": { "description": "blah" } }
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    validator.errors.mkString("") should be("")
+
+    val resource = validator.service.get.resources.find(_.`type` == "user").get
+    resource.operations.find(_.method == Method.Post).get.body.get.deprecation.flatMap(_.description) should be(None)
+    resource.operations.find(_.method == Method.Put).get.body.get.deprecation.flatMap(_.description) should be(Some("blah"))
+  }
+
+
+  // header
 
 }
