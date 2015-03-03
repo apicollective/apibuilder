@@ -297,7 +297,8 @@ object ResponseBuilder {
   def apply(internal: InternalResponseForm): Response = {
     Response(
       code = internal.code.toInt,
-      `type` = internal.datatype.get.label
+      `type` = internal.datatype.get.label,
+      deprecation = internal.deprecation.map(DeprecationBuilder(_))
     )
   }
 
