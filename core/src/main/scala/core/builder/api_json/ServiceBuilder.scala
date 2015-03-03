@@ -152,6 +152,7 @@ object OperationBuilder {
       method = Method(method),
       path = internal.path,
       description = internal.description,
+      deprecation = internal.deprecation.map(DeprecationBuilder(_)),
       body = internal.body.map { BodyBuilder(_) },
       parameters = pathParameters ++ internalParams,
       responses = internal.responses.map { ResponseBuilder(_) }
