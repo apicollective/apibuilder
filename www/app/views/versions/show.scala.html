@@ -38,7 +38,7 @@
             <thead>
               <tr>
                 <th colspan="2">Method and Path</th>
-                <th>Description</th>
+                <th colspan="2">Description</th>
               </tr>
             </thead>
             <tbody>
@@ -47,11 +47,13 @@
                  <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.`type`)-@index').toggle()">@operation.method</a></td>
                  <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.`type`)-@index').toggle()">@operation.path</a></td>
                  <td>@operation.description.getOrElse("")</td>
+                 <td>@operation.deprecation.map(deprecation(_))</td>
                </tr>
                <tr id="operation-@lib.UrlKey.generate(resource.`type`)-@index" style="display:none">
                  <td></td>
                  <td colspan="2">
                    @operation.method @service.baseUrl@operation.path
+                   @operation.deprecation.map(deprecation(_))
 
                    @operation.body.map { b =>
                      <h4>Body</h4>
@@ -70,6 +72,7 @@
                      <p>
                        HTTP @response.code:
                        @datatype(tpl.org.get, application, tpl.version.get, service, response.`type`)
+                       @response.deprecation.map(deprecation(_))
                      </p>
                    }
                  </td>
@@ -106,6 +109,7 @@
         <a name="enum-@lib.UrlKey.generate(enum.name)"></a>
         <div class="version_model">
           <h3>@enum.name</h3>
+          @enum.deprecation.map(deprecation(_))
 
           @enum.description.getOrElse("")
 
@@ -123,6 +127,7 @@
         <a name="model-@lib.UrlKey.generate(model.name)"></a>
         <div class="version_model">
           <h3>@model.name</h3>
+          @model.deprecation.map(deprecation(_))
 
           @model.description.getOrElse("")
 
@@ -139,6 +144,7 @@
         <a name="union-@lib.UrlKey.generate(union.name)"></a>
         <div class="version_union">
           <h3>@union.name</h3>
+          @union.deprecation.map(deprecation(_))
 
           @union.description.getOrElse("")
 

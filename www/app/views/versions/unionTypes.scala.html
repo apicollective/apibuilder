@@ -8,7 +8,7 @@
   <tbody>
    @union.types.map { t =>
      <tr>
-       <td>@datatype(org, app, version, service, t.`type`)</td>
+       <td>@datatype(org, app, version, service, t.`type`)@t.deprecation.map(deprecation(_))</td>
        <td>@t.description.getOrElse("")</td>
      </tr>
    }
