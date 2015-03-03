@@ -16,7 +16,7 @@ object VersionsDao {
 
   private val LatestVersion = "latest"
 
-  private val ServiceVersionNumber: String = com.gilt.apidoc.spec.v0.Constants.Version
+  private val ServiceVersionNumber: String = com.gilt.apidoc.spec.v0.Constants.Version.toLowerCase
 
   private val BaseQuery = s"""
     select versions.guid, versions.version,
