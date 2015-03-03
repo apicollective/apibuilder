@@ -17,6 +17,7 @@ private[avro] case class Builder() {
 
   def toService(
     name: String,
+    namespace: Option[String] = None,
     orgKey: String,
     applicationKey: String,
     version: String
@@ -25,7 +26,7 @@ private[avro] case class Builder() {
       name = name,
       baseUrl = None,
       description = None,
-      namespace = "TODO",
+      namespace = namespace.getOrElse(s"$orgKey.$applicationKey"),
       organization = Organization(key = orgKey),
       application = Application(key = applicationKey),
       version = version,
@@ -101,7 +102,7 @@ case class Parser() {
 
   val builder = Builder()
 
-  def parse(path: String) {
+  def parse(path: String): Service = {
     println(s"parse($path)")
 
     val protocol = parseProtocol(path)
@@ -111,13 +112,12 @@ case class Parser() {
       parseSchema(schema)
     }
 
-    println(
-      builder.toService(
-        name = protocol.getName,
-        orgKey = "gilt",
-        applicationKey = "test",
-        version = "0.0.1-dev"
-      )
+    builder.toService(
+      name = protocol.getName,
+      namespace = Util.toOption(protocol.getNamespace),
+      orgKey = "gilt",
+      applicationKey = "test",
+      version = "0.0.1-dev"
     )
 
   }
@@ -165,6 +165,7 @@ case class Parser() {
   }
 
   private def parseUnion(schema: Schema) {
+    // TODO
     val types: Seq[UnionType] = Nil
     builder.addUnion(
       name = schema.getName,

@@ -14,7 +14,7 @@ object Apidoc {
   object Field {
     def apply(field: Schema.Field): Field = {
       val t = Apidoc.getType(field.schema)
-      val default = if (field.defaultValue().isNull()) {
+      val default = if (field.defaultValue() == null || field.defaultValue().isNull()) {
         None
       } else {
         Some(field.defaultValue().toString())
@@ -58,21 +58,16 @@ object Apidoc {
               getType(t1).copy(required = false)
 
             } else {
-              getUnionType(schema)
+              Type(Util.formatName(schema.getName))
             }
           }
           case types => {
-            getUnionType(schema)
+            Type(Util.formatName(schema.getName))
           }
         }
       }
       case SchemaType.Record => Type(Util.formatName(schema.getName))
     }
-  }
-
-  def getUnionType(schema: Schema): Type = {
-    // TODO: Union Type
-    sys.error("apidoc does not support union types w/ more then 1 non null type: " + schema.getTypes.map(_.getType).mkString(", "))
   }
 
 }
