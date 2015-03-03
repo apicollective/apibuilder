@@ -249,6 +249,7 @@ object HeaderBuilder {
       `type` = resolver.parseWithError(ih.datatype.get).label,
       required = ih.required,
       description = ih.description,
+      deprecation = ih.deprecation.map(DeprecationBuilder(_)),
       default = ih.default
     )
   }
