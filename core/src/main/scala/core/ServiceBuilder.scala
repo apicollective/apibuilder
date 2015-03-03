@@ -291,7 +291,8 @@ object ResponseBuilder {
   def apply(resolver: TypeResolver, internal: InternalResponseForm): Response = {
     Response(
       code = internal.code.toInt,
-      `type` = resolver.parseWithError(internal.datatype.get).label
+      `type` = resolver.parseWithError(internal.datatype.get).label,
+      deprecation = internal.deprecation.map(DeprecationBuilder(_))
     )
   }
 

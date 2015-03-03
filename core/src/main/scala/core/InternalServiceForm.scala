@@ -222,6 +222,7 @@ case class InternalBodyForm(
 case class InternalResponseForm(
   code: String,
   datatype: Option[InternalDatatype] = None,
+  deprecation: Option[InternalDeprecationForm] = None,
   warnings: Seq[String] = Seq.empty
 ) {
 
@@ -409,7 +410,9 @@ object InternalOperationForm {
           responses.fields.map {
             case(code, value) => {
               value match {
-                case o: JsObject => InternalResponseForm(code, o)
+                case o: JsObject => {
+                  InternalResponseForm(code, o)
+                }
                 case other => {
                   InternalResponseForm(
                     code = code,
@@ -462,7 +465,8 @@ object InternalResponseForm {
   def apply(code: String, json: JsObject): InternalResponseForm = {
     InternalResponseForm(
       code = code,
-      datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_))
+      datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
+      deprecation = InternalDeprecationForm.fromJsValue(json)
     )
   }
 }
