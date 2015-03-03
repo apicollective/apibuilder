@@ -11,50 +11,52 @@ import com.gilt.apidoc.spec.v0.models._
 
 private[avro] case class Builder() {
 
-  //private val enums = scala.collection.mutable.Map[String, JsValue]()
-  private val enumBuilder = scala.collection.mutable.ListBuffer[Enum]()
-  private val models = scala.collection.mutable.Map[String, JsValue]()
-  private val unions = scala.collection.mutable.Map[String, JsValue]()
+  private val enumsBuilder = scala.collection.mutable.ListBuffer[Enum]()
+  private val modelsBuilder = scala.collection.mutable.ListBuffer[Model]()
+  private val unionsBuilder = scala.collection.mutable.ListBuffer[Union]()
 
-  def enums(): Seq[Enum] = enumBuilder.toSeq
-
-  def toApiJson(
-    name: String
-  ): JsValue = {
-    JsObject(
-      Seq(
-        Some("name" -> JsString(name)),
-        enums.toList match {
-          case Nil => None
-          case data => Some("enums" -> JsObject(data))
-        },
-        models.toList match {
-          case Nil => None
-          case data => Some("models" -> JsObject(data))
-        }
-      ).flatten
+  def toService(
+    name: String,
+    orgKey: String,
+    applicationKey: String,
+    version: String
+  ): Service = {
+    Service(
+      name = name,
+      baseUrl = None,
+      description = None,
+      namespace = "TODO",
+      organization = Organization(key = orgKey),
+      application = Application(key = applicationKey),
+      version = version,
+      enums = enumsBuilder,
+      unions = unionsBuilder,
+      models = modelsBuilder,
+      imports = Nil,
+      headers = Nil,
+      resources = Nil
     )
   }
 
-  def addModel(name: String, description: Option[String], fields: Seq[Apidoc.Field]) {
-    models += (Util.formatName(name) ->
-      JsObject(
-        Seq(
-          description.map { v => "description" -> JsString(v) },
-          Some("fields" -> JsArray(fields.map(_.jsValue)))
-        ).flatten
-      )
+  def addModel(
+    name: String,
+    description: Option[String],
+    fields: Seq[Field]
+  ) {
+    modelsBuilder += Model(
+      name = name,
+      plural = Text.pluralize(name),
+      description = description,
+      fields = fields
     )
   }
 
-  def addUnion(name: String, description: Option[String], types: Seq[Apidoc.EnumValue]) {
-    unions += (Util.formatName(name) ->
-      JsObject(
-        Seq(
-          description.map { v => "description" -> JsString(v) },
-          Some("types" -> JsArray(types.map(_.jsValue)))
-        ).flatten
-      )
+  def addUnion(name: String, description: Option[String], types: Seq[UnionType]) {
+    unionsBuilder += Union(
+      name = name,
+      plural = Text.pluralize(name),
+      description = description,
+      types = types
     )
   }
 
@@ -69,17 +71,30 @@ private[avro] case class Builder() {
       name = name,
       description = description,
       fields = Seq(
-        Apidoc.Field(name = "value", typeName = "string", maximum = Some(size))
+        Field(
+          name = "value",
+          `type` = "string",
+          required = true,
+          description = Some(s"Avro fixed type with size[$size]"),
+          maximum = Some(size)
+        )
       )
     )
   }
 
   def addEnum(name: String, description: Option[String], values: Seq[String]) {
     enumsBuilder += Enum(
-      name = name,
-      plural = Text.pluralize(name)
+      name = Util.formatName(name),
+      plural = Text.pluralize(name),
+      description = description,
+      values = values.map { n => 
+        EnumValue(
+          name = Util.formatName(n)
+        )
+      }
     )
   }
+
 }
 
 case class Parser() {
@@ -97,8 +112,11 @@ case class Parser() {
     }
 
     println(
-      builder.toApiJson(
-        name = protocol.getName
+      builder.toService(
+        name = protocol.getName,
+        orgKey = "gilt",
+        applicationKey = "test",
+        version = "0.0.1-dev"
       )
     )
 
@@ -142,12 +160,12 @@ case class Parser() {
     builder.addModel(
       name = schema.getName,
       description = Util.toOption(schema.getDoc),
-      fields = schema.getFields.map(Apidoc.Field(_))
+      fields = schema.getFields.map(Apidoc.Field.apply(_))
     )
   }
 
   private def parseUnion(schema: Schema) {
-    val types: Seq[Apidoc.EnumValue] = Nil // TODO: schema.getTypes.map(Apidoc.EnumValue(_))
+    val types: Seq[UnionType] = Nil
     builder.addUnion(
       name = schema.getName,
       description = Util.toOption(schema.getDoc),

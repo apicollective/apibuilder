@@ -2,7 +2,7 @@ package me.apidoc.avro
 
 import org.apache.avro.Schema
 import scala.collection.JavaConversions._
-import play.api.libs.json.{JsBoolean, JsNumber, JsObject, JsString}
+import com.gilt.apidoc.spec.v0.models._
 
 object Apidoc {
 
@@ -11,64 +11,20 @@ object Apidoc {
     required: Boolean = true
   )
 
-  case class EnumValue(
-    name: String,
-    description: Option[String] = None
-  ) {
-
-    val jsValue = JsObject(
-      Seq(
-        Some("name" -> JsString(name)),
-        description.map { v => "description" -> JsString(v) }
-      ).flatten
-    )
-
-  }
-
-/*
-  object EnumValue {
-    def apply(schema: Schema): EnumValue = {
-      val t = Apidoc.getType(schema)
-      EnumValue(
-        name = Util.formatName(schema.name),
-        description = Util.toOption(schema.doc)
-      )
-    }
-  }
- */
-
-  case class Field(
-    name: String,
-    typeName: String,
-    description: Option[String] = None,
-    required: Boolean = true,
-    minimum: Option[Long] = None,
-    maximum: Option[Long] = None
-  ) {
-
-    val jsValue = JsObject(
-      Seq(
-        Some("name" -> JsString(name)),
-        required match {
-          case true => None
-          case false => Some("required" -> JsBoolean(false))
-        },
-        Some("type" -> JsString(typeName)),
-        description.map { v => "description" -> JsString(v) },
-        minimum.map { v => "minimum" -> JsNumber(v) },
-        maximum.map { v => "maximum" -> JsNumber(v) }
-      ).flatten
-    )
-
-  }
-
   object Field {
     def apply(field: Schema.Field): Field = {
       val t = Apidoc.getType(field.schema)
-      Field(
+      val default = if (field.defaultValue().isNull()) {
+        None
+      } else {
+        Some(field.defaultValue().toString())
+      }
+
+      com.gilt.apidoc.spec.v0.models.Field(
         name = Util.formatName(field.name),
-        typeName = t.name,
+        `type` = t.name,
         description = Util.toOption(field.doc),
+        default = default,
         required = t.required
       )
     }
@@ -102,16 +58,21 @@ object Apidoc {
               getType(t1).copy(required = false)
 
             } else {
-              sys.error("apidoc does not support union types w/ more then 1 non null type: " + Seq(t1, t2).map(_.getType).mkString(", "))
+              getUnionType(schema)
             }
           }
           case types => {
-            sys.error("apidoc does not support union types w/ more then 1 non null type: " + types.map(_.getType).mkString(", "))
+            getUnionType(schema)
           }
         }
       }
       case SchemaType.Record => Type(Util.formatName(schema.getName))
     }
+  }
+
+  def getUnionType(schema: Schema): Type = {
+    // TODO: Union Type
+    sys.error("apidoc does not support union types w/ more then 1 non null type: " + schema.getTypes.map(_.getType).mkString(", "))
   }
 
 }
