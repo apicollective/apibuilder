@@ -382,4 +382,21 @@ class DeprecationSpec extends FunSpec with Matchers {
     validator.service.get.headers.find(_.`name` == "Old-Content-Type").get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
 
+
+  it("does not require a description") {
+    val json = s"""
+    {
+      "name": "Api Doc",
+
+      "headers": [
+        { "name": "Content-Type", "type": "string", "deprecation": {} }
+      ]
+    }
+    """
+
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    validator.errors.mkString("") should be("")
+    validator.service.get.headers.find(_.`name` == "Content-Type").get.deprecation.get.description should be(None)
+  }
+
 }
