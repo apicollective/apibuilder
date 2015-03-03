@@ -320,6 +320,7 @@ object ParameterBuilder {
       `type` = internal.datatype.get.label,
       location = location,
       description = internal.description,
+      deprecation = internal.deprecation.map(DeprecationBuilder(_)),
       required = internal.required,
       default = internal.default,
       minimum = internal.minimum,
