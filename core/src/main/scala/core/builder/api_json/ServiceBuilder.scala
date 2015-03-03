@@ -281,6 +281,7 @@ object ModelBuilder {
       name = im.name,
       plural = im.plural,
       description = im.description,
+      deprecation = im.deprecation.map(DeprecationBuilder(_)),
       fields = im.fields.map { FieldBuilder(_) }
     )
   }
