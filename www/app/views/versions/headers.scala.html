@@ -18,7 +18,7 @@
   <tbody>
    @headers.map { header =>
      <tr>
-       <td>@header.name</td>
+       <td>@header.name@header.deprecation.map(deprecation(_))</td>
        <td>@datatype(org, app, version, service, header.`type`)</td>
        <td>@if(header.required && header.default.isEmpty) { Yes } else { No }</td>
        <td>@header.default.getOrElse("-")</td>
