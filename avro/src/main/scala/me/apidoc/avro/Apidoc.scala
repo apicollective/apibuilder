@@ -46,6 +46,7 @@ object Apidoc {
       case SchemaType.Map => Type("map[%s]".format(getType(schema.getValueType).name))
       case SchemaType.Null => Type("unit")
       case SchemaType.String => Type("string")
+      case SchemaType.Record => Type(Util.formatName(schema.getName))
       case SchemaType.Union => {
         schema.getTypes.toList match {
           case Nil => sys.error("union must have at least 1 type")
@@ -66,7 +67,6 @@ object Apidoc {
           }
         }
       }
-      case SchemaType.Record => Type(Util.formatName(schema.getName))
     }
   }
 
