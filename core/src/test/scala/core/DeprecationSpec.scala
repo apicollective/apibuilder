@@ -173,5 +173,30 @@ class DeprecationSpec extends FunSpec with Matchers {
     validator.service.get.models.find(_.name == "avro_idl").get.deprecation.flatMap(_.description) should be(None)
   }
 
+  it("field") {
+    val json = """
+    {
+      "name": "Api Doc",
+
+      "models": {
+
+        "user": {
+          "fields": [
+            { "name": "id", "type": "long" },
+            { "name": "email", "type": "string", "deprecation": { "description": "blah" } }
+          ]
+        }
+
+      }
+    }
+    """
+
+    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    validator.errors.mkString("") should be("")
+    val user = validator.service.get.models.find(_.name == "user").get
+    user.fields.find(_.name == "id").get.deprecation.flatMap(_.description) should be(None)
+    user.fields.find(_.name == "email").get.deprecation.flatMap(_.description) should be(Some("blah"))
+  }
+
 
 }
