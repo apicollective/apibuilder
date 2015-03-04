@@ -5,7 +5,7 @@ create table applications (
   organization_guid       uuid not null references organizations,
   name                    text not null check (trim(name) = name),
   key                     text not null constraint applications_key_ck check (lower(trim(key)) = key),
-  visibility              text not null check (visibility in ('public', 'organization')),
+  visibility              text not null check (visibility in ('public', 'organization', 'user')),
   description             text
 );
 
