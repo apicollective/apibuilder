@@ -64,7 +64,7 @@ object Versions extends Controller {
     }
   }
 
-  def originalJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+  def original(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName).map {
       case None => {
         if (LatestVersion == versionName) {
