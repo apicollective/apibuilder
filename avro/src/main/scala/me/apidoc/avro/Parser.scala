@@ -13,7 +13,13 @@ private[avro] case class Builder() {
 
   private val enumsBuilder = scala.collection.mutable.ListBuffer[Enum]()
   private val modelsBuilder = scala.collection.mutable.ListBuffer[Model]()
-  private val unionsBuilder = scala.collection.mutable.ListBuffer[Union]()
+  private val unionsBuilder = scala.collection.mutable.ListBuffer[InternalUnion]()
+
+  private case class InternalUnion(
+    preferredNames: Seq[String],
+    description: Option[String],
+    types: Seq[UnionType]
+  )
 
   def toService(
     name: String,
@@ -31,7 +37,7 @@ private[avro] case class Builder() {
       application = Application(key = applicationKey),
       version = version,
       enums = enumsBuilder,
-      unions = unionsBuilder,
+      unions = buildUnions(),
       models = modelsBuilder,
       imports = Nil,
       headers = Nil,
@@ -44,21 +50,43 @@ private[avro] case class Builder() {
     description: Option[String],
     fields: Seq[Field]
   ) {
+    val formatted = Util.formatName(name)
     modelsBuilder += Model(
-      name = name,
-      plural = Text.pluralize(name),
+      name = formatted,
+      plural = Text.pluralize(formatted),
       description = description,
       fields = fields
     )
   }
 
-  def addUnion(name: String, description: Option[String], types: Seq[UnionType]) {
-    unionsBuilder += Union(
-      name = name,
-      plural = Text.pluralize(name),
+  def addUnion(preferredNames: Seq[String], description: Option[String], types: Seq[UnionType]) {
+    unionsBuilder += InternalUnion(
+      preferredNames = preferredNames,
       description = description,
       types = types
     )
+  }
+
+  def buildUnions(): Seq[Union] = {
+    val unionsBuilt = scala.collection.mutable.ListBuffer[String]()
+
+    unionsBuilder.map { internal =>
+      val name = internal.preferredNames.find { n =>
+        modelsBuilder.find(_.name == n).isEmpty &&
+        enumsBuilder.find(_.name == n).isEmpty &&
+        unionsBuilt.find(_ == n).isEmpty
+      }.getOrElse {
+        sys.error("Failed to find a unique name for union: " + internal)
+      }
+
+      val formatted = Util.formatName(name)
+      Union(
+        name = formatted,
+        plural = Text.pluralize(formatted),
+        description = internal.description,
+        types = internal.types
+      )
+    }
   }
 
   /**
@@ -84,9 +112,11 @@ private[avro] case class Builder() {
   }
 
   def addEnum(name: String, description: Option[String], values: Seq[String]) {
+    val formatted = Util.formatName(name)
+
     enumsBuilder += Enum(
-      name = Util.formatName(name),
-      plural = Text.pluralize(name),
+      name = formatted,
+      plural = Text.pluralize(formatted),
       description = description,
       values = values.map { n => 
         EnumValue(
@@ -169,10 +199,8 @@ case class Parser() {
       Apidoc.getType(f.schema()) match {
         case Apidoc.SimpleType(_, _) => {}
         case u: Apidoc.UnionType => {
-          println(s"UNION[${u.name}: " + u.names.mkString(","))
-
           builder.addUnion(
-            name = u.name,
+            preferredNames = Seq(u.name), // TODO: Add other names here
             description = None,
             types = u.names.map { n =>
               UnionType(n)
