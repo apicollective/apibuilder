@@ -35,7 +35,7 @@ class ParserSpec extends FunSpec with Matchers {
 
     println("Unions:")
     service.unions.foreach { union =>
-      println(s" - ${union.name}")
+      println(s" - ${union.name} (${union.description})")
       union.types.foreach { t =>
         println(s"   - ${t}")
       }

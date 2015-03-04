@@ -53,7 +53,6 @@ private[avro] case class Builder() {
   }
 
   def addUnion(name: String, description: Option[String], types: Seq[UnionType]) {
-    sys.error(name)
     unionsBuilder += Union(
       name = name,
       plural = Text.pluralize(name),
@@ -129,7 +128,9 @@ case class Parser() {
       case None => sys.error(s"Unsupported schema type[${schema.getType}]")
       case Some(st) => {
         st match {
-          case SchemaType.Union => parseUnion(schema)
+          case SchemaType.Union => {
+            sys.error("Did not expect a top level union type")
+          }
           case SchemaType.Record => parseRecord(schema)
           case SchemaType.Enum => parseEnum(schema)
           case SchemaType.Fixed => parseFixed(schema)
@@ -163,16 +164,23 @@ case class Parser() {
       description = Util.toOption(schema.getDoc),
       fields = schema.getFields.map(Apidoc.Field.apply(_))
     )
-  }
 
-  private def parseUnion(schema: Schema) {
-    // TODO
-    val types: Seq[UnionType] = Nil
-    builder.addUnion(
-      name = schema.getName,
-      description = Util.toOption(schema.getDoc),
-      types = types
-    )
+    schema.getFields.foreach { f =>
+      Apidoc.getType(f.schema()) match {
+        case Apidoc.SimpleType(_, _) => {}
+        case u: Apidoc.UnionType => {
+          println(s"UNION[${u.name}: " + u.names.mkString(","))
+
+          builder.addUnion(
+            name = u.name,
+            description = None,
+            types = u.names.map { n =>
+              UnionType(n)
+            }
+          )
+        }
+      }
+    }
   }
 
   private def parseProtocol(

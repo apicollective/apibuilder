@@ -1,0 +1,35 @@
+@namespace("mynamespace")
+protocol MyProtocol {
+
+  enum Suit {
+    SPADES, DIAMONDS, CLUBS, HEARTS
+  }
+     
+  fixed MD5(16);
+
+  record Employee {
+    string name;
+    boolean active = true;
+    long salary;
+  }
+
+  record Contractor {
+      string name;
+  }
+
+  record Members {
+      string company;
+      union {Employee, Contractor} user;
+  }
+
+  error Kaboom {
+    string explanation;
+    int result_code = -1;
+  }
+
+  record Card {
+    Suit suit;
+    int number;
+  }
+
+}
