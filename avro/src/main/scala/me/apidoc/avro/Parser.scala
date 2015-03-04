@@ -53,6 +53,7 @@ private[avro] case class Builder() {
   }
 
   def addUnion(name: String, description: Option[String], types: Seq[UnionType]) {
+    sys.error(name)
     unionsBuilder += Union(
       name = name,
       plural = Text.pluralize(name),

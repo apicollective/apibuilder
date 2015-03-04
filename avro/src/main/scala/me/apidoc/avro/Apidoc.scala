@@ -11,9 +11,25 @@ object Apidoc {
     required: Boolean = true
   )
 
+  case class UnionType(
+    names: Seq[String],
+    required: Boolean
+  ) {
+
+    val `type`: Type = {
+      names match {
+        case Nil => sys.error("union must have at least 1 type")
+        case name :: Nil => Type(name = name, required = required)
+        case names => Type(name = names.mkString("_or_"), required = required)
+      }
+    }
+
+  }
+
   object Field {
     def apply(field: Schema.Field): Field = {
       val t = Apidoc.getType(field.schema)
+      println(s"FIELD[${field.name}] type[$t]")
       val default = if (field.defaultValue() == null || field.defaultValue().isNull()) {
         None
       } else {
@@ -47,27 +63,29 @@ object Apidoc {
       case SchemaType.Null => Type("unit")
       case SchemaType.String => Type("string")
       case SchemaType.Record => Type(Util.formatName(schema.getName))
-      case SchemaType.Union => {
-        schema.getTypes.toList match {
-          case Nil => sys.error("union must have at least 1 type")
-          case t :: Nil => getType(t)
-          case t1 :: t2 :: Nil => {
-            if (SchemaType.fromAvro(t1.getType) == Some(SchemaType.Null)) {
-              getType(t2).copy(required = false)
-
-            } else if (SchemaType.fromAvro(t2.getType) == Some(SchemaType.Null)) {
-              getType(t1).copy(required = false)
-
-            } else {
-              Type(Util.formatName(schema.getName))
-            }
-          }
-          case types => {
-            Type(Util.formatName(schema.getName))
-          }
-        }
-      }
+      case SchemaType.Union => unionType(schema.getTypes).`type`
     }
+  }
+
+  /**
+    * Manufacture a union type name based on the provided Types.
+    */
+  def unionType(types: Seq[Schema]): UnionType = {
+    UnionType(
+      names = types.filter(t => !isNullType(t.getType)).map(t => Util.formatName(t.getName)),
+      required = !hasNullType(types)
+    )
+  }
+
+  private def hasNullType(types: Seq[Schema]): Boolean = {
+    types.find(t => isNullType(t.getType)) match {
+      case None => false
+      case Some(_) => true
+    }
+  }
+
+  private def isNullType(t: Schema.Type): Boolean = {
+    SchemaType.fromAvro(t) == Some(SchemaType.Null)
   }
 
 }
