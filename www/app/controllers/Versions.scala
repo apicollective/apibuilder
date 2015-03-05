@@ -2,7 +2,7 @@ package controllers
 
 import models.MainTemplate
 import lib.{UrlKey, Util, VersionedName, VersionTag}
-import com.gilt.apidoc.v0.models.{Application, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
+import com.gilt.apidoc.v0.models.{Application, Original, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 import play.api._
@@ -224,10 +224,16 @@ object Versions extends Controller {
           }
 
           case Some(file) => {
+            // println(file.name)
+            val fileType = OriginalType.ApiJson // TODO
+
             val path = File.createTempFile("api", "json")
             file.ref.moveTo(path, true)
             val versionForm = VersionForm(
-              serviceForm = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n").trim,
+              original = Original(
+                data = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n").trim,
+                `type` = fileType
+              ),
               Some(Visibility(valid.visibility))
             )
 
