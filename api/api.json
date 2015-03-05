@@ -190,6 +190,13 @@
 	    ]
 	},
 
+        "original_form": {
+            "fields": [
+                { "name": "type", "type": "original_type", "required": false, "description": "If not specified, we set the type by inspecting the data" },
+                { "name": "data", "type": "string" }
+            ]
+        },
+
         "version": {
             "description": "Represents a unique version of the application.",
             "fields": [
@@ -204,7 +211,7 @@
 
         "version_form": {
             "fields": [
-		{ "name": "original", "type": "original" },
+		{ "name": "original_form", "type": "original_form" },
 		{ "name": "visibility", "type": "visibility", "required": false, "description": "If provided, updates the visibility for all versions of this application" }
             ]
         },
