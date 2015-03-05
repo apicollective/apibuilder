@@ -3,7 +3,7 @@ package controllers
 import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, Original, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.v0.models.json._
 import com.gilt.apidoc.spec.v0.models.Service
-import lib.Validation
+import lib.{OriginalUtil, Validation}
 import core.{ServiceConfiguration, ServiceValidator}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
 import play.api.mvc._
@@ -47,12 +47,12 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.original)
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm))
             val errors = validator.errors ++ validate(request.user, org, validator)
 
             errors match {
               case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, form.original, validator.service.get)
+                val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), validator.service.get)
                 Ok(Json.toJson(version))
               }
               case errors => {
@@ -83,12 +83,12 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.original)
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm))
             val errors = validator.errors ++ validate(request.user, org, validator, Some(applicationKey))
 
             errors match {
               case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, form.original, validator.service.get, Some(applicationKey))
+                val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), validator.service.get, Some(applicationKey))
                 Ok(Json.toJson(version))
               }
               case errors => {

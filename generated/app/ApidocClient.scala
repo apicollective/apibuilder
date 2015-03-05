@@ -177,6 +177,11 @@ package com.gilt.apidoc.v0.models {
     data: String
   )
 
+  case class OriginalForm(
+    `type`: _root_.scala.Option[com.gilt.apidoc.v0.models.OriginalType] = None,
+    data: String
+  )
+
   /**
    * Allows a user to change their password with authentication from a token.
    */
@@ -289,7 +294,7 @@ package com.gilt.apidoc.v0.models {
   )
 
   case class VersionForm(
-    original: com.gilt.apidoc.v0.models.Original,
+    originalForm: com.gilt.apidoc.v0.models.OriginalForm,
     visibility: _root_.scala.Option[com.gilt.apidoc.v0.models.Visibility] = None
   )
 
@@ -781,6 +786,20 @@ package com.gilt.apidoc.v0.models {
       )(unlift(Original.unapply _))
     }
 
+    implicit def jsonReadsApidocOriginalForm: play.api.libs.json.Reads[OriginalForm] = {
+      (
+        (__ \ "type").readNullable[com.gilt.apidoc.v0.models.OriginalType] and
+        (__ \ "data").read[String]
+      )(OriginalForm.apply _)
+    }
+
+    implicit def jsonWritesApidocOriginalForm: play.api.libs.json.Writes[OriginalForm] = {
+      (
+        (__ \ "type").write[scala.Option[com.gilt.apidoc.v0.models.OriginalType]] and
+        (__ \ "data").write[String]
+      )(unlift(OriginalForm.unapply _))
+    }
+
     implicit def jsonReadsApidocPasswordReset: play.api.libs.json.Reads[PasswordReset] = {
       (
         (__ \ "token").read[String] and
@@ -997,14 +1016,14 @@ package com.gilt.apidoc.v0.models {
 
     implicit def jsonReadsApidocVersionForm: play.api.libs.json.Reads[VersionForm] = {
       (
-        (__ \ "original").read[com.gilt.apidoc.v0.models.Original] and
+        (__ \ "original_form").read[com.gilt.apidoc.v0.models.OriginalForm] and
         (__ \ "visibility").readNullable[com.gilt.apidoc.v0.models.Visibility]
       )(VersionForm.apply _)
     }
 
     implicit def jsonWritesApidocVersionForm: play.api.libs.json.Writes[VersionForm] = {
       (
-        (__ \ "original").write[com.gilt.apidoc.v0.models.Original] and
+        (__ \ "original_form").write[com.gilt.apidoc.v0.models.OriginalForm] and
         (__ \ "visibility").write[scala.Option[com.gilt.apidoc.v0.models.Visibility]]
       )(unlift(VersionForm.unapply _))
     }
