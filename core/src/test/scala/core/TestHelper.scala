@@ -45,7 +45,7 @@ object TestHelper {
     Files.write(outputPath, bytes)
   }
 
-  def  readFile(path: String): String = {
+  def readFile(path: String): String = {
     scala.io.Source.fromFile(path).getLines.mkString("\n")
   }
 
