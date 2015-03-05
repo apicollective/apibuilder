@@ -6,19 +6,19 @@ import org.scalatest.{FunSpec, Matchers}
 class ServiceValidatorSpec extends FunSpec with Matchers {
 
   it("should detect empty inputs") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, "")
+    val validator = TestHelper.serviceValidatorFromApiJson("")
     validator.isValid should be(false)
     validator.errors.mkString should be("No Data")
   }
 
   it("should detect invalid json") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, " { ")
+    val validator = TestHelper.serviceValidatorFromApiJson(" { ")
     validator.isValid should be(false)
     validator.errors.mkString.indexOf("expected close marker") should be >= 0
   }
 
   it("should detect all required fields") {
-    val validator = ServiceValidator(TestHelper.serviceConfig, " { } ")
+    val validator = TestHelper.serviceValidatorFromApiJson(" { } ")
     validator.isValid should be(false)
     validator.errors.mkString should be("Missing: name")
   }
@@ -30,7 +30,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
       "base_url": "http://localhost:9000"
     }
     """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("Name[5@4] must start with a letter")
   }
 
@@ -42,7 +42,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("base_url[http://localhost:9000/] must not end with a '/'")
   }
 
@@ -57,7 +57,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("Model[user] must have at least one field")
     validator.isValid should be(false)
   }
@@ -76,7 +76,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("user.foo has invalid type. There is no model, enum, nor datatype named[foo]")
     validator.isValid should be(false)
   }
@@ -94,7 +94,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("")
     validator.isValid should be(true)
   }
@@ -123,7 +123,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
     validator.service.get.resources.head.operations.head.responses.find(_.code == 204).getOrElse {
       sys.error("Missing 204 response")
@@ -161,8 +161,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    ServiceValidator(TestHelper.serviceConfig, json.format("user")).isValid should be(true)
-    ServiceValidator(TestHelper.serviceConfig, json.format("unknown_model")).isValid should be(false)
+    TestHelper.serviceValidatorFromApiJson(json.format("user")).isValid should be(true)
+    TestHelper.serviceValidatorFromApiJson(json.format("unknown_model")).isValid should be(false)
   }
 
   it("includes path parameter in operations") {
@@ -189,7 +189,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
     val op = validator.service.get.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
@@ -224,7 +224,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
     val op = validator.service.get.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
@@ -261,7 +261,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("Resource[user] GET path parameter[id] is specified as optional. All path parameters are required")
   }
 
@@ -291,7 +291,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
     val op = validator.service.get.resources.head.operations.head
     val idParam = op.parameters.head
@@ -332,27 +332,27 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     it("lists of primitives are valid in query parameters") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[string]"))
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[string]"))
       validator.errors.mkString("") should be("")
     }
 
     it("maps of primitives are valid in query parameters") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("map[string]"))
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("map[string]"))
       validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type[map[string]]. Maps are not supported as query parameters.")
     }
 
     it("lists of models are not valid in query parameters") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[tag]"))
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[tag]"))
       validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
     }
 
     it("models are not valid in query parameters") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("tag"))
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("tag"))
       validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
     }
 
     it("validates type name in collection") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("[foo]"))
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[foo]"))
       validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [foo]")
     }
 

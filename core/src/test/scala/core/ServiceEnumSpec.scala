@@ -44,7 +44,7 @@ class ServiceEnumSpec extends FunSpec with Matchers {
 
     it("supports a known default") {
       val json = baseJson.format("", """, "default": "Twenties" """, "")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
       val field = validator.service.get.models.head.fields.find(_.name == "age_group").get
       field.default should be(Some("Twenties"))
@@ -52,13 +52,13 @@ class ServiceEnumSpec extends FunSpec with Matchers {
 
     it("validates unknown defaults") {
       val json = baseJson.format("", """, "default": "other" """, "")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("user.age_group default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
     }
 
     it("validates unknown defaults in parameters") {
       val json = baseJson.format("", "", """, "default": "other" """)
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("Resource[user] GET /users param[age_group] default[other] is not a valid value for enum[age_group]. Valid values are: Twenties, Thirties")
     }
 
@@ -66,7 +66,7 @@ class ServiceEnumSpec extends FunSpec with Matchers {
 
   it("field can be defined as an enum") {
     val json = baseJson.format("", "", "")
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
     val ageGroup = validator.service.get.models.head.fields.find { _.name == "age_group" }.get
     ageGroup.`type` should be("age_group")
@@ -74,7 +74,7 @@ class ServiceEnumSpec extends FunSpec with Matchers {
 
   it("validates that enum values do not start with numbers") {
     val json = baseJson.format(""", { "name": "1" } """, "", "")
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("Enum[age_group] value[1] is invalid: must start with a letter")
   }
 

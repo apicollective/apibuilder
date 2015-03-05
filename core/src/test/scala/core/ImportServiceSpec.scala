@@ -1,5 +1,6 @@
 package core
 
+import com.gilt.apidoc.v0.models.{Original, OriginalType}
 import org.scalatest.{FunSpec, Matchers}
 
 class ImportServiceSpec extends FunSpec with Matchers {
@@ -20,17 +21,17 @@ class ImportServiceSpec extends FunSpec with Matchers {
         "name": "Import Shared",
         "imports": [ { "foo": "bar" } ]
       }"""
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("imports.uri is required")
     }
 
     it("import uri cannot be empty") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("  "))
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("  "))
       validator.errors.mkString("") should be("imports.uri is required")
     }
 
     it("import uri is a URI") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson.format("foobar"))
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("foobar"))
       validator.errors.mkString("") should be("imports.uri[foobar] is not a valid URI")
     }
 
@@ -92,7 +93,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
   """
 
     it("parses service definition with imports") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, json2)
+      val validator = ServiceValidator(TestHelper.serviceConfig, Original(OriginalType.ApiJson, json2))
       validator.errors.mkString("") should be("")
     }
   }

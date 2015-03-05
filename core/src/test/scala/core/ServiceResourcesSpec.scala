@@ -43,7 +43,7 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
 
     it("models can be resources, with valid paths") {
       val json = baseJson.format("user")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
 
       val resource = validator.service.get.resources.head
@@ -53,7 +53,7 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
 
     it("enums can be resources, with valid paths") {
       val json = baseJson.format("user_type")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
 
       val resource = validator.service.get.resources.head
@@ -63,15 +63,16 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
 
     it("lists cannot be resources") {
       val json = baseJson.format("[user]")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
     }
 
     it("maps cannot be resources") {
       val json = baseJson.format("[user]")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
     }
+
   }
 
   it("allows empty path for resource") {
@@ -103,9 +104,9 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
         }
       }
     }
-  """
+    """
 
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
     val operations = validator.service.get.resources.head.operations
     operations.head.path should be("/")

@@ -29,7 +29,7 @@ class ServiceHeadersSpec extends FunSpec with Matchers {
   """
 
     it("parses headers") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, baseJson)
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson)
       validator.errors.mkString("") should be("")
       val ctEnum = validator.service.get.enums.find(_.name == "content_type").get
 
@@ -78,25 +78,25 @@ class ServiceHeadersSpec extends FunSpec with Matchers {
 
     it("requires name") {
       val json = baseJson.format("""{ "type": "string" }""")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("All headers must have a name")
     }
 
     it("requires type") {
       val json = baseJson.format("""{ "name": "no_type" }""")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("All headers must have a type")
     }
 
     it("validates type") {
       val json = baseJson.format("""{ "name": "invalid_type", "type": "integer" }""")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("Header[invalid_type] type[integer] is invalid: Must be a string or the name of an enum")
     }
 
     it("validates duplicates") {
       val json = baseJson.format("""{ "name": "dup", "type": "string" }, { "name": "dup", "type": "string" }""")
-      val validator = ServiceValidator(TestHelper.serviceConfig, json)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("Header[dup] appears more than once")
     }
 

@@ -20,7 +20,7 @@ class BrokenSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("")
     val fields = validator.service.get.models.head.fields
     fields.find { _.name == "guid" }.get.`type` should be("uuid")
@@ -58,7 +58,7 @@ class BrokenSpec extends FunSpec with Matchers {
       }
     }
     """
-    val validator = ServiceValidator(TestHelper.serviceConfig, json)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("")
 
     val operation = validator.service.get.resources.head.operations.head
