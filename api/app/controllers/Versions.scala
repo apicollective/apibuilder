@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, Original, OriginalType, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, Original, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.v0.models.json._
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.Validation
@@ -47,18 +47,12 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-
-            val original = Original(
-              `type` = OriginalType.ApiJson,
-              data = form.serviceForm.toString
-            )
-
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), original.data)
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.original)
             val errors = validator.errors ++ validate(request.user, org, validator)
 
             errors match {
               case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, original, validator.service.get)
+                val version = upsertVersion(request.user, org, versionName, form, form.original, validator.service.get)
                 Ok(Json.toJson(version))
               }
               case errors => {
@@ -76,7 +70,6 @@ object Versions extends Controller {
     applicationKey: String,
     versionName: String
   ) = Authenticated(parse.json) { request =>
-
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
@@ -90,17 +83,12 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val original = Original(
-              `type` = OriginalType.ApiJson,
-              data = form.serviceForm.toString
-            )
-
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), original.data)
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.original)
             val errors = validator.errors ++ validate(request.user, org, validator, Some(applicationKey))
 
             errors match {
               case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, original, validator.service.get, Some(applicationKey))
+                val version = upsertVersion(request.user, org, versionName, form, form.original, validator.service.get, Some(applicationKey))
                 Ok(Json.toJson(version))
               }
               case errors => {

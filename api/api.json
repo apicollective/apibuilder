@@ -204,7 +204,7 @@
 
         "version_form": {
             "fields": [
-		{ "name": "service_form", "type": "string" },
+		{ "name": "original", "type": "original" },
 		{ "name": "visibility", "type": "visibility", "required": false, "description": "If provided, updates the visibility for all versions of this application" }
             ]
         },
