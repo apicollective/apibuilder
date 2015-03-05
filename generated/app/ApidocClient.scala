@@ -323,6 +323,10 @@ package com.gilt.apidoc.v0.models {
      * The original is in the api.json format
      */
     case object ApiJson extends OriginalType { override def toString = "api_json" }
+    /**
+     * The original is in Avro Idl format
+     */
+    case object AvroIdl extends OriginalType { override def toString = "avro_idl" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -340,7 +344,7 @@ package com.gilt.apidoc.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(ApiJson)
+    val all = Seq(ApiJson, AvroIdl)
 
     private[this]
     val byName = all.map(x => x.toString -> x).toMap

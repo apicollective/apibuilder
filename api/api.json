@@ -29,7 +29,8 @@
 
 	"original_type": {
 	    "values": [
-		{ "name": "api_json", "description": "The original is in the api.json format" }
+		{ "name": "api_json", "description": "The original is in the api.json format" },
+		{ "name": "avro_idl", "description": "The original is in Avro Idl format" }
 	    ]
 	}
 

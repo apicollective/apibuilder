@@ -17,8 +17,11 @@ object OriginalUtil {
     * Attempts to guess the type of original based on the data
     */
   def guessType(data: String): Option[OriginalType] = {
-    // TODO
-    Some(OriginalType.ApiJson)
+    if (data.indexOf("protocol") == -1) {
+      Some(OriginalType.AvroIdl)
+    } else {
+      Some(OriginalType.ApiJson)
+    }
   }
 
 }
