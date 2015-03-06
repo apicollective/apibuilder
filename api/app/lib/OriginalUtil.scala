@@ -17,10 +17,13 @@ object OriginalUtil {
     * Attempts to guess the type of original based on the data
     */
   def guessType(data: String): Option[OriginalType] = {
-    if (data.indexOf("protocol") == -1) {
+    val trimmed = data.trim
+    if (trimmed.indexOf("protocol ") >= 0 || trimmed.indexOf("@namespace") >= 0) {
+      Some(OriginalType.AvroIdl)
+    } else if (trimmed.startsWith("{")) {
       Some(OriginalType.ApiJson)
     } else {
-      Some(OriginalType.AvroIdl)
+      None
     }
   }
 
