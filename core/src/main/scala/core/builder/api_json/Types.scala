@@ -4,41 +4,19 @@ import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum}
 import com.gilt.apidoc.spec.v0.models.{Import, Service}
 import lib.{Datatype, DatatypeResolver, Type}
 
-private[api_json] object TypesProvider {
+private[api_json] case class InternalServiceFormTypesProvider(internal: InternalServiceForm) extends TypesProvider {
 
-  case class ServiceProvider(service: Service) extends TypesProvider {
-
-    private def qualifiedName(prefix: String, name: String): String = {
-      s"${service.namespace}.$prefix.$name"
-    }
-
-    override def enums: Iterable[TypesProviderEnum] = service.enums.map { enum =>
-      TypesProviderEnum(
-        name = qualifiedName("enums", enum.name),
-        values = enum.values.map(_.name)
-      )
-    }
-
-    override def unionNames: Iterable[String] = service.unions.map(n => qualifiedName("unions", n.name))
-
-    override def modelNames: Iterable[String] = service.models.map(n => qualifiedName("models", n.name))
-
+  override def enums = internal.enums.map { enum =>
+    TypesProviderEnum(
+      name = enum.name,
+      values = enum.values.flatMap(_.name)
+    )
   }
 
-  case class InternalServiceFormProvider(internal: InternalServiceForm) extends TypesProvider {
+  override def unionNames = internal.unions.map(_.name)
 
-    override def enums = internal.enums.map { enum =>
-      TypesProviderEnum(
-        name = enum.name,
-        values = enum.values.flatMap(_.name)
-      )
-    }
+  override def modelNames = internal.models.map(_.name)
 
-    override def unionNames = internal.unions.map(_.name)
-
-    override def modelNames = internal.models.map(_.name)
-
-  }
 }
 
 /**
@@ -57,7 +35,7 @@ private[api_json] case class RecursiveTypesProvider(
 
   override def modelNames = providers.map(_.modelNames).flatten
 
-  private lazy val providers = Seq(TypesProvider.InternalServiceFormProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
+  private lazy val providers = Seq(InternalServiceFormTypesProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
 
   private def resolve(
     importUris: Seq[String],
@@ -73,7 +51,7 @@ private[api_json] case class RecursiveTypesProvider(
           val importer = Importer(internal.fetcher, uri)
           importer.validate match {
             case Nil => {
-              Seq(TypesProvider.ServiceProvider(importer.service)) ++ resolve(importUris.drop(1), imported ++ Set(uri))
+              Seq(TypesProvider.FromService(importer.service)) ++ resolve(importUris.drop(1), imported ++ Set(uri))
             }
             case errors => {
               // There are errors w/ this import - skip it

@@ -1,5 +1,6 @@
 package core
 
+import com.gilt.apidoc.spec.v0.models.Service
 import builder.JsonUtil
 import lib.{Datatype, PrimitiveMetadata, Primitives, Type, Kind}
 import java.util.UUID
@@ -18,6 +19,29 @@ trait TypesProvider {
   def enums: Iterable[TypesProviderEnum]
   def modelNames: Iterable[String]
   def unionNames: Iterable[String]
+}
+
+object TypesProvider {
+
+  case class FromService(service: Service) extends TypesProvider {
+
+    private def qualifiedName(prefix: String, name: String): String = {
+      s"${service.namespace}.$prefix.$name"
+    }
+
+    override def enums: Iterable[TypesProviderEnum] = service.enums.map { enum =>
+      TypesProviderEnum(
+        name = qualifiedName("enums", enum.name),
+        values = enum.values.map(_.name)
+      )
+    }
+
+    override def unionNames: Iterable[String] = service.unions.map(n => qualifiedName("unions", n.name))
+
+    override def modelNames: Iterable[String] = service.models.map(n => qualifiedName("models", n.name))
+
+  }
+
 }
 
 case class TypeValidator(

@@ -1,7 +1,7 @@
 package builder.api_json
 
 import builder.ServiceValidator
-import core.{ClientFetcher, Importer, ServiceConfiguration, ServiceFetcher, Util}
+import core.{ClientFetcher, ServiceConfiguration, ServiceFetcher}
 import lib.{Datatype, Methods, Primitives, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models.{Enum, Field, Method, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
@@ -78,9 +78,7 @@ case class ApiJsonServiceValidator(
 
         if (requiredFieldErrors.isEmpty) {
           val builderErrors = validateKey ++
-          validateBaseUrl ++
           validateImports ++
-          validateModels ++
           validateEnums ++
           validateUnions ++
           validateHeaders ++
@@ -98,10 +96,9 @@ case class ApiJsonServiceValidator(
           validatePathParametersAreRequired
 
           builderErrors match {
-            case Nil => builder.ServiceSpecValidator(service.get).errors
+            case Nil => builder.ServiceSpecValidator(service.get, fetcher).errors
             case errors => errors
           }
-
 
         } else {
           requiredFieldErrors
@@ -121,19 +118,6 @@ case class ApiJsonServiceValidator(
           Seq(s"Invalid url key. A valid key would be $generated")
         }
       }
-    }
-  }
-
-  private def validateBaseUrl(): Seq[String] = {
-    internalService.get.baseUrl match {
-      case Some(url) => { 
-        if(url.endsWith("/")){
-          Seq(s"base_url[$url] must not end with a '/'")  
-        } else {
-          Seq.empty
-        } 
-      }
-      case None => Seq.empty
     }
   }
 
@@ -191,35 +175,9 @@ case class ApiJsonServiceValidator(
     internalService.get.imports.flatMap { imp =>
       imp.uri match {
         case None => Seq("imports.uri is required")
-        case Some(uri) => {
-          Util.isValidUri(uri) match {
-            case false => Seq(s"imports.uri[$uri] is not a valid URI")
-            case true => Importer(fetcher, uri).validate  // TODO. need to cache somewhere to avoid a second lookup when parsing later
-          }
-        }
+        case Some(uri) => Seq.empty
       }
     }
-  }
-
-  private def validateModels(): Seq[String] = {
-    val nameErrors = internalService.get.models.flatMap { model =>
-      Text.validateName(model.name) match {
-        case Nil => None
-        case errors => {
-          Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" ")}")
-        }
-      }
-    }
-
-    val fieldErrors = internalService.get.models.filter { _.fields.isEmpty }.map { model =>
-      s"Model[${model.name}] must have at least one field"
-    }
-
-    val duplicates = internalService.get.models.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { modelName =>
-      s"Model[$modelName] appears more than once"
-    }
-
-    nameErrors ++ fieldErrors ++ duplicates
   }
 
   private def validateEnums(): Seq[String] = {
