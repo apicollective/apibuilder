@@ -50,7 +50,7 @@ case class ClientFetcher() extends ServiceFetcher {
             }
           }
         }
-        case r => throw new FailedRequest(r.status, "Expected HTTP 200 but receieved HTTP ${r.status}")
+        case r => throw new FailedRequest(r.status, s"Expected HTTP 200 but received HTTP ${r.status}")
       },
       1000.millis
     )
