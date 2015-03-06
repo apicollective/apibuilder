@@ -77,8 +77,7 @@ case class ApiJsonServiceValidator(
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          validateName ++
-          validateKey ++
+          val builderErrors = validateKey ++
           validateBaseUrl ++
           validateImports ++
           validateModels ++
@@ -98,19 +97,16 @@ case class ApiJsonServiceValidator(
           validatePathParameters ++
           validatePathParametersAreRequired
 
+          builderErrors match {
+            case Nil => builder.ServiceSpecValidator(service.get).errors
+            case errors => errors
+          }
+
+
         } else {
           requiredFieldErrors
         }
       }
-    }
-  }
-
-  private def validateName(): Seq[String] = {
-    val name = internalService.get.name.getOrElse(sys.error("Missing name"))
-    if (Text.startsWithLetter(name)) {
-      Seq.empty
-    } else {
-      Seq(s"Name[${name}] must start with a letter")
     }
   }
 
