@@ -1,5 +1,6 @@
 package core
 
+import builder.ServiceValidator
 import com.gilt.apidoc.v0.models.{Original, OriginalType}
 import org.scalatest.{FunSpec, Matchers}
 

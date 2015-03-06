@@ -1,5 +1,7 @@
-package core
+package builder.api_json
 
+import builder.JsonUtil
+import core.{ServiceFetcher, Util}
 import lib.{Primitives, Text}
 import play.api.libs.json._
 
@@ -10,7 +12,7 @@ import play.api.libs.json._
  * JSON => InternalService => Service
  *
  */
-private[core] case class InternalServiceForm(
+private[api_json] case class InternalServiceForm(
   json: JsValue,
   fetcher: ServiceFetcher
 ) {
@@ -486,7 +488,7 @@ sealed trait InternalDatatype {
 
 }
 
-private[core] object InternalDatatype {
+private[api_json] object InternalDatatype {
 
   case class List(name: String, required: Boolean) extends InternalDatatype {
     override def label = makeLabel("[", "]")

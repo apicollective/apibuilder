@@ -1,5 +1,6 @@
 package core
 
+import builder.JsonUtil
 import lib.{Datatype, PrimitiveMetadata, Primitives, Type, Kind}
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
@@ -8,7 +9,18 @@ import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException 
 import com.fasterxml.jackson.databind.JsonMappingException
 import scala.util.{Failure, Success, Try}
 
-private[core] case class TypeValidator(
+case class TypesProviderEnum(
+  name: String,
+  values: Seq[String]
+)
+
+trait TypesProvider {
+  def enums: Iterable[TypesProviderEnum]
+  def modelNames: Iterable[String]
+  def unionNames: Iterable[String]
+}
+
+case class TypeValidator(
   enums: Iterable[TypesProviderEnum] = Seq.empty
 ) {
 

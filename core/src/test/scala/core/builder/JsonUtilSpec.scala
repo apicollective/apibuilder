@@ -1,4 +1,4 @@
-package core
+package builder
 
 import play.api.libs.json.{Json, JsUndefined}
 import org.scalatest.{FunSpec, Matchers}

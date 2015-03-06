@@ -1,4 +1,4 @@
-package core
+package builder
 
 import play.api.libs.json.{JsString, JsValue, JsUndefined}
 import scala.util.{Failure, Success, Try}
@@ -6,7 +6,7 @@ import scala.util.{Failure, Success, Try}
 /**
  * Parse numbers and string json values as strings
  */
-private[core] object JsonUtil {
+object JsonUtil {
 
   def asOptString(value: JsValue): Option[String] = {
     value match {

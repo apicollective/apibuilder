@@ -1,40 +1,13 @@
-package core
+package builder.api_json
 
+import builder.ServiceValidator
+import core.{ClientFetcher, Importer, ServiceConfiguration, ServiceFetcher, Util}
 import lib.{Datatype, Methods, Primitives, Text, Type, Kind, UrlKey}
-import com.gilt.apidoc.v0.models.{Original, OriginalType}
 import com.gilt.apidoc.spec.v0.models.{Enum, Field, Method, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import com.fasterxml.jackson.databind.JsonMappingException
 import scala.util.{Failure, Success, Try}
-
-object ServiceValidator {
-
-  def apply(
-    config: ServiceConfiguration,
-    original: Original,
-    fetcher: ServiceFetcher = new ClientFetcher()
-  ): ServiceValidator = {
-    original.`type` match {
-      case OriginalType.ApiJson => {
-        ApiJsonServiceValidator(config, original.data, fetcher)
-      }
-      case _ => {
-        sys.error("Invalid original type: " + original.`type`)
-      }
-    }
-  }
-
-}
-
-trait ServiceValidator {
-
-  def validate(): Either[Seq[String], Service]
-  def errors(): Seq[String]
-  def service(): Option[Service]
-  def isValid: Boolean = errors.isEmpty
-
-}
 
 case class ApiJsonServiceValidator(
   config: ServiceConfiguration,

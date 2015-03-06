@@ -1,21 +1,10 @@
-package core
+package builder.api_json
 
+import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum}
 import com.gilt.apidoc.spec.v0.models.{Import, Service}
 import lib.{Datatype, DatatypeResolver, Type}
-import scala.annotation.tailrec
 
-private[core] case class TypesProviderEnum(
-  name: String,
-  values: Seq[String]
-)
-
-private[core] sealed trait TypesProvider {
-  def enums: Iterable[TypesProviderEnum]
-  def modelNames: Iterable[String]
-  def unionNames: Iterable[String]
-}
-
-private[core] object TypesProvider {
+private[api_json] object TypesProvider {
 
   case class ServiceProvider(service: Service) extends TypesProvider {
 
@@ -58,7 +47,7 @@ private[core] object TypesProvider {
   * in any of the imports. Takes care to avoid importing the same
   * service multiple times (based on uniqueness of the import URIs)
   */
-private[core] case class RecursiveTypesProvider(
+private[api_json] case class RecursiveTypesProvider(
   internal: InternalServiceForm
 ) extends TypesProvider {
 
@@ -98,7 +87,7 @@ private[core] case class RecursiveTypesProvider(
 
 }
 
-private[core] case class TypeResolver(
+private[api_json] case class TypeResolver(
   provider: TypesProvider
 ) {
 

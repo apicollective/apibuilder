@@ -1,4 +1,4 @@
-package core
+package builder.api_json
 
 import org.scalatest.{FunSpec, Matchers}
 
