@@ -3,8 +3,9 @@ package controllers
 import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, Original, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.v0.models.json._
 import com.gilt.apidoc.spec.v0.models.Service
+import core.ServiceConfiguration
+import builder.ServiceValidator
 import lib.{OriginalUtil, Validation}
-import core.{ServiceConfiguration, ServiceValidator}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
 import play.api.mvc._
 import play.api.libs.json._

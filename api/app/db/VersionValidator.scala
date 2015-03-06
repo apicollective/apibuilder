@@ -1,8 +1,7 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Application, Organization, User}
+import com.gilt.apidoc.v0.models.{Organization, User}
 import lib.Validation
-import core.ServiceValidator
 
 case class VersionValidator(
   user: User,

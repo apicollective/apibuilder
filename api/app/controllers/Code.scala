@@ -11,7 +11,6 @@ import com.gilt.apidoc.spec.v0.models.json._
 import com.gilt.apidoc.generator.v0.Client
 import com.gilt.apidoc.generator.v0.models.InvocationForm
 
-import core.ServiceBuilder
 import db.{GeneratorsDao, Authorization, VersionsDao}
 import lib.{Config, AppConfig, Validation}
 
