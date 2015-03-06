@@ -4,7 +4,7 @@
     "base_url": "http://api.apidoc.me",
 
     "imports": [
-	{ "uri": "http://localhost:9000/gilt/apidoc-spec/0.7.41/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.8.12/service.json" }
     ],
 
     "enums": {
