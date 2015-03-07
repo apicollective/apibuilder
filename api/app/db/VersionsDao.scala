@@ -191,37 +191,39 @@ object VersionsDao {
     var good = 0
     var bad = 0
 
-    /* TODO: Verify
     var user: Option[User] = None
-    val sql = BaseQuery.trim + " and services.guid is null and versions.original != '{}' "
+    val sql = BaseQuery.trim + " and services.guid is null and originals.data is not null"
 
     DB.withConnection { implicit c =>
-      val versions = SQL(sql)().toList
-      versions.map { row =>
+      SQL(sql)().toList.foreach { row =>
+        val orgKey = row[String]("organization_key")
+        val applicationKey = row[String]("application_key")
         val versionGuid = row[UUID]("guid")
-        Logger.info(s"Migrating version[${versionGuid}]")
+
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionGuid to version $ServiceVersionNumber")
 
         val config = ServiceConfiguration(
-          orgKey = row[String]("organization_key"),
+          orgKey = orgKey,
           orgNamespace = row[String]("organization_namespace"),
           version = row[String]("version")
         )
 
-        val original = row[Option[String]]("original").getOrElse {
-          row[String]("old_json")
-        }
+        val original = Original(
+          `type` = OriginalType(row[String]("original_type")),
+          data = row[String]("original_data")
+        )
 
         try {
-          val validator = core.ServiceValidator(config, original)
+          val validator = core.ServiceValidator(config, original.data)
           validator.service match {
             case None => {
-              Logger.error(s"Version[${versionGuid}] has invalid JSON: " + validator.errors.mkString(", "))
+              Logger.error(s"Version[$versionGuid] has invalid JSON: " + validator.errors.mkString(", "))
               bad += 1
             }
             case Some(service) => {
               if (user.isEmpty) {
                 user = Some(UsersDao.findByEmail(UsersDao.AdminUserEmail).getOrElse {
-                  sys.error(s"Failed to create background user w/ email[${UsersDao.AdminUserEmail}]")
+                  sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmail}]")
                 })
               }
 
@@ -237,7 +239,6 @@ object VersionsDao {
         }
       }
     }
-     */
 
     Map(
       "number_migrated" -> good,

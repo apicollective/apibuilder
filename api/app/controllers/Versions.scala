@@ -36,11 +36,6 @@ object Versions extends Controller {
     orgKey: String,
     versionName: String
   ) = Authenticated(parse.json) { request =>
-    val original = Original(
-      `type` = OriginalType.ApiJson,
-      data = request.body.toString
-    )
-
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
@@ -52,7 +47,13 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
+
+            val original = Original(
+              `type` = OriginalType.ApiJson,
+              data = form.serviceForm.toString
+            )
+
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), original.data)
             val errors = validator.errors ++ validate(request.user, org, validator)
 
             errors match {
@@ -75,10 +76,6 @@ object Versions extends Controller {
     applicationKey: String,
     versionName: String
   ) = Authenticated(parse.json) { request =>
-    val original = Original(
-      `type` = OriginalType.ApiJson,
-      data = request.body.toString
-    )
 
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
@@ -93,7 +90,12 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), form.serviceForm.toString)
+            val original = Original(
+              `type` = OriginalType.ApiJson,
+              data = form.serviceForm.toString
+            )
+
+            val validator = ServiceValidator(ServiceConfiguration(org, versionName), original.data)
             val errors = validator.errors ++ validate(request.user, org, validator, Some(applicationKey))
 
             errors match {

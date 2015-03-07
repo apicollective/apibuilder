@@ -1,5 +1,6 @@
 package db
 
+import core.{ServiceConfiguration, ServiceValidator}
 import com.gilt.apidoc.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
 import com.gilt.apidoc.spec.v0.models.{Application, Organization, Service}
 import com.gilt.apidoc.spec.v0.models.json._
@@ -13,7 +14,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
   private val Original = com.gilt.apidoc.v0.models.Original(
     `type` = OriginalType.ApiJson,
-    data = Json.obj("name" -> UUID.randomUUID.toString).toString
+    data = Json.obj("name" -> s"test-${UUID.randomUUID}").toString
   )
 
   private def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.gilt.apidoc.v0.models.Application = {
@@ -77,6 +78,26 @@ class VersionsDaoSpec extends FunSpec with Matchers {
       Authorization.All,
       applicationGuid = Some(app.guid)
     ).map(_.version) should be(Seq("1.0.2", "1.0.2-dev"))
+  }
+
+  it("can parse original") {
+    val app = createApplication()
+    val service = createService(app)
+    val version = VersionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
+
+    val serviceConfig = ServiceConfiguration(
+      orgKey = "test",
+      orgNamespace = "test.apidoc",
+      version = "0.0.2"
+    )
+
+    println("Original: " + version.original.get.data)
+
+    val validator = ServiceValidator(serviceConfig, version.original.map(_.data).getOrElse {
+      sys.error("Missing original")
+    })
+    validator.errors.mkString("\n") should be("")
+
   }
 
 }
