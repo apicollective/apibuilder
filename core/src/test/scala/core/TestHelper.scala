@@ -47,8 +47,9 @@ object TestHelper {
   def parseFile(filename: String): ServiceValidator = {
     val fetcher = MockServiceFetcher()
     if (filename == "api/api.json") {
-      fetcher.add("http://localhost:9000/gilt/apidoc-spec/0.7.41/service.json", specService)
-      fetcher.add("http://www.apidoc.me/gilt/apidoc-spec/0.7.41/service.json", specService)
+      val version = com.gilt.apidoc.spec.v0.Constants.Version
+      fetcher.add(s"http://localhost:9000/gilt/apidoc-spec/$version/service.json", specService)
+      fetcher.add(s"http://www.apidoc.me/gilt/apidoc-spec/$version/service.json", specService)
     }
     parseFile(filename, fetcher)
   }
