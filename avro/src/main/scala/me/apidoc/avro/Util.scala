@@ -5,7 +5,8 @@ import lib.Text
 object Util {
 
   def formatName(name: String): String = {
-    Text.camelCaseToUnderscore(name).toLowerCase
+    //Text.camelCaseToUnderscore(name).toLowerCase
+    name.trim
   }
 
   def toOption(value: String): Option[String] = {

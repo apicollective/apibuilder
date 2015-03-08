@@ -1,22 +1,34 @@
 package me.apidoc.avro
 
+import core.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 
 class ParserSpec extends FunSpec with Matchers {
 
   val dir = "avro/src/test/resources/me/apidoc/avro"
+  val config = ServiceConfiguration(
+    orgKey = "gilt",
+    orgNamespace = "com.gilt",
+    version = "0.0.1-dev"
+  )
 
   it("parses") {
-    //Parser().parse(s"$dir/mobile-tapstream.avpr")
-    //Parser().parse(s"$dir/simple-protocol.avpr")
+    //Parser(config).parse(s"$dir/mobile-tapstream.avpr")
+    //Parser(config).parse(s"$dir/simple-protocol.avpr")
 
-    //Parser().parse(s"$dir/gfc-avro.avdl")
-    //Parser().parse(s"$dir/simple-protocol-with-gfc.avpr")
-    // Parser().parse(s"$dir/mobile-tapstream.avpr")
-    val service = Parser().parse(s"avro/example.avdl")
+    //Parser(config).parse(s"$dir/gfc-avro.avdl")
+    //Parser(config).parse(s"$dir/simple-protocol-with-gfc.avpr")
+    // Parser(config).parse(s"$dir/mobile-tapstream.avpr")
+    val service = Parser(config).parse(s"avro/example.avdl")
     println("name: " + service.name)
     println("namespace: " + service.namespace)
 
+    val validator = builder.ServiceSpecValidator(service)
+    validator.errors match {
+      case Nil => println("No errors")
+      case errors => println("Errors: " + errors.mkString("\n - ", "\n - ", "\n"))
+    }
+      
     println("Enums:")
     service.enums.foreach { enum =>
       println(s" - ${enum.name}")

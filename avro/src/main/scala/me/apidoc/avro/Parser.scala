@@ -1,5 +1,6 @@
 package me.apidoc.avro
 
+import core.ServiceConfiguration
 import java.io.File
 import org.apache.avro.{Protocol, Schema}
 import org.apache.avro.compiler.idl.Idl
@@ -16,20 +17,19 @@ private[avro] case class Builder() {
   private val unionsBuilder = scala.collection.mutable.ListBuffer[Union]()
 
   def toService(
+    config: ServiceConfiguration,
     name: String,
     namespace: Option[String] = None,
-    orgKey: String,
-    applicationKey: String,
-    version: String
+    applicationKey: String
   ): Service = {
     Service(
       name = name,
       baseUrl = None,
       description = None,
-      namespace = namespace.getOrElse(s"$orgKey.$applicationKey"),
-      organization = Organization(key = orgKey),
+      namespace = namespace.getOrElse(config.applicationNamespace(applicationKey)),
+      organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
-      version = version,
+      version = config.version,
       enums = enumsBuilder,
       unions = unionsBuilder,
       models = modelsBuilder,
@@ -45,7 +45,7 @@ private[avro] case class Builder() {
     fields: Seq[Field]
   ) {
     modelsBuilder += Model(
-      name = name,
+      name = Util.formatName(name),
       plural = Text.pluralize(name),
       description = description,
       fields = fields
@@ -54,7 +54,7 @@ private[avro] case class Builder() {
 
   def addUnion(name: String, description: Option[String], types: Seq[UnionType]) {
     unionsBuilder += Union(
-      name = name,
+      name = Util.formatName(name),
       plural = Text.pluralize(name),
       description = description,
       types = types
@@ -69,7 +69,7 @@ private[avro] case class Builder() {
     */
   def addFixed(name: String, description: Option[String], size: Int) {
     addModel(
-      name = name,
+      name = Util.formatName(name),
       description = description,
       fields = Seq(
         Field(
@@ -98,11 +98,13 @@ private[avro] case class Builder() {
 
 }
 
-case class Parser() {
+case class Parser(config: ServiceConfiguration) {
 
   val builder = Builder()
 
-  def parse(path: String): Service = {
+  def parse(
+    path: String
+  ): Service = {
     println(s"parse($path)")
 
     val protocol = parseProtocol(path)
@@ -113,11 +115,10 @@ case class Parser() {
     }
 
     builder.toService(
+      config = config,
       name = protocol.getName,
       namespace = Util.toOption(protocol.getNamespace),
-      orgKey = "gilt",
-      applicationKey = "test",
-      version = "0.0.1-dev"
+      applicationKey = "test"
     )
 
   }
@@ -160,7 +161,7 @@ case class Parser() {
 
   private def parseRecord(schema: Schema) {
     builder.addModel(
-      name = schema.getName,
+      name = Util.formatName(schema.getName),
       description = Util.toOption(schema.getDoc),
       fields = schema.getFields.map(Apidoc.Field.apply(_))
     )
@@ -172,7 +173,7 @@ case class Parser() {
           println(s"UNION[${u.name}: " + u.names.mkString(","))
 
           builder.addUnion(
-            name = u.name,
+            name = Util.formatName(u.name),
             description = None,
             types = u.names.map { n =>
               UnionType(n)
