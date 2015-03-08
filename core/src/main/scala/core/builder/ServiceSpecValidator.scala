@@ -35,7 +35,8 @@ case class ServiceSpecValidator(
     validateEnums() ++
     validateUnions() ++
     validateHeaders() ++
-    validateModelAndEnumAndUnionNamesAreDistinct()
+    validateModelAndEnumAndUnionNamesAreDistinct() ++
+    validateFields()
   }
 
   private def validateName(): Seq[String] = {
@@ -188,6 +189,18 @@ case class ServiceSpecValidator(
     }
   }
 
+  private def validateFields(): Seq[String] = {
+    service.models.flatMap { model =>
+      model.fields.flatMap { field =>
+        Text.validateName(field.name) match {
+          case Nil => None
+          case errors => {
+            Some(s"Model[${model.name}] field name[${field.name}] is invalid: ${errors.mkString(" ")}")
+          }
+        }
+      }
+    }
+  }
 
   private def dupsError(label: String, values: Iterable[String]): Seq[String] = {
     dups(values).map { n =>

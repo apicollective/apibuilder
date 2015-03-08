@@ -213,18 +213,10 @@ case class ApiJsonServiceValidator(
         s"Model[${model.name}] field[${f.name}] must have a name"
       }
     }
+
     val missingTypes = internalService.get.models.flatMap { model =>
       model.fields.filter(!_.name.isEmpty).filter(_.datatype.isEmpty).map { f =>
         s"Model[${model.name}] field[${f.name.get}] must have a type"
-      }
-    }
-    val badNames = internalService.get.models.flatMap { model =>
-      model.fields.flatMap { f =>
-        f.name.map { n => n -> Text.validateName(n) }
-      }.filter(_._2.nonEmpty).flatMap { case (name, errors) =>
-          errors.map { e =>
-            s"Model[${model.name}] field[${name}]: $e"
-          }
       }
     }
 
@@ -234,7 +226,7 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    missingTypes ++ missingNames ++ badNames ++ warnings
+    missingTypes ++ missingNames ++ warnings
   }
 
   private def validateResponses(): Seq[String] = {
