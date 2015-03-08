@@ -31,9 +31,14 @@ class ImportServiceSpec extends FunSpec with Matchers {
       validator.errors.mkString("") should be("imports.uri is required")
     }
 
-    it("import uri is a URI") {
+    it("import uri starts with a valid protocol") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("foobar"))
-      validator.errors.mkString("") should be("imports.uri[foobar] is not a valid URI")
+      validator.errors.mkString("") should be("URI[foobar] must start with http://, https://, or file://")
+    }
+
+    it("import uri does not end with a /") {
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("http://www.apidoc.me/"))
+      validator.errors.mkString("") should be("URI[http://www.apidoc.me/] cannot end with a '/'")
     }
 
   }
