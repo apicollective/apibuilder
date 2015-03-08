@@ -34,7 +34,8 @@ case class ServiceSpecValidator(
     validateModels() ++
     validateEnums() ++
     validateUnions() ++
-    validateHeaders()
+    validateHeaders() ++
+    validateModelAndEnumAndUnionNamesAreDistinct()
   }
 
   private def validateName(): Seq[String] = {
@@ -167,6 +168,26 @@ case class ServiceSpecValidator(
 
     headersWithInvalidTypes ++ duplicates
   }
+
+  /**
+    * While not strictly necessary, we do this to reduce
+    * confusion. Otherwise we would require an extension to
+    * always indicate if a type referenced a model, union, or enum.
+    */
+  private def validateModelAndEnumAndUnionNamesAreDistinct(): Seq[String] = {
+    val modelNames = service.models.map(_.name.toLowerCase)
+    val enumNames = service.enums.map(_.name.toLowerCase)
+    val unionNames = service.unions.map(_.name.toLowerCase)
+
+    modelNames.filter { enumNames.contains(_) }.map { name =>
+      s"Name[$name] cannot be used as the name of both a model and an enum"
+    } ++ modelNames.filter { unionNames.contains(_) }.map { name =>
+      s"Name[$name] cannot be used as the name of both a model and a union type"
+    } ++ enumNames.filter { unionNames.contains(_) }.map { name =>
+      s"Name[$name] cannot be used as the name of both an enum and a union type"
+    }
+  }
+
 
   private def dupsError(label: String, values: Iterable[String]): Seq[String] = {
     dups(values).map { n =>

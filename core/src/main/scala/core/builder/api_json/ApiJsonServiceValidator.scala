@@ -82,7 +82,6 @@ case class ApiJsonServiceValidator(
           validateEnums ++
           validateUnions ++
           validateHeaders ++
-          validateModelAndEnumAndUnionNamesAreDistinct ++
           validateFields ++
           validateFieldTypes ++
           validateFieldDefaults ++
@@ -206,26 +205,6 @@ case class ApiJsonServiceValidator(
     }
 
     headersWithoutNames ++ headersWithoutTypes
-  }
-
-  /**
-    * While not strictly necessary, we do this to reduce
-    * confusion. Otherwise we would require an extension to api.json
-    * to indicate if a type referenced a model or an enum. By keeping
-    * them distinct, we can avoid any confusion.
-    */
-  private def validateModelAndEnumAndUnionNamesAreDistinct(): Seq[String] = {
-    val modelNames = internalService.get.models.map(_.name.toLowerCase)
-    val enumNames = internalService.get.enums.map(_.name.toLowerCase)
-    val unionNames = internalService.get.unions.map(_.name.toLowerCase)
-
-    modelNames.filter { enumNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both a model and an enum"
-    } ++ modelNames.filter { unionNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both a model and a union type"
-    } ++ enumNames.filter { unionNames.contains(_) }.map { name =>
-      s"Name[$name] cannot be used as the name of both an enum and a union type"
-    }
   }
 
   private def validateFields(): Seq[String] = {
