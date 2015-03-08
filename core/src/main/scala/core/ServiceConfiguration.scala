@@ -8,6 +8,9 @@ case class ServiceConfiguration(
   orgNamespace: String,
   version: String
 ) {
+  assert(orgKey.trim == orgKey, s"orgKey[$orgKey] must be trimmed")
+  assert(orgNamespace.trim == orgNamespace, s"orgNamespace[$orgNamespace] must be trimmed")
+  assert(version.trim == version, s"version[$version] must be trimmed")
 
   /**
     * Example: apidocSpec => apidoc.spec
@@ -30,9 +33,9 @@ object ServiceConfiguration {
     version: String
   ): ServiceConfiguration = {
     ServiceConfiguration(
-      orgNamespace = org.namespace,
-      orgKey = org.key,
-      version = version
+      orgNamespace = org.namespace.trim,
+      orgKey = org.key.trim,
+      version = version.trim
     )
   }
 
