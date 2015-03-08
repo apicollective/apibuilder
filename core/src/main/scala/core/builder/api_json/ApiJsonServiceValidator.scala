@@ -1,7 +1,7 @@
 package builder.api_json
 
 import builder.ServiceValidator
-import core.{ClientFetcher, ServiceConfiguration, ServiceFetcher}
+import core.{ClientFetcher, ServiceConfiguration, ServiceFetcher, Util}
 import lib.{Datatype, Methods, Primitives, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models.{Enum, Field, Method, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
@@ -170,42 +170,22 @@ case class ApiJsonServiceValidator(
     internalService.get.imports.flatMap { imp =>
       imp.uri match {
         case None => Seq("imports.uri is required")
-        case Some(uri) => Seq.empty
+        case Some(uri) => {
+          Util.isValidUri(imp.uri) match {
+            case false => Seq(s"imports.uri[${imp.uri}] is not a valid URI")
+            case true => Importer(fetcher, imp.uri).validate  // TODO. need to cache somewhere to avoid a second lookup when parsing later
+          }
+        }
       }
     }
   }
 
   private def validateEnums(): Seq[String] = {
-    val nameErrors = internalService.get.enums.flatMap { enum =>
-      Text.validateName(enum.name) match {
-        case Nil => None
-        case errors => {
-          Some(s"Enum[${enum.name}] name is invalid: ${errors.mkString(" ")}")
-        }
-      }
-    }
-
-    val valueErrors = internalService.get.enums.filter { _.values.isEmpty }.map { enum =>
-      s"Enum[${enum.name}] must have at least one value"
-    }
-
-    val valuesWithoutNames = internalService.get.enums.flatMap { enum =>
+    internalService.get.enums.flatMap { enum =>
       enum.values.filter(_.name.isEmpty).map { value =>
         s"Enum[${enum.name}] - all values must have a name"
       }
     }
-
-    val valuesWithInvalidNames = internalService.get.enums.flatMap { enum =>
-      enum.values.filter(v => !v.name.isEmpty && !Text.startsWithLetter(v.name.get)).map { value =>
-        s"Enum[${enum.name}] value[${value.name.get}] is invalid: must start with a letter"
-      }
-    }
-
-    val duplicates = internalService.get.enums.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { enumName =>
-      s"Enum[$enumName] appears more than once"
-    }
-
-    nameErrors ++ valueErrors ++ valuesWithoutNames ++ valuesWithInvalidNames ++ duplicates
   }
 
   private def validateUnions(): Seq[String] = {
