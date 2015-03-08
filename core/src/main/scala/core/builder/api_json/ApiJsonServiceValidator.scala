@@ -1,7 +1,7 @@
 package builder.api_json
 
 import builder.ServiceValidator
-import core.{ClientFetcher, ServiceConfiguration, ServiceFetcher, Util}
+import core.{ClientFetcher, Importer, ServiceConfiguration, ServiceFetcher, Util}
 import lib.{Datatype, Methods, Primitives, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models.{Enum, Field, Method, Service}
 import play.api.libs.json.{JsObject, Json, JsValue}
@@ -171,9 +171,9 @@ case class ApiJsonServiceValidator(
       imp.uri match {
         case None => Seq("imports.uri is required")
         case Some(uri) => {
-          Util.isValidUri(imp.uri) match {
-            case false => Seq(s"imports.uri[${imp.uri}] is not a valid URI")
-            case true => Importer(fetcher, imp.uri).validate  // TODO. need to cache somewhere to avoid a second lookup when parsing later
+          Util.validateUri(uri) match {
+            case Nil => Importer(fetcher, uri).validate  // TODO. need to cache somewhere to avoid a second lookup when parsing later
+            case errors => errors
           }
         }
       }
