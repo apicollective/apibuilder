@@ -5,6 +5,7 @@
  * apidoc:0.8.17 http://www.apidoc.me/gilt/apidoc-generator/0.8.17/play_2_3_client
 =======
  * Service version: 0.0.9
+<<<<<<< HEAD
  * apidoc:0.8.12 http://www.apidoc.me/gilt/apidoc-generator/0.0.9/play_2_3_client
 <<<<<<< HEAD
 =======
@@ -12,6 +13,9 @@
 >>>>>>> Update codegen
 >>>>>>> Update codegen
 =======
+>>>>>>> Regenerate code
+=======
+ * apidoc:0.8.15 http://localhost:9000/gilt/apidoc-generator/0.0.9/play_2_3_client
 >>>>>>> Regenerate code
  */
 package com.gilt.apidoc.generator.v0.models {
@@ -186,6 +190,7 @@ package com.gilt.apidoc.generator.v0 {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     val UserAgent = "apidoc:0.8.17 http://www.apidoc.me/gilt/apidoc-generator/0.8.17/play_2_3_client"
     val Version = "0.8.17"
 =======
@@ -193,6 +198,9 @@ package com.gilt.apidoc.generator.v0 {
 =======
 >>>>>>> Regenerate code
     val UserAgent = "apidoc:0.8.12 http://www.apidoc.me/gilt/apidoc-generator/0.0.9/play_2_3_client"
+=======
+    val UserAgent = "apidoc:0.8.15 http://localhost:9000/gilt/apidoc-generator/0.0.9/play_2_3_client"
+>>>>>>> Regenerate code
     val Version = "0.0.9"
 >>>>>>> Update codegen
     val VersionMajor = 0
