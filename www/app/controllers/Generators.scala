@@ -99,6 +99,7 @@ object Generators extends Controller {
             }
           }
         }.getOrElse {
+          // TODO: URI VALIDATION
           val uri = if (valid.uri.toLowerCase.trim.startsWith("http")) {
             valid.uri.trim
           } else {
