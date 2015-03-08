@@ -91,13 +91,17 @@ class VersionsDaoSpec extends FunSpec with Matchers {
       version = "0.0.2"
     )
 
-    println("Original: " + version.original.get.data)
-
     val validator = ServiceValidator(serviceConfig, version.original.map(_.data).getOrElse {
       sys.error("Missing original")
     })
     validator.errors.mkString("\n") should be("")
+  }
 
+  it("trims version number") {
+    val app = createApplication()
+    val service = createService(app)
+    val version = VersionsDao.create(Util.createdBy, app, " 1.0.2\n ", Original, service)
+    version.version should be("1.0.2")
   }
 
 }
