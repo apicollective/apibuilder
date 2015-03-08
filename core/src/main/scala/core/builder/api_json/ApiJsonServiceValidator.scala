@@ -195,8 +195,6 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateHeaders(): Seq[String] = {
-    val enumNames = internalService.get.enums.map(_.name).toSet
-
     val headersWithoutNames = internalService.get.headers.filter(_.name.isEmpty) match {
       case Nil => Seq.empty
       case headers => Seq("All headers must have a name")
@@ -207,20 +205,7 @@ case class ApiJsonServiceValidator(
       case headers => Seq("All headers must have a type")
     }
 
-    val headersWithInvalidTypes = internalService.get.headers.filter(h => !h.name.isEmpty && !h.datatype.isEmpty).flatMap { header =>
-      val htype = header.datatype.get.name
-      if (htype == Primitives.String.toString || enumNames.contains(htype)) {
-        None
-      } else {
-        Some(s"Header[${header.name.get}] type[$htype] is invalid: Must be a string or the name of an enum")
-      }
-    }
-
-    val duplicates = internalService.get.headers.filter(!_.name.isEmpty).groupBy(_.name.get.toLowerCase).filter { _._2.size > 1 }.keys.map { headerName =>
-      s"Header[$headerName] appears more than once"
-    }
-
-    headersWithoutNames ++ headersWithoutTypes ++ headersWithInvalidTypes ++ duplicates
+    headersWithoutNames ++ headersWithoutTypes
   }
 
   /**

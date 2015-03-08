@@ -2,7 +2,7 @@ package builder
 
 import core.Importer
 import com.gilt.apidoc.spec.v0.models.Service
-import lib.{Datatype, DatatypeResolver, Kind, Text, Type}
+import lib.{Datatype, DatatypeResolver, Kind, Primitives, Text, Type}
 
 case class ServiceSpecValidator(
   service: Service
@@ -33,7 +33,8 @@ case class ServiceSpecValidator(
     validateBaseUrl() ++
     validateModels() ++
     validateEnums() ++
-    validateUnions()
+    validateUnions() ++
+    validateHeaders()
   }
 
   private def validateName(): Seq[String] = {
@@ -71,9 +72,7 @@ case class ServiceSpecValidator(
       s"Model[${model.name}] must have at least one field"
     }
 
-    val duplicates = service.models.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { modelName =>
-      s"Model[$modelName] appears more than once"
-    }
+    val duplicates = dupsError("Model", service.models.map(_.name))
 
     nameErrors ++ fieldErrors ++ duplicates
   }
@@ -88,9 +87,7 @@ case class ServiceSpecValidator(
       }
     }
 
-    val duplicates = service.enums.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { enumName =>
-      s"Enum[$enumName] appears more than once"
-    }
+    val duplicates = dupsError("Enum", service.enums.map(_.name))
 
     val valueErrors = service.enums.filter { _.values.isEmpty }.map { enum =>
       s"Enum[${enum.name}] must have at least one value"
@@ -103,7 +100,7 @@ case class ServiceSpecValidator(
     }
 
     val duplicateValues = service.enums.flatMap { enum =>
-      enum.values.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { value =>
+      dups(enum.values.map(_.name)).map { value =>
         s"Enum[${enum.name}] value[$value] appears more than once"
       }
     }
@@ -143,11 +140,42 @@ case class ServiceSpecValidator(
       }
     }
 
-    val duplicates = service.unions.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { unionName =>
-      s"Union[$unionName] appears more than once"
-    }
+    val duplicates = dupsError("Union", service.unions.map(_.name))
 
     nameErrors ++ typeErrors ++ invalidTypes ++ duplicates
+  }
+
+  private def validateHeaders(): Seq[String] = {
+    val enumNames = service.enums.map(_.name).toSet
+
+    val headersWithInvalidTypes = service.headers.flatMap { header =>
+      typeResolver.parse(header.`type`) match {
+        case None => Some(s"Header[${header.name}] type[${header.`type`}] is invalid")
+        case Some(dt) => {
+          dt.`type` match {
+            case Type(Kind.Primitive, "string") => None
+            case Type(Kind.Enum, _) => None
+            case Type(Kind.Model | Kind.Union | Kind.Primitive, _) => {
+              Some(s"Header[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
+            }
+          }
+        }
+      }
+    }
+
+    val duplicates = dupsError("Header", service.headers.map(_.name))
+
+    headersWithInvalidTypes ++ duplicates
+  }
+
+  private def dupsError(label: String, values: Iterable[String]): Seq[String] = {
+    dups(values).map { n =>
+      s"$label[$n] appears more than once"
+    }.toSeq
+  }
+
+  private def dups(values: Iterable[String]): Iterable[String] = {
+    values.groupBy(_.toLowerCase).filter { _._2.size > 1 }.keys
   }
 
 }
