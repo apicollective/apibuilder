@@ -27,6 +27,7 @@ object Util {
   val ApidocSpecExample = ExampleService("apidoc-spec")
   val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
 
+  val ApidocCliGitHubUrl = "https://github.com/gilt/apidoc-cli"
   val GitHubUrl = "https://github.com/gilt/apidoc"
   val GeneratorGitHubUrl = "https://github.com/gilt/apidoc-generator"
 

@@ -15,7 +15,7 @@ are support for union types and imports.</p>
 
     <li>We have replaced apiToken with auth in the Client
     signature. Users who were previously passing in an API token will
-    need to update their code to base in an instance of
+    need to update their code to pass in an instance of
     Authorization.Basic instead. This lays the foundation to have
     standard support for more authentication methods.
 
@@ -25,7 +25,7 @@ are support for union types and imports.</p>
 
     <pre>class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.v0.Authorization] = None)</pre>
 
-    In order to use a token, create an instace of basic authorization with:
+    In order to use a token, create an instance of basic authorization with:
 
     <pre>com.gilt.apidoc.v0.Authorization("token")</pre>
 
@@ -48,6 +48,12 @@ are support for union types and imports.</p>
       we simplify a portion of the upgrade path. Note that you can
       override this behavior by explicitly providing a namespace in
       the api.json file you upload to apidoc.</li>
+
+      <pre>package com.gilt.apidocspec</pre>
+
+      is now
+
+      <pre>package com.gilt.apidoc.spec.v0</pre>
 
     </ul>
 
@@ -103,8 +109,8 @@ are support for union types and imports.</p>
 
     <li> The resources element in the api.json file must now be a
     Map. Up until this version, we continued to support the original
-    format of the resources element being an array; this release fully
-    removes this deprecated features.</li>
+    format of the resources element being an array; this release
+    removes this deprecated feature.</li>
 
   </ul>
 
@@ -125,9 +131,9 @@ are support for union types and imports.</p>
     your order as having a User.
     </p>
     <p>
-      More detailed information, with specific examples of how to use
-      union types using the play clients,
-      see <a href="@routes.DocController.playUnionTypes">Play Union types</a>.
+      See <a href="@routes.DocController.playUnionTypes">Play Union
+      types</a> for more detailed information, with specific examples
+      of how to use union types using the play clients.
     </p>
     </li>
 
@@ -145,14 +151,14 @@ are support for union types and imports.</p>
     into a service description that we now call a
     &quot;Service&quot;. A Service is a full description of the REST
     API. The schema for a service can be found
-    at <a href="#@lib.Util.ApidocSpecExample.docsUrl">@lib.Util.ApidocSpecExample.key</a>.</li>
+    at <a href="@lib.Util.ApidocSpecExample.docsUrl">@lib.Util.ApidocSpecExample.key</a>.</li>
 
     <li>Code generators have been moved out of the apidoc code
-    repository and into a separate repository (a
+    repository and into a separate repository (<a
     href="@lib.Util.GeneratorGitHubUrl">@lib.Util.GeneratorGitHubUrl</a>). Combined
     with the introduction of the service schema, we now have a much
     simpler interface to create code generators. Code generators are
-    now esssentially functions that accept an instance of a service
+    functions that accept an instance of a service
     and return a string (actual code). For specific information on the
     API to create a code generator,
     see <a href="@lib.Util.ApidocGeneratorExample.docsUrl">@lib.Util.ApidocGeneratorExample.key</a>.</li>
@@ -183,6 +189,11 @@ are support for union types and imports.</p>
       mapping to package names, for example, in scala code
       generators.</li>
 
+      <li> You can provide your own namespace by including a
+      'namespace' attribute in your api.json
+      file. See <a href="@routes.DocController.apiJson'">api.json
+      format</a> for more information</li>
+
     </ol>
 
     <a name="import"></a>
@@ -194,7 +205,9 @@ are support for union types and imports.</p>
 
       <li> <a href="/docs/apiJson">Declare your imports</a> your
       api.json file by providing the full URI to each service.json
-      specification you would like to include.</li>
+      specification you would like to include. To find the URL for a
+      service from the UI, navigate to a service and then click
+      "service.json" in the nav bar on the left.</li>
 
       <li> To use a type from an imported service, reference that type
       using the fully qualified name for the type. For example, if the
@@ -215,8 +228,7 @@ are support for union types and imports.</p>
 
     <li> This release introduces a client code generator based on the
     latest ning version (1.9.11). See
-    @lib.Util.GitHubUrl/tree/master/client-tests/ning_1_9_scala_2_11
-    for an example play project.</li>
+    <a href="@lib.Util.GitHubUrl/tree/master/client-tests/ning_1_9_scala_2_11">example ning 1.9 play project</a>.</li>
 
   </ul>
 
@@ -227,7 +239,9 @@ are support for union types and imports.</p>
     <li> You can now create and manage API tokens to programmatically
     access apidoc
     applications. Visit <a href="@routes.TokensController.index()">@routes.TokensController.index()</a>
-    to manage tokens.</li>
+    to manage tokens. There is an experimental CLI that relies on
+    these tokens available
+    at <a href="@lib.Util.ApidocCliGitHubUrl">@lib.Util.ApidocCliGitHubUrl</a></li>
 
     <li> We added JSON error handling in the play client. This means
     that you will get a much nicer error message if we are unable to
@@ -242,14 +256,12 @@ are support for union types and imports.</p>
 
     <li> You can now edit your organization via the UI to change your
     organization key or namespace. Use with care as changing the
-    namespace would change the package names in generated code for all
-    services that rely on the default namespace.</li>
+    namespace may change the package names in generated code.</li>
 
     <li> We renamed the organization &quot;package name&quot; setting
-    as &quot;namespace&quot; and have made it required. The
-    organization namespace is globally unique.</li>
+    as &quot;namespace&quot; and have made it required.</li>
 
-    <li> Base url is now optional avoiding need to guess the url
+    <li> Base url is now optional avoiding need to guess the URL
     during initial development (before service is deployed)</li>
 
   </ul>
