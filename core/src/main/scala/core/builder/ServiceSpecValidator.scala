@@ -1,12 +1,11 @@
 package builder
 
-import core.{Importer, ServiceFetcher}
+import core.Importer
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.{Datatype, DatatypeResolver, Kind, Text, Type}
 
 case class ServiceSpecValidator(
-  service: Service,
-  fetcher: ServiceFetcher
+  service: Service
 ) {
 
   private val typeResolver = DatatypeResolver(
