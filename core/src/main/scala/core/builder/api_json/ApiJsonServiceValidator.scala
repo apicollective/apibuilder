@@ -189,47 +189,9 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateUnions(): Seq[String] = {
-    val nameErrors = internalService.get.unions.flatMap { union =>
-      Text.validateName(union.name) match {
-        case Nil => None
-        case errors => {
-          Some(s"Union[${union.name}] name is invalid: ${errors.mkString(" ")}")
-        }
-      }
+    internalService.get.unions.filter { !_.types.filter(_.datatype.isEmpty).isEmpty }.map { union =>
+      s"Union[${union.name}] all types must have a name"
     }
-
-    val typeErrors = internalService.get.unions.filter { _.types.isEmpty }.map { union =>
-      s"Union[${union.name}] must have at least one type"
-    }
-
-    val invalidTypes = internalService.get.unions.filter(!_.name.isEmpty).flatMap { union =>
-      union.types.flatMap { t =>
-        t.datatype match {
-          case None => Seq(s"Union[${union.name}] all types must have a name")
-          case Some(dt) => {
-            internalService.get.typeResolver.parse(dt) match {
-              case None => Seq(s"Union[${union.name}] type[${dt.label}] not found")
-              case Some(t: Datatype) => {
-                t.`type` match {
-                  case Type(Kind.Primitive, "unit") => {
-                    Seq("Union types cannot contain unit. To make a particular field optional, use the required: true|false property.")
-                  }
-                  case _ => {
-                    Seq.empty
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    val duplicates = internalService.get.unions.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { unionName =>
-      s"Union[$unionName] appears more than once"
-    }
-
-    nameErrors ++ typeErrors ++ invalidTypes ++ duplicates
   }
 
   private def validateHeaders(): Seq[String] = {

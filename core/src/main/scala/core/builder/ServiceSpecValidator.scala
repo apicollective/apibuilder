@@ -2,18 +2,39 @@ package builder
 
 import core.{Importer, ServiceFetcher}
 import com.gilt.apidoc.spec.v0.models.Service
-import lib.Text
+import lib.{Datatype, DatatypeResolver, Kind, Text, Type}
 
 case class ServiceSpecValidator(
   service: Service,
   fetcher: ServiceFetcher
 ) {
 
+  private val typeResolver = DatatypeResolver(
+    enumNames = service.enums.map(_.name) ++ service.imports.flatMap { service =>
+      service.enums.map { enum =>
+        s"${service.namespace}.enums.${enum}"
+      }
+    },
+
+    modelNames = service.models.map(_.name) ++ service.imports.flatMap { service =>
+      service.models.map { model =>
+        s"${service.namespace}.models.${model}"
+      }
+    },
+
+    unionNames = service.unions.map(_.name) ++ service.imports.flatMap { service =>
+      service.unions.map { union =>
+        s"${service.namespace}.unions.${union}"
+      }
+    }
+  )
+
   lazy val errors: Seq[String] = {
     validateName() ++
     validateBaseUrl() ++
     validateModels() ++
-    validateEnums()
+    validateEnums() ++
+    validateUnions()
   }
 
   private def validateName(): Seq[String] = {
@@ -91,5 +112,43 @@ case class ServiceSpecValidator(
     nameErrors ++ duplicates ++ valueErrors ++ valuesWithInvalidNames ++ duplicateValues
   }
 
+  private def validateUnions(): Seq[String] = {
+    val nameErrors = service.unions.flatMap { union =>
+      Text.validateName(union.name) match {
+        case Nil => None
+        case errors => {
+          Some(s"Union[${union.name}] name is invalid: ${errors.mkString(" ")}")
+        }
+      }
+    }
+
+    val typeErrors = service.unions.filter { _.types.isEmpty }.map { union =>
+      s"Union[${union.name}] must have at least one type"
+    }
+
+    val invalidTypes = service.unions.filter(!_.name.isEmpty).flatMap { union =>
+      union.types.flatMap { t =>
+        typeResolver.parse(t.`type`) match {
+          case None => Seq(s"Union[${union.name}] type[${t.`type`}] not found")
+          case Some(t: Datatype) => {
+            t.`type` match {
+              case Type(Kind.Primitive, "unit") => {
+                Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
+              }
+              case _ => {
+                Seq.empty
+              }
+            }
+          }
+        }
+      }
+    }
+
+    val duplicates = service.unions.groupBy(_.name.toLowerCase).filter { _._2.size > 1 }.keys.map { unionName =>
+      s"Union[$unionName] appears more than once"
+    }
+
+    nameErrors ++ typeErrors ++ invalidTypes ++ duplicates
+  }
 
 }

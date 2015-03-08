@@ -86,7 +86,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
   it("validates unit type") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("unit", "uuid", "registered"))
-    validator.errors.mkString("") should be("Union types cannot contain unit. To make a particular field optional, use the required: true|false property.")
+    validator.errors.mkString("") should be("Union types cannot contain unit. To make a particular field optional, use the required property.")
   }
 
 }
