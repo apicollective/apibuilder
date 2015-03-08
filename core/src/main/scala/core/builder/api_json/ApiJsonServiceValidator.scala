@@ -17,16 +17,11 @@ case class ApiJsonServiceValidator(
 
   private val RequiredFields = Seq("name")
 
-  lazy val service: Option[Service] = {
-    errors match {
-      case Nil => internalService.map { ServiceBuilder(config, _) }
-      case _ => None
-    }
-  }
+  lazy val service: Service = ServiceBuilder(config, internalService.get)
 
   def validate(): Either[Seq[String], Service] = {
     if (isValid) {
-      Right(service.get)
+      Right(service)
     } else {
       Left(errors)
     }
@@ -62,7 +57,12 @@ case class ApiJsonServiceValidator(
 
   private lazy val internalService: Option[InternalServiceForm] = serviceForm.map(InternalServiceForm(_, fetcher))
 
-  lazy val errors: Seq[String] = {
+  lazy val errors: Seq[String] = internalErrors match {
+    case Nil => builder.ServiceSpecValidator(service, fetcher).errors
+    case e => e
+  }
+
+  private lazy val internalErrors: Seq[String] = {
     internalService match {
 
       case None => {
@@ -77,7 +77,7 @@ case class ApiJsonServiceValidator(
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
-          val builderErrors = validateKey ++
+          validateKey ++
           validateImports ++
           validateEnums ++
           validateUnions ++
@@ -94,11 +94,6 @@ case class ApiJsonServiceValidator(
           validateResponses ++
           validatePathParameters ++
           validatePathParametersAreRequired
-
-          builderErrors match {
-            case Nil => builder.ServiceSpecValidator(service.get, fetcher).errors
-            case errors => errors
-          }
 
         } else {
           requiredFieldErrors

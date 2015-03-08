@@ -125,7 +125,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    validator.service.get.resources.head.operations.head.responses.find(_.code == 204).getOrElse {
+    validator.service.resources.head.operations.head.responses.find(_.code == 204).getOrElse {
       sys.error("Missing 204 response")
     }
   }
@@ -191,7 +191,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    val op = validator.service.get.resources.head.operations.head
+    val op = validator.service.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
     guid.`type` should be("uuid")
@@ -226,7 +226,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    val op = validator.service.get.resources.head.operations.head
+    val op = validator.service.resources.head.operations.head
     op.parameters.map(_.name) should be(Seq("guid"))
     val guid = op.parameters.head
     guid.`type` should be("[uuid]")
@@ -293,7 +293,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    val op = validator.service.get.resources.head.operations.head
+    val op = validator.service.resources.head.operations.head
     val idParam = op.parameters.head
     idParam.name should be("id")
     idParam.`type` should be("long")

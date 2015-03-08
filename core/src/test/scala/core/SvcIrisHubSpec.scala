@@ -18,7 +18,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
   }
 
   it("parses models") {
-    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service.get
+    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service
     val modelNames = service.models.map(_.name)
     modelNames.contains("foo") should be(false)
     modelNames.contains("agreement") should be(true)
@@ -30,7 +30,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
   }
 
   it("parses operations") {
-    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service.get
+    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service
     val itemResource = service.resources.find(_.`type` == "item").getOrElse {
       sys.error("Could not find item resource")
     }
@@ -52,7 +52,7 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
   }
 
   it("all POST operations return either a 2xx and a 409") {
-    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service.get
+    val service = TestHelper.parseFile(s"${Dir}/svc-iris-hub-0-0-1.json").service
     service.resources.foreach { resource =>
       resource.operations.filter(_.method == Method.Post).foreach { op =>
         if (op.responses.map(_.code).toSeq.sorted != Seq(201, 409) && op.responses.map(_.code).toSeq.sorted != Seq(202, 409)) {

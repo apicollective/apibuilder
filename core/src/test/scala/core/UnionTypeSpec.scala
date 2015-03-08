@@ -46,7 +46,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
   it("union types support descriptions") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("string", "uuid", "registered"))
     validator.errors.mkString("") should be("")
-    val union = validator.service.get.unions.head
+    val union = validator.service.unions.head
     union.types.find(_.`type` == "string").get.description should be(Some("foobar"))
     union.types.find(_.`type` == "uuid").get.description should be(None)
   }
@@ -54,19 +54,19 @@ class UnionTypeSpec extends FunSpec with Matchers {
   it("union types can have primitives") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("string", "uuid", "registered"))
     validator.errors.mkString("") should be("")
-    validator.service.get.unions.head.types.map(_.`type`) should be(Seq("string", "uuid"))
+    validator.service.unions.head.types.map(_.`type`) should be(Seq("string", "uuid"))
   }
 
   it("union types can have models") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("guest", "registered", "registered"))
     validator.errors.mkString("") should be("")
-    validator.service.get.unions.head.types.map(_.`type`) should be(Seq("guest", "registered"))
+    validator.service.unions.head.types.map(_.`type`) should be(Seq("guest", "registered"))
   }
 
   it("union types can have lists") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[guest]", "map[registered]", "registered"))
     validator.errors.mkString("") should be("")
-    validator.service.get.unions.head.types.map(_.`type`) should be(Seq("[guest]", "map[registered]"))
+    validator.service.unions.head.types.map(_.`type`) should be(Seq("[guest]", "map[registered]"))
   }
 
   it("rejects blank types") {

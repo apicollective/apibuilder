@@ -72,6 +72,12 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("Resource[[user]] has an invalid type: must be a singleton (not a list nor map)")
     }
+=======
+    val resource = validator.service.resources.head
+    val op = resource.operations.head
+    op.path should be ("/user_types/:id")
+  }
+>>>>>>> Remove infinite loop when validating service
 
   }
 

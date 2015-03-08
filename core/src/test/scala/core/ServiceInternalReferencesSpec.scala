@@ -27,10 +27,10 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
 
-    val barField = validator.service.get.models.find(_.name == "foo").get.fields.find(_.name == "bar").get
+    val barField = validator.service.models.find(_.name == "foo").get.fields.find(_.name == "bar").get
     barField.`type` should be("bar")
 
-    val fooField = validator.service.get.models.find(_.name == "bar").get.fields.find(_.name == "foo").get
+    val fooField = validator.service.models.find(_.name == "bar").get.fields.find(_.name == "foo").get
     fooField.`type` should be("foo")
   }
 
@@ -60,7 +60,7 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    val model = validator.service.get.models.find(_.name == "user_variant").get
+    val model = validator.service.models.find(_.name == "user_variant").get
     val parentField = model.fields.find(_.name == "parent").get
     parentField.`type` should be("user_variant")
   }

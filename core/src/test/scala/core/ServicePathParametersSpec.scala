@@ -138,7 +138,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
       val json = baseJson.format("guid")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
-      val userResource = validator.service.get.resources.head
+      val userResource = validator.service.resources.head
       val op = userResource.operations.head
       val param = op.parameters.head
       param.name should be("guid")
@@ -149,7 +149,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
       val json = baseJson.format("age")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
-      val userResource = validator.service.get.resources.head
+      val userResource = validator.service.resources.head
       val op = userResource.operations.head
       val param = op.parameters.head
       param.name should be("age")

@@ -46,7 +46,7 @@ class ServiceEnumSpec extends FunSpec with Matchers {
       val json = baseJson.format("", """, "default": "Twenties" """, "")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
-      val field = validator.service.get.models.head.fields.find(_.name == "age_group").get
+      val field = validator.service.models.head.fields.find(_.name == "age_group").get
       field.default should be(Some("Twenties"))
     }
 
@@ -68,7 +68,7 @@ class ServiceEnumSpec extends FunSpec with Matchers {
     val json = baseJson.format("", "", "")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    val ageGroup = validator.service.get.models.head.fields.find { _.name == "age_group" }.get
+    val ageGroup = validator.service.models.head.fields.find { _.name == "age_group" }.get
     ageGroup.`type` should be("age_group")
   }
 

@@ -24,10 +24,7 @@ object TestHelper {
     )
 
     val contents = readFile("spec/service.json")
-    val validator = ServiceValidator(config, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
-    validator.service.getOrElse {
-      sys.error("Failed to read spec/service.json")
-    }
+    ServiceValidator(config, Original(OriginalType.ApiJson, contents), new MockServiceFetcher()).service
   }
 
   def serviceValidatorFromApiJson(contents: String): ServiceValidator = {
