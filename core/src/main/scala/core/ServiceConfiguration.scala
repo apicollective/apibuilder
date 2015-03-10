@@ -13,7 +13,7 @@ case class ServiceConfiguration(
   assert(version.trim == version, s"version[$version] must be trimmed")
 
   /**
-    * Example: apidocSpec => apidoc.spec
+    * Example: apidocSpec => apidoc.spec.v0
     */
   def applicationNamespace(key: String): String = {
     (
