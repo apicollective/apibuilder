@@ -310,19 +310,22 @@ object InternalResourceForm {
     unions: Seq[InternalUnionForm],
     value: JsObject
   ): InternalResourceForm = {
-    val path = JsonUtil.asOptString(value \ "path").getOrElse {
-      enums.find(e => e.name == typeName) match {
-        case Some(enum) => "/" + enum.plural
-        case None => {
-          models.find(m => m.name == typeName) match {
-            case Some(model) => "/" + model.plural
-            case None => {
-              unions.find(u => u.name == typeName) match {
-                case Some(union) => "/" + union.plural
-                case None => "/"
+    val path: String = (value \ "path").asOpt[JsString] match {
+      case Some(v) => v.value
+      case None => {
+        enums.find(e => e.name == typeName) match {
+          case Some(enum) => "/" + enum.plural
+          case None => {
+            models.find(m => m.name == typeName) match {
+              case Some(model) => "/" + model.plural
+              case None => {
+                unions.find(u => u.name == typeName) match {
+                  case Some(union) => "/" + union.plural
+                  case None => ""
+                }
               }
             }
-          }
+        }
         }
       }
     }
@@ -349,7 +352,9 @@ object InternalOperationForm {
   private val NoContentResponse = InternalResponseForm(code = "204", datatype = Some(InternalDatatype("unit")))
 
   def apply(resourcePath: String, json: JsObject): InternalOperationForm = {
-    val path = resourcePath + JsonUtil.asOptString(json \ "path").getOrElse("")
+    val internalPath = resourcePath + JsonUtil.asOptString(json \ "path").getOrElse("")
+    val path = if (internalPath == "") { "/" } else { internalPath }
+
     val namedPathParameters = Util.namedParametersInPath(path)
     val parameters = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
