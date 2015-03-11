@@ -32,6 +32,12 @@ In development:
 
     APIDOC_API_URI="http://localhost:9001" /web/apidoc-cli/bin/apidoc update
 
+Updating apidoc.me
+==================
+/web/apidoc-cli/bin/apidoc upload gilt apidoc-spec ./spec/service.json  --version 0.8.17
+/web/apidoc-cli/bin/apidoc upload gilt apidoc-generator ./spec/generator.json  --version 0.8.17
+/web/apidoc-cli/bin/apidoc upload gilt apidoc ./api/api.json  --version 0.8.17
+
 SBT
 ==========
 Memory settings for SBT:
