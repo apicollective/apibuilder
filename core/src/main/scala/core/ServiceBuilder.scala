@@ -66,6 +66,7 @@ object ResourceBuilder {
           `type` = internal.datatype.name,
           plural = enum.plural,
           description = internal.description,
+          deprecation = internal.deprecation.map(DeprecationBuilder(_)),
           operations = internal.operations.map(op => OperationBuilder(resolver, op))
         )
       }
@@ -77,6 +78,7 @@ object ResourceBuilder {
               `type` = internal.datatype.name,
               plural = model.plural,
               description = internal.description,
+              deprecation = internal.deprecation.map(DeprecationBuilder(_)),
               operations = internal.operations.map(op => OperationBuilder(resolver, op, model = Some(model)))
             )
           }
@@ -91,6 +93,7 @@ object ResourceBuilder {
                   `type` = internal.datatype.name,
                   plural = union.plural,
                   description = internal.description,
+                  deprecation = internal.deprecation.map(DeprecationBuilder(_)),
                   operations = internal.operations.map(op => OperationBuilder(resolver, op, union = Some(union), models = models))
                 )
               }
@@ -147,6 +150,7 @@ object OperationBuilder {
       method = Method(method),
       path = internal.path,
       description = internal.description,
+      deprecation = internal.deprecation.map(DeprecationBuilder(_)),
       body = internal.body.map { ib => BodyBuilder(resolver, ib) },
       parameters = pathParameters ++ internalParams,
       responses = internal.responses.map { ResponseBuilder(resolver, _) }
@@ -179,13 +183,21 @@ object BodyBuilder {
       case None => sys.error("Body missing type: " + ib)
       case Some(datatype) => Body(
         `type` = resolver.parseWithError(datatype).label,
-        description = ib.description
+        description = ib.description,
+        deprecation = ib.deprecation.map(DeprecationBuilder(_))
       )
     }
   }
 
 }
 
+object DeprecationBuilder {
+
+  def apply(internal: InternalDeprecationForm): Deprecation = {
+    Deprecation(description = internal.description)
+  }
+
+}
 
 object EnumBuilder {
 
@@ -194,7 +206,14 @@ object EnumBuilder {
       name = ie.name,
       plural = ie.plural,
       description = ie.description,
-      values = ie.values.map { iv => EnumValue(name = iv.name.get, description = iv.description) }
+      deprecation = ie.deprecation.map(DeprecationBuilder(_)),
+      values = ie.values.map { iv =>
+        EnumValue(
+          name = iv.name.get,
+          description = iv.description,
+          deprecation = iv.deprecation.map(DeprecationBuilder(_))
+        )
+      }
     )
   }
 
@@ -207,7 +226,14 @@ object UnionBuilder {
       name = internal.name,
       plural = internal.plural,
       description = internal.description,
-      types = internal.types.map { it => UnionType(`type` = it.datatype.get.label, description = it.description) }
+      deprecation = internal.deprecation.map(DeprecationBuilder(_)),
+      types = internal.types.map { it =>
+        UnionType(
+          `type` = it.datatype.get.label,
+          description = it.description,
+          deprecation = it.deprecation.map(DeprecationBuilder(_))
+        )
+      }
     )
   }
 
@@ -221,6 +247,7 @@ object HeaderBuilder {
       `type` = resolver.parseWithError(ih.datatype.get).label,
       required = ih.required,
       description = ih.description,
+      deprecation = ih.deprecation.map(DeprecationBuilder(_)),
       default = ih.default
     )
   }
@@ -254,6 +281,7 @@ object ModelBuilder {
       name = im.name,
       plural = im.plural,
       description = im.description,
+      deprecation = im.deprecation.map(DeprecationBuilder(_)),
       fields = im.fields.map { FieldBuilder(resolver, _) }
     )
   }
@@ -265,7 +293,8 @@ object ResponseBuilder {
   def apply(resolver: TypeResolver, internal: InternalResponseForm): Response = {
     Response(
       code = internal.code.toInt,
-      `type` = resolver.parseWithError(internal.datatype.get).label
+      `type` = resolver.parseWithError(internal.datatype.get).label,
+      deprecation = internal.deprecation.map(DeprecationBuilder(_))
     )
   }
 
@@ -292,6 +321,7 @@ object ParameterBuilder {
       `type` = typeInstance.label,
       location = location,
       description = internal.description,
+      deprecation = internal.deprecation.map(DeprecationBuilder(_)),
       required = internal.required,
       default = internal.default,
       minimum = internal.minimum,
@@ -316,6 +346,7 @@ object FieldBuilder {
       name = internal.name.get,
       `type` = datatype.label,
       description = internal.description,
+      deprecation = internal.deprecation.map(DeprecationBuilder(_)),
       required = internal.required,
       default = internal.default,
       minimum = internal.minimum,

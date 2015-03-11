@@ -9,13 +9,14 @@
   <thead>
     <tr>
       <th>Type</th>
-      <th>Description</th>
+      <th colspan="2">Description</th>
     </tr>
   </thead>
   <tbody>
    <tr>
      <td>@datatype(org, app, version, service, body.`type`)</td>
      <td>@body.description.getOrElse("N/A")</td>
+     <td>@body.deprecation.map(deprecation(_))</td>
    </tr>
   </tbody>
 </table>
