@@ -15,7 +15,7 @@ args = ApidocCli::Args.parse(ARGV)
 PROFILE = args[:profile]
 
 orgs = [] # ['gilt']
-applications = ['checkout-api']  # ['apidoc']
+applications = ['apidoc']  # ['apidoc']
 applications_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }
@@ -25,7 +25,7 @@ if !args.has_key?(:force) && (!orgs.empty? || !applications.empty?)
   puts "  Organization: " + (orgs.empty? ? "All" : orgs.join(", "))
   puts "  Applications: " + (applications.empty? ? "All" : applications.join(", "))
   print "Continue? (y/n): "
-  response = gets
+  response = $stdin.gets
   if !response.strip.downcase.match(/^y/)
     exit(0)
   end
