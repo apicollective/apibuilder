@@ -2,22 +2,25 @@
 
 CLI_PATH = "/web/apidoc-cli/bin/apidoc"
 
-if arg_force = (ARGV[0] == "--force")
-  ARGV.shift
+if !File.exists?(CLI_PATH)
+  puts "ERROR: Could not find CLI at #{CLI_PATH}"
+  puts ""
+  exit(1)
 end
 
-APIDOC_API_URI = ARGV.shift.to_s.strip
-if APIDOC_API_URI == ""
-  raise "service uri is required"
-end
+load '/web/apidoc-cli/lib/apidoc-cli/args.rb'
+
+args = ApidocCli::Args.parse(ARGV)
+
+PROFILE = args[:profile]
 
 orgs = [] # ['gilt']
-applications = []  # ['apidoc']
+applications = ['checkout-api']  # ['apidoc']
 applications_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }
 
-if !arg_force && (!orgs.empty? || !applications.empty?)
+if !args.has_key?(:force) && (!orgs.empty? || !applications.empty?)
   puts "Confirm you would like to limit tests to:"
   puts "  Organization: " + (orgs.empty? ? "All" : orgs.join(", "))
   puts "  Applications: " + (applications.empty? ? "All" : applications.join(", "))
@@ -113,12 +116,33 @@ targets = [
            Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client'])
           ]
 
+targets = [
+           Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])
+          ]
+
+def cli(command, opts={})
+  limit = opts.delete(:limit)
+  offset = opts.delete(:offset)
+  if !opts.empty?
+    raise "Invalid keys: #{opts.keys.inspect}"
+  end
+
+  builder = {
+    "LIMIT" => limit.to_s.strip,
+    "OFFSET" => offset.to_s.strip,
+    "PROFILE" => (PROFILE.to_s.strip == "") ? "" : PROFILE.to_s.strip
+  }.select { |k, v| v != "" }.map { |k,v| "export #{k}=#{v}" }
+
+  builder << "#{CLI_PATH} #{command}"
+  cmd = builder.join(" && ")
+  # puts cmd
+  `#{cmd}`.strip.split("\n").map(&:strip)
+end
+
 def get_code(org, application, generator)
   version = "latest"
 
-  cmd = "APIDOC_API_URI=#{APIDOC_API_URI} #{CLI_PATH} code #{org} #{application} #{version} #{generator}"
-  puts cmd
-  code = `#{cmd}`.to_s.strip
+  code = cli("code #{org} #{application} #{version} #{generator}")
   if code == ""
     raise "Failed to fetch code for org[#{org}] application[#{application}] version[#{version}] generator[#{generator}]"
   end
@@ -133,10 +157,7 @@ def get_in_batches(cli_command)
   records = nil
   while records.nil? || records.size >= limit
     cache_key = "%s?limit=%s&offset=%s" % [cli_command, limit, offset]
-    if CACHE[cache_key].nil?
-      cmd = "LIMIT=#{limit} OFFSET=#{offset} APIDOC_API_URI=#{APIDOC_API_URI} #{CLI_PATH} #{cli_command}"
-      CACHE[cache_key] = `#{cmd}`.strip.split("\n").map(&:strip)
-    end
+    CACHE[cache_key] ||= cli(cli_command, :limit => limit, :offset => offset)
 
     records = CACHE[cache_key]
     records.each do |rec|
