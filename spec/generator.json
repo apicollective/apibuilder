@@ -1,0 +1,105 @@
+{
+    "name": "Apidoc Generator",
+    "description": "Documentation for an apidoc code generator API",
+    "base_url": "http://www.apidoc.me",
+
+    "imports": [
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.8.17/service.json" }
+    ],
+
+    "models": {
+
+        "generator": {
+            "description": "The generator metadata.",
+            "fields": [
+                { "name": "key", "type": "string" },
+                { "name": "name", "type": "string" },
+                { "name": "language", "type": "string", "required": false },
+                { "name": "description", "type": "string", "required": false }
+            ]
+        },
+
+        "invocation": {
+          "description": "The result of invoking a generator.",
+          "fields": [
+            { "name": "source", "type": "string", "description": "The actual source code." }
+          ]
+        },
+
+        "invocation_form": {
+          "fields": [
+            { "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service" },
+            { "name": "user_agent", "type": "string", "required": "false" }
+          ]
+        },
+
+	"healthcheck": {
+	    "fields": [
+                { "name": "status", "type": "string", "example": "healthy" }
+	    ]
+	},
+
+        "error": {
+            "fields": [
+                { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
+                { "name": "message", "type": "string", "description": "Description of the error" }
+            ]
+        }
+
+    },
+
+    "resources": {
+
+	"healthcheck": {
+	    "path": "/_internal_/healthcheck",
+            "operations": [
+                {
+                    "method": "GET",
+                    "responses": {
+                        "200": { "type": "healthcheck" }
+                    }
+                }
+	    ]
+	},
+
+        "generator": {
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Get all available generators",
+                    "parameters": [
+                        { "name": "key", "type": "string", "description": "Filter generators with this key", "required": false },
+                        { "name": "limit", "type": "integer", "default": "100", "description": "The number of records to return", "minimum": 0 },
+                        { "name": "offset", "type": "integer", "default": "0", "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ],
+                    "responses": {
+                        "200": { "type": "[generator]" }
+                    }
+                },
+                {
+                  "method": "GET",
+                  "path": "/:key",
+                  "description": "Get generator with this key",
+                  "responses": {
+                    "200": { "type": "generator" }
+                  }
+                }
+	    ]
+	},
+
+	"invocation": {
+	    "operations": [
+		{
+                    "method": "POST",
+                    "path": "/:key",
+                    "description": "Invoke a generator",
+                    "body": { "type": "invocation_form" },
+                    "responses": {
+                        "200": { "type": "invocation" },
+                        "409": { "type": "[error]" }
+                    }
+                }
+            ]
+        }
+    }
+}
