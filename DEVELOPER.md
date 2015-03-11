@@ -88,15 +88,9 @@ in situ for a nice development experience.
 Updating generated code
 =======================
 
-    script/update-generated-code
+    /web/apidoc-cli/bin/apidoc update
 
 Releasing code
 ==============
 
-Install ionblaster:
-
-    curl -s https://s3.amazonaws.com/ionblaster/install | sh
-
-Release to ec2:
-
-    /web/metadata-architecture/exec script/release-and-deploy [--tag x.y.z] api www
+    /web/ionroller-tools/bin/release-and-deploy --release "apidoc-api apidoc-www"
