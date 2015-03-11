@@ -16,17 +16,22 @@ case class ServiceConfiguration(
     * Example: apidocSpec => apidoc.spec.v0
     */
   def applicationNamespace(key: String): String = {
-    (
-      Seq(orgNamespace.trim) ++
-      Text.splitIntoWords(Text.camelCaseToUnderscore(key.trim)).map(_.toLowerCase).map(_.trim) ++
-      Seq(VersionTag(version).major.map(num => s"v$num").getOrElse(""))
-    ).filter(!_.isEmpty).mkString(".")
+    ServiceConfiguration.ApplicationNamespaceNonLetterRegexp.replaceAllIn(
+      (
+        Seq(orgNamespace.trim) ++
+        Text.splitIntoWords(Text.camelCaseToUnderscore(key.trim)).map(_.toLowerCase).map(_.trim) ++
+        Seq(VersionTag(version).major.map(num => s"v$num").getOrElse(""))
+      ).filter(!_.isEmpty).mkString("."),
+      m => m.group(1)
+    )
   }
 
 }
 
 
 object ServiceConfiguration {
+
+  private[core] val ApplicationNamespaceNonLetterRegexp = """\.([^a-zA-Z])""".r
 
   def apply(
     org: Organization,
