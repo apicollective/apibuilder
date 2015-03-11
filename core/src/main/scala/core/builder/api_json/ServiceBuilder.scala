@@ -309,13 +309,16 @@ object FieldBuilder {
     resolver: TypeResolver,
     internal: InternalFieldForm
   ): Field = {
-    val datatype = resolver.parseWithError(internal.datatype.get)
-
-    internal.default.map { resolver.assertValidDefault(datatype, _) }
+    resolver.parse(internal.datatype.get) match {
+      case None => {}
+      case Some(datatype) => {
+        internal.default.map { resolver.assertValidDefault(datatype, _) }
+      }
+    }
 
     Field(
       name = internal.name.get,
-      `type` = datatype.label,
+      `type` = internal.datatype.get.label,
       description = internal.description,
       required = internal.required,
       default = internal.default,

@@ -200,6 +200,15 @@ case class ServiceSpecValidator(
         }
       }
     }
+
+    service.models.flatMap { model =>
+      model.fields.flatMap { field =>
+        typeResolver.parse(field.`type`) match {
+          case None => Some(s"${model.name}.${field.name} has invalid type[${field.`type`}]")
+          case _ => None
+        }
+      }
+    }
   }
 
   private def dupsError(label: String, values: Iterable[String]): Seq[String] = {

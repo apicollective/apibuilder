@@ -83,7 +83,6 @@ case class ApiJsonServiceValidator(
           validateUnions ++
           validateHeaders ++
           validateFields ++
-          validateFieldTypes ++
           validateFieldDefaults ++
           validateOperations ++
           validateResources ++
@@ -129,24 +128,6 @@ case class ApiJsonServiceValidator(
       Seq.empty
     } else {
       Seq("Missing: " + missing.mkString(", "))
-    }
-  }
-
-  /**
-   * Validate references to ensure they refer to proper data
-   */
-  private def validateFieldTypes(): Seq[String] = {
-    internalService.get.models.flatMap { model =>
-      model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).flatMap { field =>
-        internalService.get.typeResolver.toType(field.datatype.get.name) match {
-          case None => {
-            Some(s"${model.name}.${field.name.get} has invalid type. There is no model, enum, nor datatype named[${field.datatype.get.name}]")
-          }
-          case _ => {
-            None
-          }
-        }
-      }
     }
   }
 
