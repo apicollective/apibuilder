@@ -15,7 +15,7 @@ args = ApidocCli::Args.parse(ARGV)
 PROFILE = args[:profile]
 
 orgs = [] # ['gilt']
-applications = ['apidoc']  # ['apidoc']
+applications = []  # ['apidoc', 'apidoc-spec', 'apidoc-generator']
 applications_to_skip_by_org = {
   "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
 }
@@ -116,10 +116,6 @@ targets = [
            Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client'])
           ]
 
-targets = [
-           Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client', 'play_2_x_json', 'scala_models'])
-          ]
-
 def cli(command, opts={})
   limit = opts.delete(:limit)
   offset = opts.delete(:offset)
@@ -135,8 +131,8 @@ def cli(command, opts={})
 
   builder << "#{CLI_PATH} #{command}"
   cmd = builder.join(" && ")
-  # puts cmd
-  `#{cmd}`.strip.split("\n").map(&:strip)
+  puts cmd
+  `#{cmd}`.strip
 end
 
 def get_code(org, application, generator)
@@ -157,7 +153,7 @@ def get_in_batches(cli_command)
   records = nil
   while records.nil? || records.size >= limit
     cache_key = "%s?limit=%s&offset=%s" % [cli_command, limit, offset]
-    CACHE[cache_key] ||= cli(cli_command, :limit => limit, :offset => offset)
+    CACHE[cache_key] ||= cli(cli_command, :limit => limit, :offset => offset).split("\n").map(&:strip)
 
     records = CACHE[cache_key]
     records.each do |rec|
