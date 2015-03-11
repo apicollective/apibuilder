@@ -7,3 +7,5 @@ scalaVersion := "2.11.5"
 libraryDependencies ++= Seq(
   ws
 )
+
+lazy val root = (project in file(".")).enablePlugins(PlayScala)
