@@ -138,13 +138,13 @@ object OperationBuilder {
           // Path parameter was declared in the parameters
           // section. Use the explicit information provided in the
           // specification
-          ParameterBuilder(resolver, declared, ParameterLocation.Path)
+          ParameterBuilder(declared, ParameterLocation.Path)
         }
       }
     }
 
     val internalParams = internal.parameters.filter(p => pathParameters.find(_.name == p.name.get).isEmpty).map { p =>
-      ParameterBuilder(resolver, p, location)
+      ParameterBuilder(p, location)
     }
 
     Operation(
@@ -286,14 +286,10 @@ object ParameterBuilder {
     )
   }
 
-  def apply(resolver: TypeResolver, internal: InternalParameterForm, location: ParameterLocation): Parameter = {
-    val typeInstance = resolver.parseWithError(internal.datatype.get)
-
-    internal.default.map { resolver.assertValidDefault(typeInstance, _) }
-
+  def apply(internal: InternalParameterForm, location: ParameterLocation): Parameter = {
     Parameter(
       name = internal.name.get,
-      `type` = typeInstance.label,
+      `type` = internal.datatype.get.label,
       location = location,
       description = internal.description,
       required = internal.required,

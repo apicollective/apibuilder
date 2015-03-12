@@ -44,7 +44,8 @@ case class ServiceSpecValidator(
     validateFields() ++
     validateFieldDefaults() ++
     validateResources() ++
-    validateParameterBodies()
+    validateParameterBodies() ++
+    validateParameterDefaults()
   }
 
   private def validateName(): Seq[String] = {
@@ -228,14 +229,7 @@ case class ServiceSpecValidator(
     service.models.flatMap { model =>
       model.fields.flatMap { field =>
         field.default.flatMap { default =>
-          typeResolver.parse(field.`type`) match {
-            case None => {
-              None
-            }
-            case Some(pd) => {
-              validator.validate(pd, default, Some(s"${model.name}.${field.name}"))
-            }
-          }
+          validateDefault(s"${model.name}.${field.name}", field.`type`, default)
         }
       }
     }
@@ -305,6 +299,38 @@ case class ServiceSpecValidator(
     }
 
     typesNotFound ++ invalidMethods
+  }
+
+  private def validateParameterDefaults(): Seq[String] = {
+    service.resources.flatMap { resource =>
+      resource.operations.filter(!_.parameters.isEmpty).flatMap { op =>
+        op.parameters.flatMap { param =>
+          typeResolver.parse(param.`type`).flatMap { pd =>
+            param.default match {
+              case None => None
+              case Some(default) => {
+                validateDefault(s"${opLabel(resource, op)} param[${param.name}]", param.`type`, default)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private def validateDefault(
+    prefix: String,
+    `type`: String,
+    default: String
+  ): Option[String] = {
+    typeResolver.parse(`type`) match {
+      case None => {
+        None
+      }
+      case Some(pd) => {
+        validator.validate(pd, default, Some(prefix))
+      }
+    }
   }
 
   private def dupsError(label: String, values: Iterable[String]): Seq[String] = {

@@ -85,7 +85,6 @@ case class ApiJsonServiceValidator(
           validateFields ++
           validateOperations ++
           validateParameterBodies ++
-          validateParameterDefaults ++
           validateParameters ++
           validateResponses ++
           validatePathParameters ++
@@ -307,23 +306,6 @@ case class ApiJsonServiceValidator(
         op.body.flatMap(_.datatype) match {
           case None => Some(s"${opLabel(resource, op)}: Body missing type")
           case Some(_) => None
-        }
-      }
-    }
-  }
-
-  private def validateParameterDefaults(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.parameters.isEmpty).flatMap { op =>
-        op.parameters.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).flatMap { param =>
-          internalService.get.typeResolver.parse(param.datatype.get).flatMap { pd =>
-            param.default match {
-              case None => None
-              case Some(default) => {
-                internalService.get.typeResolver.validate(pd, default, Some(s"${opLabel(resource, op)} param[${param.name.get}]"))
-              }
-            }
-          }
         }
       }
     }
