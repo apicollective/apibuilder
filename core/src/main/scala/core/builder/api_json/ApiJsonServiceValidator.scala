@@ -302,33 +302,14 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateParameterBodies(): Seq[String] = {
-    val typesNotFound = internalService.get.resources.flatMap { resource =>
+    internalService.get.resources.flatMap { resource =>
       resource.operations.filter(!_.body.isEmpty).flatMap { op =>
         op.body.flatMap(_.datatype) match {
-          case None => Seq(s"${opLabel(resource, op)}: Body missing type")
-          case Some(datatype) => {
-            internalService.get.typeResolver.parse(datatype) match {
-              case None => {
-                if (datatype.name.isEmpty || datatype.name.trim == "") {
-                  Seq(s"${opLabel(resource, op)}: Body missing type")
-                } else {
-                  Seq(s"${opLabel(resource, op)} body: Type[${datatype.label}] not found")
-                }
-              }
-              case Some(ti) => Seq.empty
-            }
-          }
+          case None => Some(s"${opLabel(resource, op)}: Body missing type")
+          case Some(_) => None
         }
       }
     }
-
-    val invalidMethods = internalService.get.resources.flatMap { resource =>
-      resource.operations.filter(op => !op.body.isEmpty && !op.method.isEmpty && !Methods.isJsonDocumentMethod(op.method.get)).map { op =>
-        s"${opLabel(resource, op)}: Cannot specify body for HTTP method[${op.method.get}]"
-      }
-    }
-
-    typesNotFound ++ invalidMethods
   }
 
   private def validateParameterDefaults(): Seq[String] = {

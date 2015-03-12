@@ -151,7 +151,7 @@ object OperationBuilder {
       method = Method(method),
       path = internal.path,
       description = internal.description,
-      body = internal.body.map { ib => BodyBuilder(resolver, ib) },
+      body = internal.body.map { BodyBuilder(_) },
       parameters = pathParameters ++ internalParams,
       responses = internal.responses.map { ResponseBuilder(resolver, _) }
     )
@@ -178,11 +178,11 @@ object OperationBuilder {
 
 object BodyBuilder {
 
-  def apply(resolver: TypeResolver, ib: InternalBodyForm): Body = {
+  def apply(ib: InternalBodyForm): Body = {
     ib.datatype match {
       case None => sys.error("Body missing type: " + ib)
       case Some(datatype) => Body(
-        `type` = resolver.parseWithError(datatype).label,
+        `type` = datatype.label,
         description = ib.description
       )
     }

@@ -1,8 +1,8 @@
 package builder
 
 import core.{Importer, TypeValidator, TypesProvider}
-import com.gilt.apidoc.spec.v0.models.Service
-import lib.{Datatype, DatatypeResolver, Kind, Primitives, Text, Type}
+import com.gilt.apidoc.spec.v0.models.{Operation, Resource, Service}
+import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type}
 
 case class ServiceSpecValidator(
   service: Service
@@ -43,7 +43,8 @@ case class ServiceSpecValidator(
     validateModelAndEnumAndUnionNamesAreDistinct() ++
     validateFields() ++
     validateFieldDefaults() ++
-    validateResources()
+    validateResources() ++
+    validateParameterBodies()
   }
 
   private def validateName(): Seq[String] = {
@@ -282,6 +283,30 @@ case class ServiceSpecValidator(
     datatypeErrors ++ missingOperations ++ duplicateModels
   }
 
+  private def validateParameterBodies(): Seq[String] = {
+    val typesNotFound = service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.body match {
+          case None => Seq.empty
+          case Some(body) => {
+            typeResolver.parse(body.`type`) match {
+              case None => Some(s"${opLabel(resource, op)} body: Type[${body.`type`}] not found")
+              case Some(_) => None
+            }
+          }
+        }
+      }
+    }
+
+    val invalidMethods = service.resources.flatMap { resource =>
+      resource.operations.filter(op => !op.body.isEmpty && !Methods.isJsonDocumentMethod(op.method.toString)).map { op =>
+        s"${opLabel(resource, op)}: Cannot specify body for HTTP method[${op.method}]"
+      }
+    }
+
+    typesNotFound ++ invalidMethods
+  }
+
   private def dupsError(label: String, values: Iterable[String]): Seq[String] = {
     dups(values).map { n =>
       s"$label[$n] appears more than once"
@@ -291,5 +316,10 @@ case class ServiceSpecValidator(
   private def dups(values: Iterable[String]): Iterable[String] = {
     values.groupBy(_.toLowerCase).filter { _._2.size > 1 }.keys
   }
+
+  private def opLabel(resource: Resource, op: Operation): String = {
+    s"Resource[${resource.`type`}] ${op.method} ${op.path}"
+  }
+
 
 }
