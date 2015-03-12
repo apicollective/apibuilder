@@ -42,7 +42,8 @@ case class ServiceSpecValidator(
     validateHeaders() ++
     validateModelAndEnumAndUnionNamesAreDistinct() ++
     validateFields() ++
-    validateFieldDefaults()
+    validateFieldDefaults() ++
+    validateResources()
   }
 
   private def validateName(): Seq[String] = {
@@ -228,17 +229,57 @@ case class ServiceSpecValidator(
         field.default.flatMap { default =>
           typeResolver.parse(field.`type`) match {
             case None => {
-              println(s"Could not parse[${field.`type`}]")
               None
             }
             case Some(pd) => {
-              println(s"Parsed[${field.`type`}] => $pd")
               validator.validate(pd, default, Some(s"${model.name}.${field.name}"))
             }
           }
         }
       }
     }
+  }
+
+  private def validateResources(): Seq[String] = {
+    val datatypeErrors = service.resources.flatMap { resource =>
+      typeResolver.parse(resource.`type`) match {
+        case None => {
+          Some(s"Resource[${resource.`type`}] has an invalid type")
+        }
+        case Some(dt) => {
+          dt match {
+            case Datatype.List(_) | Datatype.Map(_) => {
+              Some(s"Resource[${resource.`type`}] has an invalid type: must be a singleton (not a list nor map)")
+            }
+            case Datatype.Singleton(t) => {
+              t match {
+                case Type(Kind.Model | Kind.Enum | Kind.Union, name) => {
+                  None
+                }
+                case Type(Kind.Primitive, name) => {
+                  Some(s"Resource[${resource.`type`}] has an invalid type: Primitives cannot be mapped to resources")
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    val missingOperations = service.resources.filter { _.operations.isEmpty }.map { resource =>
+      s"Resource[${resource.`type`}] must have at least one operation"
+    }
+
+    val duplicateModels = service.resources.flatMap { resource =>
+      val numberResources = service.resources.filter { _.`type` == resource.`type` }.size
+      if (numberResources <= 1) {
+        None
+      } else {
+        Some(s"Resource[${resource.`type`}] cannot appear multiple times")
+      }
+    }.distinct
+
+    datatypeErrors ++ missingOperations ++ duplicateModels
   }
 
   private def dupsError(label: String, values: Iterable[String]): Seq[String] = {

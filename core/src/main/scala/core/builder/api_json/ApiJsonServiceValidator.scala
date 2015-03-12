@@ -84,7 +84,6 @@ case class ApiJsonServiceValidator(
           validateHeaders ++
           validateFields ++
           validateOperations ++
-          validateResources ++
           validateParameterBodies ++
           validateParameterDefaults ++
           validateParameters ++
@@ -416,48 +415,6 @@ case class ApiJsonServiceValidator(
         s"${opLabel(resource, op)}: ${op.warnings.mkString(", ")}"
       }
     }
-  }
-
-  private def validateResources(): Seq[String] = {
-    val datatypeErrors = internalService.get.resources.flatMap { resource =>
-      resource.datatype match {
-        case InternalDatatype.List(_, _) | InternalDatatype.Map(_, _) => {
-          Some(s"Resource[${resource.datatype.label}] has an invalid type: must be a singleton (not a list nor map)")
-        }
-        case InternalDatatype.Singleton(name, required) => {
-          internalService.get.resources.flatMap { resource =>
-            internalService.get.typeResolver.toType(resource.datatype.label) match {
-              case None => {
-                Some(s"Resource[${resource.datatype.label}] has an invalid type")
-              }
-              case Some(t) => {
-                t match {
-                  case Type(Kind.Model | Kind.Enum | Kind.Union, name) => None
-                  case Type(Kind.Primitive, name) => {
-                    Some(s"Resource[${resource.datatype.label}] has an invalid type: Primitives cannot be mapped to resources")
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    val missingOperations = internalService.get.resources.filter { _.operations.isEmpty }.map { resource =>
-      s"Resource[${resource.datatype.label}] must have at least one operation"
-    }
-
-    val duplicateModels = internalService.get.resources.flatMap { resource =>
-      val numberResources = internalService.get.resources.filter { _.datatype.label == resource.datatype.label }.size
-      if (numberResources <= 1) {
-        None
-      } else {
-        Some(s"Resource[${resource.datatype.label}] cannot appear multiple times")
-      }
-    }.distinct
-
-    datatypeErrors ++ missingOperations ++ duplicateModels
   }
 
   private def validatePathParameters(): Seq[String] = {

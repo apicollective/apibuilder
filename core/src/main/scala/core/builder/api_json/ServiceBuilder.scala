@@ -67,7 +67,7 @@ object ResourceBuilder {
     enums.find(_.name == internal.datatype.name) match {
       case Some(enum) => {
         Resource(
-          `type` = internal.datatype.name,
+          `type` = internal.datatype.label,
           plural = enum.plural,
           description = internal.description,
           operations = internal.operations.map(op => OperationBuilder(resolver, op))
@@ -78,7 +78,7 @@ object ResourceBuilder {
         models.find(_.name == internal.datatype.name) match {
           case Some(model) => {
             Resource(
-              `type` = internal.datatype.name,
+              `type` = internal.datatype.label,
               plural = model.plural,
               description = internal.description,
               operations = internal.operations.map(op => OperationBuilder(resolver, op, model = Some(model)))
@@ -92,7 +92,7 @@ object ResourceBuilder {
               }
               case Some(union) => {
                 Resource(
-                  `type` = internal.datatype.name,
+                  `type` = internal.datatype.label,
                   plural = union.plural,
                   description = internal.description,
                   operations = internal.operations.map(op => OperationBuilder(resolver, op, union = Some(union), models = models))
