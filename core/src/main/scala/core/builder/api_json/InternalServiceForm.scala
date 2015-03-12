@@ -109,7 +109,10 @@ private[api_json] case class InternalServiceForm(
     }
   }
 
-  lazy val typeResolver = TypeResolver(RecursiveTypesProvider(this))
+  lazy val typeResolver = TypeResolver(
+    defaultNamespace = namespace,
+    RecursiveTypesProvider(this)
+  )
 }
 
 case class InternalImportForm(

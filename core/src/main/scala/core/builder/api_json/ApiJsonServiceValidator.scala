@@ -83,7 +83,6 @@ case class ApiJsonServiceValidator(
           validateUnions ++
           validateHeaders ++
           validateFields ++
-          validateFieldDefaults ++
           validateOperations ++
           validateResources ++
           validateParameterBodies ++
@@ -128,21 +127,6 @@ case class ApiJsonServiceValidator(
       Seq.empty
     } else {
       Seq("Missing: " + missing.mkString(", "))
-    }
-  }
-
-  /**
-   * Validates that any defaults specified for fields are valid:
-   *   Valid based on the datatype
-   *   If an enum, the default is listed as a value for that enum
-   */
-  private def validateFieldDefaults(): Seq[String] = {
-    internalService.get.models.flatMap { model =>
-      model.fields.filter(!_.datatype.isEmpty).filter(!_.name.isEmpty).filter(!_.default.isEmpty).flatMap { field =>
-        internalService.get.typeResolver.parse(field.datatype.get).flatMap { pd =>
-          internalService.get.typeResolver.validate(pd, field.default.get, Some(s"${model.name}.${field.name.get}"))
-        }
-      }
     }
   }
 

@@ -66,6 +66,7 @@ private[api_json] case class RecursiveTypesProvider(
 }
 
 private[api_json] case class TypeResolver(
+  defaultNamespace: Option[String],
   provider: TypesProvider
 ) {
 
@@ -75,7 +76,10 @@ private[api_json] case class TypeResolver(
     unionNames = provider.unionNames
   )
 
-  private lazy val validator = TypeValidator(provider.enums)
+  private lazy val validator = TypeValidator(
+    defaultNamespace = defaultNamespace,
+    provider.enums
+  )
 
   def toType(name: String): Option[Type] = {
     resolver.toType(name)

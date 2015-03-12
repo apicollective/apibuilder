@@ -20,18 +20,21 @@ object ServiceBuilder {
     config: ServiceConfiguration,
     internal: InternalServiceForm
   ): Service = {
-    val resolver = TypeResolver(
-      RecursiveTypesProvider(internal)
-    )
 
     val name = internal.name.getOrElse(sys.error("Missing name"))
     val key = internal.key.getOrElse { UrlKey.generate(name) }
     val namespace = internal.namespace.getOrElse { config.applicationNamespace(key) }
+
+    val resolver = TypeResolver(
+      defaultNamespace = Some(namespace),
+      RecursiveTypesProvider(internal)
+    )
+
     val imports = internal.imports.map { ImportBuilder(internal.fetcher, _) }.sortWith(_.uri.toLowerCase < _.uri.toLowerCase)
     val headers = internal.headers.map { HeaderBuilder(resolver, _) }
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val models = internal.models.map { ModelBuilder(resolver, _) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
+    val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val resources = internal.resources.map { ResourceBuilder(resolver, models, enums, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
     Service(
@@ -250,12 +253,12 @@ object ImportBuilder {
 
 object ModelBuilder {
 
-  def apply(resolver: TypeResolver, im: InternalModelForm): Model = {
+  def apply(im: InternalModelForm): Model = {
     Model(
       name = im.name,
       plural = im.plural,
       description = im.description,
-      fields = im.fields.map { FieldBuilder(resolver, _) }
+      fields = im.fields.map { FieldBuilder(_) }
     )
   }
 
@@ -306,16 +309,8 @@ object ParameterBuilder {
 object FieldBuilder {
 
   def apply(
-    resolver: TypeResolver,
     internal: InternalFieldForm
   ): Field = {
-    resolver.parse(internal.datatype.get) match {
-      case None => {}
-      case Some(datatype) => {
-        internal.default.map { resolver.assertValidDefault(datatype, _) }
-      }
-    }
-
     Field(
       name = internal.name.get,
       `type` = internal.datatype.get.label,

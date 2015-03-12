@@ -1,6 +1,6 @@
 package builder
 
-import core.Importer
+import core.{Importer, TypeValidator, TypesProvider}
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.{Datatype, DatatypeResolver, Kind, Primitives, Text, Type}
 
@@ -28,6 +28,11 @@ case class ServiceSpecValidator(
     }
   )
 
+  private val validator = TypeValidator(
+    defaultNamespace = Some(service.namespace),
+    enums = TypesProvider.FromService(service).enums
+  )
+
   lazy val errors: Seq[String] = {
     validateName() ++
     validateBaseUrl() ++
@@ -36,7 +41,8 @@ case class ServiceSpecValidator(
     validateUnions() ++
     validateHeaders() ++
     validateModelAndEnumAndUnionNamesAreDistinct() ++
-    validateFields()
+    validateFields() ++
+    validateFieldDefaults()
   }
 
   private def validateName(): Seq[String] = {
@@ -206,6 +212,30 @@ case class ServiceSpecValidator(
         typeResolver.parse(field.`type`) match {
           case None => Some(s"${model.name}.${field.name} has invalid type[${field.`type`}]")
           case _ => None
+        }
+      }
+    }
+  }
+
+  /**
+   * Validates that any defaults specified for fields are valid:
+   *   Valid based on the datatype
+   *   If an enum, the default is listed as a value for that enum
+   */
+  private def validateFieldDefaults(): Seq[String] = {
+    service.models.flatMap { model =>
+      model.fields.flatMap { field =>
+        field.default.flatMap { default =>
+          typeResolver.parse(field.`type`) match {
+            case None => {
+              println(s"Could not parse[${field.`type`}]")
+              None
+            }
+            case Some(pd) => {
+              println(s"Parsed[${field.`type`}] => $pd")
+              validator.validate(pd, default, Some(s"${model.name}.${field.name}"))
+            }
+          }
         }
       }
     }

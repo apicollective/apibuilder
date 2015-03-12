@@ -25,6 +25,8 @@ object TypesProvider {
 
   case class FromService(service: Service) extends TypesProvider {
 
+    // TODO: Figure out imports
+
     private def qualifiedName(prefix: String, name: String): String = {
       s"${service.namespace}.$prefix.$name"
     }
@@ -45,6 +47,7 @@ object TypesProvider {
 }
 
 case class TypeValidator(
+  defaultNamespace: Option[String],
   enums: Iterable[TypesProviderEnum] = Seq.empty
 ) {
 
@@ -128,7 +131,12 @@ case class TypeValidator(
     t match {
 
       case Type(Kind.Enum, name) => {
-        enums.find(_.name == name) match {
+        val names = defaultNamespace match {
+          case None => Seq(name)
+          case Some(ns) => Seq(name, s"$ns.enums.$name")
+        }
+
+        enums.find(e => names.contains(e.name)) match {
           case None => Some(s"could not find enum named[$name]")
           case Some(enum) => {
             enum.values.find(_ == value) match {
