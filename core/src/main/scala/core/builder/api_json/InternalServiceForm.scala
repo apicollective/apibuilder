@@ -475,7 +475,14 @@ object InternalFieldForm {
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),
       example = JsonUtil.asOptString(json \ "example"),
-      warnings = warnings
+      warnings = warnings ++ JsonUtil.validate(
+        json,
+        strings = Seq("name", "type"),
+        optionalStrings = Seq("description", "example"),
+        optionalBooleans = Seq("required"),
+        optionalNumbers = Seq("minimum", "maximum"),
+        optionalAnys = Seq("default")
+      )
     )
   }
 

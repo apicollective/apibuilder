@@ -242,7 +242,6 @@
                 { "name": "fulfillment_type", "type": "string", "description": "Can be set to either 'direct_to_customer' or 'direct_to_purchasing_vendor'. Determines if the fulfilling vendor is going to ship directly to the customer (e.g. drop ship) or ship in bulk to the purchasing vendor who will then cross-dock and ship to customer." },
                 {
                     "name": "term_guid", "type": "uuid", "description": "The specific payment terms in place for this agreement",
-                    "deprecation": { "reason": "Phasing out in favor of payment terms that are part of the agreement." },
                     "required": false
                 },
                 { "name": "payment_terms", "type": "payment_terms" },
@@ -272,8 +271,7 @@
           "fields": [
             { "name": "purchasing_vendor_guid", "type": "uuid" },
             { "name": "fulfilling_vendor_guid", "type": "uuid" },
-            { "deprecation": { "reason": "Phasing out in favor of payment terms that are part of the agreement." },
-               "name": "term_guid", "type": "uuid", "required": false },
+            { "name": "term_guid", "type": "uuid", "required": false },
             { "name": "payment_terms", "type": "payment_terms", "required": false },
             { "name": "fulfillment_type", "type": "string" },
             { "name": "begin_datetime", "type": "date-time-iso8601" },

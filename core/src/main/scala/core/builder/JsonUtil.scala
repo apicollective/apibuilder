@@ -1,6 +1,6 @@
 package builder
 
-import play.api.libs.json.{Json, JsArray, JsBoolean, JsObject, JsString, JsValue, JsUndefined}
+import play.api.libs.json.{Json, JsArray, JsBoolean, JsNumber, JsObject, JsString, JsValue, JsUndefined}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -16,9 +16,11 @@ object JsonUtil {
     optionalArraysOfObjects: Seq[String] = Nil,
     optionalObjects: Seq[String] = Nil,
     optionalBooleans: Seq[String] = Nil,
+    optionalNumbers: Seq[String] = Nil,
+    optionalAnys: Seq[String] = Nil,
     prefix: Option[String] = None
   ): Seq[String] = {
-    val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ optionalBooleans
+    val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
 
     val p = prefix match {
       case None => ""
@@ -56,6 +58,19 @@ object JsonUtil {
         }
         case u: JsUndefined => None
         case _ => Some(s"${p}$field, if present, must be a boolean")
+      }
+    } ++
+    optionalNumbers.flatMap { field =>
+      (json \ field) match {
+        case o: JsNumber => None
+        case o: JsString => {
+          parseLong(o.value) match {
+            case None => Some(s"${p}$field, if present, must be a number")
+            case Some(_) => None
+          }
+        }
+        case u: JsUndefined => None
+        case _ => Some(s"${p}$field, if present, must be a number")
       }
     } ++
     arraysOfObjects.flatMap { field =>
@@ -134,11 +149,13 @@ object JsonUtil {
   }
 
   def asOptLong(value: JsValue): Option[Long] = {
-    asOptString(value).flatMap { s =>
-      Try(s.toLong) match {
-        case Success(v) => Some(v)
-        case Failure(e) => None
-      }
+    asOptString(value).flatMap { parseLong(_) }
+  }
+
+  private def parseLong(value: String): Option[Long] = {
+    Try(value.toLong) match {
+      case Success(v) => Some(v)
+      case Failure(e) => None
     }
   }
 
