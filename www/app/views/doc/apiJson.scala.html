@@ -87,8 +87,8 @@
       <li><em>required</em> boolean: true|false. By default, all fields are considered required. To make a field optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive types and enums. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@lib.Primitives.Integer.toString', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
-      <li><em>minimum</em> optional - For a string, refers to the minimum length. For an array, the minimum number of elements in the array. For example, a value of 1 for an array would indicate the array must have at least 1 element</li>
-      <li><em>maximum</em> optional - For a string, refers to the maximum length. For an array, the maximum number of elements in the array. For example, a value of 1 for an array would indicate the array must have at most 1 element</li>
+      <li><em>minimum</em> @minimumInfo("field")</li>
+      <li><em>maximum</em> @maximumInfo("field")</li>
     </ul>
 
   </p>
@@ -179,7 +179,9 @@
       "description": <em>string (optional)</em>,
       "required": <em>boolean (optional, true by default)</em>,
       "default": <em>value (optional)</em>,
-      "example": <em>string (optional)</em>
+      "example": <em>string (optional)</em>,
+      "minimum": <em>long (optional)</em>,
+      "maximum": <em>long (optional)</em>
     }
     </pre>
 
@@ -190,7 +192,9 @@
       <li><em>description</em> optional longer description for this parameter.</li>
       <li><em>required</em> boolean: true|false. By default all parameters are considered required. To make a parameter optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive and enum types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@lib.Primitives.Integer.toString', an acceptable default would be 10</li>
-      <li><em>example</em> optional - an example value for this parameter used only in the produced documentation</li>
+      <li><em>example</em> @exampleInfo("parameter")</li>
+      <li><em>minimum</em> @minimumInfo("parameter")</li>
+      <li><em>maximum</em> @maximumInfo("parameter")</li>
     </ul>
 
   </p>
