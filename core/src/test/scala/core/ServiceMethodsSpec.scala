@@ -21,10 +21,7 @@ class ServiceMethodsSpec extends FunSpec with Matchers {
       "resources": {
         "user": {
           "operations": [
-            {
-              "name": "id",
-              "type": "long"
-            }
+            {}
           ]
         }
       }

@@ -198,4 +198,34 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     validator.errors.mkString(" ") should be("Union[user] elements of types must be objects")
   }
 
+  it("validates responses") {
+    val json = """
+    {
+      "name": "test",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        }
+      },
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "response": {
+                "200": { "type": "[user]" }
+              }
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString(" ") should be("Resource[user] GET /users Unrecognized element[response]")
+  }
+
 }

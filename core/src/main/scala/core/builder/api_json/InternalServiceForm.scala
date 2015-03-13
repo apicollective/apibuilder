@@ -426,7 +426,7 @@ object InternalOperationForm {
       responses = responses,
       namedPathParameters = namedPathParameters,
       parameters = parameters,
-      warnings = warnings
+      warnings = warnings ++ JsonUtil.unrecognizedFieldsErrors(json, Seq("method", "path", "description", "body", "parameters", "responses"))
     )
   
   }
