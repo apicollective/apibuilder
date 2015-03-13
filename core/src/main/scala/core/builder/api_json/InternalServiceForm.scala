@@ -157,7 +157,7 @@ case class InternalEnumForm(
 case class InternalEnumValueForm(
   name: Option[String],
   description: Option[String],
-  deprecation: Option[InternalDeprecationForm]
+  deprecation: Option[InternalDeprecationForm],
   warnings: Seq[String]
 )
 
@@ -173,7 +173,7 @@ case class InternalUnionForm(
 case class InternalUnionTypeForm(
   datatype: Option[InternalDatatype] = None,
   description: Option[String],
-  deprecation: Option[InternalDeprecationForm]
+  deprecation: Option[InternalDeprecationForm],
   warnings: Seq[String]
 )
 
@@ -455,6 +455,7 @@ object InternalResourceForm {
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("path", "description"),
+        optionalObjects = Seq("deprecation"),
         arraysOfObjects = Seq("operations")
       )
     )
@@ -532,7 +533,7 @@ object InternalOperationForm {
         strings = Seq("method"),
         optionalStrings = Seq("description", "path"),
         optionalArraysOfObjects = Seq("parameters"),
-        optionalObjects = Seq("body", "responses")
+        optionalObjects = Seq("body", "responses", "deprecation")
       )
     )
   
@@ -581,6 +582,7 @@ object InternalFieldForm {
         json,
         strings = Seq("name", "type"),
         optionalStrings = Seq("description", "example"),
+        optionalObjects = Seq("deprecation"),
         optionalBooleans = Seq("required"),
         optionalNumbers = Seq("minimum", "maximum"),
         optionalAnys = Seq("default")
@@ -609,6 +611,7 @@ object InternalParameterForm {
         json,
         strings = Seq("name", "type"),
         optionalStrings = Seq("description", "example"),
+        optionalObjects = Seq("deprecation"),
         optionalBooleans = Seq("required"),
         optionalNumbers = Seq("minimum", "maximum"),
         optionalAnys = Seq("default")
