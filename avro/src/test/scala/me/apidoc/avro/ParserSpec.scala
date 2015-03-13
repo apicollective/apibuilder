@@ -1,6 +1,7 @@
 package me.apidoc.avro
 
-import core.ServiceConfiguration
+import java.io.File
+import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 
 class ParserSpec extends FunSpec with Matchers {
@@ -19,16 +20,10 @@ class ParserSpec extends FunSpec with Matchers {
     //Parser(config).parse(s"$dir/gfc-avro.avdl")
     //Parser(config).parse(s"$dir/simple-protocol-with-gfc.avpr")
     // Parser(config).parse(s"$dir/mobile-tapstream.avpr")
-    val service = Parser(config).parse(s"avro/example.avdl")
+    val service = Parser(config).parse(new File("avro/example.avdl"))
     println("name: " + service.name)
     println("namespace: " + service.namespace)
 
-    val validator = builder.ServiceSpecValidator(service)
-    validator.errors match {
-      case Nil => println("No errors")
-      case errors => println("Errors: " + errors.mkString("\n - ", "\n - ", "\n"))
-    }
-      
     println("Enums:")
     service.enums.foreach { enum =>
       println(s" - ${enum.name}")

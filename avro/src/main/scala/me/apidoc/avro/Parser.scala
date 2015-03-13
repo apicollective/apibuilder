@@ -1,11 +1,14 @@
 package me.apidoc.avro
 
-import core.ServiceConfiguration
+import lib.ServiceConfiguration
 import java.io.File
+import java.nio.file.{Paths, Files}
+import java.nio.charset.StandardCharsets
 import org.apache.avro.{Protocol, Schema}
 import org.apache.avro.compiler.idl.Idl
 import scala.collection.JavaConversions._
 import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
+import java.util.UUID
 
 import lib.Text
 import com.gilt.apidoc.spec.v0.models._
@@ -103,11 +106,29 @@ case class Parser(config: ServiceConfiguration) {
   val builder = Builder()
 
   def parse(
-    path: String
+    path: File
   ): Service = {
     println(s"parse($path)")
+    parse(parseFile(path))
+  }
 
-    val protocol = parseProtocol(path)
+  def parseString(
+    contents: String
+  ): Service = {
+    val tmpPath = "/tmp/apidoc.tmp." + UUID.randomUUID.toString + ".avdl"
+    writeToFile(tmpPath, contents)
+    parse(new File(tmpPath))
+  }
+
+  private def writeToFile(path: String, contents: String) {
+    val outputPath = Paths.get(path)
+    val bytes = contents.getBytes(StandardCharsets.UTF_8)
+    Files.write(outputPath, bytes)
+  }
+
+  def parse(
+    protocol: Protocol
+  ): Service = {
     println(s"protocol name[${protocol.getName}] namespace[${protocol.getNamespace}]")
 
     protocol.getTypes.foreach { schema =>
@@ -184,17 +205,17 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
-  private def parseProtocol(
-    path: String
+  private def parseFile(
+    path: File
   ): Protocol = {
-    if (path.endsWith(".avdl")) {
-      new Idl(new File(path)).CompilationUnit()
+    if (path.toString.endsWith(".avdl")) {
+      new Idl(path).CompilationUnit()
 
-    } else if (path.endsWith(".avpr")) {
-      Protocol.parse(new java.io.File(path))
+    } else if (path.toString.endsWith(".avpr")) {
+      Protocol.parse(path)
 
     } else {
-      sys.error("Unrecognized file extension for path[$path]")
+      sys.error(s"Unrecognized file extension for path[$path]")
     }
   }
 

@@ -1,6 +1,7 @@
 package db
 
-import core.ServiceConfiguration
+import lib.ServiceConfiguration
+import builder.OriginalValidator
 import com.gilt.apidoc.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
@@ -214,7 +215,7 @@ object VersionsDao {
         )
 
         try {
-          val validator = builder.ServiceValidator(config, original)
+          val validator = OriginalValidator(config, original)
           validator.validate match {
             case Left(errors) => {
               Logger.error(s"Version[$versionGuid] has invalid JSON: " + errors.mkString(", "))

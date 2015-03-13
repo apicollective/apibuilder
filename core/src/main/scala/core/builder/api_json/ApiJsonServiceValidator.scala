@@ -1,8 +1,8 @@
 package builder.api_json
 
-import builder.{JsonUtil, ServiceValidator}
-import core.{ClientFetcher, Importer, ServiceConfiguration, ServiceFetcher, Util}
-import lib.UrlKey
+import builder.JsonUtil
+import core.{ClientFetcher, Importer, ServiceFetcher, Util}
+import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
 import com.gilt.apidoc.spec.v0.models.Service
 import play.api.libs.json.{Json, JsObject}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
@@ -12,7 +12,7 @@ case class ApiJsonServiceValidator(
   config: ServiceConfiguration,
   apiJson: String,
   fetcher: ServiceFetcher = new ClientFetcher()
-) extends ServiceValidator {
+) extends ServiceValidator[Service] {
 
   private lazy val service: Service = ServiceBuilder(config, internalService.get)
 

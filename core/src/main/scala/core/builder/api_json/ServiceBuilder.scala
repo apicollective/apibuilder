@@ -1,7 +1,7 @@
 package builder.api_json
 
-import core.{ClientFetcher, Importer, ServiceConfiguration, ServiceFetcher}
-import lib.{Datatype, Methods, Primitives, Type, Kind, UrlKey}
+import core.{ClientFetcher, Importer, ServiceFetcher}
+import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
 

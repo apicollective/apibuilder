@@ -1,6 +1,7 @@
 package core
 
-import builder.ServiceValidator
+import lib.{ServiceConfiguration, ServiceValidator}
+import builder.OriginalValidator
 import com.gilt.apidoc.v0.models.{Original, OriginalType}
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.Text
@@ -10,7 +11,7 @@ import java.util.UUID
 
 object TestHelper {
 
-  trait ServiceValidatorForSpecs extends ServiceValidator {
+  trait ServiceValidatorForSpecs extends ServiceValidator[Service] {
     def service(): Service
   }
 
@@ -18,7 +19,7 @@ object TestHelper {
     * Exposes a 'service' method to simplify access to service object
     * in tests
     */
-  case class TestServiceValidator(validator: ServiceValidator) extends ServiceValidatorForSpecs {
+  case class TestServiceValidator(validator: ServiceValidator[Service]) extends ServiceValidatorForSpecs {
 
     override def validate() = validator.validate()
     override def errors() = validator.errors()
@@ -45,13 +46,13 @@ object TestHelper {
     )
 
     val contents = readFile("spec/service.json")
-    val validator = ServiceValidator(config, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+    val validator = OriginalValidator(config, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
     TestServiceValidator(validator).service
   }
 
   def serviceValidatorFromApiJson(contents: String): ServiceValidatorForSpecs = {
     TestServiceValidator(
-      ServiceValidator(serviceConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+      OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
     )
   }
 
@@ -86,7 +87,7 @@ object TestHelper {
     fetcher: ServiceFetcher
   ): ServiceValidatorForSpecs = {
     val contents = readFile(filename)
-    val validator = ServiceValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
+    val validator = OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
     if (!validator.isValid) {
       sys.error(s"Invalid api.json file[$filename]: " + validator.errors.mkString("\n"))
     }

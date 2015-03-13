@@ -1,6 +1,6 @@
 package core
 
-import builder.ServiceValidator
+import builder.OriginalValidator
 import com.gilt.apidoc.v0.models.{Original, OriginalType}
 import org.scalatest.{FunSpec, Matchers}
 
@@ -99,7 +99,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
   """
 
     it("parses service definition with imports") {
-      val validator = ServiceValidator(TestHelper.serviceConfig, Original(OriginalType.ApiJson, json2))
+      val validator = OriginalValidator(TestHelper.serviceConfig, Original(OriginalType.ApiJson, json2))
       validator.errors.mkString("") should be("")
     }
   }

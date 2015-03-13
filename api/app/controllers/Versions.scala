@@ -3,8 +3,8 @@ package controllers
 import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, Original, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.v0.models.json._
 import com.gilt.apidoc.spec.v0.models.Service
-import core.ServiceConfiguration
-import builder.ServiceValidator
+import lib.ServiceConfiguration
+import builder.OriginalValidator
 import lib.{OriginalUtil, Validation}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
 import play.api.mvc._
@@ -48,7 +48,7 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            ServiceValidator(ServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
+            OriginalValidator(toServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
               case Left(errors) => {
                 Conflict(Json.toJson(Validation.errors(errors)))
               }
@@ -88,7 +88,7 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            ServiceValidator(ServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
+            OriginalValidator(toServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
               case Left(errors) => {
                 Conflict(Json.toJson(Validation.errors(errors)))
               }
@@ -154,6 +154,15 @@ object Versions extends Controller {
       case Some(existing: Version) => VersionsDao.replace(user, existing, application, original, service)
     }
   }
+
+  private def toServiceConfiguration(
+    org: Organization,
+    version: String
+  ) = ServiceConfiguration(
+    orgKey = org.key,
+    orgNamespace = org.namespace,
+    version = version
+  )
 
   private def validateVersion(
     user: User,

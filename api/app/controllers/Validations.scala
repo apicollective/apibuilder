@@ -2,8 +2,8 @@ package controllers
 
 import com.gilt.apidoc.v0.models.{Original, OriginalType, Validation}
 import com.gilt.apidoc.v0.models.json._
-import core.ServiceConfiguration
-import builder.ServiceValidator
+import lib.ServiceConfiguration
+import builder.OriginalValidator
 import play.api.mvc._
 import play.api.libs.json._
 
@@ -19,7 +19,7 @@ object Validations extends Controller {
     request.body.file.getName()
     val fileType = OriginalType.ApiJson // TODO
     val contents = scala.io.Source.fromFile(request.body.file, "UTF-8").getLines.mkString("\n")
-    ServiceValidator(config, Original(fileType, contents)).errors match {
+    OriginalValidator(config, Original(fileType, contents)).errors match {
       case Nil => Ok(Json.toJson(Validation(true, Nil)))
       case errors => BadRequest(Json.toJson(Validation(false, errors)))
     }
