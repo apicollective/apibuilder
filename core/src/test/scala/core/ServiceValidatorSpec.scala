@@ -47,6 +47,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
       "name": "Api Doc",
       "models": {
         "user": {
+          "fields": []
         }
       }
     }

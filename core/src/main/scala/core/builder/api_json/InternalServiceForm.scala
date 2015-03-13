@@ -98,9 +98,11 @@ private[api_json] case class InternalServiceForm(
       case None => Seq.empty
 
       case Some(resources: JsObject) => {
-        resources.fields.map { v =>
+        resources.fields.flatMap { v =>
           v match {
-            case(typeName, value) => InternalResourceForm(typeName, models, enums, unions, value.as[JsObject])
+            case(typeName, value) => {
+              value.asOpt[JsObject].map(InternalResourceForm(typeName, models, enums, unions, _))
+            }
           }
         }
       }
@@ -162,7 +164,8 @@ case class InternalResourceForm(
   datatype: InternalDatatype,
   description: Option[String],
   path: String,
-  operations: Seq[InternalOperationForm]
+  operations: Seq[InternalOperationForm],
+  warnings: Seq[String] = Seq.empty
 )
 
 case class InternalOperationForm(
@@ -225,11 +228,13 @@ object InternalUnionForm {
     val types = (value \ "types").asOpt[JsArray] match {
        case None => Seq.empty
        case Some(a: JsArray) => {
-         a.value.map { json =>
-           InternalUnionTypeForm(
-             datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
-             description = JsonUtil.asOptString(json \ "description")
-           )
+         a.value.flatMap { value =>
+           value.asOpt[JsObject].map { json =>
+             InternalUnionTypeForm(
+               datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
+               description = JsonUtil.asOptString(json \ "description")
+             )
+           }
          }
        }
     }
@@ -265,7 +270,7 @@ object InternalModelForm {
       case None => Seq.empty
 
       case Some(a: JsArray) => {
-        a.value.map { json => InternalFieldForm(json.as[JsObject]) }
+        a.value.flatMap { _.asOpt[JsObject].map(InternalFieldForm(_)) }
       }
 
     }
@@ -287,11 +292,13 @@ object InternalEnumForm {
     val values = (value \ "values").asOpt[JsArray] match {
        case None => Seq.empty
        case Some(a: JsArray) => {
-         a.value.map { json =>
-           InternalEnumValueForm(
-             name = JsonUtil.asOptString(json \ "name"),
-             description = JsonUtil.asOptString(json \ "description")
-           )
+         a.value.flatMap { value =>
+           value.asOpt[JsObject].map { json =>
+             InternalEnumValueForm(
+               name = JsonUtil.asOptString(json \ "name"),
+               description = JsonUtil.asOptString(json \ "description")
+             )
+           }
          }
        }
     }
@@ -338,7 +345,7 @@ object InternalResourceForm {
     val operations = (value \ "operations").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {
-        a.value.map { json => InternalOperationForm(path, json.as[JsObject]) }
+        a.value.flatMap { _.asOpt[JsObject].map(InternalOperationForm(path, _)) }
       }
     }
 
@@ -346,7 +353,8 @@ object InternalResourceForm {
       datatype = InternalDatatype(typeName),
       description = JsonUtil.asOptString(value \ "description"),
       path = path,
-      operations = operations
+      operations = operations,
+      warnings = JsonUtil.unrecognizedFieldsErrors(value, Seq("path", "description", "operations"))
     )
   }
 
@@ -364,7 +372,7 @@ object InternalOperationForm {
     val parameters = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {
-        a.value.map { data => InternalParameterForm(data.as[JsObject]) }
+        a.value.flatMap { _.asOpt[JsObject].map(InternalParameterForm(_)) }
       }
     }
 

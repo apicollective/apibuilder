@@ -57,7 +57,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
 
     Seq("imports", "headers").foreach { field =>
       val validator = TestHelper.serviceValidatorFromApiJson(json.format(field))
-      validator.errors.mkString should be(s"$field, if present, must be an array")
+      validator.errors.mkString("") should be(s"$field, if present, must be an array")
     }
   }
 
@@ -84,7 +84,22 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("Unrecognized element[resource] in JSON document")
+    println(validator.errors.mkString)
+    validator.errors.mkString should be("Unrecognized element[resource]")
+  }
+
+  it("validates multiple unknown keys") {
+    val json = """
+    {
+      "name": "test",
+      "resource": [],
+      "foo": []
+    }
+    """
+
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    println(validator.errors.mkString)
+    validator.errors.mkString should be("Unrecognized elements[foo, resource]")
   }
 
   it("validates models") {
@@ -92,8 +107,9 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     {
       "name": "test",
       "models": {
-        "name": "user",
-        "description": []
+        "user": {
+          "description": []
+        }
       }
     }
     """
@@ -107,8 +123,9 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     {
       "name": "test",
       "models": {
-        "name": "user",
-        "fields": ["test"]
+        "user": {
+          "fields": ["test"]
+        }
       }
     }
     """
@@ -122,8 +139,9 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     {
       "name": "test",
       "enums": {
-        "name": "user",
-        "description": []
+        "user": {
+          "description": []
+        }
       }
     }
     """
@@ -137,8 +155,9 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     {
       "name": "test",
       "enums": {
-        "name": "user",
-        "values": ["test"]
+        "user": {
+          "values": ["test"]
+        }
       }
     }
     """
@@ -152,8 +171,9 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     {
       "name": "test",
       "unions": {
-        "name": "user",
-        "description": []
+        "user": {
+          "description": []
+        }
       }
     }
     """
@@ -167,8 +187,9 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     {
       "name": "test",
       "unions": {
-        "name": "user",
-        "types": ["test"]
+        "user": {
+          "types": ["test"]
+        }
       }
     }
     """

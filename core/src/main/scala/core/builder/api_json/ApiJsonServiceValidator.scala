@@ -81,6 +81,7 @@ case class ApiJsonServiceValidator(
           validateUnions ++
           validateHeaders ++
           validateFields ++
+          validateResources ++
           validateOperations ++
           validateParameterBodies ++
           validateParameters ++
@@ -119,9 +120,7 @@ case class ApiJsonServiceValidator(
 
     val keys = internalService.get.json.as[JsObject].value map { case (key, value) => key }
 
-    val unrecognized = keys.filter { k => !recognized.contains(k) }.map { k =>
-      s"Unrecognized element[${k}] in JSON document"
-    }.toSeq
+    val unrecognized = JsonUtil.unrecognizedFieldsErrors(internalService.get.json.as[JsObject], recognized)
 
     val invalid = validateJsValue(
       internalService.get.json,
@@ -133,40 +132,43 @@ case class ApiJsonServiceValidator(
 
     val models: Seq[String] = (internalService.get.json \ "models").asOpt[JsObject] match {
       case None => Seq.empty
-      case Some(js) => {
-        val name = JsonUtil.asOptString(js \ "name").getOrElse("")
-        validateJsValue(
-          js,
-          optionalStrings = Seq("description", "plural"),
-          arraysOfObjects = Seq("fields"),
-          prefix = Some(s"Model[$name]")
-        )
+      case Some(model) => {
+        model.value.flatMap { case (name, js) =>
+          validateJsValue(
+            js,
+            optionalStrings = Seq("description", "plural"),
+            arraysOfObjects = Seq("fields"),
+            prefix = Some(s"Model[$name]")
+          )
+        }.toSeq
       }
     }
 
     val enums: Seq[String] = (internalService.get.json \ "enums").asOpt[JsObject] match {
       case None => Seq.empty
-      case Some(js) => {
-        val name = JsonUtil.asOptString(js \ "name").getOrElse("")
-        validateJsValue(
-          js,
-          optionalStrings = Seq("description", "plural"),
-          arraysOfObjects = Seq("values"),
-          prefix = Some(s"Enum[$name]")
-        )
+      case Some(enum) => {
+        enum.value.flatMap { case (name, js) =>
+          validateJsValue(
+            js,
+            optionalStrings = Seq("description", "plural"),
+            arraysOfObjects = Seq("values"),
+            prefix = Some(s"Enum[$name]")
+          )
+        }.toSeq
       }
     }
 
     val unions: Seq[String] = (internalService.get.json \ "unions").asOpt[JsObject] match {
       case None => Seq.empty
       case Some(js) => {
-        val name = JsonUtil.asOptString(js \ "name").getOrElse("")
-        validateJsValue(
-          js,
-          optionalStrings = Seq("description", "plural"),
-          arraysOfObjects = Seq("types"),
-          prefix = Some(s"Union[$name]")
-        )
+        js.value.flatMap { case (name, js) =>
+          validateJsValue(
+            js,
+            optionalStrings = Seq("description", "plural"),
+            arraysOfObjects = Seq("types"),
+            prefix = Some(s"Union[$name]")
+          )
+        }.toSeq
       }
     }
 
@@ -348,6 +350,12 @@ case class ApiJsonServiceValidator(
           case Some(_) => None
         }
       }
+    }
+  }
+
+  private def validateResources(): Seq[String] = {
+    internalService.get.resources.filter(!_.warnings.isEmpty).map { resource =>
+      s"Resource[${resource.datatype.label}] " + resource.warnings.mkString(", ")
     }
   }
 

@@ -19,7 +19,6 @@ class ServiceCommonReturnTypeSpec extends FunSpec with Matchers {
       },
       "resources": {
         "user": {
-          "model": "user",
           "operations": [
             {
               "method": "GET",
