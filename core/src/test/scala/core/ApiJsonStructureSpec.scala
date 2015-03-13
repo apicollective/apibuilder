@@ -84,7 +84,6 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    println(validator.errors.mkString)
     validator.errors.mkString should be("Unrecognized element[resource]")
   }
 
@@ -98,7 +97,6 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    println(validator.errors.mkString)
     validator.errors.mkString should be("Unrecognized elements[foo, resource]")
   }
 

@@ -71,24 +71,23 @@ case class ApiJsonServiceValidator(
       }
 
       case Some(sd: InternalServiceForm) => {
-        val requiredFieldErrors = validateRequiredFields()
-
-        if (requiredFieldErrors.isEmpty) {
-          validateStructure() ++
-          validateKey ++
-          validateImports ++
-          validateEnums ++
-          validateUnions ++
-          validateHeaders ++
-          validateFields ++
-          validateResources ++
-          validateOperations ++
-          validateParameterBodies ++
-          validateParameters ++
-          validateResponses
-
-        } else {
-          requiredFieldErrors
+        validateStructure match {
+          case Nil => {
+            validateKey ++
+            validateImports ++
+            validateEnums ++
+            validateUnions ++
+            validateHeaders ++
+            validateFields ++
+            validateResources ++
+            validateOperations ++
+            validateParameterBodies ++
+            validateParameters ++
+            validateResponses
+          }
+          case errors => {
+            errors
+          }
         }
       }
     }
@@ -108,20 +107,7 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  /**
-   * Validate basic structure, returning a list of error messages
-   */
-  private def validateRequiredFields(): Seq[String] = {
-    JsonUtil.validate(internalService.get.json, strings = Seq("name"))
-  }
-
   private def validateStructure(): Seq[String] = {
-    val recognized = Seq("name", "namespace", "base_url", "description", "imports", "headers", "enums", "models", "unions", "resources")
-
-    val keys = internalService.get.json.as[JsObject].value map { case (key, value) => key }
-
-    val unrecognized = JsonUtil.unrecognizedFieldsErrors(internalService.get.json.as[JsObject], recognized)
-
     val invalid = JsonUtil.validate(
       internalService.get.json,
       strings = Seq("name"),
@@ -172,7 +158,7 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    unrecognized ++ invalid ++ models ++ enums ++ unions
+    invalid ++ models ++ enums ++ unions
   }
 
   private def validateImports(): Seq[String] = {

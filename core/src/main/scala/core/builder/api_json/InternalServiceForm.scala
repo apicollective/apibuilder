@@ -354,7 +354,11 @@ object InternalResourceForm {
       description = JsonUtil.asOptString(value \ "description"),
       path = path,
       operations = operations,
-      warnings = JsonUtil.unrecognizedFieldsErrors(value, Seq("path", "description", "operations"))
+      warnings = JsonUtil.validate(
+        value,
+        optionalStrings = Seq("path", "description"),
+        arraysOfObjects = Seq("operations")
+      )
     )
   }
 
@@ -400,8 +404,6 @@ object InternalOperationForm {
       }
     }
 
-    var warnings: Seq[String] = Seq.empty
-
     val body = (json \ "body").asOpt[JsObject].map { o =>
       InternalBodyForm(
         datatype = JsonUtil.asOptString(o \ "type").map(InternalDatatype(_)),
@@ -417,7 +419,7 @@ object InternalOperationForm {
       responses = responses,
       namedPathParameters = namedPathParameters,
       parameters = parameters,
-      warnings = warnings ++ JsonUtil.validate(
+      warnings = JsonUtil.validate(
         json,
         strings = Seq("method"),
         optionalStrings = Seq("description", "path"),

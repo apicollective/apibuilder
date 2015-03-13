@@ -17,11 +17,19 @@ object JsonUtil {
     optionalObjects: Seq[String] = Nil,
     prefix: Option[String] = None
   ): Seq[String] = {
+    val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects
+
     val p = prefix match {
       case None => ""
       case Some(value) => s"$value "
     }
 
+    val unrecognized = json.asOpt[JsObject] match {
+      case None => Seq.empty
+      case Some(v) => unrecognizedFieldsErrors(v, keys, prefix)
+    }
+
+    unrecognized ++
     strings.flatMap { field =>
       (json \ field) match {
         case o: JsString => None
@@ -75,7 +83,7 @@ object JsonUtil {
   }
 
 
-  def unrecognizedFieldsErrors(
+  private def unrecognizedFieldsErrors(
     json: JsObject,
     fields: Seq[String],
     prefix: Option[String] = None
