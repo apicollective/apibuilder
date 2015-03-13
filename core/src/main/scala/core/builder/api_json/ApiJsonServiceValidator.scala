@@ -108,7 +108,7 @@ case class ApiJsonServiceValidator(
     JsonUtil.validate(
       internalService.get.json,
       strings = Seq("name"),
-      optionalStrings = Seq("base_url", "description"),
+      optionalStrings = Seq("base_url", "description", "namespace"),
       optionalArraysOfObjects = Seq("imports", "headers"),
       optionalObjects = Seq("enums", "models", "unions", "resources")
     )
