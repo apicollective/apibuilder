@@ -71,7 +71,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
   it("rejects blank types") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("guest", "", "registered"))
-    validator.errors.mkString("") should be("Union[user] all types must have a name")
+    validator.errors.mkString("") should be("Union[user] type[] type must be a non empty string")
   }
 
   it("rejects invalid types") {

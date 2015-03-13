@@ -75,9 +75,12 @@ case class ApiJsonServiceValidator(
           case Nil => {
             validateKey ++
             validateImports ++
-            validateEnums ++
-            validateUnions ++
-            validateHeaders ++
+            internalService.get.models.flatMap(_.warnings) ++
+            internalService.get.enums.flatMap(_.warnings) ++
+            internalService.get.enums.flatMap(_.values).flatMap(_.warnings) ++
+            internalService.get.unions.flatMap(_.warnings) ++
+            internalService.get.unions.flatMap(_.types).flatMap(_.warnings) ++
+            internalService.get.headers.flatMap(_.warnings) ++
             validateFields ++
             validateResources ++
             validateOperations ++
@@ -108,57 +111,13 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateStructure(): Seq[String] = {
-    val invalid = JsonUtil.validate(
+    JsonUtil.validate(
       internalService.get.json,
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description"),
       optionalArraysOfObjects = Seq("imports", "headers"),
       optionalObjects = Seq("enums", "models", "unions", "resources")
     )
-
-    val models: Seq[String] = (internalService.get.json \ "models").asOpt[JsObject] match {
-      case None => Seq.empty
-      case Some(model) => {
-        model.value.flatMap { case (name, js) =>
-          JsonUtil.validate(
-            js,
-            optionalStrings = Seq("description", "plural"),
-            arraysOfObjects = Seq("fields"),
-            prefix = Some(s"Model[$name]")
-          )
-        }.toSeq
-      }
-    }
-
-    val enums: Seq[String] = (internalService.get.json \ "enums").asOpt[JsObject] match {
-      case None => Seq.empty
-      case Some(enum) => {
-        enum.value.flatMap { case (name, js) =>
-          JsonUtil.validate(
-            js,
-            optionalStrings = Seq("description", "plural"),
-            arraysOfObjects = Seq("values"),
-            prefix = Some(s"Enum[$name]")
-          )
-        }.toSeq
-      }
-    }
-
-    val unions: Seq[String] = (internalService.get.json \ "unions").asOpt[JsObject] match {
-      case None => Seq.empty
-      case Some(js) => {
-        js.value.flatMap { case (name, js) =>
-          JsonUtil.validate(
-            js,
-            optionalStrings = Seq("description", "plural"),
-            arraysOfObjects = Seq("types"),
-            prefix = Some(s"Union[$name]")
-          )
-        }.toSeq
-      }
-    }
-
-    invalid ++ models ++ enums ++ unions
   }
 
   private def validateImports(): Seq[String] = {
@@ -181,16 +140,6 @@ case class ApiJsonServiceValidator(
         s"Enum[${enum.name}] - all values must have a name"
       }
     }
-  }
-
-  private def validateUnions(): Seq[String] = {
-    internalService.get.unions.filter { !_.types.filter(_.datatype.isEmpty).isEmpty }.map { union =>
-      s"Union[${union.name}] all types must have a name"
-    }
-  }
-
-  private def validateHeaders(): Seq[String] = {
-    internalService.get.headers.flatMap(_.warnings)
   }
 
   private def validateFields(): Seq[String] = {
@@ -269,18 +218,11 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateParameters(): Seq[String] = {
-    val missingNames = internalService.get.resources.flatMap { resource =>
+    internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.parameters.filter(_.name.isEmpty).map { p =>
-          opLabel(resource, op, "Missing name")
-        }
-        op.parameters.filter(_.datatype.isEmpty).map { p =>
-          opLabel(resource, op, "Missing type")
-        }
+        op.parameters.flatMap(_.warnings)
       }
     }
-
-    missingNames
   }
 
   private def opLabel(

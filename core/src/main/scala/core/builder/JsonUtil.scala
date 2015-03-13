@@ -35,7 +35,12 @@ object JsonUtil {
     unrecognized ++
     strings.flatMap { field =>
       (json \ field) match {
-        case o: JsString => None
+        case o: JsString => {
+          parseString(o.value) match {
+            case None => Some(s"${p}$field must be a non empty string")
+            case Some(_) => None
+          }
+        }
         case u: JsUndefined => Some(s"${p}Missing $field")
         case _ => Some(s"${p}$field must be a string")
       }
@@ -110,7 +115,6 @@ object JsonUtil {
       }
     }
   }
-
 
   private def unrecognizedFieldsErrors(
     json: JsObject,

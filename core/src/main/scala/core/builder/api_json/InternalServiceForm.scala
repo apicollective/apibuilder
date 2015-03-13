@@ -133,31 +133,36 @@ case class InternalModelForm(
   name: String,
   plural: String,
   description: Option[String],
-  fields: Seq[InternalFieldForm]
+  fields: Seq[InternalFieldForm],
+  warnings: Seq[String]
 )
 
 case class InternalEnumForm(
   name: String,
   plural: String,
   description: Option[String],
-  values: Seq[InternalEnumValueForm]
+  values: Seq[InternalEnumValueForm],
+  warnings: Seq[String]
 )
 
 case class InternalEnumValueForm(
   name: Option[String],
-  description: Option[String]
+  description: Option[String],
+  warnings: Seq[String]
 )
 
 case class InternalUnionForm(
   name: String,
   plural: String,
   description: Option[String],
-  types: Seq[InternalUnionTypeForm]
+  types: Seq[InternalUnionTypeForm],
+  warnings: Seq[String]
 )
 
 case class InternalUnionTypeForm(
   datatype: Option[InternalDatatype] = None,
-  description: Option[String]
+  description: Option[String],
+  warnings: Seq[String]
 )
 
 case class InternalHeaderForm(
@@ -212,7 +217,8 @@ case class InternalParameterForm(
   default: Option[String] = None,
   example: Option[String] = None,
   minimum: Option[Long] = None,
-  maximum: Option[Long] = None
+  maximum: Option[Long] = None,
+  warnings: Seq[String] = Seq.empty
 )
 
 case class InternalBodyForm(
@@ -239,9 +245,17 @@ object InternalUnionForm {
        case Some(a: JsArray) => {
          a.value.flatMap { value =>
            value.asOpt[JsObject].map { json =>
+             val typeName = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_))
+
              InternalUnionTypeForm(
-               datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
-               description = JsonUtil.asOptString(json \ "description")
+               datatype = typeName,
+               description = JsonUtil.asOptString(json \ "description"),
+               warnings = JsonUtil.validate(
+                 json,
+                 strings = Seq("type"),
+                 optionalStrings = Seq("description"),
+                 prefix = Some(s"Union[$name] type[${typeName.getOrElse("")}]")
+               )
              )
            }
          }
@@ -252,7 +266,13 @@ object InternalUnionForm {
       name = name,
       plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
       description = description,
-      types = types
+      types = types,
+      warnings = JsonUtil.validate(
+        value,
+        optionalStrings = Seq("description", "plural"),
+        arraysOfObjects = Seq("types"),
+        prefix = Some(s"Union[$name]")
+      )
     )
   }
 
@@ -288,7 +308,13 @@ object InternalModelForm {
       name = name,
       plural = plural,
       description = description,
-      fields = fields
+      fields = fields,
+      warnings = JsonUtil.validate(
+        value,
+        optionalStrings = Seq("description", "plural"),
+        arraysOfObjects = Seq("fields"),
+        prefix = Some(s"Model[$name]")
+      )
     )
   }
 
@@ -303,9 +329,16 @@ object InternalEnumForm {
        case Some(a: JsArray) => {
          a.value.flatMap { value =>
            value.asOpt[JsObject].map { json =>
+             val valueName = JsonUtil.asOptString(json \ "name")
              InternalEnumValueForm(
-               name = JsonUtil.asOptString(json \ "name"),
-               description = JsonUtil.asOptString(json \ "description")
+               name = valueName,
+               description = JsonUtil.asOptString(json \ "description"),
+               warnings = JsonUtil.validate(
+                 json,
+                 strings = Seq("name"),
+                 optionalStrings = Seq("description"),
+                 prefix = Some(s"Enum[$name] value[${valueName.getOrElse("")}]")
+               )
              )
            }
          }
@@ -316,7 +349,13 @@ object InternalEnumForm {
       name = name,
       plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
       description = description,
-      values = values
+      values = values,
+      warnings = JsonUtil.validate(
+        value,
+        optionalStrings = Seq("description", "plural"),
+        arraysOfObjects = Seq("values"),
+        prefix = Some(s"Enum[$name]")
+      )
     )
   }
 
@@ -501,7 +540,15 @@ object InternalParameterForm {
       default = JsonUtil.asOptString(json \ "default"),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),
-      example = JsonUtil.asOptString(json \ "example")
+      example = JsonUtil.asOptString(json \ "example"),
+      warnings = JsonUtil.validate(
+        json,
+        strings = Seq("name", "type"),
+        optionalStrings = Seq("description", "example"),
+        optionalBooleans = Seq("required"),
+        optionalNumbers = Seq("minimum", "maximum"),
+        optionalAnys = Seq("default")
+      )
     )
   }
 
