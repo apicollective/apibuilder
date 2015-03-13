@@ -47,7 +47,8 @@ case class ServiceSpecValidator(
     validateParameterBodies() ++
     validateParameterDefaults() ++
     validateParameters() ++
-    validateResponses()
+    validateResponses() ++
+    validatePathParameters()
   }
 
   private def validateName(): Seq[String] = {
@@ -375,6 +376,47 @@ case class ServiceSpecValidator(
       }
     }
   }
+
+  private def validatePathParameters(): Seq[String] = {
+    service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.parameters.filter(_.location == ParameterLocation.Path).flatMap { p =>
+          val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}")
+
+          typeResolver.parse(p.`type`).flatMap { dt =>
+            dt match {
+              case Datatype.List(_) => Some(errorTemplate.format("list"))
+              case Datatype.Map(_) => Some(errorTemplate.format("map"))
+              case Datatype.Singleton(t) => {
+                isTypeValidInPath(t) match {
+                  case true => None
+                  case false => Some(errorTemplate.format(t.name))
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private def isTypeValidInPath(t: Type): Boolean = {
+    t.typeKind match {
+      case Kind.Primitive => {
+        Primitives.validInPath(t.name)
+      }
+      case Kind.Model | Kind.Union => {
+        // We do not support models in path parameters
+        false
+      }
+      case Kind.Enum => {
+        // Serializes as a string
+        true
+      }
+    }
+  }
+
+
 
   private def validateResponses(): Seq[String] = {
     val invalidMethods = service.resources.flatMap { resource =>

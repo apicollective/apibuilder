@@ -86,8 +86,7 @@ case class ApiJsonServiceValidator(
           validateOperations ++
           validateParameterBodies ++
           validateParameters ++
-          validateResponses ++
-          validatePathParameters
+          validateResponses
 
         } else {
           requiredFieldErrors
@@ -260,58 +259,6 @@ case class ApiJsonServiceValidator(
     }
 
     missingNames
-  }
-
-  private def validatePathParameters(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
-      internalService.get.models.find(_.name == resource.datatype.label) match {
-        case None => None
-        case Some(model: InternalModelForm) => {
-          resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
-            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.name).isEmpty).map(f => (f.name.get -> f.datatype.get)).toMap
-            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.name).isEmpty).map(p => (p.name.get -> p.datatype.get)).toMap
-
-            op.namedPathParameters.flatMap { name =>
-              val parsedDatatype = paramMap.get(name).getOrElse {
-                fieldMap.get(name).getOrElse {
-                  InternalDatatype(Primitives.String.toString)
-                }
-              }
-              val errorTemplate = opLabel(resource, op, s"path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}")
-
-              internalService.get.typeResolver.parse(parsedDatatype) match {
-                case None => Some(errorTemplate.format(name))
-
-                case Some(Datatype.List(_)) => Some(errorTemplate.format("list"))
-                case Some(Datatype.Map(_)) => Some(errorTemplate.format("map"))
-                case Some(Datatype.Singleton(t)) => {
-                  isTypeValidInPath(t) match {
-                    case true => None
-                    case false => Some(errorTemplate.format(t.name))
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private def isTypeValidInPath(t: Type): Boolean = {
-    t.typeKind match {
-      case Kind.Primitive => {
-        Primitives.validInPath(t.name)
-      }
-      case Kind.Model | Kind.Union => {
-        // We do not support models in path parameters
-        false
-      }
-      case Kind.Enum => {
-        // Serializes as a string
-        true
-      }
-    }
   }
 
   private def opLabel(
