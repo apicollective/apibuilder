@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-# ./upload localhost http://localhost:9000 0.8.18
+# ./upload
+# ./upload 0.8.18
+# ./upload 0.8.18 localhost http://localhost:9000
 
 CLI_PATH = "/web/apidoc-cli/bin/apidoc"
 PRODUCTION_HOST = "http://www.apidoc.me"
@@ -9,16 +11,20 @@ version = ARGV.shift.to_s.strip
 profile = ARGV.shift.to_s.strip
 host = ARGV.shift.to_s.strip
 
+number_defaults = 0
 if version == ""
   version = `git describe`.strip
+  number_defaults += 1
 end
 
 if profile == ""
   profile = "localhost"
+  number_defaults += 1
 end
 
 if host == ""
   host = "http://localhost:9000"
+  number_defaults += 1
 end
 
 puts ""
@@ -27,15 +33,17 @@ puts "    Host: #{host}"
 puts " Version: #{version}"
 puts ""
 
-answer = nil
-while answer.nil?
-  print "Continue? (y/n): "
-  response = $stdin.gets.strip.downcase
-  if response.match(/^y/)
-    answer = true
-  elsif response.match(/^n/)
-    puts "exiting"
-    exit(0)
+if number_defaults > 0
+  answer = nil
+  while answer.nil?
+    print "Continue? (y/n): "
+    response = $stdin.gets.strip.downcase
+    if response.match(/^y/)
+      answer = true
+    elsif response.match(/^n/)
+      puts "exiting"
+      exit(0)
+    end
   end
 end
 
