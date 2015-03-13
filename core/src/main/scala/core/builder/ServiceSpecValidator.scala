@@ -320,49 +320,48 @@ case class ServiceSpecValidator(
   }
 
   private def validateParameters(): Seq[String] = {
-    // Query parameters can only be primitives or enums
-    val invalidQueryTypes = service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.parameters.filter(_.location == ParameterLocation.Query).flatMap { p =>
-          val dt = p.`type`
-          typeResolver.parse(dt) match {
-            case None => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type: $dt")
-            }
-            case Some(Datatype.List(Type(Kind.Primitive | Kind.Enum, name))) => {
-              None
-            }
-            case Some(Datatype.List(Type(Kind.Model | Kind.Union, name))) => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[$dt]. Model and union types are not supported as query parameters.")
-            }
-
-            case Some(Datatype.Singleton(Type(Kind.Primitive | Kind.Enum, name))) => {
-              None
-            }
-            case Some(Datatype.Singleton(Type(Kind.Model | Kind.Union, name))) => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[$dt]. Model and union types are not supported as query parameters.")
-            }
-
-            case Some(Datatype.Map(_)) => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[$dt]. Maps are not supported as query parameters.")
-            }
-          }
-        }
-      }
-    }
-
-    val unknownTypes = service.resources.flatMap { resource =>
+    service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.parameters.flatMap { p =>
           typeResolver.parse(p.`type`) match {
-            case None => Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type.")
-            case Some(_) => None
+            case None => {
+              Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type: ${p.`type`}")
+            }
+            case Some(dt) => {
+              p.location match {
+                // Query parameters can only be primitives or enums
+                case ParameterLocation.Query => {
+                  dt match {
+                    case Datatype.List(Type(Kind.Primitive | Kind.Enum, name)) => {
+                      None
+                    }
+                    case Datatype.List(Type(Kind.Model | Kind.Union, name)) => {
+                      Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters.")
+                    }
+
+                    case Datatype.Singleton(Type(Kind.Primitive | Kind.Enum, name)) => {
+                      None
+                    }
+                    case Datatype.Singleton(Type(Kind.Model | Kind.Union, name)) => {
+                      Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters.")
+                    }
+
+                    case Datatype.Map(_) => {
+                      Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as query parameters.")
+                    }
+
+                  }
+
+                }
+                case ParameterLocation.Form | ParameterLocation.Path | ParameterLocation.UNDEFINED(_) => {
+                  None
+                }
+              }
+            }
           }
         }
       }
     }
-
-    invalidQueryTypes ++ unknownTypes
   }
 
   private def validateDefault(

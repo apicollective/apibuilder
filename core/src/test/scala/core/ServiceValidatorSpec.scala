@@ -353,7 +353,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     it("validates type name in collection") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[foo]"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [foo]Resource[tag] GET /tags: Parameter[tags] has an invalid type.")
+      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [foo]")
     }
 
   }
