@@ -85,6 +85,9 @@ object Versions extends Controller {
               case OriginalType.ApiJson => {
                 Ok(original.data).withHeaders("Content-Type" -> "application/json")
               }
+              case OriginalType.AvroIdl => {
+                Ok(original.data).withHeaders("Content-Type" -> "text/plain")
+              }
               case OriginalType.UNDEFINED(_) => {
                 Ok(original.data).withHeaders("Content-Type" -> "text/plain")
               }
