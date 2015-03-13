@@ -2,11 +2,10 @@ package builder.api_json
 
 import builder.ServiceValidator
 import core.{ClientFetcher, Importer, ServiceConfiguration, ServiceFetcher, Util}
-import lib.{Datatype, Methods, Primitives, Text, Type, Kind, UrlKey}
-import com.gilt.apidoc.spec.v0.models.{Enum, Field, Method, Service}
+import lib.UrlKey
+import com.gilt.apidoc.spec.v0.models.Service
 import play.api.libs.json.{JsObject, Json, JsValue}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
-import com.fasterxml.jackson.databind.JsonMappingException
 import scala.util.{Failure, Success, Try}
 
 case class ApiJsonServiceValidator(
