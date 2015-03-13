@@ -167,6 +167,7 @@
 	    "fields": [
 		{ "name": "code", "type": "integer" },
 		{ "name": "type", "type": "string" },
+		{ "name": "description", "type": "string", "required": false }
 		{ "name": "deprecation", "type": "deprecation", "required": false }
 	    ]
 	},

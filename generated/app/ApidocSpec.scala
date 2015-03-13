@@ -119,6 +119,7 @@ package com.gilt.apidoc.spec.v0.models {
   case class Response(
     code: Int,
     `type`: String,
+    description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None
   )
 
@@ -527,6 +528,7 @@ package com.gilt.apidoc.spec.v0.models {
       (
         (__ \ "code").read[Int] and
         (__ \ "type").read[String] and
+        (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation]
       )(Response.apply _)
     }
@@ -535,6 +537,7 @@ package com.gilt.apidoc.spec.v0.models {
       (
         (__ \ "code").write[Int] and
         (__ \ "type").write[String] and
+        (__ \ "description").write[scala.Option[String]] and
         (__ \ "deprecation").write[scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation]]
       )(unlift(Response.unapply _))
     }
