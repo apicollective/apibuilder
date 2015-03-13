@@ -87,8 +87,7 @@ case class ApiJsonServiceValidator(
           validateParameterBodies ++
           validateParameters ++
           validateResponses ++
-          validatePathParameters ++
-          validatePathParametersAreRequired
+          validatePathParameters
 
         } else {
           requiredFieldErrors
@@ -240,18 +239,6 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def opLabel(
-    resource: InternalResourceForm,
-    op: InternalOperationForm,
-    message: String
-  ): String = {
-    val prefix = op.method match {
-      case None => s"Resource[${resource.datatype.label}] ${op.path}"
-      case Some(method) => s"Resource[${resource.datatype.label}] ${method} ${op.path}"
-    }
-    prefix + " " + message
-  }
-
   private def validateOperations(): Seq[String] = {
     internalService.get.resources.flatMap { resource =>
       resource.operations.filter(!_.warnings.isEmpty).map { op =>
@@ -327,31 +314,16 @@ case class ApiJsonServiceValidator(
     }
   }
 
-  private def validatePathParametersAreRequired(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
-      internalService.get.models.find(_.name == resource.datatype.label) match {
-        case None => None
-        case Some(model: InternalModelForm) => {
-          resource.operations.filter(!_.namedPathParameters.isEmpty).flatMap { op =>
-            val fieldMap = model.fields.filter(f => !f.name.isEmpty && !f.datatype.map(_.name).isEmpty).map(f => (f.name.get -> f.required)).toMap
-            val paramMap = op.parameters.filter(p => !p.name.isEmpty && !p.datatype.map(_.name).isEmpty).map(p => (p.name.get -> p.required)).toMap
-
-            op.namedPathParameters.flatMap { name =>
-              val isRequired = paramMap.get(name).getOrElse {
-                fieldMap.get(name).getOrElse {
-                  true
-                }
-              }
-
-              if (isRequired) {
-                None
-              } else {
-                Some(s"Resource[${resource.datatype.label}] ${op.method.getOrElse("")} path parameter[$name] is specified as optional. All path parameters are required")
-              }
-            }
-          }
-        }
-      }
+  private def opLabel(
+    resource: InternalResourceForm,
+    op: InternalOperationForm,
+    message: String
+  ): String = {
+    val prefix = op.method match {
+      case None => s"Resource[${resource.datatype.label}] ${op.path}"
+      case Some(method) => s"Resource[${resource.datatype.label}] ${method} ${op.path}"
     }
+    prefix + " " + message
   }
+
 }

@@ -330,8 +330,8 @@ case class ServiceSpecValidator(
             }
             case Some(dt) => {
               p.location match {
-                // Query parameters can only be primitives or enums
                 case ParameterLocation.Query => {
+                  // Query parameters can only be primitives or enums
                   dt match {
                     case Datatype.List(Type(Kind.Primitive | Kind.Enum, name)) => {
                       None
@@ -354,7 +354,18 @@ case class ServiceSpecValidator(
                   }
 
                 }
-                case ParameterLocation.Form | ParameterLocation.Path | ParameterLocation.UNDEFINED(_) => {
+
+                case ParameterLocation.Path => {
+                  // Path parameters are required
+                  p.required match {
+                    case true => None
+                    case false => {
+                      Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
+                    }
+                  }
+                }
+
+                case ParameterLocation.Form | ParameterLocation.UNDEFINED(_) => {
                   None
                 }
               }

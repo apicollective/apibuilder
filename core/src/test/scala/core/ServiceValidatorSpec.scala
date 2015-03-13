@@ -233,7 +233,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     guid.location should be(ParameterLocation.Query)
   }
 
-  it("path parameters cannot be optional") {
+  it("path parameters must be required") {
     val json = """
     {
       "base_url": "http://localhost:9000",
@@ -262,7 +262,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("Resource[user] GET path parameter[id] is specified as optional. All path parameters are required")
+    validator.errors.mkString("") should be("Resource[user] GET /users/:id path parameter[id] is specified as optional. All path parameters are required")
   }
 
   it("infers datatype for a path parameter from the associated model") {
