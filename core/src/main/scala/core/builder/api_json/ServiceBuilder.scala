@@ -114,7 +114,7 @@ object OperationBuilder {
     union: Option[Union] = None,
     models: Seq[Model] = Nil
   ): Operation = {
-    val method = internal.method.getOrElse { sys.error("Missing method") }
+    val method = internal.method.getOrElse("")
     val location = if (!internal.body.isEmpty || !Methods.isJsonDocumentMethod(method)) { ParameterLocation.Query } else { ParameterLocation.Form }
 
     val pathParameters = internal.namedPathParameters.map { name =>

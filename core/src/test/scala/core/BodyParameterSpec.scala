@@ -94,7 +94,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
 
   it("validates if body is not a map") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("POST", """"string"""", "boolean"))
-    validator.errors.mkString("") should be(s"""Resource[message] POST /messages/:mimeType body declaration must be an object, e.g. { "type": "string" }""")
+    validator.errors.mkString("") should be("Resource[message] POST /messages/:mimeType body, if present, must be an object")
   }
 
   it("validates that body cannot be specified for GET, DELETE operations") {

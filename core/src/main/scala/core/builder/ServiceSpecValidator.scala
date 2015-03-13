@@ -504,7 +504,12 @@ case class ServiceSpecValidator(
     op: Operation,
     message: String
   ): String = {
-    s"Resource[${resource.`type`}] ${op.method} ${op.path} $message"
+    Seq(
+      s"Resource[${resource.`type`}]",
+      op.method.toString,
+      op.path,
+      message
+    ).map(_.trim).filter(!_.isEmpty).mkString(" ")
   }
 
 

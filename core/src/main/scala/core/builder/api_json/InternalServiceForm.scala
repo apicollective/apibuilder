@@ -402,20 +402,11 @@ object InternalOperationForm {
 
     var warnings: Seq[String] = Seq.empty
 
-    val body = (json \ "body") match {
-      case o: JsObject => {
-        Some(
-          InternalBodyForm(
-            datatype = JsonUtil.asOptString(o \ "type").map(InternalDatatype(_)),
-            description = JsonUtil.asOptString(o \ "description")
-          )
-        )
-      }
-      case u: JsUndefined => None
-      case v: JsValue => {
-        warnings = Seq(s"""body declaration must be an object, e.g. { "type": $v }""")
-        None
-      }
+    val body = (json \ "body").asOpt[JsObject].map { o =>
+      InternalBodyForm(
+        datatype = JsonUtil.asOptString(o \ "type").map(InternalDatatype(_)),
+        description = JsonUtil.asOptString(o \ "description")
+      )
     }
 
     InternalOperationForm(
@@ -426,7 +417,13 @@ object InternalOperationForm {
       responses = responses,
       namedPathParameters = namedPathParameters,
       parameters = parameters,
-      warnings = warnings ++ JsonUtil.unrecognizedFieldsErrors(json, Seq("method", "path", "description", "body", "parameters", "responses"))
+      warnings = warnings ++ JsonUtil.validate(
+        json,
+        strings = Seq("method"),
+        optionalStrings = Seq("description", "path"),
+        optionalArraysOfObjects = Seq("parameters"),
+        optionalObjects = Seq("body", "responses")
+      )
     )
   
   }

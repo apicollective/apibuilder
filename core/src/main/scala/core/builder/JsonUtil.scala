@@ -1,12 +1,79 @@
 package builder
 
-import play.api.libs.json.{JsObject, JsString, JsValue, JsUndefined}
+import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue, JsUndefined}
 import scala.util.{Failure, Success, Try}
 
 /**
  * Parse numbers and string json values as strings
  */
 object JsonUtil {
+
+  def validate(
+    json: JsValue,
+    strings: Seq[String] = Nil,
+    optionalStrings: Seq[String] = Nil,
+    arraysOfObjects: Seq[String] = Nil,
+    optionalArraysOfObjects: Seq[String] = Nil,
+    optionalObjects: Seq[String] = Nil,
+    prefix: Option[String] = None
+  ): Seq[String] = {
+    val p = prefix match {
+      case None => ""
+      case Some(value) => s"$value "
+    }
+
+    strings.flatMap { field =>
+      (json \ field) match {
+        case o: JsString => None
+        case u: JsUndefined => Some(s"${p}Missing $field")
+        case _ => Some(s"${p}$field must be a string")
+      }
+    } ++
+    optionalStrings.flatMap { field =>
+      (json \ field) match {
+        case o: JsString => None
+        case u: JsUndefined => None
+        case _ => Some(s"${p}$field, if present, must be a string")
+      }
+    } ++
+    arraysOfObjects.flatMap { field =>
+      (json \ field) match {
+        case o: JsArray => validateArrayOfObjects(s"${p}elements of $field", o.value)
+        case u: JsUndefined => Some(s"${p}Missing $field")
+        case _ => Some(s"${p}$field must be an array")
+      }
+    } ++
+    optionalArraysOfObjects.flatMap { field =>
+      (json \ field) match {
+        case o: JsArray => validateArrayOfObjects(s"${p}elements of $field", o.value)
+        case u: JsUndefined => None
+        case _ => Some(s"${p}$field, if present, must be an array")
+      }
+    } ++
+    optionalObjects.flatMap { field =>
+      (json \ field) match {
+        case o: JsObject => None
+        case u: JsUndefined => None
+        case _ => Some(s"${p}$field, if present, must be an object")
+      }
+    }
+  }
+
+  private def validateArrayOfObjects(
+    prefix: String,
+    js: Seq[JsValue]
+  ): Option[String] = {
+    js.headOption match {
+      case None => None
+      case Some(o) => {
+        o match {
+          case o: JsObject => None
+          case _ => Some(s"${prefix} must be objects")
+        }
+      }
+    }
+  }
+
 
   def unrecognizedFieldsErrors(
     json: JsObject,

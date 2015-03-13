@@ -81,7 +81,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
   it("generates an error message for a missing method") {
     val json = baseJson.format("", "")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be(s"Resource[user] /users/:id Missing HTTP method")
+    validator.errors.mkString(" ") should be(s"Resource[user] /users/:id Invalid HTTP method[]. Must be one of: GET, POST, PUT, PATCH, DELETE, HEAD, CONNECT, OPTIONS, TRACE")
   }
 
 }

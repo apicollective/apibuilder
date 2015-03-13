@@ -4,7 +4,7 @@ import builder.{JsonUtil, ServiceValidator}
 import core.{ClientFetcher, Importer, ServiceConfiguration, ServiceFetcher, Util}
 import lib.UrlKey
 import com.gilt.apidoc.spec.v0.models.Service
-import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue, JsUndefined}
+import play.api.libs.json.{Json, JsObject}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import scala.util.{Failure, Success, Try}
 
@@ -112,7 +112,7 @@ case class ApiJsonServiceValidator(
    * Validate basic structure, returning a list of error messages
    */
   private def validateRequiredFields(): Seq[String] = {
-    validateJsValue(internalService.get.json, strings = Seq("name"))
+    JsonUtil.validate(internalService.get.json, strings = Seq("name"))
   }
 
   private def validateStructure(): Seq[String] = {
@@ -122,7 +122,7 @@ case class ApiJsonServiceValidator(
 
     val unrecognized = JsonUtil.unrecognizedFieldsErrors(internalService.get.json.as[JsObject], recognized)
 
-    val invalid = validateJsValue(
+    val invalid = JsonUtil.validate(
       internalService.get.json,
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description"),
@@ -134,7 +134,7 @@ case class ApiJsonServiceValidator(
       case None => Seq.empty
       case Some(model) => {
         model.value.flatMap { case (name, js) =>
-          validateJsValue(
+          JsonUtil.validate(
             js,
             optionalStrings = Seq("description", "plural"),
             arraysOfObjects = Seq("fields"),
@@ -148,7 +148,7 @@ case class ApiJsonServiceValidator(
       case None => Seq.empty
       case Some(enum) => {
         enum.value.flatMap { case (name, js) =>
-          validateJsValue(
+          JsonUtil.validate(
             js,
             optionalStrings = Seq("description", "plural"),
             arraysOfObjects = Seq("values"),
@@ -162,7 +162,7 @@ case class ApiJsonServiceValidator(
       case None => Seq.empty
       case Some(js) => {
         js.value.flatMap { case (name, js) =>
-          validateJsValue(
+          JsonUtil.validate(
             js,
             optionalStrings = Seq("description", "plural"),
             arraysOfObjects = Seq("types"),
@@ -173,72 +173,6 @@ case class ApiJsonServiceValidator(
     }
 
     unrecognized ++ invalid ++ models ++ enums ++ unions
-  }
-
-  private def validateJsValue(
-    json: JsValue,
-    strings: Seq[String] = Nil,
-    optionalStrings: Seq[String] = Nil,
-    arraysOfObjects: Seq[String] = Nil,
-    optionalArraysOfObjects: Seq[String] = Nil,
-    optionalObjects: Seq[String] = Nil,
-    prefix: Option[String] = None
-  ): Seq[String] = {
-    val p = prefix match {
-      case None => ""
-      case Some(value) => s"$value "
-    }
-
-    strings.flatMap { field =>
-      (json \ field) match {
-        case o: JsString => None
-        case u: JsUndefined => Some(s"${p}Missing $field")
-        case _ => Some(s"${p}$field must be a string")
-      }
-    } ++
-    optionalStrings.flatMap { field =>
-      (json \ field) match {
-        case o: JsString => None
-        case u: JsUndefined => None
-        case _ => Some(s"${p}$field, if present, must be a string")
-      }
-    } ++
-    arraysOfObjects.flatMap { field =>
-      (json \ field) match {
-        case o: JsArray => validateArrayOfObjects(s"${p}elements of $field", o.value)
-        case u: JsUndefined => Some(s"${p}Missing $field")
-        case _ => Some(s"${p}$field must be an array")
-      }
-    } ++
-    optionalArraysOfObjects.flatMap { field =>
-      (json \ field) match {
-        case o: JsArray => validateArrayOfObjects(s"${p}elements of $field", o.value)
-        case u: JsUndefined => None
-        case _ => Some(s"${p}$field, if present, must be an array")
-      }
-    } ++
-    optionalObjects.flatMap { field =>
-      (json \ field) match {
-        case o: JsObject => None
-        case u: JsUndefined => None
-        case _ => Some(s"${p}$field, if present, must be an object")
-      }
-    }
-  }
-
-  private def validateArrayOfObjects(
-    prefix: String,
-    js: Seq[JsValue]
-  ): Option[String] = {
-    js.headOption match {
-      case None => None
-      case Some(o) => {
-        o match {
-          case o: JsObject => None
-          case _ => Some(s"${prefix} must be objects")
-        }
-      }
-    }
   }
 
   private def validateImports(): Seq[String] = {
@@ -307,15 +241,6 @@ case class ApiJsonServiceValidator(
 
 
   private def validateResponses(): Seq[String] = {
-    val missingMethods = internalService.get.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.method match {
-          case None => Some(opLabel(resource, op, "Missing HTTP method"))
-          case Some(m) => None
-        }
-      }
-    }
-
     val invalidCodes = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
@@ -339,7 +264,7 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    missingMethods ++ invalidCodes ++ warnings
+    invalidCodes ++ warnings
   }
 
   private def validateParameterBodies(): Seq[String] = {
@@ -387,11 +312,12 @@ case class ApiJsonServiceValidator(
     op: InternalOperationForm,
     message: String
   ): String = {
-    val prefix = op.method match {
-      case None => s"Resource[${resource.datatype.label}] ${op.path}"
-      case Some(method) => s"Resource[${resource.datatype.label}] ${method} ${op.path}"
-    }
-    prefix + " " + message
+    Seq(
+      s"Resource[${resource.datatype.label}]",
+      op.method.getOrElse("").trim,
+      op.path.trim,
+      message.trim
+    ).filter(_ != "").mkString(" ")
   }
 
 }
