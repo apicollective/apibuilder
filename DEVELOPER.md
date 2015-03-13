@@ -1,6 +1,6 @@
 
 
-Designed to host API documentation for REST services. See api/api.json for
+Designed to host API documentation for REST services. See spec/api.json for
 description of the API.
 
 There are four SBT subprojects
@@ -14,7 +14,7 @@ users.
 
 api
 ===
-apidoc REST service itself. See api/api.json contains the description
+apidoc REST service itself. See spec/api.json contains the description
 of the API.
 
 www
@@ -34,9 +34,9 @@ In development:
 
 Updating apidoc.me
 ==================
-/web/apidoc-cli/bin/apidoc upload gilt apidoc-spec ./spec/service.json  --version 0.8.17
-/web/apidoc-cli/bin/apidoc upload gilt apidoc-generator ./spec/generator.json  --version 0.8.17
-/web/apidoc-cli/bin/apidoc upload gilt apidoc ./api/api.json  --version 0.8.17
+/web/apidoc-cli/bin/apidoc upload gilt apidoc-spec ./spec/service.json  --version 0.8.18
+/web/apidoc-cli/bin/apidoc upload gilt apidoc-generator ./spec/generator.json  --version 0.8.18
+/web/apidoc-cli/bin/apidoc upload gilt apidoc-api ./spec/api.json  --version 0.8.18
 
 SBT
 ==========

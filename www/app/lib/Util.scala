@@ -21,8 +21,8 @@ object Util {
   val OrgDetailsText = "Org Details"
   val ServiceJsonText = "service.json"
 
-  val ApidocExample = ExampleService("apidoc")
-  val ApidocExampleWithVersionNumber = ExampleService("apidoc", Config.requiredString("git.version"))
+  val ApidocExample = ExampleService("apidoc-api")
+  val ApidocExampleWithVersionNumber = ExampleService("apidoc-api", Config.requiredString("git.version"))
   val ApidocGeneratorExample = ExampleService("apidoc-generator")
   val ApidocSpecExample = ExampleService("apidoc-spec")
   val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
