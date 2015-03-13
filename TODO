@@ -9,11 +9,6 @@ Add support for multiple input types:
       package called apiJson. Main signature now is parse -> service
     Hopefully straightforward now given standardization on service.json
 
-Add support for ning async client 1.9.10
-  https://github.com/AsyncHttpClient/async-http-client/blob/master/MIGRATION.md
-    - Rename xxxParameter (add, set, get...) into xxxFormParam
-    - Rename xxxQueryParameter (add, set, get...) into xxxQueryParam
-
 Breaking changes:
   - Change 404s to be explicit
 
