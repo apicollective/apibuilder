@@ -78,13 +78,21 @@ private[api_json] case class InternalServiceForm(
         case o: JsObject => {
           val datatype = InternalDatatype(o)
 
+          val headerName = JsonUtil.asOptString(o \ "name")
           Some(
             InternalHeaderForm(
-              name = JsonUtil.asOptString(o \ "name"),
+              name = headerName,
               datatype = datatype,
               required = datatype.map(_.required).getOrElse(true),
               description = JsonUtil.asOptString(o \ "description"),
-              default = JsonUtil.asOptString(o \ "default")
+              default = JsonUtil.asOptString(o \ "default"),
+              warnings = JsonUtil.validate(
+                o,
+                strings = Seq("name", "type"),
+                optionalBooleans = Seq("required"),
+                optionalStrings = Seq("default", "description"),
+                prefix = Some(s"Header[${headerName.getOrElse("")}]".trim)
+              )
             )
           )
         }
@@ -157,7 +165,8 @@ case class InternalHeaderForm(
   datatype: Option[InternalDatatype],
   required: Boolean,
   description: Option[String],
-  default: Option[String]
+  default: Option[String],
+  warnings: Seq[String]
 )
 
 case class InternalResourceForm(

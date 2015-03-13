@@ -79,13 +79,13 @@ class ServiceHeadersSpec extends FunSpec with Matchers {
     it("requires name") {
       val json = baseJson.format("""{ "type": "string" }""")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be("All headers must have a name")
+      validator.errors.mkString("") should be("Header[] Missing name")
     }
 
     it("requires type") {
       val json = baseJson.format("""{ "name": "no_type" }""")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be("All headers must have a type")
+      validator.errors.mkString("") should be("Header[no_type] Missing type")
     }
 
     it("validates type") {

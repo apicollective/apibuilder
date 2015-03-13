@@ -1,6 +1,6 @@
 package builder
 
-import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue, JsUndefined}
+import play.api.libs.json.{Json, JsArray, JsBoolean, JsObject, JsString, JsValue, JsUndefined}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -15,9 +15,10 @@ object JsonUtil {
     arraysOfObjects: Seq[String] = Nil,
     optionalArraysOfObjects: Seq[String] = Nil,
     optionalObjects: Seq[String] = Nil,
+    optionalBooleans: Seq[String] = Nil,
     prefix: Option[String] = None
   ): Seq[String] = {
-    val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects
+    val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ optionalBooleans
 
     val p = prefix match {
       case None => ""
@@ -42,6 +43,19 @@ object JsonUtil {
         case o: JsString => None
         case u: JsUndefined => None
         case _ => Some(s"${p}$field, if present, must be a string")
+      }
+    } ++
+    optionalBooleans.flatMap { field =>
+      (json \ field) match {
+        case o: JsBoolean => None
+        case o: JsString => {
+          parseBoolean(o.value) match {
+            case None => Some(s"${p}$field, if present, must be a boolean or the string 'true' or 'false'")
+            case Some(_) => None
+          }
+        }
+        case u: JsUndefined => None
+        case _ => Some(s"${p}$field, if present, must be a boolean")
       }
     } ++
     arraysOfObjects.flatMap { field =>
@@ -106,14 +120,16 @@ object JsonUtil {
   }
 
   def asOptBoolean(value: JsValue): Option[Boolean] = {
-    asOptString(value).flatMap { s =>
-      if (s == "true") {
-        Some(true)
-      } else if (s == "false") {
-        Some(false)
-      } else {
-        None
-      }
+    asOptString(value).flatMap { parseBoolean(_) }
+  }
+
+  private def parseBoolean(value: String): Option[Boolean] = {
+    if (value == "true") {
+      Some(true)
+    } else if (value == "false") {
+      Some(false)
+    } else {
+      None
     }
   }
 

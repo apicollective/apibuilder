@@ -190,17 +190,7 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateHeaders(): Seq[String] = {
-    val headersWithoutNames = internalService.get.headers.filter(_.name.isEmpty) match {
-      case Nil => Seq.empty
-      case headers => Seq("All headers must have a name")
-    }
-
-    val headersWithoutTypes = internalService.get.headers.filter(_.datatype.isEmpty) match {
-      case Nil => Seq.empty
-      case headers => Seq("All headers must have a type")
-    }
-
-    headersWithoutNames ++ headersWithoutTypes
+    internalService.get.headers.flatMap(_.warnings)
   }
 
   private def validateFields(): Seq[String] = {
