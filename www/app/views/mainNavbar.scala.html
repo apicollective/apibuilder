@@ -1,10 +1,11 @@
 @(user: Option[com.gilt.apidoc.v0.models.User],
   requestPath: String)
 
-<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+<div class="main-navbar navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
+        <li class="logo"><a class="apidoc" href="/">apidoc</a></li>
         <li><a href="@routes.DocController.index()">Documentation</a></li>
         <li><a href="@lib.Util.GitHubUrl">github</a></li>
       </ul>

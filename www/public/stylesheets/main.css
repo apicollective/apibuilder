@@ -2,20 +2,16 @@ body {
   min-height: 2000px;
 }
 
-body .navbar-fixed-top {
-  position: relative;
-  left: inherit;
-  right: inherit;
-  top: inherit;
-  padding-left: 220px;
-}
-
 ul.dropdown-menu {
   z-index: 1001;
 }
 
+body .main-container {
+  margin-top: 71px;
+}
+
 body .sidebar {
-  top: 0px;
+  top: 51px;
   padding-top: 0px;
 }
 
@@ -38,6 +34,10 @@ body .container {
 
 .nowrap {
     white-space: nowrap;
+}
+
+.main-navbar .logo {
+  margin-right: 100px;
 }
 
 /*
@@ -91,10 +91,6 @@ body .container {
   }
 }
 
-.version_resource {
-  padding-top: 50px;
-}
-
 dd.error {
   color: #cc3333;
 }
@@ -116,4 +112,10 @@ body .modal-body .well {
   float: right;
   padding: 20px;
   font-style: italic;
+}
+
+.versions-show {
+  border-top: 1px solid #aeaeae;
+  margin-top: 25px;
+  padding-top: 15px;
 }
