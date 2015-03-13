@@ -445,7 +445,12 @@ object InternalResponseForm {
   def apply(code: String, json: JsObject): InternalResponseForm = {
     InternalResponseForm(
       code = code,
-      datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_))
+      datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
+      warnings = JsonUtil.validate(
+        json,
+        strings = Seq("type"),
+        optionalStrings = Seq("description")
+      )
     )
   }
 }

@@ -331,7 +331,8 @@
     <pre>
     {
       "http_status_code": {
-        "type": <em>type</em>
+        "type": <em>type</em>,
+        "description": <em>string (optional)</em>
       }
     }
     </pre>
@@ -340,6 +341,7 @@
     <ul>
       <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
       <li><em>type</em> @typeInfo("response")</li>
+      <li><em>description</em> optional longer description for this response.</li>
     </ul>
 
     There are a few conventions enforced:
