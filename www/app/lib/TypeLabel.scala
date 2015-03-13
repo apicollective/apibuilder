@@ -71,16 +71,16 @@ object Href {
   def apply(orgKey: String, appKey: String, version: String, t: Type): Href = {
     t match {
       case Type(Kind.Primitive, name) => {
-        Href(name, s"/doc/types#$name")
+        Href(name, s"/doc/types#${UrlKey.generate(name)}")
       }
       case Type(Kind.Enum, name) => {
-        Href(name, prefix(orgKey, appKey, version) + s"#enum-$name")
+        Href(name, prefix(orgKey, appKey, version) + s"#enum-${UrlKey.generate(name)}")
       }
       case Type(Kind.Model, name) => {
-        Href(name, prefix(orgKey, appKey, version) + s"#model-$name")
+        Href(name, prefix(orgKey, appKey, version) + s"#model-${UrlKey.generate(name)}")
       }
       case Type(Kind.Union, name) => {
-        Href(name, prefix(orgKey, appKey, version) + s"#union-$name")
+        Href(name, prefix(orgKey, appKey, version) + s"#union-${UrlKey.generate(name)}")
       }
     }
   }
