@@ -1,6 +1,6 @@
 package me.apidoc.avro
 
-import lib.ServiceConfiguration
+import lib.{ServiceConfiguration, UrlKey}
 import java.io.File
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
@@ -139,7 +139,7 @@ case class Parser(config: ServiceConfiguration) {
       config = config,
       name = protocol.getName,
       namespace = Util.toOption(protocol.getNamespace),
-      applicationKey = "test"
+      applicationKey = UrlKey.generate(protocol.getName)
     )
 
   }
