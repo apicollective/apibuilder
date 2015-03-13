@@ -6,6 +6,25 @@
 
   <ul>
 
+    <li> Support for Avro IDL! This feature allows you to represent
+    your models
+    using <a href="https://avro.apache.org/docs/1.7.7/idl.html">Avro
+    IDL</a> specification. You can upload this file and it will be
+    automatically converted to the apidoc service specification. The
+    primary use cases we are exploring here: (1) when you are only
+    defining events (e.g. no resources / operations) and prefer IDL or
+    already have IDL; (2) support for generate nice libraries / models
+    for working with your models where the input data are already in
+    IDL (hopefully the existing clients from apidoc are useful).
+
+    <p>
+    To use this feature, upload an .avdl file instead of a .json file
+    to your application. We will detect that the file is in Avro IDL
+    format and parse appropriately.
+    </p>
+
+    </li>
+
     <li> Much stronger validation on the elements present in the
     api.json document - e.g. you will see validation errors if you
     mistype an
@@ -20,9 +39,8 @@
 
     <li> Better handling for original uploads, including identifying
     your uploads by type. This sets the stage to support more input
-    formats (in addition to api.json). We are currently exploring avro
-    IDL (for model definitions) and starting to think about swagger
-    json as an input format.</li>
+    formats (in addition to api.json). After avro IDL is stable, we
+    are going to look at swagger json as an input format.</li>
 
     <li> UI now has a link to delete a specific version of a
     service. See <a href='@lib.Util.GitHubUrl/issues/300'>Issue
