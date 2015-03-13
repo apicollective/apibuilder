@@ -1,15 +1,21 @@
 package lib
 
-case class ExampleService(key: String, version: String = "latest") {
+case class ExampleService(
+  organizationKey: String,
+  applicationKey: String,
+  version: String = "latest"
+) {
+
+  val label = s"$organizationKey/$applicationKey"
 
   val docsUrl = if (version == "latest") {
-    s"/gilt/$key"
+    s"/$organizationKey/$applicationKey"
   } else {
-    s"/gilt/$key/$version"
+    s"/$organizationKey/$applicationKey/$version"
   }
 
-  val originalJsonUrl = s"/gilt/$key/$version/original.json"
-  val serviceJsonUrl = s"/gilt/$key/$version/service.json"
+  val originalJsonUrl = s"/$organizationKey/$applicationKey/$version/original.json"
+  val serviceJsonUrl = s"/$organizationKey/$applicationKey/$version/service.json"
 
 }
 
@@ -21,10 +27,10 @@ object Util {
   val OrgDetailsText = "Org Details"
   val ServiceJsonText = "service.json"
 
-  val ApidocExample = ExampleService("apidoc-api")
-  val ApidocExampleWithVersionNumber = ExampleService("apidoc-api", Config.requiredString("git.version"))
-  val ApidocGeneratorExample = ExampleService("apidoc-generator")
-  val ApidocSpecExample = ExampleService("apidoc-spec")
+  val ApidocExample = ExampleService("gilt", "apidoc-api")
+  val ApidocExampleWithVersionNumber = ExampleService("gilt", "apidoc-api", Config.requiredString("git.version"))
+  val ApidocGeneratorExample = ExampleService("gilt", "apidoc-generator")
+  val ApidocSpecExample = ExampleService("gilt", "apidoc-spec")
   val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
 
   val ApidocCliGitHubUrl = "https://github.com/gilt/apidoc-cli"
