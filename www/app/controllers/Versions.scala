@@ -114,6 +114,18 @@ object Versions extends Controller {
     }
   }
 
+  def postDelete(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
+    for {
+      result <- request.api.versions.deleteByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
+    } yield {
+      result match {
+        case None => Redirect(routes.Versions.show(orgKey, applicationKey, versionName)).flashing("success" -> s"Version $versionName was not found or could not be deleted")
+        case Some(_) => Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("success" -> s"Version $versionName deleted")
+      }
+    }
+  }
+
+
   def postWatch(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
     request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(request.org.key, applicationKey, versionName).flatMap {
       case None => {
