@@ -2,7 +2,35 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
-<h3><!-- NEXT RELEASE --</h3>
+<h3><!-- NEXT RELEASE --></h3>
+
+  <ul>
+
+    <li> Much stronger validation on the elements present in the
+    api.json document - e.g. you will see validation errors if you
+    mistype an
+    attribute. See <a href='@lib.Util.GitHubUrl/issues/292'>Issue
+    292</a></li>
+
+    <li> Introduced <em>deprecation</em> element on all relevant
+    types. This allows you to mark elements of your API as deprecated
+    with an optional
+    description. See <a href='@lib.Util.GitHubUrl/issues/220'>Issue
+    220</a></li>
+
+    <li> Better handling for original uploads, including identifying
+    your uploads by type. This sets the stage to support more input
+    formats (in addition to api.json). We are currently exploring avro
+    IDL (for model definitions) and starting to think about swagger
+    json as an input format.</li>
+
+    <li> UI now has a link to delete a specific version of a
+    service. See <a href='@lib.Util.GitHubUrl/issues/300'>Issue
+    300</a></li>
+
+    <li> Numerous small bug fixes and minor improvements</li>
+
+  </ul>
 
 <h3>0.8.14 - Mar 6 2015</h3>
 
