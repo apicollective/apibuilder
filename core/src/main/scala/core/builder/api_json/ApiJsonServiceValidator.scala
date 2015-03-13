@@ -1,10 +1,10 @@
 package builder.api_json
 
-import builder.ServiceValidator
+import builder.{JsonUtil, ServiceValidator}
 import core.{ClientFetcher, Importer, ServiceConfiguration, ServiceFetcher, Util}
 import lib.UrlKey
 import com.gilt.apidoc.spec.v0.models.Service
-import play.api.libs.json.{JsObject, Json, JsValue}
+import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue, JsUndefined}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import scala.util.{Failure, Success, Try}
 
@@ -13,8 +13,6 @@ case class ApiJsonServiceValidator(
   apiJson: String,
   fetcher: ServiceFetcher = new ClientFetcher()
 ) extends ServiceValidator {
-
-  private val RequiredFields = Seq("name")
 
   lazy val service: Service = ServiceBuilder(config, internalService.get)
 
@@ -76,6 +74,7 @@ case class ApiJsonServiceValidator(
         val requiredFieldErrors = validateRequiredFields()
 
         if (requiredFieldErrors.isEmpty) {
+          validateStructure() ++
           validateKey ++
           validateImports ++
           validateEnums ++
@@ -112,16 +111,131 @@ case class ApiJsonServiceValidator(
    * Validate basic structure, returning a list of error messages
    */
   private def validateRequiredFields(): Seq[String] = {
-    val missing = RequiredFields.filter { field =>
-      (internalService.get.json \ field).asOpt[JsValue] match {
-        case None => true
-        case Some(_) => false
+    validateJsValue(internalService.get.json, strings = Seq("name"))
+  }
+
+  private def validateStructure(): Seq[String] = {
+    val recognized = Seq("name", "namespace", "base_url", "description", "imports", "headers", "enums", "models", "unions", "resources")
+
+    val keys = internalService.get.json.as[JsObject].value map { case (key, value) => key }
+
+    val unrecognized = keys.filter { k => !recognized.contains(k) }.map { k =>
+      s"Unrecognized element[${k}] in JSON document"
+    }.toSeq
+
+    val invalid = validateJsValue(
+      internalService.get.json,
+      strings = Seq("name"),
+      optionalStrings = Seq("base_url", "description"),
+      optionalArraysOfObjects = Seq("imports", "headers"),
+      optionalObjects = Seq("enums", "models", "unions", "resources")
+    )
+
+    val models: Seq[String] = (internalService.get.json \ "models").asOpt[JsObject] match {
+      case None => Seq.empty
+      case Some(js) => {
+        val name = JsonUtil.asOptString(js \ "name").getOrElse("")
+        validateJsValue(
+          js,
+          optionalStrings = Seq("description", "plural"),
+          arraysOfObjects = Seq("fields"),
+          prefix = Some(s"Model[$name]")
+        )
       }
     }
-    if (missing.isEmpty) {
-      Seq.empty
-    } else {
-      Seq("Missing: " + missing.mkString(", "))
+
+    val enums: Seq[String] = (internalService.get.json \ "enums").asOpt[JsObject] match {
+      case None => Seq.empty
+      case Some(js) => {
+        val name = JsonUtil.asOptString(js \ "name").getOrElse("")
+        validateJsValue(
+          js,
+          optionalStrings = Seq("description", "plural"),
+          arraysOfObjects = Seq("values"),
+          prefix = Some(s"Enum[$name]")
+        )
+      }
+    }
+
+    val unions: Seq[String] = (internalService.get.json \ "unions").asOpt[JsObject] match {
+      case None => Seq.empty
+      case Some(js) => {
+        val name = JsonUtil.asOptString(js \ "name").getOrElse("")
+        validateJsValue(
+          js,
+          optionalStrings = Seq("description", "plural"),
+          arraysOfObjects = Seq("types"),
+          prefix = Some(s"Union[$name]")
+        )
+      }
+    }
+
+    unrecognized ++ invalid ++ models ++ enums ++ unions
+  }
+
+  private def validateJsValue(
+    json: JsValue,
+    strings: Seq[String] = Nil,
+    optionalStrings: Seq[String] = Nil,
+    arraysOfObjects: Seq[String] = Nil,
+    optionalArraysOfObjects: Seq[String] = Nil,
+    optionalObjects: Seq[String] = Nil,
+    prefix: Option[String] = None
+  ): Seq[String] = {
+    val p = prefix match {
+      case None => ""
+      case Some(value) => s"$value "
+    }
+
+    strings.flatMap { field =>
+      (json \ field) match {
+        case o: JsString => None
+        case u: JsUndefined => Some(s"${p}Missing $field")
+        case _ => Some(s"${p}$field must be a string")
+      }
+    } ++
+    optionalStrings.flatMap { field =>
+      (json \ field) match {
+        case o: JsString => None
+        case u: JsUndefined => None
+        case _ => Some(s"${p}$field, if present, must be a string")
+      }
+    } ++
+    arraysOfObjects.flatMap { field =>
+      (json \ field) match {
+        case o: JsArray => validateArrayOfObjects(s"${p}elements of $field", o.value)
+        case u: JsUndefined => Some(s"${p}Missing $field")
+        case _ => Some(s"${p}$field must be an array")
+      }
+    } ++
+    optionalArraysOfObjects.flatMap { field =>
+      (json \ field) match {
+        case o: JsArray => validateArrayOfObjects(s"${p}elements of $field", o.value)
+        case u: JsUndefined => None
+        case _ => Some(s"${p}$field, if present, must be an array")
+      }
+    } ++
+    optionalObjects.flatMap { field =>
+      (json \ field) match {
+        case o: JsObject => None
+        case u: JsUndefined => None
+        case _ => Some(s"${p}$field, if present, must be an object")
+      }
+    }
+  }
+
+  private def validateArrayOfObjects(
+    prefix: String,
+    js: Seq[JsValue]
+  ): Option[String] = {
+    js.headOption match {
+      case None => None
+      case Some(o) => {
+        o match {
+          case o: JsObject => None
+          case _ => Some(s"${prefix} must be objects")
+        }
+      }
     }
   }
 

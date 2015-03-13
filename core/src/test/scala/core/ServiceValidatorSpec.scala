@@ -17,12 +17,6 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     validator.errors.mkString.indexOf("expected close marker") should be >= 0
   }
 
-  it("should detect all required fields") {
-    val validator = TestHelper.serviceValidatorFromApiJson(" { } ")
-    validator.isValid should be(false)
-    validator.errors.mkString should be("Missing: name")
-  }
-
   it("service name must be a valid name") {
     val json = """
     {
