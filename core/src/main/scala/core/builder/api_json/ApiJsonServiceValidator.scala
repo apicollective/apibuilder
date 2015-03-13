@@ -315,6 +315,14 @@ case class ApiJsonServiceValidator(
     s"Resource[${resource.datatype.label}] ${op.method.get} ${op.path}"
   }
 
+  private def validateOperations(): Seq[String] = {
+    internalService.get.resources.flatMap { resource =>
+      resource.operations.filter(!_.warnings.isEmpty).map { op =>
+        s"${opLabel(resource, op)}: ${op.warnings.mkString(", ")}"
+      }
+    }
+  }
+
   private def validateParameters(): Seq[String] = {
     val missingNames = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
@@ -327,57 +335,7 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    // Query parameters can only be primitives or enums
-    val invalidQueryTypes = internalService.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.method.isEmpty).filter(op => !op.body.isEmpty || op.method.map(Method(_)) == Some(Method.Get) ).flatMap { op =>
-        op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
-          val dt = p.datatype.get
-          internalService.get.typeResolver.parse(dt) match {
-            case None => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type: ${dt.label}")
-            }
-            case Some(Datatype.List(Type(Kind.Primitive | Kind.Enum, name))) => {
-              None
-            }
-            case Some(Datatype.List(Type(Kind.Model | Kind.Union, name))) => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[${dt.name}]. Model and union types are not supported as query parameters.")
-            }
-
-            case Some(Datatype.Singleton(Type(Kind.Primitive | Kind.Enum, name))) => {
-              None
-            }
-            case Some(Datatype.Singleton(Type(Kind.Model | Kind.Union, name))) => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[${dt.name}]. Model and union types are not supported as query parameters.")
-            }
-
-            case Some(Datatype.Map(_)) => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] has an invalid type[${dt.label}]. Maps are not supported as query parameters.")
-            }
-          }
-        }
-      }
-    }
-
-    val unknownTypes = internalService.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.method.isEmpty).flatMap { op =>
-        op.parameters.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty).flatMap { p =>
-          p.datatype.map(_.name) match {
-            case None => Some(s"${opLabel(resource, op)}: Parameter[${p.name.get}] is missing a type.")
-            case Some(typeName) => None
-          }
-        }
-      }
-    }
-
-    missingNames ++ invalidQueryTypes ++ unknownTypes
-  }
-
-  private def validateOperations(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
-      resource.operations.filter(!_.warnings.isEmpty).map { op =>
-        s"${opLabel(resource, op)}: ${op.warnings.mkString(", ")}"
-      }
-    }
+    missingNames
   }
 
   private def validatePathParameters(): Seq[String] = {
