@@ -48,16 +48,20 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm))
-            val errors = validator.errors ++ validate(request.user, org, validator)
-
-            errors match {
-              case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), validator.service.get)
-                Ok(Json.toJson(version))
-              }
-              case errors => {
+            ServiceValidator(ServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
+              case Left(errors) => {
                 Conflict(Json.toJson(Validation.errors(errors)))
+              }
+              case Right(service) => {
+                validateVersion(request.user, org, service.application.key) match {
+                  case Nil => {
+                    val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service)
+                    Ok(Json.toJson(version))
+                  }
+                  case errors => {
+                    Conflict(Json.toJson(Validation.errors(errors)))
+                  }
+                }
               }
             }
           }
@@ -84,16 +88,20 @@ object Versions extends Controller {
           }
           case s: JsSuccess[VersionForm] => {
             val form = s.get
-            val validator = ServiceValidator(ServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm))
-            val errors = validator.errors ++ validate(request.user, org, validator, Some(applicationKey))
-
-            errors match {
-              case Nil => {
-                val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), validator.service.get, Some(applicationKey))
-                Ok(Json.toJson(version))
-              }
-              case errors => {
+            ServiceValidator(ServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
+              case Left(errors) => {
                 Conflict(Json.toJson(Validation.errors(errors)))
+              }
+              case Right(service) => {
+                validateVersion(request.user, org, service.application.key, Some(applicationKey)) match {
+                  case Nil => {
+                    val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey))
+                    Ok(Json.toJson(version))
+                  }
+                  case errors => {
+                    Conflict(Json.toJson(Validation.errors(errors)))
+                  }
+                }
               }
             }
           }
@@ -147,23 +155,18 @@ object Versions extends Controller {
     }
   }
 
-  private def validate(
+  private def validateVersion(
     user: User,
     org: Organization,
-    validator: ServiceValidator,
+    applicationKey: String,
     existingKey: Option[String] = None
   ): Seq[String] = {
-    validator.service match {
-      case None => Seq.empty
-      case Some(service) => {
-        VersionValidator(
-          user = user,
-          org = org,
-          newApplicationKey = service.application.key,
-          existingApplicationKey = existingKey
-        ).validate
-      }
-    }
+    VersionValidator(
+      user = user,
+      org = org,
+      newApplicationKey = applicationKey,
+      existingApplicationKey = existingKey
+    ).validate
   }
 
 }

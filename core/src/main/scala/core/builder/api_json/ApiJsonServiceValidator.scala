@@ -14,13 +14,12 @@ case class ApiJsonServiceValidator(
   fetcher: ServiceFetcher = new ClientFetcher()
 ) extends ServiceValidator {
 
-  lazy val service: Service = ServiceBuilder(config, internalService.get)
+  private lazy val service: Service = ServiceBuilder(config, internalService.get)
 
   def validate(): Either[Seq[String], Service] = {
-    if (isValid) {
-      Right(service)
-    } else {
-      Left(errors)
+    errors match {
+      case Nil => Right(service)
+      case errors => Left(errors)
     }
   }
 

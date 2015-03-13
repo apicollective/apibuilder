@@ -214,13 +214,13 @@ object VersionsDao {
         )
 
         try {
-          val validator = core.ServiceValidator(config, original.data)
-          validator.service match {
-            case None => {
-              Logger.error(s"Version[$versionGuid] has invalid JSON: " + validator.errors.mkString(", "))
+          val validator = builder.ServiceValidator(config, original)
+          validator.validate match {
+            case Left(errors) => {
+              Logger.error(s"Version[$versionGuid] has invalid JSON: " + errors.mkString(", "))
               bad += 1
             }
-            case Some(service) => {
+            case Right(service) => {
               if (user.isEmpty) {
                 user = Some(UsersDao.findByEmail(UsersDao.AdminUserEmail).getOrElse {
                   sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmail}]")

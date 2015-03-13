@@ -8,7 +8,6 @@ trait ServiceValidator {
 
   def validate(): Either[Seq[String], Service]
   def errors(): Seq[String]
-  def service(): Service
   def isValid: Boolean = errors.isEmpty
 
 }

@@ -232,19 +232,23 @@ object HeaderBuilder {
 object ImportBuilder {
 
   def apply(fetcher: ServiceFetcher, internal: InternalImportForm): Import = {
-    val importer = Importer(fetcher, internal.uri.get)
-    val service = importer.service
-
-    Import(
-      uri = internal.uri.get,
-      organization = service.organization,
-      application = service.application,
-      namespace = service.namespace,
-      version = service.version,
-      enums = service.enums.map(_.name),
-      unions = service.unions.map(_.name),
-      models = service.models.map(_.name)
-    )
+    Importer(fetcher, internal.uri.get).fetched match {
+      case Left(errors) => {
+        sys.error("Errors in import: " + errors)
+      }
+      case Right(service) => {
+        Import(
+          uri = internal.uri.get,
+          organization = service.organization,
+          application = service.application,
+          namespace = service.namespace,
+          version = service.version,
+          enums = service.enums.map(_.name),
+          unions = service.unions.map(_.name),
+          models = service.models.map(_.name)
+        )
+      }
+    }
   }
 
 }

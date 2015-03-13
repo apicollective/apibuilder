@@ -10,6 +10,27 @@ import java.util.UUID
 
 object TestHelper {
 
+  trait ServiceValidatorForSpecs extends ServiceValidator {
+    def service(): Service
+  }
+
+  /**
+    * Exposes a 'service' method to simplify access to service object
+    * in tests
+    */
+  case class TestServiceValidator(validator: ServiceValidator) extends ServiceValidatorForSpecs {
+
+    override def validate() = validator.validate()
+    override def errors() = validator.errors()
+    override def isValid = validator.isValid
+
+    override lazy val service: Service = validate match {
+      case Left(errors) => sys.error(errors.mkString(", "))
+      case Right(service) => service
+    }
+
+  }
+
   val serviceConfig = ServiceConfiguration(
     orgKey = "test",
     orgNamespace = "test.apidoc",
@@ -24,11 +45,14 @@ object TestHelper {
     )
 
     val contents = readFile("spec/service.json")
-    ServiceValidator(config, Original(OriginalType.ApiJson, contents), new MockServiceFetcher()).service
+    val validator = ServiceValidator(config, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+    TestServiceValidator(validator).service
   }
 
-  def serviceValidatorFromApiJson(contents: String): ServiceValidator = {
-    ServiceValidator(serviceConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+  def serviceValidatorFromApiJson(contents: String): ServiceValidatorForSpecs = {
+    TestServiceValidator(
+      ServiceValidator(serviceConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+    )
   }
 
   def writeToTempFile(contents: String): String = {
@@ -47,7 +71,7 @@ object TestHelper {
     scala.io.Source.fromFile(path).getLines.mkString("\n")
   }
 
-  def parseFile(filename: String): ServiceValidator = {
+  def parseFile(filename: String): ServiceValidatorForSpecs = {
     val fetcher = MockServiceFetcher()
     if (filename == "api/api.json") {
       val version = com.gilt.apidoc.spec.v0.Constants.Version
@@ -60,13 +84,15 @@ object TestHelper {
   private def parseFile(
     filename: String,
     fetcher: ServiceFetcher
-  ): ServiceValidator = {
+  ): ServiceValidatorForSpecs = {
     val contents = readFile(filename)
     val validator = ServiceValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
     if (!validator.isValid) {
       sys.error(s"Invalid api.json file[$filename]: " + validator.errors.mkString("\n"))
     }
-    validator
+    TestServiceValidator(
+      validator
+    )
   }
 
   def assertEqualsFile(filename: String, contents: String) {
