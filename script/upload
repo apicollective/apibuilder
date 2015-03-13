@@ -89,7 +89,7 @@ def upload(profile, host, version, application, path)
   dir = File.dirname(__FILE__)
   tmp = rewriteHost(File.join(dir, path), PRODUCTION_HOST, host)
   cli("upload gilt #{application} #{tmp} --version #{version}", :profile => profile)
-  #File.delete(tmp)
+  File.delete(tmp)
 end
 
 upload(profile, host, version, "apidoc-spec", "../spec/service.json")
