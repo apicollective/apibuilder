@@ -55,7 +55,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
   it("validates that responses is map from string to object") {
     val json = baseJson.format("DELETE", s""", "responses": { "204": "unit" } """)
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Resource[user] DELETE /users/:id 204: Value must be a JsObject")
+    validator.errors.mkString(" ") should be("Resource[user] DELETE /users/:id 204: value must be an object")
   }
 
   it("generates a single error message for invalid 404 specification") {

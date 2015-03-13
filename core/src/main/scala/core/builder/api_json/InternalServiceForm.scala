@@ -224,7 +224,8 @@ case class InternalParameterForm(
 
 case class InternalBodyForm(
   datatype: Option[InternalDatatype] = None,
-  description: Option[String] = None
+  description: Option[String] = None,
+  warnings: Seq[String]
 )
 
 case class InternalResponseForm(
@@ -448,7 +449,7 @@ object InternalOperationForm {
                 case other => {
                   InternalResponseForm(
                     code = code,
-                    warnings = Seq("Value must be a JsObject")
+                    warnings = Seq("value must be an object")
                   )
                 }
               }
@@ -461,7 +462,12 @@ object InternalOperationForm {
     val body = (json \ "body").asOpt[JsObject].map { o =>
       InternalBodyForm(
         datatype = JsonUtil.asOptString(o \ "type").map(InternalDatatype(_)),
-        description = JsonUtil.asOptString(o \ "description")
+        description = JsonUtil.asOptString(o \ "description"),
+        warnings = JsonUtil.validate(
+          o,
+          strings = Seq("type"),
+          optionalStrings = Seq("description")
+        )
       )
     }
 
