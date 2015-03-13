@@ -1,0 +1,92 @@
+#!/usr/bin/env ruby
+
+# ./upload localhost http://localhost:9000 0.8.18
+
+CLI_PATH = "/web/apidoc-cli/bin/apidoc"
+PRODUCTION_HOST = "http://www.apidoc.me"
+
+version = ARGV.shift.to_s.strip
+profile = ARGV.shift.to_s.strip
+host = ARGV.shift.to_s.strip
+
+if version == ""
+  version = `git describe`.strip
+end
+
+if profile == ""
+  profile = "localhost"
+end
+
+if host == ""
+  host = "http://localhost:9000"
+end
+
+puts ""
+puts " Profile: #{profile}"
+puts "    Host: #{host}"
+puts " Version: #{version}"
+puts ""
+
+answer = nil
+while answer.nil?
+  print "Continue? (y/n): "
+  response = $stdin.gets.strip.downcase
+  if response.match(/^y/)
+    answer = true
+  elsif response.match(/^n/)
+    puts "exiting"
+    exit(0)
+  end
+end
+
+def print_error(msg)
+  puts ""
+  puts msg
+  puts ""
+end
+
+def rewriteHost(path, from, to)
+  if !File.exists?(path)
+    print_error("Cannot find file[#{path}]")
+    exit(1)
+  end
+
+  tmp = "/tmp/apidoc.script.upload.#{Process.pid}.tmp"
+  File.open(tmp, "w") do |out|
+    IO.readlines(path).each do |l|
+      out << l.gsub(/#{from}/, to)
+    end
+  end
+
+  tmp
+end
+
+def cli(command, opts={})
+  profile = opts.delete(:profile)
+  if !opts.empty?
+    raise "Invalid keys: #{opts.keys.inspect}"
+  end
+
+  builder = {
+    "PROFILE" => profile.to_s.strip
+  }.select { |k, v| v != "" }.map { |k,v| "export #{k}=#{v}" }
+
+  builder << "#{CLI_PATH} #{command}"
+  cmd = builder.join(" && ")
+  puts cmd
+  puts `#{cmd}`.strip
+end
+
+def upload(profile, host, version, application, path)
+  dir = File.dirname(__FILE__)
+  tmp = rewriteHost(File.join(dir, path), PRODUCTION_HOST, host)
+  cli("upload gilt #{application} #{tmp} --version #{version}", :profile => profile)
+  #File.delete(tmp)
+end
+
+upload(profile, host, version, "apidoc-spec", "../spec/service.json")
+upload(profile, host, version, "apidoc-generator", "../spec/generator.json")
+upload(profile, host, version, "apidoc-api", "../spec/api.json")
+
+
+
