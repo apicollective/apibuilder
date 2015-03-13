@@ -95,7 +95,10 @@ class VersionsDaoSpec extends FunSpec with Matchers {
     val validator = OriginalValidator(serviceConfig, version.original.getOrElse {
       sys.error("Missing original")
     })
-    validator.errors.mkString("\n") should be("")
+    validator.validate match {
+      case Left(errors) => fail(errors.mkString("\n"))
+      case Right(_) => {}
+    }
   }
 
   it("trims version number") {

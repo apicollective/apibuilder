@@ -13,6 +13,7 @@ object TestHelper {
 
   trait ServiceValidatorForSpecs extends ServiceValidator[Service] {
     def service(): Service
+    def errors(): Seq[String]
   }
 
   /**
@@ -22,8 +23,11 @@ object TestHelper {
   case class TestServiceValidator(validator: ServiceValidator[Service]) extends ServiceValidatorForSpecs {
 
     override def validate() = validator.validate()
-    override def errors() = validator.errors()
-    override def isValid = validator.isValid
+
+    override def errors() = validate match {
+      case Left(errors) => errors
+      case Right(_) => Seq.empty
+    }
 
     override lazy val service: Service = validate match {
       case Left(errors) => sys.error(errors.mkString(", "))
@@ -88,8 +92,11 @@ object TestHelper {
   ): ServiceValidatorForSpecs = {
     val contents = readFile(filename)
     val validator = OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), fetcher)
-    if (!validator.isValid) {
-      sys.error(s"Invalid api.json file[$filename]: " + validator.errors.mkString("\n"))
+    validator.validate match {
+      case Left(errors) => {
+        sys.error(s"Invalid api.json file[$filename]: " + errors.mkString("\n"))
+      }
+      case Right(_) => {}
     }
     TestServiceValidator(
       validator

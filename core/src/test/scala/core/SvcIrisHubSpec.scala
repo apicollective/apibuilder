@@ -10,9 +10,12 @@ class SvcIrisHubSpec extends FunSpec with Matchers {
 
   it("should parse valid json") {
     Filenames.foreach { name =>
-      val validator = TestHelper.parseFile(s"${Dir}/${name}")
-      if (!validator.isValid) {
-        fail(s"Error parsing json file ${name}:\n  - " + validator.errors.mkString("\n  - "))
+      TestHelper.parseFile(s"${Dir}/${name}").validate match {
+        case Left(errors) => {
+          fail(s"Error parsing json file ${name}:\n  - " + errors.mkString("\n  - "))
+        }
+        case Right(_) => {
+        }
       }
     }
   }

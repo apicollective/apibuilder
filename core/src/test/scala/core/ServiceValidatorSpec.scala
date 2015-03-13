@@ -7,13 +7,11 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
   it("should detect empty inputs") {
     val validator = TestHelper.serviceValidatorFromApiJson("")
-    validator.isValid should be(false)
     validator.errors.mkString should be("No Data")
   }
 
   it("should detect invalid json") {
     val validator = TestHelper.serviceValidatorFromApiJson(" { ")
-    validator.isValid should be(false)
     validator.errors.mkString.indexOf("expected close marker") should be >= 0
   }
 
@@ -54,7 +52,6 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("Model[user] must have at least one field")
-    validator.isValid should be(false)
   }
 
   it("reference that points to a non-existent model") {
@@ -73,7 +70,6 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("user.foo has invalid type[foo]")
-    validator.isValid should be(false)
   }
 
   it("base_url is optional") {
@@ -91,7 +87,6 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("")
-    validator.isValid should be(true)
   }
 
   it("defaults to a NoContent response") {
@@ -156,8 +151,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
     """
 
-    TestHelper.serviceValidatorFromApiJson(json.format("user")).isValid should be(true)
-    TestHelper.serviceValidatorFromApiJson(json.format("unknown_model")).isValid should be(false)
+    TestHelper.serviceValidatorFromApiJson(json.format("user")).errors.mkString("") should be("")
+    TestHelper.serviceValidatorFromApiJson(json.format("unknown_model")).errors.mkString("") should be("Resource[user] GET /users/:guid response code[200] has an invalid type[unknown_model].")
   }
 
   it("includes path parameter in operations") {

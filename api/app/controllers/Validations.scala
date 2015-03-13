@@ -19,9 +19,13 @@ object Validations extends Controller {
     request.body.file.getName()
     val fileType = OriginalType.ApiJson // TODO
     val contents = scala.io.Source.fromFile(request.body.file, "UTF-8").getLines.mkString("\n")
-    OriginalValidator(config, Original(fileType, contents)).errors match {
-      case Nil => Ok(Json.toJson(Validation(true, Nil)))
-      case errors => BadRequest(Json.toJson(Validation(false, errors)))
+    OriginalValidator(config, Original(fileType, contents)).validate match {
+      case Left(errors) => {
+        BadRequest(Json.toJson(Validation(false, errors)))
+      }
+      case Right(service) => {
+        Ok(Json.toJson(Validation(true, Nil)))
+      }
     }
   }
 
