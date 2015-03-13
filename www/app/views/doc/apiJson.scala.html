@@ -99,6 +99,7 @@
     {
       "typeName" => {
         "path": <em>string (optional)</em>,
+        "description": <em>string (optional)</em>,
         "operations": <em>JSON Array of <a href="#operation">Operation</a></em>
       }
     }
@@ -108,6 +109,7 @@
     <ul>
       <li><em>typeName</em> the name of the model or enum that this resource represents</li>
       <li><em>path</em> optional path where this resource is located. If not provided, defaults to the plural of the typeName, with some assumptions of formatting for web (e.g. lower case, dash separated). Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that all operations for this path will require a parameter named 'guid' of type 'string'</li>
+      <li><em>description</em> optional longer description for this resource.</li>
       <li><em>operations</em> one or more operations is required. See <a href="#operation">Operation</a>.</li>
     </ul>
   </p>
