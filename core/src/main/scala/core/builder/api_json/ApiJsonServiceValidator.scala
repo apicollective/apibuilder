@@ -197,7 +197,7 @@ case class ApiJsonServiceValidator(
     val missingMethods = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.method match {
-          case None => Some(s"${opLabel(resource, op)} Missing HTTP method")
+          case None => Some(opLabel(resource, op, "Missing HTTP method"))
           case Some(m) => None
         }
       }
@@ -210,7 +210,7 @@ case class ApiJsonServiceValidator(
             case Success(v) => None
             case Failure(ex) => ex match {
               case e: java.lang.NumberFormatException => {
-                Some(s"${opLabel(resource, op)}: Response code is not an integer[${r.code}]")
+                Some(opLabel(resource, op, s"Response code is not an integer[${r.code}]"))
               }
             }
           }
@@ -221,7 +221,7 @@ case class ApiJsonServiceValidator(
     val warnings = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.filter(r => !r.warnings.isEmpty).map { r =>
-          s"${opLabel(resource, op)} ${r.code}: " + r.warnings.mkString(", ")
+          opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", "))
         }
       }
     }
@@ -233,24 +233,29 @@ case class ApiJsonServiceValidator(
     internalService.get.resources.flatMap { resource =>
       resource.operations.filter(!_.body.isEmpty).flatMap { op =>
         op.body.flatMap(_.datatype) match {
-          case None => Some(s"${opLabel(resource, op)}: Body missing type")
+          case None => Some(opLabel(resource, op, "Body missing type"))
           case Some(_) => None
         }
       }
     }
   }
 
-  private def opLabel(resource: InternalResourceForm, op: InternalOperationForm): String = {
-    op.method match {
+  private def opLabel(
+    resource: InternalResourceForm,
+    op: InternalOperationForm,
+    message: String
+  ): String = {
+    val prefix = op.method match {
       case None => s"Resource[${resource.datatype.label}] ${op.path}"
       case Some(method) => s"Resource[${resource.datatype.label}] ${method} ${op.path}"
     }
+    prefix + " " + message
   }
 
   private def validateOperations(): Seq[String] = {
     internalService.get.resources.flatMap { resource =>
       resource.operations.filter(!_.warnings.isEmpty).map { op =>
-        s"${opLabel(resource, op)}: ${op.warnings.mkString(", ")}"
+        opLabel(resource, op, op.warnings.mkString(", "))
       }
     }
   }
@@ -259,10 +264,10 @@ case class ApiJsonServiceValidator(
     val missingNames = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.parameters.filter(_.name.isEmpty).map { p =>
-          s"${opLabel(resource, op)}: Missing name"
+          opLabel(resource, op, "Missing name")
         }
         op.parameters.filter(_.datatype.isEmpty).map { p =>
-          s"${opLabel(resource, op)}: Missing type"
+          opLabel(resource, op, "Missing type")
         }
       }
     }
@@ -285,7 +290,7 @@ case class ApiJsonServiceValidator(
                   InternalDatatype(Primitives.String.toString)
                 }
               }
-              val errorTemplate = s"Resource[${resource.datatype.label}] ${op.method.getOrElse("")} path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}"
+              val errorTemplate = opLabel(resource, op, s"path parameter[$name] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}")
 
               internalService.get.typeResolver.parse(parsedDatatype) match {
                 case None => Some(errorTemplate.format(name))
