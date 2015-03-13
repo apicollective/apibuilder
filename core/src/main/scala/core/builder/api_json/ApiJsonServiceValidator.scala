@@ -192,17 +192,13 @@ case class ApiJsonServiceValidator(
     missingTypes ++ missingNames ++ warnings
   }
 
+
   private def validateResponses(): Seq[String] = {
-    val invalidMethods = internalService.get.resources.flatMap { resource =>
+    val missingMethods = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.method match {
-          case None => Seq(s"Resource[${resource.datatype.label}] ${op.path} Missing HTTP method")
-          case Some(m) => {
-            Method.fromString(m) match {
-              case None => Seq(s"Resource[${resource.datatype.label}] ${op.path} Invalid HTTP method[$m]. Must be one of: " + Method.all.mkString(", "))
-              case Some(_) => Seq.empty
-            }
-          }
+          case None => Some(s"${opLabel(resource, op)} Missing HTTP method")
+          case Some(m) => None
         }
       }
     }
@@ -214,90 +210,23 @@ case class ApiJsonServiceValidator(
             case Success(v) => None
             case Failure(ex) => ex match {
               case e: java.lang.NumberFormatException => {
-                Some(s"Resource[${resource.datatype.label}] ${op.label}: Response code is not an integer[${r.code}]")
+                Some(s"${opLabel(resource, op)}: Response code is not an integer[${r.code}]")
               }
             }
           }
         }
       }
-    }
-
-    val modelNames = internalService.get.models.map { _.name }.toSet
-    val enumNames = internalService.get.enums.map { _.name }.toSet
-
-    val missingOrInvalidTypes = internalService.get.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.responses.flatMap { r =>
-          r.datatype.map(_.name) match {
-            case None => {
-              Some(s"Resource[${resource.datatype.label}] ${op.label} with response code[${r.code}]: Missing type")
-            }
-            case Some(typeName) => {
-              internalService.get.typeResolver.toType(typeName) match {
-                case None => Some(s"Resource[${resource.datatype.label}] ${op.label} with response code[${r.code}] has an invalid type[$typeName].")
-                case Some(t) => None
-              }
-            }
-          }
-        }
-      }
-    }
-
-    val mixed2xxResponseTypes = if (invalidCodes.isEmpty) {
-      internalService.get.resources.flatMap { resource =>
-        resource.operations.flatMap { op =>
-          val types = op.responses.filter { r => !r.datatypeLabel.isEmpty && r.code.toInt >= 200 && r.code.toInt < 300 }.map(_.datatypeLabel.get).distinct
-          if (types.size <= 1) {
-            None
-          } else {
-            Some(s"Resource[${resource.datatype.label}] cannot have varying response types for 2xx response codes: ${types.sorted.mkString(", ")}")
-          }
-        }
-      }
-    } else {
-      Seq.empty
-    }
-
-    val typesNotAllowed = Seq(404) // also >= 500
-    val responsesWithDisallowedTypes = if (invalidCodes.isEmpty) {
-      internalService.get.resources.flatMap { resource =>
-        resource.operations.flatMap { op =>
-          op.responses.find { r => typesNotAllowed.contains(r.code.toInt) || r.code.toInt >= 500 } match {
-            case None => {
-              None
-            }
-            case Some(r) => {
-              Some(s"Resource[${resource.datatype.label}] ${op.label} has a response with code[${r.code}] - this code cannot be explicitly specified")
-            }
-          }
-        }
-      }
-    } else {
-      Seq.empty
-    }
-
-    val typesRequiringUnit = Seq(204, 304)
-    val noContentWithTypes = if (invalidCodes.isEmpty) {
-      internalService.get.resources.flatMap { resource =>
-        resource.operations.flatMap { op =>
-          op.responses.filter(r => typesRequiringUnit.contains(r.code.toInt) && !r.datatype.isEmpty && r.datatype.get.name != Primitives.Unit.toString).map { r =>
-            s"""Resource[${resource.datatype.label}] ${op.label} Responses w/ code[${r.code}] must return unit and not[${r.datatype.get.label}]"""
-          }
-        }
-      }
-    } else {
-      Seq.empty
     }
 
     val warnings = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.filter(r => !r.warnings.isEmpty).map { r =>
-          s"Resource[${resource.datatype.label}] ${op.method.getOrElse("")} ${r.code}: " + r.warnings.mkString(", ")
+          s"${opLabel(resource, op)} ${r.code}: " + r.warnings.mkString(", ")
         }
       }
     }
 
-    invalidMethods ++ invalidCodes ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes ++ warnings
+    missingMethods ++ invalidCodes ++ warnings
   }
 
   private def validateParameterBodies(): Seq[String] = {
@@ -312,7 +241,10 @@ case class ApiJsonServiceValidator(
   }
 
   private def opLabel(resource: InternalResourceForm, op: InternalOperationForm): String = {
-    s"Resource[${resource.datatype.label}] ${op.method.get} ${op.path}"
+    op.method match {
+      case None => s"Resource[${resource.datatype.label}] ${op.path}"
+      case Some(method) => s"Resource[${resource.datatype.label}] ${method} ${op.path}"
+    }
   }
 
   private def validateOperations(): Seq[String] = {

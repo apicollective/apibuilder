@@ -35,7 +35,7 @@ object ServiceBuilder {
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val resources = internal.resources.map { ResourceBuilder(resolver, models, enums, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
+    val resources = internal.resources.map { ResourceBuilder(models, enums, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
     Service(
       name = name,
@@ -58,7 +58,6 @@ object ServiceBuilder {
 object ResourceBuilder {
 
   def apply(
-    resolver: TypeResolver,
     models: Seq[Model],
     enums: Seq[Enum],
     unions: Seq[Union],
@@ -70,7 +69,7 @@ object ResourceBuilder {
           `type` = internal.datatype.label,
           plural = enum.plural,
           description = internal.description,
-          operations = internal.operations.map(op => OperationBuilder(resolver, op))
+          operations = internal.operations.map(op => OperationBuilder(op))
         )
       }
 
@@ -81,7 +80,7 @@ object ResourceBuilder {
               `type` = internal.datatype.label,
               plural = model.plural,
               description = internal.description,
-              operations = internal.operations.map(op => OperationBuilder(resolver, op, model = Some(model)))
+              operations = internal.operations.map(op => OperationBuilder(op, model = Some(model)))
             )
           }
 
@@ -95,7 +94,7 @@ object ResourceBuilder {
                   `type` = internal.datatype.label,
                   plural = union.plural,
                   description = internal.description,
-                  operations = internal.operations.map(op => OperationBuilder(resolver, op, union = Some(union), models = models))
+                  operations = internal.operations.map(op => OperationBuilder(op, union = Some(union), models = models))
                 )
               }
             }
@@ -110,7 +109,6 @@ object ResourceBuilder {
 object OperationBuilder {
 
   def apply(
-    resolver: TypeResolver,
     internal: InternalOperationForm,
     model: Option[Model] = None,
     union: Option[Union] = None,
@@ -153,7 +151,7 @@ object OperationBuilder {
       description = internal.description,
       body = internal.body.map { BodyBuilder(_) },
       parameters = pathParameters ++ internalParams,
-      responses = internal.responses.map { ResponseBuilder(resolver, _) }
+      responses = internal.responses.map { ResponseBuilder(_) }
     )
   }
 
@@ -266,10 +264,10 @@ object ModelBuilder {
 
 object ResponseBuilder {
 
-  def apply(resolver: TypeResolver, internal: InternalResponseForm): Response = {
+  def apply(internal: InternalResponseForm): Response = {
     Response(
       code = internal.code.toInt,
-      `type` = resolver.parseWithError(internal.datatype.get).label
+      `type` = internal.datatype.get.label
     )
   }
 

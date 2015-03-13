@@ -55,7 +55,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
   it("validates that responses is map from string to object") {
     val json = baseJson.format("DELETE", s""", "responses": { "204": "unit" } """)
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.contains(s"Resource[user] DELETE 204: Value must be a JsObject") should be(true)
+    validator.errors.mkString(" ") should be("Resource[user] DELETE /users/:id 204: Value must be a JsObject")
   }
 
   it("generates a single error message for invalid 404 specification") {
@@ -67,7 +67,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
   it("generates an error message for an invalid method") {
     val json = baseJson.format("FOO", "")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Resource[user] /users/:id Invalid HTTP method[FOO]. Must be one of: GET, POST, PUT, PATCH, DELETE, HEAD, CONNECT, OPTIONS, TRACE")
+    validator.errors.mkString(" ") should be("Resource[user] FOO /users/:id Invalid HTTP method[FOO]. Must be one of: GET, POST, PUT, PATCH, DELETE, HEAD, CONNECT, OPTIONS, TRACE")
   }
 
   it("accepts lower and upper case method names") {

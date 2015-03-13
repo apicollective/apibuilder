@@ -1,7 +1,7 @@
 package builder
 
 import core.{Importer, TypeValidator, TypesProvider}
-import com.gilt.apidoc.spec.v0.models.{Operation, ParameterLocation, Resource, Service}
+import com.gilt.apidoc.spec.v0.models.{Method, Operation, ParameterLocation, Resource, Service}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type}
 
 case class ServiceSpecValidator(
@@ -46,7 +46,8 @@ case class ServiceSpecValidator(
     validateResources() ++
     validateParameterBodies() ++
     validateParameterDefaults() ++
-    validateParameters()
+    validateParameters() ++
+    validateResponses()
   }
 
   private def validateName(): Seq[String] = {
@@ -363,6 +364,62 @@ case class ServiceSpecValidator(
       }
     }
   }
+
+  private def validateResponses(): Seq[String] = {
+    val invalidMethods = service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.method match {
+          case Method.UNDEFINED(name) => Some(s"${opLabel(resource, op)} Invalid HTTP method[$name]. Must be one of: " + Method.all.mkString(", "))
+          case _ => None
+        }
+      }
+    }
+
+    val missingOrInvalidTypes = service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.responses.flatMap { r =>
+          typeResolver.parse(r.`type`) match {
+            case None => {
+              Some(s"${opLabel(resource, op)} with response code[${r.code}] has an invalid type[${r.`type`}].")
+            }
+            case Some(_) => None
+          }
+        }
+      }
+    }
+
+    val mixed2xxResponseTypes = service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        val types = op.responses.filter { r => r.code >= 200 && r.code < 300 }.map(_.`type`).distinct
+        if (types.size <= 1) {
+          None
+        } else {
+          Some(s"Resource[${resource.`type`}] cannot have varying response types for 2xx response codes: ${types.sorted.mkString(", ")}")
+        }
+      }
+    }
+
+    val statusCodesNotAllowed = Seq(404) // also >= 500
+    val responsesWithDisallowedTypes = service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.responses.find { r => statusCodesNotAllowed.contains(r.code) || r.code >= 500 }.flatMap { r =>
+          Some(s"${opLabel(resource, op)} has a response with code[${r.code}] - this code cannot be explicitly specified")
+        }
+      }
+    }
+
+    val statusCodesRequiringUnit = Seq(204, 304)
+    val noContentWithTypes = service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.responses.filter(r => statusCodesRequiringUnit.contains(r.code) && r.`type` != Primitives.Unit.toString).map { r =>
+          s"""${opLabel(resource, op)} Responses w/ code[${r.code}] must return unit and not[${r.`type`}]"""
+        }
+      }
+    }
+
+    invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes
+  }
+
 
   private def validateDefault(
     prefix: String,
