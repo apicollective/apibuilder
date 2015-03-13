@@ -286,7 +286,7 @@ case class ServiceSpecValidator(
           case None => Seq.empty
           case Some(body) => {
             typeResolver.parse(body.`type`) match {
-              case None => Some(s"${opLabel(resource, op)} body: Type[${body.`type`}] not found")
+              case None => Some(opLabel(resource, op, s"body: Type[${body.`type`}] not found"))
               case Some(_) => None
             }
           }
@@ -296,7 +296,7 @@ case class ServiceSpecValidator(
 
     val invalidMethods = service.resources.flatMap { resource =>
       resource.operations.filter(op => !op.body.isEmpty && !Methods.isJsonDocumentMethod(op.method.toString)).map { op =>
-        s"${opLabel(resource, op)}: Cannot specify body for HTTP method[${op.method}]"
+        opLabel(resource, op, s"Cannot specify body for HTTP method[${op.method}]")
       }
     }
 
@@ -311,7 +311,7 @@ case class ServiceSpecValidator(
             param.default match {
               case None => None
               case Some(default) => {
-                validateDefault(s"${opLabel(resource, op)} param[${param.name}]", param.`type`, default)
+                validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
               }
             }
           }
@@ -326,7 +326,7 @@ case class ServiceSpecValidator(
         op.parameters.flatMap { p =>
           typeResolver.parse(p.`type`) match {
             case None => {
-              Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type: ${p.`type`}")
+              Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type: ${p.`type`}"))
             }
             case Some(dt) => {
               p.location match {
@@ -337,18 +337,18 @@ case class ServiceSpecValidator(
                       None
                     }
                     case Datatype.List(Type(Kind.Model | Kind.Union, name)) => {
-                      Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters.")
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters."))
                     }
 
                     case Datatype.Singleton(Type(Kind.Primitive | Kind.Enum, name)) => {
                       None
                     }
                     case Datatype.Singleton(Type(Kind.Model | Kind.Union, name)) => {
-                      Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters.")
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters."))
                     }
 
                     case Datatype.Map(_) => {
-                      Some(s"${opLabel(resource, op)}: Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as query parameters.")
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as query parameters."))
                     }
 
                   }
@@ -369,7 +369,7 @@ case class ServiceSpecValidator(
     val invalidMethods = service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.method match {
-          case Method.UNDEFINED(name) => Some(s"${opLabel(resource, op)} Invalid HTTP method[$name]. Must be one of: " + Method.all.mkString(", "))
+          case Method.UNDEFINED(name) => Some(opLabel(resource, op, s"Invalid HTTP method[$name]. Must be one of: " + Method.all.mkString(", ")))
           case _ => None
         }
       }
@@ -380,7 +380,7 @@ case class ServiceSpecValidator(
         op.responses.flatMap { r =>
           typeResolver.parse(r.`type`) match {
             case None => {
-              Some(s"${opLabel(resource, op)} with response code[${r.code}] has an invalid type[${r.`type`}].")
+              Some(opLabel(resource, op, s"response code[${r.code}] has an invalid type[${r.`type`}]."))
             }
             case Some(_) => None
           }
@@ -403,7 +403,7 @@ case class ServiceSpecValidator(
     val responsesWithDisallowedTypes = service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.find { r => statusCodesNotAllowed.contains(r.code) || r.code >= 500 }.flatMap { r =>
-          Some(s"${opLabel(resource, op)} has a response with code[${r.code}] - this code cannot be explicitly specified")
+          Some(opLabel(resource, op, s"response code[${r.code}] cannot be explicitly specified"))
         }
       }
     }
@@ -412,7 +412,7 @@ case class ServiceSpecValidator(
     val noContentWithTypes = service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.filter(r => statusCodesRequiringUnit.contains(r.code) && r.`type` != Primitives.Unit.toString).map { r =>
-          s"""${opLabel(resource, op)} Responses w/ code[${r.code}] must return unit and not[${r.`type`}]"""
+          opLabel(resource, op, s"response code[${r.code}] must return unit and not[${r.`type`}]")
         }
       }
     }
@@ -446,8 +446,12 @@ case class ServiceSpecValidator(
     values.groupBy(_.toLowerCase).filter { _._2.size > 1 }.keys
   }
 
-  private def opLabel(resource: Resource, op: Operation): String = {
-    s"Resource[${resource.`type`}] ${op.method} ${op.path}"
+  private def opLabel(
+    resource: Resource,
+    op: Operation,
+    message: String
+  ): String = {
+    s"Resource[${resource.`type`}] ${op.method} ${op.path} $message"
   }
 
 

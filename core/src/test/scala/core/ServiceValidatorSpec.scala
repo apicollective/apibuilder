@@ -338,22 +338,22 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     it("maps of primitives are valid in query parameters") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("map[string]"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type[map[string]]. Maps are not supported as query parameters.")
+      validator.errors.mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[map[string]]. Maps are not supported as query parameters.")
     }
 
     it("lists of models are not valid in query parameters") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[tag]"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type[[tag]]. Model and union types are not supported as query parameters.")
+      validator.errors.mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[[tag]]. Model and union types are not supported as query parameters.")
     }
 
     it("models are not valid in query parameters") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("tag"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
+      validator.errors.mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type[tag]. Model and union types are not supported as query parameters.")
     }
 
     it("validates type name in collection") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("[foo]"))
-      validator.errors.mkString("") should be("Resource[tag] GET /tags: Parameter[tags] has an invalid type: [foo]")
+      validator.errors.mkString("") should be("Resource[tag] GET /tags Parameter[tags] has an invalid type: [foo]")
     }
 
   }

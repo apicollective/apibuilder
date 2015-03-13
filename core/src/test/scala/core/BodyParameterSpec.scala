@@ -100,7 +100,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
   it("validates that body cannot be specified for GET, DELETE operations") {
     Methods.MethodsNotAcceptingBodies.foreach { method =>
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(method, """{ "type": "message" }""", "boolean"))
-      validator.errors.mkString("") should be(s"Resource[message] $method /messages/:mimeType: Cannot specify body for HTTP method[$method]")
+      validator.errors.mkString("") should be(s"Resource[message] $method /messages/:mimeType Cannot specify body for HTTP method[$method]")
     }
   }
 
@@ -144,7 +144,7 @@ class BodyParameterSpec extends FunSpec with Matchers {
   it("If body specified, parameters cannot be models") {
     val baseJsonWithInvalidModel = baseJson.format("POST", """{ "type": "message" }""", "message")
     val validator = TestHelper.serviceValidatorFromApiJson(baseJsonWithInvalidModel)
-    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType: Parameter[debug] has an invalid type[message]. Model and union types are not supported as query parameters.")
+    validator.errors.mkString("") should be(s"Resource[message] POST /messages/:mimeType Parameter[debug] has an invalid type[message]. Model and union types are not supported as query parameters.")
   }
 
 }
