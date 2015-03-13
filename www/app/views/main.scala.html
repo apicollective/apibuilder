@@ -41,7 +41,9 @@
                   @if(metadata.isOrgMember) {
                     <li><a href="@routes.ApplicationSettings.show(service.organization.key, service.application.key, version)">Settings</a></li>
                   }
-                  <li><a href="@routes.Versions.original(service.organization.key, service.application.key, version)">original</a></li>
+                  @metadata.versionObject.flatMap(_.original).map { original =>
+                    <li><a href="@routes.Versions.original(service.organization.key, service.application.key, version)">original (@{original.`type`})</a></li>
+                  }
                   <li><a href="@routes.Versions.serviceJson(service.organization.key, service.application.key, version)">@lib.Util.ServiceJsonText</a></li>
                 }
               }

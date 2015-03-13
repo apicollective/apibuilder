@@ -1,6 +1,6 @@
 package models
 
-import com.gilt.apidoc.v0.models.{Application, Generator, Organization, User}
+import com.gilt.apidoc.v0.models.{Application, Generator, Organization, User, Version}
 import com.gilt.apidoc.spec.v0.models.{Resource, Service}
 import play.api.Play.current
 
@@ -26,6 +26,7 @@ case class MainTemplate(
   org: Option[Organization] = None,
   application: Option[Application] = None,
   version: Option[String] = None,
+  versionObject: Option[Version] = None,
   allServiceVersions: Seq[String] = Seq.empty,
   user: Option[User] = None,
   resource: Option[Resource] = None,
