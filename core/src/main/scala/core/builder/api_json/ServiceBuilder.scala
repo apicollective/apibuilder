@@ -300,6 +300,7 @@ object ResponseBuilder {
     Response(
       code = internal.code.toInt,
       `type` = internal.datatype.get.label,
+      description = internal.description,
       deprecation = internal.deprecation.map(DeprecationBuilder(_))
     )
   }

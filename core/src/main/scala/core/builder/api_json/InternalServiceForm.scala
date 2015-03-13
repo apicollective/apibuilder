@@ -248,6 +248,7 @@ case class InternalBodyForm(
 case class InternalResponseForm(
   code: String,
   datatype: Option[InternalDatatype] = None,
+  description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm] = None,
   warnings: Seq[String] = Seq.empty
 ) {
@@ -546,6 +547,7 @@ object InternalResponseForm {
     InternalResponseForm(
       code = code,
       datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
+      description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
       warnings = JsonUtil.validate(
         json,

@@ -73,6 +73,7 @@
                      <p>
                        HTTP @response.code:
                        @datatype(tpl.org.get, application, tpl.version.get, service, response.`type`)
+                       @Html(response.description.map(v => s"<p>$v</p>").getOrElse(""))
                        @response.deprecation.map(deprecation(_))
                      </p>
                    }
