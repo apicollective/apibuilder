@@ -26,7 +26,14 @@
       <tbody>
         @applications.items.map { application =>
          <tr>
-           <td><a href="@routes.Versions.show(tpl.org.get.key, application.key, "latest")">@application.name</a></td>
+           <td>
+             <a href="@routes.Versions.show(tpl.org.get.key, application.key, "latest")">@application.name</a>
+             @{application.visibility match {
+                case com.gilt.apidoc.v0.models.Visibility.Public => ""
+                case com.gilt.apidoc.v0.models.Visibility.Organization | com.gilt.apidoc.v0.models.Visibility.User => "(private)"
+                case com.gilt.apidoc.v0.models.Visibility.UNDEFINED(name) => name
+             }}
+           </td>
            <td>@lib.Text.truncate(application.description.getOrElse(""))</td>
          </tr>
        }
