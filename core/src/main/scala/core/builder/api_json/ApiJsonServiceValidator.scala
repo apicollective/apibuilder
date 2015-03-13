@@ -53,12 +53,7 @@ case class ApiJsonServiceValidator(
 
   private lazy val internalService: Option[InternalServiceForm] = serviceForm.map(InternalServiceForm(_, fetcher))
 
-  lazy val errors: Seq[String] = internalErrors match {
-    case Nil => builder.ServiceSpecValidator(service).errors
-    case e => e
-  }
-
-  private lazy val internalErrors: Seq[String] = {
+  override lazy val errors: Seq[String] = {
     internalService match {
 
       case None => {

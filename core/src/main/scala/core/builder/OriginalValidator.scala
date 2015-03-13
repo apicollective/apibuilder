@@ -15,7 +15,7 @@ object OriginalValidator {
     original: Original,
     fetcher: ServiceFetcher = new ClientFetcher()
   ): ServiceValidator[Service] = {
-    original.`type` match {
+    val validator = original.`type` match {
       case OriginalType.ApiJson => {
         api_json.ApiJsonServiceValidator(config, original.data, fetcher)
       }
@@ -26,6 +26,23 @@ object OriginalValidator {
         sys.error("Invalid original type: " + original.`type`)
       }
     }
+    WithServiceSpecValidator(validator)
+  }
+
+  case class WithServiceSpecValidator(underlying: ServiceValidator[Service]) extends ServiceValidator[Service] {
+
+    override def validate(): Either[Seq[String], Service] = {
+      underlying.validate() match {
+        case Left(errors) => Left(errors)
+        case Right(service) => {
+          ServiceSpecValidator(service).errors match {
+            case Nil => Right(service)
+            case errors => Left(errors)
+          }
+        }
+      }
+    }
+
   }
 
 }

@@ -16,9 +16,4 @@ case class AvroIdlServiceValidator(
     }
   }
 
-  override lazy val errors = validate match {
-    case Left(errors) => errors
-    case Right(_) => Nil
-  }
-
 }
