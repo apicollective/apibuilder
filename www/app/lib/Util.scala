@@ -14,7 +14,7 @@ case class ExampleService(
     s"/$organizationKey/$applicationKey/$version"
   }
 
-  val originalJsonUrl = s"/$organizationKey/$applicationKey/$version/original.json"
+  val originalJsonUrl = s"/$organizationKey/$applicationKey/$version/original"
   val serviceJsonUrl = s"/$organizationKey/$applicationKey/$version/service.json"
 
 }
