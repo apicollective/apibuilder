@@ -121,9 +121,10 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateImports(): Seq[String] = {
+    internalService.get.imports.flatMap(_.warnings) ++
     internalService.get.imports.flatMap { imp =>
       imp.uri match {
-        case None => Seq("imports.uri is required")
+        case None => None
         case Some(uri) => {
           Util.validateUri(uri) match {
             case Nil => Importer(fetcher, uri).validate  // TODO. need to cache somewhere to avoid a second lookup when parsing later

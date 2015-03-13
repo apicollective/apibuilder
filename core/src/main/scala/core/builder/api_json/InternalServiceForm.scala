@@ -126,7 +126,8 @@ private[api_json] case class InternalServiceForm(
 }
 
 case class InternalImportForm(
-  uri: Option[String]
+  uri: Option[String],
+  warnings: Seq[String]
 )
 
 case class InternalModelForm(
@@ -282,7 +283,12 @@ object InternalImportForm {
 
   def apply(value: JsObject): InternalImportForm = {
     InternalImportForm(
-      uri = JsonUtil.asOptString(value \ "uri")
+      uri = JsonUtil.asOptString(value \ "uri"),
+      warnings = JsonUtil.validate(
+        value,
+        strings = Seq("uri"),
+        prefix = Some("Import")
+      )
     )
   }
 
