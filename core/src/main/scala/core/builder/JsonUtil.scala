@@ -22,11 +22,6 @@ object JsonUtil {
   ): Seq[String] = {
     val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
 
-    val p = prefix match {
-      case None => ""
-      case Some(value) => s"$value "
-    }
-
     val unrecognized = json.asOpt[JsObject] match {
       case None => Seq.empty
       case Some(v) => unrecognizedFieldsErrors(v, keys, prefix)
@@ -37,19 +32,19 @@ object JsonUtil {
       (json \ field) match {
         case o: JsString => {
           parseString(o.value) match {
-            case None => Some(s"${p}$field must be a non empty string")
+            case None => Some(withPrefix(prefix, s"$field must be a non empty string"))
             case Some(_) => None
           }
         }
-        case u: JsUndefined => Some(s"${p}Missing $field")
-        case _ => Some(s"${p}$field must be a string")
+        case u: JsUndefined => Some(withPrefix(prefix, s"Missing $field"))
+        case _ => Some(withPrefix(prefix, s"$field must be a string"))
       }
     } ++
     optionalStrings.flatMap { field =>
       (json \ field) match {
         case o: JsString => None
         case u: JsUndefined => None
-        case _ => Some(s"${p}$field, if present, must be a string")
+        case _ => Some(withPrefix(prefix, s"$field, if present, must be a string"))
       }
     } ++
     optionalBooleans.flatMap { field =>
@@ -57,12 +52,12 @@ object JsonUtil {
         case o: JsBoolean => None
         case o: JsString => {
           parseBoolean(o.value) match {
-            case None => Some(s"${p}$field, if present, must be a boolean or the string 'true' or 'false'")
+            case None => Some(withPrefix(prefix, s"$field, if present, must be a boolean or the string 'true' or 'false'"))
             case Some(_) => None
           }
         }
         case u: JsUndefined => None
-        case _ => Some(s"${p}$field, if present, must be a boolean")
+        case _ => Some(withPrefix(prefix, s"$field, if present, must be a boolean"))
       }
     } ++
     optionalNumbers.flatMap { field =>
@@ -70,33 +65,33 @@ object JsonUtil {
         case o: JsNumber => None
         case o: JsString => {
           parseLong(o.value) match {
-            case None => Some(s"${p}$field, if present, must be a number")
+            case None => Some(withPrefix(prefix, s"$field, if present, must be a number"))
             case Some(_) => None
           }
         }
         case u: JsUndefined => None
-        case _ => Some(s"${p}$field, if present, must be a number")
+        case _ => Some(withPrefix(prefix, s"$field, if present, must be a number"))
       }
     } ++
     arraysOfObjects.flatMap { field =>
       (json \ field) match {
-        case o: JsArray => validateArrayOfObjects(s"${p}elements of $field", o.value)
-        case u: JsUndefined => Some(s"${p}Missing $field")
-        case _ => Some(s"${p}$field must be an array")
+        case o: JsArray => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
+        case u: JsUndefined => Some(withPrefix(prefix, s"Missing $field"))
+        case _ => Some(withPrefix(prefix, s"$field must be an array"))
       }
     } ++
     optionalArraysOfObjects.flatMap { field =>
       (json \ field) match {
-        case o: JsArray => validateArrayOfObjects(s"${p}elements of $field", o.value)
+        case o: JsArray => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
         case u: JsUndefined => None
-        case _ => Some(s"${p}$field, if present, must be an array")
+        case _ => Some(withPrefix(prefix, s"$field, if present, must be an array"))
       }
     } ++
     optionalObjects.flatMap { field =>
       (json \ field) match {
         case o: JsObject => None
         case u: JsUndefined => None
-        case _ => Some(s"${p}$field, if present, must be an object")
+        case _ => Some(withPrefix(prefix, s"$field, if present, must be an object"))
       }
     }
   }
@@ -125,8 +120,8 @@ object JsonUtil {
 
     keys.filter { k => !fields.contains(k) }.toList match {
       case Nil => Nil
-      case one :: Nil => Seq((prefix.getOrElse("") + " ").trim + s"Unrecognized element[$one]")
-      case multiple => Seq((prefix.getOrElse("") + " ").trim + s"Unrecognized elements[${multiple.sorted.mkString(", ")}]")
+      case one :: Nil => Seq(withPrefix(prefix, s"Unrecognized element[$one]"))
+      case multiple => Seq(withPrefix(prefix, s"Unrecognized elements[${multiple.sorted.mkString(", ")}]"))
     }
   }
 
@@ -177,4 +172,10 @@ object JsonUtil {
     }
   }
 
+  private def withPrefix(prefix: Option[String], message: String): String = {
+    prefix match {
+      case None => message
+      case Some(value) => s"$value $message"
+    }
+  }
 }

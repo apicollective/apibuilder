@@ -23,12 +23,12 @@ class ImportServiceSpec extends FunSpec with Matchers {
         "imports": [ { "foo": "bar" } ]
       }"""
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be("imports.uri is required")
+      validator.errors.mkString(",") should be("Import Unrecognized element[foo],Import Missing uri")
     }
 
     it("import uri cannot be empty") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("  "))
-      validator.errors.mkString("") should be("imports.uri is required")
+      validator.errors.mkString("") should be("Import uri must be a non empty string")
     }
 
     it("import uri starts with a valid protocol") {
