@@ -1,5 +1,6 @@
 package db
 
+import lib.Role
 import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, Visibility}
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
@@ -11,15 +12,19 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
 
   private lazy val baseUrl = "http://localhost"
 
-  private def upsertApplication(nameOption: Option[String] = None): Application = {
+  private def upsertApplication(
+    nameOption: Option[String] = None,
+    org: Organization = Util.testOrg,
+    visibility: Visibility = Visibility.Organization
+  ): Application = {
     val n = nameOption.getOrElse("Application %s".format(UUID.randomUUID))
-    ApplicationsDao.findAll(Authorization.All, orgKey = Some(Util.testOrg.key), name = Some(n), limit = 1).headOption.getOrElse {
+    ApplicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(n), limit = 1).headOption.getOrElse {
       val applicationForm = ApplicationForm(
         name = n,
         description = None,
-        visibility = Visibility.Organization
+        visibility = visibility
       )
-      ApplicationsDao.create(Util.createdBy, Util.testOrg, applicationForm)
+      ApplicationsDao.create(Util.createdBy, org, applicationForm)
     }
   }
 
@@ -27,6 +32,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
     ApplicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = 1).headOption
   }
 
+/*
   it("create") {
     val name = "Application %s".format(UUID.randomUUID)
     val application = upsertApplication(Some(name))
@@ -123,6 +129,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
       findByKey(Util.testOrg, application.key).get.visibility should be(Visibility.Organization)
     }
   }
+*/
 
   describe("findAll") {
 
@@ -185,10 +192,32 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
           guids.contains(privateApplication.guid) should be(true)
         }
 
-        it("other user cannot see private application") {
+        it("other user cannot see public nor private applications for a private org") {
           val guids = ApplicationsDao.findAll(Authorization.User(Util.createdBy.guid), orgKey = Some(org.key)).map(_.guid)
-          guids.contains(publicApplication.guid) should be(true)
+          guids.contains(publicApplication.guid) should be(false)
           guids.contains(privateApplication.guid) should be(false)
+        }
+
+        it("other user cannot see private application even for a public org") {
+          val myUser = Util.createRandomUser()
+          val myOrg = Util.createOrganization(visibility = Some(Visibility.Public))
+          Util.createMembership(myOrg, myUser, Role.Member)
+          val myPrivateApp = upsertApplication(org = myOrg)
+          val myPublicApp = upsertApplication(org = myOrg, visibility = Visibility.Public)
+
+          val otherUser = Util.createRandomUser()
+          val otherOrg = Util.createOrganization(visibility = Some(Visibility.Public))
+          Util.createMembership(otherOrg, otherUser, Role.Member)
+          val otherPrivateApp = upsertApplication(org = otherOrg)
+          val otherPublicApp = upsertApplication(org = otherOrg, visibility = Visibility.Public)
+
+          val myGuids = ApplicationsDao.findAll(Authorization.User(myUser.guid), orgKey = Some(myOrg.key)).map(_.guid)
+          myGuids.contains(myPrivateApp.guid) should be(true)
+          myGuids.contains(myPublicApp.guid) should be(true)
+
+          val otherGuids = ApplicationsDao.findAll(Authorization.User(myUser.guid), orgKey = Some(otherOrg.key)).map(_.guid)
+          otherGuids.contains(otherPrivateApp.guid) should be(false)
+          otherGuids.contains(otherPublicApp.guid) should be(true)
         }
       }
 

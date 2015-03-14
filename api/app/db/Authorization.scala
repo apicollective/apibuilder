@@ -99,7 +99,9 @@ object Authorization {
       organizationsTableName: String = "organizations"
     ) = {
       Some(
-        "(" + PublicApplicationsQuery.format(applicationsTableName) + " or " + organizationFilter(organizationsTableName).get + ")"
+        organizationFilter(organizationsTableName).get +
+        " and (" + PublicApplicationsQuery.format(applicationsTableName) +
+        s" or $organizationsTableName.guid in ($UserQuery)) "
       )
     }
     override def tokenFilter(
