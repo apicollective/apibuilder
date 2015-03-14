@@ -1,13 +1,5 @@
 Add support for multiple input types:
-  - next up is avro
   - consider support for swagger.json here
-  - data model we want is:
-    - version has an original source file which contains a type (enum
-      of ApiJson, AvroIdl, SwaggerJson(future)) and content (text)
-    - remove api.json from the UI and replace with source
-    - Change core ServiceBuilder / InternalServiceForm to be in a
-      package called apiJson. Main signature now is parse -> service
-    Hopefully straightforward now given standardization on service.json
 
 Breaking changes:
   - Change 404s to be explicit
