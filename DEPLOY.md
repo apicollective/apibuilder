@@ -16,12 +16,7 @@ Installing Docker on mac
 Deploying
 ==============
 
-    /web/metadata-architecture/exec ./script/release-and-deploy generator api www
-
-Metadata about your app EC2 Configuration
-=========================================
-
-    /web/metadata-architecture/exec ionblaster list
+  /web/ionroller-tools/bin/release-and-deploy --release "apidoc-api apidoc-www"
 
 Releasing a schema change
 =========================
