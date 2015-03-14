@@ -18,11 +18,14 @@
       <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Not Watching</a>
     }
   </div>
-  <div class="pull-left">
-    <p class="service-description">
-      @service.description.getOrElse("")
-    </p>
-  </div>
+
+  @service.description.map { desc =>
+    <div class="pull-left">
+      <p class="service-description">
+        @desc
+      </p>
+    </div>
+  }
  
   <div class="pull-left versions-show">
     
@@ -31,7 +34,7 @@
     @if(service.resources.isEmpty) {
       <em>No resources</em>
     } else {
-      resources(tpl.org.get, application, tpl.version.get, service.resources)
+      @resources(tpl.org.get, application, tpl.version.get, service)
     }
 
     <h2>Headers</h2>
