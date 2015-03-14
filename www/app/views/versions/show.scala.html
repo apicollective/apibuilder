@@ -18,10 +18,15 @@
       <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Not Watching</a>
     }
   </div>
- 
   <div class="pull-left">
-    @service.description.getOrElse("")
-
+    <p class="service-description">
+      @service.description.getOrElse("")
+    </p>
+  </div>
+ 
+  <div class="pull-left versions-show">
+    
+    
     <h2>Resources</h2>
     @if(service.resources.isEmpty) {
       <em>No resources</em>
