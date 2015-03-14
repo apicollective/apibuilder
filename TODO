@@ -23,8 +23,6 @@ incompatible changes.
 Org level setting to enable semver versioning (default on)
   - prevent backwards incompatible changes once at major version 1
 
-Email user when their membership request has been processed
-
 Implement subscriptions.findAll authorization filter
 
 Implement backwards compatibility layer - each new version of a

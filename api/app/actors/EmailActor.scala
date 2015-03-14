@@ -1,7 +1,7 @@
 package actors
 
-import com.gilt.apidoc.v0.models.{Membership, Publication, Application}
-import lib.{Email, Person}
+import com.gilt.apidoc.v0.models.{Application, Membership, Publication}
+import lib.{Email, Person, Role}
 import db._
 import play.api.Logger
 import akka.actor.Actor
@@ -13,6 +13,8 @@ object EmailActor {
     case class EmailVerificationCreated(guid: UUID)
     case class MembershipCreated(guid: UUID)
     case class MembershipRequestCreated(guid: UUID)
+    case class MembershipRequestAccepted(organizationGuid: UUID, userGuid: UUID, role: Role)
+    case class MembershipRequestDeclined(organizationGuid: UUID, userGuid: UUID, role: Role)
     case class PasswordResetRequestCreated(guid: UUID)
     case class ApplicationCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
@@ -33,6 +35,34 @@ class EmailActor extends Actor {
             subject = s"${request.organization.name}: Membership Request from ${request.user.email}",
             body = views.html.emails.membershipRequestCreated(request).toString
           )
+        }
+      }
+    )
+
+    case EmailActor.Messages.MembershipRequestAccepted(organizationGuid, userGuid, role) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.MembershipRequestAccepted($organizationGuid, $userGuid, $role)", {
+        OrganizationsDao.findByGuid(Authorization.All, organizationGuid).map { org =>
+          UsersDao.findByGuid(userGuid).map { user =>
+            Email.sendHtml(
+              to = Person(user),
+              subject = s"Welcome to ${org.name}",
+              body = views.html.emails.membershipRequestAccepted(org, user, role).toString
+            )
+          }
+        }
+      }
+    )
+
+    case EmailActor.Messages.MembershipRequestDeclined(organizationGuid, userGuid, role) => Util.withVerboseErrorHandler(
+      s"EmailActor.Messages.MembershipRequestDeclined($organizationGuid, $userGuid, $role)", {
+        OrganizationsDao.findByGuid(Authorization.All, organizationGuid).map { org =>
+          UsersDao.findByGuid(userGuid).map { user =>
+            Email.sendHtml(
+              to = Person(user),
+              subject = s"Your Membership Request to join ${org.name} was declined",
+              body = views.html.emails.membershipRequestDeclined(org, user, role).toString
+            )
+          }
         }
       }
     )

@@ -1,5 +1,6 @@
 package actors
 
+import lib.{Role}
 import play.api.libs.concurrent.Akka
 import play.api.libs.concurrent.Execution.Implicits._
 import akka.actor._
@@ -13,6 +14,8 @@ object MainActor {
   object Messages {
     case class EmailVerificationCreated(guid: UUID)
     case class MembershipRequestCreated(guid: UUID)
+    case class MembershipRequestAccepted(organizationGuid: UUID, userGuid: UUID, role: Role)
+    case class MembershipRequestDeclined(organizationGuid: UUID, userGuid: UUID, role: Role)
     case class MembershipCreated(guid: UUID)
     case class PasswordResetRequestCreated(guid: UUID)
     case class ApplicationCreated(guid: UUID)
@@ -33,6 +36,18 @@ class MainActor(name: String) extends Actor with ActorLogging {
     case MainActor.Messages.MembershipRequestCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.MembershipRequestCreated($guid)", {
         emailActor ! EmailActor.Messages.MembershipRequestCreated(guid)
+      }
+    )
+
+    case MainActor.Messages.MembershipRequestAccepted(organizationGuid, userGuid, role) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.MembershipRequestAccepted($organizationGuid, $userGuid, $role)", {
+        emailActor ! EmailActor.Messages.MembershipRequestAccepted(organizationGuid, userGuid, role)
+      }
+    )
+
+    case MainActor.Messages.MembershipRequestDeclined(organizationGuid, userGuid, role) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.MembershipRequestDeclined($organizationGuid, $userGuid, $role)", {
+        emailActor ! EmailActor.Messages.MembershipRequestDeclined(organizationGuid, userGuid, role)
       }
     )
 

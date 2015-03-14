@@ -99,6 +99,8 @@ object MembershipRequestsDao {
       MembershipRequestsDao.softDelete(createdBy, request)
       MembershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
+
+    global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestAccepted(request.organization.guid, request.user.guid, r)
   }
 
   /**
@@ -116,6 +118,8 @@ object MembershipRequestsDao {
       OrganizationLogsDao.create(createdBy, request.organization, message)
       MembershipRequestsDao.softDelete(createdBy, request)
     }
+
+    global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestDeclined(request.organization.guid, request.user.guid, r)
   }
 
   private def assertUserCanReview(user: User, request: MembershipRequest) {
