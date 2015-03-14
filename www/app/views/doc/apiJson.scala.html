@@ -46,7 +46,8 @@
       "name" => {
         "description": <em>string (optional)</em>,
         "plural": <em>string (optional)</em>,
-        "fields": <em>JSON Array of <a href="#field">Field</a></em>
+        "fields": <em>JSON Array of <a href="#field">Field</a></em>,
+        "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
     </pre>
@@ -57,6 +58,7 @@
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
       <li><em>description</em> specifies an optional, longer description for what this model represents.</li>
       <li><em>fields</em> indicates that one or more fields is required. See <a href="#field">Field</a>.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
 
@@ -75,7 +77,8 @@
       "default": <em>value (optional)</em>,
       "example": <em>string (optional)</em>,
       "minimum": <em>long (optional)</em>,
-      "maximum": <em>long (optional)</em>
+      "maximum": <em>long (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
 
@@ -89,6 +92,7 @@
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
       <li><em>minimum</em> @minimumInfo("field")</li>
       <li><em>maximum</em> @maximumInfo("field")</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
 
   </p>
@@ -104,7 +108,8 @@
       "typeName" => {
         "path": <em>string (optional)</em>,
         "description": <em>string (optional)</em>,
-        "operations": <em>JSON Array of <a href="#operation">Operation</a></em>
+        "operations": <em>JSON Array of <a href="#operation">Operation</a></em>,
+        "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
     </pre>
@@ -115,6 +120,7 @@
       <li><em>path</em> optional path where this resource is located. If not provided, defaults to the plural of the typeName, with some assumptions of formatting for web (e.g. lower case, dash separated). Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that all operations for this path will require a parameter named 'guid' of type 'string'</li>
       <li><em>description</em> optional longer description for this resource.</li>
       <li><em>operations</em> one or more operations is required. See <a href="#operation">Operation</a>.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
 
@@ -131,7 +137,8 @@
       "description": <em>string (optional)</em>,
       "body": <em>JSON Object of <a href="#body">Body</a> (optional)</em>,
       "parameters": <em>JSON Array of <a href="#parameter">Parameter</a> (optional)</em>,
-      "responses": <em>JSON Object of <a href="#response">Response</a> (optional)</em>
+      "responses": <em>JSON Object of <a href="#response">Response</a> (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
 
@@ -143,6 +150,7 @@
       <li><em>body</em> optional specification for the type of the body of this request. For all operations that support bodies (e.g. POST, PUT, PATCH), allows you to specify the type of the body. See <a href="#body">Body</a>.</li>
       <li><em>parameters</em> optional JSON Array of the parameters to this method. By default, for @lib.Methods.MethodsNotAcceptingBodies.mkString(" and ") methods, parameters are assumed to be in the path or in the query. For other methods, parameters are assumed to be in the path or form body, unless you have explicitly specified a body in which case parameters can be provided in the path or the query. See <a href="#parameter">Parameter</a>.</li>
       <li><em>responses</em> optional JSON Object of HTTP Response Code => Response. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented. See <a href="#response">Response</a>.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
 
@@ -155,7 +163,8 @@
     <pre>
     {
       "type": <em>string</em>,
-      "description": <em>string (optional)</em>
+      "description": <em>string (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>,
     }
     </pre>
 
@@ -163,6 +172,7 @@
     <ul>
       <li><em>type</em> @typeInfo("body")</li>
       <li><em>description</em> optional longer description for this body.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
 
@@ -181,7 +191,8 @@
       "default": <em>value (optional)</em>,
       "example": <em>string (optional)</em>,
       "minimum": <em>long (optional)</em>,
-      "maximum": <em>long (optional)</em>
+      "maximum": <em>long (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
 
@@ -195,6 +206,7 @@
       <li><em>example</em> @exampleInfo("parameter")</li>
       <li><em>minimum</em> @minimumInfo("parameter")</li>
       <li><em>maximum</em> @maximumInfo("parameter")</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
 
   </p>
@@ -210,7 +222,8 @@
       "name": <em>string</em>,
       "plural": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
-      "values": <em>JSON Array of <a href="#enumValue">EnumValue</a></em>
+      "values": <em>JSON Array of <a href="#enumValue">EnumValue</a></em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
 
@@ -220,6 +233,7 @@
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
       <li><em>description</em> optional longer description for this enum.</li>
       <li><em>values</em> Json Array of EnumValue objects. Each element defines a valid value and an optional description. See <a href="#enumValue">EnumValue</a>.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
 
@@ -232,7 +246,8 @@
     <pre>
     {
       "name": <em>string</em>,
-      "description": <em>string (optional)</em>
+      "description": <em>string (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
 
@@ -240,6 +255,7 @@
     <ul>
       <li><em>name</em> the name of the value. Names must start with a letter.</li>
       <li><em>description</em> optional longer description for this enum.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
   <a name="union"></a>
@@ -251,7 +267,8 @@
       "name" => {
         "plural": <em>string (optional)</em>,
         "description": <em>string (optional)</em>,
-        "types": <em>JSON Array of <a href="#unionType">UnionType</a></em>
+        "types": <em>JSON Array of <a href="#unionType">UnionType</a></em>,
+        "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
     </pre>
@@ -262,6 +279,7 @@
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
       <li><em>description</em> specifies an optional, longer description for what this model represents.</li>
       <li><em>types</em> Specifies the individual types that are part of this union type. See <a href="#unionType">UnionType</a>.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
 
@@ -274,7 +292,8 @@
     <pre>
     {
       "type": <em>string</em>,
-      "description": <em>string (optional)</em>
+      "description": <em>string (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
 
@@ -284,6 +303,7 @@
       type. Acceptable values include the name of either an enum, a model,
       or a (<a href="@routes.DocController.types">primitive type</a>).</li>
       <li><em>description</em> optional longer description for this enum.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
   <a name="import"></a>
@@ -315,7 +335,8 @@
       "type": <em>string</em>,
       "required": <em>boolean (optional, true by default)</em>,
       "default": <em>value (optional)</em>,
-      "description": <em>string (optional)</em>
+      "description": <em>string (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
 
@@ -326,9 +347,8 @@
       <li><em>required</em> boolean: true|false. By default, all headers are considered required. To make a parameter optional, set "required" to false.</li>
       <li><em>default</em> the default value for this header. If specified, generated clients will automatically include this header in all requests. Default values must be specified as strings.</li>
       <li><em>description</em> optional longer description for this header.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
-
-
 
   <a name="response"></a>
   <h2>Response declaration</h2>
@@ -340,7 +360,8 @@
     {
       "http_status_code": {
         "type": <em>type</em>,
-        "description": <em>string (optional)</em>
+        "description": <em>string (optional)</em>,
+        "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
     </pre>
@@ -350,6 +371,7 @@
       <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
       <li><em>type</em> @typeInfo("response")</li>
       <li><em>description</em> optional longer description for this response.</li>
+      <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
 
     There are a few conventions enforced:
@@ -370,6 +392,25 @@
 
       <li> HTTP Response codes of 204 and 304 cannot contain a type - they must return no content.</li>
 
+    </ul>
+
+  </p>
+
+  <a name="deprecation"></a>
+  <h2>Deprecation declaration</h2>
+
+  <p>
+    A deprecation is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "description": <em>string (optional)</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>description</em> optional, but recommended to contain notes for what the user is supposed to do now that this property is deprecated.</li>
     </ul>
 
   </p>
