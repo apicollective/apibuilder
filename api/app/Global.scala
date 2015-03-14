@@ -22,12 +22,12 @@ object Global extends WithFilters(LoggingFilter) {
   }
 
   override def onBadRequest(request: RequestHeader, error: String) = {
-    Future.successful(BadRequest(Json.toJson(Validation.serverError("Bad Request"))))
+    Future.successful(BadRequest(Json.toJson(Validation.serverError(error))))
   }
 
   override def onError(request: RequestHeader, ex: Throwable) = {
     Logger.error(ex.toString, ex)
-    Future.successful(InternalServerError(Json.toJson(Validation.serverError())))
+    Future.successful(InternalServerError(Json.toJson(Validation.serverError(ex.getMessage))))
   }
 
   private def ensureServices() {
