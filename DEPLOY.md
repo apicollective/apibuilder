@@ -21,21 +21,33 @@ Deploying
 Releasing a schema change
 =========================
 
+    sudo yum install postgresql93
+
     cd /web/apidoc/schema
     sem-dist
     scp -F /web/metadata-architecture/ssh/config /web/schema-apidoc/dist/schema-apidoc-*.tar.gz dbgateway:~/
     ssh -F /web/metadata-architecture/ssh/config dbgateway
     tar xfz schema-apidoc-*.tar.gz
-    cd schema-apidoc-0.0.31
-    sem-apply --user web --host apidoc.cqe9ob8rnh0u.us-east-1.rds.amazonaws.com --name apidoc
+    cd schema-apidoc-*
+
+    echo "apidoc.prod.rds.gilt.local:5432:apidoc:api:PASSWORD" > ~/.pgpass
+    chmod 0600 ~/.pgpass
+
+    sem-apply --user apoi --host apidoc.prod.rds.gilt.local --name apidoc
+
+Database backup
+===============
+
+    pg_dump  -Fc -h apidoc.prod.rds.gilt.local -U api -f apidoc.dmp apidoc
+    pg_restore -U api -c -d apidoc apidoc.dmp
 
 Debugging
 =========
 
- - Login to EC2 https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:search=i-079f7c54
+ - Login to EC2 https://console.aws.amazon.com/
 
  - SSH to an instance
-   ssh -F /web/metadata-architecture/ssh/config <EC2 Hostname>
+   ssh -F /web/metadata-architecture/ssh/mbryzek <EC2 Hostname>
 
  - sudo docker ps -a
 
