@@ -43,7 +43,7 @@
 
     <pre>
     {
-      "name" => {
+      "name": {
         "description": <em>string (optional)</em>,
         "plural": <em>string (optional)</em>,
         "fields": <em>JSON Array of <a href="#field">Field</a></em>,
@@ -105,7 +105,7 @@
 
     <pre>
     {
-      "typeName" => {
+      "typeName": {
         "path": <em>string (optional)</em>,
         "description": <em>string (optional)</em>,
         "operations": <em>JSON Array of <a href="#operation">Operation</a></em>,
@@ -149,7 +149,7 @@
       <li><em>description</em> optional longer description for this operation.</li>
       <li><em>body</em> optional specification for the type of the body of this request. For all operations that support bodies (e.g. POST, PUT, PATCH), allows you to specify the type of the body. See <a href="#body">Body</a>.</li>
       <li><em>parameters</em> optional JSON Array of the parameters to this method. By default, for @lib.Methods.MethodsNotAcceptingBodies.mkString(" and ") methods, parameters are assumed to be in the path or in the query. For other methods, parameters are assumed to be in the path or form body, unless you have explicitly specified a body in which case parameters can be provided in the path or the query. See <a href="#parameter">Parameter</a>.</li>
-      <li><em>responses</em> optional JSON Object of HTTP Response Code => Response. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented. See <a href="#response">Response</a>.</li>
+      <li><em>responses</em> optional JSON Object of HTTP Response Code to Response. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented. See <a href="#response">Response</a>.</li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
@@ -219,11 +219,12 @@
 
     <pre>
     {
-      "name": <em>string</em>,
-      "plural": <em>string (optional)</em>,
-      "description": <em>string (optional)</em>,
-      "values": <em>JSON Array of <a href="#enumValue">EnumValue</a></em>,
-      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
+      "name": {
+        "plural": <em>string (optional)</em>,
+        "description": <em>string (optional)</em>,
+        "values": <em>JSON Array of <a href="#enumValue">EnumValue</a></em>,
+        "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
+      }
     }
     </pre>
 
@@ -264,7 +265,7 @@
   <p>
     <pre>
     {
-      "name" => {
+      "name": {
         "plural": <em>string (optional)</em>,
         "description": <em>string (optional)</em>,
         "types": <em>JSON Array of <a href="#unionType">UnionType</a></em>,
