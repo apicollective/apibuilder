@@ -199,6 +199,7 @@ object VersionsDao {
       SQL(sql)().toList.foreach { row =>
         val orgKey = row[String]("organization_key")
         val applicationKey = row[String]("application_key")
+        val versionName = row[String]("version")
         val versionGuid = row[UUID]("guid")
 
         Logger.info(s"Migrating $orgKey/$applicationKey/$versionGuid to version $ServiceVersionNumber")
@@ -218,7 +219,7 @@ object VersionsDao {
           val validator = OriginalValidator(config, original)
           validator.validate match {
             case Left(errors) => {
-              Logger.error(s"Version[$versionGuid] has invalid JSON: " + errors.mkString(", "))
+            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
               bad += 1
             }
             case Right(service) => {
@@ -234,7 +235,7 @@ object VersionsDao {
           }
         } catch {
           case e: Throwable => {
-            Logger.error(s"Error migrating version[${versionGuid}] to service versionNumber[$ServiceVersionNumber]: $e")
+            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] to service versionNumber[$ServiceVersionNumber]: $e")
             bad += 1
           }
         }
