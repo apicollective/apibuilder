@@ -138,10 +138,16 @@ end
 def get_code(org, application, generator)
   version = "latest"
 
-  code = cli("code #{org} #{application} #{version} #{generator}")
-  if code == ""
-    raise "Failed to fetch code for org[#{org}] application[#{application}] version[#{version}] generator[#{generator}]"
+  begin
+    code = cli("code #{org} #{application} #{version} #{generator}")
+  rescue Com::Gilt::Apidoc::Api::V0::HttpClient::ServerError => e
+    if e.code == 404
+      puts " - warning: application[#{application}] either has no versions or was otherwise not found"
+    else
+      raise "Failed to fetch code for org[#{org}] application[#{application}] version[#{version}] generator[#{generator}]"
+    end
   end
+
   code
 end
 
