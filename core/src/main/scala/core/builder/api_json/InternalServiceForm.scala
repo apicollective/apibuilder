@@ -401,7 +401,7 @@ object InternalEnumForm {
       values = values,
       warnings = JsonUtil.validate(
         value,
-        optionalStrings = Seq("description", "plural"),
+        optionalStrings = Seq("name", "description", "plural"),
         arraysOfObjects = Seq("values"),
         optionalObjects = Seq("deprecation"),
         prefix = Some(s"Enum[$name]")
