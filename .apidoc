@@ -9,12 +9,12 @@ code:
       version: latest
       generators:
         play_2_3_client: generated/app/ApidocSpec.scala
-    apidoc:
-      version: latest
-      generators:
-        play_2_3_client: generated/app/ApidocClient.scala
-        play_2_x_routes: api/conf/routes
     apidoc-generator:
       version: latest
       generators:
         play_2_3_client: generated/app/ApidocGenerator.scala
+    apidoc-cli:
+      version: latest
+      generators:
+        play_2_3_client: generated/app/ApidocClient.scala
+        play_2_x_routes: api/conf/routes
