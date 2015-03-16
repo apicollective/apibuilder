@@ -6,30 +6,30 @@
 
 @main(tpl) {
 
-  <div class="pull-right">
-    @if(tpl.isOrgMember) {
-      <a href="@routes.Versions.create(orgKey = tpl.org.get.key, application = Some(service.application.key))">Upload new version</a> |
-      <a class="delete" text="Are you sure?" href="@routes.Versions.postDelete(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Delete this version</a> |
-    }
+  <div class="versions-header clearfix">
+    <div class="pull-right">
+      @if(tpl.isOrgMember) {
+        <a href="@routes.Versions.create(orgKey = tpl.org.get.key, application = Some(service.application.key))">Upload new version</a> |
+        <a class="delete" text="Are you sure?" href="@routes.Versions.postDelete(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Delete this version</a> |
+      }
 
-    @if(isWatching) {
-      <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Watching</a>
-    } else {
-      <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Not Watching</a>
+      @if(isWatching) {
+        <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Watching</a>
+      } else {
+        <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Not Watching</a>
+      }
+    </div>
+
+    @service.description.map { desc =>
+      <div class="pull-left">
+        <p class="service-description">
+          @desc
+        </p>
+      </div>
     }
   </div>
-
-  @service.description.map { desc =>
-    <div class="pull-left">
-      <p class="service-description">
-        @desc
-      </p>
-    </div>
-  }
  
-  <div class="pull-left versions-show">
-    
-    
+  <div class="versions-show">
     <h2>Resources</h2>
     @if(service.resources.isEmpty) {
       <em>No resources</em>
