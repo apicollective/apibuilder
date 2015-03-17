@@ -1,7 +1,8 @@
 @(tpl: models.MainTemplate,
   applicationKey: Option[String],
   form: Form[controllers.Versions.UploadData],
-  errors: Seq[String] = Seq.empty
+  errors: Seq[String] = Seq.empty,
+  isFirstVersion: Option[Boolean] = None
 )(implicit flash: Flash)
 
 @main(tpl) {
@@ -55,6 +56,9 @@
           <a href="@routes.Organizations.show(tpl.org.get.key)" class="btn">Cancel</a>
         } else {
           <a href="@routes.Versions.show(tpl.service.get.organization.key, tpl.service.get.application.key, "latest")" class="btn">Cancel</a>
+        }
+        @if(isFirstVersion.getOrElse(false) && !tpl.org.isEmpty && !applicationKey.isEmpty && tpl.canDeleteApplication(applicationKey.get)) {
+          <a href="@routes.ApplicationSettings.postDelete(tpl.org.get.key, applicationKey.get)" class="delete" data-confirm="Are you sure?">Delete this application</a>
         }
       </div>
 

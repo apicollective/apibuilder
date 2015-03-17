@@ -99,7 +99,7 @@ POST    /:orgKey/subscriptions/:publication/toggle                controllers.Su
 GET     /:orgKey/:applicationKey/:version/settings                controllers.ApplicationSettings.show(orgKey: String, applicationKey: String, version: String)
 GET     /:orgKey/:applicationKey/:version/settings/edit           controllers.ApplicationSettings.edit(orgKey: String, applicationKey: String, version: String)
 POST    /:orgKey/:applicationKey/:version/settings/postEdit       controllers.ApplicationSettings.postEdit(orgKey: String, applicationKey: String, version: String)
-POST    /:orgKey/:applicationKey/:version/settings/postDelete     controllers.ApplicationSettings.postDelete(orgKey: String, applicationKey: String, version: String)
+POST    /:orgKey/:applicationKey/settings/postDelete              controllers.ApplicationSettings.postDelete(orgKey: String, applicationKey: String)
 
 GET     /:orgKey/:applicationKey                                  controllers.Versions.redirectToLatest(orgKey: String, applicationKey: String)
 GET     /:orgKey/:applicationKey/:version                         controllers.Versions.show(orgKey: String, applicationKey: String, version: String)

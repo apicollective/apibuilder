@@ -207,7 +207,10 @@ object Versions extends Controller {
                   visibility = application.visibility.toString
                 )
               )
-              Ok(views.html.versions.form(tpl, applicationKey, filledForm))
+
+              val isFirstVersion = versionsResponse.isEmpty
+              println(tpl)
+              Ok(views.html.versions.form(tpl, applicationKey, filledForm, isFirstVersion = Some(isFirstVersion)))
             }
           }
         }

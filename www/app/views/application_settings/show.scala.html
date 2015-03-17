@@ -17,7 +17,7 @@
     </ul>
 
     @if(tpl.canDeleteApplication(application.key)) {
-      <a href="@routes.ApplicationSettings.postDelete(org.key, application.key, tpl.version.get)" class="delete" data-confirm="Are you sure?">Delete this application</a>
+      <a href="@routes.ApplicationSettings.postDelete(org.key, application.key)" class="delete" data-confirm="Are you sure?">Delete this application</a>
     }
   }
 

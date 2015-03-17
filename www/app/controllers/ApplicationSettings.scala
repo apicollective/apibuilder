@@ -85,7 +85,7 @@ object ApplicationSettings extends Controller {
     }
   }
 
-  def postDelete(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
+  def postDelete(orgKey: String, applicationKey: String) = AuthenticatedOrg.async { implicit request =>
     for {
       result <- request.api.Applications.deleteByOrgKeyAndApplicationKey(request.org.key, applicationKey)
     } yield {
