@@ -118,7 +118,7 @@ object OperationBuilder {
     models: Seq[Model] = Nil
   ): Operation = {
     val method = internal.method.getOrElse("")
-    val location = if (!internal.body.isEmpty || !Methods.isJsonDocumentMethod(method)) { ParameterLocation.Query } else { ParameterLocation.Form }
+    val defaultLocation = if (!internal.body.isEmpty || !Methods.isJsonDocumentMethod(method)) { ParameterLocation.Query } else { ParameterLocation.Form }
 
     val pathParameters = internal.namedPathParameters.map { name =>
       internal.parameters.find(_.name == Some(name)) match {
@@ -145,7 +145,7 @@ object OperationBuilder {
     }
 
     val internalParams = internal.parameters.filter(p => pathParameters.find(_.name == p.name.get).isEmpty).map { p =>
-      ParameterBuilder(p, location)
+      ParameterBuilder(p, defaultLocation)
     }
 
     Operation(
@@ -318,11 +318,11 @@ object ParameterBuilder {
     )
   }
 
-  def apply(internal: InternalParameterForm, location: ParameterLocation): Parameter = {
+  def apply(internal: InternalParameterForm, defaultLocation: ParameterLocation): Parameter = {
     Parameter(
       name = internal.name.get,
       `type` = internal.datatype.get.label,
-      location = location,
+      location = internal.location.map(toParameterLocation(_)).getOrElse(defaultLocation),
       description = internal.description,
       deprecation = internal.deprecation.map(DeprecationBuilder(_)),
       required = internal.required,
@@ -331,6 +331,12 @@ object ParameterBuilder {
       maximum = internal.maximum,
       example = internal.example
     )
+  }
+
+  private def toParameterLocation(value: String): ParameterLocation = {
+    ParameterLocation.all.find(_.toString.toLowerCase == value.toLowerCase).getOrElse {
+      ParameterLocation.UNDEFINED(value)
+    }
   }
 
 }

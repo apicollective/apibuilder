@@ -44,6 +44,7 @@ case class ServiceSpecValidator(
     validateFields() ++
     validateFieldDefaults() ++
     validateResources() ++
+    validateParameterLocations() ++
     validateParameterBodies() ++
     validateParameterDefaults() ++
     validateParameters() ++
@@ -278,6 +279,19 @@ case class ServiceSpecValidator(
     }.distinct
 
     datatypeErrors ++ missingOperations ++ duplicateModels
+  }
+
+  private def validateParameterLocations(): Seq[String] = {
+    service.resources.flatMap { resource =>
+      resource.operations.filter(!_.parameters.isEmpty).flatMap { op =>
+        op.parameters.flatMap { param =>
+          param.location match {
+            case ParameterLocation.Query | ParameterLocation.Form | ParameterLocation.Path => None
+            case ParameterLocation.UNDEFINED(name) => Some(opLabel(resource, op, s"location[$name] is not recognized. Must be one of: ${ParameterLocation.all.map(_.toString.toLowerCase).mkString(", ")}"))
+          }
+        }
+      }
+    }
   }
 
   private def validateParameterBodies(): Seq[String] = {

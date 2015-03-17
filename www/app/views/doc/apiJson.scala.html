@@ -186,6 +186,7 @@
     {
       "name": <em>string</em>,
       "type": <em>string</em>,
+      "location": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
       "required": <em>boolean (optional, true by default)</em>,
       "default": <em>value (optional)</em>,
@@ -200,6 +201,7 @@
     <ul>
       <li><em>name</em> the name of the parameter. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
       <li><em>type</em> @typeInfo("parameter")</li>
+      <li><em>location</em> one of: @com.gilt.apidoc.spec.v0.models.ParameterLocation.all.map(_.toString.toLowerCase).mkString(", "). Defines the location of this parameter. Default location varies based on the context of the parameter (e.g. if the operation method is a POST, the default will be @com.gilt.apidoc.spec.v0.models.ParameterLocation.Form; if a GET, the default will be @com.gilt.apidoc.spec.v0.models.ParameterLocation.Query)</li>
       <li><em>description</em> optional longer description for this parameter.</li>
       <li><em>required</em> boolean: true|false. By default all parameters are considered required. To make a parameter optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive and enum types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@lib.Primitives.Integer.toString', an acceptable default would be 10</li>

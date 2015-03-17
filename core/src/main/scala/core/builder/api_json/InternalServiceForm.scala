@@ -228,6 +228,7 @@ case class InternalFieldForm(
 case class InternalParameterForm(
   name: Option[String] = None,
   datatype: Option[InternalDatatype] = None,
+  location: Option[String] = None,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
   required: Boolean,
@@ -602,6 +603,7 @@ object InternalParameterForm {
     InternalParameterForm(
       name = JsonUtil.asOptString(json \ "name"),
       datatype = datatype,
+      location = JsonUtil.asOptString(json \ "location"),
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
       required = datatype.map(_.required).getOrElse(true),
@@ -612,7 +614,7 @@ object InternalParameterForm {
       warnings = JsonUtil.validate(
         json,
         strings = Seq("name", "type"),
-        optionalStrings = Seq("description", "example"),
+        optionalStrings = Seq("description", "example", "location"),
         optionalObjects = Seq("deprecation"),
         optionalBooleans = Seq("required"),
         optionalNumbers = Seq("minimum", "maximum"),
