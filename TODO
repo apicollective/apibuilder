@@ -1,3 +1,6 @@
+Make lookup function of sealed traits case insensitive
+  - can then remove toParameterLocation
+
 Add support for multiple input types:
   - consider support for swagger.json here
 
