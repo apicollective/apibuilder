@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Original, User}
+import com.gilt.apidoc.api.v0.models.{Original, User}
 import anorm._
 import play.api.db._
 import play.api.libs.json.JsObject

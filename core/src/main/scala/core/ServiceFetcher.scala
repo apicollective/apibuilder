@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidoc.v0.errors.FailedRequest
+import com.gilt.apidoc.api.v0.errors.FailedRequest
 import com.gilt.apidoc.spec.v0.models.{Method, Service}
 import com.gilt.apidoc.spec.v0.models.json._
 import play.api.libs.json.Json
@@ -34,7 +34,7 @@ case class ClientFetcher() extends ServiceFetcher {
     import scala.concurrent.Await
     import scala.concurrent.duration._
 
-    val client = new com.gilt.apidoc.v0.Client(uri)
+    val client = new com.gilt.apidoc.api.v0.Client(uri)
 
     Await.result(
       client._executeRequest(Method.Get.toString, "").map {

@@ -2,7 +2,7 @@ package controllers
 
 import lib.{ApiClient, Config}
 import models.MainTemplate
-import com.gilt.apidoc.v0.models.User
+import com.gilt.apidoc.api.v0.models.User
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }

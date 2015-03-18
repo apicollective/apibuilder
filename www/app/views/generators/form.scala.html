@@ -40,7 +40,7 @@
               )</td>
               <td>@helper.select(
                 details("visibility"),
-                com.gilt.apidoc.v0.models.Visibility.all.map( v => (v.toString -> v.toString) ),
+                com.gilt.apidoc.api.v0.models.Visibility.all.map( v => (v.toString -> v.toString) ),
                 '_error -> form.error("visibility"),
                 '_label -> null
               )</td>

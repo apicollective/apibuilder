@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, User, Visibility}
+import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, User, Visibility}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 import models._
@@ -16,7 +16,7 @@ object ApplicationSettings extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   private def mainTemplate(
-    api: com.gilt.apidoc.v0.Client,
+    api: com.gilt.apidoc.api.v0.Client,
     base: MainTemplate,
     applicationKey: String,
     versionName: String
@@ -75,7 +75,7 @@ object ApplicationSettings extends Controller {
           ).map { app =>
             Redirect(routes.ApplicationSettings.show(request.org.key, application.key, versionName)).flashing("success" -> s"Settings updated")
           }.recover {
-            case response: com.gilt.apidoc.v0.errors.ErrorsResponse => {
+            case response: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
               Ok(views.html.application_settings.form(tpl, boundForm, response.errors.map(_.message)))
             }
           }

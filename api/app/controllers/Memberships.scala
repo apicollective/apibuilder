@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.Membership
-import com.gilt.apidoc.v0.models.json._
+import com.gilt.apidoc.api.v0.models.Membership
+import com.gilt.apidoc.api.v0.models.json._
 import db.{Authorization, MembershipsDao}
 import play.api.mvc._
 import play.api.libs.json.Json

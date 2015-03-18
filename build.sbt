@@ -57,7 +57,7 @@ lazy val api = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    routesImport += "com.gilt.apidoc.v0.Bindables._",
+    routesImport += "com.gilt.apidoc.api.v0.Bindables._",
     libraryDependencies ++= Seq(
       ws,
       jdbc,
@@ -76,7 +76,7 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    routesImport += "com.gilt.apidoc.v0.Bindables._",
+    routesImport += "com.gilt.apidoc.api.v0.Bindables._",
     libraryDependencies ++= Seq(
       "com.github.tototoshi" %% "scala-csv" % "1.2.0"
     )

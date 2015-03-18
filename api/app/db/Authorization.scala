@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.Visibility
+import com.gilt.apidoc.api.v0.models.Visibility
 import java.util.UUID
 import anorm.NamedParameter
 
@@ -118,7 +118,7 @@ object Authorization {
 
   }
 
-  def apply(user: Option[com.gilt.apidoc.v0.models.User]): Authorization = {
+  def apply(user: Option[com.gilt.apidoc.api.v0.models.User]): Authorization = {
     user match {
       case None => PublicOnly
       case Some(u) => User(u.guid)

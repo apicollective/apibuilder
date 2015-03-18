@@ -1,4 +1,4 @@
-@(user: Option[com.gilt.apidoc.v0.models.User])
+@(user: Option[com.gilt.apidoc.api.v0.models.User])
 
 @doc.main(routes.DocController.index.url, user) {
 
@@ -75,7 +75,7 @@
 
     <p><b>Example from Scala:</b></p>
     <pre>
-      val client = new com.gilt.apidoc.v0.Client("http://localhost:8000")
+      val client = new com.gilt.apidoc.api.v0.Client("http://localhost:8000")
 
       val organizations = client.organizations.get(limit = Some(10), offset = Some(0))
       organizations.foreach { org =>

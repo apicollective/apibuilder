@@ -2,7 +2,7 @@ package controllers
 
 import models.MainTemplate
 import lib.{UrlKey, Util, VersionedName, VersionTag}
-import com.gilt.apidoc.v0.models.{Application, OriginalForm, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
+import com.gilt.apidoc.api.v0.models.{Application, OriginalForm, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 import play.api._
@@ -261,7 +261,7 @@ object Versions extends Controller {
                 ).map { version =>
                   Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version updated" )
                 }.recover {
-                  case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
+                  case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
                     Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }
@@ -276,7 +276,7 @@ object Versions extends Controller {
                 ).map { version =>
                   Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version created" )
                 }.recover {
-                  case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
+                  case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
                     Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }
@@ -289,7 +289,7 @@ object Versions extends Controller {
   }
 
   private def isWatching(
-    api: com.gilt.apidoc.v0.Client,
+    api: com.gilt.apidoc.api.v0.Client,
     user: Option[User],
     orgKey: String,
     applicationKey: String

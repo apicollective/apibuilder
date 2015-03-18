@@ -1,7 +1,7 @@
 package lib
 
-import com.gilt.apidoc.v0.models.User
-import com.gilt.apidoc.v0.{Authorization, Client}
+import com.gilt.apidoc.api.v0.models.User
+import com.gilt.apidoc.api.v0.{Authorization, Client}
 
 case class ApiClient(user: Option[User]) {
 
@@ -10,8 +10,8 @@ case class ApiClient(user: Option[User]) {
 
   val client: Client = {
     user match {
-      case None => new com.gilt.apidoc.v0.Client(apiHost, Some(apiAuth))
-      case Some(u) => new com.gilt.apidoc.v0.Client(apiHost, Some(apiAuth)) {
+      case None => new com.gilt.apidoc.api.v0.Client(apiHost, Some(apiAuth))
+      case Some(u) => new com.gilt.apidoc.api.v0.Client(apiHost, Some(apiAuth)) {
         override def _requestHolder(path: String) = {
           super._requestHolder(path).withHeaders("X-User-Guid" -> u.guid.toString)
         }

@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, Original, User, Version, VersionForm, Visibility}
-import com.gilt.apidoc.v0.models.json._
+import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, Original, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.api.v0.models.json._
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.ServiceConfiguration
 import builder.OriginalValidator

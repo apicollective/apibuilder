@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.ApplicationForm
-import com.gilt.apidoc.v0.models.json._
+import com.gilt.apidoc.api.v0.models.ApplicationForm
+import com.gilt.apidoc.api.v0.models.json._
 import db.{Authorization, OrganizationsDao, ApplicationsDao}
 import lib.Validation
 import play.api.mvc._

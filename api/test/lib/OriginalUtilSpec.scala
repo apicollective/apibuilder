@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.apidoc.v0.models.{Original, OriginalForm, OriginalType}
+import com.gilt.apidoc.api.v0.models.{Original, OriginalForm, OriginalType}
 import org.scalatest.{FunSpec, ShouldMatchers}
 
 class OriginalUtilSpec extends FunSpec with ShouldMatchers {

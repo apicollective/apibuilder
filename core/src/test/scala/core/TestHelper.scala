@@ -2,7 +2,7 @@ package core
 
 import lib.{ServiceConfiguration, ServiceValidator}
 import builder.OriginalValidator
-import com.gilt.apidoc.v0.models.{Original, OriginalType}
+import com.gilt.apidoc.api.v0.models.{Original, OriginalType}
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.Text
 import java.nio.file.{Paths, Files}

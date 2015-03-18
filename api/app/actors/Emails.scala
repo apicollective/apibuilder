@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.apidoc.v0.models.{Organization, Publication, Subscription}
+import com.gilt.apidoc.api.v0.models.{Organization, Publication, Subscription}
 import db.{Authorization, SubscriptionsDao}
 import lib.{Email, Pager, Person}
 import akka.actor._

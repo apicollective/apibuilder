@@ -1,4 +1,4 @@
-@(user: Option[com.gilt.apidoc.v0.models.User])
+@(user: Option[com.gilt.apidoc.api.v0.models.User])
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
@@ -71,11 +71,11 @@ are support for union types and imports.</p>
 
     is now
 
-    <pre>class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.v0.Authorization] = None)</pre>
+    <pre>class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.api.v0.Authorization] = None)</pre>
 
     In order to use a token, create an instance of basic authorization with:
 
-    <pre>com.gilt.apidoc.v0.Authorization.Basic("token")</pre>
+    <pre>com.gilt.apidoc.api.v0.Authorization.Basic("token")</pre>
 
     <li>The scala code generators generate new package names:
 
@@ -141,7 +141,7 @@ are support for union types and imports.</p>
     </ol>
 
     <pre>
-      def postByOrgKey(domain: com.gilt.apidoc.v0.models.Domain,
+      def postByOrgKey(domain: com.gilt.apidoc.api.v0.models.Domain,
         orgKey: String
       )
     </pre>

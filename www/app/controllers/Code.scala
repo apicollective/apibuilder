@@ -12,7 +12,7 @@ object Code extends Controller {
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
       case Some(r) => Ok(r.source)
     }.recover {
-      case r: com.gilt.apidoc.v0.errors.ErrorsResponse => {
+      case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
         Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> r.errors.map(_.message).mkString(", "))
       }
     }

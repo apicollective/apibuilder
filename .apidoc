@@ -13,8 +13,8 @@ code:
       version: latest
       generators:
         play_2_3_client: generated/app/ApidocGenerator.scala
-    apidoc-cli:
+    apidoc-api:
       version: latest
       generators:
-        play_2_3_client: generated/app/ApidocClient.scala
+        play_2_3_client: generated/app/ApidocApi.scala
         play_2_x_routes: api/conf/routes

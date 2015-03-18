@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.{Original, OriginalType, Validation}
-import com.gilt.apidoc.v0.models.json._
+import com.gilt.apidoc.api.v0.models.{Original, OriginalType, Validation}
+import com.gilt.apidoc.api.v0.models.json._
 import lib.ServiceConfiguration
 import builder.OriginalValidator
 import play.api.mvc._

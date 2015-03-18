@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.{OrganizationForm, Visibility}
+import com.gilt.apidoc.api.v0.models.{OrganizationForm, Visibility}
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID

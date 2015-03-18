@@ -36,7 +36,7 @@
 
           @helper.select(
             form("visibility"),
-            com.gilt.apidoc.v0.models.Visibility.all.map { v => (v.toString -> v.toString) },
+            com.gilt.apidoc.api.v0.models.Visibility.all.map { v => (v.toString -> v.toString) },
             '_label -> "Visibility",
             '_error -> form.error("visibility"),
             '_help -> "Set to public if anybody can view this service, or organization to limit to other members of your org."

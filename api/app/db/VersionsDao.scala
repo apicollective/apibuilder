@@ -2,7 +2,7 @@ package db
 
 import lib.ServiceConfiguration
 import builder.OriginalValidator
-import com.gilt.apidoc.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.api.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 import lib.VersionTag

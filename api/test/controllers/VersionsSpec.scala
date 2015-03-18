@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.v0.models.{OriginalForm, OriginalType, VersionForm}
+import com.gilt.apidoc.api.v0.models.{OriginalForm, OriginalType, VersionForm}
 import java.util.UUID
 
 import play.api.test._
@@ -20,7 +20,7 @@ class VersionsSpec extends BaseSpec {
       client.versions.postByOrgKeyAndVersion(
         orgKey = org.key,
         version = "0.0.1",
-        versionForm = com.gilt.apidoc.v0.models.VersionForm(
+        versionForm = com.gilt.apidoc.api.v0.models.VersionForm(
           originalForm = OriginalForm(
             data = serviceForm
           )

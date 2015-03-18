@@ -2,7 +2,7 @@ package db
 
 import lib.ServiceConfiguration
 import builder.OriginalValidator
-import com.gilt.apidoc.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
+import com.gilt.apidoc.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
 import com.gilt.apidoc.spec.v0.models.{Application, Organization, Service}
 import com.gilt.apidoc.spec.v0.models.json._
 import org.scalatest.{FunSpec, Matchers}
@@ -13,12 +13,12 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private val Original = com.gilt.apidoc.v0.models.Original(
+  private val Original = com.gilt.apidoc.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
     data = Json.obj("name" -> s"test-${UUID.randomUUID}").toString
   )
 
-  private def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.gilt.apidoc.v0.models.Application = {
+  private def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.gilt.apidoc.api.v0.models.Application = {
     val applicationForm = ApplicationForm(
       name = key,
       key = Some(key),
@@ -28,7 +28,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
     ApplicationsDao.create(Util.createdBy, Util.testOrg, applicationForm)
   }
 
-  private def createService(app: com.gilt.apidoc.v0.models.Application): Service = Service(
+  private def createService(app: com.gilt.apidoc.api.v0.models.Application): Service = Service(
     name = app.name,
     organization = Organization(key = "test"),
     application = Application(key = app.key),
@@ -45,7 +45,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
   describe("with an application") {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
-    val application: com.gilt.apidoc.v0.models.Application = createApplication(applicationKey)
+    val application: com.gilt.apidoc.api.v0.models.Application = createApplication(applicationKey)
     val service = createService(application)
 
     it("create") {

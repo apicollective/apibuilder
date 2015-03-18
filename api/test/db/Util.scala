@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Publication, Subscription, SubscriptionForm, User, UserForm, Visibility}
+import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Publication, Subscription, SubscriptionForm, User, UserForm, Visibility}
 import lib.Role
 import java.util.UUID
 
@@ -81,7 +81,7 @@ object Util {
     org: Organization,
     user: User = Util.createRandomUser(),
     role: Role = Role.Admin
-  ): com.gilt.apidoc.v0.models.Membership = {
+  ): com.gilt.apidoc.api.v0.models.Membership = {
     val request = MembershipRequestsDao.upsert(Util.createdBy, org, user, role)
     MembershipRequestsDao.accept(Util.createdBy, request)
 

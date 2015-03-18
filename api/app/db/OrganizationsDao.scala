@@ -1,7 +1,7 @@
 package db
 
-import com.gilt.apidoc.v0.models._
-import com.gilt.apidoc.v0.models.json._
+import com.gilt.apidoc.api.v0.models._
+import com.gilt.apidoc.api.v0.models.json._
 import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
 import play.api.db._
@@ -49,7 +49,7 @@ object OrganizationsDao {
   def validate(
     form: OrganizationForm,
     existing: Option[Organization] = None
-  ): Seq[com.gilt.apidoc.v0.models.Error] = {
+  ): Seq[com.gilt.apidoc.api.v0.models.Error] = {
 
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")

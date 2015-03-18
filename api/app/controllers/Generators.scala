@@ -2,9 +2,9 @@ package controllers
 
 import java.util.UUID
 
-import com.gilt.apidoc.v0.errors.FailedRequest
-import com.gilt.apidoc.v0.models.{GeneratorOrgForm, GeneratorUpdateForm, GeneratorCreateForm, User, Generator}
-import com.gilt.apidoc.v0.models.json._
+import com.gilt.apidoc.api.v0.errors.FailedRequest
+import com.gilt.apidoc.api.v0.models.{GeneratorOrgForm, GeneratorUpdateForm, GeneratorCreateForm, User, Generator}
+import com.gilt.apidoc.api.v0.models.json._
 import com.gilt.apidoc.generator.v0.Client
 import db._
 import lib.Validation

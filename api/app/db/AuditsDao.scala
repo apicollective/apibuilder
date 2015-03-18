@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.v0.models.{Audit, ReferenceGuid}
+import com.gilt.apidoc.api.v0.models.{Audit, ReferenceGuid}
 import db.AnormHelper._
 import org.joda.time.DateTime
 import java.util.UUID

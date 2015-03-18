@@ -2,8 +2,8 @@ package controllers
 
 import db.{Authorization, SubscriptionsDao}
 import lib.Validation
-import com.gilt.apidoc.v0.models.{Publication, Subscription, SubscriptionForm, User}
-import com.gilt.apidoc.v0.models.json._
+import com.gilt.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm, User}
+import com.gilt.apidoc.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
