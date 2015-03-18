@@ -322,7 +322,7 @@ object ParameterBuilder {
     Parameter(
       name = internal.name.get,
       `type` = internal.datatype.get.label,
-      location = internal.location.map(toParameterLocation(_)).getOrElse(defaultLocation),
+      location = internal.location.map(ParameterLocation(_)).getOrElse(defaultLocation),
       description = internal.description,
       deprecation = internal.deprecation.map(DeprecationBuilder(_)),
       required = internal.required,
@@ -331,12 +331,6 @@ object ParameterBuilder {
       maximum = internal.maximum,
       example = internal.example
     )
-  }
-
-  private def toParameterLocation(value: String): ParameterLocation = {
-    ParameterLocation.all.find(_.toString.toLowerCase == value.toLowerCase).getOrElse {
-      ParameterLocation.UNDEFINED(value)
-    }
   }
 
 }
