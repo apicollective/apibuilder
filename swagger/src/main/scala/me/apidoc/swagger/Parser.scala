@@ -54,6 +54,8 @@ case class Parser(config: ServiceConfiguration) {
       println("definition: " + d)
     }
 
+    // We're at 'path' - https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md
+
     sys.error("TODO")
   }
 
