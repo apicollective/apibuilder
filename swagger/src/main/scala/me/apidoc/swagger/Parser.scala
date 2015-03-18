@@ -21,7 +21,48 @@ case class Parser(config: ServiceConfiguration) {
   ): Service = {
     val swagger = new SwaggerParser().read(path.toString)
     println(swagger)
+    val methods = swagger.getClass().getMethods().foreach { m =>
+      println("METHOD: " + m)
+    }
+
+    println("swagger version: " + swagger.getSwagger())
+
+    val info = swagger.getInfo()
+    println("info:")
+    println(" - title: " + info.getTitle())
+    println(" - description: " + info.getDescription())
+    println(" - termsOfServiceUrl: " + info.getTermsOfService())
+    println(" - contact:")
+    println("   - name: " + info.getContact().getName())
+    println("   - url: " + info.getContact().getUrl())
+    println("   - email: " + info.getContact().getEmail())
+    println(" - license: " + info.getLicense())
+    println("   - name: " + info.getLicense().getName())
+    println("   - url: " + info.getLicense().getUrl())
+    println(" - version: " + info.getVersion())
+
+    println("host: " + swagger.getHost())
+    println("basePath: " + swagger.getBasePath())
+    println("schemes: " + toArray(swagger.getSchemes()).mkString(", "))
+    val baseUrl = swagger.getSchemes.headOption.map(_.toString.toLowerCase).getOrElse("http") + "//" + swagger.getHost() + swagger.getBasePath()
+    println("baseUrl: " + baseUrl)
+
+    println("consumes: " + toArray(swagger.getConsumes()).mkString(", "))
+    println("produces: " + toArray(swagger.getProduces).mkString(", "))
+
+    swagger.getDefinitions.foreach { d =>
+      println("definition: " + d)
+    }
+
     sys.error("TODO")
+  }
+
+  private def toArray[T](values: java.util.List[T]): Seq[T] = {
+    if (values == null) {
+      Nil
+    } else {
+      values
+    }
   }
 
   def parseString(
