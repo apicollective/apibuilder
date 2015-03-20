@@ -7,6 +7,6 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 // Use the Play sbt plugin for Play projects
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.8")
 
-addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.8")
+addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.1")
 
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
