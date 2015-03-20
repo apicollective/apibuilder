@@ -9,7 +9,7 @@ import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
 import java.util.UUID
 
 import io.swagger.parser.SwaggerParser
-import com.wordnik.swagger.models.Swagger
+import com.wordnik.swagger.models.{ModelImpl, Swagger}
 
 import lib.Text
 import com.gilt.apidoc.spec.v0.models._
@@ -21,9 +21,7 @@ case class Parser(config: ServiceConfiguration) {
   ): Service = {
     val swagger = new SwaggerParser().read(path.toString)
     println(swagger)
-    val methods = swagger.getClass().getMethods().foreach { m =>
-      println("METHOD: " + m)
-    }
+    //printMethods(swagger)
 
     println("swagger version: " + swagger.getSwagger())
 
@@ -32,13 +30,30 @@ case class Parser(config: ServiceConfiguration) {
     println(" - title: " + info.getTitle())
     println(" - description: " + info.getDescription())
     println(" - termsOfServiceUrl: " + info.getTermsOfService())
+
     println(" - contact:")
-    println("   - name: " + info.getContact().getName())
-    println("   - url: " + info.getContact().getUrl())
-    println("   - email: " + info.getContact().getEmail())
-    println(" - license: " + info.getLicense())
-    println("   - name: " + info.getLicense().getName())
-    println("   - url: " + info.getLicense().getUrl())
+    Option(info.getContact()) match {
+      case None => {
+        println("   - none")
+      }
+      case Some(contact) => {
+        println("   - name: " + contact.getName())
+        println("   - url: " + contact.getUrl())
+        println("   - email: " + contact.getEmail())
+      }
+    }
+
+    println(" - license:")
+    Option(info.getLicense()) match {
+      case None => {
+        println("   - none")
+      }
+      case Some(license) => {
+        println("   - name: " + license.getName())
+        println("   - url: " + license.getUrl())
+      }
+    }
+
     println(" - version: " + info.getVersion())
 
     println("host: " + swagger.getHost())
@@ -50,13 +65,98 @@ case class Parser(config: ServiceConfiguration) {
     println("consumes: " + toArray(swagger.getConsumes()).mkString(", "))
     println("produces: " + toArray(swagger.getProduces).mkString(", "))
 
+    swagger.getPaths.foreach {
+      case (url, p) => {
+        println("path: " + url)
+        p.getOperations().foreach { op =>
+          println("  - op: " + op)
+        }
+      }
+    }
+
     swagger.getDefinitions.foreach { d =>
-      println("definition: " + d)
+      d match {
+        case (name, definition) => {
+          definition match {
+            case schema: ModelImpl => {
+              //printMethods(schema)
+
+              println(s"definition[$name]: " + schema)
+              println("  - type: " + Option(schema.getType()))
+              println("  - description: " + Option(schema.getDescription()))
+              println("  - example: " + Option(schema.getExample()))
+              println("  - discriminator: " + Option(schema.getDiscriminator()))
+
+              val requiredFieldNames: Seq[String] = schema.getRequired()
+              println("    - required: " + requiredFieldNames.mkString(", "))
+
+              schema.getProperties().foreach {
+                case (key, prop) => {
+                  println(s"  - prop[$key]")
+                  
+                  val schemaType = Option(prop.getFormat()) match {
+                    case None => {
+                      SchemaType.fromSwagger(prop.getType()).getOrElse {
+                        sys.error(s"Unrecognized swagger type[${prop.getType()}]")
+                      }
+                    }
+                    case Some(format) => {
+                      SchemaType.fromSwagger(format).getOrElse {
+                        sys.error(s"Unrecognized swagger type[$format]")
+                      }
+                    }
+                  }
+
+                  println(s"    - apidoc type: " + schemaType.apidoc)
+                  println(s"    - title: " + Option(prop.getTitle()))
+                  println(s"    - description: " + Option(prop.getDescription()))
+                  println(s"    - name: " + Option(prop.getName()))
+                  println(s"    - required: " + prop.getRequired())
+                  println(s"    - example: " + Option(prop.getExample()))
+
+                  // Ignoring:
+                  println(s"    - readOnly: " + Option(prop.getReadOnly()))
+                  println(s"    - xml: " + Option(prop.getXml()))
+                }
+              }
+
+              println("  - external docs:")
+              val docs = if (schema.getExternalDocs() == null) { None } else { Some(schema.getExternalDocs()) }
+              docs.map { doc =>
+                println("    - url: " + doc.getUrl())
+                println("    - description: " + doc.getDescription())
+              }
+
+              println("  - addl properties:")
+              Option(schema.getAdditionalProperties()) match {
+                case None => {
+                  println("    - None")
+                }
+                case Some(property) => {
+                  println("    - " + property)
+                }
+              }
+            }
+            case _ => {
+              sys.error(s"Unsupported definition: $definition")
+            }
+          }
+        }
+      }
     }
 
     // We're at 'path' - https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md
 
     sys.error("TODO")
+  }
+
+  private def printMethods(instance: Any) {
+    println(s"${instance.getClass()}")
+    instance.getClass().getMethods().map(_.toString).sorted.foreach { m =>
+      if (m.toString().indexOf("get") >= 0) {
+        println("  - method: " + m)
+      }
+    }
   }
 
   private def toArray[T](values: java.util.List[T]): Seq[T] = {
