@@ -10,7 +10,7 @@ import java.util.UUID
 
 import io.swagger.parser.SwaggerParser
 import com.wordnik.swagger.models.{ModelImpl, Swagger}
-import com.wordnik.swagger.models.properties.Property
+import com.wordnik.swagger.models.properties.{AbstractNumericProperty, ArrayProperty, Property, StringProperty, UUIDProperty}
 import com.gilt.apidoc.spec.v0.models._
 
 import lib.Text
@@ -73,7 +73,40 @@ case class Parser(config: ServiceConfiguration) {
                 deprecation = None,
                 fields = m.getProperties().map {
                   case (key, prop) => {
-                    field(key, prop)
+                    val base = field(key, prop)
+
+                    prop match {
+                      case p: ArrayProperty => {
+                        // TODO: p.getUniqueItems()
+                        base.copy(`type` = "[" + base.`type` + "]")
+                      }
+                      case p: AbstractNumericProperty => {
+                        base.copy(
+                          minimum = Option(p.getMinimum()).map(_.toLong) match {
+                            case None => Option(p.getExclusiveMinimum()).map(_.toLong)
+                            case Some(v) => Some(v)
+                          },
+                          maximum = Option(p.getMaximum()).map(_.toLong) match {
+                            case None => Option(p.getExclusiveMaximum()).map(_.toLong)
+                            case Some(v) => Some(v)
+                          }
+                        )
+                      }
+                      case p: UUIDProperty => {
+                        base.copy(
+                          minimum = Option(p.getMinLength()).map(_.toLong),
+                          maximum = Option(p.getMaxLength()).map(_.toLong)
+                        )
+                      }
+                      case p: StringProperty => {
+                        // TODO getPattern
+                        base.copy(
+                          minimum = Option(p.getMinLength()).map(_.toLong),
+                          maximum = Option(p.getMaxLength()).map(_.toLong)
+                        )
+                      }
+                      case _ => base
+                    }
                   }
                 }.toSeq
               )
