@@ -21,7 +21,14 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         println("ERRORS: " + errors.mkString(", "))
       }
       case Right(service) => {
-        println("No errors. Service: " + service.name)
+        println("No errors.")
+        println("Service: " + service.name)
+        service.models.foreach { m =>
+          println(s" Model ${m.name}")
+          m.fields.foreach { f =>
+            println(s"   - Field ${f.name}, type: ${f.`type`}")
+          }
+        }
       }
     }
   }
