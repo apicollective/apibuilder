@@ -30,6 +30,7 @@ case class Parser(config: ServiceConfiguration) {
     val swagger = new SwaggerParser().read(path.toString)
     val info = swagger.getInfo()
     val applicationKey = UrlKey.generate(info.getTitle())
+    val specModels = models(swagger)
 
     Service(
       name = info.getTitle(),
@@ -41,10 +42,10 @@ case class Parser(config: ServiceConfiguration) {
       version = info.getVersion(),
       enums = Nil,
       unions = Nil,
-      models = models(swagger),
+      models = specModels,
       imports = Nil,
       headers = Nil,
-      resources = Nil
+      resources = resources(swagger, specModels)
     )
   }
 
@@ -188,19 +189,52 @@ case class Parser(config: ServiceConfiguration) {
     println("consumes: " + toArray(swagger.getConsumes()).mkString(", "))
     println("produces: " + toArray(swagger.getProduces).mkString(", "))
 
+    sys.error("TODO")
+  }
+
+  private def resources(
+    swagger: Swagger,
+    models: Seq[Model]
+  ): Seq[Resource] = {
     swagger.getPaths.foreach {
       case (url, p) => {
-        println("path: " + url)
+        println("url: " + url)
         p.getOperations().foreach { op =>
-          println("  - op: " + op)
+          println("  - tags: " + toArray(op.getTags()).mkString(", "))
+          println("  - summary: " + Option(op.getSummary()))
+          println("  - description: " + Option(op.getDescription()))
+          println("  - schemes: " + toArray(op.getSchemes()).mkString(", "))
+          println("  - consumes: " + toArray(op.getConsumes()).mkString(", "))
+          println("  - produces: " + toArray(op.getProduces).mkString(", "))
+
+          println("  - parameters:")
+          toArray(op.getParameters).foreach { param =>
+            println("    - name: " + param.getName())
+          }
+
+          println("  - responses:")
+          op.getResponses.foreach {
+            case (code, response) => {
+              println("    - code: " + code)
+              println("    - response: " + response)
+            }
+          }
+
+          val deprecation = Option(op.isDeprecated).getOrElse(false) match {
+            case false => None
+            case true => Some(Deprecation())
+          }
+          println("  - deprecation: " + deprecation)
+
+          // getSecurity
+          // getExternalDocs
+          // getVendorExtensions
         }
       }
     }
 
-
+    Nil
     // We're at 'path' - https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md
-
-    sys.error("TODO")
   }
 
   private def printMethods(instance: Any) {
