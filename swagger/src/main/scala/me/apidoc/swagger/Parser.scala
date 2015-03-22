@@ -18,6 +18,8 @@ import com.gilt.apidoc.spec.v0.models._
 
 case class Parser(config: ServiceConfiguration) {
 
+  private val DefaultResponseCode = "default"
+
   def parse(
     path: File
   ): Service = {
@@ -199,6 +201,17 @@ case class Parser(config: ServiceConfiguration) {
     swagger.getPaths.foreach {
       case (url, p) => {
         println("url: " + url)
+
+        val model = findModelByUrl(models, url)
+        model match {
+          case None => {
+            println("  - warnings: No model matches path")
+          }
+          case Some(m) => {
+            println("  - model: " + m.name)
+          }
+        }
+
         p.getOperations().foreach { op =>
           println("  - tags: " + toArray(op.getTags()).mkString(", "))
           println("  - summary: " + Option(op.getSummary()))
@@ -215,8 +228,13 @@ case class Parser(config: ServiceConfiguration) {
           println("  - responses:")
           op.getResponses.foreach {
             case (code, response) => {
-              println("    - code: " + code)
-              println("    - response: " + response)
+              if (code == DefaultResponseCode) {
+                println("    - code: " + code + " -- TODO")
+                println("    - response: " + response)
+              } else {
+                println("    - code: " + code)
+                println("    - response: " + response)
+              }
             }
           }
 
@@ -235,6 +253,21 @@ case class Parser(config: ServiceConfiguration) {
 
     Nil
     // We're at 'path' - https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md
+  }
+
+  private def findModelByUrl(
+    models: Seq[Model],
+    url: String
+  ): Option[Model] = {
+    val normalized = normalize(url)
+    models.find { m =>
+      val modelUrl = normalize(s"/${m.plural}")
+      normalized == modelUrl || normalized.startsWith(modelUrl + "/")
+    }
+  }
+
+  private def normalize(value: String): String = {
+    value.toLowerCase.trim.replaceAll("_", "-")
   }
 
   private def printMethods(instance: Any) {
