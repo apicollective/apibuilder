@@ -10,7 +10,7 @@ import java.util.UUID
 
 import io.swagger.parser.SwaggerParser
 import com.wordnik.swagger.models.{ModelImpl, Swagger}
-import com.wordnik.swagger.models.properties.{AbstractNumericProperty, ArrayProperty, Property, StringProperty, UUIDProperty}
+import com.wordnik.swagger.models.properties.{AbstractNumericProperty, ArrayProperty, Property, RefProperty, StringProperty, UUIDProperty}
 import com.gilt.apidoc.spec.v0.models._
 
 import lib.Text
@@ -125,28 +125,13 @@ case class Parser(config: ServiceConfiguration) {
   }
 
   private def field(name: String, prop: Property): Field = {
-    val schemaType = Option(prop.getFormat()) match {
-      case None => {
-        SchemaType.fromSwagger(prop.getType()).getOrElse {
-          sys.error(s"Unrecognized swagger type[${prop.getType()}]")
-        }
-      }
-      case Some(format) => {
-        SchemaType.fromSwagger(format).getOrElse {
-          sys.error(s"Unrecognized swagger type[$format]")
-        }
-      }
-    }
-
     // Ignoring:
     // println(s"    - readOnly: " + Option(prop.getReadOnly()))
     // println(s"    - xml: " + Option(prop.getXml()))
-
-
     Field(
       name = name,
       description = Option(prop.getDescription()),
-      `type` = schemaType.apidoc,
+      `type` = toSchemaType(prop),
       required = prop.getRequired(),
       example = Option(prop.getExample())
     )
@@ -227,14 +212,10 @@ case class Parser(config: ServiceConfiguration) {
 
           println("  - responses:")
           op.getResponses.foreach {
-            case (code, response) => {
-              if (code == DefaultResponseCode) {
-                println("    - code: " + code + " -- TODO")
-                println("    - response: " + response)
-              } else {
-                println("    - code: " + code)
-                println("    - response: " + response)
-              }
+            case (code, swaggerResponse) => {
+              val response = toResponse(code, swaggerResponse)
+              println("    - code: " + code + " -- TODO")
+              println("    - response: " + response)
             }
           }
 
@@ -252,7 +233,55 @@ case class Parser(config: ServiceConfiguration) {
     }
 
     Nil
-    // We're at 'path' - https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md
+  }
+
+
+  private def toSchemaType(prop: Property): String = {
+    prop match {
+      case p: ArrayProperty => {
+        val schema = toSchemaType(p.getItems)
+        val isUnique = Option(p.getUniqueItems) // TODO
+        "[${schema}]"
+      }
+      case p: RefProperty => {
+        sys.error("TODO: Help!")
+      }
+      case _ => {
+        Option(prop.getFormat()) match {
+          case None => {
+            SchemaType.fromSwagger(prop.getType()).getOrElse {
+              sys.error(s"Unrecognized swagger type[${prop.getType()}]: ${prop.getClass}")
+            }
+          }
+          case Some(format) => {
+            SchemaType.fromSwagger(format).getOrElse {
+              sys.error(s"Unrecognized swagger type[$format]: ${prop.getClass}")
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private def toResponse(
+    code: String,
+    response: com.wordnik.swagger.models.Response
+  ): Response = {
+    val intCode = if (code == DefaultResponseCode) {
+      409
+    } else {
+      code.toInt
+    }
+
+    // getExamples
+    // getHeaders
+
+    Response(
+      code = intCode,
+      `type` = toSchemaType(response.getSchema),
+      description = Option(response.getDescription),
+      deprecation = None
+    )
   }
 
   private def findModelByUrl(

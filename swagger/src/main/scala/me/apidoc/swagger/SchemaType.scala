@@ -19,8 +19,8 @@ object SchemaType {
     SchemaType("dateTime", "date-time-iso8601")
   )
 
-  def fromSwagger(swaggerType: String): Option[SchemaType] = {
-    all.find(_.swagger == swaggerType)
+  def fromSwagger(swaggerType: String): Option[String] = {
+    all.find(_.swagger == swaggerType).map(_.apidoc)
   }
 
 }
