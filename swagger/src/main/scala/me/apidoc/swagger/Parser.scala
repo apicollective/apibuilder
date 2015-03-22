@@ -183,24 +183,20 @@ case class Parser(config: ServiceConfiguration) {
     swagger: Swagger,
     models: Seq[Model]
   ): Seq[Resource] = {
-    swagger.getPaths.foreach {
+    swagger.getPaths.map {
       case (url, p) => {
         println("url: " + url)
 
-        val model = findModelByUrl(models, url)
-        model match {
-          case None => {
-            println("  - warnings: No model matches path")
-          }
-          case Some(m) => {
-            println("  - model: " + m.name)
-          }
+        val model = findModelByUrl(models, url).getOrElse {
+          sys.error(s"Could not find model at url[$url]")
         }
 
-        p.getOperations().foreach { op =>
+        val operations = p.getOperations().map { op =>
           println("  - tags: " + toArray(op.getTags()).mkString(", "))
-          println("  - summary: " + Option(op.getSummary()))
-          println("  - description: " + Option(op.getDescription()))
+
+          val summary = Option(op.getSummary())
+          val description = Option(op.getDescription())
+
           println("  - schemes: " + toArray(op.getSchemes()).mkString(", "))
           println("  - consumes: " + toArray(op.getConsumes()).mkString(", "))
           println("  - produces: " + toArray(op.getProduces).mkString(", "))
@@ -211,40 +207,63 @@ case class Parser(config: ServiceConfiguration) {
           }
 
           println("  - responses:")
-          op.getResponses.foreach {
+          val responses = op.getResponses.map {
             case (code, swaggerResponse) => {
-              val response = toResponse(code, swaggerResponse)
-              println("    - code: " + code + " -- TODO")
-              println("    - response: " + response)
+              toResponse(models, code, swaggerResponse)
             }
           }
-
-          val deprecation = Option(op.isDeprecated).getOrElse(false) match {
-            case false => None
-            case true => Some(Deprecation())
-          }
-          println("  - deprecation: " + deprecation)
 
           // getSecurity
           // getExternalDocs
           // getVendorExtensions
+          // getOperationId
+          Operation(
+            method = Method("get"), // TODO
+            path = url,
+            description = combine(Seq(summary, description)),
+            deprecation = Option(op.isDeprecated).getOrElse(false) match {
+              case false => None
+              case true => Some(Deprecation())
+            },
+            //body = ?, TODO
+            //parameters = ?, TODO
+            responses = responses.toSeq
+          )
         }
-      }
-    }
 
-    Nil
+        Resource(
+          `type` = model.name,
+          plural = model.plural,
+          description = None, // TODO
+          deprecation = None,
+          operations = operations
+        )
+      }
+    }.toSeq
   }
 
+  private def combine(values: Seq[Option[String]]): Option[String] = {
+    values.flatten match {
+      case Nil => None
+      case v => Some(v.mkString("\n\n"))
+    }
+  }
 
-  private def toSchemaType(prop: Property): String = {
+  private def toSchemaType(
+    prop: Property,
+    models: Seq[Model] = Nil
+  ): String = {
     prop match {
       case p: ArrayProperty => {
-        val schema = toSchemaType(p.getItems)
+        val schema = toSchemaType(p.getItems, models)
         val isUnique = Option(p.getUniqueItems) // TODO
-        "[${schema}]"
+        s"[$schema]"
       }
       case p: RefProperty => {
-        sys.error("TODO: Help!")
+        val model = models.find(_.name == p.getSimpleRef()).getOrElse {
+          sys.error("Cannot find model for reference: " + p.get$ref())
+        }
+        model.name
       }
       case _ => {
         Option(prop.getFormat()) match {
@@ -264,6 +283,7 @@ case class Parser(config: ServiceConfiguration) {
   }
 
   private def toResponse(
+    models: Seq[Model],
     code: String,
     response: com.wordnik.swagger.models.Response
   ): Response = {
@@ -278,7 +298,7 @@ case class Parser(config: ServiceConfiguration) {
 
     Response(
       code = intCode,
-      `type` = toSchemaType(response.getSchema),
+      `type` = toSchemaType(response.getSchema, models),
       description = Option(response.getDescription),
       deprecation = None
     )
