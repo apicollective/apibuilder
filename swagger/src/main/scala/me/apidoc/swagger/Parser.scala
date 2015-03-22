@@ -191,45 +191,14 @@ case class Parser(config: ServiceConfiguration) {
           sys.error(s"Could not find model at url[$url]")
         }
 
-        val operations = p.getOperations().map { op =>
-          println("  - tags: " + toArray(op.getTags()).mkString(", "))
-
-          val summary = Option(op.getSummary())
-          val description = Option(op.getDescription())
-
-          println("  - schemes: " + toArray(op.getSchemes()).mkString(", "))
-          println("  - consumes: " + toArray(op.getConsumes()).mkString(", "))
-          println("  - produces: " + toArray(op.getProduces).mkString(", "))
-
-          println("  - parameters:")
-          toArray(op.getParameters).foreach { param =>
-            println("    - name: " + param.getName())
-          }
-
-          println("  - responses:")
-          val responses = op.getResponses.map {
-            case (code, swaggerResponse) => {
-              toResponse(models, code, swaggerResponse)
-            }
-          }
-
-          // getSecurity
-          // getExternalDocs
-          // getVendorExtensions
-          // getOperationId
-          Operation(
-            method = Method("get"), // TODO
-            path = url,
-            description = combine(Seq(summary, description)),
-            deprecation = Option(op.isDeprecated).getOrElse(false) match {
-              case false => None
-              case true => Some(Deprecation())
-            },
-            //body = ?, TODO
-            //parameters = ?, TODO
-            responses = responses.toSeq
-          )
-        }
+        val operations = Seq(
+          Option(p.getGet).map { toOperation(models, Method.Get, url, _) },
+          Option(p.getPost).map { toOperation(models, Method.Post, url, _) },
+          Option(p.getPut).map { toOperation(models, Method.Put, url, _) },
+          Option(p.getDelete).map { toOperation(models, Method.Delete, url, _) },
+          Option(p.getOptions).map { toOperation(models, Method.Options, url, _) },
+          Option(p.getPatch).map { toOperation(models, Method.Patch, url, _) }
+        ).flatten
 
         Resource(
           `type` = model.name,
@@ -240,6 +209,51 @@ case class Parser(config: ServiceConfiguration) {
         )
       }
     }.toSeq
+  }
+
+  private def toOperation(
+    models: Seq[Model],
+    method: Method,
+    url: String,
+    op: com.wordnik.swagger.models.Operation
+  ): Operation = {
+    println("  - tags: " + toArray(op.getTags()).mkString(", "))
+
+    val summary = Option(op.getSummary())
+    val description = Option(op.getDescription())
+
+    println("  - schemes: " + toArray(op.getSchemes()).mkString(", "))
+    println("  - consumes: " + toArray(op.getConsumes()).mkString(", "))
+    println("  - produces: " + toArray(op.getProduces).mkString(", "))
+
+    println("  - parameters:")
+    toArray(op.getParameters).foreach { param =>
+      println("    - name: " + param.getName())
+    }
+
+    println("  - responses:")
+    val responses = op.getResponses.map {
+      case (code, swaggerResponse) => {
+        toResponse(models, code, swaggerResponse)
+      }
+    }
+
+    // getSecurity
+    // getExternalDocs
+    // getVendorExtensions
+    // getOperationId
+    Operation(
+      method = method,
+      path = url,
+      description = combine(Seq(summary, description)),
+      deprecation = Option(op.isDeprecated).getOrElse(false) match {
+        case false => None
+        case true => Some(Deprecation())
+      },
+      //body = ?, TODO
+      //parameters = ?, TODO
+      responses = responses.toSeq
+    )
   }
 
   private def combine(values: Seq[Option[String]]): Option[String] = {
