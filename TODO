@@ -1,3 +1,8 @@
+Consider supporting (from swagger):
+  - "default" keyword for responses
+  - add license, info
+  - parameter locations: header, cookie
+
 Make lookup function of sealed traits case insensitive
   - can then remove toParameterLocation
 
