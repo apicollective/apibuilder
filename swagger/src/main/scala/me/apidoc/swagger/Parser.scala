@@ -185,8 +185,6 @@ case class Parser(config: ServiceConfiguration) {
   ): Seq[Resource] = {
     swagger.getPaths.map {
       case (url, p) => {
-        println("url: " + url)
-
         val model = findModelByUrl(models, url).getOrElse {
           sys.error(s"Could not find model at url[$url]")
         }
@@ -200,10 +198,13 @@ case class Parser(config: ServiceConfiguration) {
           Option(p.getPatch).map { toOperation(models, Method.Patch, url, _) }
         ).flatten
 
+        // getVendorExtensions
+        // getParameters
+
         Resource(
           `type` = model.name,
           plural = model.plural,
-          description = None, // TODO
+          description = None,
           deprecation = None,
           operations = operations
         )
@@ -222,22 +223,19 @@ case class Parser(config: ServiceConfiguration) {
     val summary = Option(op.getSummary())
     val description = Option(op.getDescription())
 
-    println("  - schemes: " + toArray(op.getSchemes()).mkString(", "))
-    println("  - consumes: " + toArray(op.getConsumes()).mkString(", "))
-    println("  - produces: " + toArray(op.getProduces).mkString(", "))
-
-    println("  - parameters:")
-    toArray(op.getParameters).foreach { param =>
-      println("    - name: " + param.getName())
+    val parameters = toArray(op.getParameters).map { param =>
+      toParameter(models, param)
     }
 
-    println("  - responses:")
     val responses = op.getResponses.map {
       case (code, swaggerResponse) => {
         toResponse(models, code, swaggerResponse)
       }
     }
 
+    // println("  - schemes: " + toArray(op.getSchemes()).mkString(", "))
+    // println("  - consumes: " + toArray(op.getConsumes()).mkString(", "))
+    // println("  - produces: " + toArray(op.getProduces).mkString(", "))
     // getSecurity
     // getExternalDocs
     // getVendorExtensions
@@ -251,7 +249,7 @@ case class Parser(config: ServiceConfiguration) {
         case true => Some(Deprecation())
       },
       //body = ?, TODO
-      //parameters = ?, TODO
+      parameters = parameters,
       responses = responses.toSeq
     )
   }
@@ -293,6 +291,36 @@ case class Parser(config: ServiceConfiguration) {
           }
         }
       }
+    }
+  }
+
+  private def toParameter(
+    models: Seq[Model],
+    param: com.wordnik.swagger.models.parameters.Parameter
+  ): Parameter = {
+    // getAccess
+    // getVendorExtensions
+
+    val location = ParameterLocation.fromString(param.getIn).getOrElse {
+      sys.error(s"Could not translate param[${param.getName}] location[${param.getIn}]")
+    }
+
+    val p = Parameter(
+      name = param.getName(),
+      `type` = SchemaType.fromSwagger("string").getOrElse { // TODO
+        sys.error(s"Unrecognized swagger parameter type[]: param[${param.getName}] class[${param.getClass}]")
+      },
+      location = location,
+      description = Option(param.getDescription()),
+      required = param.getRequired(),
+      default = None,
+      minimum = None,
+      maximum = None,
+      example = None
+    )
+
+    param match {
+      case _ => p
     }
   }
 

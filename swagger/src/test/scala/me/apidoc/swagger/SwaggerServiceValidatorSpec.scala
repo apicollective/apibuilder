@@ -35,7 +35,19 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
           r.operations.foreach { op =>
             println(s"  ${op.method} ${op.path}")
             println(s"   body: " + op.body.map(_.`type`))
-            println(s"   parameters: TODO")
+
+            println(s"   parameters:")
+            op.parameters match {
+              case Nil => {
+                println("    none")
+              }
+              case params => {
+                params.foreach { p =>
+                  println(s"    ${p.name}: ${p.`type`}")
+                }
+              }
+            }
+
             println(s"   responses:")
             op.responses.foreach { r =>
               println(s"    ${r.code}: ${r.`type`}")
