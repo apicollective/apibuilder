@@ -43,8 +43,8 @@ lazy val swagger = project
 
 lazy val core = project
   .in(file("core"))
-  .dependsOn(generated, lib, avro)
-  .aggregate(generated, lib, avro)
+  .dependsOn(generated, lib, avro, swagger)
+  .aggregate(generated, lib, avro, swagger)
   .settings(commonSettings: _*)
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",

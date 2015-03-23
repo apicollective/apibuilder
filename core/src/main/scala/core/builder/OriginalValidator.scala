@@ -1,6 +1,8 @@
 package builder
 
+import me.apidoc.swagger.SwaggerServiceValidator
 import me.apidoc.avro.AvroIdlServiceValidator
+import api_json.ApiJsonServiceValidator
 import lib.{ServiceConfiguration, ServiceValidator}
 import core.{ClientFetcher, ServiceFetcher}
 import com.gilt.apidoc.api.v0.models.{Original, OriginalType}
@@ -18,10 +20,13 @@ object OriginalValidator {
   ): ServiceValidator[Service] = {
     val validator = original.`type` match {
       case OriginalType.ApiJson => {
-        api_json.ApiJsonServiceValidator(config, original.data, fetcher, internalMigration)
+        ApiJsonServiceValidator(config, original.data, fetcher, internalMigration)
       }
       case OriginalType.AvroIdl => {
         AvroIdlServiceValidator(config, original.data)
+      }
+      case OriginalType.SwaggerJson => {
+        SwaggerServiceValidator(config, original.data)
       }
       case _ => {
         sys.error("Invalid original type: " + original.`type`)

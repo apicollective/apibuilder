@@ -26,6 +26,10 @@ class OriginalUtilSpec extends FunSpec with ShouldMatchers {
       OriginalUtil.guessType(readFile("../spec/service.json")) should be(Some(OriginalType.ApiJson))
     }
 
+    it("swaggerJson") {
+      OriginalUtil.guessType(readFile("../swagger/example-petstore.json")) should be(Some(OriginalType.SwaggerJson))
+    }
+
     it("avroIdl") {
       OriginalUtil.guessType("  @namespace  ") should be(Some(OriginalType.AvroIdl))
       OriginalUtil.guessType("  protocol bar {}  ") should be(Some(OriginalType.AvroIdl))
