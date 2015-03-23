@@ -46,7 +46,7 @@
 
     </li>
 
-    <li>
+    <li> Enable plugin:
 
       <pre>
       enablePlugins(PlayScala)
@@ -60,12 +60,17 @@
         routesImport += "&lt;packageName&gt;.&lt;serviceName&gt;.v&lt;versionNumber&gt;.Bindables._"
       </pre>
 
+      for example:
+      <pre>
+        routesImport += "com.gilt.apidoc.api.v@{com.gilt.apidoc.api.v0.Constants.VersionMajor}.Bindables._"
+      </pre>
+
     </li>
 
   </ol>
 
   <p>
-  For a real life example, view <a href="https://github.com/gilt/apidoc/blob/master/build.sbt">apidoc's build.sbt file</a>
+  For a real life example, view <a href="@lib.Util.GitHubUrl/blob/master/build.sbt">apidoc's build.sbt file</a>
   </p>
 
 }  
