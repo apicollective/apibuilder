@@ -10,6 +10,7 @@ import java.util.UUID
 
 import io.swagger.parser.SwaggerParser
 import com.wordnik.swagger.models.{ModelImpl, Swagger}
+import com.wordnik.swagger.models.{parameters => swaggerparams}
 import com.wordnik.swagger.models.properties.{AbstractNumericProperty, ArrayProperty, Property, RefProperty, StringProperty, UUIDProperty}
 import com.gilt.apidoc.spec.v0.models._
 
@@ -142,7 +143,6 @@ case class Parser(config: ServiceConfiguration) {
   ): Service = {
     val swagger = new SwaggerParser().read(path.toString)
     println(swagger)
-    //printMethods(swagger)
 
     println("swagger version: " + swagger.getSwagger())
 
@@ -223,8 +223,18 @@ case class Parser(config: ServiceConfiguration) {
     val summary = Option(op.getSummary())
     val description = Option(op.getDescription())
 
-    val parameters = toArray(op.getParameters).map { param =>
-      toParameter(models, param)
+    val parameters = toArray(op.getParameters).flatMap { param =>
+      param match {
+        case p: com.wordnik.swagger.models.parameters.BodyParameter => None
+        case _ => Some(toParameter(models, param))
+      }
+    }
+
+    val bodies = toArray(op.getParameters).flatMap { param =>
+      param match {
+        case p: com.wordnik.swagger.models.parameters.BodyParameter => Some(toBody(models, p))
+        case _ => None
+      }
     }
 
     val responses = op.getResponses.map {
@@ -248,7 +258,13 @@ case class Parser(config: ServiceConfiguration) {
         case false => None
         case true => Some(Deprecation())
       },
-      //body = ?, TODO
+      body = bodies.toList match {
+        case Nil => None
+        case body :: Nil => Some(body)
+        case multiple => {
+          sys.error("Multiple body parameters specified for operation at url[$url]")
+        }
+      },
       parameters = parameters,
       responses = responses.toSeq
     )
@@ -258,6 +274,27 @@ case class Parser(config: ServiceConfiguration) {
     values.flatten match {
       case Nil => None
       case v => Some(v.mkString("\n\n"))
+    }
+  }
+
+  private def toSchemaTypeFromStrings(
+    t: String,
+    format: Option[String],
+    itemProperty: Option[Property],
+    models: Seq[Model] = Nil
+  ): String = {
+    t match {
+      case "array" => {
+        toSchemaType(
+          prop = itemProperty.getOrElse {
+            sys.error("Need item property for array")
+          },
+          models = models
+        )
+      }
+      case _ => {
+        SchemaType.fromSwaggerWithError(t, format)
+      }
     }
   }
 
@@ -278,20 +315,25 @@ case class Parser(config: ServiceConfiguration) {
         model.name
       }
       case _ => {
-        Option(prop.getFormat()) match {
-          case None => {
-            SchemaType.fromSwagger(prop.getType()).getOrElse {
-              sys.error(s"Unrecognized swagger type[${prop.getType()}]: ${prop.getClass}")
-            }
-          }
-          case Some(format) => {
-            SchemaType.fromSwagger(format).getOrElse {
-              sys.error(s"Unrecognized swagger type[$format]: ${prop.getClass}")
-            }
-          }
-        }
+        SchemaType.fromSwaggerWithError(prop.getType, Option(prop.getFormat))
       }
     }
+  }
+
+  private def toBody(
+    models: Seq[Model],
+    param: com.wordnik.swagger.models.parameters.BodyParameter
+  ): Body = {
+    val bodyType = param.getSchema match {
+      case m: ModelImpl => m.getType
+      case o => sys.error("Unrecognized model: " + o)
+    }
+
+    Body(
+      `type` = bodyType,
+      description = Option(param.getDescription),
+      deprecation = None
+    )
   }
 
   private def toParameter(
@@ -305,11 +347,9 @@ case class Parser(config: ServiceConfiguration) {
       sys.error(s"Could not translate param[${param.getName}] location[${param.getIn}]")
     }
 
-    val p = Parameter(
+    val template = Parameter(
       name = param.getName(),
-      `type` = SchemaType.fromSwagger("string").getOrElse { // TODO
-        sys.error(s"Unrecognized swagger parameter type[]: param[${param.getName}] class[${param.getClass}]")
-      },
+      `type` = "string",
       location = location,
       description = Option(param.getDescription()),
       required = param.getRequired(),
@@ -320,7 +360,15 @@ case class Parser(config: ServiceConfiguration) {
     )
 
     param match {
-      case _ => p
+      case p: swaggerparams.BodyParameter => {
+        sys.error("Should never see body parameter here")
+      }
+      case p: swaggerparams.QueryParameter => {
+        template.copy(`type` = toSchemaTypeFromStrings(p.getType, Option(p.getFormat), Option(p.getItems), models))
+      }
+      case _ => {
+        template
+      }
     }
   }
 
@@ -359,15 +407,6 @@ case class Parser(config: ServiceConfiguration) {
 
   private def normalize(value: String): String = {
     value.toLowerCase.trim.replaceAll("_", "-")
-  }
-
-  private def printMethods(instance: Any) {
-    println(s"${instance.getClass()}")
-    instance.getClass().getMethods().map(_.toString).sorted.foreach { m =>
-      if (m.toString().indexOf("get") >= 0) {
-        println("  - method: " + m)
-      }
-    }
   }
 
   private def toArray[T](values: java.util.List[T]): Seq[T] = {

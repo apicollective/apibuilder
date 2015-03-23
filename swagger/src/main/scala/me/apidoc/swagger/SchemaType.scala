@@ -19,9 +19,23 @@ object SchemaType {
     SchemaType("dateTime", "date-time-iso8601")
   )
 
-  def fromSwagger(swaggerType: String): Option[String] = {
-    all.find(_.swagger == swaggerType).map(_.apidoc)
+  def fromSwagger(
+    swaggerType: String,
+    format: Option[String]
+  ): Option[String] = {
+    format match {
+      case None => all.find(_.swagger == swaggerType).map(_.apidoc)
+      case Some(format) => all.find(_.swagger == format).map(_.apidoc)
+    }
+  }
+
+  def fromSwaggerWithError(
+    swaggerType: String,
+    format: Option[String]
+  ): String = {
+    fromSwagger(swaggerType, format).getOrElse {
+      sys.error(s"Could not resolve swagger type[$swaggerType] format[${format.getOrElse("")}]")
+    }
   }
 
 }
-
