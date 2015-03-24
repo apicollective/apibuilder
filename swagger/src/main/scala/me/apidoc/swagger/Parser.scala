@@ -143,8 +143,36 @@ case class Parser(config: ServiceConfiguration) {
   }
 
   private def composeModels(m1: Model, m2: Model): Model = {
-    // TODO: 
-    m1
+    m1.copy(
+      description = choose(m2.description, m1.description),
+      deprecation = choose(m2.deprecation, m1.deprecation),
+      fields = m1.fields.map { f =>
+        m2.fields.find(_.name == f.name) match {
+          case None => f
+          case Some(other) => composeFields(f, other)
+        }
+      }
+    )
+  }
+
+  private def composeFields(f1: Field, f2: Field): Field = {
+    f1.copy(
+      `type` = f2.`type`,
+      description = choose(f2.description, f1.description),
+      deprecation = choose(f2.deprecation, f1.deprecation),
+      default = choose(f2.default, f1.default),
+      required = f2.required,
+      minimum = choose(f2.minimum, f1.minimum),
+      maximum = choose(f2.maximum, f1.maximum),
+      example = choose(f2.example, f1.example)
+    )
+  }
+
+  private def choose[T](a: Option[T], b: Option[T]): Option[T] = {
+    a match {
+      case None => b
+      case Some(_) => a
+    }
   }
 
   private def toModel(
@@ -158,7 +186,6 @@ case class Parser(config: ServiceConfiguration) {
       // TODO println("    - url: " + doc.getUrl())
       // TODO println("    - description: " + doc.getDescription())
     }
-    println("  - addl properties:")
     Option(m.getAdditionalProperties()).map { prop =>
       // TODO: println("    - additional property: " + prop)
     }
@@ -392,7 +419,6 @@ case class Parser(config: ServiceConfiguration) {
     prop: Property,
     models: Seq[Model] = Nil
   ): String = {
-    println(s"toSchemaType - PROP[$prop]")
     prop match {
       case p: ArrayProperty => {
         val schema = toSchemaType(p.getItems, models)

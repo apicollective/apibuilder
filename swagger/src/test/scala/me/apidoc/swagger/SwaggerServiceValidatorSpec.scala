@@ -9,6 +9,13 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
     scala.io.Source.fromFile(path).getLines.mkString("\n")
   }
 
+  private def printRequired(value: Boolean): String = {
+    value match {
+      case true => "(required)"
+      case false => "(optional)"
+    }
+  }
+
   val config = ServiceConfiguration(
     orgKey = "gilt",
     orgNamespace = "com.gilt",
@@ -27,10 +34,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         service.models.foreach { m =>
           println(s" Model ${m.name}")
           m.fields.foreach { f =>
-            println(s"   - Field ${f.name}, type: ${f.`type`} " + (f.required match {
-              case true => "(required)"
-              case false => "(optional)"
-            }))
+            println(s"   - Field ${f.name}, type: ${f.`type`} ${printRequired(f.required)}")
           }
         }
 
@@ -56,7 +60,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               }
               case params => {
                 params.foreach { p =>
-                  println(s"    ${p.name}: ${p.`type`} (${p.location})")
+                  println(s"    ${p.name}: ${p.`type`} (${p.location}) ${printRequired(p.required)}")
                 }
               }
             }
