@@ -59,7 +59,7 @@ case class Parser(config: ServiceConfiguration) {
       models = specModels,
       imports = Nil,
       headers = Nil,
-      resources = resources(swagger, specModels)
+      resources = mergeResources(resources(swagger, specModels))
     )
   }
 
@@ -150,6 +150,28 @@ case class Parser(config: ServiceConfiguration) {
     models.find(_.name == name).getOrElse {
       sys.error(s"Failed to find a model with name[$name]")
     }
+  }
+
+  // @tailrec
+  private def mergeResources(resources: Seq[Resource]): Seq[Resource] = {
+    resources.groupBy(_.`type`).flatMap {
+      case (resourceType, resources) => {
+        resources.toList match {
+          case Nil => Nil
+          case resource :: Nil => Seq(resource)
+          case r1 :: r2 :: Nil => Seq(mergeResourcesIntoOne(r1, r2))
+          case r1 :: r2 :: rest => mergeResources(Seq(mergeResourcesIntoOne(r1, r2)) ++ rest)
+        }
+      }
+    }.toSeq
+  }
+
+  private def mergeResourcesIntoOne(r1: Resource, r2: Resource): Resource = {
+    r1.copy(
+      description = choose(r1.description, r2.description),
+      deprecation = choose(r1.deprecation, r2.deprecation),
+      operations = r1.operations ++ r2.operations
+    )
   }
 
   private def composeModels(m1: Model, m2: Model): Model = {

@@ -23,13 +23,14 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   )
 
   it("parses") {
-    val files = Seq("petstore-expanded.json", "petstore-simple.json", "petstore.json", "petstore-minimal.json", "petstore-with-external-docs.json")
+    //val files = Seq("petstore-expanded.json", "petstore-simple.json", "petstore.json", "petstore-minimal.json", "petstore-with-external-docs.json")
+    val files = Seq("petstore-with-external-docs.json")
     files.foreach { filename =>
       val path = s"swagger/test/resources/$filename"
       println(s"Reading file[$path]")
       SwaggerServiceValidator(config, readFile(path)).validate match {
         case Left(errors) => {
-          println("ERRORS: " + errors.mkString(", "))
+          fail(s"Service validation failed for path[$path]: "  + errors.mkString(", "))
         }
         case Right(service) => {
           println("No errors.")
