@@ -23,56 +23,59 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   )
 
   it("parses") {
-    // swagger/example-petstore.json
-    SwaggerServiceValidator(config, readFile("swagger/test/resources/petstore-with-external-docs.json")).validate match {
-      case Left(errors) => {
-        println("ERRORS: " + errors.mkString(", "))
-      }
-      case Right(service) => {
-        println("No errors.")
-        println("Service: " + service.name)
-        service.models.foreach { m =>
-          println(s" Model ${m.name}")
-          m.fields.foreach { f =>
-            println(s"   - Field ${f.name}, type: ${f.`type`} ${printRequired(f.required)}")
-          }
+    val files = Seq("petstore-expanded.json", "petstore-simple.json", "petstore.json", "petstore-minimal.json", "petstore-with-external-docs.json")
+    files.foreach { filename =>
+      val path = s"swagger/test/resources/$filename"
+      println(s"Reading file[$path]")
+      SwaggerServiceValidator(config, readFile(path)).validate match {
+        case Left(errors) => {
+          println("ERRORS: " + errors.mkString(", "))
         }
-
-        service.resources.foreach { r =>
-          println(s" Resource ${r.`type`}")
-          r.operations.foreach { op =>
-            println(s"  ${op.method} ${op.path}")
-
-            println(s"   body:")
-            op.body match {
-              case None => {
-                println("    none")
-              }
-              case Some(b) => {
-                println(s"    ${b.`type`}")
-              }
+        case Right(service) => {
+          println("No errors.")
+          println("Service: " + service.name)
+          service.models.foreach { m =>
+            println(s" Model ${m.name}")
+            m.fields.foreach { f =>
+              println(s"   - Field ${f.name}, type: ${f.`type`} ${printRequired(f.required)}")
             }
-              
-            println(s"   parameters:")
-            op.parameters match {
-              case Nil => {
-                println("    none")
-              }
-              case params => {
-                params.foreach { p =>
-                  println(s"    ${p.name}: ${p.`type`} (${p.location}) ${printRequired(p.required)}")
+          }
+
+          service.resources.foreach { r =>
+            println(s" Resource ${r.`type`}")
+            r.operations.foreach { op =>
+              println(s"  ${op.method} ${op.path}")
+
+              println(s"   body:")
+              op.body match {
+                case None => {
+                  println("    none")
+                }
+                case Some(b) => {
+                  println(s"    ${b.`type`}")
                 }
               }
-            }
+              
+              println(s"   parameters:")
+              op.parameters match {
+                case Nil => {
+                  println("    none")
+                }
+                case params => {
+                  params.foreach { p =>
+                    println(s"    ${p.name}: ${p.`type`} (${p.location}) ${printRequired(p.required)}")
+                  }
+                }
+              }
 
-            println(s"   responses:")
-            op.responses.foreach { r =>
-              println(s"    ${r.code}: ${r.`type`}")
+              println(s"   responses:")
+              op.responses.foreach { r =>
+                println(s"    ${r.code}: ${r.`type`}")
+              }
             }
           }
         }
       }
     }
   }
-
 }
