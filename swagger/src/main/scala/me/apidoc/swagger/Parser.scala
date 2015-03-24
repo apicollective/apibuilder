@@ -230,7 +230,7 @@ case class Parser(config: ServiceConfiguration) {
       plural = Text.pluralize(name),
       description = desc,
       deprecation = None,
-      fields = m.getProperties().map {
+      fields = toMap(m.getProperties).map {
         case (key, prop) => {
           val base = field(key, prop)
 
@@ -573,6 +573,14 @@ case class Parser(config: ServiceConfiguration) {
 
   private def normalize(value: String): String = {
     value.toLowerCase.trim.replaceAll("_", "-")
+  }
+
+  private def toMap[T](values: java.util.Map[String, T]): java.util.Map[String, T] = {
+    if (values == null) {
+      java.util.Collections.emptyMap[String, T]()
+    } else {
+      values
+    }
   }
 
   private def toArray[T](values: java.util.List[T]): Seq[T] = {
