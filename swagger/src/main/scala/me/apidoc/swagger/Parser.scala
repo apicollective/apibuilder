@@ -183,7 +183,7 @@ case class Parser(config: ServiceConfiguration) {
           case None => f
           case Some(other) => composeFields(f, other)
         }
-      }
+      } ++ m2.fields.filter( f => m1.fields.find(_.name == f.name).isEmpty )
     )
   }
 
