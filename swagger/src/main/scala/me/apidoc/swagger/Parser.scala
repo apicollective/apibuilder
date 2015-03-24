@@ -18,6 +18,16 @@ import lib.Text
 import com.gilt.apidoc.spec.v0.models._
 import scala.annotation.tailrec
 
+object Parser {
+
+  private val PathParams = """\{(.+)\}""".r
+
+  def substitutePathParameters(url: String): String = {
+    PathParams.replaceAllIn(url, m => ":" + m.group(1))
+  }
+
+}
+
 case class Parser(config: ServiceConfiguration) {
 
   private val DefaultResponseCode = "default"
@@ -258,7 +268,7 @@ case class Parser(config: ServiceConfiguration) {
   def debug(
     path: File
   ): Service = {
-    val swagger = new SwaggerParser().read(path.toString)
+   val swagger = new SwaggerParser().read(path.toString)
     println(swagger)
 
     println("swagger version: " + swagger.getSwagger())
@@ -369,7 +379,7 @@ case class Parser(config: ServiceConfiguration) {
     // getOperationId (this is like a nick name for the method - e.g. findPets)
     Operation(
       method = method,
-      path = url,
+      path = Parser.substitutePathParameters(url),
       description = combine(Seq(summary, description)),
       deprecation = Option(op.isDeprecated).getOrElse(false) match {
         case false => None
