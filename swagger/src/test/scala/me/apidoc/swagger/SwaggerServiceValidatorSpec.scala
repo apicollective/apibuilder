@@ -1,5 +1,6 @@
 package me.apidoc.swagger
 
+import com.gilt.apidoc.spec.v0.models.{Field, Model}
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 
@@ -14,6 +15,28 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       case true => "(required)"
       case false => "(optional)"
     }
+  }
+
+  private def checkModel(actual: Model, target: Model) {
+    actual.name should be(target.name)
+    actual.plural should be(target.plural)
+    actual.description should be(target.description)
+    actual.fields.map(_.name) should be(target.fields.map(_.name))
+    actual.fields.foreach { f =>
+      checkField(f, target.fields.find(_.name == f.name).get)
+    }
+  }
+
+  private def checkField(actual: Field, target: Field) {
+    actual.name should be(target.name)
+    actual.`type` should be(target.`type`)
+    actual.description should be(target.description)
+    actual.deprecation should be(target.deprecation)
+    actual.default should be(target.default)
+    actual.required should be(target.required)
+    actual.minimum should be(target.minimum)
+    actual.maximum should be(target.maximum)
+    actual.example should be(target.example)
   }
 
   val config = ServiceConfiguration(
@@ -33,6 +56,34 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
           fail(s"Service validation failed for path[$path]: "  + errors.mkString(", "))
         }
         case Right(service) => {
+          service.name should be("Swagger Petstore")
+          service.models.map(_.name) should be(Seq("pet", "newPet", "errorModel"))
+
+          checkModel(
+            service.models.find(_.name == "pet").get,
+            Model(
+              name = "pet",
+              plural = "pets",
+              fields = Seq(
+                Field(
+                  name = "id",
+                  `type` = "long",
+                  required = true
+                ),
+                Field(
+                  name = "name",
+                  `type` = "string",
+                  required = true
+                ),
+                Field(
+                  name = "tag",
+                  `type` = "string",
+                  required = false
+                )
+              )
+            )
+          )
+
           println("No errors.")
           println("Service: " + service.name)
           service.models.foreach { m =>
