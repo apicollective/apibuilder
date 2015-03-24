@@ -213,11 +213,14 @@ case class Parser(config: ServiceConfiguration) {
   ): Model = {
     // TODO println("  - type: " + Option(schema.getType()))
     // TODO println("  - discriminator: " + Option(schema.getDiscriminator()))
-    // TODO println("  - external docs:")
-    Option(m.getExternalDocs()).map { doc =>
-      // TODO println("    - url: " + doc.getUrl())
-      // TODO println("    - description: " + doc.getDescription())
-    }
+
+    val desc = combine(
+      Seq(
+        Option(m.getDescription()),
+        externalDocsToString(Option(m.getExternalDocs))
+      )
+    )
+
     Option(m.getAdditionalProperties()).map { prop =>
       // TODO: println("    - additional property: " + prop)
     }
@@ -225,7 +228,7 @@ case class Parser(config: ServiceConfiguration) {
     Model(
       name = name,
       plural = Text.pluralize(name),
-      description = Option(m.getDescription()),
+      description = desc,
       deprecation = None,
       fields = m.getProperties().map {
         case (key, prop) => {
@@ -272,6 +275,12 @@ case class Parser(config: ServiceConfiguration) {
         }
       }.toSeq
     )
+  }
+
+  private def externalDocsToString(docs: Option[com.wordnik.swagger.models.ExternalDocs]): Option[String] = {
+    docs.flatMap { doc =>
+      combine(Seq(Option(doc.getDescription), Option(doc.getUrl)), ": ")
+    }
   }
 
   private def field(name: String, prop: Property): Field = {
@@ -396,13 +405,12 @@ case class Parser(config: ServiceConfiguration) {
     // println("  - consumes: " + toArray(op.getConsumes()).mkString(", "))
     // println("  - produces: " + toArray(op.getProduces).mkString(", "))
     // getSecurity
-    // getExternalDocs
     // getVendorExtensions
     // getOperationId (this is like a nick name for the method - e.g. findPets)
     Operation(
       method = method,
       path = Parser.substitutePathParameters(url),
-      description = combine(Seq(summary, description)),
+      description = combine(Seq(summary, description, externalDocsToString(Option(op.getExternalDocs)))),
       deprecation = Option(op.isDeprecated).getOrElse(false) match {
         case false => None
         case true => Some(Deprecation())
@@ -419,10 +427,13 @@ case class Parser(config: ServiceConfiguration) {
     )
   }
 
-  private def combine(values: Seq[Option[String]]): Option[String] = {
+  private def combine(
+    values: Seq[Option[String]],
+    connector: String = "\n\n"
+  ): Option[String] = {
     values.flatten match {
       case Nil => None
-      case v => Some(v.mkString("\n\n"))
+      case v => Some(v.mkString(connector))
     }
   }
 

@@ -64,6 +64,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
             Model(
               name = "pet",
               plural = "pets",
+              description = Some("find more info here: https://helloreverb.com/about"),
               fields = Seq(
                 Field(
                   name = "id",
