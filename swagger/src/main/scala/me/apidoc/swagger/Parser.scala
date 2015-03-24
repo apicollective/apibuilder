@@ -9,7 +9,7 @@ import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
 import java.util.UUID
 
 import io.swagger.parser.SwaggerParser
-import com.wordnik.swagger.models.{ComposedModel, ModelImpl, Swagger}
+import com.wordnik.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
 import com.wordnik.swagger.models.{parameters => swaggerparams}
 import com.wordnik.swagger.models.properties.{AbstractNumericProperty, ArrayProperty, Property, RefProperty, StringProperty, UUIDProperty}
 import com.gilt.apidoc.spec.v0.models._
@@ -52,88 +52,172 @@ case class Parser(config: ServiceConfiguration) {
     )
   }
 
+  private case class MyDefinition(name: String, definition: com.wordnik.swagger.models.Model)
+
   private def models(swagger: Swagger): Seq[Model] = {
-    swagger.getDefinitions().map { d =>
-      d match {
-        case (name, definition) => {
-          definition match {
-            case m: ComposedModel => {
-              m.getAllOf.foreach { m =>
-                println("M: " + m)
-              }
+    buildModels(
+      definitions = swagger.getDefinitions.map { case (name, definition) => MyDefinition(name, definition) }.toSeq,
+      models = Nil
+    )
+  }
 
-              m.getInterfaces.foreach { i =>
-                println("I: " + i)
-              }
-              sys.error("TODO")
-            }
+  private def nextDefinition(
+    definitions: Seq[MyDefinition],
+    models: Seq[Model]
+  ): Option[MyDefinition] = {
+    definitions.headOption // TODO
+  }
 
-            case m: ModelImpl => {
-              // TODO println("  - type: " + Option(schema.getType()))
-              // TODO println("  - discriminator: " + Option(schema.getDiscriminator()))
-              // TODO println("  - external docs:")
-              Option(m.getExternalDocs()).map { doc =>
-                // TODO println("    - url: " + doc.getUrl())
-                // TODO println("    - description: " + doc.getDescription())
-              }
-              println("  - addl properties:")
-              Option(m.getAdditionalProperties()).map { prop =>
-                // TODO: println("    - additional property: " + prop)
-              }
-
-              Model(
-                name = name,
-                plural = Text.pluralize(name),
-                description = Option(m.getDescription()),
-                deprecation = None,
-                fields = m.getProperties().map {
-                  case (key, prop) => {
-                    val base = field(key, prop)
-
-                    prop match {
-                      case p: ArrayProperty => {
-                        // TODO: p.getUniqueItems()
-                        base.copy(`type` = "[" + base.`type` + "]")
-                      }
-                      case p: AbstractNumericProperty => {
-                        base.copy(
-                          minimum = Option(p.getMinimum()).map(_.toLong) match {
-                            case None => Option(p.getExclusiveMinimum()).map(_.toLong)
-                            case Some(v) => Some(v)
-                          },
-                          maximum = Option(p.getMaximum()).map(_.toLong) match {
-                            case None => Option(p.getExclusiveMaximum()).map(_.toLong)
-                            case Some(v) => Some(v)
-                          }
-                        )
-                      }
-                      case p: UUIDProperty => {
-                        base.copy(
-                          minimum = Option(p.getMinLength()).map(_.toLong),
-                          maximum = Option(p.getMaxLength()).map(_.toLong)
-                        )
-                      }
-                      case p: StringProperty => {
-                        // TODO getPattern
-                        base.copy(
-                          minimum = Option(p.getMinLength()).map(_.toLong),
-                          maximum = Option(p.getMaxLength()).map(_.toLong)
-                        )
-                      }
-                      case _ => base
-                    }
-                  }
-                }.toSeq
-              )
-            }
-
-            case _ => {
-              sys.error(s"Unsupported definition for name[$name]: $definition")
-            }
-          }
+  private def buildModels(
+    definitions: Seq[MyDefinition],
+    models: Seq[Model],
+    numIterations: Int = 0
+  ): Seq[Model] = {
+    nextDefinition(definitions, models) match {
+      case None => {
+        definitions.toList match {
+          case Nil => models
+          case remaining => sys.error("Failed to resolve definitions: " + definitions.map(_.name).mkString(", "))
         }
       }
-    }.toSeq
+
+      case Some(mydefinition) => {
+        val name = mydefinition.name
+        val newModel = mydefinition.definition match {
+          case m: ComposedModel => {
+            println(s"Composed model[$name] all of:")
+            var composedModel: Option[Model] = None
+
+            m.getInterfaces.foreach { i =>
+              sys.error("TODO: Handle interfaces: " + i)
+            }
+
+            m.getAllOf.foreach { swaggerModel =>
+              swaggerModel match {
+                case rm: RefModel => {
+                  val refModel = resolveRefModel(models, rm)
+
+                  composedModel match {
+                    case None => {
+                      composedModel = Some(
+                        refModel.copy(
+                          name = name,
+                          plural = Text.pluralize(name)
+                        )
+                      )
+                    }
+                    case Some(m) => {
+                      composedModel = Some(composeModels(m, refModel))
+                    }
+                  }
+                }
+                case m: ModelImpl => {
+                  println("MODEL: " + toModel(name, m))
+                }
+              }
+            }
+
+            composedModel.getOrElse {
+              sys.error(s"Empty composed model: $name")
+            }
+          }
+
+          case m: ModelImpl => {
+            toModel(name, m)
+          }
+
+          case _ => {
+            sys.error(s"Unsupported definition for name[$name]")
+          }
+        }
+
+        println(s"NAME:[$name]")
+        buildModels(
+          definitions.filter(_.name != name),
+          models ++ Seq(newModel),
+          numIterations = numIterations + 1
+        )
+      }
+    }
+  }
+
+
+  private def resolveRefModel(
+    models: Seq[Model],
+    rm: RefModel
+  ): Model = {
+    // Lookup reference. need to make method iterative
+    val name = rm.getSimpleRef()
+    models.find(_.name == name).getOrElse {
+      sys.error(s"Failed to find a model with name[$name]")
+    }
+  }
+
+  private def composeModels(m1: Model, m2: Model): Model = {
+    // TODO: 
+    m1
+  }
+
+  private def toModel(
+    name: String,
+    m: ModelImpl
+  ): Model = {
+    // TODO println("  - type: " + Option(schema.getType()))
+    // TODO println("  - discriminator: " + Option(schema.getDiscriminator()))
+    // TODO println("  - external docs:")
+    Option(m.getExternalDocs()).map { doc =>
+      // TODO println("    - url: " + doc.getUrl())
+      // TODO println("    - description: " + doc.getDescription())
+    }
+    println("  - addl properties:")
+    Option(m.getAdditionalProperties()).map { prop =>
+      // TODO: println("    - additional property: " + prop)
+    }
+
+    Model(
+      name = name,
+      plural = Text.pluralize(name),
+      description = Option(m.getDescription()),
+      deprecation = None,
+      fields = m.getProperties().map {
+        case (key, prop) => {
+          val base = field(key, prop)
+
+          prop match {
+            case p: ArrayProperty => {
+              // TODO: p.getUniqueItems()
+              base.copy(`type` = "[" + base.`type` + "]")
+            }
+            case p: AbstractNumericProperty => {
+              base.copy(
+                minimum = Option(p.getMinimum()).map(_.toLong) match {
+                  case None => Option(p.getExclusiveMinimum()).map(_.toLong)
+                  case Some(v) => Some(v)
+                },
+                maximum = Option(p.getMaximum()).map(_.toLong) match {
+                  case None => Option(p.getExclusiveMaximum()).map(_.toLong)
+                  case Some(v) => Some(v)
+                }
+              )
+            }
+            case p: UUIDProperty => {
+              base.copy(
+                minimum = Option(p.getMinLength()).map(_.toLong),
+                maximum = Option(p.getMaxLength()).map(_.toLong)
+              )
+            }
+            case p: StringProperty => {
+              // TODO getPattern
+              base.copy(
+                minimum = Option(p.getMinLength()).map(_.toLong),
+                maximum = Option(p.getMaxLength()).map(_.toLong)
+              )
+            }
+            case _ => base
+          }
+        }
+      }.toSeq
+    )
   }
 
   private def field(name: String, prop: Property): Field = {
@@ -229,7 +313,7 @@ case class Parser(config: ServiceConfiguration) {
     url: String,
     op: com.wordnik.swagger.models.Operation
   ): Operation = {
-    println("  - tags: " + toArray(op.getTags()).mkString(", "))
+    // println("  - tags: " + toArray(op.getTags()).mkString(", "))
 
     val summary = Option(op.getSummary())
     val description = Option(op.getDescription())
@@ -337,7 +421,7 @@ case class Parser(config: ServiceConfiguration) {
   ): Body = {
     val bodyType = param.getSchema match {
       case m: ModelImpl => m.getType
-      case o => sys.error("Unrecognized model: " + o)
+      case rm: RefModel => resolveRefModel(models, rm).name
     }
 
     Body(
