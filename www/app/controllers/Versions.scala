@@ -209,7 +209,6 @@ object Versions extends Controller {
               )
 
               val isFirstVersion = versionsResponse.isEmpty
-              println(tpl)
               Ok(views.html.versions.form(tpl, applicationKey, filledForm, isFirstVersion = Some(isFirstVersion)))
             }
           }
