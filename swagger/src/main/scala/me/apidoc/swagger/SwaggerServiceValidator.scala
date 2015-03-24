@@ -11,7 +11,10 @@ case class SwaggerServiceValidator(
 
   override def validate(): Either[Seq[String], Service] = {
     Try(Parser(config).parseString(definition)) match {
-      case Failure(ex) => Left(Seq(ex.toString))
+      case Failure(ex) => {
+        ex.printStackTrace(System.err)
+        Left(Seq(ex.toString))
+      }
       case Success(service) => Right(service)
     }
   }

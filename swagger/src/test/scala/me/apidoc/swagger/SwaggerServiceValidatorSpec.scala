@@ -27,7 +27,10 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         service.models.foreach { m =>
           println(s" Model ${m.name}")
           m.fields.foreach { f =>
-            println(s"   - Field ${f.name}, type: ${f.`type`}")
+            println(s"   - Field ${f.name}, type: ${f.`type`} " + (f.required match {
+              case true => "(required)"
+              case false => "(optional)"
+            }))
           }
         }
 
@@ -53,7 +56,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               }
               case params => {
                 params.foreach { p =>
-                  println(s"    ${p.name}: ${p.`type`}")
+                  println(s"    ${p.name}: ${p.`type`} (${p.location})")
                 }
               }
             }

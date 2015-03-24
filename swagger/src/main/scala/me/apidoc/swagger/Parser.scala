@@ -16,6 +16,7 @@ import com.gilt.apidoc.spec.v0.models._
 
 import lib.Text
 import com.gilt.apidoc.spec.v0.models._
+import scala.annotation.tailrec
 
 case class Parser(config: ServiceConfiguration) {
 
@@ -68,6 +69,7 @@ case class Parser(config: ServiceConfiguration) {
     definitions.headOption // TODO
   }
 
+  @tailrec
   private def buildModels(
     definitions: Seq[MyDefinition],
     models: Seq[Model],
@@ -85,7 +87,6 @@ case class Parser(config: ServiceConfiguration) {
         val name = mydefinition.name
         val newModel = mydefinition.definition match {
           case m: ComposedModel => {
-            println(s"Composed model[$name] all of:")
             var composedModel: Option[Model] = None
 
             m.getInterfaces.foreach { i =>
@@ -93,27 +94,20 @@ case class Parser(config: ServiceConfiguration) {
             }
 
             m.getAllOf.foreach { swaggerModel =>
-              swaggerModel match {
-                case rm: RefModel => {
-                  val refModel = resolveRefModel(models, rm)
+              val thisModel = swaggerModel match {
+                case rm: RefModel => resolveRefModel(models, rm)
+                case m: ModelImpl => toModel(name, m)
+                case _ => sys.error(s"Unsupported composition model[$swaggerModel]")
+              }
 
-                  composedModel match {
-                    case None => {
-                      composedModel = Some(
-                        refModel.copy(
-                          name = name,
-                          plural = Text.pluralize(name)
-                        )
-                      )
-                    }
-                    case Some(m) => {
-                      composedModel = Some(composeModels(m, refModel))
-                    }
-                  }
-                }
-                case m: ModelImpl => {
-                  println("MODEL: " + toModel(name, m))
-                }
+              composedModel = composedModel match {
+                case None => Some(
+                  thisModel.copy(
+                    name = name,
+                    plural = Text.pluralize(name)
+                  )
+                )
+                case Some(cm) => Some(composeModels(cm, thisModel))
               }
             }
 
@@ -122,16 +116,11 @@ case class Parser(config: ServiceConfiguration) {
             }
           }
 
-          case m: ModelImpl => {
-            toModel(name, m)
-          }
-
-          case _ => {
-            sys.error(s"Unsupported definition for name[$name]")
-          }
+          case rm: RefModel => resolveRefModel(models, rm)
+          case m: ModelImpl => toModel(name, m)
+          case _ => sys.error(s"Unsupported definition for name[$name]")
         }
 
-        println(s"NAME:[$name]")
         buildModels(
           definitions.filter(_.name != name),
           models ++ Seq(newModel),
@@ -208,7 +197,13 @@ case class Parser(config: ServiceConfiguration) {
             }
             case p: StringProperty => {
               // TODO getPattern
+              val desc = Option(p.getPattern) match {
+                case None => base.description
+                case Some(pattern) => combine(Seq(base.description, Some(s"Pattern: $pattern")))
+              }
+
               base.copy(
+                description = desc,
                 minimum = Option(p.getMinLength()).map(_.toLong),
                 maximum = Option(p.getMaxLength()).map(_.toLong)
               )
@@ -397,6 +392,7 @@ case class Parser(config: ServiceConfiguration) {
     prop: Property,
     models: Seq[Model] = Nil
   ): String = {
+    println(s"toSchemaType - PROP[$prop]")
     prop match {
       case p: ArrayProperty => {
         val schema = toSchemaType(p.getItems, models)
@@ -410,6 +406,9 @@ case class Parser(config: ServiceConfiguration) {
         model.name
       }
       case _ => {
+        if (prop.getType == null) {
+          sys.error(s"Property[${prop}] has no type")
+        }
         SchemaType.fromSwaggerWithError(prop.getType, Option(prop.getFormat))
       }
     }
@@ -483,7 +482,10 @@ case class Parser(config: ServiceConfiguration) {
 
     Response(
       code = intCode,
-      `type` = toSchemaType(response.getSchema, models),
+      `type` = Option(response.getSchema) match {
+        case None => "unit"
+        case Some(schema) => toSchemaType(schema, models)
+      },
       description = Option(response.getDescription),
       deprecation = None
     )
