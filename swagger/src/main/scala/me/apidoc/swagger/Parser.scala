@@ -9,7 +9,7 @@ import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
 import java.util.UUID
 
 import io.swagger.parser.SwaggerParser
-import com.wordnik.swagger.models.{ModelImpl, Swagger}
+import com.wordnik.swagger.models.{ComposedModel, ModelImpl, Swagger}
 import com.wordnik.swagger.models.{parameters => swaggerparams}
 import com.wordnik.swagger.models.properties.{AbstractNumericProperty, ArrayProperty, Property, RefProperty, StringProperty, UUIDProperty}
 import com.gilt.apidoc.spec.v0.models._
@@ -57,6 +57,17 @@ case class Parser(config: ServiceConfiguration) {
       d match {
         case (name, definition) => {
           definition match {
+            case m: ComposedModel => {
+              m.getAllOf.foreach { m =>
+                println("M: " + m)
+              }
+
+              m.getInterfaces.foreach { i =>
+                println("I: " + i)
+              }
+              sys.error("TODO")
+            }
+
             case m: ModelImpl => {
               // TODO println("  - type: " + Option(schema.getType()))
               // TODO println("  - discriminator: " + Option(schema.getDiscriminator()))
@@ -249,7 +260,7 @@ case class Parser(config: ServiceConfiguration) {
     // getSecurity
     // getExternalDocs
     // getVendorExtensions
-    // getOperationId
+    // getOperationId (this is like a nick name for the method - e.g. findPets)
     Operation(
       method = method,
       path = url,

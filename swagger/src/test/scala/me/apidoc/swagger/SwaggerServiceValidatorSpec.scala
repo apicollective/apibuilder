@@ -16,7 +16,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   )
 
   it("parses") {
-    SwaggerServiceValidator(config, readFile("swagger/example-petstore.json")).validate match {
+    // swagger/example-petstore.json
+    SwaggerServiceValidator(config, readFile("swagger/test/resources/petstore-with-external-docs.json")).validate match {
       case Left(errors) => {
         println("ERRORS: " + errors.mkString(", "))
       }
