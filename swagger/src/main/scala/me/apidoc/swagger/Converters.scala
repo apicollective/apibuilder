@@ -26,5 +26,8 @@ object Converters {
     }
   }
 
+  def normalizeUrl(value: String): String = {
+    value.toLowerCase.trim.replaceAll("_", "-")
+  }
 
 }

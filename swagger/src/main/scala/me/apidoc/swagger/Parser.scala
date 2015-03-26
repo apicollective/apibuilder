@@ -538,15 +538,11 @@ case class Parser(config: ServiceConfiguration) {
     models: Seq[Model],
     url: String
   ): Option[Model] = {
-    val normalized = normalize(url)
+    val normalized = Converters.normalizeUrl(url)
     models.find { m =>
-      val modelUrl = normalize(s"/${m.plural}")
+      val modelUrl = Converters.normalizeUrl(s"/${m.plural}")
       normalized == modelUrl || normalized.startsWith(modelUrl + "/")
     }
-  }
-
-  private def normalize(value: String): String = {
-    value.toLowerCase.trim.replaceAll("_", "-")
   }
 
   private def toMap[T](values: java.util.Map[String, T]): java.util.Map[String, T] = {

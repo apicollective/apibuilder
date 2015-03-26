@@ -32,4 +32,11 @@ class ConvertersSpec extends FunSpec with Matchers {
     Converters.combine(Seq(Some("foo"), None, Some("bar")), connector = ", ") should be(Some("foo, bar"))
   }
 
+  it("normalizeUrl") {
+    Converters.normalizeUrl("/foo") should be("/foo")
+    Converters.normalizeUrl("/foo_bar") should be("/foo-bar")
+    Converters.normalizeUrl("/FOO_BAR") should be("/foo-bar")
+    Converters.normalizeUrl("  /FOO_BAR  ") should be("/foo-bar")
+  }
+
 }
