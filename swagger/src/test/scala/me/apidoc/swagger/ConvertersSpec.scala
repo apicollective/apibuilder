@@ -12,14 +12,14 @@ class ConvertersSpec extends FunSpec with Matchers {
     Converters.substitutePathParameters("/stores/{guid}/pets") should be("/stores/:guid/pets")
   }
 
-  it("baseUrl") {
-    Converters.baseUrl(Nil, "localhost", None) should be("http://localhost")
-    Converters.baseUrl(Seq("http"), "localhost", None) should be("http://localhost")
-    Converters.baseUrl(Seq("HTTP"), "localhost", None) should be("http://localhost")
-    Converters.baseUrl(Seq("https"), "localhost", None) should be("https://localhost")
-    Converters.baseUrl(Seq("https"), "localhost", Some("/api")) should be("https://localhost/api")
-    Converters.baseUrl(Seq("http", "https"), "localhost", Some("/api")) should be("http://localhost/api")
-    Converters.baseUrl(Seq("https", "http"), "localhost", Some("/api")) should be("https://localhost/api")
+  it("baseUrls") {
+    Converters.baseUrls(Nil, "localhost", None) should be(Nil)
+    Converters.baseUrls(Seq("http"), "localhost", None) should be(Seq("http://localhost"))
+    Converters.baseUrls(Seq("HTTP"), "localhost", None) should be(Seq("http://localhost"))
+    Converters.baseUrls(Seq("https"), "localhost", None) should be(Seq("https://localhost"))
+    Converters.baseUrls(Seq("https"), "localhost", Some("/api")) should be(Seq("https://localhost/api"))
+    Converters.baseUrls(Seq("http", "https"), "localhost", Some("/api")) should be(Seq("http://localhost/api", "https://localhost/api"))
+    Converters.baseUrls(Seq("https", "http"), "localhost", Some("/api")) should be(Seq("https://localhost/api", "http://localhost/api"))
   }
 
 }

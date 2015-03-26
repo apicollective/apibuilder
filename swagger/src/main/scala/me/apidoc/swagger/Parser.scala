@@ -33,7 +33,7 @@ case class Parser(config: ServiceConfiguration) {
     Service(
       name = info.getTitle(),
       description = Option(info.getDescription()),
-      baseUrl = Converters.baseUrl(toArray(swagger.getSchemes).map(_.toString), swagger.getHost, Option(swagger.getBasePath)),
+      baseUrl = Converters.baseUrls(toArray(swagger.getSchemes).map(_.toString), swagger.getHost, Option(swagger.getBasePath)).headOption,
       namespace = config.applicationNamespace(applicationKey),
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),

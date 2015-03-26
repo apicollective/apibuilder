@@ -8,20 +8,12 @@ object Converters {
     PathParams.replaceAllIn(url, m => ":" + m.group(1))
   }
 
-  def baseUrl(
+  def baseUrls(
     schemes: Seq[String],
     host: String,
     path: Option[String]
-  ): Option[String] = {
-    val rest = s"://$host${path.getOrElse("")}"
-    schemes.map(_.toLowerCase).toList match {
-      case Nil => None
-      case one :: Nil => Some(s"$one$rest")
-      case multiple => {
-        // TODO: How to handle multiple schemes
-        Some(s"${multiple.head}$rest")
-      }
-    }
+  ): Seq[String] = {
+    schemes.map(_.toLowerCase).map { scheme => s"$scheme://$host${path.getOrElse("")}" }
   }
 
 }
