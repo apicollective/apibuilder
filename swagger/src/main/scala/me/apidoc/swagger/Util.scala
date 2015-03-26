@@ -16,4 +16,12 @@ object Util {
     }
   }
 
+  def toMap[T](values: java.util.Map[String, T]): java.util.Map[String, T] = {
+    if (values == null) {
+      java.util.Collections.emptyMap[String, T]()
+    } else {
+      values
+    }
+  }
+
 }
