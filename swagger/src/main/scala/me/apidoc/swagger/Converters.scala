@@ -16,4 +16,15 @@ object Converters {
     schemes.map(_.toLowerCase).map { scheme => s"$scheme://$host${path.getOrElse("")}" }
   }
 
+  def combine(
+    values: Seq[Option[String]],
+    connector: String = "\n\n"
+  ): Option[String] = {
+    values.flatten.filter(!_.isEmpty) match {
+      case Nil => None
+      case nonEmptyValues => Some(nonEmptyValues.mkString(connector))
+    }
+  }
+
+
 }

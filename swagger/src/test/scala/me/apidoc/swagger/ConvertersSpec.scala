@@ -22,4 +22,14 @@ class ConvertersSpec extends FunSpec with Matchers {
     Converters.baseUrls(Seq("https", "http"), "localhost", Some("/api")) should be(Seq("https://localhost/api", "http://localhost/api"))
   }
 
+  it("combine") {
+    Converters.combine(Nil) should be(None)
+    Converters.combine(Seq(None)) should be(None)
+    Converters.combine(Seq(Some(""))) should be(None)
+    Converters.combine(Seq(Some("foo"))) should be(Some("foo"))
+    Converters.combine(Seq(Some("foo"), Some("bar"))) should be(Some("foo\n\nbar"))
+    Converters.combine(Seq(Some("foo"), None, Some("bar"))) should be(Some("foo\n\nbar"))
+    Converters.combine(Seq(Some("foo"), None, Some("bar")), connector = ", ") should be(Some("foo, bar"))
+  }
+
 }

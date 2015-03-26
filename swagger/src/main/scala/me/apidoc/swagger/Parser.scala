@@ -198,7 +198,7 @@ case class Parser(config: ServiceConfiguration) {
     // TODO println("  - type: " + Option(schema.getType()))
     // TODO println("  - discriminator: " + Option(schema.getDiscriminator()))
 
-    val desc = combine(
+    val desc = Converters.combine(
       Seq(
         Option(m.getDescription()),
         externalDocsToString(Option(m.getExternalDocs))
@@ -245,7 +245,7 @@ case class Parser(config: ServiceConfiguration) {
               // TODO getPattern
               val desc = Option(p.getPattern) match {
                 case None => base.description
-                case Some(pattern) => combine(Seq(base.description, Some(s"Pattern: $pattern")))
+                case Some(pattern) => Converters.combine(Seq(base.description, Some(s"Pattern: $pattern")))
               }
 
               base.copy(
@@ -263,7 +263,7 @@ case class Parser(config: ServiceConfiguration) {
 
   private def externalDocsToString(docs: Option[com.wordnik.swagger.models.ExternalDocs]): Option[String] = {
     docs.flatMap { doc =>
-      combine(Seq(Option(doc.getDescription), Option(doc.getUrl)), ": ")
+      Converters.combine(Seq(Option(doc.getDescription), Option(doc.getUrl)), ": ")
     }
   }
 
@@ -394,7 +394,7 @@ case class Parser(config: ServiceConfiguration) {
     Operation(
       method = method,
       path = Converters.substitutePathParameters(url),
-      description = combine(Seq(summary, description, externalDocsToString(Option(op.getExternalDocs)))),
+      description = Converters.combine(Seq(summary, description, externalDocsToString(Option(op.getExternalDocs)))),
       deprecation = Option(op.isDeprecated).getOrElse(false) match {
         case false => None
         case true => Some(Deprecation())
@@ -409,16 +409,6 @@ case class Parser(config: ServiceConfiguration) {
       parameters = parameters,
       responses = responses.toSeq
     )
-  }
-
-  private def combine(
-    values: Seq[Option[String]],
-    connector: String = "\n\n"
-  ): Option[String] = {
-    values.flatten match {
-      case Nil => None
-      case v => Some(v.mkString(connector))
-    }
   }
 
   private def toSchemaTypeFromStrings(
