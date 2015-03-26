@@ -1,17 +1,14 @@
 swagger initial release:
   - /web/apidoc/swagger/src/main/scala/me/apidoc/swagger/Parser.scala
     -- break up into smaller files with more granular tests
-    -- pass in service configuration (remove test config)
-    val config = ServiceConfiguration(
-      orgKey = "gilt",
-      orgNamespace = "com.gilt",
-      version = "0.0.1-dev"
-    )
 
 Consider supporting (from swagger):
   - "default" keyword for responses
-  - add license, info
+  - add license, info, documentation
+  - add support for github markdown
   - parameter locations: header, cookie
+  - replace base_url with urls which would be an array of [ url,
+    description ]
 
 Make lookup function of sealed traits case insensitive
   - can then remove toParameterLocation
