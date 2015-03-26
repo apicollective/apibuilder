@@ -35,12 +35,6 @@ case class Parser(config: ServiceConfiguration) {
   def parse(
     path: File
   ): Service = {
-    val config = ServiceConfiguration(
-      orgKey = "gilt",
-      orgNamespace = "com.gilt",
-      version = "0.0.1-dev"
-    )
-
     val swagger = new SwaggerParser().read(path.toString)
     val info = swagger.getInfo()
     val applicationKey = UrlKey.generate(info.getTitle())
@@ -49,11 +43,11 @@ case class Parser(config: ServiceConfiguration) {
     Service(
       name = info.getTitle(),
       description = Option(info.getDescription()),
-      baseUrl = Some(swagger.getSchemes.headOption.map(_.toString.toLowerCase).getOrElse("http") + "//" + swagger.getHost() + swagger.getBasePath()),
+      baseUrl = getBaseUrl(swagger),
       namespace = config.applicationNamespace(applicationKey),
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
-      version = info.getVersion(),
+      version = config.version,
       enums = Nil,
       unions = Nil,
       models = specModels,
@@ -64,6 +58,17 @@ case class Parser(config: ServiceConfiguration) {
   }
 
   private case class MyDefinition(name: String, definition: com.wordnik.swagger.models.Model)
+
+  private def getBaseUrl(swagger: Swagger): Option[String] = {
+    swagger.getSchemes.map(_.toString).map(_.toLowerCase).toList match {
+      case Nil => None
+      case one :: Nil => Some(s"$one://${swagger.getHost}${swagger.getBasePath}")
+      case multiple => {
+        // TODO: How to handle multiple schemes
+        Some(s"${multiple.head}://${swagger.getHost}${swagger.getBasePath}")
+      }
+    }
+  }
 
   private def models(swagger: Swagger): Seq[Model] = {
     buildModels(

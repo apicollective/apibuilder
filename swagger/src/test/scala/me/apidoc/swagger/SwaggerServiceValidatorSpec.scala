@@ -40,9 +40,9 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   val config = ServiceConfiguration(
-    orgKey = "gilt",
-    orgNamespace = "com.gilt",
-    version = "0.0.1-dev"
+    orgKey = "apidoc",
+    orgNamespace = "me.apidoc",
+    version = "0.0.2-dev"
   )
 
   it("parses") {
@@ -57,6 +57,15 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
         }
         case Right(service) => {
           service.name should be("Swagger Petstore")
+          service.namespace should be("me.apidoc.swagger.petstore.v0")
+          service.organization.key should be("apidoc")
+          service.application.key should be("swagger-petstore")
+          service.version should be("0.0.2-dev")
+          service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
+          service.description should be(Some("A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification"))
+          service.headers should be(Seq.empty)
+          service.imports should be(Seq.empty)
+          service.enums should be(Seq.empty)
           service.models.map(_.name) should be(Seq("pet", "newPet", "errorModel"))
 
           checkModel(
