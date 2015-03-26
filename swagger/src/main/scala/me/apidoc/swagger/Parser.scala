@@ -18,16 +18,6 @@ import lib.Text
 import com.gilt.apidoc.spec.v0.models._
 import scala.annotation.tailrec
 
-object Parser {
-
-  private val PathParams = """\{(.+)\}""".r
-
-  def substitutePathParameters(url: String): String = {
-    PathParams.replaceAllIn(url, m => ":" + m.group(1))
-  }
-
-}
-
 case class Parser(config: ServiceConfiguration) {
 
   private val DefaultResponseCode = "default"
@@ -43,7 +33,7 @@ case class Parser(config: ServiceConfiguration) {
     Service(
       name = info.getTitle(),
       description = Option(info.getDescription()),
-      baseUrl = getBaseUrl(swagger),
+      baseUrl = Converters.baseUrl(toArray(swagger.getSchemes).map(_.toString), swagger.getHost, Option(swagger.getBasePath)),
       namespace = config.applicationNamespace(applicationKey),
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
@@ -58,17 +48,6 @@ case class Parser(config: ServiceConfiguration) {
   }
 
   private case class MyDefinition(name: String, definition: com.wordnik.swagger.models.Model)
-
-  private def getBaseUrl(swagger: Swagger): Option[String] = {
-    swagger.getSchemes.map(_.toString).map(_.toLowerCase).toList match {
-      case Nil => None
-      case one :: Nil => Some(s"$one://${swagger.getHost}${swagger.getBasePath}")
-      case multiple => {
-        // TODO: How to handle multiple schemes
-        Some(s"${multiple.head}://${swagger.getHost}${swagger.getBasePath}")
-      }
-    }
-  }
 
   private def models(swagger: Swagger): Seq[Model] = {
     buildModels(
@@ -414,7 +393,7 @@ case class Parser(config: ServiceConfiguration) {
     // getOperationId (this is like a nick name for the method - e.g. findPets)
     Operation(
       method = method,
-      path = Parser.substitutePathParameters(url),
+      path = Converters.substitutePathParameters(url),
       description = combine(Seq(summary, description, externalDocsToString(Option(op.getExternalDocs)))),
       deprecation = Option(op.isDeprecated).getOrElse(false) match {
         case false => None
