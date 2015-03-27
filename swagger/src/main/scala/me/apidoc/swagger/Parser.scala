@@ -182,7 +182,7 @@ case class Parser(config: ServiceConfiguration) {
     // TODO println("  - type: " + Option(schema.getType()))
     // TODO println("  - discriminator: " + Option(schema.getDiscriminator()))
 
-    val desc = Converters.combine(
+    val desc = Util.combine(
       Seq(
         Option(m.getDescription()),
         translators.ExternalDoc(Option(m.getExternalDocs))
@@ -229,7 +229,7 @@ case class Parser(config: ServiceConfiguration) {
               // TODO getPattern
               val desc = Option(p.getPattern) match {
                 case None => base.description
-                case Some(pattern) => Converters.combine(Seq(base.description, Some(s"Pattern: $pattern")))
+                case Some(pattern) => Util.combine(Seq(base.description, Some(s"Pattern: $pattern")))
               }
 
               base.copy(
@@ -334,8 +334,8 @@ case class Parser(config: ServiceConfiguration) {
     // getOperationId (this is like a nick name for the method - e.g. findPets)
     Operation(
       method = method,
-      path = Converters.substitutePathParameters(url),
-      description = Converters.combine(Seq(summary, description, translators.ExternalDoc(Option(op.getExternalDocs)))),
+      path = Util.substitutePathParameters(url),
+      description = Util.combine(Seq(summary, description, translators.ExternalDoc(Option(op.getExternalDocs)))),
       deprecation = Option(op.isDeprecated).getOrElse(false) match {
         case false => None
         case true => Some(Deprecation())
@@ -412,9 +412,9 @@ case class Parser(config: ServiceConfiguration) {
     models: Seq[Model],
     url: String
   ): Option[Model] = {
-    val normalized = Converters.normalizeUrl(url)
+    val normalized = Util.normalizeUrl(url)
     models.find { m =>
-      val modelUrl = Converters.normalizeUrl(s"/${m.plural}")
+      val modelUrl = Util.normalizeUrl(s"/${m.plural}")
       normalized == modelUrl || normalized.startsWith(modelUrl + "/")
     }
   }

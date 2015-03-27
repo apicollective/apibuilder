@@ -10,6 +10,30 @@ class UtilSpec extends FunSpec with Matchers {
     Util.formatName("  pet  ") should be("pet")
   }
 
+  it("substitutePathParameters") {
+    Util.substitutePathParameters("/pets/:id") should be("/pets/:id")
+    Util.substitutePathParameters("/pets/{id}") should be("/pets/:id")
+    Util.substitutePathParameters("/stores/{id}/pets") should be("/stores/:id/pets")
+    Util.substitutePathParameters("/stores/{guid}/pets") should be("/stores/:guid/pets")
+  }
+
+  it("combine") {
+    Util.combine(Nil) should be(None)
+    Util.combine(Seq(None)) should be(None)
+    Util.combine(Seq(Some(""))) should be(None)
+    Util.combine(Seq(Some("foo"))) should be(Some("foo"))
+    Util.combine(Seq(Some("foo"), Some("bar"))) should be(Some("foo\n\nbar"))
+    Util.combine(Seq(Some("foo"), None, Some("bar"))) should be(Some("foo\n\nbar"))
+    Util.combine(Seq(Some("foo"), None, Some("bar")), connector = ", ") should be(Some("foo, bar"))
+  }
+
+  it("normalizeUrl") {
+    Util.normalizeUrl("/foo") should be("/foo")
+    Util.normalizeUrl("/foo_bar") should be("/foo-bar")
+    Util.normalizeUrl("/FOO_BAR") should be("/foo-bar")
+    Util.normalizeUrl("  /FOO_BAR  ") should be("/foo-bar")
+  }
+
   it("choose") {
     Util.choose(None, None) should be(None)
     Util.choose(Some("a"), None) should be(Some("a"))

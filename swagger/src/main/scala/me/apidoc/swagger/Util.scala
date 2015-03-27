@@ -28,6 +28,32 @@ object Util {
     name.trim
   }
 
+  private val PathParams = """\{(.+)\}""".r
+
+  /**
+    * Replace swagger {...} syntax with leading :
+    */
+  def substitutePathParameters(url: String): String = {
+    PathParams.replaceAllIn(url, m => ":" + m.group(1))
+  }
+
+  /**
+    * Combine all non empty values into one string
+    */
+  def combine(
+    values: Seq[Option[String]],
+    connector: String = "\n\n"
+  ): Option[String] = {
+    values.flatten.filter(!_.isEmpty) match {
+      case Nil => None
+      case nonEmptyValues => Some(nonEmptyValues.mkString(connector))
+    }
+  }
+
+  def normalizeUrl(value: String): String = {
+    value.toLowerCase.trim.replaceAll("_", "-")
+  }
+
   /**
     * Returns a if present; otherwise b
     */
