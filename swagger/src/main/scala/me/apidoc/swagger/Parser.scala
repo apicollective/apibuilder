@@ -185,7 +185,7 @@ case class Parser(config: ServiceConfiguration) {
     val desc = Converters.combine(
       Seq(
         Option(m.getDescription()),
-        externalDocsToString(Option(m.getExternalDocs))
+        translators.ExternalDoc(Option(m.getExternalDocs))
       )
     )
 
@@ -245,17 +245,11 @@ case class Parser(config: ServiceConfiguration) {
     )
   }
 
-  private def externalDocsToString(docs: Option[com.wordnik.swagger.models.ExternalDocs]): Option[String] = {
-    docs.flatMap { doc =>
-      Converters.combine(Seq(Option(doc.getDescription), Option(doc.getUrl)), ": ")
-    }
-  }
-
   private def field(
     resolver: Resolver,
     name: String,
     prop: Property
-): Field = {
+  ): Field = {
     // Ignoring:
     // println(s"    - readOnly: " + Option(prop.getReadOnly()))
     // println(s"    - xml: " + Option(prop.getXml()))
@@ -341,7 +335,7 @@ case class Parser(config: ServiceConfiguration) {
     Operation(
       method = method,
       path = Converters.substitutePathParameters(url),
-      description = Converters.combine(Seq(summary, description, externalDocsToString(Option(op.getExternalDocs)))),
+      description = Converters.combine(Seq(summary, description, translators.ExternalDoc(Option(op.getExternalDocs)))),
       deprecation = Option(op.isDeprecated).getOrElse(false) match {
         case false => None
         case true => Some(Deprecation())
