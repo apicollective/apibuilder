@@ -66,7 +66,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
           service.headers should be(Seq.empty)
           service.imports should be(Seq.empty)
           service.enums should be(Seq.empty)
-          service.models.map(_.name) should be(Seq("pet", "newPet", "errorModel"))
+          service.models.map(_.name).sorted should be(Seq("errorModel", "newPet", "pet"))
 
           checkModel(
             service.models.find(_.name == "pet").get,

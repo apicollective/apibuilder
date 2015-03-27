@@ -19,9 +19,26 @@ private[swagger] case class ModelSelector(
   }
 
   def next(): Option[MyDefinition] = {
-    remaining().headOption.map { md =>
-      completed += md.name
-      md
+    remaining().find { m => !isComposedModel(m) } match {
+      case Some(m) => {
+        Some(select(m))
+      }
+
+      case None => {
+        remaining().headOption.map( m => select(m) )
+      }
+    }
+  }
+
+  private def select(md: MyDefinition): MyDefinition = {
+    completed += md.name
+    md
+  }
+
+  private def isComposedModel(md: MyDefinition): Boolean = {
+    md.definition match {
+      case m: swagger.ComposedModel => true
+      case _ => false
     }
   }
 
