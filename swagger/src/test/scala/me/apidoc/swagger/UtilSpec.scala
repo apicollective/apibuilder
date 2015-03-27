@@ -10,6 +10,13 @@ class UtilSpec extends FunSpec with Matchers {
     Util.formatName("  pet  ") should be("pet")
   }
 
+  it("choose") {
+    Util.choose(None, None) should be(None)
+    Util.choose(Some("a"), None) should be(Some("a"))
+    Util.choose(Some("a"), Some("b")) should be(Some("a"))
+    Util.choose(None, Some("b")) should be(Some("b"))
+  }
+
   it("toOption") {
     Util.toOption(null) should be(None)
     Util.toOption("") should be(None)

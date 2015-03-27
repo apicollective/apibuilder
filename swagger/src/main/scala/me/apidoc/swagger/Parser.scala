@@ -152,16 +152,16 @@ case class Parser(config: ServiceConfiguration) {
 
   private def mergeResourcesIntoOne(r1: Resource, r2: Resource): Resource = {
     r1.copy(
-      description = choose(r1.description, r2.description),
-      deprecation = choose(r1.deprecation, r2.deprecation),
+      description = Util.choose(r1.description, r2.description),
+      deprecation = Util.choose(r1.deprecation, r2.deprecation),
       operations = r1.operations ++ r2.operations
     )
   }
 
   private def composeModels(m1: Model, m2: Model): Model = {
     m1.copy(
-      description = choose(m2.description, m1.description),
-      deprecation = choose(m2.deprecation, m1.deprecation),
+      description = Util.choose(m2.description, m1.description),
+      deprecation = Util.choose(m2.deprecation, m1.deprecation),
       fields = m1.fields.map { f =>
         m2.fields.find(_.name == f.name) match {
           case None => f
@@ -174,21 +174,14 @@ case class Parser(config: ServiceConfiguration) {
   private def composeFields(f1: Field, f2: Field): Field = {
     f1.copy(
       `type` = f2.`type`,
-      description = choose(f2.description, f1.description),
-      deprecation = choose(f2.deprecation, f1.deprecation),
-      default = choose(f2.default, f1.default),
+      description = Util.choose(f2.description, f1.description),
+      deprecation = Util.choose(f2.deprecation, f1.deprecation),
+      default = Util.choose(f2.default, f1.default),
       required = f2.required,
-      minimum = choose(f2.minimum, f1.minimum),
-      maximum = choose(f2.maximum, f1.maximum),
-      example = choose(f2.example, f1.example)
+      minimum = Util.choose(f2.minimum, f1.minimum),
+      maximum = Util.choose(f2.maximum, f1.maximum),
+      example = Util.choose(f2.example, f1.example)
     )
-  }
-
-  private def choose[T](a: Option[T], b: Option[T]): Option[T] = {
-    a match {
-      case None => b
-      case Some(_) => a
-    }
   }
 
   private def toModel(
