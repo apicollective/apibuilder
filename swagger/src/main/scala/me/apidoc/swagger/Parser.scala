@@ -200,7 +200,7 @@ case class Parser(config: ServiceConfiguration) {
       deprecation = None,
       fields = Util.toMap(m.getProperties).map {
         case (key, prop) => {
-          val base = field(resolver, key, prop)
+          val base = translators.Field(resolver, key, prop)
 
           prop match {
             case p: ArrayProperty => {
@@ -242,23 +242,6 @@ case class Parser(config: ServiceConfiguration) {
           }
         }
       }.toSeq
-    )
-  }
-
-  private def field(
-    resolver: Resolver,
-    name: String,
-    prop: Property
-  ): Field = {
-    // Ignoring:
-    // println(s"    - readOnly: " + Option(prop.getReadOnly()))
-    // println(s"    - xml: " + Option(prop.getXml()))
-    Field(
-      name = name,
-      description = Option(prop.getDescription()),
-      `type` = resolver.schemaType(prop),
-      required = prop.getRequired(),
-      example = Option(prop.getExample())
     )
   }
 
