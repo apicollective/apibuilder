@@ -15,7 +15,7 @@ Consider supporting (from swagger):
   - add support for github markdown
      - say we do it and just start rendering
   - parameter locations: header, cookie
-
+  - add headers to response object
 
 Think about:
   - replace base_url with urls which would be an array of [ url, description ]

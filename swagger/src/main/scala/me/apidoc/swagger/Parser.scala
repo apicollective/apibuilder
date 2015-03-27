@@ -18,8 +18,6 @@ import scala.annotation.tailrec
 
 case class Parser(config: ServiceConfiguration) {
 
-  private val DefaultResponseCode = "default"
-
   def parseString(
     contents: String
   ): Service = {
@@ -95,7 +93,7 @@ case class Parser(config: ServiceConfiguration) {
             m.getAllOf.foreach { swaggerModel =>
               val thisModel = swaggerModel match {
                 case rm: RefModel => Resolver(models = models).resolveWithError(rm)
-                case m: ModelImpl => toModel(name, m)
+                case m: ModelImpl => toModel(Resolver(models = models), name, m)
                 case _ => sys.error(s"Unsupported composition model[$swaggerModel]")
               }
 
@@ -116,7 +114,7 @@ case class Parser(config: ServiceConfiguration) {
           }
 
           case rm: RefModel => Resolver(models = models).resolveWithError(rm)
-          case m: ModelImpl => toModel(name, m)
+          case m: ModelImpl => toModel(Resolver(models = models), name, m)
           case _ => sys.error(s"Unsupported definition for name[$name]")
         }
 
@@ -178,6 +176,7 @@ case class Parser(config: ServiceConfiguration) {
   }
 
   private def toModel(
+    resolver: Resolver,
     name: String,
     m: ModelImpl
   ): Model = {
@@ -202,7 +201,7 @@ case class Parser(config: ServiceConfiguration) {
       deprecation = None,
       fields = Util.toMap(m.getProperties).map {
         case (key, prop) => {
-          val base = field(key, prop)
+          val base = field(resolver, key, prop)
 
           prop match {
             case p: ArrayProperty => {
@@ -253,14 +252,18 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
-  private def field(name: String, prop: Property): Field = {
+  private def field(
+    resolver: Resolver,
+    name: String,
+    prop: Property
+): Field = {
     // Ignoring:
     // println(s"    - readOnly: " + Option(prop.getReadOnly()))
     // println(s"    - xml: " + Option(prop.getXml()))
     Field(
       name = name,
       description = Option(prop.getDescription()),
-      `type` = toSchemaType(prop),
+      `type` = resolver.schemaType(prop),
       required = prop.getRequired(),
       example = Option(prop.getExample())
     )
@@ -313,7 +316,7 @@ case class Parser(config: ServiceConfiguration) {
     val parameters = Util.toArray(op.getParameters).flatMap { param =>
       param match {
         case p: com.wordnik.swagger.models.parameters.BodyParameter => None
-        case _ => Some(toParameter(resolver.models, param))
+        case _ => Some(toParameter(resolver, param))
       }
     }
 
@@ -326,7 +329,7 @@ case class Parser(config: ServiceConfiguration) {
 
     val responses = op.getResponses.map {
       case (code, swaggerResponse) => {
-        toResponse(resolver.models, code, swaggerResponse)
+        translators.Response(resolver, code, swaggerResponse)
       }
     }
 
@@ -357,53 +360,27 @@ case class Parser(config: ServiceConfiguration) {
   }
 
   private def toSchemaTypeFromStrings(
+    resolver: Resolver,
     t: String,
     format: Option[String],
-    itemProperty: Option[Property],
-    models: Seq[Model] = Nil
+    itemProperty: Option[Property]
   ): String = {
     t match {
       case "array" => {
-        toSchemaType(
-          prop = itemProperty.getOrElse {
+        resolver.schemaType(
+          itemProperty.getOrElse {
             sys.error("Need item property for array")
-          },
-          models = models
+          }
         )
       }
       case _ => {
-        SchemaType.fromSwaggerWithError(t, format)
-      }
-    }
-  }
-
-  private def toSchemaType(
-    prop: Property,
-    models: Seq[Model] = Nil
-  ): String = {
-    prop match {
-      case p: ArrayProperty => {
-        val schema = toSchemaType(p.getItems, models)
-        val isUnique = Option(p.getUniqueItems) // TODO
-        s"[$schema]"
-      }
-      case p: RefProperty => {
-        val model = models.find(_.name == p.getSimpleRef()).getOrElse {
-          sys.error("Cannot find model for reference: " + p.get$ref())
-        }
-        model.name
-      }
-      case _ => {
-        if (prop.getType == null) {
-          sys.error(s"Property[${prop}] has no type")
-        }
-        SchemaType.fromSwaggerWithError(prop.getType, Option(prop.getFormat))
+        translators.SchemaType.fromSwaggerWithError(t, format)
       }
     }
   }
 
   private def toParameter(
-    models: Seq[Model],
+    resolver: Resolver,
     param: com.wordnik.swagger.models.parameters.Parameter
   ): Parameter = {
     // getAccess
@@ -430,37 +407,12 @@ case class Parser(config: ServiceConfiguration) {
         sys.error("Should never see body parameter here")
       }
       case p: swaggerparams.QueryParameter => {
-        template.copy(`type` = toSchemaTypeFromStrings(p.getType, Option(p.getFormat), Option(p.getItems), models))
+        template.copy(`type` = toSchemaTypeFromStrings(resolver, p.getType, Option(p.getFormat), Option(p.getItems)))
       }
       case _ => {
         template
       }
     }
-  }
-
-  private def toResponse(
-    models: Seq[Model],
-    code: String,
-    response: com.wordnik.swagger.models.Response
-  ): Response = {
-    val intCode = if (code == DefaultResponseCode) {
-      409
-    } else {
-      code.toInt
-    }
-
-    // getExamples
-    // getHeaders
-
-    Response(
-      code = intCode,
-      `type` = Option(response.getSchema) match {
-        case None => "unit"
-        case Some(schema) => toSchemaType(schema, models)
-      },
-      description = Option(response.getDescription),
-      deprecation = None
-    )
   }
 
   private def findModelByUrl(
