@@ -25,4 +25,13 @@ object Util {
     }
   }
 
+  def toArray[T](values: java.util.List[T]): Seq[T] = {
+    if (values == null) {
+      Nil
+    } else {
+      values.asScala
+    }
+  }
+
+
 }

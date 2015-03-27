@@ -33,7 +33,7 @@ case class Parser(config: ServiceConfiguration) {
     Service(
       name = info.getTitle(),
       description = Option(info.getDescription()),
-      baseUrl = Converters.baseUrls(toArray(swagger.getSchemes).map(_.toString), swagger.getHost, Option(swagger.getBasePath)).headOption,
+      baseUrl = Converters.baseUrls(Util.toArray(swagger.getSchemes).map(_.toString), swagger.getHost, Option(swagger.getBasePath)).headOption,
       namespace = config.applicationNamespace(applicationKey),
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
@@ -315,8 +315,8 @@ case class Parser(config: ServiceConfiguration) {
       }
     }
 
-    println("consumes: " + toArray(swagger.getConsumes()).mkString(", "))
-    println("produces: " + toArray(swagger.getProduces).mkString(", "))
+    println("consumes: " + Util.toArray(swagger.getConsumes()).mkString(", "))
+    println("produces: " + Util.toArray(swagger.getProduces).mkString(", "))
 
     sys.error("TODO")
   }
@@ -360,19 +360,19 @@ case class Parser(config: ServiceConfiguration) {
     url: String,
     op: com.wordnik.swagger.models.Operation
   ): Operation = {
-    // println("  - tags: " + toArray(op.getTags()).mkString(", "))
+    // println("  - tags: " + Util.toArray(op.getTags()).mkString(", "))
 
     val summary = Option(op.getSummary())
     val description = Option(op.getDescription())
 
-    val parameters = toArray(op.getParameters).flatMap { param =>
+    val parameters = Util.toArray(op.getParameters).flatMap { param =>
       param match {
         case p: com.wordnik.swagger.models.parameters.BodyParameter => None
         case _ => Some(toParameter(models, param))
       }
     }
 
-    val bodies = toArray(op.getParameters).flatMap { param =>
+    val bodies = Util.toArray(op.getParameters).flatMap { param =>
       param match {
         case p: com.wordnik.swagger.models.parameters.BodyParameter => Some(toBody(models, p))
         case _ => None
@@ -385,9 +385,9 @@ case class Parser(config: ServiceConfiguration) {
       }
     }
 
-    // println("  - schemes: " + toArray(op.getSchemes()).mkString(", "))
-    // println("  - consumes: " + toArray(op.getConsumes()).mkString(", "))
-    // println("  - produces: " + toArray(op.getProduces).mkString(", "))
+    // println("  - schemes: " + Util.toArray(op.getSchemes()).mkString(", "))
+    // println("  - consumes: " + Util.toArray(op.getConsumes()).mkString(", "))
+    // println("  - produces: " + Util.toArray(op.getProduces).mkString(", "))
     // getSecurity
     // getVendorExtensions
     // getOperationId (this is like a nick name for the method - e.g. findPets)
@@ -542,14 +542,6 @@ case class Parser(config: ServiceConfiguration) {
     models.find { m =>
       val modelUrl = Converters.normalizeUrl(s"/${m.plural}")
       normalized == modelUrl || normalized.startsWith(modelUrl + "/")
-    }
-  }
-
-  private def toArray[T](values: java.util.List[T]): Seq[T] = {
-    if (values == null) {
-      Nil
-    } else {
-      values
     }
   }
 
