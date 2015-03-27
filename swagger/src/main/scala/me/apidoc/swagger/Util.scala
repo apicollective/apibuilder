@@ -2,8 +2,24 @@ package me.apidoc.swagger
 
 import lib.Text
 import scala.collection.JavaConverters._
+import java.nio.file.{Files, Paths}
+import java.nio.charset.StandardCharsets
+import java.io.File
+import java.util.UUID
 
 object Util {
+
+  def writeToTempFile(contents: String): File = {
+    val tmpPath = "/tmp/apidoc.swagger.tmp." + UUID.randomUUID.toString + ".json"
+    writeToFile(tmpPath, contents)
+    new File(tmpPath)
+  }
+
+  def writeToFile(path: String, contents: String) {
+    val outputPath = Paths.get(path)
+    val bytes = contents.getBytes(StandardCharsets.UTF_8)
+    Files.write(outputPath, bytes)
+  }
 
   /**
     * Normalize names

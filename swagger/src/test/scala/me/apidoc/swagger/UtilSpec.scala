@@ -43,4 +43,9 @@ class UtilSpec extends FunSpec with Matchers {
     Util.toArray(list) should be(Seq("foo"))
   }
 
+  it("writeToTempFile") {
+    val path = Util.writeToTempFile("testing")
+    scala.io.Source.fromFile(path).getLines.mkString("\n") should be("testing")
+  }
+
 }
