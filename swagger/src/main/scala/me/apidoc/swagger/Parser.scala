@@ -54,28 +54,28 @@ case class Parser(config: ServiceConfiguration) {
 
   private def models(swagger: Swagger): Seq[Model] = {
     buildModels(
-      definitions = swagger.getDefinitions.map { case (name, definition) => MyDefinition(name, definition) }.toSeq,
-      models = Nil
+      resolver = Resolver(models = Nil),
+      definitions = swagger.getDefinitions.map { case (name, definition) => MyDefinition(name, definition) }.toSeq
     )
   }
 
   private def nextDefinition(
-    definitions: Seq[MyDefinition],
-    models: Seq[Model]
+    resolver: Resolver,
+    definitions: Seq[MyDefinition]
   ): Option[MyDefinition] = {
     definitions.headOption // TODO
   }
 
   @tailrec
   private def buildModels(
+    resolver: Resolver,
     definitions: Seq[MyDefinition],
-    models: Seq[Model],
     numIterations: Int = 0
   ): Seq[Model] = {
-    nextDefinition(definitions, models) match {
+    nextDefinition(resolver, definitions) match {
       case None => {
         definitions.toList match {
-          case Nil => models
+          case Nil => resolver.models
           case remaining => sys.error("Failed to resolve definitions: " + definitions.map(_.name).mkString(", "))
         }
       }
@@ -92,8 +92,8 @@ case class Parser(config: ServiceConfiguration) {
 
             m.getAllOf.foreach { swaggerModel =>
               val thisModel = swaggerModel match {
-                case rm: RefModel => Resolver(models = models).resolveWithError(rm)
-                case m: ModelImpl => toModel(Resolver(models = models), name, m)
+                case rm: RefModel => resolver.resolveWithError(rm)
+                case m: ModelImpl => toModel(resolver, name, m)
                 case _ => sys.error(s"Unsupported composition model[$swaggerModel]")
               }
 
@@ -113,14 +113,14 @@ case class Parser(config: ServiceConfiguration) {
             }
           }
 
-          case rm: RefModel => Resolver(models = models).resolveWithError(rm)
-          case m: ModelImpl => toModel(Resolver(models = models), name, m)
+          case rm: RefModel => resolver.resolveWithError(rm)
+          case m: ModelImpl => toModel(resolver, name, m)
           case _ => sys.error(s"Unsupported definition for name[$name]")
         }
 
         buildModels(
+          resolver = Resolver(models = resolver.models ++ Seq(newModel)),
           definitions.filter(_.name != name),
-          models ++ Seq(newModel),
           numIterations = numIterations + 1
         )
       }
