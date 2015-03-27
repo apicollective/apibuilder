@@ -1,5 +1,6 @@
 package me.apidoc.swagger
 
+import translators.Resolver
 import lib.{ServiceConfiguration, Text, UrlKey}
 import java.io.File
 import scala.collection.JavaConversions._
@@ -32,6 +33,7 @@ case class Parser(config: ServiceConfiguration) {
     val info = swagger.getInfo()
     val applicationKey = UrlKey.generate(info.getTitle())
     val specModels = models(swagger)
+    val resolver = Resolver(models = specModels)
 
     Service(
       name = info.getTitle(),
@@ -46,7 +48,7 @@ case class Parser(config: ServiceConfiguration) {
       models = specModels,
       imports = Nil,
       headers = Nil,
-      resources = mergeResources(resources(swagger, specModels))
+      resources = mergeResources(resources(swagger, resolver))
     )
   }
 
@@ -92,7 +94,7 @@ case class Parser(config: ServiceConfiguration) {
 
             m.getAllOf.foreach { swaggerModel =>
               val thisModel = swaggerModel match {
-                case rm: RefModel => resolveRefModel(models, rm)
+                case rm: RefModel => Resolver(models = models).resolveWithError(rm)
                 case m: ModelImpl => toModel(name, m)
                 case _ => sys.error(s"Unsupported composition model[$swaggerModel]")
               }
@@ -113,7 +115,7 @@ case class Parser(config: ServiceConfiguration) {
             }
           }
 
-          case rm: RefModel => resolveRefModel(models, rm)
+          case rm: RefModel => Resolver(models = models).resolveWithError(rm)
           case m: ModelImpl => toModel(name, m)
           case _ => sys.error(s"Unsupported definition for name[$name]")
         }
@@ -124,18 +126,6 @@ case class Parser(config: ServiceConfiguration) {
           numIterations = numIterations + 1
         )
       }
-    }
-  }
-
-
-  private def resolveRefModel(
-    models: Seq[Model],
-    rm: RefModel
-  ): Model = {
-    // Lookup reference. need to make method iterative
-    val name = rm.getSimpleRef()
-    models.find(_.name == name).getOrElse {
-      sys.error(s"Failed to find a model with name[$name]")
     }
   }
 
@@ -278,21 +268,21 @@ case class Parser(config: ServiceConfiguration) {
 
   private def resources(
     swagger: Swagger,
-    models: Seq[Model]
+    resolver: Resolver
   ): Seq[Resource] = {
     swagger.getPaths.map {
       case (url, p) => {
-        val model = findModelByUrl(models, url).getOrElse {
+        val model = findModelByUrl(resolver.models, url).getOrElse {
           sys.error(s"Could not find model at url[$url]")
         }
 
         val operations = Seq(
-          Option(p.getGet).map { toOperation(models, Method.Get, url, _) },
-          Option(p.getPost).map { toOperation(models, Method.Post, url, _) },
-          Option(p.getPut).map { toOperation(models, Method.Put, url, _) },
-          Option(p.getDelete).map { toOperation(models, Method.Delete, url, _) },
-          Option(p.getOptions).map { toOperation(models, Method.Options, url, _) },
-          Option(p.getPatch).map { toOperation(models, Method.Patch, url, _) }
+          Option(p.getGet).map { toOperation(resolver, Method.Get, url, _) },
+          Option(p.getPost).map { toOperation(resolver, Method.Post, url, _) },
+          Option(p.getPut).map { toOperation(resolver, Method.Put, url, _) },
+          Option(p.getDelete).map { toOperation(resolver, Method.Delete, url, _) },
+          Option(p.getOptions).map { toOperation(resolver, Method.Options, url, _) },
+          Option(p.getPatch).map { toOperation(resolver, Method.Patch, url, _) }
         ).flatten
 
         // getVendorExtensions
@@ -310,7 +300,7 @@ case class Parser(config: ServiceConfiguration) {
   }
 
   private def toOperation(
-    models: Seq[Model],
+    resolver: Resolver,
     method: Method,
     url: String,
     op: com.wordnik.swagger.models.Operation
@@ -323,20 +313,20 @@ case class Parser(config: ServiceConfiguration) {
     val parameters = Util.toArray(op.getParameters).flatMap { param =>
       param match {
         case p: com.wordnik.swagger.models.parameters.BodyParameter => None
-        case _ => Some(toParameter(models, param))
+        case _ => Some(toParameter(resolver.models, param))
       }
     }
 
     val bodies = Util.toArray(op.getParameters).flatMap { param =>
       param match {
-        case p: com.wordnik.swagger.models.parameters.BodyParameter => Some(toBody(models, p))
+        case p: com.wordnik.swagger.models.parameters.BodyParameter => Some(translators.Body(resolver, p))
         case _ => None
       }
     }
 
     val responses = op.getResponses.map {
       case (code, swaggerResponse) => {
-        toResponse(models, code, swaggerResponse)
+        toResponse(resolver.models, code, swaggerResponse)
       }
     }
 
@@ -410,22 +400,6 @@ case class Parser(config: ServiceConfiguration) {
         SchemaType.fromSwaggerWithError(prop.getType, Option(prop.getFormat))
       }
     }
-  }
-
-  private def toBody(
-    models: Seq[Model],
-    param: com.wordnik.swagger.models.parameters.BodyParameter
-  ): Body = {
-    val bodyType = param.getSchema match {
-      case m: ModelImpl => m.getType
-      case rm: RefModel => resolveRefModel(models, rm).name
-    }
-
-    Body(
-      `type` = bodyType,
-      description = Option(param.getDescription),
-      deprecation = None
-    )
   }
 
   private def toParameter(
