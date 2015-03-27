@@ -50,33 +50,23 @@ case class Parser(config: ServiceConfiguration) {
     )
   }
 
-  private case class MyDefinition(name: String, definition: com.wordnik.swagger.models.Model)
-
   private def models(swagger: Swagger): Seq[Model] = {
     buildModels(
-      resolver = Resolver(models = Nil),
-      definitions = swagger.getDefinitions.map { case (name, definition) => MyDefinition(name, definition) }.toSeq
+      selector = ModelSelector(swagger.getDefinitions.toMap),
+      resolver = Resolver(models = Nil)
     )
-  }
-
-  private def nextDefinition(
-    resolver: Resolver,
-    definitions: Seq[MyDefinition]
-  ): Option[MyDefinition] = {
-    definitions.headOption // TODO
   }
 
   @tailrec
   private def buildModels(
-    resolver: Resolver,
-    definitions: Seq[MyDefinition],
-    numIterations: Int = 0
+    selector: ModelSelector,
+    resolver: Resolver
   ): Seq[Model] = {
-    nextDefinition(resolver, definitions) match {
+    selector.next() match {
       case None => {
-        definitions.toList match {
+        selector.remaining.toList match {
           case Nil => resolver.models
-          case remaining => sys.error("Failed to resolve definitions: " + definitions.map(_.name).mkString(", "))
+          case remaining => sys.error("Failed to resolve definitions: " + selector.remaining.map(_.name).mkString(", "))
         }
       }
 
@@ -119,9 +109,8 @@ case class Parser(config: ServiceConfiguration) {
         }
 
         buildModels(
-          resolver = Resolver(models = resolver.models ++ Seq(newModel)),
-          definitions.filter(_.name != name),
-          numIterations = numIterations + 1
+          selector = selector,
+          resolver = Resolver(models = resolver.models ++ Seq(newModel))
         )
       }
     }
