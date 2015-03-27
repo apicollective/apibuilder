@@ -9,8 +9,8 @@ import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
 import io.swagger.parser.SwaggerParser
 import com.wordnik.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
 import com.wordnik.swagger.models.{parameters => swaggerparams}
-import com.wordnik.swagger.models.properties.{AbstractNumericProperty, ArrayProperty, Property, RefProperty, StringProperty, UUIDProperty}
 import com.gilt.apidoc.spec.v0.models._
+import com.wordnik.swagger.models.properties.Property
 
 import lib.Text
 import com.gilt.apidoc.spec.v0.models._
@@ -93,7 +93,7 @@ case class Parser(config: ServiceConfiguration) {
             m.getAllOf.foreach { swaggerModel =>
               val thisModel = swaggerModel match {
                 case rm: RefModel => resolver.resolveWithError(rm)
-                case m: ModelImpl => toModel(resolver, name, m)
+                case m: ModelImpl => translators.Model(resolver, name, m)
                 case _ => sys.error(s"Unsupported composition model[$swaggerModel]")
               }
 
@@ -114,7 +114,7 @@ case class Parser(config: ServiceConfiguration) {
           }
 
           case rm: RefModel => resolver.resolveWithError(rm)
-          case m: ModelImpl => toModel(resolver, name, m)
+          case m: ModelImpl => translators.Model(resolver, name, m)
           case _ => sys.error(s"Unsupported definition for name[$name]")
         }
 
@@ -171,77 +171,6 @@ case class Parser(config: ServiceConfiguration) {
       minimum = Util.choose(f2.minimum, f1.minimum),
       maximum = Util.choose(f2.maximum, f1.maximum),
       example = Util.choose(f2.example, f1.example)
-    )
-  }
-
-  private def toModel(
-    resolver: Resolver,
-    name: String,
-    m: ModelImpl
-  ): Model = {
-    // TODO println("  - type: " + Option(schema.getType()))
-    // TODO println("  - discriminator: " + Option(schema.getDiscriminator()))
-
-    val desc = Util.combine(
-      Seq(
-        Option(m.getDescription()),
-        translators.ExternalDoc(Option(m.getExternalDocs))
-      )
-    )
-
-    Option(m.getAdditionalProperties()).map { prop =>
-      // TODO: println("    - additional property: " + prop)
-    }
-
-    Model(
-      name = name,
-      plural = Text.pluralize(name),
-      description = desc,
-      deprecation = None,
-      fields = Util.toMap(m.getProperties).map {
-        case (key, prop) => {
-          val base = translators.Field(resolver, key, prop)
-
-          prop match {
-            case p: ArrayProperty => {
-              // TODO: p.getUniqueItems()
-              base.copy(`type` = "[" + base.`type` + "]")
-            }
-            case p: AbstractNumericProperty => {
-              base.copy(
-                minimum = Option(p.getMinimum()).map(_.toLong) match {
-                  case None => Option(p.getExclusiveMinimum()).map(_.toLong)
-                  case Some(v) => Some(v)
-                },
-                maximum = Option(p.getMaximum()).map(_.toLong) match {
-                  case None => Option(p.getExclusiveMaximum()).map(_.toLong)
-                  case Some(v) => Some(v)
-                }
-              )
-            }
-            case p: UUIDProperty => {
-              base.copy(
-                minimum = Option(p.getMinLength()).map(_.toLong),
-                maximum = Option(p.getMaxLength()).map(_.toLong)
-              )
-            }
-            case p: StringProperty => {
-              // TODO getPattern
-              val desc = Option(p.getPattern) match {
-                case None => base.description
-                case Some(pattern) => Util.combine(Seq(base.description, Some(s"Pattern: $pattern")))
-              }
-
-              base.copy(
-                description = desc,
-                minimum = Option(p.getMinLength()).map(_.toLong),
-                maximum = Option(p.getMaxLength()).map(_.toLong)
-              )
-            }
-            case _ => base
-          }
-        }
-      }.toSeq
     )
   }
 
