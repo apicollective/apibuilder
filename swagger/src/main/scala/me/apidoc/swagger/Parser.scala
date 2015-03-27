@@ -273,47 +273,6 @@ case class Parser(config: ServiceConfiguration) {
     )
   }
 
-  def debug(
-    path: File
-  ): Service = {
-   val swagger = new SwaggerParser().read(path.toString)
-    println(swagger)
-
-    println("swagger version: " + swagger.getSwagger())
-
-    val info = swagger.getInfo()
-    println("info:")
-    println(" - termsOfServiceUrl: " + info.getTermsOfService())
-
-    println(" - contact:")
-    Option(info.getContact()) match {
-      case None => {
-        println("   - none")
-      }
-      case Some(contact) => {
-        println("   - name: " + contact.getName())
-        println("   - url: " + contact.getUrl())
-        println("   - email: " + contact.getEmail())
-      }
-    }
-
-    println(" - license:")
-    Option(info.getLicense()) match {
-      case None => {
-        println("   - none")
-      }
-      case Some(license) => {
-        println("   - name: " + license.getName())
-        println("   - url: " + license.getUrl())
-      }
-    }
-
-    println("consumes: " + Util.toArray(swagger.getConsumes()).mkString(", "))
-    println("produces: " + Util.toArray(swagger.getProduces).mkString(", "))
-
-    sys.error("TODO")
-  }
-
   private def resources(
     swagger: Swagger,
     models: Seq[Model]
