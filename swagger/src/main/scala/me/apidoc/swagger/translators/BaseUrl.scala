@@ -1,8 +1,8 @@
-package me.apidoc.swagger
+package me.apidoc.swagger.translators
 
-object Converters {
+object BaseUrl {
 
-  def baseUrls(
+  def apply(
     schemes: Seq[String],
     host: String,
     path: Option[String]
