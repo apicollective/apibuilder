@@ -127,7 +127,6 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
-  // @tailrec
   private def mergeResources(resources: Seq[Resource]): Seq[Resource] = {
     resources.groupBy(_.`type`).flatMap {
       case (resourceType, resources) => {
