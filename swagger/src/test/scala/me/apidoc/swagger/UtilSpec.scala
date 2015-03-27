@@ -5,6 +5,19 @@ import org.scalatest.{FunSpec, Matchers}
 
 class UtilSpec extends FunSpec with Matchers {
 
+  it("formatName") {
+    Util.formatName("pet") should be("pet")
+    Util.formatName("  pet  ") should be("pet")
+  }
+
+  it("toOption") {
+    Util.toOption(null) should be(None)
+    Util.toOption("") should be(None)
+    Util.toOption("    ") should be(None)
+    Util.toOption("foo") should be(Some("foo"))
+    Util.toOption("  foo  ") should be(Some("foo"))
+  }
+
   it("toMap") {
     Util.toMap(null) should be(Map())
     Util.toMap(java.util.Collections.emptyMap()) should be(Map.empty)
