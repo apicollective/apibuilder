@@ -1,6 +1,7 @@
 package me.apidoc.swagger
 
 import lib.Text
+import scala.collection.JavaConverters._
 
 object Util {
 
@@ -16,11 +17,11 @@ object Util {
     }
   }
 
-  def toMap[T](values: java.util.Map[String, T]): java.util.Map[String, T] = {
+  def toMap[T](values: java.util.Map[String, T]): Map[String, T] = {
     if (values == null) {
-      java.util.Collections.emptyMap[String, T]()
+      Map()
     } else {
-      values
+      values.asScala.toMap
     }
   }
 
