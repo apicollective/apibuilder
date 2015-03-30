@@ -85,6 +85,3 @@ private[swagger] case class ModelSelector(
   }
 
 }
-
-
-
