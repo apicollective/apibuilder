@@ -169,42 +169,12 @@ case class Parser(config: ServiceConfiguration) {
   ): Seq[Resource] = {
     swagger.getPaths.map {
       case (url, p) => {
-        val model = findModelByUrl(resolver.models, url).getOrElse {
-          sys.error(s"Could not find model at url[$url]")
+        resolver.findModelByUrl(url) match {
+          case Some(model) => translators.Resource(resolver, model, url, p)
+          case None => sys.error(s"Could not find model at url[$url]")
         }
-
-        val operations = Seq(
-          Option(p.getGet).map { translators.Operation(resolver, Method.Get, url, _) },
-          Option(p.getPost).map { translators.Operation(resolver, Method.Post, url, _) },
-          Option(p.getPut).map { translators.Operation(resolver, Method.Put, url, _) },
-          Option(p.getDelete).map { translators.Operation(resolver, Method.Delete, url, _) },
-          Option(p.getOptions).map { translators.Operation(resolver, Method.Options, url, _) },
-          Option(p.getPatch).map { translators.Operation(resolver, Method.Patch, url, _) }
-        ).flatten
-
-        // getVendorExtensions
-        // getParameters
-
-        Resource(
-          `type` = model.name,
-          plural = model.plural,
-          description = None,
-          deprecation = None,
-          operations = operations
-        )
       }
     }.toSeq
-  }
-
-  private def findModelByUrl(
-    models: Seq[Model],
-    url: String
-  ): Option[Model] = {
-    val normalized = Util.normalizeUrl(url)
-    models.find { m =>
-      val modelUrl = Util.normalizeUrl(s"/${m.plural}")
-      normalized == modelUrl || normalized.startsWith(modelUrl + "/")
-    }
   }
 
 }

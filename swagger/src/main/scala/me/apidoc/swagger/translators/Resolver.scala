@@ -1,5 +1,6 @@
 package me.apidoc.swagger.translators
 
+import me.apidoc.swagger.Util
 import com.gilt.apidoc.spec.v0.{ models => apidoc }
 import com.wordnik.swagger.models.RefModel
 import com.wordnik.swagger.models.properties.{ArrayProperty, Property, RefProperty}
@@ -21,6 +22,16 @@ case class Resolver(
   ): apidoc.Model = {
     resolve(rm).getOrElse {
       sys.error(s"Failed to find a model with name[${rm.getSimpleRef}]")
+    }
+  }
+
+  def findModelByUrl(
+    url: String
+  ): Option[apidoc.Model] = {
+    val normalized = Util.normalizeUrl(url)
+    models.find { m =>
+      val modelUrl = Util.normalizeUrl(s"/${m.plural}")
+      normalized == modelUrl || normalized.startsWith(modelUrl + "/")
     }
   }
 
