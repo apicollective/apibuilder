@@ -1,5 +1,6 @@
 package me.apidoc.swagger.translators
 
+import me.apidoc.swagger.Util
 import com.gilt.apidoc.spec.v0.{ models => apidoc }
 import com.wordnik.swagger.{ models => swagger }
 
@@ -27,6 +28,27 @@ object Resource {
         Option(path.getOptions).map { Operation(resolver, apidoc.Method.Options, url, _) },
         Option(path.getPatch).map { Operation(resolver, apidoc.Method.Patch, url, _) }
       ).flatten
+    )
+  }
+
+  def mergeAll(resources: Seq[apidoc.Resource]): Seq[apidoc.Resource] = {
+    resources.groupBy(_.`type`).flatMap {
+      case (resourceType, resources) => {
+        resources.toList match {
+          case Nil => Nil
+          case resource :: Nil => Seq(resource)
+          case r1 :: r2 :: Nil => Seq(merge(r1, r2))
+          case r1 :: r2 :: rest => mergeAll(Seq(merge(r1, r2)) ++ rest)
+        }
+      }
+    }.toSeq
+  }
+
+  def merge(r1: apidoc.Resource, r2: apidoc.Resource): apidoc.Resource = {
+    r1.copy(
+      description = Util.choose(r1.description, r2.description),
+      deprecation = Util.choose(r1.deprecation, r2.deprecation),
+      operations = r1.operations ++ r2.operations
     )
   }
 
