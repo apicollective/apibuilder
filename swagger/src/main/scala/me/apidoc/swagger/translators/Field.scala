@@ -4,7 +4,8 @@ import lib.Primitives
 import me.apidoc.swagger.Util
 import com.gilt.apidoc.spec.v0.{ models => apidoc }
 import com.wordnik.swagger.{ models => swagger }
-import com.wordnik.swagger.models.properties.{AbstractNumericProperty, ArrayProperty, Property, RefProperty, StringProperty, UUIDProperty}
+import com.wordnik.swagger.models.properties._
+import scala.collection.JavaConversions._
 
 object Field {
 
@@ -14,12 +15,12 @@ object Field {
     prop: Property
   ): apidoc.Field = {
     // Ignoring:
-    // println(s"    - readOnly: " + Option(prop.getReadOnly()))
-    // println(s"    - xml: " + Option(prop.getXml()))
+    // Option(prop.getXml)
+    // Option(prop.getReadOnly)
     val base = apidoc.Field(
       name = name,
-      description = Option(prop.getDescription()),
       `type` = resolver.schemaType(prop),
+      description = Option(prop.getDescription),
       required = prop.getRequired(),
       example = Option(prop.getExample())
     )
@@ -45,6 +46,7 @@ object Field {
     prop: Property
   ): apidoc.Field = {
     prop match {
+
       case p: ArrayProperty => {
         base.copy(
           `type` = "[" + base.`type` + "]",
@@ -54,7 +56,27 @@ object Field {
           }
         )
       }
+
+      case p: BooleanProperty => {
+        base.copy(
+          `type` = Primitives.Boolean.toString
+        )
+      }
+
+      case p: DateProperty => {
+        base.copy(
+          `type` = Primitives.DateIso8601.toString
+        )
+      }
+
+      case p: DateTimeProperty => {
+        base.copy(
+          `type` = Primitives.DateTimeIso8601.toString
+        )
+      }
+
       case p: AbstractNumericProperty => {
+        // Also covers DecimalProperty, DoubleProperty, FloatProperty, IntegerProperty, LongProperty
         base.copy(
           minimum = Option(p.getMinimum()).map(_.toLong) match {
             case None => Option(p.getExclusiveMinimum()).map(_.toLong)
@@ -67,25 +89,54 @@ object Field {
         )
       }
 
-      case p: UUIDProperty => {
+      case p: FileProperty => {
+        // TODO: we need a datatype for File
+        base
+      }
+
+      case p: MapProperty => {
+        // TODO: p.getAdditionalProperties
         base.copy(
-          minimum = Option(p.getMinLength()).map(_.toLong),
-          maximum = Option(p.getMaxLength()).map(_.toLong)
+          `type` = "map[" + base.`type` + "]"
         )
       }
 
+      case p: RefProperty => {
+        sys.error("TODO: Handle Ref Property")
+      }
+
       case p: StringProperty => {
-        base.copy(
-          minimum = Option(p.getMinLength()).map(_.toLong),
-          maximum = Option(p.getMaxLength()).map(_.toLong),
-          description = Option(p.getPattern) match {
-            case None => base.description
-            case Some(pattern) => Util.combine(Seq(base.description, Some(s"Pattern: $pattern")))
-          }
+        stringProperty(base, Option(p.getMinLength), Option(p.getMaxLength), Option(p.getPattern)).copy(
+          `type` = Primitives.String.toString
         )
       }
-      case _ => base
+
+      case p: UUIDProperty => {
+        stringProperty(base, Option(p.getMinLength), Option(p.getMaxLength), Option(p.getPattern)).copy(
+          `type` = Primitives.Uuid.toString
+        )
+      }
+
+      case _ => {
+        base
+      }
     }
+  }
+
+  private def stringProperty(
+    base: apidoc.Field,
+    minimum: Option[Integer],
+    maximum: Option[Integer],
+    pattern: Option[String]
+  ): apidoc.Field = {
+    base.copy(
+      minimum = minimum.map(_.toLong),
+      maximum = maximum.map(_.toLong),
+      description = pattern match {
+        case None => base.description
+        case Some(pattern) => Util.combine(Seq(base.description, Some(s"Pattern: $pattern")))
+      }
+    )
   }
 
 }
