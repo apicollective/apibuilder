@@ -1,15 +1,20 @@
 package me.apidoc.swagger
 
 import com.wordnik.swagger.{models => swagger}
+import com.wordnik.swagger.models.properties.{ArrayProperty, Property, RefProperty}
 
 private[swagger] case class MyDefinition(name: String, definition: swagger.Model) {
-
 
   /**
     * the list of types that this definition depends on
     */
-  lazy val dependencies: Seq[String] = modelDependencies(definition)
+  val dependencies: Seq[String] = modelDependencies(definition)
 
+  /**
+    * Returns a list of all the non primitive types that this model
+    * depends on. Resolves references and inspects the properties of
+    * all fields defined on this model.
+    */
   private def modelDependencies(swaggerModel: swagger.Model): Seq[String] = {
     swaggerModel match {
       case m: swagger.ComposedModel => {
@@ -21,12 +26,32 @@ private[swagger] case class MyDefinition(name: String, definition: swagger.Model
       }
 
       case m: swagger.ModelImpl => {
-        // TODO: m.fields
-        Nil
+        Util.toMap(m.getProperties).values.flatMap { schemaType(_) }.toSeq
       }
 
       case _ => {
         Nil
+      }
+    }
+  }
+
+  /**
+    * If the type of this property is a primitive, returns
+    * None. Otherwise returns the name of the type.
+    */
+  private def schemaType(prop: Property): Option[String] = {
+    prop match {
+      case p: ArrayProperty => {
+        schemaType(p.getItems)
+      }
+      case p: RefProperty => {
+        Some(p.getSimpleRef)
+      }
+      case _ => {
+        SchemaType.fromSwagger(prop.getType, Option(prop.getFormat)) match {
+          case None => Some(prop.getType)
+          case Some(_) => None // Primitive type - no need to resolve
+        }
       }
     }
   }
