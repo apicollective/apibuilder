@@ -2,17 +2,12 @@ package me.apidoc.swagger
 
 import translators.Resolver
 import lib.{ServiceConfiguration, Text, UrlKey}
-import java.io.File
-import scala.collection.JavaConversions._
-import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
 
 import io.swagger.parser.SwaggerParser
 import com.wordnik.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
-import com.wordnik.swagger.models.{parameters => swaggerparams}
-import com.gilt.apidoc.spec.v0.models._
-import com.wordnik.swagger.models.properties.Property
+import java.io.File
 
-import lib.Text
+import scala.collection.JavaConversions._
 import com.gilt.apidoc.spec.v0.models._
 import scala.annotation.tailrec
 
@@ -82,7 +77,7 @@ case class Parser(config: ServiceConfiguration) {
 
             m.getAllOf.foreach { swaggerModel =>
               val thisModel = swaggerModel match {
-                case rm: RefModel => resolver.resolveWithError(rm)
+                case m: RefModel => resolver.resolveWithError(m)
                 case m: ModelImpl => translators.Model(resolver, name, m)
                 case _ => sys.error(s"Unsupported composition model[$name] - $swaggerModel")
               }
