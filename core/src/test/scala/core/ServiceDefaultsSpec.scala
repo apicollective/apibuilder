@@ -33,8 +33,8 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       "models": {
         "user": {
           "fields": [
-            { "name": "is_active", "type": "boolean", "default": "true", "required": "true" },
-            { "name": "is_athlete", "type": "boolean", "default": "false", "required": "false" }
+            { "name": "is_active", "type": "boolean", "default": "true", "required": true },
+            { "name": "is_athlete", "type": "boolean", "default": "false", "required": "true" }
           ]
         }
       }
@@ -49,7 +49,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
 
     val isAthleteField = validator.service.models.head.fields.find { _.name == "is_athlete" }.get
     isAthleteField.default should be(Some("false"))
-    isAthleteField.required should be(false)
+    isAthleteField.required should be(true)
   }
 
   it("rejects invalid boolean defaults") {
@@ -102,6 +102,24 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString should be("Resource[user] cannot appear multiple times")
+  }
+
+  it("fields with defaults must be marked required") {
+    val json = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "created_at", "type": "date-iso8601", "default": "2014-01-01", "required": false }
+          ]
+        }
+      }
+    }
+    """
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString("") should be("user.created_at has a default specified. It must be marked required")
   }
 
 }

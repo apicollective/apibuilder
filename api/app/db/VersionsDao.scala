@@ -216,7 +216,7 @@ object VersionsDao {
         )
 
         try {
-          val validator = OriginalValidator(config, original)
+          val validator = OriginalValidator(config, original, internalMigration = true)
           validator.validate match {
             case Left(errors) => {
             Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))

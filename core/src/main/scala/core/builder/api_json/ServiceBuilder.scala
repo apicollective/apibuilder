@@ -345,7 +345,10 @@ object FieldBuilder {
       `type` = internal.datatype.get.label,
       description = internal.description,
       deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-      required = internal.required,
+      required = internal.default match {
+        case None => internal.required
+        case Some(_) => true
+      },
       default = internal.default,
       minimum = internal.minimum,
       maximum = internal.maximum,

@@ -11,7 +11,8 @@ import scala.util.{Failure, Success, Try}
 case class ApiJsonServiceValidator(
   config: ServiceConfiguration,
   apiJson: String,
-  fetcher: ServiceFetcher = new ClientFetcher()
+  fetcher: ServiceFetcher = new ClientFetcher(),
+  internalMigration: Boolean
 ) extends ServiceValidator[Service] {
 
   private lazy val service: Service = ServiceBuilder(config, internalService.get)
@@ -156,7 +157,23 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    missingTypes ++ missingNames ++ warnings
+    val changeInRequiredFields = internalMigration match {
+      case true => Nil
+      case false => {
+        internalService.get.models.flatMap { model =>
+          model.fields.filter(!_.name.isEmpty).flatMap { field =>
+            field.default.flatMap { default =>
+              field.required match {
+                case false => Some(s"${model.name}.${field.name.get} has a default specified. It must be marked required")
+                case true => None
+              }
+            }
+          }
+        }
+      }
+    }
+
+    missingTypes ++ missingNames ++ warnings ++ changeInRequiredFields
   }
 
 
