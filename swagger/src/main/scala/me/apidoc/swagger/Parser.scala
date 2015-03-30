@@ -52,7 +52,7 @@ case class Parser(config: ServiceConfiguration) {
 
   private def models(swagger: Swagger): Seq[Model] = {
     buildModels(
-      selector = ModelSelector(swagger.getDefinitions.toMap),
+      selector = ModelSelector(Util.toMap(swagger.getDefinitions)),
       resolver = Resolver(models = Nil)
     )
   }
