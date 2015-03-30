@@ -2,7 +2,36 @@ package me.apidoc.swagger
 
 import com.wordnik.swagger.{models => swagger}
 
-private[swagger] case class MyDefinition(name: String, definition: swagger.Model)
+private[swagger] case class MyDefinition(name: String, definition: swagger.Model) {
+
+
+  /**
+    * the list of types that this definition depends on
+    */
+  lazy val dependencies: Seq[String] = modelDependencies(definition)
+
+  private def modelDependencies(swaggerModel: swagger.Model): Seq[String] = {
+    swaggerModel match {
+      case m: swagger.ComposedModel => {
+        Util.toArray(m.getAllOf).flatMap { modelDependencies(_) }
+      }
+
+      case m: swagger.RefModel => {
+        Seq(m.getSimpleRef)
+      }
+
+      case m: swagger.ModelImpl => {
+        // TODO: m.fields
+        Nil
+      }
+
+      case _ => {
+        Nil
+      }
+    }
+  }
+
+}
 
 private[swagger] case class ModelSelector(
   swaggerDefinitions: Map[String, swagger.Model]
@@ -19,26 +48,14 @@ private[swagger] case class ModelSelector(
   }
 
   def next(): Option[MyDefinition] = {
-    remaining().find { m => !isComposedModel(m) } match {
-      case Some(m) => {
-        Some(select(m))
+    remaining().find { m =>
+      m.dependencies.find( depName => !completed.contains(depName) ) match {
+        case None => true
+        case Some(_) => false
       }
-
-      case None => {
-        remaining().headOption.map( m => select(m) )
-      }
-    }
-  }
-
-  private def select(md: MyDefinition): MyDefinition = {
-    completed += md.name
-    md
-  }
-
-  private def isComposedModel(md: MyDefinition): Boolean = {
-    md.definition match {
-      case m: swagger.ComposedModel => true
-      case _ => false
+    }.map { md =>
+      completed += md.name
+      md
     }
   }
 
