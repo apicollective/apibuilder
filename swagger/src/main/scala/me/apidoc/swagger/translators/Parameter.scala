@@ -1,5 +1,6 @@
 package me.apidoc.swagger.translators
 
+import lib.Primitives
 import me.apidoc.swagger.Util
 import com.gilt.apidoc.spec.v0.{models => apidoc}
 import com.wordnik.swagger.{models => swagger}
@@ -21,7 +22,7 @@ object Parameter {
 
     val template = apidoc.Parameter(
       name = param.getName(),
-      `type` = "string",
+      `type` = Primitives.String.toString,
       location = location,
       description = Option(param.getDescription()),
       required = param.getRequired(),
