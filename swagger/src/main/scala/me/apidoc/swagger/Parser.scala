@@ -77,14 +77,14 @@ case class Parser(config: ServiceConfiguration) {
             var composedModel: Option[Model] = None
 
             m.getInterfaces.foreach { i =>
-              sys.error("TODO: Handle interfaces: " + i)
+              sys.error(s"TODO: Handle interfaces for definition[$name]: $i")
             }
 
             m.getAllOf.foreach { swaggerModel =>
               val thisModel = swaggerModel match {
                 case rm: RefModel => resolver.resolveWithError(rm)
                 case m: ModelImpl => translators.Model(resolver, name, m)
-                case _ => sys.error(s"Unsupported composition model[$swaggerModel]")
+                case _ => sys.error(s"Unsupported composition model[$name] - $swaggerModel")
               }
 
               composedModel = composedModel match {
