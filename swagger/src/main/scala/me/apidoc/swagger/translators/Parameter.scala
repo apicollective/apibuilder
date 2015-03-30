@@ -36,7 +36,7 @@ object Parameter {
         sys.error("Should never see body parameter here")
       }
       case p: swaggerparams.RefParameter => {
-        sys.error("TODO")
+        sys.error("TODO: We do not support Ref Parameters")
       }
       case p: swaggerparams.CookieParameter => {
         toSchemaType(resolver, p, Option(p.getItems))
