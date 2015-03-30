@@ -34,4 +34,17 @@ object Model {
     )
   }
 
+  def compose(m1: apidoc.Model, m2: apidoc.Model): apidoc.Model = {
+    m1.copy(
+      description = Util.choose(m2.description, m1.description),
+      deprecation = Util.choose(m2.deprecation, m1.deprecation),
+      fields = m1.fields.map { f =>
+        m2.fields.find(_.name == f.name) match {
+          case None => f
+          case Some(other) => Field.compose(f, other)
+        }
+      } ++ m2.fields.filter( f => m1.fields.find(_.name == f.name).isEmpty )
+    )
+  }
+
 }

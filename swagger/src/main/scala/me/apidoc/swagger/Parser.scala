@@ -94,7 +94,7 @@ case class Parser(config: ServiceConfiguration) {
                     plural = Text.pluralize(name)
                   )
                 )
-                case Some(cm) => Some(composeModels(cm, thisModel))
+                case Some(cm) => Some(translators.Model.compose(cm, thisModel))
               }
             }
 
@@ -114,32 +114,6 @@ case class Parser(config: ServiceConfiguration) {
         )
       }
     }
-  }
-
-  private def composeModels(m1: Model, m2: Model): Model = {
-    m1.copy(
-      description = Util.choose(m2.description, m1.description),
-      deprecation = Util.choose(m2.deprecation, m1.deprecation),
-      fields = m1.fields.map { f =>
-        m2.fields.find(_.name == f.name) match {
-          case None => f
-          case Some(other) => composeFields(f, other)
-        }
-      } ++ m2.fields.filter( f => m1.fields.find(_.name == f.name).isEmpty )
-    )
-  }
-
-  private def composeFields(f1: Field, f2: Field): Field = {
-    f1.copy(
-      `type` = f2.`type`,
-      description = Util.choose(f2.description, f1.description),
-      deprecation = Util.choose(f2.deprecation, f1.deprecation),
-      default = Util.choose(f2.default, f1.default),
-      required = f2.required,
-      minimum = Util.choose(f2.minimum, f1.minimum),
-      maximum = Util.choose(f2.maximum, f1.maximum),
-      example = Util.choose(f2.example, f1.example)
-    )
   }
 
   private def resources(

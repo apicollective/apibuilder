@@ -26,6 +26,20 @@ object Field {
     specialize(base, prop)
   }
 
+  def compose(f1: apidoc.Field, f2: apidoc.Field): apidoc.Field = {
+    f1.copy(
+      `type` = f2.`type`,
+      description = Util.choose(f2.description, f1.description),
+      deprecation = Util.choose(f2.deprecation, f1.deprecation),
+      default = Util.choose(f2.default, f1.default),
+      required = f2.required,
+      minimum = Util.choose(f2.minimum, f1.minimum),
+      maximum = Util.choose(f2.maximum, f1.maximum),
+      example = Util.choose(f2.example, f1.example)
+    )
+  }
+
+
   private def specialize(
     base: apidoc.Field,
     prop: Property
