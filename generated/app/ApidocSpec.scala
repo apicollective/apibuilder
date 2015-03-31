@@ -68,9 +68,9 @@ package com.gilt.apidoc.spec.v0.models {
     organization: com.gilt.apidoc.spec.v0.models.Organization,
     application: com.gilt.apidoc.spec.v0.models.Application,
     version: String,
-    enums: Seq[String],
-    unions: Seq[String],
-    models: Seq[String]
+    enums: Seq[String] = Nil,
+    unions: Seq[String] = Nil,
+    models: Seq[String] = Nil
   )
 
   case class Model(
@@ -131,12 +131,12 @@ package com.gilt.apidoc.spec.v0.models {
     version: String,
     baseUrl: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
-    headers: Seq[com.gilt.apidoc.spec.v0.models.Header],
-    imports: Seq[com.gilt.apidoc.spec.v0.models.Import],
-    enums: Seq[com.gilt.apidoc.spec.v0.models.Enum],
-    unions: Seq[com.gilt.apidoc.spec.v0.models.Union],
-    models: Seq[com.gilt.apidoc.spec.v0.models.Model],
-    resources: Seq[com.gilt.apidoc.spec.v0.models.Resource]
+    headers: Seq[com.gilt.apidoc.spec.v0.models.Header] = Nil,
+    imports: Seq[com.gilt.apidoc.spec.v0.models.Import] = Nil,
+    enums: Seq[com.gilt.apidoc.spec.v0.models.Enum] = Nil,
+    unions: Seq[com.gilt.apidoc.spec.v0.models.Union] = Nil,
+    models: Seq[com.gilt.apidoc.spec.v0.models.Model] = Nil,
+    resources: Seq[com.gilt.apidoc.spec.v0.models.Resource] = Nil
   )
 
   case class Union(

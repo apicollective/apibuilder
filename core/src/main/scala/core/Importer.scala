@@ -20,7 +20,10 @@ case class Importer(fetcher: ServiceFetcher, uri: String) {
       fetcher.fetch(uri)
     ) match {
       case Success(service) => Right(service)
-      case Failure(ex) => Left(s"Error fetching uri[$uri]: ${ex}")
+      case Failure(ex) => {
+        ex.printStackTrace(System.err)
+        Left(s"Error fetching uri[$uri]: ${ex}")
+      }
     }
   }
 
