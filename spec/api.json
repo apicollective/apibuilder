@@ -58,7 +58,7 @@
 	    "description": "Used only to validate json files - used as a resource where http status code defines success",
 	    "fields": [
                 { "name": "valid", "type": "boolean", "description": "If true, the json schema is valid. If false, there is at least one validation error." },
-		{ "name": "errors", "type": "[string]", "required": false, "description": "Contains any validation errors that result from parsing the json document. If empty, the document is valid." }
+		{ "name": "errors", "type": "[string]", "default": "[]", "description": "Contains any validation errors that result from parsing the json document. If empty, the document is valid." }
 	    ]
 	},
 
@@ -122,7 +122,7 @@
                 { "name": "name", "type": "string", "description": "The name of this organization." },
                 { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.gilt" },
                 { "name": "visibility", "type": "visibility" },
-                { "name": "domains", "type": "[domain]", "required": false }
+                { "name": "domains", "type": "[domain]", "default": "[]" }
             ]
         },
 
