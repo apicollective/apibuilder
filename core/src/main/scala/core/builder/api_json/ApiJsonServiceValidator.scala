@@ -15,7 +15,7 @@ case class ApiJsonServiceValidator(
   internalMigration: Boolean
 ) extends ServiceValidator[Service] {
 
-  private lazy val service: Service = ServiceBuilder(config, internalService.get)
+  private lazy val service: Service = ServiceBuilder(internalMigration = internalMigration).apply(config, internalService.get)
 
   def validate(): Either[Seq[String], Service] = {
     errors match {
@@ -157,23 +157,7 @@ case class ApiJsonServiceValidator(
       }
     }
 
-    val changeInRequiredFields = internalMigration match {
-      case true => Nil
-      case false => {
-        internalService.get.models.flatMap { model =>
-          model.fields.filter(!_.name.isEmpty).flatMap { field =>
-            field.default.flatMap { default =>
-              field.required match {
-                case false => Some(s"${model.name}.${field.name.get} has a default specified. It must be marked required")
-                case true => None
-              }
-            }
-          }
-        }
-      }
-    }
-
-    missingTypes ++ missingNames ++ warnings ++ changeInRequiredFields
+    missingTypes ++ missingNames ++ warnings
   }
 
 
