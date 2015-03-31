@@ -675,7 +675,7 @@ package com.gilt.apidoc.spec.v0 {
   object Constants {
 
     val UserAgent = "apidoc:0.8.27 http://localhost:9000/gilt/apidoc-spec/0.8.18/play_2_3_client"
-    val Version = "0.8.18"
+    val Version = "0.8.28"
     val VersionMajor = 0
 
   }
