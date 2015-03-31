@@ -33,7 +33,7 @@ object Util {
     name: Option[String] = None,
     key: Option[String] = None,
     namespace: Option[String] = None,
-    visibility: Option[Visibility] = None
+    visibility: Visibility = Visibility.Organization
   ): Organization = {
     val form = createOrganizationForm(
       name = name.getOrElse(UUID.randomUUID.toString),
@@ -48,8 +48,8 @@ object Util {
     name: String = UUID.randomUUID.toString,
     key: Option[String] = None,
     namespace: String = "test." + UUID.randomUUID.toString,
-    visibility: Option[Visibility] = None,
-    domains: Seq[String] = Nil
+    visibility: Visibility = Visibility.Organization,
+    domains: Option[Seq[String]] = None
   ) = OrganizationForm(
     name = name,
     key = key,

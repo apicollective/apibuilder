@@ -28,7 +28,7 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
     lazy val form = OrganizationForm(
       name = org.name,
       key = Some(org.key),
-      visibility = Some(org.visibility),
+      visibility = org.visibility,
       namespace = org.namespace
     )
 
@@ -48,10 +48,10 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
     }
   
     it("visibility") {
-      val updated = OrganizationsDao.update(Util.createdBy, org, form.copy(visibility = Some(Visibility.Public)))
+      val updated = OrganizationsDao.update(Util.createdBy, org, form.copy(visibility = Visibility.Public))
       updated.visibility should be(Visibility.Public)
 
-      val updated2 = OrganizationsDao.update(Util.createdBy, org, form.copy(visibility = Some(Visibility.Organization)))
+      val updated2 = OrganizationsDao.update(Util.createdBy, org, form.copy(visibility = Visibility.Organization))
       updated2.visibility should be(Visibility.Organization)
     }
 
@@ -74,7 +74,7 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
       Util.createdBy,
       OrganizationForm(
         name = "Test Org " + UUID.randomUUID.toString,
-        domains = domains,
+        domains = Some(domains),
         namespace = "test." +UUID.randomUUID.toString
       )
     )
@@ -171,15 +171,15 @@ class OrganizationsDaoSpec extends FunSpec with Matchers {
 
     it("validates domains") {
       val name = UUID.randomUUID.toString
-      OrganizationsDao.validate(Util.createOrganizationForm(name = name, domains = Seq.empty)) should be(Seq.empty)
-      OrganizationsDao.validate(Util.createOrganizationForm(name = name, domains = Seq("bad name"))).head.message should be("Domain bad name is not valid. Expected a domain name like apidoc.me")
+      OrganizationsDao.validate(Util.createOrganizationForm(name = name, domains = None)) should be(Seq.empty)
+      OrganizationsDao.validate(Util.createOrganizationForm(name = name, domains = Some(Seq("bad name")))).head.message should be("Domain bad name is not valid. Expected a domain name like apidoc.me")
     }
   }
 
   describe("Authorization") {
 
     val publicUser = Util.createRandomUser()
-    val publicOrg = Util.createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString), visibility = Some(Visibility.Public))
+    val publicOrg = Util.createOrganization(publicUser, Some("A Public " + UUID.randomUUID().toString), visibility = Visibility.Public)
 
     val privateUser = Util.createRandomUser()
     val privateOrg = Util.createOrganization(privateUser, Some("A Private " + UUID.randomUUID().toString))

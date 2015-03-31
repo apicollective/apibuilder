@@ -68,8 +68,8 @@ class OrganizationsSpec extends BaseSpec {
   }
 
   "GET /organizations for an anonymous user shows only public orgs" in new WithServer {
-    val privateOrg = createOrganization(createOrganizationForm().copy(visibility = Some(Visibility.Organization)))
-    val publicOrg = createOrganization(createOrganizationForm().copy(visibility = Some(Visibility.Public)))
+    val privateOrg = createOrganization(createOrganizationForm().copy(visibility = Visibility.Organization))
+    val publicOrg = createOrganization(createOrganizationForm().copy(visibility = Visibility.Public))
     val anonymous = createUser()
 
     val client = newClient(anonymous)
