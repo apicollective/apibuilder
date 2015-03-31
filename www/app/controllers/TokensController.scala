@@ -22,8 +22,8 @@ object TokensController extends Controller {
     for {
       tokens <- request.api.tokens.getUsersByUserGuid(
         request.user.guid,
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
       )
     } yield {
       Ok(views.html.tokens.index(request.mainTemplate(Some("Tokens")), PaginatedCollection(page, tokens)))

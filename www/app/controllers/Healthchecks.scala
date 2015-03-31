@@ -10,7 +10,7 @@ object Healthchecks extends Controller {
 
   def index() = Action.async { implicit request =>
     for {
-      orgs <- Authenticated.api().Organizations.get(key = Some("gilt"), limit = Some(1))
+      orgs <- Authenticated.api().Organizations.get(key = Some("gilt"), limit = 1)
     } yield {
       val tpl = MainTemplate(requestPath = request.path, title = Some("Healthcheck"), org = orgs.headOption)
       Ok(views.html.healthchecks.index(tpl))

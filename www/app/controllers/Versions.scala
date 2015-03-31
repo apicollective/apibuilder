@@ -83,7 +83,7 @@ object Versions extends Controller {
           }
           case Some(original) => {
             original.`type` match {
-              case OriginalType.ApiJson => {
+              case OriginalType.ApiJson | OriginalType.SwaggerJson => {
                 Ok(original.data).withHeaders("Content-Type" -> "application/json")
               }
               case OriginalType.AvroIdl => {
@@ -190,7 +190,7 @@ object Versions extends Controller {
       case Some(key) => {
         for {
           applicationResponse <- request.api.Applications.getByOrgKey(orgKey = orgKey, key = Some(key))
-          versionsResponse <- request.api.versions.getByOrgKeyAndApplicationKey(orgKey, key, limit = Some(1))
+          versionsResponse <- request.api.versions.getByOrgKeyAndApplicationKey(orgKey, key, limit = 1)
         } yield {
           applicationResponse.headOption match {
             case None => {

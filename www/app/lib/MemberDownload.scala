@@ -26,8 +26,8 @@ case class MemberDownload(
       Await.result(
         client.memberships.get(
           orgKey = Some(orgKey),
-          limit = Some(250),
-          offset = Some(offset)
+          limit = 250,
+          offset = offset
         ),
         5000.millis
       )

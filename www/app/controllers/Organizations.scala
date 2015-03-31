@@ -19,12 +19,12 @@ object Organizations extends Controller {
     for {
       applications <- request.api.Applications.getByOrgKey(
         orgKey = orgKey,
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
       )
     } yield {
       val haveRequests = if (request.isAdmin) {
-        val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(request.org.guid), limit = Some(1)), 1500.millis)
+        val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(request.org.guid), limit = 1), 1500.millis)
         !pendingRequests.isEmpty
       } else {
         false
@@ -49,8 +49,8 @@ object Organizations extends Controller {
     for {
       requests <- request.api.MembershipRequests.get(
         orgKey = Some(orgKey),
-        limit = Some(Pagination.DefaultLimit+1),
-        offset = Some(page * Pagination.DefaultLimit)
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
       )
     } yield {
       Ok(views.html.organizations.membershipRequests(
@@ -143,7 +143,7 @@ object Organizations extends Controller {
             name = valid.name,
             namespace = valid.namespace,
             key = valid.key,
-            visibility = Some(Visibility(valid.visibility))
+            visibility = Visibility(valid.visibility)
           )
         ).map { org =>
           Redirect(routes.Organizations.show(org.key)).flashing("success" -> "Org created")
@@ -203,7 +203,7 @@ object Organizations extends Controller {
                   name = valid.name,
                   namespace = valid.namespace,
                   key = Some(updatedKey),
-                  visibility = Some(Visibility(valid.visibility))
+                  visibility = Visibility(valid.visibility)
                 )
               ).map { org =>
                 Redirect(routes.Organizations.details(updatedKey)).flashing("success" -> "Org updated")

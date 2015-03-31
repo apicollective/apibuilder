@@ -41,7 +41,7 @@ object Subscriptions extends Controller {
       subscriptions <- request.api.subscriptions.get(
         organizationKey = Some(request.org.key),
         userGuid = Some(request.user.guid),
-        limit = Some(Publication.all.size + 1)
+        limit = Publication.all.size + 1
       )
     } yield {
       val userPublications = Publication.all.filter { p => offerPublication(request.isAdmin, p) }.map { p =>
