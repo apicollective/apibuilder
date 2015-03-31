@@ -77,7 +77,7 @@
     <pre>
       val client = new com.gilt.apidoc.api.v0.Client("http://localhost:8000")
 
-      val organizations = client.organizations.get(limit = Some(10), offset = Some(0))
+      val organizations = client.organizations.get(limit = Some(10), offset = 0))
       organizations.foreach { org =>
         println(s"Org ${org.name} is named ${org.id}")
       }

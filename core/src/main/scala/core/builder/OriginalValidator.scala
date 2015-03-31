@@ -13,11 +13,12 @@ object OriginalValidator {
   def apply(
     config: ServiceConfiguration,
     original: Original,
-    fetcher: ServiceFetcher = new ClientFetcher()
+    fetcher: ServiceFetcher = new ClientFetcher(),
+    internalMigration: Boolean = false
   ): ServiceValidator[Service] = {
     val validator = original.`type` match {
       case OriginalType.ApiJson => {
-        api_json.ApiJsonServiceValidator(config, original.data, fetcher)
+        api_json.ApiJsonServiceValidator(config, original.data, fetcher, internalMigration)
       }
       case OriginalType.AvroIdl => {
         AvroIdlServiceValidator(config, original.data)

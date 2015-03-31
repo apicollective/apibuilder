@@ -32,7 +32,6 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
     ApplicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = 1).headOption
   }
 
-/*
   it("create") {
     val name = "Application %s".format(UUID.randomUUID)
     val application = upsertApplication(Some(name))
@@ -129,7 +128,6 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
       findByKey(Util.testOrg, application.key).get.visibility should be(Visibility.Organization)
     }
   }
-*/
 
   describe("findAll") {
 
@@ -200,13 +198,13 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
 
         it("other user cannot see private application even for a public org") {
           val myUser = Util.createRandomUser()
-          val myOrg = Util.createOrganization(visibility = Some(Visibility.Public))
+          val myOrg = Util.createOrganization(visibility = Visibility.Public)
           Util.createMembership(myOrg, myUser, Role.Member)
           val myPrivateApp = upsertApplication(org = myOrg)
           val myPublicApp = upsertApplication(org = myOrg, visibility = Visibility.Public)
 
           val otherUser = Util.createRandomUser()
-          val otherOrg = Util.createOrganization(visibility = Some(Visibility.Public))
+          val otherOrg = Util.createOrganization(visibility = Visibility.Public)
           Util.createMembership(otherOrg, otherUser, Role.Member)
           val otherPrivateApp = upsertApplication(org = otherOrg)
           val otherPublicApp = upsertApplication(org = otherOrg, visibility = Visibility.Public)

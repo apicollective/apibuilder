@@ -115,17 +115,12 @@ object OrganizationsDao {
       }
     }
 
-    val visibilityErrors = form.visibility match {
-      case None => Seq.empty
-      case Some(v) => {
-        Visibility.fromString(v.toString) match {
-          case Some(_) => Seq.empty
-          case None => Seq(s"Invalid visibility[${v.toString}]")
-        }
-      }
+    val visibilityErrors =  Visibility.fromString(form.visibility.toString) match {
+      case Some(_) => Seq.empty
+      case None => Seq(s"Invalid visibility[${form.visibility.toString}]")
     }
 
-    val domainErrors = form.domains.filter(!isDomainValid(_)).map(d => s"Domain $d is not valid. Expected a domain name like apidoc.me")
+    val domainErrors = form.domains.getOrElse(Nil).filter(!isDomainValid(_)).map(d => s"Domain $d is not valid. Expected a domain name like apidoc.me")
 
     Validation.errors(nameErrors ++ keyErrors ++ namespaceErrors ++ visibilityErrors ++ domainErrors)
   }
@@ -170,7 +165,7 @@ object OrganizationsDao {
         'name -> form.name.trim,
         'key -> form.key.getOrElse(UrlKey.generate(form.name)).trim,
         'namespace -> form.namespace.trim,
-        'visibility -> form.visibility.getOrElse(DefaultVisibility).toString,
+        'visibility -> form.visibility.toString,
         'user_guid -> user.guid
       ).execute()
     }
@@ -192,8 +187,8 @@ object OrganizationsDao {
       key = form.key.getOrElse(UrlKey.generate(form.name)).trim,
       name = form.name.trim,
       namespace = form.namespace.trim,
-      visibility = form.visibility.getOrElse(DefaultVisibility),
-      domains = form.domains.map(Domain(_))
+      visibility = form.visibility,
+      domains = form.domains.getOrElse(Nil).map(Domain(_))
     )
 
     SQL(InsertQuery).on(

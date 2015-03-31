@@ -21,8 +21,8 @@ object Members extends Controller {
     for {
       orgs <- request.api.Organizations.get(key = Some(orgKey))
       members <- request.api.Memberships.get(orgKey = Some(orgKey),
-                                             limit = Some(Pagination.DefaultLimit+1),
-                                             offset = Some(page * Pagination.DefaultLimit))
+                                             limit = Pagination.DefaultLimit+1,
+                                             offset = page * Pagination.DefaultLimit)
     } yield {
       orgs.headOption match {
 

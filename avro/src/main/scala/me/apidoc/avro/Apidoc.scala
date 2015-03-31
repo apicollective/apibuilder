@@ -28,7 +28,7 @@ object Apidoc {
   object Field {
     def apply(field: Schema.Field): Field = {
       val t = Apidoc.getType(field.schema)
-      println(s"FIELD[${field.name}] type[$t]")
+
       val default = if (field.defaultValue() == null || field.defaultValue().isNull()) {
         None
       } else {

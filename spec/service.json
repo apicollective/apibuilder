@@ -36,12 +36,12 @@
 		{ "name": "version", "type": "string", "example": "1.0.0" },
 		{ "name": "base_url", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "headers", "type": "[header]" },
-		{ "name": "imports", "type": "[import]" },
-		{ "name": "enums", "type": "[enum]" },
-		{ "name": "unions", "type": "[union]" },
-		{ "name": "models", "type": "[model]" },
-		{ "name": "resources", "type": "[resource]" }
+		{ "name": "headers", "type": "[header]", "default": "[]" },
+		{ "name": "imports", "type": "[import]", "default": "[]" },
+		{ "name": "enums", "type": "[enum]", "default": "[]" },
+		{ "name": "unions", "type": "[union]", "default": "[]" },
+		{ "name": "models", "type": "[model]", "default": "[]" },
+		{ "name": "resources", "type": "[resource]", "default": "[]" }
 	    ]
 	},
 
@@ -135,8 +135,8 @@
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "body", "type": "body", "required": false },
-		{ "name": "parameters", "type": "[parameter]", "required": false },
-		{ "name": "responses", "type": "[response]", "required": false }
+		{ "name": "parameters", "type": "[parameter]", "default": "[]" },
+		{ "name": "responses", "type": "[response]", "default": "[]" }
 	    ]
 	},
 
@@ -191,9 +191,9 @@
 		{ "name": "organization", "type": "organization" },
 		{ "name": "application", "type": "application" },
 		{ "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
-		{ "name": "enums", "type": "[string]", "description": "Models made available by this import" },
-		{ "name": "unions", "type": "[string]", "description": "Unions made available by this import" },
-		{ "name": "models", "type": "[string]", "description": "Models made available by this import" }
+		{ "name": "enums", "type": "[string]", "description": "Models made available by this import", "default": "[]" },
+		{ "name": "unions", "type": "[string]", "description": "Unions made available by this import", "default": "[]" },
+		{ "name": "models", "type": "[string]", "description": "Models made available by this import", "default": "[]" }
 	    ]
 	},
 

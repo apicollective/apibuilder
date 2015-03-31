@@ -11,10 +11,11 @@ import scala.util.{Failure, Success, Try}
 case class ApiJsonServiceValidator(
   config: ServiceConfiguration,
   apiJson: String,
-  fetcher: ServiceFetcher = new ClientFetcher()
+  fetcher: ServiceFetcher = new ClientFetcher(),
+  internalMigration: Boolean
 ) extends ServiceValidator[Service] {
 
-  private lazy val service: Service = ServiceBuilder(config, internalService.get)
+  private lazy val service: Service = ServiceBuilder(internalMigration = internalMigration).apply(config, internalService.get)
 
   def validate(): Either[Seq[String], Service] = {
     errors match {

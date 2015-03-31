@@ -15,8 +15,8 @@ object ApplicationController extends Controller {
       case None => {
         for {
           publicOrgs <- request.api.Organizations.get(
-            limit = Some(Pagination.DefaultLimit+1),
-            offset = Some(publicOrgsPage * Pagination.DefaultLimit)
+            limit = Pagination.DefaultLimit+1,
+            offset = publicOrgsPage * Pagination.DefaultLimit
           )
         } yield {
           Ok(
@@ -34,17 +34,17 @@ object ApplicationController extends Controller {
         for {
           orgs <- request.api.Organizations.get(
             userGuid = Some(user.guid),
-            limit = Some(Pagination.DefaultLimit+1),
-            offset = Some(orgsPage * Pagination.DefaultLimit)
+            limit = Pagination.DefaultLimit+1,
+            offset = orgsPage * Pagination.DefaultLimit
           )
           membershipRequests <- request.api.MembershipRequests.get(
             userGuid = Some(user.guid),
-            limit = Some(Pagination.DefaultLimit+1),
-            offset = Some(membershipRequestsPage * Pagination.DefaultLimit)
+            limit = Pagination.DefaultLimit+1,
+            offset = membershipRequestsPage * Pagination.DefaultLimit
           )
           publicOrgs <- request.api.Organizations.get(
-            limit = Some(Pagination.DefaultLimit+1),
-            offset = Some(publicOrgsPage * Pagination.DefaultLimit)
+            limit = Pagination.DefaultLimit+1,
+            offset = publicOrgsPage * Pagination.DefaultLimit
           )
         } yield {
           Ok(

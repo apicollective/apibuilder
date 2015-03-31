@@ -4,7 +4,7 @@
     "base_url": "http://api.apidoc.me",
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.8.18/service.json" }
+	{ "uri": "http://localhost:9000/gilt/apidoc-spec/0.8.28/service.json" }
     ],
 
     "enums": {
@@ -58,7 +58,7 @@
 	    "description": "Used only to validate json files - used as a resource where http status code defines success",
 	    "fields": [
                 { "name": "valid", "type": "boolean", "description": "If true, the json schema is valid. If false, there is at least one validation error." },
-		{ "name": "errors", "type": "[string]", "required": false, "description": "Contains any validation errors that result from parsing the json document. If empty, the document is valid." }
+		{ "name": "errors", "type": "[string]", "default": "[]", "description": "Contains any validation errors that result from parsing the json document. If empty, the document is valid." }
 	    ]
 	},
 
@@ -122,7 +122,7 @@
                 { "name": "name", "type": "string", "description": "The name of this organization." },
                 { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.gilt" },
                 { "name": "visibility", "type": "visibility" },
-                { "name": "domains", "type": "[domain]", "required": false }
+                { "name": "domains", "type": "[domain]", "default": "[]" }
             ]
         },
 
@@ -131,7 +131,7 @@
                 { "name": "name", "type": "string" },
                 { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" },
                 { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.gilt" },
-                { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "required": false, "default": "organization" },
+                { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "default": "organization" },
                 { "name": "domains", "type": "[string]", "required": false, "example": "apidoc.me" }
             ]
         },
