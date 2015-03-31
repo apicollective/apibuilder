@@ -27,6 +27,12 @@ class ImporterSpec extends FunSpec with Matchers {
       "namespace": "test.apidoc.import-shared",
       "version": "1.0.0",
 
+      "imports": [],
+      "headers": [],
+      "unions": [],
+      "enums": [],
+      "resources": [],
+
       "models": [
         {
           "name": "user",

@@ -53,6 +53,11 @@ class ImportServiceSpec extends FunSpec with Matchers {
       "namespace": "test.apidoc.import-shared",
       "version": "1.0.0",
 
+      "imports": [],
+      "headers": [],
+      "unions": [],
+      "resources": [],
+
       "enums": [
         {
           "name": "age_group",
