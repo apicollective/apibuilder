@@ -25,7 +25,7 @@
       <li><em>name</em>: the human readable name of this service. Used for display, and as the basis for generating a unique key for URL.</li>
       <li><em>namespace</em>: specifies the namespace for this service. Namespace is primarily used when other services import definitions from your service and in the code generators when defining things like package names. If not specified, we will automatically generate a namespace based on [organization namespace].[formatted service name].[major version number]. Note that by default apidoc includes the major version number in the package name which allows service authors and clients to interact with multiple versions of the service where changes have been made in a non backwards compatible way.</li>
       <li><em>baseUrl</em>: the base URL where this service is hosted. Must start with http.</li>
-      <li><em>description</em>: optional description for what this service provides.</li>
+      @description("service")
       <li><em>imports</em> JSON array defining any other services whose schema definitions we would like to import into our service.. See <a href="#import">Import</a></li>
       <li><em>headers</em> JSON array defining any HTTP Headers that the service understands or expects. See <a href="#header">Header</a></li>
       <li><em>enums</em> JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#enum">Enum</a></li>
@@ -56,7 +56,7 @@
     <ul>
       <li><em>name</em> specifies the name of the model. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. The name must be unique in the set of names assigned to enums, models, or other union types.</li>
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
-      <li><em>description</em> specifies an optional, longer description for what this model represents.</li>
+      @description("model")
       <li><em>fields</em> indicates that one or more fields is required. See <a href="#field">Field</a>.</li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
@@ -86,7 +86,7 @@
     <ul>
       <li><em>name</em> specifies the name of the field. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
       <li><em>type</em> @typeInfo("field")</li>
-      <li><em>description</em> optional longer description for this field.</li>
+      @description("field")
       <li><em>required</em> boolean: true|false. By default, all fields are considered required. To make a field optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive types and enums. The value must be valid for the type specified for this field. For example, if you specify a field named 'limit' with type '@lib.Primitives.Integer.toString', an acceptable default would be 10</li>
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
@@ -118,7 +118,7 @@
     <ul>
       <li><em>typeName</em> the name of the model or enum that this resource represents</li>
       <li><em>path</em> optional path where this resource is located. If not provided, defaults to the plural of the typeName, with some assumptions of formatting for web (e.g. lower case, dash separated). Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that all operations for this path will require a parameter named 'guid' of type 'string'</li>
-      <li><em>description</em> optional longer description for this resource.</li>
+      @description("resource")
       <li><em>operations</em> one or more operations is required. See <a href="#operation">Operation</a>.</li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
@@ -146,7 +146,7 @@
     <ul>
       <li><em>method</em> the HTTP method for this operation</li>
       <li><em>path</em> optional path for this particular operation. If not provided, defaults to no additional path. Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that this operation is available at /resource_path/:guid. Path parameter types are inferred by looking for a field with that name on the model associated with this resource. If not found, the datatype of any path parameter will be string.</li>
-      <li><em>description</em> optional longer description for this operation.</li>
+      @description("operation")
       <li><em>body</em> optional specification for the type of the body of this request. For all operations that support bodies (e.g. POST, PUT, PATCH), allows you to specify the type of the body. See <a href="#body">Body</a>.</li>
       <li><em>parameters</em> optional JSON Array of the parameters to this method. By default, for @lib.Methods.MethodsNotAcceptingBodies.mkString(" and ") methods, parameters are assumed to be in the path or in the query. For other methods, parameters are assumed to be in the path or form body, unless you have explicitly specified a body in which case parameters can be provided in the path or the query. See <a href="#parameter">Parameter</a>.</li>
       <li><em>responses</em> optional JSON Object of HTTP Response Code to Response. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented. See <a href="#response">Response</a>.</li>
@@ -171,7 +171,7 @@
     where
     <ul>
       <li><em>type</em> @typeInfo("body")</li>
-      <li><em>description</em> optional longer description for this body.</li>
+      @description("body")
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
@@ -188,12 +188,12 @@
       "type": <em>string</em>,
       "location": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>,
       "required": <em>boolean (optional, true by default)</em>,
       "default": <em>value (optional)</em>,
       "example": <em>string (optional)</em>,
       "minimum": <em>long (optional)</em>,
-      "maximum": <em>long (optional)</em>,
-      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
+      "maximum": <em>long (optional)</em>
     }
     </pre>
 
@@ -202,7 +202,7 @@
       <li><em>name</em> the name of the parameter. Names must be alphanumeric and must start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters.</li>
       <li><em>type</em> @typeInfo("parameter")</li>
       <li><em>location</em> one of: @com.gilt.apidoc.spec.v0.models.ParameterLocation.all.map(_.toString.toLowerCase).mkString(", "). Defines the location of this parameter. Default location varies based on the context of the parameter (e.g. if the operation method is a POST, the default will be @com.gilt.apidoc.spec.v0.models.ParameterLocation.Form; if a GET, the default will be @com.gilt.apidoc.spec.v0.models.ParameterLocation.Query)</li>
-      <li><em>description</em> optional longer description for this parameter.</li>
+      @description("parameter")
       <li><em>required</em> boolean: true|false. By default all parameters are considered required. To make a parameter optional, set "required" to false.</li>
       <li><em>default</em> optional default value. Can only be used for primitive and enum types. The value must be valid for the type specified for this parameter. For example, if you specify a parameter named 'limit' with type '@lib.Primitives.Integer.toString', an acceptable default would be 10</li>
       <li><em>example</em> @exampleInfo("parameter")</li>
@@ -257,7 +257,7 @@
     where
     <ul>
       <li><em>name</em> the name of the value. Names must start with a letter.</li>
-      <li><em>description</em> optional longer description for this enum.</li>
+      @description("enum value")
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
@@ -280,7 +280,7 @@
     <ul>
       <li><em>name</em> specifies the name of the union type. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. The name must be unique in the set of names assigned to enums, models, or other union types.</li>
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
-      <li><em>description</em> specifies an optional, longer description for what this model represents.</li>
+      @description("union")
       <li><em>types</em> Specifies the individual types that are part of this union type. See <a href="#unionType">UnionType</a>.</li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
@@ -305,7 +305,7 @@
       <li><em>type</em> specifies the type to include in this union
       type. Acceptable values include the name of either an enum, a model,
       or a (<a href="@routes.DocController.types">primitive type</a>).</li>
-      <li><em>description</em> optional longer description for this enum.</li>
+      @description("type")
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
@@ -349,7 +349,7 @@
       <li><em>type</em> the type of this header. Acceptable values are either the name of an enum or string. To specify a collection (meaning multiple values for this header can be provided), the type name can be wrapped with "[]". For example, to specify that the type is a collection of strings, use "[string]".</li>
       <li><em>required</em> boolean: true|false. By default, all headers are considered required. To make a parameter optional, set "required" to false.</li>
       <li><em>default</em> the default value for this header. If specified, generated clients will automatically include this header in all requests. Default values must be specified as strings.</li>
-      <li><em>description</em> optional longer description for this header.</li>
+      @description("header")
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
@@ -373,7 +373,7 @@
     <ul>
       <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
       <li><em>type</em> @typeInfo("response")</li>
-      <li><em>description</em> optional longer description for this response.</li>
+      @description("response")
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
 
@@ -413,7 +413,9 @@
 
     where
     <ul>
-      <li><em>description</em> optional, but recommended to contain notes for what the user is supposed to do now that this property is deprecated.</li>
+      <li><em>description</em> optional, but recommended to contain
+      notes for what the user is supposed to do now that this property
+      is deprecated. Supports <a href="https://help.github.com/articles/github-flavored-markdown/">GFM</a>.</li>
     </ul>
 
   </p>
