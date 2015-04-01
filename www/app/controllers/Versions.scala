@@ -42,7 +42,11 @@ object Versions extends Controller {
 
             case None => {
               if (LatestVersion == versionName) {
-                Redirect(routes.Versions.create(orgKey, application = Some(applicationKey))).flashing("success" -> s"Application does not yet have any versions")
+                if (request.isMember) {
+                  Redirect(routes.Versions.create(orgKey, application = Some(applicationKey))).flashing("success" -> s"Application does not yet have any versions")
+                } else {
+                  Redirect(routes.Organizations.show(orgKey)).flashing("success" -> s"Application does not have any versions")
+                }
               } else {
                 Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Version not found: $versionName")
               }
