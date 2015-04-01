@@ -9,12 +9,6 @@ Consider supporting (from swagger):
 Think about:
   - replace base_url with urls which would be an array of [ url, description ]
 
-Make lookup function of sealed traits case insensitive
-  - can then remove toParameterLocation
-
-Add support for multiple input types:
-  - consider support for swagger.json here
-
 Breaking changes:
   - Change 404s to be explicit
 
@@ -49,5 +43,3 @@ are tested offline and manually. Need to think through how testing
 will work across mulitple platforms.
   
 api.json: Support authentication, documentation
-  
-Swagger 2.0 was released in September 2014. Explore if swagger 2.0 can become the input spec for apidoc.
