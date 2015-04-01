@@ -22,7 +22,9 @@ case class Parser(config: ServiceConfiguration) {
   def parse(
     path: File
   ): Service = {
-    val swagger = new SwaggerParser().read(path.toString)
+    val swagger = Option(new SwaggerParser().read(path.toString)).getOrElse {
+      sys.error("File is not a valid swagger.json format")
+    }
     val info = swagger.getInfo()
     val applicationKey = UrlKey.generate(info.getTitle())
     val specModels = models(swagger)
