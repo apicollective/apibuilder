@@ -6,6 +6,78 @@
 
   <ul>
 
+    <li> Breaking change: scala client code generators have been
+    updated to treat required/default fields differently. The
+    implication of required is now equivalent to saying that a given
+    field must always be present when a model is sent over the
+    wire. Fields with defaults are required fields for which generated
+    code provides a default value.
+
+    <ul>
+
+      <li>All non-required fields are represented as options in Scala.</li>
+
+      <li>All non-required fields are represented as nullable in Ruby.</li>
+
+      <li>Non-required fields in Scala are now serialized using
+          writeNullable so that they are not mapped to null in the
+          JSON representation.</li>
+
+      <li>Notably, non-required collections now map to Option in Scala
+         and nullable in Ruby. They no longer default to an empty
+         instance of the collection.</li>
+
+      <li>Default values are parsed and injected as language specific
+          literals client side.</li>
+
+      <li>It is illegal to specify a default for a non-required
+          field. You will see a validation error when uploading a
+          service to apidoc.</li>
+
+    </ul>
+
+    For more information, see <a href='@lib.Util.GeneratorGitHubUrl/pull/6'>PR 6</a> and
+    <a href='@lib.Util.GeneratorGitHubUrl/issues/5'>Issue 5</a>.
+    </li>
+
+    <li> Experimental support for Swagger Json (2.0 only). This
+    feature allows you to define your service using
+    the <a href="http://swagger.io">swagger spec, version 2.0</a> and
+    import it into apidoc. This in turns means you can use the apidoc
+    code generators to access services described with swagger. There
+    are a few major caveats:
+
+    <ul>
+
+      <li> Only a subset of features are supported as swagger has a
+      broader feature set. We are prioritizing future work in apidoc
+      to incorporate these features directly.</li>
+
+      <li> There is a mismatch between APIs in swagger and Resources
+      in apidoc. Right now we are using a simple pattern match on API
+      Urls to determine resources. You will get an error if an API
+      path cannot automatically be mapped to a resource.</li>
+
+      <li> We have tested swagger integration using the petstore
+      example only
+      (see <a href="@lib.Util.GitHubUrl/tree/master/swagger/src/test/resources/petstore-with-external-docs.json">petstore-with-external-docs.json</a>)
+      and have not yet verified that the clients actually work... so
+      more to come in this area (and if you are interested in helping
+      - please let us know!)</li>
+
+    </ul>
+
+    When uploading a new version of an application, you will see a
+    drop down to select the type of file you are uploading (or leave
+    blank and we will auto detect swagger based on a json document
+    with a top level key named 'swagger').
+    
+  </ul>
+
+<h3>0.8.27 - Mar 13 2015</h3>
+
+  <ul>
+
     <li> Support for Avro IDL! This feature allows you to represent
     your models
     using <a href="https://avro.apache.org/docs/1.7.7/idl.html">Avro
