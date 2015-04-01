@@ -5,7 +5,7 @@ name := "apidoc"
 
 organization := "com.gilt.apidoc"
 
-scalaVersion in ThisBuild := "2.11.5"
+scalaVersion in ThisBuild := "2.11.6"
 
 // required because of issue between scoverage & sbt
 parallelExecution in Test in ThisBuild := true
