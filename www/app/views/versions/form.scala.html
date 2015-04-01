@@ -48,6 +48,19 @@
               '_error -> form.error("file")
           )
 
+          @helper.select(
+            form("original_type"),
+	    Seq( ("", "-- auto detect --") ) ++ com.gilt.apidoc.api.v0.models.OriginalType.all.map { t =>
+	      t match {
+                      case com.gilt.apidoc.api.v0.models.OriginalType.AvroIdl => (t.toString, "Avro IDL (experimental)")
+                      case com.gilt.apidoc.api.v0.models.OriginalType.ApiJson => (t.toString, "api.json")
+                      case com.gilt.apidoc.api.v0.models.OriginalType.SwaggerJson => (t.toString, "swagger.json (2.0, experimental))")
+                      case com.gilt.apidoc.api.v0.models.OriginalType.UNDEFINED(name) => (t.toString, name)
+              }
+            },
+            '_label -> "Type"
+          )
+
       </fieldset>
 
       <div class="actions">
