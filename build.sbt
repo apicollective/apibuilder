@@ -90,7 +90,7 @@ lazy val www = project
   .settings(
     routesImport += "com.gilt.apidoc.api.v0.Bindables._",
     libraryDependencies ++= Seq(
-      "com.github.tototoshi" %% "scala-csv" % "1.2.0"
+      "com.github.tototoshi" %% "scala-csv" % "1.2.1"
     )
   )
 
