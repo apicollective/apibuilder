@@ -11,6 +11,7 @@ POST       /generators                                         controllers.Gener
 PUT        /generators/:key                                    controllers.Generators.putByKey(key: String)
 DELETE     /generators/:key                                    controllers.Generators.deleteByKey(key: String)
 GET        /_internal_/healthcheck                             controllers.Healthchecks.getInternalAndHealthcheck()
+GET        /_internal_/migrate                                 controllers.Healthchecks.getInternalAndMigrate()
 GET        /memberships                                        controllers.Memberships.get(org_guid: _root_.scala.Option[_root_.java.util.UUID], org_key: _root_.scala.Option[String], user_guid: _root_.scala.Option[_root_.java.util.UUID], role: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /memberships/:guid                                  controllers.Memberships.getByGuid(guid: _root_.java.util.UUID)
 DELETE     /memberships/:guid                                  controllers.Memberships.deleteByGuid(guid: _root_.java.util.UUID)

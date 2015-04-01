@@ -1371,6 +1371,13 @@ package com.gilt.apidoc.api.v0 {
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
+
+      override def getInternalAndMigrate()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Map[String, String]] = {
+        _executeRequest("GET", s"/_internal_/migrate").map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Map[String, String]", r, _.validate[Map[String, String]])
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
     }
 
     object MembershipRequests extends MembershipRequests {
@@ -2120,6 +2127,8 @@ package com.gilt.apidoc.api.v0 {
 
   trait Healthchecks {
     def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.scala.Option[com.gilt.apidoc.api.v0.models.Healthcheck]]
+
+    def getInternalAndMigrate()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Map[String, String]]
   }
 
   trait MembershipRequests {

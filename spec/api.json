@@ -357,12 +357,21 @@
     "resources": {
 
 	"healthcheck": {
-	    "path": "/_internal_/healthcheck",
+	    "path": "/_internal_",
             "operations": [
                 {
                     "method": "GET",
+		    "path": "/healthcheck",
                     "responses": {
                         "200": { "type": "healthcheck" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+		    "path": "/migrate",
+                    "responses": {
+                        "200": { "type": "map[string]" }
                     }
                 }
 	    ]
