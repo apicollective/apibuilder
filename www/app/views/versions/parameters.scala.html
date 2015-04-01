@@ -24,7 +24,7 @@
        <td>@param.location</td>
        <td>@if(param.required && param.default.isEmpty) { Yes } else { No }</td>
        <td>@param.default.getOrElse("-")</td>
-       <td>@param.description.getOrElse("")
+       <td>@markdown(param.description)
            <p>
              @param.minimum.map { v => Minimum: @v<br/> }
              @param.maximum.map { v => Maximum: @v<br/> }

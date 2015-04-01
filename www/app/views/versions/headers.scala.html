@@ -22,7 +22,7 @@
        <td>@datatype(org, app, version, service, header.`type`)</td>
        <td>@if(header.required && header.default.isEmpty) { Yes } else { No }</td>
        <td>@header.default.getOrElse("-")</td>
-       <td>@header.description.getOrElse("")</td>
+       <td>@markdown(header.description)</td>
      </tr>
    }
   </tbody>
