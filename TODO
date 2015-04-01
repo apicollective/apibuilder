@@ -1,12 +1,3 @@
-apidoc:
-  add validation that:
-    if required is false, default is none
-    re-upload api.json and upgrade it
-
-swagger initial release:
-  - /web/apidoc/swagger/src/main/scala/me/apidoc/swagger/Parser.scala
-    -- break up into smaller files with more granular tests
-
 Consider supporting (from swagger):
   - "default" keyword for responses
   - add "apidoc": "0.x" // maps to the version of the apidoc-api spec,
