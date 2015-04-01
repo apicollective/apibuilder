@@ -49,7 +49,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
     //val files = Seq("petstore-expanded.json", "petstore-simple.json", "petstore.json", "petstore-minimal.json", "petstore-with-external-docs.json")
     val files = Seq("petstore-with-external-docs.json")
     files.foreach { filename =>
-      val path = s"swagger/test/resources/$filename"
+      val path = s"swagger/src/test/resources/$filename"
       println(s"Reading file[$path]")
       SwaggerServiceValidator(config, readFile(path)).validate match {
         case Left(errors) => {
