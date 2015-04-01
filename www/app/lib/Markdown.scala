@@ -1,6 +1,6 @@
 package lib
 
-import org.pegdown.PegDownProcessor
+import org.pegdown.{Extensions, PegDownProcessor}
 
 /**
   * Wrapper on play config testing for empty strings and standardizing
@@ -9,7 +9,7 @@ import org.pegdown.PegDownProcessor
 object Markdown {
 
   def toHtml(value: String): String = {
-    (new PegDownProcessor()).markdownToHtml(value)
+    (new PegDownProcessor(Extensions.ALL)).markdownToHtml(value)
   }
 
 }
