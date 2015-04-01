@@ -1,3 +1,25 @@
+apidoc:
+  add validation that:
+    if required is false, default is none
+    re-upload api.json and upgrade it
+
+swagger initial release:
+  - /web/apidoc/swagger/src/main/scala/me/apidoc/swagger/Parser.scala
+    -- break up into smaller files with more granular tests
+
+Consider supporting (from swagger):
+  - "default" keyword for responses
+  - add "apidoc": "0.x" // maps to the version of the apidoc-api spec,
+    currently 0.8.18. Not required. Defaults to latest version
+  - add license, info, documentation. Remove description from top level (replaced with info.description)
+  - add support for github markdown
+     - say we do it and just start rendering
+  - parameter locations: header, cookie
+  - add headers to response object
+
+Think about:
+  - replace base_url with urls which would be an array of [ url, description ]
+
 Make lookup function of sealed traits case insensitive
   - can then remove toParameterLocation
 

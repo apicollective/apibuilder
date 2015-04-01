@@ -29,10 +29,22 @@ lazy val avro = project
     )
   )
 
+lazy val swagger = project
+  .in(file("swagger"))
+  .dependsOn(generated, lib)
+  .aggregate(generated, lib)
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.swagger" % "swagger-parser" % "1.0.2",
+      "com.typesafe.play" %% "play-json" % "2.3.8",
+      "org.scalatest"     %% "scalatest" % "2.2.0" % "test"
+    )
+  )
+
 lazy val core = project
   .in(file("core"))
-  .dependsOn(generated, lib, avro)
-  .aggregate(generated, lib, avro)
+  .dependsOn(generated, lib, avro, swagger)
+  .aggregate(generated, lib, avro, swagger)
   .settings(commonSettings: _*)
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",

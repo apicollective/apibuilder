@@ -42,7 +42,11 @@ object Versions extends Controller {
 
             case None => {
               if (LatestVersion == versionName) {
-                Redirect(routes.Versions.create(orgKey, application = Some(applicationKey))).flashing("success" -> s"Application does not yet have any versions")
+                if (request.isMember) {
+                  Redirect(routes.Versions.create(orgKey, application = Some(applicationKey))).flashing("success" -> s"Application does not yet have any versions")
+                } else {
+                  Redirect(routes.Organizations.show(orgKey)).flashing("success" -> s"Application does not have any versions")
+                }
               } else {
                 Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion)).flashing("warning" -> s"Version not found: $versionName")
               }
@@ -181,7 +185,8 @@ object Versions extends Controller {
         val filledForm = uploadForm.fill(
           UploadData(
             version = DefaultVersion,
-            visibility = Visibility.Organization.toString
+            visibility = Visibility.Organization.toString,
+            originalType = None
           )
         )
         Ok(views.html.versions.form(tpl, applicationKey, filledForm))
@@ -204,12 +209,12 @@ object Versions extends Controller {
               val filledForm = uploadForm.fill(
                 UploadData(
                   version = versionsResponse.headOption.map(v => VersionTag(v.version).nextMicro().getOrElse(v.version)).getOrElse(DefaultVersion),
-                  visibility = application.visibility.toString
+                  visibility = application.visibility.toString,
+                  originalType = None
                 )
               )
 
               val isFirstVersion = versionsResponse.isEmpty
-              println(tpl)
               Ok(views.html.versions.form(tpl, applicationKey, filledForm, isFirstVersion = Some(isFirstVersion)))
             }
           }
@@ -247,6 +252,7 @@ object Versions extends Controller {
             file.ref.moveTo(path, true)
             val versionForm = VersionForm(
               originalForm = OriginalForm(
+                `type` = valid.originalType.map(OriginalType(_)),
                 data = scala.io.Source.fromFile(path, "UTF-8").getLines.mkString("\n").trim
               ),
               Some(Visibility(valid.visibility))
@@ -311,11 +317,17 @@ object Versions extends Controller {
     }
   }
 
-  case class UploadData(version: String, visibility: String)
+  case class UploadData(
+    version: String,
+    visibility: String,
+    originalType: Option[String]
+  )
+
   private val uploadForm = Form(
     mapping(
       "version" -> nonEmptyText,
-      "visibility" -> nonEmptyText
+      "visibility" -> nonEmptyText,
+      "original_type" -> optional(nonEmptyText)
     )(UploadData.apply)(UploadData.unapply)
   )
 
