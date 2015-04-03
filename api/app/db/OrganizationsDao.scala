@@ -107,11 +107,7 @@ object OrganizationsDao {
         }
       }
       case Some(org: Organization) => {
-        if (existing.map(_.guid) == Some(org.guid)) {
-          Seq.empty
-        } else {
-          Seq("This namespace is already registered to another organization")
-        }
+        Seq.empty
       }
     }
 
