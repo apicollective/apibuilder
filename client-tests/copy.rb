@@ -51,20 +51,36 @@ end
 def upsert_app(client, org, app)
   if client.applications.get_by_org_key(org.key, :key => app.key).empty?
     puts "Creating #{org.key}:#{app.key}"
-    client.applications.post_by_org_key(org.key,
-                                        Com::Gilt::Apidoc::Api::V0::Models::ApplicationForm.new(:name => app.name,
-                                                                                                :key => app.key,
-                                                                                                :description => app.description,
-                                                                                                :visibility => app.visibility))
+    begin
+      client.applications.post_by_org_key(org.key,
+                                          Com::Gilt::Apidoc::Api::V0::Models::ApplicationForm.new(:name => app.name,
+                                                                                                  :key => app.key,
+                                                                                                  :description => app.description,
+                                                                                                  :visibility => app.visibility))
+    rescue Com::Gilt::Apidoc::Api::V0::HttpClient::ServerError => e
+      if e.code == 409
+        puts "  " + e.message
+      else
+        raise e
+      end
+    end
   end
 end
 
 def copy_version(client, org, app, version)
   puts "Creating #{org.key}:#{app.key}:#{version.version}"
 
-  if client.versions.put_by_org_key_and_application_key_and_version(org.key, app.key, version.version,
-                                        Com::Gilt::Apidoc::Api::V0::Models::VersionForm.new(
-                                          :original_form => Com::Gilt::Apidoc::Api::V0::Models::OriginalForm.new(:type => version.original.type, :data => version.original.data)))
+  of = Com::Gilt::Apidoc::Api::V0::Models::OriginalForm.new(:type => version.original.type, :data => version.original.data)
+  begin
+    if client.versions.put_by_org_key_and_application_key_and_version(org.key, app.key, version.version,
+                                                                      Com::Gilt::Apidoc::Api::V0::Models::VersionForm.new(:original_form => of))
+    end
+  rescue Com::Gilt::Apidoc::Api::V0::HttpClient::ServerError => e
+    if e.code == 409
+      puts "  " + e.message
+    else
+      raise e
+    end
   end
 end
 
