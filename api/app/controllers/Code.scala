@@ -37,7 +37,7 @@ object Code extends Controller {
       }
 
       case Some(version) => {
-        GeneratorsDao.findAll(user = request.user, key = Some(generatorKey)).headOption match {
+        GeneratorsDao.findAll(Authorization(request.user), key = Some(generatorKey)).headOption match {
           case None => {
             Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
           }

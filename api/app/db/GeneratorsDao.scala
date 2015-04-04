@@ -16,45 +16,10 @@ object GeneratorsDao {
            generators.key,
            generators.created_at,
            generators.uri,
-           generators.visibility,
-           memberships.organization_guid,
-           generator_users.enabled,
-           users.guid as user_guid,
-           users.email as user_email,
-           users.nickname as user_nickname,
-           users.name as user_name,
-           users.nickname as user_nickname
+           generators.visibility
       from generators
-      join users on users.guid = generators.user_guid
-      left join memberships on memberships.deleted_at is null
-                            and memberships.user_guid = generators.user_guid
-      left join generator_users on generator_users.deleted_at is null
-                            and generator_users.user_guid = {user_guid}::uuid
-                            and generator_users.generator_guid = generators.guid
      where generators.deleted_at is null
-     and (
-       (generators.visibility = '${Visibility.Public}')
-       or
-       (generators.user_guid = {user_guid}::uuid)
-       or
-       (generators.visibility = '${Visibility.Organization}' and memberships.organization_guid in (
-         select organization_guid from memberships
-           where memberships.deleted_at is null
-           and user_guid = {user_guid}::uuid
-         )
-       )
-     )
   """
-
-  private val OrgGeneratorsQuery = """
-    select generator_guid from generator_organizations
-     where deleted_at is null
-       and organization_guid in (
-            select organization_guid from memberships
-             where deleted_at is null
-               and user_guid = {user_guid}::uuid
-           )
-  """.stripMargin
 
   private val InsertQuery = """
     insert into generators
@@ -110,16 +75,14 @@ object GeneratorsDao {
       visibility = visibility,
       name = name.trim,
       description = description.map(_.trim),
-      language = language.map(_.trim),
-      owner = createdBy,
-      enabled = true
+      language = language.map(_.trim)
     )
 
     SQL(InsertQuery).on(
       'guid -> generator.guid,
       'key -> generator.key,
       'uri -> generator.uri,
-      'user_guid -> generator.owner.guid,
+      'user_guid -> createdBy.guid,
       'visibility -> visibility.toString,
       'created_by_guid -> createdBy.guid
     ).execute()
@@ -136,27 +99,6 @@ object GeneratorsDao {
       ).execute()
 
       generator.copy(visibility = visibility)
-    }
-  }
-
-  def userEnabledUpdate(user: User, generator: Generator, enabled: Boolean): Generator = {
-    DB.withConnection { implicit c =>
-        val updateQuery = "update generator_users set deleted_at = now(), deleted_by_guid = {deleted_by_guid}::uuid where generator_guid = {generator_guid}::uuid and user_guid = {user_guid}::uuid"
-        SQL(updateQuery).on(
-          'deleted_by_guid -> user.guid,
-          'generator_guid -> generator.guid,
-          'user_guid -> user.guid
-        ).execute()
-        val insertQuery = s"insert into generator_users (guid, generator_guid, user_guid, enabled, created_by_guid) values ({guid}::uuid, {generator_guid}::uuid, {user_guid}::uuid, {enabled}, {created_by_guid}::uuid)"
-        SQL(insertQuery).on(
-          'guid -> UUID.randomUUID(),
-          'generator_guid -> generator.guid,
-          'user_guid -> user.guid,
-          'enabled -> enabled,
-          'created_by_guid -> user.guid
-        ).execute()
-
-      generator.copy(enabled = enabled)
     }
   }
 
@@ -188,7 +130,7 @@ object GeneratorsDao {
   }
 
   def findAll(
-    user: Option[User] = None,
+    auth: Authorization,
     guid: Option[UUID] = None,
     key: Option[String] = None,
     keyAndUri: Option[(String, String)] = None,
@@ -199,18 +141,7 @@ object GeneratorsDao {
       key.isEmpty || keyAndUri.isEmpty,
       "Cannot specify key and keyAndUri"
     )
-
-   // get generator enabled choice for all orgs of the user
-    val orgEnabledGenerators: Set[UUID] = user match {
-      case None => Set.empty
-      case Some(u) => {
-        DB.withConnection { implicit c =>
-          SQL(OrgGeneratorsQuery).on('user_guid -> u.guid)().toList.map { row =>
-            row[UUID]("generator_guid")
-          }.toSet
-        }
-      }
-    }
+    // TODO: Implement Authorization
 
     // Query generators
     val sql = Seq(
@@ -218,11 +149,11 @@ object GeneratorsDao {
       guid.map(_ => "and generators.guid = {guid}::uuid"),
       key.map(_ => "and generators.key = {key}"),
       keyAndUri.map(_ => "and generators.key = {key} and generators.uri = {uri}"),
-      Some(s"limit $limit offset $offset")
+      Some(s" order by lower(generators.key)"),
+      Some(s" limit $limit offset $offset")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
-      Some('user_guid -> user.map(_.guid).getOrElse(UUID.randomUUID)), // TODO Avoid needing the random guid
       guid.map('guid -> _),
       key.map('key -> _),
       keyAndUri.map('key -> _._1),
@@ -234,8 +165,7 @@ object GeneratorsDao {
         val genGuid = row[UUID]("guid")
         val uri = row[String]("uri")
         val visibility = Visibility(row[String]("visibility"))
-        val isEnabled = row[Option[Boolean]]("enabled")
-        val owner = UsersDao.fromRow(row, Some("user"))
+
         Generator(
           guid = genGuid,
           key = row[String]("key"),
@@ -243,11 +173,9 @@ object GeneratorsDao {
           name = "",
           description = None,
           language = None,
-          visibility = visibility,
-          owner = owner,
-          enabled = isEnabled.getOrElse(false) || (!user.isEmpty && isOwner(user.get.guid, owner)) || isTrusted(uri) || isOrgEnabled(visibility, genGuid, orgEnabledGenerators)
-        ) -> row[Date]("created_at")
-      }.toSeq.sortBy(_._2.getTime).map(_._1).distinct
+          visibility = visibility
+        )
+      }.toSeq
     }
   }
 

@@ -59,7 +59,7 @@ object Versions extends Controller {
                 allServiceVersions = versionsResponse.map(_.version),
                 service = Some(v.service),
                 versionObject = Some(v),
-                generators = generators.filter(_.enabled)
+                generators = generators
               )
               Ok(views.html.versions.show(tpl, application, v.service, watches))
             }

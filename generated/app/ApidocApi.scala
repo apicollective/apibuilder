@@ -81,9 +81,7 @@ package com.gilt.apidoc.api.v0.models {
     name: String,
     language: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
-    visibility: com.gilt.apidoc.api.v0.models.Visibility,
-    owner: com.gilt.apidoc.api.v0.models.User,
-    enabled: Boolean
+    visibility: com.gilt.apidoc.api.v0.models.Visibility
   )
 
   /**
@@ -622,9 +620,7 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "name").read[String] and
         (__ \ "language").readNullable[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "visibility").read[com.gilt.apidoc.api.v0.models.Visibility] and
-        (__ \ "owner").read[com.gilt.apidoc.api.v0.models.User] and
-        (__ \ "enabled").read[Boolean]
+        (__ \ "visibility").read[com.gilt.apidoc.api.v0.models.Visibility]
       )(Generator.apply _)
     }
 
@@ -636,9 +632,7 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "name").write[String] and
         (__ \ "language").writeNullable[String] and
         (__ \ "description").writeNullable[String] and
-        (__ \ "visibility").write[com.gilt.apidoc.api.v0.models.Visibility] and
-        (__ \ "owner").write[com.gilt.apidoc.api.v0.models.User] and
-        (__ \ "enabled").write[Boolean]
+        (__ \ "visibility").write[com.gilt.apidoc.api.v0.models.Visibility]
       )(unlift(Generator.unapply _))
     }
 

@@ -250,9 +250,7 @@
             { "name": "name", "type": "string" },
             { "name": "language", "type": "string", "required": false },
             { "name": "description", "type": "string", "required": false },
-            { "name": "visibility", "type": "visibility" },
-            { "name": "owner", "type": "user" },
-            { "name": "enabled", "type": "boolean" }
+            { "name": "visibility", "type": "visibility" }
           ]
         },
 
