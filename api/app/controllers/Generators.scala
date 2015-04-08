@@ -23,7 +23,6 @@ object Generators extends Controller {
     limit: Long = 100,
     offset: Long = 0
   ) = AnonymousRequest.async { request =>
-    println("limit: " + limit)
     val generators = GeneratorsDao.findAll(
       Authorization(request.user),
       guid = guid,
@@ -31,9 +30,6 @@ object Generators extends Controller {
       limit = limit,
       offset = offset
     )
-    println("guid:" + guid)
-    println("key:" + key)
-    println("generators: " + generators.size)
 
     fillInGeneratorMeta(
       GeneratorsDao.findAll(
@@ -60,7 +56,6 @@ object Generators extends Controller {
   }
 
   private def fillInGeneratorMeta(generator: Generator): Future[Either[Status, Generator]] = {
-    println(s"fillInGeneratorMeta(${generator.key})")
     new Client(generator.uri).generators.getByKey(generator.key).map {
       case Some(meta) => Right(generator.copy(name = meta.name, description = meta.description, language = meta.language))
       case _ => Left(NotFound)
