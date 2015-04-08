@@ -10,7 +10,7 @@
   <div class="version_resource">
     <h3><a href="#model-@lib.UrlKey.generate(resource.`type`)">@{resource.`type`}</a></h3>
 
-    @markdown(resource.description)
+    @Html(lib.Markdown(resource.description))
 
     <h4>Operations</h4>
     @if(resource.operations.isEmpty) {
@@ -28,7 +28,7 @@
            <tr>
              <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.`type`)-@index').toggle()">@operation.method</a></td>
              <td class="nowrap"><a onClick="$('#operation-@lib.UrlKey.generate(resource.`type`)-@index').toggle()">@operation.path</a></td>
-             <td>@markdown(operation.description)</td>
+             <td>@Html(lib.Markdown(operation.description))</td>
              <td>@operation.deprecation.map(deprecation(_))</td>
            </tr>
            <tr id="operation-@lib.UrlKey.generate(resource.`type`)-@index" style="display:none">
@@ -54,7 +54,7 @@
                  <p>
                    HTTP @response.code:
                    @datatype(org, application, version, service, response.`type`)
-                   @markdown(response.description)
+                   @Html(lib.Markdown(response.description))
                    @response.deprecation.map(deprecation(_))
                  </p>
                }

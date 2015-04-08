@@ -29,7 +29,7 @@
       @tpl.generators.map { generator =>
         <tr>
             <td class="generator-select" data-generator-guid="@generator.guid">@generator.name</td>
-            <td class="generator-select" data-generator-guid="@generator.guid">@markdown(generator.description)</td>
+            <td class="generator-select" data-generator-guid="@generator.guid">@Html(lib.Markdown(generator.description))</td>
             <td class="generator-select" data-generator-guid="@generator.guid">@generator.language.getOrElse("")</td>
             <td>
                 <input type="checkbox" name="enabled" value="true" class="generator-enable-setter" data-generator-guid="@generator.guid" checked="checked"/>

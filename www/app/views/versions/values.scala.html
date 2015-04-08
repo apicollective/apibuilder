@@ -8,7 +8,7 @@
    @enum.values.map { value =>
      <tr>
        <td>@value.name@enum.deprecation.map(deprecation(_))</td>
-       <td>@markdown(value.description)</td>
+       <td>@Html(lib.Markdown(value.description))</td>
      </tr>
    }
   </tbody>

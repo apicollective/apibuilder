@@ -1,6 +1,6 @@
 @(deprecation: com.gilt.apidoc.spec.v0.models.Deprecation)
 
 <em>
-  deprecated
-  @deprecation.description.map(d => s": " + markdown(Some(d)))
+  deprecated:
+  @Html(lib.Markdown.toHtml(deprecation.description.getOrElse("")))
 </em>
