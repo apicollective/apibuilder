@@ -325,8 +325,8 @@ class DeprecationSpec extends FunSpec with Matchers {
 
     val resource = validator.service.resources.find(_.`type` == "user").get
     val op = resource.operations.head
-    op.responses.find(_.code == 200).get.deprecation.flatMap(_.description) should be(None)
-    op.responses.find(_.code == 201).get.deprecation.flatMap(_.description) should be(Some("blah"))
+    op.responses.find(r => TestHelper.responseCode(r.code) == "200").get.deprecation.flatMap(_.description) should be(None)
+    op.responses.find(r => TestHelper.responseCode(r.code) == "201").get.deprecation.flatMap(_.description) should be(Some("blah"))
   }
 
   it("body") {

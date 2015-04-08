@@ -3,7 +3,7 @@ package core
 import lib.{ServiceConfiguration, ServiceValidator}
 import builder.OriginalValidator
 import com.gilt.apidoc.api.v0.models.{Original, OriginalType}
-import com.gilt.apidoc.spec.v0.models.Service
+import com.gilt.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeUndefinedType, StringWrapper, IntWrapper}
 import lib.Text
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
@@ -52,6 +52,14 @@ object TestHelper {
     val contents = readFile("spec/service.json")
     val validator = OriginalValidator(config, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
     TestServiceValidator(validator).service
+  }
+
+  def responseCode(responseCode: ResponseCode): String = {
+    responseCode match {
+      case StringWrapper(value) => value
+      case IntWrapper(value) => value.toString
+      case ResponseCodeUndefinedType(_) => sys.error("invalid value")
+    }
   }
 
   def serviceValidatorFromApiJson(contents: String): ServiceValidatorForSpecs = {

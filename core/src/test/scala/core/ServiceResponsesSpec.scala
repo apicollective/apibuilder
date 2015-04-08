@@ -46,7 +46,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
     val json = baseJson.format("DELETE", "")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    val response = validator.service.resources.head.operations.head.responses.find(_.code == 204).get
+    val response = validator.service.resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").get
     response.`type` should be("unit")
   }
 

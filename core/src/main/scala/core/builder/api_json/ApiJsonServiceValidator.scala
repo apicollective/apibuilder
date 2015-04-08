@@ -165,11 +165,15 @@ case class ApiJsonServiceValidator(
     val invalidCodes = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.flatMap { r =>
-          Try(r.code.toInt) match {
-            case Success(v) => None
-            case Failure(ex) => ex match {
-              case e: java.lang.NumberFormatException => {
-                Some(opLabel(resource, op, s"Response code is not an integer[${r.code}]"))
+          if (r.code == ServiceBuilder.DefaultResponseCode) {
+            None
+          } else {
+            Try(r.code.toInt) match {
+              case Success(v) => None
+              case Failure(ex) => ex match {
+                case e: java.lang.NumberFormatException => {
+                  Some(opLabel(resource, op, s"Response code is not an integer[${r.code}]"))
+                }
               }
             }
           }

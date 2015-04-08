@@ -5,6 +5,10 @@ import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kin
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
 
+object ServiceBuilder {
+  val DefaultResponseCode = "default"
+}
+
 case class ServiceBuilder(
   internalMigration: Boolean = false
 ) {
@@ -305,7 +309,11 @@ case class ServiceBuilder(
 
     def apply(internal: InternalResponseForm): Response = {
       Response(
-        code = internal.code.toInt,
+        code = if (internal.code == ServiceBuilder.DefaultResponseCode) {
+          StringWrapper(ServiceBuilder.DefaultResponseCode)
+        } else {
+          IntWrapper(internal.code.toInt)
+        },
         `type` = internal.datatype.get.label,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_))
