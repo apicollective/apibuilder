@@ -28,25 +28,11 @@ class VersionsDaoSpec extends FunSpec with Matchers {
     ApplicationsDao.create(Util.createdBy, Util.testOrg, applicationForm)
   }
 
-  private def createService(app: com.gilt.apidoc.api.v0.models.Application): Service = Service(
-    name = app.name,
-    organization = Organization(key = "test"),
-    application = Application(key = app.key),
-    namespace = "test." + key,
-    version = "0.0.1-dev",
-    headers = Nil,
-    imports = Nil,
-    enums = Nil,
-    models = Nil,
-    unions = Nil,
-    resources = Nil
-  )
-
   describe("with an application") {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
     val application: com.gilt.apidoc.api.v0.models.Application = createApplication(applicationKey)
-    val service = createService(application)
+    val service = Util.createService(application)
 
     it("create") {
       val version = VersionsDao.create(Util.createdBy, application, "1.0.0", Original, service)
@@ -71,7 +57,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
   it("sorts properly") {
     val app = createApplication()
-    val service = createService(app)
+    val service = Util.createService(app)
     val version1 = VersionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
     val version2 = VersionsDao.create(Util.createdBy, app, "1.0.2-dev", Original, service)
 
@@ -83,7 +69,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
   it("can parse original") {
     val app = createApplication()
-    val service = createService(app)
+    val service = Util.createService(app)
     val version = VersionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
 
     val serviceConfig = ServiceConfiguration(
@@ -103,7 +89,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
   it("trims version number") {
     val app = createApplication()
-    val service = createService(app)
+    val service = Util.createService(app)
     val version = VersionsDao.create(Util.createdBy, app, " 1.0.2\n ", Original, service)
     version.version should be("1.0.2")
   }

@@ -1,16 +1,22 @@
 package db
 
 import lib.Role
-import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, Visibility}
+import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OriginalType, Visibility}
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
+import play.api.libs.json.Json
 
 class ApplicationsDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
   private lazy val baseUrl = "http://localhost"
+
+  private val Original = com.gilt.apidoc.api.v0.models.Original(
+    `type` = OriginalType.ApiJson,
+    data = Json.obj("name" -> s"test-${UUID.randomUUID}").toString
+  )
 
   private def upsertApplication(
     nameOption: Option[String] = None,
@@ -158,6 +164,38 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
       val guids = ApplicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(publicApplication.name)).map(_.guid)
       guids.contains(publicApplication.guid) should be(true)
       guids.contains(privateApplication.guid) should be(false)
+    }
+
+    it("hasVersion") {
+      val app = Util.createApplication(org)
+
+      ApplicationsDao.findAll(
+        Authorization.All,
+        guid = Some(app.guid),
+        hasVersion = Some(false)
+      ).map(_.guid) should be(Seq(app.guid))
+
+      ApplicationsDao.findAll(
+        Authorization.All,
+        guid = Some(app.guid),
+        hasVersion = Some(true)
+      ).map(_.guid) should be(Seq.empty)
+
+      val service = Util.createService(app)
+      val version = VersionsDao.create(Util.createdBy, app, "1.0.0", Original, service)
+
+      ApplicationsDao.findAll(
+        Authorization.All,
+        guid = Some(app.guid),
+        hasVersion = Some(false)
+      ).map(_.guid) should be(Seq.empty)
+
+      ApplicationsDao.findAll(
+        Authorization.All,
+        guid = Some(app.guid),
+        hasVersion = Some(true)
+      ).map(_.guid) should be(Seq(app.guid))
+
     }
 
     describe("Authorization") {

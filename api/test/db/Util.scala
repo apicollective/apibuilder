@@ -1,6 +1,8 @@
 package db
 
 import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Publication, Subscription, SubscriptionForm, User, UserForm, Visibility}
+import com.gilt.apidoc.spec.v0.models.Service
+import com.gilt.apidoc.spec.v0.{models => spec}
 import lib.Role
 import java.util.UUID
 
@@ -104,6 +106,21 @@ object Util {
       )
     )
   }
+
+  def createService(app: com.gilt.apidoc.api.v0.models.Application): Service = Service(
+    name = app.name,
+    organization = spec.Organization(key = "test"),
+    application = spec.Application(key = app.key),
+    namespace = "test." + app.key,
+    version = "0.0.1-dev",
+    headers = Nil,
+    imports = Nil,
+    enums = Nil,
+    models = Nil,
+    unions = Nil,
+    resources = Nil
+  )
+
 
   lazy val createdBy = Util.upsertUser("admin@apidoc.me")
 

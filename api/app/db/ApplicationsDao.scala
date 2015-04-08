@@ -181,6 +181,7 @@ object ApplicationsDao {
     name: Option[String] = None,
     key: Option[String] = None,
     version: Option[Version] = None,
+    hasVersion: Option[Boolean] = None,
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Application] = {
@@ -192,6 +193,12 @@ object ApplicationsDao {
       name.map { v => "and lower(trim(applications.name)) = lower(trim({name}))" },
       key.map { v => "and applications.key = lower(trim({key}))" },
       version.map { v => "and applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)" },
+      hasVersion.map { v =>
+        v match {
+          case true => { "and exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
+          case false => { "and not exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
+        }
+      },
       Some(s"order by lower(applications.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
