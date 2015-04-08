@@ -139,6 +139,7 @@ object SubscriptionsDao {
   ): Seq[Subscription] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      authorization.subscriptionFilter().map(v => "and " + v),
       guid.map { v => "and subscriptions.guid = {guid}::uuid" },
       organization.map { v => "and subscriptions.organization_guid = {organization_guid}::uuid" },
       organizationKey.map { v => "and subscriptions.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))" },
@@ -153,7 +154,7 @@ object SubscriptionsDao {
       organizationKey.map('organization_key -> _),
       userGuid.map('user_guid -> _.toString),
       publication.map('publication -> _.toString)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq

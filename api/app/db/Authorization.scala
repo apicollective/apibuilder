@@ -37,13 +37,24 @@ sealed trait Authorization {
     tokensTableName: String = "tokens"
   ): Option[String]
 
+  /**
+    * Generates a sql filter to restrict the returned set of
+    * subscriptions to those that this user is authorized to access.
+    * 
+    * @param subscriptionsTableName e.g "subscriptions"
+    */
+  def subscriptionFilter(
+    subscriptionsTableName: String = "subscriptions",
+    organizationsTableName: String = "organizations"
+  ): Option[String]
+
   def bindVariables(): Seq[NamedParameter] = Seq.empty
 
 }
 
 object Authorization {
 
-  private val UserQuery =
+  private val OrgsByUserQuery =
     s"select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid"
 
   private val PublicApplicationsQuery = s"%s.visibility = '${Visibility.Public.toString}'"
@@ -67,6 +78,11 @@ object Authorization {
       tokensTableName: String = "tokens"
     ): Option[String] = Some("false")
 
+    override def subscriptionFilter(
+      subscriptionsTableName: String = "subscriptions",
+      organizationsTableName: String = "organizations"
+    ): Option[String] = Some("false")
+
   }
 
   case object All extends Authorization {
@@ -84,6 +100,11 @@ object Authorization {
       tokensTableName: String = "tokens"
     ): Option[String] = None
 
+    override def subscriptionFilter(
+      subscriptionsTableName: String = "subscriptions",
+      organizationsTableName: String = "organizations"
+    ): Option[String] = None
+
   }
 
   case class User(userGuid: UUID) extends Authorization {
@@ -91,7 +112,7 @@ object Authorization {
     override def organizationFilter(
       organizationsTableName: String = "organizations"
     ) = {
-      Some(s"($organizationsTableName.visibility = '${Visibility.Public}' or $organizationsTableName.guid in ($UserQuery))")
+      Some(s"($organizationsTableName.visibility = '${Visibility.Public}' or $organizationsTableName.guid in ($OrgsByUserQuery))")
     }
 
     override def applicationFilter(
@@ -101,13 +122,22 @@ object Authorization {
       Some(
         organizationFilter(organizationsTableName).get +
         " and (" + PublicApplicationsQuery.format(applicationsTableName) +
-        s" or $organizationsTableName.guid in ($UserQuery)) "
+        s" or $organizationsTableName.guid in ($OrgsByUserQuery)) "
       )
     }
+
     override def tokenFilter(
       tokensTableName: String = "tokens"
     ): Option[String] = {
       Some(s"${tokensTableName}.user_guid = {authorization_user_guid}::uuid")
+    }
+
+    override def subscriptionFilter(
+      subscriptionsTableName: String = "subscriptions",
+      organizationsTableName: String = "organizations"
+    ): Option[String] = {
+      val orgsFilter = s"$organizationsTableName.guid in ($OrgsByUserQuery)"
+      Some(s"(${subscriptionsTableName}.user_guid = {authorization_user_guid}::uuid or $orgsFilter)")
     }
 
     override def bindVariables(): Seq[NamedParameter] = {

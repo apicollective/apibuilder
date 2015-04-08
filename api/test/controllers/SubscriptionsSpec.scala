@@ -148,4 +148,12 @@ class SubscriptionsSpec extends BaseSpec {
     }.responseCode must be(400)
   }
 
+  "GET /subscriptions authorizes user" in new WithServer {
+    val subscription = createSubscription(createSubscriptionForm(org))
+    val randomUser = createUser()
+
+    await(client.subscriptions.get(guid = Some(subscription.guid))).map(_.guid) must be(Seq(subscription.guid))
+    await(newClient(randomUser).subscriptions.get(guid = Some(subscription.guid))).map(_.guid) must be(Nil)
+  }
+
 }
