@@ -330,7 +330,10 @@ case class ServiceSpecValidator(
             param.default match {
               case None => None
               case Some(default) => {
-                validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
+                param.required match {
+                  case false => Some(opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required"))
+                  case true => validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
+                }
               }
             }
           }

@@ -326,7 +326,15 @@ case class ServiceBuilder(
         location = internal.location.map(ParameterLocation(_)).getOrElse(defaultLocation),
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-        required = internal.required,
+        required = internalMigration match {
+          case true => {
+            internal.default match {
+              case None => internal.required
+              case Some(_) => true
+            }
+          }
+          case false => internal.required
+        },
         default = internal.default,
         minimum = internal.minimum,
         maximum = internal.maximum,
