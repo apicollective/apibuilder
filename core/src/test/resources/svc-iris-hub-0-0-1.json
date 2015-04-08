@@ -620,7 +620,7 @@
                     "parameters": [
                         { "name": "vendor_guid", "type": "uuid" },
                         { "name": "number", "type": "string" },
-                        { "name": "quantity", "type": "long", "required": false, "default": 0 },
+                        { "name": "quantity", "type": "long", "default": 0 },
                         { "name": "prices", "type": "prices", "required": false },
                         { "name": "attributes", "type": "[attribute]", "required": false, "example": "size", "description": "Attributes are part of the unique item composition. In they physical world, attributes would be sku-defining properties like color or size." },
                         { "name": "return_policy", "type": "return_policy", "required": false },

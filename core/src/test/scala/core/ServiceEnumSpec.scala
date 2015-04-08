@@ -31,7 +31,7 @@ class ServiceEnumSpec extends FunSpec with Matchers {
             {
               "method": "GET",
               "parameters": [
-                { "name": "age_group", "type": "age_group", "required": false%s }
+                { "name": "age_group", "type": "age_group"%s }
               ]
             }
           ]
