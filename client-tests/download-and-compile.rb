@@ -16,9 +16,6 @@ PROFILE = args[:profile]
 
 orgs = [] # ['gilt']
 applications = []  # ['apidoc', 'apidoc-spec', 'apidoc-generator']
-applications_to_skip_by_org = {
-  "gilt" => ["transactional-email-delivery-service"] # Currently > 22 fields
-}
 
 if !args.has_key?(:force) && (!orgs.empty? || !applications.empty?)
   puts "Confirm you would like to limit tests to:"
@@ -178,11 +175,9 @@ targets.each do |target|
 
     get_in_batches("list organizations") do |org|
       next if !orgs.empty? && !orgs.include?(org)
-      applications_to_skip = applications_to_skip_by_org[org] || []
 
       get_in_batches("list applications #{org}") do |app|
         next if !applications.empty? && !applications.include?(app)
-        next if applications_to_skip.include?(app)
 
         puts "  %s/%s" % [org, app]
         if code = get_code(org, app, generator)
