@@ -14,8 +14,8 @@ args = ApidocCli::Args.parse(ARGV)
 
 PROFILE = args[:profile]
 
-orgs = ['copy-gilt'] # ['gilt']
-applications = ['test-mobile-plp-feed']  # ['apidoc', 'apidoc-spec', 'apidoc-generator']
+orgs = [] # ['gilt']
+applications = []  # ['apidoc', 'apidoc-spec', 'apidoc-generator']
 
 if !args.has_key?(:force) && (!orgs.empty? || !applications.empty?)
   puts "Confirm you would like to limit tests to:"
