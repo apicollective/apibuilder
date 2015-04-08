@@ -15,7 +15,7 @@
   <tbody>
    <tr>
      <td>@datatype(org, app, version, service, body.`type`)</td>
-     <td>@markdown(body.description, defaultText = "N/A")</td>
+     <td>@Html(lib.Markdown.toHtml(body.description.getOrElse("N/A")))</td>
      <td>@body.deprecation.map(deprecation(_))</td>
    </tr>
   </tbody>

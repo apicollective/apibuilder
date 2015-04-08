@@ -23,7 +23,7 @@
     @service.description.map { desc =>
       <div class="pull-left">
         <p class="service-description">
-          @markdown(Some(desc))
+          @Html(lib.Markdown.toHtml(desc))
         </p>
       </div>
     }
@@ -62,7 +62,7 @@
           <h3>@enum.name</h3>
           @enum.deprecation.map(deprecation(_))
 
-          @markdown(enum.description)
+          @Html(lib.Markdown(enum.description))
 
           @values(tpl.org.get, application, tpl.version.get, enum)
         </div>
@@ -80,7 +80,7 @@
           <h3>@model.name</h3>
           @model.deprecation.map(deprecation(_))
 
-          @markdown(model.description)
+          @Html(lib.Markdown(model.description))
 
           @fields(tpl.org.get, application, tpl.version.get, service, model.fields)
         </div>
@@ -97,7 +97,7 @@
           <h3>@union.name</h3>
           @union.deprecation.map(deprecation(_))
 
-          @markdown(union.description)
+          @Html(lib.Markdown(union.description))
 
           @unionTypes(tpl.org.get, application, tpl.version.get, service, union)
         </div>

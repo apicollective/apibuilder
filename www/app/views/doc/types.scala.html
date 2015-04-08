@@ -18,7 +18,7 @@
       <a name='@md.primitive.toString'></a>
       <h3>@md.primitive.toString</h3>
       <ul>
-        <li> @markdown(Some(md.description))</li>
+        <li> @Html(lib.Markdown.toHtml(md.description))</li>
         <li> Examples:
              @Html(md.examples.mkString("<ul><li>", "</li><li>", "</li></ul>"))
         </li>

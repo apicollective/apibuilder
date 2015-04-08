@@ -6,8 +6,8 @@
 
   <ul>
     <li> Full token: @token.maskedToken (<a href="@routes.TokensController.cleartext(token.guid)">Show full token</a>) </li>
-    <li> Description: @markdown(token.description, default = Some(Html("<em>none</em>")))</li>
-    <li> Created: @lib.DateHelper.longDateTime(tpl.timeZone, token.audit.createdAt)</li>
+    <li> Description: @Html(lib.Markdown.toHtml(token.description.getOrElse("~none~"))) </li>
+    <li> Created: @lib.DateHelper.longDateTime(tpl.timeZone, token.audit.createdAt) </li>
   </ul>
 
   <ul>

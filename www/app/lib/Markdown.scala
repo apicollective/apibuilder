@@ -8,6 +8,13 @@ import org.pegdown.{Extensions, PegDownProcessor}
   */
 object Markdown {
 
+  def apply(
+    value: Option[String],
+    default: String = ""
+  ): String = {
+    value.map { toHtml(_) }.getOrElse(default)
+  }
+
   def toHtml(value: String): String = {
     (new PegDownProcessor(Extensions.ALL)).markdownToHtml(value)
   }

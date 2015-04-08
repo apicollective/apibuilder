@@ -9,7 +9,7 @@
    @union.types.map { t =>
      <tr>
        <td>@datatype(org, app, version, service, t.`type`)@t.deprecation.map(deprecation(_))</td>
-       <td>@markdown(t.description)</td>
+       <td>@Html(lib.Markdown(t.description))</td>
      </tr>
    }
   </tbody>
