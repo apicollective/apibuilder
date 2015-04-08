@@ -13,17 +13,17 @@ object Response {
     code: String,
     response: swagger.Response
   ): apidoc.Response = {
-    val intCode = if (code == DefaultResponseCode) {
-      409 // TODO: Apidoc doesn't yet support default response codes
+    val responseCode = if (code == DefaultResponseCode) {
+      apidoc.StringWrapper(DefaultResponseCode)
     } else {
-      code.toInt
+      apidoc.IntWrapper(code.toInt)
     }
 
     // getExamples
     // getHeaders
 
     apidoc.Response(
-      code = intCode,
+      code = responseCode,
       `type` = Option(response.getSchema) match {
         case None => Primitives.Unit.toString
         case Some(schema) => resolver.schemaType(schema)

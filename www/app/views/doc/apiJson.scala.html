@@ -371,7 +371,14 @@
 
     where
     <ul>
-      <li><em>http_status_code</em> A valid HTTP status code for this response (e.g. 200). Only status codes that have interesting return types should be documented.</li>
+
+      <li><em>http_status_code</em> A valid HTTP status code for this
+      response (e.g. 200). Only status codes that have interesting
+      return types should be documented. You can also specify an HTTP
+      status code of 'default' to map to all other non documented
+      types. This is useful to capture a generic error type that would
+      be returned for non documented response codes.</li>
+
       <li><em>type</em> @typeInfo("response")</li>
       @description("response")
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>

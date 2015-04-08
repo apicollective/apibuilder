@@ -26,6 +26,15 @@
 	}
     },
 
+    "unions": {
+	"response_code": {
+	    "types": [
+		{ "type": "integer", "description": "Documents an HTTP status code (e.g. 200, 409, etc.)" },
+		{ "type": "string", "description": "Can be set to the string 'default' to indicate all other response codes. Only the value 'default' is valid here." }
+	    ]
+	}
+    },
+
     "models": {
 	"service": {
 	    "fields": [
@@ -165,7 +174,7 @@
 
 	"response": {
 	    "fields": [
-		{ "name": "code", "type": "integer" },
+		{ "name": "code", "type": "response_code" },
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false }

@@ -5,6 +5,8 @@
  */
 package com.gilt.apidoc.spec.v0.models {
 
+  sealed trait ResponseCode
+
   case class Application(
     key: String
   )
@@ -117,7 +119,7 @@ package com.gilt.apidoc.spec.v0.models {
   )
 
   case class Response(
-    code: Int,
+    code: com.gilt.apidoc.spec.v0.models.ResponseCode,
     `type`: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None
@@ -155,6 +157,30 @@ package com.gilt.apidoc.spec.v0.models {
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Deprecation] = None
   )
+
+  /**
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union ResponseCode, it will need to be handled in the client code. This
+   * implementation will deserialize these future types as an instance of this class.
+   */
+  case class ResponseCodeUndefinedType(
+    description: String
+  ) extends ResponseCode
+
+
+  /**
+   * Wrapper class to support the union types containing the datatype[integer]
+   */
+  case class IntWrapper(
+    value: Int
+  ) extends ResponseCode
+
+  /**
+   * Wrapper class to support the union types containing the datatype[string]
+   */
+  case class StringWrapper(
+    value: String
+  ) extends ResponseCode
 
   sealed trait Method
 
@@ -526,7 +552,7 @@ package com.gilt.apidoc.spec.v0.models {
 
     implicit def jsonReadsApidocspecResponse: play.api.libs.json.Reads[Response] = {
       (
-        (__ \ "code").read[Int] and
+        (__ \ "code").read[com.gilt.apidoc.spec.v0.models.ResponseCode] and
         (__ \ "type").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.gilt.apidoc.spec.v0.models.Deprecation]
@@ -535,7 +561,7 @@ package com.gilt.apidoc.spec.v0.models {
 
     implicit def jsonWritesApidocspecResponse: play.api.libs.json.Writes[Response] = {
       (
-        (__ \ "code").write[Int] and
+        (__ \ "code").write[com.gilt.apidoc.spec.v0.models.ResponseCode] and
         (__ \ "type").write[String] and
         (__ \ "description").writeNullable[String] and
         (__ \ "deprecation").writeNullable[com.gilt.apidoc.spec.v0.models.Deprecation]
@@ -612,6 +638,42 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "description").writeNullable[String] and
         (__ \ "deprecation").writeNullable[com.gilt.apidoc.spec.v0.models.Deprecation]
       )(unlift(UnionType.unapply _))
+    }
+
+    implicit def jsonReadsApidocspecIntWrapper: play.api.libs.json.Reads[IntWrapper] = {
+      (__ \ "value").read[Int].map { x => new IntWrapper(value = x) }
+    }
+
+    implicit def jsonWritesApidocspecIntWrapper: play.api.libs.json.Writes[IntWrapper] = new play.api.libs.json.Writes[IntWrapper] {
+      def writes(x: IntWrapper) = play.api.libs.json.Json.obj(
+        "value" -> play.api.libs.json.Json.toJson(x.value)
+      )
+    }
+
+    implicit def jsonReadsApidocspecStringWrapper: play.api.libs.json.Reads[StringWrapper] = {
+      (__ \ "value").read[String].map { x => new StringWrapper(value = x) }
+    }
+
+    implicit def jsonWritesApidocspecStringWrapper: play.api.libs.json.Writes[StringWrapper] = new play.api.libs.json.Writes[StringWrapper] {
+      def writes(x: StringWrapper) = play.api.libs.json.Json.obj(
+        "value" -> play.api.libs.json.Json.toJson(x.value)
+      )
+    }
+
+    implicit def jsonReadsApidocspecResponseCode: play.api.libs.json.Reads[ResponseCode] = {
+      (
+        (__ \ "integer").read(jsonReadsApidocspecIntWrapper).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
+        orElse
+        (__ \ "string").read(jsonReadsApidocspecStringWrapper).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
+      )
+    }
+
+    implicit def jsonWritesApidocspecResponseCode: play.api.libs.json.Writes[ResponseCode] = new play.api.libs.json.Writes[ResponseCode] {
+      def writes(obj: ResponseCode) = obj match {
+        case x: IntWrapper => play.api.libs.json.Json.obj("integer" -> jsonWritesApidocspecIntWrapper.writes(x))
+        case x: StringWrapper => play.api.libs.json.Json.obj("string" -> jsonWritesApidocspecStringWrapper.writes(x))
+        case x: com.gilt.apidoc.spec.v0.models.ResponseCodeUndefinedType => sys.error(s"The type[com.gilt.apidoc.spec.v0.models.ResponseCodeUndefinedType] should never be serialized")
+      }
     }
   }
 }
