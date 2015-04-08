@@ -13,6 +13,7 @@ object Applications extends Controller {
     orgKey: String,
     name: Option[String],
     key: Option[String],
+    hasVersion: Option[Boolean],
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
@@ -21,6 +22,7 @@ object Applications extends Controller {
       orgKey = Some(orgKey),
       name = name,
       key = key,
+      hasVersion = hasVersion,
       limit = limit,
       offset = offset
     )

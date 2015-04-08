@@ -1180,12 +1180,14 @@ package com.gilt.apidoc.api.v0 {
         orgKey: String,
         name: _root_.scala.Option[String] = None,
         key: _root_.scala.Option[String] = None,
+        hasVersion: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Application]] = {
         val queryParameters = Seq(
           name.map("name" -> _),
           key.map("key" -> _),
+          hasVersion.map("has_version" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten
@@ -2018,6 +2020,7 @@ package com.gilt.apidoc.api.v0 {
       orgKey: String,
       name: _root_.scala.Option[String] = None,
       key: _root_.scala.Option[String] = None,
+      hasVersion: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Application]]
