@@ -50,6 +50,10 @@ object Code extends Controller {
               invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
             ).map { invocation =>
               Ok(Json.toJson(com.gilt.apidoc.api.v0.models.Code(generator, invocation.source)))
+            }.recover {
+              case r: com.gilt.apidoc.generator.v0.errors.ErrorsResponse => {
+                Conflict(Json.toJson(Validation.errors(r.errors.map(_.message))))
+              }
             }
           }
         }
