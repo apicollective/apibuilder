@@ -116,6 +116,7 @@ targets = [
 def cli(command, opts={})
   limit = opts.delete(:limit)
   offset = opts.delete(:offset)
+  has_version = opts.delete(:has_version)
   if !opts.empty?
     raise "Invalid keys: #{opts.keys.inspect}"
   end
@@ -123,6 +124,7 @@ def cli(command, opts={})
   builder = {
     "LIMIT" => limit.to_s.strip,
     "OFFSET" => offset.to_s.strip,
+    "HAS_VERSION" => has_version.to_s,
     "PROFILE" => (PROFILE.to_s.strip == "") ? "" : PROFILE.to_s.strip
   }.select { |k, v| v != "" }.map { |k,v| "export #{k}=#{v}" }
 
@@ -150,13 +152,18 @@ end
 
 CACHE = {}
 
-def get_in_batches(cli_command)
+def get_in_batches(cli_command, opts={})
+  has_version = opts.delete(:has_version)
+  if !opts.empty?
+    raise "Invalid keys: #{opts.keys.inspect}"
+  end
+
   offset = 0
   limit = 100
   records = nil
   while records.nil? || records.size >= limit
-    cache_key = "%s?limit=%s&offset=%s" % [cli_command, limit, offset]
-    CACHE[cache_key] ||= cli(cli_command, :limit => limit, :offset => offset).split("\n").map(&:strip)
+    cache_key = "%s?limit=%s&offset=%s&has_version=%s" % [cli_command, limit, offset, has_version]
+    CACHE[cache_key] ||= cli(cli_command, :limit => limit, :offset => offset, :has_version => has_version).split("\n").map(&:strip)
 
     records = CACHE[cache_key]
     records.each do |rec|
@@ -176,7 +183,7 @@ targets.each do |target|
     get_in_batches("list organizations") do |org|
       next if !orgs.empty? && !orgs.include?(org)
 
-      get_in_batches("list applications #{org}") do |app|
+      get_in_batches("list applications #{org}", :has_version => true) do |app|
         next if !applications.empty? && !applications.include?(app)
 
         puts "  %s/%s" % [org, app]
