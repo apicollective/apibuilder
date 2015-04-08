@@ -34,9 +34,9 @@ In development:
 
 Updating apidoc.me
 ==================
-/web/apidoc-cli/bin/apidoc upload gilt apidoc-spec ./spec/service.json  --version 0.8.28
-/web/apidoc-cli/bin/apidoc upload gilt apidoc-generator ./spec/generator.json  --version 0.8.28
-/web/apidoc-cli/bin/apidoc upload gilt apidoc-api ./spec/api.json  --version 0.8.28
+/web/apidoc-cli/bin/apidoc upload gilt apidoc-spec ./spec/service.json  --version 0.9.2
+/web/apidoc-cli/bin/apidoc upload gilt apidoc-generator ./spec/generator.json  --version 0.9.2
+/web/apidoc-cli/bin/apidoc upload gilt apidoc-api ./spec/api.json  --version 0.9.2
 
 SBT
 ==========
