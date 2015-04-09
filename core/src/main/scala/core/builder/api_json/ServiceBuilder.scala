@@ -309,9 +309,7 @@ case class ServiceBuilder(
 
     def apply(internal: InternalResponseForm): Response = {
       Response(
-        code = if (internal.code == ServiceBuilder.DefaultResponseCode) {
-          StringWrapper(ServiceBuilder.DefaultResponseCode)
-        } else {
+        code = ResponseCodeOption.fromString(internal.code).getOrElse {
           IntWrapper(internal.code.toInt)
         },
         `type` = internal.datatype.get.label,

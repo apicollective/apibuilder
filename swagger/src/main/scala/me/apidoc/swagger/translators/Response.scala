@@ -6,15 +6,13 @@ import com.wordnik.swagger.{ models => swagger }
 
 object Response {
 
-  private val DefaultResponseCode = "default"
-
   def apply(
     resolver: Resolver,
     code: String,
     response: swagger.Response
   ): apidoc.Response = {
-    val responseCode = if (code == DefaultResponseCode) {
-      apidoc.StringWrapper(DefaultResponseCode)
+    val responseCode = if (code == "default") {
+      apidoc.ResponseCodeOption.Default
     } else {
       apidoc.IntWrapper(code.toInt)
     }

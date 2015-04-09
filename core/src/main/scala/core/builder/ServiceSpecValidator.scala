@@ -1,7 +1,7 @@
 package builder
 
 import core.{Importer, TypeValidator, TypesProvider}
-import com.gilt.apidoc.spec.v0.models.{IntWrapper, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, Resource, Service, StringWrapper}
+import com.gilt.apidoc.spec.v0.models.{IntWrapper, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type}
 
 case class ServiceSpecValidator(
@@ -439,15 +439,15 @@ case class ServiceSpecValidator(
 
   private def responseCode5xx(responseCode: ResponseCode): Boolean = {
     responseCode match {
-      case StringWrapper(value) => false
       case IntWrapper(value) => value >= 500
-      case ResponseCodeUndefinedType(value) => false
+      case ResponseCodeOption.Default | ResponseCodeOption.UNDEFINED(_) | ResponseCodeUndefinedType(_) => false
     }
   }
 
   private def responseCodeString(responseCode: ResponseCode): String = {
     responseCode match {
-      case StringWrapper(value) => value
+      case ResponseCodeOption.Default => ResponseCodeOption.Default.toString
+      case ResponseCodeOption.UNDEFINED(value) => value
       case IntWrapper(value) => value.toString
       case ResponseCodeUndefinedType(value) => value.toString
     }
@@ -480,7 +480,6 @@ case class ServiceSpecValidator(
       resource.operations.flatMap { op =>
         val types = op.responses.flatMap { r =>
           r.code match {
-            case StringWrapper(value) => None
             case IntWrapper(value) => {
               if (value >= 200 && value < 300) {
                 Some(r.`type`)
@@ -488,7 +487,7 @@ case class ServiceSpecValidator(
                 None
               }
             }
-            case ResponseCodeUndefinedType(value) => None
+            case ResponseCodeOption.Default | ResponseCodeOption.UNDEFINED(_) | ResponseCodeUndefinedType(_) => None
           }
         }.distinct
 

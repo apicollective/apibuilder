@@ -3,7 +3,7 @@ package core
 import lib.{ServiceConfiguration, ServiceValidator}
 import builder.OriginalValidator
 import com.gilt.apidoc.api.v0.models.{Original, OriginalType}
-import com.gilt.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeUndefinedType, StringWrapper, IntWrapper}
+import com.gilt.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, IntWrapper}
 import lib.Text
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
@@ -56,9 +56,10 @@ object TestHelper {
 
   def responseCode(responseCode: ResponseCode): String = {
     responseCode match {
-      case StringWrapper(value) => value
       case IntWrapper(value) => value.toString
-      case ResponseCodeUndefinedType(_) => sys.error("invalid value")
+      case ResponseCodeOption.Default => ResponseCodeOption.Default.toString
+      case ResponseCodeOption.UNDEFINED(value) => sys.error(s"invalid value[$value]")
+      case ResponseCodeUndefinedType(value) => sys.error(s"invalid response code type[$value]")
     }
   }
 

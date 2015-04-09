@@ -23,6 +23,12 @@
 		{ "name": "Query" },
 		{ "name": "Form" }
 	    ]
+	},
+
+	"response_code_option": {
+	    "values": [
+		{ "name": "Default" }
+	    ]
 	}
     },
 
@@ -30,7 +36,7 @@
 	"response_code": {
 	    "types": [
 		{ "type": "integer", "description": "Documents an HTTP status code (e.g. 200, 409, etc.)" },
-		{ "type": "string", "description": "Can be set to the string 'default' to indicate all other response codes. Only the value 'default' is valid here." }
+		{ "type": "response_code_option", "description": "An individual operation can specify a response code of default to handle all other response codes. This is most useful for providing consistent error handling from an operation." }
 	    ]
 	}
     },

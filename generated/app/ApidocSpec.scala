@@ -175,13 +175,6 @@ package com.gilt.apidoc.spec.v0.models {
     value: Int
   ) extends ResponseCode
 
-  /**
-   * Wrapper class to support the union types containing the datatype[string]
-   */
-  case class StringWrapper(
-    value: String
-  ) extends ResponseCode
-
   sealed trait Method
 
   object Method {
@@ -258,6 +251,39 @@ package com.gilt.apidoc.spec.v0.models {
 
   }
 
+  sealed trait ResponseCodeOption extends ResponseCode
+
+  object ResponseCodeOption {
+
+    case object Default extends ResponseCodeOption { override def toString = "Default" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends ResponseCodeOption
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Default)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): ResponseCodeOption = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[ResponseCodeOption] = byName.get(value.toLowerCase)
+
+  }
+
 }
 
 package com.gilt.apidoc.spec.v0.models {
@@ -296,6 +322,11 @@ package com.gilt.apidoc.spec.v0.models {
     implicit val jsonReadsApidocspecParameterLocation = __.read[String].map(ParameterLocation.apply)
     implicit val jsonWritesApidocspecParameterLocation = new Writes[ParameterLocation] {
       def writes(x: ParameterLocation) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsApidocspecResponseCodeOption = __.read[String].map(ResponseCodeOption.apply)
+    implicit val jsonWritesApidocspecResponseCodeOption = new Writes[ResponseCodeOption] {
+      def writes(x: ResponseCodeOption) = JsString(x.toString)
     }
 
     implicit def jsonReadsApidocspecApplication: play.api.libs.json.Reads[Application] = {
@@ -650,28 +681,18 @@ package com.gilt.apidoc.spec.v0.models {
       )
     }
 
-    implicit def jsonReadsApidocspecStringWrapper: play.api.libs.json.Reads[StringWrapper] = {
-      (__ \ "value").read[String].map { x => new StringWrapper(value = x) }
-    }
-
-    implicit def jsonWritesApidocspecStringWrapper: play.api.libs.json.Writes[StringWrapper] = new play.api.libs.json.Writes[StringWrapper] {
-      def writes(x: StringWrapper) = play.api.libs.json.Json.obj(
-        "value" -> play.api.libs.json.Json.toJson(x.value)
-      )
-    }
-
     implicit def jsonReadsApidocspecResponseCode: play.api.libs.json.Reads[ResponseCode] = {
       (
         (__ \ "integer").read(jsonReadsApidocspecIntWrapper).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
         orElse
-        (__ \ "string").read(jsonReadsApidocspecStringWrapper).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
+        (__ \ "response_code_option").read(jsonReadsApidocspecResponseCodeOption).asInstanceOf[play.api.libs.json.Reads[ResponseCode]]
       )
     }
 
     implicit def jsonWritesApidocspecResponseCode: play.api.libs.json.Writes[ResponseCode] = new play.api.libs.json.Writes[ResponseCode] {
       def writes(obj: ResponseCode) = obj match {
         case x: IntWrapper => play.api.libs.json.Json.obj("integer" -> jsonWritesApidocspecIntWrapper.writes(x))
-        case x: StringWrapper => play.api.libs.json.Json.obj("string" -> jsonWritesApidocspecStringWrapper.writes(x))
+        case x: com.gilt.apidoc.spec.v0.models.ResponseCodeOption => play.api.libs.json.Json.obj("response_code_option" -> jsonWritesApidocspecResponseCodeOption.writes(x))
         case x: com.gilt.apidoc.spec.v0.models.ResponseCodeUndefinedType => sys.error(s"The type[com.gilt.apidoc.spec.v0.models.ResponseCodeUndefinedType] should never be serialized")
       }
     }
@@ -725,6 +746,17 @@ package com.gilt.apidoc.spec.v0 {
 
     implicit val queryStringBindableEnumParameterLocation = new QueryStringBindable.Parsing[com.gilt.apidoc.spec.v0.models.ParameterLocation](
       ParameterLocation.fromString(_).get, _.toString, enumParameterLocationNotFound
+    )
+
+    // Enum: ResponseCodeOption
+    private val enumResponseCodeOptionNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.ResponseCodeOption.all.mkString(", ")}"
+
+    implicit val pathBindableEnumResponseCodeOption = new PathBindable.Parsing[com.gilt.apidoc.spec.v0.models.ResponseCodeOption] (
+      ResponseCodeOption.fromString(_).get, _.toString, enumResponseCodeOptionNotFound
+    )
+
+    implicit val queryStringBindableEnumResponseCodeOption = new QueryStringBindable.Parsing[com.gilt.apidoc.spec.v0.models.ResponseCodeOption](
+      ResponseCodeOption.fromString(_).get, _.toString, enumResponseCodeOptionNotFound
     )
 
   }
