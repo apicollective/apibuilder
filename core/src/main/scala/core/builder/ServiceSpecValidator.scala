@@ -247,7 +247,7 @@ case class ServiceSpecValidator(
     val datatypeErrors = service.resources.flatMap { resource =>
       typeResolver.parse(resource.`type`) match {
         case None => {
-          Some(s"Resource[${resource.`type`}] has an invalid type")
+          Some(s"Resource[${resource.`type`}] has an invalid type. Must resolve to a known enum, model or primitive")
         }
         case Some(dt) => {
           dt match {

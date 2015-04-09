@@ -113,4 +113,46 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
     operations.last.path should be("/foo")
   }
 
+  describe("resource types") {
+    val baseJson = """
+    {
+      "base_url": "http://localhost:9000",
+      "name": "Api Doc",
+
+      "enums": {
+        "user_type": {
+          "values": [
+            { "name": "registered" },
+            { "name": "guest" }
+          ]
+        }
+      },
+
+      "resources": {
+        "%s": {
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:id"
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    it("validates that resource types are well defined") {
+      val json = baseJson.format("user")
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
+      validator.errors.mkString("") should be("Resource[user] has an invalid type. Must resolve to a known enum, model or primitive")
+    }
+
+    it("enums can be mapped to resources") {
+      val json = baseJson.format("user_type")
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
+      validator.errors.mkString("") should be("")
+    }
+
+  }
+
 }

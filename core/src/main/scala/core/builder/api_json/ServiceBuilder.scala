@@ -1,7 +1,7 @@
 package builder.api_json
 
 import core.{ClientFetcher, Importer, ServiceFetcher}
-import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Type, Kind, UrlKey}
+import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
 
@@ -71,7 +71,7 @@ case class ServiceBuilder(
             plural = enum.plural,
             description = internal.description,
             deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-            operations = internal.operations.map(op => OperationBuilder(op))
+            operations = internal.operations.map(op => OperationBuilder(op, models = models))
           )
         }
 
@@ -90,7 +90,13 @@ case class ServiceBuilder(
             case None => {
               unions.find(_.name == internal.datatype.name) match {
                 case None => {
-                  sys.error(s"Resource type[${internal.datatype.name}] must resolve to a model, enum or union type")
+                  Resource(
+                    `type` = internal.datatype.label,
+                    plural = Text.pluralize(internal.datatype.name),
+                    description = internal.description,
+                    deprecation = internal.deprecation.map(DeprecationBuilder(_)),
+                    operations = internal.operations.map(op => OperationBuilder(op, models = models))
+                  )
                 }
                 case Some(union) => {
                   Resource(
