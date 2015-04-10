@@ -162,30 +162,13 @@ case class ApiJsonServiceValidator(
 
 
   private def validateResponses(): Seq[String] = {
-    val invalidCodes = internalService.get.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.responses.flatMap { r =>
-          Try(r.code.toInt) match {
-            case Success(v) => None
-            case Failure(ex) => ex match {
-              case e: java.lang.NumberFormatException => {
-                Some(opLabel(resource, op, s"Response code is not an integer[${r.code}]"))
-              }
-            }
-          }
-        }
-      }
-    }
-
-    val warnings = internalService.get.resources.flatMap { resource =>
+    internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.filter(r => !r.warnings.isEmpty).map { r =>
           opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", "))
         }
       }
     }
-
-    invalidCodes ++ warnings
   }
 
   private def validateParameterBodies(): Seq[String] = {

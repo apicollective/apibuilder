@@ -115,7 +115,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    validator.service.resources.head.operations.head.responses.find(_.code == 204).getOrElse {
+    validator.service.resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").getOrElse {
       sys.error("Missing 204 response")
     }
   }

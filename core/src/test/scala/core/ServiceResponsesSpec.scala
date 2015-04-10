@@ -13,6 +13,12 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
           "fields": [
             { "name": "id", "type": "long" }
           ]
+        },
+        "error": {
+          "fields": [
+            { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
+            { "name": "message", "type": "string", "description": "Description of the error" }
+          ]
         }
       },
       "resources": {
@@ -40,7 +46,7 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
     val json = baseJson.format("DELETE", "")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString("") should be("")
-    val response = validator.service.resources.head.operations.head.responses.find(_.code == 204).get
+    val response = validator.service.resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "204").get
     response.`type` should be("unit")
   }
 
@@ -82,6 +88,26 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
     val json = baseJson.format("", "")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString(" ") should be(s"Resource[user] /users/:id method must be a non empty string")
+  }
+
+  it("supports 'default' keyword for response codes") {
+    val json = baseJson.format("DELETE", s""", "responses": { "default": { "type": "error" } } """)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString(" ") should be("")
+  }
+
+  it("validates strings that are not 'default'") {
+    val json = baseJson.format("DELETE", s""", "responses": { "def": { "type": "error" } } """)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString(" ") should be("Response code must be an integer or the keyword 'default' and not[def]")
+  }
+
+  it("validates response codes are >= 100") {
+    Seq(-50, 0, 50).foreach { code =>
+      val json = baseJson.format("DELETE", s""", "responses": { "$code": { "type": "error" } } """)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
+      validator.errors.mkString(" ") should be(s"Response code[$code] must be >= 100")
+    }
   }
 
 }

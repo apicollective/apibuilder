@@ -4,6 +4,7 @@ import core.{ClientFetcher, Importer, ServiceFetcher}
 import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
+import scala.util.{Failure, Success, Try}
 
 case class ServiceBuilder(
   internalMigration: Boolean = false
@@ -305,7 +306,10 @@ case class ServiceBuilder(
 
     def apply(internal: InternalResponseForm): Response = {
       Response(
-        code = internal.code.toInt,
+        code = Try(internal.code.toInt) match {
+          case Success(code) => IntWrapper(code)
+          case Failure(ex) => ResponseCodeOption(internal.code)
+        },
         `type` = internal.datatype.get.label,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_))

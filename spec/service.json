@@ -23,6 +23,21 @@
 		{ "name": "Query" },
 		{ "name": "Form" }
 	    ]
+	},
+
+	"response_code_option": {
+	    "values": [
+		{ "name": "Default" }
+	    ]
+	}
+    },
+
+    "unions": {
+	"response_code": {
+	    "types": [
+		{ "type": "integer", "description": "Documents an HTTP status code (e.g. 200, 409, etc.)" },
+		{ "type": "response_code_option", "description": "An individual operation can specify a response code of default to handle all other response codes. This is most useful for providing consistent error handling from an operation." }
+	    ]
 	}
     },
 
@@ -165,7 +180,7 @@
 
 	"response": {
 	    "fields": [
-		{ "name": "code", "type": "integer" },
+		{ "name": "code", "type": "response_code" },
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false }
