@@ -4,10 +4,7 @@ import core.{ClientFetcher, Importer, ServiceFetcher}
 import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
-
-object ServiceBuilder {
-  val DefaultResponseCode = "default"
-}
+import scala.util.{Failure, Success, Try}
 
 case class ServiceBuilder(
   internalMigration: Boolean = false
@@ -309,8 +306,9 @@ case class ServiceBuilder(
 
     def apply(internal: InternalResponseForm): Response = {
       Response(
-        code = ResponseCodeOption.fromString(internal.code).getOrElse {
-          IntWrapper(internal.code.toInt)
+        code = Try(internal.code.toInt) match {
+          case Success(code) => IntWrapper(code)
+          case Failure(ex) => ResponseCodeOption(internal.code)
         },
         `type` = internal.datatype.get.label,
         description = internal.description,

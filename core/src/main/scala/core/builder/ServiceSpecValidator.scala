@@ -3,6 +3,7 @@ package builder
 import core.{Importer, TypeValidator, TypesProvider}
 import com.gilt.apidoc.spec.v0.models.{IntWrapper, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type}
+import scala.util.{Failure, Success, Try}
 
 case class ServiceSpecValidator(
   service: Service
@@ -454,6 +455,25 @@ case class ServiceSpecValidator(
   }
 
   private def validateResponses(): Seq[String] = {
+    val invalidCodes = service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.responses.flatMap { r =>
+          r.code match {
+            case ResponseCodeOption.Default => None
+            case ResponseCodeOption.UNDEFINED(value) => Some(s"Response code must be an integer or the keyword 'default' and not[$value]")
+            case ResponseCodeUndefinedType(value) => Some(s"Response code must be an integer or the keyword 'default' and not[$value]")
+            case IntWrapper(code) => {
+              if (code < 100) {
+                Some(s"Response code[$code] must be >= 100")
+              } else {
+                None
+              }
+            }
+          }
+        }
+      }
+    }
+
     val invalidMethods = service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.method match {
@@ -517,7 +537,7 @@ case class ServiceSpecValidator(
       }
     }
 
-    invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes
+    invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes
   }
 
 

@@ -96,4 +96,18 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
     validator.errors.mkString(" ") should be("")
   }
 
+  it("validates strings that are not 'default'") {
+    val json = baseJson.format("DELETE", s""", "responses": { "def": { "type": "error" } } """)
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString(" ") should be("Response code must be an integer or the keyword 'default' and not[def]")
+  }
+
+  it("validates response codes are >= 100") {
+    Seq(-50, 0, 50).foreach { code =>
+      val json = baseJson.format("DELETE", s""", "responses": { "$code": { "type": "error" } } """)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
+      validator.errors.mkString(" ") should be(s"Response code[$code] must be >= 100")
+    }
+  }
+
 }
