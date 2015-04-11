@@ -52,7 +52,12 @@
                <h4>Response</h4>
                @operation.responses.map { response =>
                  <p>
-                   HTTP @response.code:
+                   HTTP @{response.code match {
+                     case com.gilt.apidoc.spec.v0.models.ResponseCodeInt(value) => value
+                     case com.gilt.apidoc.spec.v0.models.ResponseCodeOption.Default => "*"
+                     case com.gilt.apidoc.spec.v0.models.ResponseCodeOption.UNDEFINED(value) => value
+                     case com.gilt.apidoc.spec.v0.models.ResponseCodeUndefinedType(value) => value
+                   }}:
                    @datatype(org, application, version, service, response.`type`)
                    @Html(lib.Markdown(response.description))
                    @response.deprecation.map(deprecation(_))
