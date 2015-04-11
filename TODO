@@ -9,6 +9,7 @@ Consider supporting (from swagger):
 
 Think about:
   - replace base_url with urls which would be an array of [ url, description ]
+  - add authentication object support from swagger spec
 
 Breaking changes:
   - Change 404s to be explicit
@@ -40,5 +41,4 @@ versioning or not.
 Automate end to tests of generated clients. Currently client libraries
 are tested offline and manually. Need to think through how testing
 will work across mulitple platforms.
-  
-api.json: Support authentication, documentation
+
