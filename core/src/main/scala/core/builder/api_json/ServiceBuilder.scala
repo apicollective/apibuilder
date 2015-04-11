@@ -307,7 +307,7 @@ case class ServiceBuilder(
     def apply(internal: InternalResponseForm): Response = {
       Response(
         code = Try(internal.code.toInt) match {
-          case Success(code) => IntWrapper(code)
+          case Success(code) => ResponseCodeInt(code)
           case Failure(ex) => ResponseCodeOption(internal.code)
         },
         `type` = internal.datatype.get.label,

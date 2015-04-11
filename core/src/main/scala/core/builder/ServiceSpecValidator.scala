@@ -1,7 +1,7 @@
 package builder
 
 import core.{Importer, TypeValidator, TypesProvider}
-import com.gilt.apidoc.spec.v0.models.{IntWrapper, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
+import com.gilt.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type}
 import scala.util.{Failure, Success, Try}
 
@@ -440,7 +440,7 @@ case class ServiceSpecValidator(
 
   private def responseCode5xx(responseCode: ResponseCode): Boolean = {
     responseCode match {
-      case IntWrapper(value) => value >= 500
+      case ResponseCodeInt(value) => value >= 500
       case ResponseCodeOption.Default | ResponseCodeOption.UNDEFINED(_) | ResponseCodeUndefinedType(_) => false
     }
   }
@@ -449,7 +449,7 @@ case class ServiceSpecValidator(
     responseCode match {
       case ResponseCodeOption.Default => ResponseCodeOption.Default.toString
       case ResponseCodeOption.UNDEFINED(value) => value
-      case IntWrapper(value) => value.toString
+      case ResponseCodeInt(value) => value.toString
       case ResponseCodeUndefinedType(value) => value.toString
     }
   }
@@ -462,7 +462,7 @@ case class ServiceSpecValidator(
             case ResponseCodeOption.Default => None
             case ResponseCodeOption.UNDEFINED(value) => Some(s"Response code must be an integer or the keyword 'default' and not[$value]")
             case ResponseCodeUndefinedType(value) => Some(s"Response code must be an integer or the keyword 'default' and not[$value]")
-            case IntWrapper(code) => {
+            case ResponseCodeInt(code) => {
               if (code < 100) {
                 Some(s"Response code[$code] must be >= 100")
               } else {
@@ -500,7 +500,7 @@ case class ServiceSpecValidator(
       resource.operations.flatMap { op =>
         val types = op.responses.flatMap { r =>
           r.code match {
-            case IntWrapper(value) => {
+            case ResponseCodeInt(value) => {
               if (value >= 200 && value < 300) {
                 Some(r.`type`)
               } else {

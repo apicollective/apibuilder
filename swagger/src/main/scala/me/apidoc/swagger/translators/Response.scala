@@ -14,7 +14,7 @@ object Response {
     val responseCode = if (code == "default") {
       apidoc.ResponseCodeOption.Default
     } else {
-      apidoc.IntWrapper(code.toInt)
+      apidoc.ResponseCodeInt(code.toInt)
     }
 
     // getExamples
