@@ -2,6 +2,21 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.9.4 - Apr 10 2015</h3>
+
+  <ul>
+
+    <li> New 'default' keyword for response codes - this feature has
+    been added to enhance support of apidoc uploads using the swagger
+    specification. We now support the keyword 'default' when defining
+    the response code. This keyword can be used to specify a default
+    type for all non specified response codes, which is particularly
+    useful for handling
+    errors. See <a href="@routes.DocController.apiJson#response">api.json
+    response</a> for details.</li>
+
+  </ul>
+
 <h3>0.9.0 - Apr 2 2015</h3>
 
   <ul>
