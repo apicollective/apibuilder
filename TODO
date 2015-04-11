@@ -1,7 +1,6 @@
 Expose permission check at www/app/views/generators/details.scala.html for removing a generator
 
 Consider supporting (from swagger):
-  - "default" keyword for responses
   - add "apidoc": "0.x" // maps to the version of the apidoc-api spec,
     currently 0.8.18. Not required. Defaults to latest version
   - add license, info, documentation. Remove description from top level (replaced with info.description)
