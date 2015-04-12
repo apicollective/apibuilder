@@ -15,6 +15,15 @@
     errors. See <a href="@routes.DocController.apiJson#response">api.json
     response</a> for details.</li>
 
+    <li> Changed the names of the wrapper classes used when a union
+    type includes a primitive type. Previously, we would create
+    wrapper classes - e.g. IntWrapper - that would be used for all the
+    union types. With this change, the scala generators create a
+    unique class based on the union name and the primitive name. For
+    example, a union type named &quot;user&quot; that supported
+    &quot;Int&qout; will now result in a class names
+    &quot;UserInt&quot;.</li>
+
   </ul>
 
 <h3>0.9.0 - Apr 2 2015</h3>
