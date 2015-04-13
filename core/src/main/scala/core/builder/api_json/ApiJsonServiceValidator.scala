@@ -1,7 +1,7 @@
 package builder.api_json
 
 import builder.JsonUtil
-import core.{ClientFetcher, Importer, ServiceFetcher, Util}
+import core.{ClientFetcher, Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
 import com.gilt.apidoc.spec.v0.models.Service
 import play.api.libs.json.{Json, JsObject}
@@ -12,10 +12,10 @@ case class ApiJsonServiceValidator(
   config: ServiceConfiguration,
   apiJson: String,
   fetcher: ServiceFetcher = new ClientFetcher(),
-  internalMigration: Boolean
+  migration: VersionMigration
 ) extends ServiceValidator[Service] {
 
-  private lazy val service: Service = ServiceBuilder(internalMigration = internalMigration).apply(config, internalService.get)
+  private lazy val service: Service = ServiceBuilder(migration = migration).apply(config, internalService.get)
 
   def validate(): Either[Seq[String], Service] = {
     errors match {

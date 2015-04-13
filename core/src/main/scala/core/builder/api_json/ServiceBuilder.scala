@@ -1,13 +1,13 @@
 package builder.api_json
 
-import core.{ClientFetcher, Importer, ServiceFetcher}
+import core.{ClientFetcher, Importer, ServiceFetcher, VersionMigration}
 import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
 import scala.util.{Failure, Success, Try}
 
 case class ServiceBuilder(
-  internalMigration: Boolean = false
+  migration: VersionMigration
 ) {
 
   def apply(
@@ -336,7 +336,7 @@ case class ServiceBuilder(
         location = internal.location.map(ParameterLocation(_)).getOrElse(defaultLocation),
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-        required = internalMigration match {
+        required = migration.makeFieldsWithDefaultsRequired match {
           case true => {
             internal.default match {
               case None => internal.required
@@ -363,7 +363,7 @@ case class ServiceBuilder(
         `type` = internal.datatype.get.label,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-        required = internalMigration match {
+        required = migration.makeFieldsWithDefaultsRequired match {
           case true => {
             internal.default match {
               case None => internal.required

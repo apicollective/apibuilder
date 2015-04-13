@@ -519,15 +519,6 @@ case class ServiceSpecValidator(
       }
     }
 
-    val statusCodesNotAllowed = Seq("404") // Also >= 500
-    val responsesWithDisallowedTypes = service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.responses.find { r => statusCodesNotAllowed.contains(responseCodeString(r.code)) || responseCode5xx(r.code) }.flatMap { r =>
-          Some(opLabel(resource, op, s"response code[${responseCodeString(r.code)}] cannot be explicitly specified"))
-        }
-      }
-    }
-
     val statusCodesRequiringUnit = Seq("204", "304")
     val noContentWithTypes = service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
@@ -537,7 +528,7 @@ case class ServiceSpecValidator(
       }
     }
 
-    invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ responsesWithDisallowedTypes ++ noContentWithTypes
+    invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ noContentWithTypes
   }
 
 
