@@ -8,7 +8,7 @@ class ServiceMethodsSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
-      "base_url": "http://localhost:9000",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
         "user": {

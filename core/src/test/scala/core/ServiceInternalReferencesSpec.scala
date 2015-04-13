@@ -7,8 +7,8 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
   it("Validates circular reference") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "svc-circular-reference",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "foo": {
             "fields": [
@@ -37,8 +37,8 @@ class ServiceInternalReferencesSpec extends FunSpec with Matchers {
   it("Is able to parse self reference") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "svc-reference",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user_variant": {
             "description": "variant set a user belongs to for a particular test.",

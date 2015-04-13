@@ -11,6 +11,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "enums": {
         "old_content_type": {
@@ -41,6 +42,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "enums": {
         "content_type": {
@@ -65,6 +67,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "unions": {
         "old_content_type": {
@@ -111,6 +114,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "unions": {
         "content_type": {
@@ -150,6 +154,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
 
@@ -180,6 +185,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
 
@@ -205,6 +211,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = s"""
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
         "user": $userModel,
@@ -238,6 +245,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = s"""
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
         "user": $userModel
@@ -265,6 +273,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = s"""
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
         "user": $userModel
@@ -299,6 +308,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = s"""
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
         "user": $userModel
@@ -333,6 +343,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = s"""
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
         "user": $userModel
@@ -367,6 +378,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = s"""
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "headers": [
         { "name": "Content-Type", "type": "string" },
@@ -387,6 +399,7 @@ class DeprecationSpec extends FunSpec with Matchers {
     val json = s"""
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "headers": [
         { "name": "Content-Type", "type": "string", "deprecation": {} }

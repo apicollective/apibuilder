@@ -8,8 +8,8 @@ class ServiceCommonReturnTypeSpec extends FunSpec with Matchers {
   it("all 2xx return types must share a common types") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [

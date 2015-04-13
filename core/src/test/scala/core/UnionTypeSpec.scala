@@ -8,6 +8,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
   val baseJson = """
     {
       "name": "Union Types Test",
+      "apidoc": { "version": "0.9.6" },
 
       "unions": {
         "user": {

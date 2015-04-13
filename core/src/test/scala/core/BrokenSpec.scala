@@ -8,8 +8,8 @@ class BrokenSpec extends FunSpec with Matchers {
   it("support arrays as types in fields") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "vendor": {
           "fields": [
@@ -31,8 +31,8 @@ class BrokenSpec extends FunSpec with Matchers {
   it("support arrays as types in operations") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "vendor": {
           "fields": [

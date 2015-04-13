@@ -2,6 +2,7 @@
     "base_url": "https://api.iris.gilt.com",
 
     "name": "Iris Hub",
+    "apidoc": { "version": "0.9.4" },
 
     "description": "Iris Hub provides an API to allow vendor to vendor communication and purchasing. One way to think about the hub is a modern EDI - very simple REST interface to enable purchasing and fulfillment between two vendors.",
 

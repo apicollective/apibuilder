@@ -10,6 +10,10 @@ case class ServiceBuilder(
   migration: VersionMigration
 ) {
 
+  // The last version of the apidoc spec before we introduced
+  // apidoc/version node.
+  private val ApidocVersionToInject = "0.9.4"
+
   def apply(
     config: ServiceConfiguration,
     apiJson: String,
@@ -41,6 +45,15 @@ case class ServiceBuilder(
     val resources = internal.resources.map { ResourceBuilder(models, enums, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
     Service(
+      apidoc = internal.apidoc match {
+        case Some(i) => Apidoc(version = i.version.get)
+        case None => {
+          migration.injectApidocVersion match {
+            case false => sys.error("Missing apidoc node")
+            case true => Apidoc(version = ApidocVersionToInject)
+          }
+        }
+      },
       name = name,
       namespace = namespace,
       organization = Organization(key = config.orgKey),

@@ -19,7 +19,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "5@4",
-      "base_url": "http://localhost:9000"
+      "apidoc": { "version": "0.9.6" }
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
@@ -30,7 +30,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "TestApp",
-      "base_url": "http://localhost:9000/"
+      "base_url": "http://localhost:9000/",
+      "apidoc": { "version": "0.9.6" }
     }
     """
 
@@ -41,8 +42,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   it("model that is missing fields") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": []
@@ -57,8 +58,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   it("reference that points to a non-existent model") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -76,6 +77,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -92,8 +94,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   it("defaults to a NoContent response") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -123,8 +125,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   it("operations w/ a valid response validates correct") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -158,8 +160,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   it("includes path parameter in operations") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -190,8 +192,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   it("DELETE supports query parameters") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -226,8 +228,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   it("path parameters must be required") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -259,8 +261,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -293,8 +295,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
     val baseJson = """
     {
-        "base_url": "https://localhost",
         "name": "Test Validation of Parameters",
+        "apidoc": { "version": "0.9.6" },
     
         "models": {
     

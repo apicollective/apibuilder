@@ -8,8 +8,8 @@ class BodyParameterSpec extends FunSpec with Matchers {
 
   val baseJson = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "enums": {
         "age_group": {

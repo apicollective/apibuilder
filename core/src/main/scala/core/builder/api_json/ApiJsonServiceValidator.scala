@@ -2,7 +2,7 @@ package builder.api_json
 
 import builder.JsonUtil
 import core.{ClientFetcher, Importer, ServiceFetcher, Util, VersionMigration}
-import lib.{ServiceConfiguration, ServiceValidator, UrlKey}
+import lib.{ServiceConfiguration, ServiceValidator, UrlKey, VersionTag}
 import com.gilt.apidoc.spec.v0.models.Service
 import play.api.libs.json.{Json, JsObject}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
@@ -69,6 +69,7 @@ case class ApiJsonServiceValidator(
         validateStructure match {
           case Nil => {
             validateKey ++
+            validateApidoc ++
             validateImports ++
             internalService.get.models.flatMap(_.warnings) ++
             internalService.get.enums.flatMap(_.warnings) ++
@@ -111,8 +112,15 @@ case class ApiJsonServiceValidator(
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description", "namespace"),
       optionalArraysOfObjects = Seq("imports", "headers"),
-      optionalObjects = Seq("enums", "models", "unions", "resources")
+      optionalObjects = Seq("apidoc", "enums", "models", "unions", "resources")
     )
+  }
+
+  private def validateApidoc(): Seq[String] = {
+    internalService.get.apidoc.flatMap(_.version) match {
+      case Some(_) => Nil
+      case None => Seq(s"Missing apidoc/version. Latest version of apidoc specification is ${com.gilt.apidoc.spec.v0.Constants.Version}")
+    }
   }
 
   private def validateImports(): Seq[String] = {

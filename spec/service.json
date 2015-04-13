@@ -1,6 +1,9 @@
 {
     "name": "apidoc spec",
     "description": "Specification of apidoc api.json schema",
+    "apidoc": {
+      "version": "0.9.6"
+    },
 
     "enums": {
 	"method": {
@@ -42,8 +45,15 @@
     },
 
     "models": {
+	"apidoc": {
+	    "fields": [
+		{ "name": "version", "type": "string", "example": "1.0.3" }
+	    ]
+	},
+
 	"service": {
 	    "fields": [
+		{ "name": "apidoc", "type": "apidoc" },
 		{ "name": "name", "type": "string" },
 		{ "name": "organization", "type": "organization" },
 		{ "name": "application", "type": "application" },

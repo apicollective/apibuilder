@@ -6,8 +6,8 @@ class ServiceMapSpec extends FunSpec with Matchers {
 
   private val baseJson = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [

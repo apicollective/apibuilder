@@ -7,8 +7,8 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("accepts defaults for date-iso8601") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -28,8 +28,8 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("accepts strings and values as defaults for booleans") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -55,8 +55,8 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("rejects invalid boolean defaults") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -73,8 +73,8 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("validates duplicate models in the resources section") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -107,8 +107,9 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   it("fields with defaults must be marked required") {
     val json = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
+
       "models": {
         "user": {
           "fields": [
