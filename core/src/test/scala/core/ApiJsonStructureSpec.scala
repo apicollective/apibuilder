@@ -7,7 +7,9 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
 
   it("name is required") {
     val json = """
-    {}
+    {
+      "apidoc": { "version": "0.9.6" }
+    }
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
@@ -16,7 +18,10 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
 
   it("name must be a string") {
     val json = """
-    { "name": { "foo": "bar" } }
+    {
+      "name": { "foo": "bar" },
+      "apidoc": { "version": "0.9.6" }
+    }
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
@@ -27,6 +32,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "base_url": { "foo": "bar" }
     }
     """
@@ -39,6 +45,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "description": ["test"]
     }
     """
@@ -51,6 +58,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "%s": { "foo": "bar" }
     }
     """
@@ -65,6 +73,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "%s": []
     }
     """
@@ -79,6 +88,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "resource": []
     }
     """
@@ -91,6 +101,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "resource": [],
       "foo": []
     }
@@ -104,6 +115,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "description": []
@@ -120,6 +132,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": ["test"]
@@ -136,6 +149,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "enums": {
         "user": {
           "description": []
@@ -152,6 +166,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "enums": {
         "user": {
           "values": ["test"]
@@ -168,6 +183,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "unions": {
         "user": {
           "description": []
@@ -184,6 +200,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "unions": {
         "user": {
           "types": ["test"]
@@ -200,6 +217,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "test",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [

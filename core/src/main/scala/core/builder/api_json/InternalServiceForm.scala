@@ -17,6 +17,7 @@ private[api_json] case class InternalServiceForm(
   fetcher: ServiceFetcher
 ) {
 
+  lazy val apidoc = (json \ "apidoc").asOpt[JsValue].map { InternalApidocForm(_) }
   lazy val name = JsonUtil.asOptString(json \ "name")
   lazy val key = JsonUtil.asOptString(json \ "key")
   lazy val namespace = JsonUtil.asOptString(json \ "namespace")
@@ -130,6 +131,10 @@ private[api_json] case class InternalServiceForm(
 case class InternalImportForm(
   uri: Option[String],
   warnings: Seq[String]
+)
+
+case class InternalApidocForm(
+  version: Option[String]
 )
 
 case class InternalDeprecationForm(
@@ -255,6 +260,16 @@ case class InternalResponseForm(
 ) {
 
   lazy val datatypeLabel: Option[String] = datatype.map(_.label)
+
+}
+
+object InternalApidocForm {
+
+  def apply(value: JsValue): InternalApidocForm = {
+    InternalApidocForm(
+      version = JsonUtil.asOptString(value \ "version")
+    )
+  }
 
 }
 

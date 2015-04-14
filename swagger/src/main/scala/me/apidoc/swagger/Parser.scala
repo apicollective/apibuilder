@@ -31,6 +31,7 @@ case class Parser(config: ServiceConfiguration) {
     val resolver = Resolver(models = specModels)
 
     Service(
+      apidoc = Apidoc(version = com.gilt.apidoc.spec.v0.Constants.Version),
       name = info.getTitle(),
       description = Option(info.getDescription()),
       baseUrl = translators.BaseUrl(Util.toArray(swagger.getSchemes).map(_.toString), swagger.getHost, Option(swagger.getBasePath)).headOption,

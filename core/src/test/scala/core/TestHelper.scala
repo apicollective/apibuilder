@@ -63,9 +63,17 @@ object TestHelper {
     }
   }
 
-  def serviceValidatorFromApiJson(contents: String): ServiceValidatorForSpecs = {
+  def serviceValidatorFromApiJson(
+    contents: String,
+    migration: VersionMigration = VersionMigration(internal = false)
+  ): ServiceValidatorForSpecs = {
     TestServiceValidator(
-      OriginalValidator(serviceConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+      OriginalValidator(
+        serviceConfig,
+        Original(OriginalType.ApiJson, contents),
+        new MockServiceFetcher(),
+        migration
+      )
     )
   }
 

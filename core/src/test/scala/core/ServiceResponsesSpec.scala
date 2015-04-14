@@ -6,8 +6,8 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
 
   val baseJson = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
       "models": {
         "user": {
           "fields": [
@@ -50,24 +50,10 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
     response.`type` should be("unit")
   }
 
-  it("does not allow explicit definition of 404, 5xx status codes") {
-    Seq(404, 500, 501, 502).foreach { code =>
-      val json = baseJson.format("DELETE", s""", "responses": { "$code": { "type": "unit" } } """)
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be(s"Resource[user] DELETE /users/:id response code[$code] cannot be explicitly specified")
-    }
-  }
-
   it("validates that responses is map from string to object") {
     val json = baseJson.format("DELETE", s""", "responses": { "204": "unit" } """)
     val validator = TestHelper.serviceValidatorFromApiJson(json)
     validator.errors.mkString(" ") should be("Resource[user] DELETE /users/:id 204: value must be an object")
-  }
-
-  it("generates a single error message for invalid 404 specification") {
-    val json = baseJson.format("DELETE", s""", "responses": { "404": { "type": "user" } } """)
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be(s"Resource[user] DELETE /users/:id response code[404] cannot be explicitly specified")
   }
 
   it("generates an error message for an invalid method") {

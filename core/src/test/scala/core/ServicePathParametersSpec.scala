@@ -8,8 +8,8 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
   describe("with a service") {
     val baseJson = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "enums": {
         "age_group": {
@@ -21,7 +21,6 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
       },
 
       "models": {
-
         "tag": {
           "fields": [
             { "name": "id", "type": "long" }
@@ -40,6 +39,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
           ]
         }
       },
+
       "resources": {
         "user": {
           "operations": [
@@ -100,6 +100,8 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
     val baseJson = s"""
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
+
       "unions": {
         "user": {
           "types": [

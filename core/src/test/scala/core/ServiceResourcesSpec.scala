@@ -7,8 +7,8 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
   describe("with service") {
     val baseJson = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "enums": {
         "user_type": {
@@ -79,6 +79,7 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "models": {
         "user": {
@@ -116,8 +117,8 @@ class ServiceResourcesSpec extends FunSpec with Matchers {
   describe("resource types") {
     val baseJson = """
     {
-      "base_url": "http://localhost:9000",
       "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
 
       "enums": {
         "user_type": {

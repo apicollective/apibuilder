@@ -11,6 +11,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
     val baseJson = """
     {
       "name": "Import Shared",
+      "apidoc": { "version": "0.9.6" },
       "imports": [
 	{ "uri": "%s" }
       ]
@@ -20,6 +21,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
     it("import uri is present") {
       val json = """{
         "name": "Import Shared",
+        "apidoc": { "version": "0.9.6" },
         "imports": [ { "foo": "bar" } ]
       }"""
       val validator = TestHelper.serviceValidatorFromApiJson(json)
@@ -48,6 +50,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
     val json1 = """
     {
       "name": "Import Shared",
+      "apidoc": { "version": "0.9.6" },
       "organization": { "key": "test" },
       "application": { "key": "import-shared" },
       "namespace": "test.apidoc.import-shared",
@@ -86,6 +89,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
     val json2 = s"""
     {
       "name": "Import Service",
+      "apidoc": { "version": "0.9.6" },
 
       "imports": [
 	{ "uri": "file://$json1File" }

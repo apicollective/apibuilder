@@ -14,7 +14,7 @@ class VersionsSpec extends BaseSpec {
 
   "POST /:orgKey/:version stores the original in the proper format" in new WithServer {
     val name = s"test-${UUID.randomUUID}"
-    val serviceForm = s"""{ "name": "$name" }"""
+    val serviceForm = s"""{ "name": "$name", "apidoc": { "version": "${com.gilt.apidoc.api.v0.Constants.Version}" } }"""
 
     val version = await(
       client.versions.postByOrgKeyAndVersion(

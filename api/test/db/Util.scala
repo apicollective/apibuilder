@@ -108,6 +108,7 @@ object Util {
   }
 
   def createService(app: com.gilt.apidoc.api.v0.models.Application): Service = Service(
+    apidoc = spec.Apidoc(version = com.gilt.apidoc.spec.v0.Constants.Version),
     name = app.name,
     organization = spec.Organization(key = "test"),
     application = spec.Application(key = app.key),

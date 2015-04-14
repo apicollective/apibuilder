@@ -2,9 +2,12 @@
     "name": "apidoc generator",
     "description": "Documentation for an apidoc code generator API",
     "base_url": "http://www.apidoc.me",
+    "apidoc": {
+      "version": "0.9.6"
+    },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.4/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json" }
     ],
 
     "models": {

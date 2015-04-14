@@ -8,7 +8,8 @@ class ImporterSpec extends FunSpec with Matchers {
   describe("with an invalid service") {
     val json = """
     {
-      "name": "Import Shared"
+      "name": "Import Shared",
+      "apidoc": { "version": "0.9.6" }
     }
     """
 
@@ -22,6 +23,7 @@ class ImporterSpec extends FunSpec with Matchers {
     val json = """
     {
       "name": "Import Shared",
+      "apidoc": { "version": "0.9.6" },
       "organization": { "key": "test" },
       "application": { "key": "import-shared" },
       "namespace": "test.apidoc.import-shared",

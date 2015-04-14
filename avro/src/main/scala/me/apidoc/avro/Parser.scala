@@ -26,6 +26,7 @@ private[avro] case class Builder() {
     applicationKey: String
   ): Service = {
     Service(
+      apidoc = com.gilt.apidoc.spec.v0.models.Apidoc(version = com.gilt.apidoc.spec.v0.Constants.Version),
       name = name,
       baseUrl = None,
       description = None,

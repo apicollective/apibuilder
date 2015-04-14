@@ -47,7 +47,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
   }
 
   /**
-   * Computes the next micro version. If we cannot parse the currency
+   * Computes the next micro version. If we cannot parse the current
    * version number, then returns None.
    */
   def nextMicro(): Option[String] = {

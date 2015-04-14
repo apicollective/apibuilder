@@ -1,14 +1,18 @@
 package builder.api_json
 
-import core.{ClientFetcher, Importer, ServiceFetcher}
+import core.{ClientFetcher, Importer, ServiceFetcher, VersionMigration}
 import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
 import scala.util.{Failure, Success, Try}
 
 case class ServiceBuilder(
-  internalMigration: Boolean = false
+  migration: VersionMigration
 ) {
+
+  // The last version of the apidoc spec before we introduced
+  // apidoc/version node and made it required.
+  private val ApidocVersionToInject = "0.9.4"
 
   def apply(
     config: ServiceConfiguration,
@@ -41,6 +45,15 @@ case class ServiceBuilder(
     val resources = internal.resources.map { ResourceBuilder(models, enums, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
     Service(
+      apidoc = internal.apidoc match {
+        case Some(i) => Apidoc(version = i.version.get)
+        case None => {
+          migration.injectApidocVersion match {
+            case false => sys.error("Missing apidoc node")
+            case true => Apidoc(version = ApidocVersionToInject)
+          }
+        }
+      },
       name = name,
       namespace = namespace,
       organization = Organization(key = config.orgKey),
@@ -336,7 +349,7 @@ case class ServiceBuilder(
         location = internal.location.map(ParameterLocation(_)).getOrElse(defaultLocation),
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-        required = internalMigration match {
+        required = migration.makeFieldsWithDefaultsRequired match {
           case true => {
             internal.default match {
               case None => internal.required
@@ -363,7 +376,7 @@ case class ServiceBuilder(
         `type` = internal.datatype.get.label,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-        required = internalMigration match {
+        required = migration.makeFieldsWithDefaultsRequired match {
           case true => {
             internal.default match {
               case None => internal.required

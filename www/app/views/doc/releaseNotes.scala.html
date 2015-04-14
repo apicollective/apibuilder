@@ -2,6 +2,28 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.9.5 - Apr 14 2015</h3>
+
+  <ul>
+
+    <li> Added a required, top level node named 'apidoc' to the
+    api.json upload. The initial purpose of this node is to capture
+    the version of the apidoc specification used by that
+    file. See <a href="@routes.DocController.apiJson#apidoc">api.json
+    apidoc</a> for details.</li>
+
+    <li> Add support for explicitly specifying 404 responses - users
+    will now have to explicitly specify 404 for any responses that
+    return 404s. Previously, any GET method that returned a singleton
+    automatically inferred a
+    404. See <a href='@lib.Util.GitHubUrl/pull/320'>PR 320</a>.
+
+</li>
+
+  </ul>
+
+
+
 <h3>0.9.4 - Apr 10 2015</h3>
 
   <ul>

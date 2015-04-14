@@ -15,7 +15,12 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
   private val Original = com.gilt.apidoc.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
-    data = Json.obj("name" -> s"test-${UUID.randomUUID}").toString
+    data = Json.obj(
+      "apidoc" -> Json.obj(
+        "version" -> com.gilt.apidoc.spec.v0.Constants.Version
+      ),
+      "name" -> s"test-${UUID.randomUUID}"
+    ).toString
   )
 
   private def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.gilt.apidoc.api.v0.models.Application = {
