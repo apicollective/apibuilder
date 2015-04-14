@@ -11,7 +11,7 @@ case class ServiceBuilder(
 ) {
 
   // The last version of the apidoc spec before we introduced
-  // apidoc/version node.
+  // apidoc/version node and made it required.
   private val ApidocVersionToInject = "0.9.4"
 
   def apply(

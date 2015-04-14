@@ -117,9 +117,16 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateApidoc(): Seq[String] = {
-    internalService.get.apidoc.flatMap(_.version) match {
-      case Some(_) => Nil
-      case None => Seq(s"Missing apidoc/version. Latest version of apidoc specification is ${com.gilt.apidoc.spec.v0.Constants.Version}")
+    migration.injectApidocVersion match {
+      case false => {
+        internalService.get.apidoc.flatMap(_.version) match {
+          case Some(_) => Nil
+          case None => Seq(s"Missing apidoc/version. Latest version of apidoc specification is ${com.gilt.apidoc.spec.v0.Constants.Version}")
+        }
+      }
+      case true => {
+        Nil
+      }
     }
   }
 
