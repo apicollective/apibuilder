@@ -1,8 +1,6 @@
 Expose permission check at www/app/views/generators/details.scala.html for removing a generator
 
 Consider supporting (from swagger):
-  - add "apidoc": "0.x" // maps to the version of the apidoc-api spec,
-    currently 0.8.18. Not required. Defaults to latest version
   - add license, info, documentation. Remove description from top level (replaced with info.description)
   - parameter locations: header, cookie
   - add headers to response object
@@ -10,9 +8,6 @@ Consider supporting (from swagger):
 Think about:
   - replace base_url with urls which would be an array of [ url, description ]
   - add authentication object support from swagger spec
-
-Breaking changes:
-  - Change 404s to be explicit
 
 Generators:
   - Cache the generators
