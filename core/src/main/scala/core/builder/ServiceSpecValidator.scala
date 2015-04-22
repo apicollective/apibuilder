@@ -62,11 +62,7 @@ case class ServiceSpecValidator(
         Seq(s"Invalid apidoc version[${service.apidoc.version}]. Latest version of apidoc specification is $current")
       }
       case Some(_) => {
-        if (VersionTag(current).compare(specified) < 0) {
-          Seq(s"Apidoc version[${service.apidoc.version}] cannot be greater than the current latest version of the apidoc specification[$current]")
-        } else {
-          Nil
-        }
+        Nil
       }
     }
   }

@@ -41,14 +41,6 @@ class ApidocVersionSpec extends FunSpec with Matchers {
       validator.errors.mkString("") should be("")
     }
 
-    it("validates version <= latest version") {
-      val current = com.gilt.apidoc.spec.v0.Constants.Version
-      val next = VersionTag(current).nextMicro.get
-      val json = baseJson.format(next)
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be(s"Apidoc version[$next] cannot be greater than the current latest version of the apidoc specification[$current]")
-    }
-
     it("rejects invalid version") {
       val json = baseJson.format("!")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
