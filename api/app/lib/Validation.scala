@@ -15,6 +15,10 @@ object Validation {
     Seq(Error(InvalidJsonCode, errors.toString))
   }
 
+  def invalidJsonDocument(): Seq[Error] = {
+    Seq(Error(InvalidJsonCode, "Content is not valid JSON"))
+  }
+
   def userAuthorizationFailed(): Seq[Error] = {
     Seq(Error(UserAuthorizationFailedCode, "Email address and/or password did not match"))
   }

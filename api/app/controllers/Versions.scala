@@ -9,6 +9,7 @@ import lib.{OriginalUtil, Validation}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
 import play.api.mvc._
 import play.api.libs.json._
+import scala.util.{Failure, Success, Try}
 
 object Versions extends Controller {
 
@@ -36,30 +37,37 @@ object Versions extends Controller {
   def postByOrgKeyAndVersion(
     orgKey: String,
     versionName: String
-  ) = Authenticated(parse.json) { request =>
+  ) = Authenticated { request =>
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
       }
       case Some(org) => {
-        request.body.validate[VersionForm] match {
-          case e: JsError => {
-            Conflict(Json.toJson(Validation.invalidJson(e)))
+        Try(Json.parse(request.body.toString)) match {
+          case Failure(ex) => {
+            Conflict(Json.toJson(Validation.invalidJsonDocument()))
           }
-          case s: JsSuccess[VersionForm] => {
-            val form = s.get
-            OriginalValidator(toServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
-              case Left(errors) => {
-                Conflict(Json.toJson(Validation.errors(errors)))
+          case Success(json) => {
+            json.validate[VersionForm] match {
+              case e: JsError => {
+                Conflict(Json.toJson(Validation.invalidJson(e)))
               }
-              case Right(service) => {
-                validateVersion(request.user, org, service.application.key) match {
-                  case Nil => {
-                    val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service)
-                    Ok(Json.toJson(version))
-                  }
-                  case errors => {
+              case s: JsSuccess[VersionForm] => {
+                val form = s.get
+                OriginalValidator(toServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
+                  case Left(errors) => {
                     Conflict(Json.toJson(Validation.errors(errors)))
+                  }
+                  case Right(service) => {
+                    validateVersion(request.user, org, service.application.key) match {
+                      case Nil => {
+                        val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service)
+                        Ok(Json.toJson(version))
+                      }
+                      case errors => {
+                        Conflict(Json.toJson(Validation.errors(errors)))
+                      }
+                    }
                   }
                 }
               }
@@ -74,7 +82,7 @@ object Versions extends Controller {
     orgKey: String,
     applicationKey: String,
     versionName: String
-  ) = Authenticated(parse.json) { request =>
+  ) = Authenticated { request =>
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
@@ -82,24 +90,31 @@ object Versions extends Controller {
 
       case Some(org: Organization) => {
 
-        request.body.validate[VersionForm] match {
-          case e: JsError => {
-            Conflict(Json.toJson(Validation.invalidJson(e)))
+        Try(Json.parse(request.body.toString)) match {
+          case Failure(ex) => {
+            Conflict(Json.toJson(Validation.invalidJsonDocument()))
           }
-          case s: JsSuccess[VersionForm] => {
-            val form = s.get
-            OriginalValidator(toServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
-              case Left(errors) => {
-                Conflict(Json.toJson(Validation.errors(errors)))
+          case Success(json) => {
+            json.validate[VersionForm] match {
+              case e: JsError => {
+                Conflict(Json.toJson(Validation.invalidJson(e)))
               }
-              case Right(service) => {
-                validateVersion(request.user, org, service.application.key, Some(applicationKey)) match {
-                  case Nil => {
-                    val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey))
-                    Ok(Json.toJson(version))
-                  }
-                  case errors => {
+              case s: JsSuccess[VersionForm] => {
+                val form = s.get
+                OriginalValidator(toServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
+                  case Left(errors) => {
                     Conflict(Json.toJson(Validation.errors(errors)))
+                  }
+                  case Right(service) => {
+                    validateVersion(request.user, org, service.application.key, Some(applicationKey)) match {
+                      case Nil => {
+                        val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey))
+                        Ok(Json.toJson(version))
+                      }
+                      case errors => {
+                        Conflict(Json.toJson(Validation.errors(errors)))
+                      }
+                    }
                   }
                 }
               }
