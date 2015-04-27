@@ -49,7 +49,6 @@ object Generators extends Controller {
     boundForm.fold (
 
       errors => Future {
-        println("ERRORS: " + errors)
         InternalServerError
       },
 
