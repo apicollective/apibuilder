@@ -9,7 +9,6 @@ import lib.{OriginalUtil, Validation}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
 import play.api.mvc._
 import play.api.libs.json._
-import scala.util.{Failure, Success, Try}
 
 object Versions extends Controller {
 
@@ -43,11 +42,8 @@ object Versions extends Controller {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
       }
       case Some(org) => {
-        Try(Json.parse(request.body.toString)) match {
-          case Failure(ex) => {
-            Conflict(Json.toJson(Validation.invalidJsonDocument()))
-          }
-          case Success(json) => {
+        request.body match {
+          case AnyContentAsJson(json) => {
             json.validate[VersionForm] match {
               case e: JsError => {
                 Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -73,6 +69,11 @@ object Versions extends Controller {
               }
             }
           }
+
+          case _ => {
+            Conflict(Json.toJson(Validation.invalidJsonDocument()))
+          }
+
         }
       }
     }
@@ -89,12 +90,8 @@ object Versions extends Controller {
       }
 
       case Some(org: Organization) => {
-
-        Try(Json.parse(request.body.toString)) match {
-          case Failure(ex) => {
-            Conflict(Json.toJson(Validation.invalidJsonDocument()))
-          }
-          case Success(json) => {
+        request.body match {
+          case AnyContentAsJson(json) => {
             json.validate[VersionForm] match {
               case e: JsError => {
                 Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -119,6 +116,9 @@ object Versions extends Controller {
                 }
               }
             }
+          }
+          case _ => {
+            Conflict(Json.toJson(Validation.invalidJsonDocument()))
           }
         }
       }
