@@ -1,6 +1,6 @@
 package builder.api_json
 
-import core.{ClientFetcher, Importer, ServiceFetcher, VersionMigration}
+import core.{Importer, ServiceFetcher, VersionMigration}
 import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kind, UrlKey}
 import com.gilt.apidoc.spec.v0.models._
 import play.api.libs.json._
@@ -17,7 +17,7 @@ case class ServiceBuilder(
   def apply(
     config: ServiceConfiguration,
     apiJson: String,
-    fetcher: ServiceFetcher = ClientFetcher()
+    fetcher: ServiceFetcher
   ): Service = {
     val jsValue = Json.parse(apiJson)
     apply(config, InternalServiceForm(jsValue, fetcher))

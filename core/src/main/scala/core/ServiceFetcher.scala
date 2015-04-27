@@ -14,7 +14,10 @@ trait ServiceFetcher {
 
 }
 
-case class ClientFetcher() extends ServiceFetcher {
+case class ClientFetcher(
+  requestHeaders: Seq[(String, String)]
+) extends ServiceFetcher {
+  assert(!requestHeaders.isEmpty)
 
   override def fetch(uri: String): Service = {
     if (uri.trim.toLowerCase.startsWith("file://")) {
@@ -30,6 +33,11 @@ case class ClientFetcher() extends ServiceFetcher {
   }
 
   private def fetchContentsFromUri(uri: String): Service = {
+    println("FETCHING URI: " + uri)
+    requestHeaders.foreach { h =>
+      println(s" - header[$h]")
+    }
+
     import scala.concurrent.ExecutionContext.Implicits.global
     import scala.concurrent.Await
     import scala.concurrent.duration._

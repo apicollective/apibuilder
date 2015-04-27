@@ -21,24 +21,45 @@ private[controllers] case class UserAuth(
 )
 
 
+case class AuthHeaders(
+  authorization: Option[String],
+  userGuid: Option[String]
+) {
+
+  def toSeq(): Seq[(String, String)] = {
+    Seq(
+      authorization.map { v => (RequestHelper.AuthorizationHeader, v) },
+      userGuid.map { v => (RequestHelper.UserGuidHeader, v) }
+    ).flatten
+  }
+
+}
+
+object AuthHeaders {
+
+  def apply(headers: play.api.mvc.Headers): AuthHeaders = {
+    AuthHeaders(
+      authorization = headers.get(RequestHelper.AuthorizationHeader),
+      userGuid = headers.get(RequestHelper.UserGuidHeader)
+    )
+  }
+
+}
+
 private[controllers] object RequestHelper {
 
   val UserGuidHeader = "X-User-Guid"
   val AuthorizationHeader = "Authorization"
 
-  def userAuth(
-    authorizationHeader: Option[String],
-    userGuidHeader: Option[String]
-  ): UserAuth = {
-
-    val tokenUser: Option[User] = BasicAuthorization.get(authorizationHeader) match {
+  def userAuth(authHeaders: AuthHeaders): UserAuth = {
+    val tokenUser: Option[User] = BasicAuthorization.get(authHeaders.authorization) match {
       case Some(auth: BasicAuthorization.Token) => {
         UsersDao.findByToken(auth.token)
       }
       case _ => None
     }
 
-    userGuidHeader.flatMap(UsersDao.findByGuid(_)) match {
+    authHeaders.userGuid.flatMap(UsersDao.findByGuid(_)) match {
       case None => {
         /**
           * Currently a hack. If the token user is NOT our system user
@@ -67,18 +88,22 @@ private[controllers] object RequestHelper {
 
 }
 
-class AnonymousRequest[A](val tokenUser: Option[User], val user: Option[User], request: Request[A]) extends WrappedRequest[A](request)
+class AnonymousRequest[A](
+  val authHeaders: AuthHeaders,
+  val tokenUser: Option[User],
+  val user: Option[User],
+  request: Request[A]
+) extends WrappedRequest[A](request)
 
 object AnonymousRequest extends ActionBuilder[AnonymousRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AnonymousRequest[A]) => Future[Result]) = {
-    val userAuth = RequestHelper.userAuth(
-      request.headers.get(RequestHelper.AuthorizationHeader),
-      request.headers.get(RequestHelper.UserGuidHeader)
-    )
+    val headers = AuthHeaders(request.headers)
+    val userAuth = RequestHelper.userAuth(headers)
 
     block(
       new AnonymousRequest(
+        authHeaders = headers,
         tokenUser = userAuth.tokenUser,
         user = userAuth.user,
         request = request
@@ -88,7 +113,12 @@ object AnonymousRequest extends ActionBuilder[AnonymousRequest] {
 
 }
 
-class AuthenticatedRequest[A](val tokenUser: User, val user: User, request: Request[A]) extends WrappedRequest[A](request) {
+class AuthenticatedRequest[A](
+  val authHeaders: AuthHeaders,
+  val tokenUser: User,
+  val user: User,
+  request: Request[A]
+) extends WrappedRequest[A](request) {
 
   def requireAdmin(org: Organization) {
     require(MembershipsDao.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
@@ -103,10 +133,8 @@ class AuthenticatedRequest[A](val tokenUser: User, val user: User, request: Requ
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
-    val userAuth = RequestHelper.userAuth(
-      request.headers.get(RequestHelper.AuthorizationHeader),
-      request.headers.get(RequestHelper.UserGuidHeader)
-    )
+    val headers = AuthHeaders(request.headers)
+    val userAuth = RequestHelper.userAuth(headers)
 
     userAuth.user match {
       case None => {
@@ -114,7 +142,12 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
       }
 
       case Some(user) => {
-        block(new AuthenticatedRequest(userAuth.tokenUser.get, user, request))
+        block(new AuthenticatedRequest(
+          authHeaders = headers,
+          userAuth.tokenUser.get,
+          user,
+          request)
+        )
       }
     }
   }

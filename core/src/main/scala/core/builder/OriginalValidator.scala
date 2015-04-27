@@ -4,7 +4,7 @@ import me.apidoc.swagger.SwaggerServiceValidator
 import me.apidoc.avro.AvroIdlServiceValidator
 import api_json.ApiJsonServiceValidator
 import lib.{ServiceConfiguration, ServiceValidator}
-import core.{ClientFetcher, ServiceFetcher, VersionMigration}
+import core.{ServiceFetcher, VersionMigration}
 import com.gilt.apidoc.api.v0.models.{Original, OriginalType}
 import com.gilt.apidoc.spec.v0.models.Service
 
@@ -15,7 +15,7 @@ object OriginalValidator {
   def apply(
     config: ServiceConfiguration,
     original: Original,
-    fetcher: ServiceFetcher = new ClientFetcher(),
+    fetcher: ServiceFetcher,
     migration: VersionMigration = VersionMigration(internal = false)
   ): ServiceValidator[Service] = {
     val validator = original.`type` match {
