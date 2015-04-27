@@ -42,7 +42,10 @@ case class ClientFetcher(
     import scala.concurrent.Await
     import scala.concurrent.duration._
 
-    val client = new com.gilt.apidoc.api.v0.Client(uri)
+    val client = new com.gilt.apidoc.api.v0.Client(
+      apiUrl = uri,
+      defaultHeaders = requestHeaders
+    )
 
     Await.result(
       client._executeRequest(Method.Get.toString, "").map {

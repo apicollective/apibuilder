@@ -1133,7 +1133,8 @@ package com.gilt.apidoc.api.v0 {
 
   class Client(
     apiUrl: String,
-    auth: scala.Option[com.gilt.apidoc.api.v0.Authorization] = None
+    auth: scala.Option[com.gilt.apidoc.api.v0.Authorization] = None,
+    defaultHeaders: Seq[(String, String)] = Nil
   ) {
     import com.gilt.apidoc.api.v0.models.json._
 
@@ -1930,7 +1931,8 @@ package com.gilt.apidoc.api.v0 {
         "User-Agent" -> Constants.UserAgent,
         "X-Apidoc-Version" -> Constants.Version,
         "X-Apidoc-Version-Major" -> Constants.VersionMajor.toString
-      )
+      ).withHeaders(defaultHeaders : _*)
+
       auth.fold(holder) { a =>
         a match {
           case Authorization.Basic(username, password) => {
