@@ -1,7 +1,7 @@
 package db
 
-import lib.ServiceConfiguration
-import core.{ClientFetcher, VersionMigration}
+import lib.{DatabaseServiceFetcher, ServiceConfiguration}
+import core.VersionMigration
 import builder.OriginalValidator
 import com.gilt.apidoc.api.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
 import com.gilt.apidoc.spec.v0.models.Service
@@ -220,7 +220,7 @@ object VersionsDao {
           val validator = OriginalValidator(
             config = config,
             original = original,
-            fetcher = ClientFetcher(requestHeaders = Nil), // TODO
+            fetcher = DatabaseServiceFetcher(),
             migration = VersionMigration(internal = true)
           )
           validator.validate match {

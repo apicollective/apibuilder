@@ -1,6 +1,6 @@
 package db
 
-import lib.ServiceConfiguration
+import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import builder.OriginalValidator
 import com.gilt.apidoc.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
 import com.gilt.apidoc.spec.v0.models.{Application, Organization, Service}
@@ -83,9 +83,13 @@ class VersionsDaoSpec extends FunSpec with Matchers {
       version = "0.0.2"
     )
 
-    val validator = OriginalValidator(serviceConfig, version.original.getOrElse {
-      sys.error("Missing original")
-    })
+    val validator = OriginalValidator(
+      config = serviceConfig,
+      original = version.original.getOrElse {
+        sys.error("Missing original")
+      },
+      fetcher = DatabaseServiceFetcher()
+    )
     validator.validate match {
       case Left(errors) => fail(errors.mkString("\n"))
       case Right(_) => {}

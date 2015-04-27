@@ -111,7 +111,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
       val validator = OriginalValidator(
         config = TestHelper.serviceConfig,
         original = Original(OriginalType.ApiJson, json2),
-        fetcher = ClientFetcher(requestHeaders = Nil)
+        fetcher = FileServiceFetcher()
       )
       validator.validate match {
         case Left(errors) => {

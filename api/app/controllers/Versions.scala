@@ -4,9 +4,8 @@ import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization
 import com.gilt.apidoc.api.v0.models.json._
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.ServiceConfiguration
-import core.ClientFetcher
 import builder.OriginalValidator
-import lib.{OriginalUtil, Validation}
+import lib.{DatabaseServiceFetcher, OriginalUtil, Validation}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
 import play.api.mvc._
 import play.api.libs.json._
@@ -54,7 +53,7 @@ object Versions extends Controller {
                 OriginalValidator(
                   config = toServiceConfiguration(org, versionName),
                   original = OriginalUtil.toOriginal(form.originalForm),
-                  fetcher = ClientFetcher(requestHeaders = request.authHeaders.toSeq)
+                  fetcher = DatabaseServiceFetcher()
                 ).validate match {
                   case Left(errors) => {
                     Conflict(Json.toJson(Validation.errors(errors)))
@@ -106,7 +105,7 @@ object Versions extends Controller {
                 OriginalValidator(
                   config = toServiceConfiguration(org, versionName),
                   original = OriginalUtil.toOriginal(form.originalForm),
-                  fetcher = ClientFetcher(requestHeaders = request.authHeaders.toSeq)
+                  fetcher = DatabaseServiceFetcher()
                 ).validate match {
                   case Left(errors) => {
                     Conflict(Json.toJson(Validation.errors(errors)))

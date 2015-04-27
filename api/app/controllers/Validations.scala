@@ -2,8 +2,8 @@ package controllers
 
 import com.gilt.apidoc.api.v0.models.{Original, OriginalType, Validation}
 import com.gilt.apidoc.api.v0.models.json._
-import lib.ServiceConfiguration
-import core.ClientFetcher
+import core.ServiceFetcher
+import lib.{DatabaseServiceFetcher, OriginalUtil, ServiceConfiguration}
 import builder.OriginalValidator
 import play.api.mvc._
 import play.api.libs.json._
@@ -17,19 +17,25 @@ object Validations extends Controller {
   )
 
   def post() = AnonymousRequest(parse.temporaryFile) { request =>
-    request.body.file.getName()
-    val fileType = OriginalType.ApiJson // TODO
     val contents = scala.io.Source.fromFile(request.body.file, "UTF-8").getLines.mkString("\n")
-    OriginalValidator(
-      config = config,
-      original = Original(fileType, contents),
-      fetcher = ClientFetcher(requestHeaders = request.authHeaders.toSeq)
-    ).validate match {
-      case Left(errors) => {
-        BadRequest(Json.toJson(Validation(false, errors)))
+    OriginalUtil.guessType(contents) match {
+      case None => {
+        BadRequest(Json.toJson(Validation(false, Seq("Could not determine the type of file from the content."))))
       }
-      case Right(service) => {
-        Ok(Json.toJson(Validation(true, Nil)))
+
+      case Some(fileType) => {
+        OriginalValidator(
+          config = config,
+          original = Original(fileType, contents),
+          fetcher = DatabaseServiceFetcher()
+        ).validate match {
+          case Left(errors) => {
+            BadRequest(Json.toJson(Validation(false, errors)))
+          }
+          case Right(service) => {
+            Ok(Json.toJson(Validation(true, Nil)))
+          }
+        }
       }
     }
   }
