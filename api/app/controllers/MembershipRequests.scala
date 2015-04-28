@@ -31,7 +31,7 @@ object MembershipRequests extends Controller {
     offset: Long = 0
   ) = Authenticated { request =>
     val requests = MembershipRequestsDao.findAll(
-      Authorization(Some(request.user)),
+      request.authorization,
       organizationGuid = organizationGuid,
       organizationKey = organizationKey,
       userGuid = userGuid,
@@ -81,7 +81,7 @@ object MembershipRequests extends Controller {
   }
 
   def postAcceptByGuid(guid: UUID) = Authenticated { request =>
-    MembershipRequestsDao.findByGuid(Authorization(Some(request.user)), guid) match {
+    MembershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {
         MembershipRequestsDao.accept(request.user, mr)
@@ -91,7 +91,7 @@ object MembershipRequests extends Controller {
   }
 
   def postDeclineByGuid(guid: UUID) = Authenticated { request =>
-    MembershipRequestsDao.findByGuid(Authorization(Some(request.user)), guid) match {
+    MembershipRequestsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(mr) => {
         MembershipRequestsDao.decline(request.user, mr)

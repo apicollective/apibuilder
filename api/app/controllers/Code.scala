@@ -31,13 +31,13 @@ object Code extends Controller {
     versionName: String,
     generatorKey: String
   ) = AnonymousRequest.async { request =>
-    VersionsDao.findVersion(Authorization(request.user), orgKey, applicationKey, versionName) match {
+    VersionsDao.findVersion(request.authorization, orgKey, applicationKey, versionName) match {
       case None => {
         Future.successful(NotFound)
       }
 
       case Some(version) => {
-        GeneratorsDao.findAll(Authorization(request.user), key = Some(generatorKey)).headOption match {
+        GeneratorsDao.findAll(request.authorization, key = Some(generatorKey)).headOption match {
           case None => {
             Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
           }

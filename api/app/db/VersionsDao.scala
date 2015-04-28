@@ -220,7 +220,7 @@ object VersionsDao {
           val validator = OriginalValidator(
             config = config,
             original = original,
-            fetcher = DatabaseServiceFetcher(),
+            fetcher = DatabaseServiceFetcher(Authorization.All),
             migration = VersionMigration(internal = true)
           )
           validator.validate match {

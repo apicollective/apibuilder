@@ -20,7 +20,7 @@ object Memberships extends Controller {
     Ok(
       Json.toJson(
         MembershipsDao.findAll(
-          Authorization(Some(request.user)),
+          request.authorization,
           organizationGuid = organizationGuid,
           organizationKey = organizationKey,
           userGuid = userGuid,
@@ -33,7 +33,7 @@ object Memberships extends Controller {
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>
-    MembershipsDao.findByGuid(Authorization(Some(request.user)), guid) match {
+    MembershipsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(membership) => {
         if (MembershipsDao.isUserAdmin(request.user, membership.organization)) {
@@ -46,7 +46,7 @@ object Memberships extends Controller {
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    MembershipsDao.findByGuid(Authorization(Some(request.user)), guid) match {
+    MembershipsDao.findByGuid(request.authorization, guid) match {
       case None => NoContent
       case Some(membership) => {
         if (MembershipsDao.isUserAdmin(request.user, membership.organization)) {

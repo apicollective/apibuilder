@@ -88,7 +88,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
       original = version.original.getOrElse {
         sys.error("Missing original")
       },
-      fetcher = DatabaseServiceFetcher()
+      fetcher = DatabaseServiceFetcher(Authorization.All)
     )
     validator.validate match {
       case Left(errors) => fail(errors.mkString("\n"))

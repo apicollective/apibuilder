@@ -27,7 +27,7 @@ object Validations extends Controller {
         OriginalValidator(
           config = config,
           original = Original(fileType, contents),
-          fetcher = DatabaseServiceFetcher()
+          fetcher = DatabaseServiceFetcher(request.authorization)
         ).validate match {
           case Left(errors) => {
             BadRequest(Json.toJson(Validation(false, errors)))

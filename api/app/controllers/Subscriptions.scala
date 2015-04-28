@@ -22,7 +22,7 @@ trait Subscriptions {
     offset: Long = 0
   ) = Authenticated { request =>
     val subscriptions = SubscriptionsDao.findAll(
-      Authorization(Some(request.user)),
+      request.authorization,
       guid = guid,
       organizationKey = organizationKey,
       userGuid = userGuid,

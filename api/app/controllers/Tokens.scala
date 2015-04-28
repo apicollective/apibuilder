@@ -20,7 +20,7 @@ trait Tokens {
     offset: Long = 0
   ) = Authenticated { request =>
     val tokens = TokensDao.findAll(
-      Authorization(Some(request.user)),
+      request.authorization,
       userGuid = Some(userGuid),
       guid = guid,
       limit = limit,
@@ -32,7 +32,7 @@ trait Tokens {
   def getCleartextByGuid(
     guid: UUID
   ) = Authenticated { request =>
-    TokensDao.findCleartextByGuid(Authorization(Some(request.user)), guid) match {
+    TokensDao.findCleartextByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(token) => {
         Ok(Json.toJson(token))
@@ -61,7 +61,7 @@ trait Tokens {
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    TokensDao.findByGuid(Authorization(Some(request.user)), guid).map { token =>
+    TokensDao.findByGuid(request.authorization, guid).map { token =>
       TokensDao.softDelete(request.user, token)
     }
     NoContent

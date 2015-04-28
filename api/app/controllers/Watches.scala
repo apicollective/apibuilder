@@ -22,7 +22,7 @@ trait Watches {
     offset: Long = 0
   ) = Authenticated { request =>
     val watches = WatchesDao.findAll(
-      Authorization(Some(request.user)),
+      request.authorization,
       guid = guid,
       userGuid = userGuid,
       organizationKey =  organizationKey,
@@ -46,7 +46,7 @@ trait Watches {
     applicationKey: String
   ) = Authenticated { request =>
     WatchesDao.findAll(
-      Authorization(Some(request.user)),
+      request.authorization,
       userGuid = userGuid,
       organizationKey =  Some(organizationKey),
       applicationKey = Some(applicationKey),
