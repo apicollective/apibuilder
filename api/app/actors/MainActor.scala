@@ -18,10 +18,6 @@ object MainActor {
     case class MembershipRequestDeclined(organizationGuid: UUID, userGuid: UUID, role: Role)
     case class MembershipCreated(guid: UUID)
 
-    case class SegmentCreated(segment: Segment)
-    case class SegmentUpdated(segment: Segment)
-    case class SegmentDeleted(segment: Segment)
-
     case class PasswordResetRequestCreated(guid: UUID)
     case class ApplicationCreated(guid: UUID)
     case class UserCreated(guid: UUID)
