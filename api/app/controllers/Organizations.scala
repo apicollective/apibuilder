@@ -22,7 +22,7 @@ object Organizations extends Controller {
     Ok(
       Json.toJson(
         OrganizationsDao.findAll(
-          Authorization(request.user),
+          request.authorization,
           userGuid = userGuid,
           guid = guid,
           key = key,
@@ -36,7 +36,7 @@ object Organizations extends Controller {
   }
 
   def getByKey(key: String) = AnonymousRequest { request =>
-    OrganizationsDao.findByKey(Authorization(request.user), key) match {
+    OrganizationsDao.findByKey(request.authorization, key) match {
       case None => NotFound
       case Some(org) => Ok(Json.toJson(org))
     }
@@ -66,7 +66,7 @@ object Organizations extends Controller {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[OrganizationForm] => { 
-        OrganizationsDao.findByKey(Authorization(Some(request.user)), key) match {
+        OrganizationsDao.findByKey(request.authorization, key) match {
           case None => NotFound
           case Some(existing) => {
             val form = s.get

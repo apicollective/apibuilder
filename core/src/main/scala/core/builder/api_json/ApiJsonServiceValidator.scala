@@ -1,7 +1,7 @@
 package builder.api_json
 
 import builder.JsonUtil
-import core.{ClientFetcher, Importer, ServiceFetcher, Util, VersionMigration}
+import core.{Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey, VersionTag}
 import com.gilt.apidoc.spec.v0.models.Service
 import play.api.libs.json.{Json, JsObject}
@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 case class ApiJsonServiceValidator(
   config: ServiceConfiguration,
   apiJson: String,
-  fetcher: ServiceFetcher = new ClientFetcher(),
+  fetcher: ServiceFetcher,
   migration: VersionMigration
 ) extends ServiceValidator[Service] {
 

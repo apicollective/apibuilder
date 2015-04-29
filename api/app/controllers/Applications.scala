@@ -18,7 +18,7 @@ object Applications extends Controller {
     offset: Long = 0
   ) = AnonymousRequest { request =>
     val applications = ApplicationsDao.findAll(
-      Authorization(request.user),
+      request.authorization,
       orgKey = Some(orgKey),
       name = name,
       key = key,

@@ -15,7 +15,8 @@ case class FullWatchForm(
   form: WatchForm
 ) {
 
-  private val auth = Authorization(Some(createdBy))
+  private val auth = Authorization.User(createdBy.guid)
+
   val org: Option[Organization] = OrganizationsDao.findByKey(auth, form.organizationKey)
   val application: Option[Application] = org.flatMap { o =>
     ApplicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
@@ -121,7 +122,7 @@ object WatchesDao {
   }
 
   def findByUserAndGuid(user: User, guid: UUID): Option[Watch] = {
-    findByGuid(Authorization(Some(user)), guid)
+    findByGuid(Authorization.User(user.guid), guid)
   }
 
   def findAll(

@@ -5,7 +5,7 @@ import com.gilt.apidoc.api.v0.models.json._
 import com.gilt.apidoc.spec.v0.models.Service
 import lib.ServiceConfiguration
 import builder.OriginalValidator
-import lib.{OriginalUtil, Validation}
+import lib.{DatabaseServiceFetcher, OriginalUtil, Validation}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
 import play.api.mvc._
 import play.api.libs.json._
@@ -15,9 +15,9 @@ object Versions extends Controller {
   private val DefaultVisibility = Visibility.Organization
 
   def getByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
-    val versions = ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization(request.user), orgKey, applicationKey).map { application =>
+    val versions = ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
       VersionsDao.findAll(
-        Authorization(request.user),
+        request.authorization,
         applicationGuid = Some(application.guid),
         limit = limit,
         offset = offset
@@ -27,7 +27,7 @@ object Versions extends Controller {
   }
 
   def getByOrgKeyAndApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = AnonymousRequest { request =>
-    VersionsDao.findVersion(Authorization(request.user), orgKey, applicationKey, version) match {
+    VersionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
       case None => NotFound
       case Some(v: Version) => Ok(Json.toJson(v))
     }
@@ -50,7 +50,11 @@ object Versions extends Controller {
               }
               case s: JsSuccess[VersionForm] => {
                 val form = s.get
-                OriginalValidator(toServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
+                OriginalValidator(
+                  config = toServiceConfiguration(org, versionName),
+                  original = OriginalUtil.toOriginal(form.originalForm),
+                  fetcher = DatabaseServiceFetcher(request.authorization)
+                ).validate match {
                   case Left(errors) => {
                     Conflict(Json.toJson(Validation.errors(errors)))
                   }
@@ -98,7 +102,11 @@ object Versions extends Controller {
               }
               case s: JsSuccess[VersionForm] => {
                 val form = s.get
-                OriginalValidator(toServiceConfiguration(org, versionName), OriginalUtil.toOriginal(form.originalForm)).validate match {
+                OriginalValidator(
+                  config = toServiceConfiguration(org, versionName),
+                  original = OriginalUtil.toOriginal(form.originalForm),
+                  fetcher = DatabaseServiceFetcher(request.authorization)
+                ).validate match {
                   case Left(errors) => {
                     Conflict(Json.toJson(Validation.errors(errors)))
                   }
@@ -164,7 +172,7 @@ object Versions extends Controller {
       }
     }
 
-    VersionsDao.findByApplicationAndVersion(Authorization(Some(user)), application, versionName) match {
+    VersionsDao.findByApplicationAndVersion(Authorization.User(user.guid), application, versionName) match {
       case None => VersionsDao.create(user, application, versionName, original, service)
       case Some(existing: Version) => VersionsDao.replace(user, existing, application, original, service)
     }

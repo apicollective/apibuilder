@@ -41,7 +41,7 @@ object SubscriptionsDao {
     user: User,
     form: SubscriptionForm
   ): Seq[Error] = {
-    val org = OrganizationsDao.findByKey(Authorization(Some(user)), form.organizationKey)
+    val org = OrganizationsDao.findByKey(Authorization.User(user.guid), form.organizationKey)
 
     val organizationKeyErrors = org match {
         case None => Seq("Organization not found")
@@ -81,7 +81,7 @@ object SubscriptionsDao {
     val errors = validate(createdBy, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    val org = OrganizationsDao.findByKey(Authorization(Some(createdBy)), form.organizationKey).getOrElse {
+    val org = OrganizationsDao.findByKey(Authorization.User(createdBy.guid), form.organizationKey).getOrElse {
       sys.error("Failed to validate org for subscription")
     }
 
@@ -124,7 +124,7 @@ object SubscriptionsDao {
   }
 
   def findByUserAndGuid(user: User, guid: UUID): Option[Subscription] = {
-    findAll(Authorization(Some(user)), guid = Some(guid), limit = 1).headOption
+    findAll(Authorization.User(user.guid), guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(

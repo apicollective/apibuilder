@@ -1,6 +1,6 @@
 package db
 
-import lib.ServiceConfiguration
+import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import core.VersionMigration
 import builder.OriginalValidator
 import com.gilt.apidoc.api.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
@@ -217,7 +217,12 @@ object VersionsDao {
         )
 
         try {
-          val validator = OriginalValidator(config, original, migration = VersionMigration(internal = true))
+          val validator = OriginalValidator(
+            config = config,
+            original = original,
+            fetcher = DatabaseServiceFetcher(Authorization.All),
+            migration = VersionMigration(internal = true)
+          )
           validator.validate match {
             case Left(errors) => {
             Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))

@@ -148,10 +148,10 @@ object Authorization {
 
   }
 
-  def apply(user: Option[com.gilt.apidoc.api.v0.models.User]): Authorization = {
-    user match {
+  def apply(userGuid: Option[UUID]): Authorization = {
+    userGuid match {
       case None => PublicOnly
-      case Some(u) => User(u.guid)
+      case Some(guid) => User(guid)
     }
   }
 
