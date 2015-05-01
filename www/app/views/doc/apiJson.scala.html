@@ -406,19 +406,12 @@
 
     <ul>
 
-      <li> HTTP Response codes of 404, 5xx cannot be explicitly
-      specified and are handled automatically to ensure consistent
-      behavior in generated client libraries.</li>
+      <li> HTTP Response codes of 5xx cannot be explicitly specified
+      and are handled automatically to ensure consistent behavior in
+      generated client libraries.</li>
 
-      <ul>
-
-        <li> 404 response is automatically added for all GET requests</li>
-        <li> if a successful response returns an array, 404 returns an empty list</li>
-        <li> if a successful response returns a single instance, 404 returns null (or None in languages that support options)</li>
-
-      </ul>
-
-      <li> HTTP Response codes of 204 and 304 indicate that no content is returned, so they must use a type of <em>unit</em>.</li>
+      <li> HTTP Response codes of 204 and 304 indicate that no content
+      is returned, so they must use a type of <em>unit</em>.</li>
 
     </ul>
 
