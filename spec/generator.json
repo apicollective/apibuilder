@@ -84,7 +84,8 @@
                   "path": "/:key",
                   "description": "Get generator with this key",
                   "responses": {
-                    "200": { "type": "generator" }
+                    "200": { "type": "generator" },
+                    "404": { "type": "unit" }
                   }
                 }
 	    ]
