@@ -9,6 +9,7 @@ import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import play.api.Play.current
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 class AnonymousRequest[A](
   resources: RequestResources,
@@ -101,14 +102,48 @@ object AnonymousRequest {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def resources(requestPath: String, userGuid: Option[String]): RequestResources = {
-    val user = userGuid.flatMap { guid =>
-      Await.result(Authenticated.api().Users.getByGuid(UUID.fromString(guid)), 5000.millis)
-    }
+  /**
+    * Blocking call to fetch a user. If the provided guid is not a
+    * valid UUID, returns none.
+    */
+  def getUser(guid: String): Option[User] = {
+    Try(UUID.fromString(guid)) match {
+      case Success(userGuid) => {
+        Await.ready(
+          Authenticated.api().Users.getByGuid(userGuid),
+          5000.millis
+        ).value.get match {
+          case Success(user) => Some(user)
+          case Failure(ex) => ex match {
+            case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
+            case _ => throw ex
+          }
+        }
+      }
 
-    val org = requestPath.split("/").drop(1).headOption.flatMap { possibleOrgKey =>
-      Await.result(Authenticated.api(user).Organizations.getByKey(possibleOrgKey), 1000.millis).headOption
+      case Failure(ex) => None
     }
+  }
+
+  /**
+    * Blocking call to fetch an organization
+    */
+  def getOrganization(user: Option[User], key: String): Option[Organization] = {
+    Await.ready(
+      Authenticated.api(user).Organizations.getByKey(key),
+      1000.millis
+    ).value.get match {
+      case Success(org) => Some(org)
+      case Failure(ex) => ex match {
+        case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
+        case _ => throw ex
+      }
+    }
+  }
+
+  def resources(requestPath: String, userGuid: Option[String]): RequestResources = {
+    val user = userGuid.flatMap { getUser(_) }
+    val org = requestPath.split("/").drop(1).headOption.flatMap { getOrganization(user, _) }
 
     val memberships = if (user.isEmpty || org.isEmpty) {
       Seq.empty
