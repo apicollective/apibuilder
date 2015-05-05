@@ -1,7 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm}
-import com.gilt.apidoc.api.v0.errors.{ErrorsResponse, FailedRequest}
+import com.gilt.apidoc.api.v0.errors.{ErrorsResponse, FailedRequest, UnitResponse}
 import java.util.UUID
 
 import play.api.test._
@@ -96,19 +96,25 @@ class SubscriptionsSpec extends BaseSpec {
 
   "DELETE /subscriptions/:guid" in new WithServer {
     val subscription = createSubscription(createSubscriptionForm(org))
-    await(client.subscriptions.deleteByGuid(subscription.guid)) must be(Some(()))
-    await(client.subscriptions.deleteByGuid(subscription.guid)) must be(Some(())) // test idempotence
-    await(client.subscriptions.getByGuid(subscription.guid)) must be(None)
+    await(client.subscriptions.deleteByGuid(subscription.guid)) must be(())
+    await(client.subscriptions.deleteByGuid(subscription.guid)) must be(()) // test idempotence
+    intercept[UnitResponse] {
+      await(client.subscriptions.getByGuid(subscription.guid))
+    }.status must be(404)
 
     // now recreate
     val subscription2 = createSubscription(createSubscriptionForm(org))
-    await(client.subscriptions.getByGuid(subscription2.guid)) must be(Some(subscription2))
+    await(client.subscriptions.getByGuid(subscription2.guid)) must be(subscription2)
   }
+
 
   "GET /subscriptions/:guid" in new WithServer {
     val subscription = createSubscription(createSubscriptionForm(org))
-    await(client.subscriptions.getByGuid(subscription.guid)) must be(Some(subscription))
-    await(client.subscriptions.getByGuid(UUID.randomUUID)) must be(None)
+    await(client.subscriptions.getByGuid(subscription.guid)) must be(subscription)
+
+    intercept[UnitResponse] {
+      await(client.subscriptions.getByGuid(UUID.randomUUID))
+    }.status must be(404)
   }
 
   "GET /subscriptions filters" in new WithServer {

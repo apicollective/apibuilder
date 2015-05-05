@@ -2,7 +2,7 @@ package controllers
 
 import db.OrganizationsDao
 import com.gilt.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
-import com.gilt.apidoc.api.v0.errors.ErrorsResponse
+import com.gilt.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._
@@ -64,7 +64,9 @@ class OrganizationsSpec extends BaseSpec {
   "GET /organizations/:key" in new WithServer {
     val org = createOrganization()
     await(client.organizations.getByKey(org.key)) must be(org)
-    await(client.organizations.getByKey(UUID.randomUUID.toString)) must be(None)
+    intercept[UnitResponse] {
+      await(client.organizations.getByKey(UUID.randomUUID.toString))
+    }.status must be(404)
   }
 
   "GET /organizations for an anonymous user shows only public orgs" in new WithServer {
@@ -73,7 +75,9 @@ class OrganizationsSpec extends BaseSpec {
     val anonymous = createUser()
 
     val client = newClient(anonymous)
-    await(client.organizations.getByKey(privateOrg.key)) must be(None)
+    intercept[UnitResponse] {
+      client.organizations.getByKey(privateOrg.key)
+    }.status must be(404)
     await(client.organizations.getByKey(publicOrg.key)).key must be(publicOrg.key)
 
     await(client.organizations.get(key = Some(privateOrg.key))) must be(Seq.empty)
