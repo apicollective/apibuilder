@@ -89,7 +89,7 @@ object Members extends Controller {
     request.requireAdmin
 
     for {
-      membership <- request.api.Memberships.getByGuid(guid)
+      membership <- AnonymousRequest.callWith404(request.api.Memberships.getByGuid(guid))
       memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
     } yield {
       memberships.find(_.role == Role.Member.key) match {
@@ -115,7 +115,7 @@ object Members extends Controller {
     request.requireAdmin
 
     for {
-      membership <- request.api.Memberships.getByGuid(guid)
+      membership <- AnonymousRequest.callWith404(request.api.Memberships.getByGuid(guid))
       memberships <- request.api.Memberships.get(orgKey = Some(orgKey), userGuid = Some(membership.get.user.guid))
     } yield {
       memberships.find(_.role == Role.Admin.key) match {

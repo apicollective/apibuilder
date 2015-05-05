@@ -41,7 +41,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
     }
 
     request.session.get("user_guid").map { userGuid =>
-      Await.result(api().Users.getByGuid(UUID.fromString(userGuid)), 5000.millis) match {
+      AnonymousRequest.getUser(userGuid) match {
 
         case None => {
           // have a user guid, but user does not exist

@@ -50,7 +50,7 @@ object TokensController extends Controller {
 
   def cleartext(guid: UUID) = Authenticated.async { implicit request =>
     for {
-      cleartextOption <- request.api.tokens.getCleartextByGuid(guid)
+      cleartextOption <- AnonymousRequest.callWith404(request.api.tokens.getCleartextByGuid(guid))
     } yield {
       cleartextOption match {
         case None => {

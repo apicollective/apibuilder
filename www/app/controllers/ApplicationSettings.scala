@@ -23,7 +23,9 @@ object ApplicationSettings extends Controller {
   ): Future[MainTemplate] = {
     for {
       applicationResponse <- api.Applications.getByOrgKey(orgKey = base.org.get.key, key = Some(applicationKey))
-      versionOption <- api.Versions.getByOrgKeyAndApplicationKeyAndVersion(base.org.get.key, applicationKey, versionName)
+      versionOption <- AnonymousRequest.callWith404(
+        api.Versions.getByOrgKeyAndApplicationKeyAndVersion(base.org.get.key, applicationKey, versionName)
+      )
     } yield {
       val application = applicationResponse.headOption.getOrElse {
         sys.error("Application not found")

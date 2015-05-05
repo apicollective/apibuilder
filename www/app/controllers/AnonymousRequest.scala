@@ -103,6 +103,17 @@ object AnonymousRequest {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def callWith404[T](
+    f: Future[T]
+  ): Future[Option[T]] = {
+    // TODO - remove the wait
+    import scala.concurrent._
+
+    Future {
+      awaitCallWith404(f)
+    }
+  }
+
+  def awaitCallWith404[T](
     future: Future[T]
   ): Option[T] = {
     Await.ready(future, 1000.millis).value.get match {
@@ -120,7 +131,7 @@ object AnonymousRequest {
     */
   def getUser(guid: String): Option[User] = {
     Try(UUID.fromString(guid)) match {
-      case Success(userGuid) => callWith404( Authenticated.api().Users.getByGuid(userGuid) )
+      case Success(userGuid) => awaitCallWith404( Authenticated.api().Users.getByGuid(userGuid) )
       case Failure(ex) => None
     }
   }
@@ -129,7 +140,7 @@ object AnonymousRequest {
     * Blocking call to fetch an organization
     */
   def getOrganization(user: Option[User], key: String): Option[Organization] = {
-    callWith404( Authenticated.api(user).Organizations.getByKey(key) )
+    awaitCallWith404( Authenticated.api(user).Organizations.getByKey(key) )
   }
 
   def resources(requestPath: String, userGuid: Option[String]): RequestResources = {
