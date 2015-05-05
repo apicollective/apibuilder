@@ -2,13 +2,12 @@ package controllers
 
 import com.gilt.apidoc.api.v0.models.{ Membership, Organization, User, Visibility }
 import models.MainTemplate
-import lib.Role
+import lib.{ApiClient, Role}
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import play.api.Play.current
-import java.util.UUID
 
 class AnonymousRequest[A](
   resources: RequestResources,
@@ -101,19 +100,22 @@ object AnonymousRequest {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  /**
+    * Blocking call to fetch an organization
+    */
+  private def getOrganization(user: Option[User], key: String): Option[Organization] = {
+    ApiClient.awaitCallWith404( Authenticated.api(user).Organizations.getByKey(key) )
+  }
+
   def resources(requestPath: String, userGuid: Option[String]): RequestResources = {
-    val user = userGuid.flatMap { guid =>
-      Await.result(Authenticated.api().Users.getByGuid(UUID.fromString(guid)), 5000.millis)
-    }
+    val user = userGuid.flatMap { ApiClient.getUser(_) }
+    val org = requestPath.split("/").drop(1).headOption.flatMap { getOrganization(user, _) }
 
-    val org = requestPath.split("/").drop(1).headOption.flatMap { possibleOrgKey =>
-      Await.result(Authenticated.api(user).Organizations.getByKey(possibleOrgKey), 1000.millis).headOption
-    }
-
-    val memberships = if (user.isEmpty || org.isEmpty) {
-      Seq.empty
-    } else {
-      Await.result(Authenticated.api(user).Memberships.get(orgKey = Some(org.get.key), userGuid = Some(user.get.guid)), 1000.millis)
+    val memberships = (user, org) match {
+      case (Some(u), Some(o)) => {
+        Await.result(Authenticated.api(user).Memberships.get(orgKey = Some(o.key), userGuid = Some(u.guid)), 1000.millis)
+      }
+      case _ => Seq.empty
     }
 
     RequestResources(

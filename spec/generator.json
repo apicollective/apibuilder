@@ -3,11 +3,11 @@
     "description": "Documentation for an apidoc code generator API",
     "base_url": "http://www.apidoc.me",
     "apidoc": {
-      "version": "0.9.6"
+      "version": "0.9.9"
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.10/service.json" }
     ],
 
     "models": {
@@ -84,7 +84,8 @@
                   "path": "/:key",
                   "description": "Get generator with this key",
                   "responses": {
-                    "200": { "type": "generator" }
+                    "200": { "type": "generator" },
+                    "404": { "type": "unit" }
                   }
                 }
 	    ]

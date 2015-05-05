@@ -1,5 +1,6 @@
 package controllers
 
+import com.gilt.apidoc.spec.v0.models.Method
 import lib.{ApiClient, Config}
 import models.MainTemplate
 import com.gilt.apidoc.api.v0.models.User
@@ -33,15 +34,15 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
     lazy val returnUrl: Option[String] = {
-      if (request.method.toUpperCase == "GET") {
-        Some(request.uri)
-      } else {
-        None
+      Method(request.method) match {
+        case Method.Get => Some(request.uri)
+        case Method.Connect | Method.Delete | Method.Head | Method.Options | Method.Patch | Method.Post | Method.Put | Method.Trace => None
+        case Method.UNDEFINED(_) => None
       }
     }
 
     request.session.get("user_guid").map { userGuid =>
-      Await.result(api().Users.getByGuid(UUID.fromString(userGuid)), 5000.millis) match {
+      ApiClient.getUser(userGuid) match {
 
         case None => {
           // have a user guid, but user does not exist

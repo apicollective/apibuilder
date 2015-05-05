@@ -3,11 +3,11 @@
     "description": "Host API documentation for applications providing REST APIs, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
     "apidoc": {
-      "version": "0.9.6"
+      "version": "0.9.9"
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.10/service.json" }
     ],
 
     "enums": {
@@ -411,7 +411,8 @@
                     "description": "Returns information about the user with this guid.",
                     "path": "/:guid",
                     "responses": {
-                        "200": { "type": "user" }
+                        "200": { "type": "user" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -473,7 +474,8 @@
 		    "description": "Used to fetch the clear text token.",
 		    "path": "/:guid/cleartext",
                     "responses": {
-                        "200": { "type": "cleartext_token" }
+                        "200": { "type": "cleartext_token" },
+                        "404": { "type": "unit" }
                     }
 		},
 
@@ -519,7 +521,8 @@
                     "path": "/:key",
                     "description": "Returns the organization with this key.",
                     "responses": {
-                        "200": { "type": "organization" }
+                        "200": { "type": "organization" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -595,7 +598,8 @@
                     "method": "GET",
                     "path": "/:guid",
 		    "responses": {
-			"200": { "type": "membership" }
+			"200": { "type": "membership" },
+                        "404": { "type": "unit" }
 		    }
                 },
 
@@ -756,7 +760,8 @@
                     "description": "Retrieve a specific version of an application.",
 		    "path": "/:applicationKey/:version",
                     "responses": {
-                        "200": { "type": "version" }
+                        "200": { "type": "version" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -811,7 +816,8 @@
               "method": "GET",
               "path": "/:key",
               "responses": {
-                "200": { "type": "generator" }
+                  "200": { "type": "generator" },
+                  "404": { "type": "unit" }
               }
             },
 
@@ -865,7 +871,8 @@
                     "description": "Returns information about a specific subscription.",
                     "path": "/:guid",
                     "responses": {
-                        "200": { "type": "subscription" }
+                        "200": { "type": "subscription" },
+                        "404": { "type": "unit" }
                     }
                 },
 
@@ -909,7 +916,8 @@
                     "description": "Returns information about a specific watch.",
                     "path": "/:guid",
                     "responses": {
-                        "200": { "type": "watch" }
+                        "200": { "type": "watch" },
+                        "404": { "type": "unit" }
                     }
                 },
 

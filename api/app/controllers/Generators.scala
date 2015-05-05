@@ -2,7 +2,7 @@ package controllers
 
 import java.util.UUID
 
-import com.gilt.apidoc.api.v0.errors.FailedRequest
+import com.gilt.apidoc.api.v0.errors.UnitResponse
 import com.gilt.apidoc.api.v0.models.{GeneratorOrgForm, GeneratorUpdateForm, GeneratorCreateForm, User, Generator}
 import com.gilt.apidoc.api.v0.models.json._
 import com.gilt.apidoc.generator.v0.Client
@@ -56,9 +56,8 @@ object Generators extends Controller {
   }
 
   private def fillInGeneratorMeta(generator: Generator): Future[Either[Status, Generator]] = {
-    new Client(generator.uri).generators.getByKey(generator.key).map {
-      case Some(meta) => Right(generator.copy(name = meta.name, description = meta.description, language = meta.language))
-      case _ => Left(NotFound)
+    new Client(generator.uri).generators.getByKey(generator.key).map { meta =>
+      Right(generator.copy(name = meta.name, description = meta.description, language = meta.language))
     }.recover {
       case ex: Exception => Left(ServiceUnavailable)
     }
@@ -87,14 +86,11 @@ object Generators extends Controller {
               case Some(d) =>
                 Future.successful(Conflict(Json.toJson(Validation.error(s"generator ${form.key} already exists"))))
               case None =>
-                new Client(form.uri).generators.getByKey(form.key).recover {
-                  case ex: FailedRequest => None
-                }.map {
-                  case Some(meta) =>
-                    val generator = GeneratorsDao.create(request.user, form.key, form.uri, form.visibility, meta.name, meta.description, meta.language)
-                    Ok(Json.toJson(generator))
-                  case None =>
-                    NotFound("Generator uri invalid")
+                new Client(form.uri).generators.getByKey(form.key).map { meta =>
+                  val generator = GeneratorsDao.create(request.user, form.key, form.uri, form.visibility, meta.name, meta.description, meta.language)
+                  Ok(Json.toJson(generator))
+                }.recover {
+                  case UnitResponse(404) => NotFound
                 }
             }
           }
