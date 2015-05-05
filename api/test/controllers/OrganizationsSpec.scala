@@ -74,7 +74,7 @@ class OrganizationsSpec extends BaseSpec {
 
     val client = newClient(anonymous)
     await(client.organizations.getByKey(privateOrg.key)) must be(None)
-    await(client.organizations.getByKey(publicOrg.key)).map(_.key) must be(Some(publicOrg.key))
+    await(client.organizations.getByKey(publicOrg.key)).key must be(publicOrg.key)
 
     await(client.organizations.get(key = Some(privateOrg.key))) must be(Seq.empty)
     await(client.organizations.get(key = Some(publicOrg.key))).map(_.key) must be(Seq(publicOrg.key))
