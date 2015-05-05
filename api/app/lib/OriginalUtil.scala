@@ -2,6 +2,7 @@ package lib
 
 import com.gilt.apidoc.api.v0.models.{Original, OriginalForm, OriginalType}
 import play.api.libs.json.{Json, JsString, JsObject}
+import scala.util.{Failure, Success, Try}
 
 object OriginalUtil {
 
@@ -22,14 +23,19 @@ object OriginalUtil {
     if (trimmed.indexOf("protocol ") >= 0 || trimmed.indexOf("@namespace") >= 0) {
       Some(OriginalType.AvroIdl)
     } else if (trimmed.startsWith("{")) {
-      Json.parse(trimmed).asOpt[JsObject] match {
-        case None => None
-        case Some(o) => {
-          (o \ "swagger").asOpt[JsString] match {
-            case Some(v) => Some(OriginalType.SwaggerJson)
-            case None => Some(OriginalType.ApiJson)
+      Try(
+        Json.parse(trimmed).asOpt[JsObject] match {
+          case None => None
+          case Some(o) => {
+            (o \ "swagger").asOpt[JsString] match {
+              case Some(v) => Some(OriginalType.SwaggerJson)
+              case None => Some(OriginalType.ApiJson)
+            }
           }
         }
+      ) match {
+        case Success(ot) => ot
+        case Failure(e) => None
       }
     } else {
       None

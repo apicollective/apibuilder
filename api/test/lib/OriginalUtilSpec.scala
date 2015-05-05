@@ -35,8 +35,12 @@ class OriginalUtilSpec extends FunSpec with ShouldMatchers {
       OriginalUtil.guessType("  protocol bar {}  ") should be(Some(OriginalType.AvroIdl))
     }
 
-    describe("unknown") {
+    it("unknown") {
       OriginalUtil.guessType("   ") should be(None)
+    }
+
+    it("poorly formatted json") {
+      OriginalUtil.guessType("{   ") should be(None)
     }
 
   }

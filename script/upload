@@ -53,24 +53,6 @@ def print_error(msg)
   puts ""
 end
 
-# replace www.apidoc.me with localhost:9000 - useful when operating
-# locally in development mode
-def rewrite_host(path, from, to)
-  if !File.exists?(path)
-    print_error("Cannot find file[#{path}]")
-    exit(1)
-  end
-
-  tmp = "/tmp/apidoc.script.upload.#{Process.pid}.tmp"
-  File.open(tmp, "w") do |out|
-    IO.readlines(path).each do |l|
-      out << l.gsub(/#{from}/, to)
-    end
-  end
-
-  tmp
-end
-
 def cli(command, opts={})
   profile = opts.delete(:profile)
   if !opts.empty?
@@ -89,9 +71,7 @@ end
 
 def upload(profile, host, version, application, path)
   dir = File.dirname(__FILE__)
-  tmp = rewrite_host(File.join(dir, path), PRODUCTION_HOST, host)
-  cli("upload gilt #{application} #{tmp} --version #{version}", :profile => profile)
-  File.delete(tmp)
+  cli("upload gilt #{application} #{File.join(dir, path)} --version #{version}", :profile => profile)
 end
 
 upload(profile, host, version, "apidoc-spec", "../spec/service.json")
