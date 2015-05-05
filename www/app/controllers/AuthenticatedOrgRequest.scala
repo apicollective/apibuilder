@@ -64,7 +64,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
 
     request.session.get("user_guid").map { userGuid =>
 
-      AnonymousRequest.awaitCallWith404(Authenticated.api().Users.getByGuid(UUID.fromString(userGuid))) match {
+      lib.ApiClient.awaitCallWith404(Authenticated.api().Users.getByGuid(UUID.fromString(userGuid))) match {
 
         case None => {
           // have a user guid, but user does not exist
@@ -76,7 +76,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             sys.error(s"No org key for request path[${request.path}]")
           }
 
-          val orgOption = AnonymousRequest.awaitCallWith404(Authenticated.api(Some(u)).Organizations.getByKey(orgKey)).headOption
+          val orgOption = lib.ApiClient.awaitCallWith404(Authenticated.api(Some(u)).Organizations.getByKey(orgKey)).headOption
           val memberships = Await.result(Authenticated.api(Some(u)).Memberships.get(orgKey = Some(orgKey), userGuid = Some(u.guid)), 1000.millis)
           orgOption match {
             case None => {

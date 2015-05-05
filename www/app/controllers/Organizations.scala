@@ -158,7 +158,7 @@ object Organizations extends Controller {
   }
 
   def edit(orgKey: String) = Authenticated.async { implicit request =>
-    AnonymousRequest.callWith404(request.api.Organizations.getByKey(orgKey)).map { orgOption =>
+    lib.ApiClient.callWith404(request.api.Organizations.getByKey(orgKey)).map { orgOption =>
       orgOption match {
         case None => {
           Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")
@@ -179,7 +179,7 @@ object Organizations extends Controller {
   }
 
   def editPost(orgKey: String) = Authenticated.async { implicit request =>
-    AnonymousRequest.callWith404(request.api.Organizations.getByKey(orgKey)).flatMap { orgOption =>
+    lib.ApiClient.callWith404(request.api.Organizations.getByKey(orgKey)).flatMap { orgOption =>
       orgOption match {
         case None => Future {
           Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")

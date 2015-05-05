@@ -2,14 +2,12 @@ package controllers
 
 import com.gilt.apidoc.api.v0.models.{ Membership, Organization, User, Visibility }
 import models.MainTemplate
-import lib.Role
+import lib.{ApiClient, Role}
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import play.api.Play.current
-import java.util.UUID
-import scala.util.{Failure, Success, Try}
 
 class AnonymousRequest[A](
   resources: RequestResources,
@@ -102,49 +100,15 @@ object AnonymousRequest {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def callWith404[T](
-    f: Future[T]
-  ): Future[Option[T]] = {
-    // TODO - remove the wait
-    import scala.concurrent._
-
-    Future {
-      awaitCallWith404(f)
-    }
-  }
-
-  def awaitCallWith404[T](
-    future: Future[T]
-  ): Option[T] = {
-    Await.ready(future, 1000.millis).value.get match {
-      case Success(value) => Some(value)
-      case Failure(ex) => ex match {
-        case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
-        case _ => throw ex
-      }
-    }
-  }
-  
-  /**
-    * Blocking call to fetch a user. If the provided guid is not a
-    * valid UUID, returns none.
-    */
-  def getUser(guid: String): Option[User] = {
-    Try(UUID.fromString(guid)) match {
-      case Success(userGuid) => awaitCallWith404( Authenticated.api().Users.getByGuid(userGuid) )
-      case Failure(ex) => None
-    }
-  }
-
   /**
     * Blocking call to fetch an organization
     */
-  def getOrganization(user: Option[User], key: String): Option[Organization] = {
-    awaitCallWith404( Authenticated.api(user).Organizations.getByKey(key) )
+  private def getOrganization(user: Option[User], key: String): Option[Organization] = {
+    ApiClient.awaitCallWith404( Authenticated.api(user).Organizations.getByKey(key) )
   }
 
   def resources(requestPath: String, userGuid: Option[String]): RequestResources = {
-    val user = userGuid.flatMap { getUser(_) }
+    val user = userGuid.flatMap { ApiClient.getUser(_) }
     val org = requestPath.split("/").drop(1).headOption.flatMap { getOrganization(user, _) }
 
     val memberships = (user, org) match {

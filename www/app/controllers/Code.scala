@@ -8,7 +8,7 @@ import play.api.mvc._
 object Code extends Controller {
 
   def generate(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { request =>
-    AnonymousRequest.callWith404(
+    lib.ApiClient.callWith404(
       request.api.Code.getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(orgKey, applicationKey, version, generatorKey)
     ).map {
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")

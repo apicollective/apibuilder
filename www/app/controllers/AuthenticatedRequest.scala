@@ -41,7 +41,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
     }
 
     request.session.get("user_guid").map { userGuid =>
-      AnonymousRequest.getUser(userGuid) match {
+      ApiClient.getUser(userGuid) match {
 
         case None => {
           // have a user guid, but user does not exist

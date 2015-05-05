@@ -29,7 +29,7 @@ object Versions extends Controller {
     for {
       applicationResponse <- request.api.applications.getByOrgKey(orgKey = orgKey, key = Some(applicationKey))
       versionsResponse <- request.api.versions.getByOrgKeyAndApplicationKey(orgKey, applicationKey)
-      versionOption <- AnonymousRequest.callWith404(
+      versionOption <- lib.ApiClient.callWith404(
         request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
       )
       generators <- request.api.Generators.get()
@@ -72,7 +72,7 @@ object Versions extends Controller {
   }
 
   def original(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
-    AnonymousRequest.callWith404(
+    lib.ApiClient.callWith404(
       request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
     ).map {
       case None => {
@@ -108,7 +108,7 @@ object Versions extends Controller {
   }
 
   def serviceJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
-    AnonymousRequest.callWith404(
+    lib.ApiClient.callWith404(
       request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
     ).map {
       case None => {
@@ -127,7 +127,7 @@ object Versions extends Controller {
 
   def postDelete(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     for {
-      result <- AnonymousRequest.callWith404(
+      result <- lib.ApiClient.callWith404(
         request.api.versions.deleteByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
       )
     } yield {
@@ -140,7 +140,7 @@ object Versions extends Controller {
 
 
   def postWatch(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
-    AnonymousRequest.callWith404(
+    lib.ApiClient.callWith404(
       request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(request.org.key, applicationKey, versionName)
     ).flatMap {
       case None => {

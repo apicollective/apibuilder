@@ -29,7 +29,7 @@ object Generators extends Controller {
 
   def getByKey(key: String) = Authenticated.async { implicit request =>
     for {
-      generator <- AnonymousRequest.callWith404(request.api.Generators.getByKey(key))
+      generator <- lib.ApiClient.callWith404(request.api.Generators.getByKey(key))
     } yield {
       generator match {
         case None => Redirect(routes.Generators.index()).flashing("warning" -> s"Generator not found")

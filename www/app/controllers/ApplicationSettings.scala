@@ -23,7 +23,7 @@ object ApplicationSettings extends Controller {
   ): Future[MainTemplate] = {
     for {
       applicationResponse <- api.Applications.getByOrgKey(orgKey = base.org.get.key, key = Some(applicationKey))
-      versionOption <- AnonymousRequest.callWith404(
+      versionOption <- lib.ApiClient.callWith404(
         api.Versions.getByOrgKeyAndApplicationKeyAndVersion(base.org.get.key, applicationKey, versionName)
       )
     } yield {
