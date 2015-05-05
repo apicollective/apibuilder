@@ -48,7 +48,7 @@ class OrganizationsSpec extends BaseSpec {
 
   "DELETE /organizations/:key" in new WithServer {
     val org = createOrganization()
-    await(client.organizations.deleteByKey(org.key)) must be(Some(()))
+    await(client.organizations.deleteByKey(org.key)) must be(())
     await(client.organizations.get(key = Some(org.key))) must be(Seq.empty)
   }
 
@@ -63,7 +63,7 @@ class OrganizationsSpec extends BaseSpec {
 
   "GET /organizations/:key" in new WithServer {
     val org = createOrganization()
-    await(client.organizations.getByKey(org.key)) must be(Some(org))
+    await(client.organizations.getByKey(org.key)) must be(org)
     await(client.organizations.getByKey(UUID.randomUUID.toString)) must be(None)
   }
 
