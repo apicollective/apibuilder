@@ -9,12 +9,11 @@ case class ApiClient(user: Option[User]) {
   private val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
 
   val client: Client = {
-    val defaultHeaders = user match {
-      case None => Nil
-      case Some(u) => {
-        Seq(("X-User-Guid", u.guid.toString))
+    val defaultHeaders = Seq(
+      user.map { u =>
+        ("X-User-Guid", u.guid.toString)
       }
-    }
+    ).flatten
 
     new com.gilt.apidoc.api.v0.Client(
       apiUrl = apiHost,
