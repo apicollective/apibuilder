@@ -76,7 +76,7 @@ class OrganizationsSpec extends BaseSpec {
 
     val client = newClient(anonymous)
     intercept[UnitResponse] {
-      client.organizations.getByKey(privateOrg.key)
+      await(client.organizations.getByKey(privateOrg.key))
     }.status must be(404)
     await(client.organizations.getByKey(publicOrg.key)).key must be(publicOrg.key)
 
