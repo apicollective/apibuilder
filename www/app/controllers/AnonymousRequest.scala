@@ -102,25 +102,25 @@ object AnonymousRequest {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  def callWith404[T](
+    future: Future[T]
+  ): Option[T] = {
+    Await.ready(future, 1000.millis).value.get match {
+      case Success(value) => Some(value)
+      case Failure(ex) => ex match {
+        case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
+        case _ => throw ex
+      }
+    }
+  }
+  
   /**
     * Blocking call to fetch a user. If the provided guid is not a
     * valid UUID, returns none.
     */
   def getUser(guid: String): Option[User] = {
     Try(UUID.fromString(guid)) match {
-      case Success(userGuid) => {
-        Await.ready(
-          Authenticated.api().Users.getByGuid(userGuid),
-          5000.millis
-        ).value.get match {
-          case Success(user) => Some(user)
-          case Failure(ex) => ex match {
-            case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
-            case _ => throw ex
-          }
-        }
-      }
-
+      case Success(userGuid) => callWith404( Authenticated.api().Users.getByGuid(userGuid) )
       case Failure(ex) => None
     }
   }
@@ -129,16 +129,7 @@ object AnonymousRequest {
     * Blocking call to fetch an organization
     */
   def getOrganization(user: Option[User], key: String): Option[Organization] = {
-    Await.ready(
-      Authenticated.api(user).Organizations.getByKey(key),
-      1000.millis
-    ).value.get match {
-      case Success(org) => Some(org)
-      case Failure(ex) => ex match {
-        case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
-        case _ => throw ex
-      }
-    }
+    callWith404( Authenticated.api(user).Organizations.getByKey(key) )
   }
 
   def resources(requestPath: String, userGuid: Option[String]): RequestResources = {
