@@ -2,8 +2,7 @@ package lib
 
 import core.ServiceFetcher
 import com.gilt.apidoc.spec.v0.models.Service
-import db.{ApplicationsDao, Authorization, VersionsDao}
-import java.util.UUID
+import db.{Authorization, VersionsDao}
 
 /**
   * Implements service fetch by querying the DB
@@ -11,7 +10,6 @@ import java.util.UUID
 case class DatabaseServiceFetcher(authorization: Authorization) extends ServiceFetcher {
 
   override def fetch(uri: String): Service = {
-    println(s"fetch uri[$uri]")
     ServiceUri.parse(uri) match {
 
       case None => {
