@@ -136,10 +136,11 @@ object AnonymousRequest {
     val user = userGuid.flatMap { getUser(_) }
     val org = requestPath.split("/").drop(1).headOption.flatMap { getOrganization(user, _) }
 
-    val memberships = if (user.isEmpty || org.isEmpty) {
-      Seq.empty
-    } else {
-      Await.result(Authenticated.api(user).Memberships.get(orgKey = Some(org.get.key), userGuid = Some(user.get.guid)), 1000.millis)
+    val memberships = (user, org) match {
+      case (Some(u), Some(o)) => {
+        Await.result(Authenticated.api(user).Memberships.get(orgKey = Some(o.key), userGuid = Some(u.guid)), 1000.millis)
+      }
+      case _ => Seq.empty
     }
 
     RequestResources(
