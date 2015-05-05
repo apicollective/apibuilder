@@ -9,14 +9,18 @@ case class ApiClient(user: Option[User]) {
   private lazy val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
 
   val client: Client = {
-    user match {
-      case None => new com.gilt.apidoc.api.v0.Client(apiHost, Some(apiAuth))
-      case Some(u) => new com.gilt.apidoc.api.v0.Client(apiHost, Some(apiAuth)) {
-        override def _requestHolder(path: String) = {
-          super._requestHolder(path).withHeaders("X-User-Guid" -> u.guid.toString)
-        }
+    val defaultHeaders = user match {
+      case None => Nil
+      case Some(u) => {
+        Seq(("X-User-Guid", u.guid.toString))
       }
     }
+
+    new com.gilt.apidoc.api.v0.Client(
+      apiUrl = apiHost,
+      auth = Some(apiAuth),
+      defaultHeaders = defaultHeaders
+    )
   }
 
 }
