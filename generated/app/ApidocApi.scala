@@ -1137,6 +1137,7 @@ package com.gilt.apidoc.api.v0 {
     defaultHeaders: Seq[(String, String)] = Nil
   ) {
     import com.gilt.apidoc.api.v0.models.json._
+    import com.gilt.apidoc.spec.v0.models.json._
 
     private val logger = play.api.Logger("com.gilt.apidoc.api.v0.Client")
 
