@@ -3,11 +3,11 @@
     "description": "Host API documentation for applications providing REST APIs, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
     "apidoc": {
-      "version": "0.9.6"
+      "version": "0.9.9"
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.10/service.json" }
     ],
 
     "enums": {
