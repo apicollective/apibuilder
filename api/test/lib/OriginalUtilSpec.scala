@@ -5,12 +5,8 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 
 class OriginalUtilSpec extends FunSpec with ShouldMatchers {
 
-  def readFile(path: String): String = {
-    scala.io.Source.fromFile(path).getLines.mkString("\n")
-  }
-
   it("original") {
-    val data = readFile("../spec/api.json")
+    val data = TestHelper.readFile("../spec/api.json")
     OriginalUtil.toOriginal(OriginalForm(data = data)) should be(
       Original(
         OriginalType.ApiJson,
@@ -22,12 +18,12 @@ class OriginalUtilSpec extends FunSpec with ShouldMatchers {
   describe("guessType") {
 
     it("apiJson") {
-      OriginalUtil.guessType(readFile("../spec/api.json")) should be(Some(OriginalType.ApiJson))
-      OriginalUtil.guessType(readFile("../spec/service.json")) should be(Some(OriginalType.ApiJson))
+      OriginalUtil.guessType(TestHelper.readFile("../spec/api.json")) should be(Some(OriginalType.ApiJson))
+      OriginalUtil.guessType(TestHelper.readFile("../spec/service.json")) should be(Some(OriginalType.ApiJson))
     }
 
     it("swaggerJson") {
-      OriginalUtil.guessType(readFile("../swagger/src/test/resources/petstore-with-external-docs.json")) should be(Some(OriginalType.SwaggerJson))
+      OriginalUtil.guessType(TestHelper.readFile("../swagger/src/test/resources/petstore-with-external-docs.json")) should be(Some(OriginalType.SwaggerJson))
     }
 
     it("avroIdl") {
