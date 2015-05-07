@@ -88,5 +88,32 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     )
   }
 
+  it("description") {
+    val base = service.copy(description = None)
+
+    ServiceDiff(base, base.copy(description = None)).differences should be(Nil)
+
+    ServiceDiff(base, base.copy(description = Some("foo"))).differences should be(
+      Seq(
+        Difference.NonBreaking(s"description added: foo")
+      )
+    )
+
+    ServiceDiff(base.copy(description = Some("foo")), base).differences should be(
+      Seq(
+        Difference.NonBreaking(s"description removed: foo")
+      )
+    )
+
+    ServiceDiff(
+      base.copy(description = Some("foo")),
+      base.copy(description = Some("foobar"))
+    ).differences should be(
+      Seq(
+        Difference.NonBreaking(s"description changed from foo to foobar")
+      )
+    )
+  }
+
 
 }

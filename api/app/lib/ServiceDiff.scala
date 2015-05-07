@@ -42,15 +42,39 @@ case class ServiceDiff(
     diffResources()
   ).flatten
 
+  private def diffOptionalString(
+    label: String,
+    a: Option[String],
+    b: Option[String]
+  ): Seq[String] = {
+    (a, b) match {
+      case (None, None) => Nil
+      case (Some(value), None) => Seq(s"$label removed: $value")
+      case (None, Some(value)) => Seq(s"$label added: $value")
+      case (Some(valueA), Some(valueB)) => {
+        if (valueA == valueB) {
+          Nil
+        } else {
+          Seq(s"$label changed from $valueA to $valueB")
+        }
+      }
+    }
+  }
+
   private def diffString(
     label: String,
     a: String,
     b: String
   ): Seq[String] = {
-    a match {
-      case `b` => Nil
-      case other => Seq(s"$label changed from $a to $b")
-    }
+    diffOptionalString(label, Some(a), Some(b))
+  }
+
+  private def diffOptionalStringNonBreaking(
+    label: String,
+    a: Option[String],
+    b: Option[String]
+  ): Seq[Difference] = {
+    diffOptionalString(label, a, b).map { Difference.NonBreaking(_) }
   }
 
   private def diffStringNonBreaking(
@@ -94,17 +118,13 @@ case class ServiceDiff(
   }
 
   private def diffBaseUrl(): Seq[Difference] = {
-    (a.baseUrl, b.baseUrl) match {
-      case (None, None) => Nil
-      case (Some(url), None) => Seq(Difference.NonBreaking(s"base_url removed: $url"))
-      case (None, Some(url)) => Seq(Difference.NonBreaking(s"base_url added: $url"))
-      case (Some(urlA), Some(urlB)) => {
-        diffStringNonBreaking("base_url", urlA, urlB)
-      }
-    }
+    diffOptionalStringNonBreaking("base_url", a.baseUrl, b.baseUrl)
   }
 
-  private def diffDescription(): Seq[Difference] = Nil
+  private def diffDescription(): Seq[Difference] = {
+    diffOptionalStringNonBreaking("description", a.description, b.description)
+  }
+
   private def diffHeaders(): Seq[Difference] = Nil
   private def diffImports(): Seq[Difference] = Nil
   private def diffEnums(): Seq[Difference] = Nil
