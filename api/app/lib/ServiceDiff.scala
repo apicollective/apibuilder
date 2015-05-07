@@ -49,13 +49,13 @@ case class ServiceDiff(
   ): Seq[String] = {
     (a, b) match {
       case (None, None) => Nil
-      case (Some(value), None) => Seq(s"$label removed: $value")
-      case (None, Some(value)) => Seq(s"$label added: $value")
+      case (Some(value), None) => Seq(s"$label removed: ${Text.truncate(value)}")
+      case (None, Some(value)) => Seq(s"$label added: ${Text.truncate(value)}")
       case (Some(valueA), Some(valueB)) => {
         if (valueA == valueB) {
           Nil
         } else {
-          Seq(s"$label changed from $valueA to $valueB")
+          Seq(s"$label changed from ${Text.truncate(valueA)} to ${Text.truncate(valueB)}")
         }
       }
     }
