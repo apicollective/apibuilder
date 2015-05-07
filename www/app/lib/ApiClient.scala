@@ -35,7 +35,9 @@ object ApiClient {
     * Blocking call to fetch a user. If the provided guid is not a
     * valid UUID, returns none.
     */
-  def getUser(guid: String)(implicit ec: ExecutionContext): Option[User] = {
+  def getUser(
+    guid: String
+  )(implicit ec: ExecutionContext): Option[User] = {
     Try(UUID.fromString(guid)) match {
       case Success(userGuid) => awaitCallWith404( unauthenticatedClient.users.getByGuid(userGuid) )
       case Failure(ex) => None
