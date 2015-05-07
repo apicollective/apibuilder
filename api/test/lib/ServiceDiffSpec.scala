@@ -197,5 +197,36 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       }
 
     }
+
+    describe("deprecation") {
+
+      it("add") {
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation()))))
+        ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test deprecated")
+          )
+        )
+      }
+
+      it("add with description") {
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation(description = Some("test"))))))
+        ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test deprecated: test")
+          )
+        )
+      }
+
+      it("remove") {
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation()))))
+        ServiceDiff(serviceWithHeader2, serviceWithHeader).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test removed: deprecation")
+          )
+        )
+      }
+
+    }
   }
 }

@@ -106,7 +106,12 @@ case class ServiceDiff(
       case (None, None) => Nil
       case (Some(_), Some(_)) => Nil
       case (Some(_), None) => Seq(Difference.NonBreaking(Helpers.removed(prefix, "deprecation")))
-      case (None, Some(_)) => Seq(Difference.NonBreaking(Helpers.added(prefix, "deprecation")))
+      case (None, Some(d)) => {
+        d.description match {
+          case None => Seq(Difference.NonBreaking(s"$prefix deprecated"))
+          case Some(desc) => Seq(Difference.NonBreaking(s"$prefix deprecated: $desc"))
+        }
+      }
     }
   }
 
