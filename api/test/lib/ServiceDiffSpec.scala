@@ -132,7 +132,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       ServiceDiff(serviceWithHeader, serviceWithHeader).differences should be(Nil)
     }
 
-    it("removing a header") {
+    it("remove header") {
       ServiceDiff(serviceWithHeader, base).differences should be(
         Seq(
           Difference.NonBreaking("header removed: x-test")
@@ -140,7 +140,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       )
     }
 
-    it("adding an optional header") {
+    it("add optional header") {
       ServiceDiff(base, serviceWithHeader).differences should be(
         Seq(
           Difference.NonBreaking("optional header added: x-test")
@@ -148,13 +148,54 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       )
     }
 
-    it("adding a required header") {
+    it("add required header") {
       val serviceWithRequiredHeader = base.copy(headers = Seq(header.copy(required = true)))
       ServiceDiff(base, serviceWithRequiredHeader).differences should be(
         Seq(
           Difference.Breaking("required header added: x-test")
         )
       )
+    }
+
+    it("type") {
+      val serviceWithHeader2 = base.copy(headers = Seq(header.copy(`type` = "long")))
+      ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
+        Seq(
+          Difference.Breaking("header x-test type changed from string to long")
+        )
+      )
+    }
+
+    describe("description") {
+
+      it("add") {
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("foo"))))
+        ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test description added: foo")
+          )
+        )
+      }
+
+      it("remove") {
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("foo"))))
+        ServiceDiff(serviceWithHeader2, serviceWithHeader).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test description removed: foo")
+          )
+        )
+      }
+
+      it("change") {
+        val serviceWithHeader1 = base.copy(headers = Seq(header.copy(description = Some("foo"))))
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("bar"))))
+        ServiceDiff(serviceWithHeader1, serviceWithHeader2).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test description changed from foo to bar")
+          )
+        )
+      }
+
     }
   }
 }
