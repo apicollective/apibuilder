@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.apidoc.spec.v0.models.Service
+import com.gilt.apidoc.spec.v0.models._
 
 sealed trait Difference {
 
@@ -49,13 +49,13 @@ case class ServiceDiff(
   ): Seq[String] = {
     (a, b) match {
       case (None, None) => Nil
-      case (Some(value), None) => Seq(s"$label removed: ${Text.truncate(value)}")
-      case (None, Some(value)) => Seq(s"$label added: ${Text.truncate(value)}")
+      case (Some(value), None) => Seq(Helpers.removed(label, value))
+      case (None, Some(value)) => Seq(Helpers.added(label, value))
       case (Some(valueA), Some(valueB)) => {
         if (valueA == valueB) {
           Nil
         } else {
-          Seq(s"$label changed from ${Text.truncate(valueA)} to ${Text.truncate(valueB)}")
+          Seq(Helpers.changed(label, valueA, valueB))
         }
       }
     }
@@ -125,12 +125,75 @@ case class ServiceDiff(
     diffOptionalStringNonBreaking("description", a.description, b.description)
   }
 
-  private def diffHeaders(): Seq[Difference] = Nil
+  private def diffHeaders(): Seq[Difference] = {
+    val addedHeaders = b.headers.map(_.name).filter(h => a.headers.find(_.name == h).isEmpty)
+
+    a.headers.flatMap { headerA =>
+      b.headers.find(_.name == headerA.name) match {
+        case None => Some(Difference.NonBreaking(Helpers.removed("header", headerA.name)))
+        case Some(headerB) => diffHeader(headerA, headerB)
+      }
+    } ++ b.headers.find( h => addedHeaders.contains(h.name) ).map { h =>
+      h.required match {
+        case false => Difference.NonBreaking(Helpers.added("optional header", h.name))
+        case true => Difference.Breaking(Helpers.added("required header", h.name))
+      }
+    }
+  }
+
+  private def diffHeader(a: Header, b: Header): Seq[Difference] = {
+    assert(a.name == b.name, "Header names must be the same")
+    val prefix = s"header ${a.name}"
+
+    diffStringBreaking(s"$prefix type", a.`type`, b.`type`) ++
+    diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    Helpers.diffRequired(s"$prefix required", a.required, b.required) ++
+    Helpers.diffDefault(s"$prefix default", a.default, b.default)
+  }
+
+  private def diffDeprecation(prefix: String, a: Option[Deprecation], b: Option[Deprecation]): Seq[Difference] = {
+    (a, b) match {
+      case (None, None) => Nil
+      case (Some(_), Some(_)) => Nil
+      case (Some(_), None) => Seq(Difference.NonBreaking(Helpers.removed(prefix, "deprecation")))
+      case (None, Some(_)) => Seq(Difference.NonBreaking(Helpers.added(prefix, "deprecation")))
+    }
+  }
+
   private def diffImports(): Seq[Difference] = Nil
   private def diffEnums(): Seq[Difference] = Nil
   private def diffUnions(): Seq[Difference] = Nil
   private def diffModels(): Seq[Difference] = Nil
   private def diffResources(): Seq[Difference] = Nil
 
+  private object Helpers {
+
+    def removed(label: String, value: String) = s"$label removed: ${Text.truncate(value)}"
+
+    def added(label: String, value: String) = s"$label added: ${Text.truncate(value)}"
+
+    def changed(label: String, from: String, to: String) = s"$label changed from ${Text.truncate(from)} to ${Text.truncate(to)}"
+
+    def diffRequired(label: String, a: Boolean, b: Boolean): Seq[Difference] = {
+      (a, b) match {
+        case (true, true) => Nil
+        case (false, false) => Nil
+        case (true, false) => Nil
+        case (false, true) => Seq(Difference.Breaking(s"$label is now required"))
+      }
+    }
+
+    def diffDefault(label: String, a: Option[String], b: Option[String]): Seq[Difference] = {
+      (a, b) match {
+        case (None, None) => Nil
+        case (Some(_), Some(_)) => Nil
+        case (None, Some(_)) => Nil
+        case (Some(_), None) => {
+          Seq(Difference.Breaking(s"$label removed default"))
+        }
+      }
+    }
+  }
 
 }
