@@ -89,8 +89,21 @@ case class ServiceDiff(
     diffStringBreaking("namespace", a.namespace, b.namespace)
   }
 
-  private def diffVersion(): Seq[Difference] = Nil
-  private def diffBaseUrl(): Seq[Difference] = Nil
+  private def diffVersion(): Seq[Difference] = {
+    diffStringNonBreaking("version", a.version, b.version)
+  }
+
+  private def diffBaseUrl(): Seq[Difference] = {
+    (a.baseUrl, b.baseUrl) match {
+      case (None, None) => Nil
+      case (Some(url), None) => Seq(Difference.NonBreaking(s"base_url removed: $url"))
+      case (None, Some(url)) => Seq(Difference.NonBreaking(s"base_url added: $url"))
+      case (Some(urlA), Some(urlB)) => {
+        diffStringNonBreaking("base_url", urlA, urlB)
+      }
+    }
+  }
+
   private def diffDescription(): Seq[Difference] = Nil
   private def diffHeaders(): Seq[Difference] = Nil
   private def diffImports(): Seq[Difference] = Nil

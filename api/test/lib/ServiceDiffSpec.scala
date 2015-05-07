@@ -53,5 +53,40 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     )
   }
 
+  it("version") {
+    ServiceDiff(service, service.copy(version = "0.0.1")).differences should be(
+      Seq(
+        Difference.NonBreaking(s"version changed from ${service.version} to 0.0.1")
+      )
+    )
+  }
+
+  it("baseUrl") {
+    val base = service.copy(baseUrl = None)
+
+    ServiceDiff(base, base.copy(baseUrl = None)).differences should be(Nil)
+
+    ServiceDiff(base, base.copy(baseUrl = Some("http://foo.com"))).differences should be(
+      Seq(
+        Difference.NonBreaking(s"base_url added: http://foo.com")
+      )
+    )
+
+    ServiceDiff(base.copy(baseUrl = Some("http://foo.com")), base).differences should be(
+      Seq(
+        Difference.NonBreaking(s"base_url removed: http://foo.com")
+      )
+    )
+
+    ServiceDiff(
+      base.copy(baseUrl = Some("http://foo.com")),
+      base.copy(baseUrl = Some("http://foobar.com"))
+    ).differences should be(
+      Seq(
+        Difference.NonBreaking(s"base_url changed from http://foo.com to http://foobar.com")
+      )
+    )
+  }
+
 
 }
