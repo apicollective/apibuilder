@@ -115,5 +115,46 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     )
   }
 
+  describe("headers") {
+    val header = Header(
+      name = "x-test",
+      `type` = "string",
+      description = None,
+      deprecation = None,
+      required = false,
+      default = None
+    )
 
+    val base = service.copy(headers = Nil)
+    val serviceWithHeader = base.copy(headers = Seq(header))
+
+    it("no change") {
+      ServiceDiff(serviceWithHeader, serviceWithHeader).differences should be(Nil)
+    }
+
+    it("removing a header") {
+      ServiceDiff(serviceWithHeader, base).differences should be(
+        Seq(
+          Difference.NonBreaking("header removed: x-test")
+        )
+      )
+    }
+
+    it("adding an optional header") {
+      ServiceDiff(base, serviceWithHeader).differences should be(
+        Seq(
+          Difference.NonBreaking("optional header added: x-test")
+        )
+      )
+    }
+
+    it("adding a required header") {
+      val serviceWithRequiredHeader = base.copy(headers = Seq(header.copy(required = true)))
+      ServiceDiff(base, serviceWithRequiredHeader).differences should be(
+        Seq(
+          Difference.Breaking("required header added: x-test")
+        )
+      )
+    }
+  }
 }
