@@ -14,12 +14,11 @@ object ApiClient {
   def callWith404[T](
     f: Future[T]
   )(implicit ec: ExecutionContext): Future[Option[T]] = {
-
     f.map {
       value => Some(value)
     }.recover {
-        case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
-        case ex: Throwable => throw ex
+      case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
+      case ex: Throwable => throw ex
     }
   }
 
