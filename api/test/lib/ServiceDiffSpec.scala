@@ -9,6 +9,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
   private lazy val service = TestHelper.readService("../spec/api.json")
 
+/*
   it("no changes") {
     ServiceDiff(service, service).differences should be(Nil)
   }
@@ -495,6 +496,135 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType.copy(deprecation = Some(Deprecation()))))))).differences should be(
         Seq(
           Difference.NonBreaking("union user type registered deprecated")
+        )
+      )
+    }
+
+  }
+*/
+
+  // START
+  describe("model") {
+
+    val field = Field(
+      name = "id",
+      `type` = "long",
+      description = None,
+      deprecation = None,
+      default = None,
+      required = false,
+      minimum = None,
+      maximum = None,
+      example = None
+    )
+
+    val model = Model(
+      name = "user",
+      plural = "users",
+      description = None,
+      deprecation = None,
+      fields = Seq(field)
+    )
+
+    val base = service.copy(models = Nil)
+    val serviceWithModel = base.copy(models = Seq(model))
+
+    it("no change") {
+      ServiceDiff(serviceWithModel, serviceWithModel).differences should be(Nil)
+    }
+
+    it("add model") {
+      ServiceDiff(base, serviceWithModel).differences should be(
+        Seq(
+          Difference.NonBreaking("model added: user")
+        )
+      )
+    }
+
+    it("remove model") {
+      ServiceDiff(serviceWithModel, base).differences should be(
+        Seq(
+          Difference.Breaking("model removed: user")
+        )
+      )
+    }
+
+    it("change model") {
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(plural = "all_users")))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user plural changed from users to all_users")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(description = Some("test"))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user description added: test")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(deprecation = Some(Deprecation()))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user deprecated")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Nil)))).differences should be(
+        Seq(
+          Difference.Breaking("model user field removed: id")
+        )
+      )
+
+      val field2 = field.copy(name = "name")
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user optional field added: name")
+        )
+      )
+
+      val field2WithDefault = field.copy(name = "name", default = Some("test"))
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2WithDefault))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user optional field added: name, defaults to test")
+        )
+      )
+
+      val field2Required = field.copy(name = "name", required = true)
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2Required))))).differences should be(
+        Seq(
+          Difference.Breaking("model user required field added: name")
+        )
+      )
+
+      val field2RequiredWithDefault = field.copy(name = "name", required = true, default = Some("test"))
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2Required))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user required field added: name, defaults to test")
+        )
+      )
+    }
+
+    it("change fields") {
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(`type` = "uuid")))))).differences should be(
+        Seq(
+          Difference.Breaking("model user field id type changed from long to uuid")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(description = Some("test"))))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id description added: test")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(deprecation = Some(Deprecation()))))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id deprecated")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(default = Some("1"))))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id default added: 1")
         )
       )
     }

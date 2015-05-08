@@ -75,14 +75,14 @@ case class ServiceDiff(
   }
 
   private def diffHeaders(): Seq[Difference] = {
-    val addedHeaders = b.headers.map(_.name).filter(h => a.headers.find(_.name == h).isEmpty)
+    val added = b.headers.map(_.name).filter(h => a.headers.find(_.name == h).isEmpty)
 
     a.headers.flatMap { headerA =>
       b.headers.find(_.name == headerA.name) match {
         case None => Some(Difference.NonBreaking(Helpers.removed("header", headerA.name)))
         case Some(headerB) => diffHeader(headerA, headerB)
       }
-    } ++ b.headers.find( h => addedHeaders.contains(h.name) ).map { h =>
+    } ++ b.headers.find( h => added.contains(h.name) ).map { h =>
       h.required match {
         case false => Difference.NonBreaking(Helpers.added("optional header", h.name))
         case true => Difference.Breaking(Helpers.added("required header", h.name))
@@ -199,7 +199,58 @@ case class ServiceDiff(
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
   }
 
-  private def diffModels(): Seq[Difference] = Nil
+  private def diffModels(): Seq[Difference] = {
+    a.models.flatMap { modelA =>
+      b.models.find(_.name == modelA.name) match {
+        case None => Some(Difference.Breaking(Helpers.removed("model", modelA.name)))
+        case Some(modelB) => diffModel(modelA, modelB)
+      }
+    } ++ Helpers.findNew("model", a.models.map(_.name), b.models.map(_.name))
+  }
+
+  private def diffModel(a: Model, b: Model): Seq[Difference] = {
+    assert(a.name == b.name, "Model name's must be the same")
+    val prefix = s"model ${a.name}"
+
+    Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    diffFields(a.name, a.fields, b.fields)
+  }
+
+  private def diffFields(modelName: String, a: Seq[Field], b: Seq[Field]): Seq[Difference] = {
+    val added = b.map(_.name).filter(h => a.find(_.name == h).isEmpty)
+    val prefix = s"model $modelName"
+
+    a.flatMap { fieldA =>
+      b.find(_.name == fieldA.name) match {
+        case None => Some(Difference.Breaking(Helpers.removed(s"$prefix field", fieldA.name)))
+        case Some(fieldB) => diffField(modelName, fieldA, fieldB)
+      }
+    } ++ b.find( f => added.contains(f.name) ).map { f =>
+      (f.required, f.default) match {
+        case (false, None) => Difference.NonBreaking(Helpers.added(s"$prefix optional field", f.name))
+        case (false, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix optional field", s"$f.name, defaults to ${Text.truncate(default)}"))
+        case (true, None) => Difference.Breaking(Helpers.added(s"$prefix required field", f.name))
+        case (true, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix required field", s"$f.name, defaults to ${Text.truncate(default)}"))
+      }
+    }
+  }
+
+  private def diffField(modelName: String, a: Field, b: Field): Seq[Difference] = {
+    assert(a.name == b.name, "Model field name's must be the same")
+    val prefix = s"model $modelName field ${a.name}"
+
+    Helpers.diffStringBreaking(s"$prefix type", a.`type`, b.`type`) ++
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    Helpers.diffDefault(prefix, a.default, b.default) ++
+    Helpers.diffRequired(prefix, a.required, b.required) ++
+    Helpers.diffOptionalStringNonBreaking(s"$prefix minimum", a.minimum.map(_.toString), b.minimum.map(_.toString)) ++
+    Helpers.diffOptionalStringNonBreaking(s"$prefix maximum", a.maximum.map(_.toString), b.maximum.map(_.toString)) ++
+    Helpers.diffOptionalStringNonBreaking(s"$prefix example", a.example, b.example)
+  }
+
   private def diffResources(): Seq[Difference] = Nil
 
   private object Helpers {
