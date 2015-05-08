@@ -9,6 +9,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
   private lazy val service = TestHelper.readService("../spec/api.json")
 
+/*
   it("no changes") {
     ServiceDiff(service, service).differences should be(Nil)
   }
@@ -359,7 +360,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("remove enum") {
       ServiceDiff(serviceWithEnum, base).differences should be(
         Seq(
-          Difference.NonBreaking("enum removed: age_group")
+          Difference.Breaking("enum removed: age_group")
         )
       )
     }
@@ -385,7 +386,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Nil)))).differences should be(
         Seq(
-          Difference.NonBreaking("enum age_group value removed: 18-25")
+          Difference.Breaking("enum age_group value removed: 18-25")
         )
       )
 
@@ -412,5 +413,95 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     }
 
   }
-}
+*/
 
+  // Start
+  describe("union") {
+
+    val unionType = UnionType(
+      `type` = "registered",
+      description = None,
+      deprecation = None
+    )
+
+    val union = Union(
+      name = "user",
+      plural = "users",
+      description = None,
+      deprecation = None,
+      types = Seq(unionType)
+    )
+
+    val base = service.copy(unions = Nil)
+    val serviceWithUnion = base.copy(unions = Seq(union))
+
+    it("no change") {
+      ServiceDiff(serviceWithUnion, serviceWithUnion).differences should be(Nil)
+    }
+
+    it("add union") {
+      ServiceDiff(base, serviceWithUnion).differences should be(
+        Seq(
+          Difference.NonBreaking("union added: user")
+        )
+      )
+    }
+
+    it("remove union") {
+      ServiceDiff(serviceWithUnion, base).differences should be(
+        Seq(
+          Difference.Breaking("union removed: user")
+        )
+      )
+    }
+
+    it("change union") {
+      ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(plural = "all_users")))).differences should be(
+        Seq(
+          Difference.NonBreaking("union user plural changed from users to all_users")
+        )
+      )
+
+      ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(description = Some("test"))))).differences should be(
+        Seq(
+          Difference.NonBreaking("union user description added: test")
+        )
+      )
+
+      ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(deprecation = Some(Deprecation()))))).differences should be(
+        Seq(
+          Difference.NonBreaking("union user deprecated")
+        )
+      )
+
+      ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Nil)))).differences should be(
+        Seq(
+          Difference.Breaking("union user type removed: registered")
+        )
+      )
+
+      val unionType2 = unionType.copy(`type` = "guest")
+      ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType, unionType2))))).differences should be(
+        Seq(
+          Difference.NonBreaking("union user type added: guest")
+        )
+      )
+    }
+
+    it("change unionTypes") {
+      ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType.copy(description = Some("test"))))))).differences should be(
+        Seq(
+          Difference.NonBreaking("union user type registered description added: test")
+        )
+      )
+
+      ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType.copy(deprecation = Some(Deprecation()))))))).differences should be(
+        Seq(
+          Difference.NonBreaking("union user type registered deprecated")
+        )
+      )
+    }
+
+  }
+
+}

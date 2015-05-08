@@ -132,7 +132,7 @@ case class ServiceDiff(
 
     a.enums.flatMap { enumA =>
       b.enums.find(_.name == enumA.name) match {
-        case None => Some(Difference.NonBreaking(Helpers.removed("enum", enumA.name)))
+        case None => Some(Difference.Breaking(Helpers.removed("enum", enumA.name)))
         case Some(enumB) => diffEnum(enumA, enumB)
       }
     } ++ added.map { name =>
@@ -156,7 +156,7 @@ case class ServiceDiff(
 
     a.flatMap { valueA =>
       b.find(_.name == valueA.name) match {
-        case None => Some(Difference.NonBreaking(Helpers.removed(prefix, valueA.name)))
+        case None => Some(Difference.Breaking(Helpers.removed(prefix, valueA.name)))
         case Some(valueB) => diffEnumValue(enumName, valueA, valueB)
       }
     } ++ added.map { name =>
@@ -172,7 +172,51 @@ case class ServiceDiff(
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
   }
 
-  private def diffUnions(): Seq[Difference] = Nil
+  private def diffUnions(): Seq[Difference] = {
+    val added = b.unions.map(_.name).filter(n => a.unions.find(_.name == n).isEmpty)
+
+    a.unions.flatMap { unionA =>
+      b.unions.find(_.name == unionA.name) match {
+        case None => Some(Difference.Breaking(Helpers.removed("union", unionA.name)))
+        case Some(unionB) => diffUnion(unionA, unionB)
+      }
+    } ++ added.map { name =>
+      Difference.NonBreaking(Helpers.added("union", name))
+    }
+  }
+
+  private def diffUnion(a: Union, b: Union): Seq[Difference] = {
+    assert(a.name == b.name, "Union name's must be the same")
+    val prefix = s"union ${a.name}"
+
+    Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    diffUnionTypes(a.name, a.types, b.types)
+  }
+
+  private def diffUnionTypes(unionName: String, a: Seq[UnionType], b: Seq[UnionType]): Seq[Difference] = {
+    val added = b.map(_.`type`).filter(n => a.find(_.`type` == n).isEmpty)
+    val prefix = s"union $unionName type"
+
+    a.flatMap { typeA =>
+      b.find(_.`type` == typeA.`type`) match {
+        case None => Some(Difference.Breaking(Helpers.removed(prefix, typeA.`type`)))
+        case Some(typeB) => diffUnionType(unionName, typeA, typeB)
+      }
+    } ++ added.map { name =>
+      Difference.NonBreaking(Helpers.added(prefix, name))
+    }
+  }
+
+  private def diffUnionType(unionName: String, a: UnionType, b: UnionType): Seq[Difference] = {
+    assert(a.`type` == b.`type`, "Union type name's must be the same")
+    val prefix = s"union $unionName type ${a.`type`}"
+
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
+  }
+
   private def diffModels(): Seq[Difference] = Nil
   private def diffResources(): Seq[Difference] = Nil
 
