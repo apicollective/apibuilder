@@ -96,23 +96,9 @@ case class ServiceDiff(
 
     Helpers.diffStringBreaking(s"$prefix type", a.`type`, b.`type`) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
-    diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     Helpers.diffRequired(s"$prefix required", a.required, b.required) ++
     Helpers.diffDefault(s"$prefix default", a.default, b.default)
-  }
-
-  private def diffDeprecation(prefix: String, a: Option[Deprecation], b: Option[Deprecation]): Seq[Difference] = {
-    (a, b) match {
-      case (None, None) => Nil
-      case (Some(_), Some(_)) => Nil
-      case (Some(_), None) => Seq(Difference.NonBreaking(Helpers.removed(prefix, "deprecation")))
-      case (None, Some(d)) => {
-        d.description match {
-          case None => Seq(Difference.NonBreaking(s"$prefix deprecated"))
-          case Some(desc) => Seq(Difference.NonBreaking(s"$prefix deprecated: $desc"))
-        }
-      }
-    }
   }
 
   private def diffImports(): Seq[Difference] = {
@@ -141,7 +127,51 @@ case class ServiceDiff(
     Helpers.diffArrayNonBreaking(s"$prefix models", a.models, b.models)
   }
 
-  private def diffEnums(): Seq[Difference] = Nil
+  private def diffEnums(): Seq[Difference] = {
+    val added = b.enums.map(_.name).filter(n => a.enums.find(_.name == n).isEmpty)
+
+    a.enums.flatMap { enumA =>
+      b.enums.find(_.name == enumA.name) match {
+        case None => Some(Difference.NonBreaking(Helpers.removed("enum", enumA.name)))
+        case Some(enumB) => diffEnum(enumA, enumB)
+      }
+    } ++ added.map { name =>
+      Difference.NonBreaking(Helpers.added("enum", name))
+    }
+  }
+
+  private def diffEnum(a: Enum, b: Enum): Seq[Difference] = {
+    assert(a.name == b.name, "Enum name's must be the same")
+    val prefix = s"enum ${a.name}"
+
+    Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    diffEnumValues(a.name, a.values, b.values)
+  }
+
+  private def diffEnumValues(enumName: String, a: Seq[EnumValue], b: Seq[EnumValue]): Seq[Difference] = {
+    val added = b.map(_.name).filter(n => a.find(_.name == n).isEmpty)
+    val prefix = s"enum $enumName value"
+
+    a.flatMap { valueA =>
+      b.find(_.name == valueA.name) match {
+        case None => Some(Difference.NonBreaking(Helpers.removed(prefix, valueA.name)))
+        case Some(valueB) => diffEnumValue(enumName, valueA, valueB)
+      }
+    } ++ added.map { name =>
+      Difference.NonBreaking(Helpers.added(prefix, name))
+    }
+  }
+
+  private def diffEnumValue(enumName: String, a: EnumValue, b: EnumValue): Seq[Difference] = {
+    assert(a.name == b.name, "Enum value name's must be the same")
+    val prefix = s"enum $enumName value ${a.name}"
+
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
+  }
+
   private def diffUnions(): Seq[Difference] = Nil
   private def diffModels(): Seq[Difference] = Nil
   private def diffResources(): Seq[Difference] = Nil
@@ -231,6 +261,20 @@ case class ServiceDiff(
       b: Option[String]
     ): Seq[Difference] = {
       diffOptionalString(label, a, b).map { Difference.NonBreaking(_) }
+    }
+
+    def diffDeprecation(prefix: String, a: Option[Deprecation], b: Option[Deprecation]): Seq[Difference] = {
+      (a, b) match {
+        case (None, None) => Nil
+        case (Some(_), Some(_)) => Nil
+        case (Some(_), None) => Seq(Difference.NonBreaking(Helpers.removed(prefix, "deprecation")))
+        case (None, Some(d)) => {
+          d.description match {
+            case None => Seq(Difference.NonBreaking(s"$prefix deprecated"))
+            case Some(desc) => Seq(Difference.NonBreaking(s"$prefix deprecated: $desc"))
+          }
+        }
+      }
     }
 
   }
