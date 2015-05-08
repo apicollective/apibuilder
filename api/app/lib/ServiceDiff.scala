@@ -102,16 +102,12 @@ case class ServiceDiff(
   }
 
   private def diffImports(): Seq[Difference] = {
-    val added = b.imports.map(_.uri).filter(uri => a.imports.find(_.uri == uri).isEmpty)
-
     a.imports.flatMap { importA =>
       b.imports.find(_.uri == importA.uri) match {
         case None => Some(Difference.NonBreaking(Helpers.removed("import", importA.uri)))
         case Some(importB) => diffImport(importA, importB)
       }
-    } ++ added.map { uri =>
-      Difference.NonBreaking(Helpers.added("import", uri))
-    }
+    } ++ Helpers.findNew("import", a.imports.map(_.uri), b.imports.map(_.uri))
   }
 
   private def diffImport(a: Import, b: Import): Seq[Difference] = {
@@ -128,16 +124,12 @@ case class ServiceDiff(
   }
 
   private def diffEnums(): Seq[Difference] = {
-    val added = b.enums.map(_.name).filter(n => a.enums.find(_.name == n).isEmpty)
-
     a.enums.flatMap { enumA =>
       b.enums.find(_.name == enumA.name) match {
         case None => Some(Difference.Breaking(Helpers.removed("enum", enumA.name)))
         case Some(enumB) => diffEnum(enumA, enumB)
       }
-    } ++ added.map { name =>
-      Difference.NonBreaking(Helpers.added("enum", name))
-    }
+    } ++ Helpers.findNew("enum", a.enums.map(_.name), b.enums.map(_.name))
   }
 
   private def diffEnum(a: Enum, b: Enum): Seq[Difference] = {
@@ -151,7 +143,6 @@ case class ServiceDiff(
   }
 
   private def diffEnumValues(enumName: String, a: Seq[EnumValue], b: Seq[EnumValue]): Seq[Difference] = {
-    val added = b.map(_.name).filter(n => a.find(_.name == n).isEmpty)
     val prefix = s"enum $enumName value"
 
     a.flatMap { valueA =>
@@ -159,9 +150,7 @@ case class ServiceDiff(
         case None => Some(Difference.Breaking(Helpers.removed(prefix, valueA.name)))
         case Some(valueB) => diffEnumValue(enumName, valueA, valueB)
       }
-    } ++ added.map { name =>
-      Difference.NonBreaking(Helpers.added(prefix, name))
-    }
+    } ++ Helpers.findNew(prefix, a.map(_.name), b.map(_.name))
   }
 
   private def diffEnumValue(enumName: String, a: EnumValue, b: EnumValue): Seq[Difference] = {
@@ -173,16 +162,12 @@ case class ServiceDiff(
   }
 
   private def diffUnions(): Seq[Difference] = {
-    val added = b.unions.map(_.name).filter(n => a.unions.find(_.name == n).isEmpty)
-
     a.unions.flatMap { unionA =>
       b.unions.find(_.name == unionA.name) match {
         case None => Some(Difference.Breaking(Helpers.removed("union", unionA.name)))
         case Some(unionB) => diffUnion(unionA, unionB)
       }
-    } ++ added.map { name =>
-      Difference.NonBreaking(Helpers.added("union", name))
-    }
+    } ++ Helpers.findNew("union", a.unions.map(_.name), b.unions.map(_.name))
   }
 
   private def diffUnion(a: Union, b: Union): Seq[Difference] = {
@@ -196,7 +181,6 @@ case class ServiceDiff(
   }
 
   private def diffUnionTypes(unionName: String, a: Seq[UnionType], b: Seq[UnionType]): Seq[Difference] = {
-    val added = b.map(_.`type`).filter(n => a.find(_.`type` == n).isEmpty)
     val prefix = s"union $unionName type"
 
     a.flatMap { typeA =>
@@ -204,9 +188,7 @@ case class ServiceDiff(
         case None => Some(Difference.Breaking(Helpers.removed(prefix, typeA.`type`)))
         case Some(typeB) => diffUnionType(unionName, typeA, typeB)
       }
-    } ++ added.map { name =>
-      Difference.NonBreaking(Helpers.added(prefix, name))
-    }
+    } ++ Helpers.findNew(prefix, a.map(_.`type`), b.map(_.`type`))
   }
 
   private def diffUnionType(unionName: String, a: UnionType, b: UnionType): Seq[Difference] = {
@@ -227,6 +209,12 @@ case class ServiceDiff(
     def added(label: String, value: String) = s"$label added: ${Text.truncate(value)}"
 
     def changed(label: String, from: String, to: String) = s"$label changed from ${Text.truncate(from)} to ${Text.truncate(to)}"
+
+    def findNew(prefix: String, a: Seq[String], b: Seq[String]): Seq[Difference] = {
+      b.filter(n => a.find(_ == n).isEmpty).map { name =>
+        Difference.NonBreaking(Helpers.added(prefix, name))
+      }
+    }
 
     def diffRequired(label: String, a: Boolean, b: Boolean): Seq[Difference] = {
       (a, b) match {

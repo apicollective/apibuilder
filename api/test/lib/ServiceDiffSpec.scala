@@ -9,7 +9,6 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
   private lazy val service = TestHelper.readService("../spec/api.json")
 
-/*
   it("no changes") {
     ServiceDiff(service, service).differences should be(Nil)
   }
@@ -413,9 +412,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     }
 
   }
-*/
 
-  // Start
   describe("union") {
 
     val unionType = UnionType(
