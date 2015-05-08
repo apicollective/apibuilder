@@ -228,5 +228,102 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       }
 
     }
+
+    describe("import") {
+
+      val imp = Import(
+        uri = "http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json",
+        namespace = "com.gilt.apidoc.spec.v0",
+        organization = Organization(key = "gilt"),
+        application = Application(key = "apidoc-spec"),
+        version = "0.9.6",
+        enums = Seq("method", "parameter_location", "response_code_option"),
+        unions = Seq("response_code"),
+        models = Seq("apidoc", "application")
+      )
+
+      val base = service.copy(imports = Nil)
+      val serviceWithImport = base.copy(imports = Seq(imp))
+
+      it("no change") {
+        ServiceDiff(serviceWithImport, serviceWithImport).differences should be(Nil)
+      }
+
+      it("remove import") {
+        ServiceDiff(serviceWithImport, base).differences should be(
+          Seq(
+            Difference.NonBreaking("import removed: http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json")
+          )
+        )
+      }
+
+      it("add import") {
+        ServiceDiff(base, serviceWithImport).differences should be(
+          Seq(
+            Difference.NonBreaking("import added: http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json")
+          )
+        )
+      }
+
+      it("change import") {
+        val imp2 = Import(
+          uri = "http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json",
+          namespace = "com.gilt.apidoc.spec.v1",
+          organization = Organization(key = "gilt2"),
+          application = Application(key = "apidoc-spec2"),
+          version = "1.0.0",
+          enums = Seq("foo"),
+          unions = Seq("bar"),
+          models = Seq("baz")
+        )
+
+        val prefix = "import http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json"
+
+        ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(namespace = imp2.namespace)))).differences should be(
+          Seq(
+            Difference.NonBreaking(s"$prefix namespace changed from com.gilt.apidoc.spec.v0 to com.gilt.apidoc.spec.v1")
+          )
+        )
+
+        ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(organization = imp2.organization)))).differences should be(
+          Seq(
+            Difference.NonBreaking(s"$prefix organization/key changed from gilt to gilt2")
+          )
+        )
+
+        ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(application = imp2.application)))).differences should be(
+          Seq(
+            Difference.NonBreaking(s"$prefix application/key changed from apidoc-spec to apidoc-spec2")
+          )
+        )
+
+        ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(version = imp2.version)))).differences should be(
+          Seq(
+            Difference.NonBreaking(s"$prefix version changed from 0.9.6 to 1.0.0")
+          )
+        )
+
+        ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(enums = imp2.enums)))).differences should be(
+          Seq(
+            Difference.NonBreaking(s"$prefix enums changed from [method, parameter_location, response_code_option] to [foo]")
+          )
+        )
+
+        ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(unions = imp2.unions)))).differences should be(
+          Seq(
+            Difference.NonBreaking(s"$prefix unions changed from [response_code] to [bar]")
+          )
+        )
+
+        ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(models = imp2.models)))).differences should be(
+          Seq(
+            Difference.NonBreaking(s"$prefix models changed from [apidoc, application] to [baz]")
+          )
+        )
+
+      }
+
+    }
+
   }
 }

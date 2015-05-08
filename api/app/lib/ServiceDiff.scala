@@ -115,7 +115,32 @@ case class ServiceDiff(
     }
   }
 
-  private def diffImports(): Seq[Difference] = Nil
+  private def diffImports(): Seq[Difference] = {
+    val added = b.imports.map(_.uri).filter(uri => a.imports.find(_.uri == uri).isEmpty)
+
+    a.imports.flatMap { importA =>
+      b.imports.find(_.uri == importA.uri) match {
+        case None => Some(Difference.NonBreaking(Helpers.removed("import", importA.uri)))
+        case Some(importB) => diffImport(importA, importB)
+      }
+    } ++ added.map { uri =>
+      Difference.NonBreaking(Helpers.added("import", uri))
+    }
+  }
+
+  private def diffImport(a: Import, b: Import): Seq[Difference] = {
+    assert(a.uri == b.uri, "Import uri's must be the same")
+    val prefix = s"import ${a.uri}"
+
+    Helpers.diffStringNonBreaking(s"$prefix namespace", a.namespace, b.namespace) ++
+    Helpers.diffStringNonBreaking(s"$prefix organization/key", a.organization.key, b.organization.key) ++
+    Helpers.diffStringNonBreaking(s"$prefix application/key", a.application.key, b.application.key) ++
+    Helpers.diffStringNonBreaking(s"$prefix version", a.version, b.version) ++
+    Helpers.diffArrayNonBreaking(s"$prefix enums", a.enums, b.enums) ++
+    Helpers.diffArrayNonBreaking(s"$prefix unions", a.unions, b.unions) ++
+    Helpers.diffArrayNonBreaking(s"$prefix models", a.models, b.models)
+  }
+
   private def diffEnums(): Seq[Difference] = Nil
   private def diffUnions(): Seq[Difference] = Nil
   private def diffModels(): Seq[Difference] = Nil
@@ -171,6 +196,14 @@ case class ServiceDiff(
       b: String
     ): Seq[Difference] = {
       diffString(label, a, b).map { Difference.NonBreaking(_) }
+    }
+
+    def diffArrayNonBreaking(
+      label: String,
+      a: Seq[String],
+      b: Seq[String]
+    ): Seq[Difference] = {
+      diffString(label, "[" + a.mkString(", ") + "]", "[" + b.mkString(", ") + "]").map { Difference.NonBreaking(_) }
     }
 
     def diffOptionalString(
