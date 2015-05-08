@@ -670,7 +670,23 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         )
       )
 
-      // TODO: Finish diff of field attributes
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1))))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id minimum added: 1")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1))))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id maximum added: 1")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(example = Some("foo"))))))).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id example added: foo")
+        )
+      )
     }
 
   }
