@@ -280,7 +280,11 @@ case class ServiceDiff(
       (a, b) match {
         case (None, None) => Nil
         case (Some(from), Some(to)) => {
-          Seq(Difference.NonBreaking("$label default changed from ${Text.truncate(from)} to ${Text.truncate(to)}"))
+          if (from == to) {
+            Nil
+          } else {
+            Seq(Difference.NonBreaking(s"$label default changed from ${Text.truncate(from)} to ${Text.truncate(to)}"))
+          }
         }
         case (None, Some(default)) => {
           Seq(Difference.NonBreaking(s"$label default added: ${Text.truncate(default)}"))
