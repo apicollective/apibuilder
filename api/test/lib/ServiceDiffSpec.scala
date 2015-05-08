@@ -242,7 +242,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(default = Some("test"))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test default removed: test")
+            Difference.Breaking("header x-test default removed: test")
           )
         )
       }
@@ -656,9 +656,10 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
           Difference.NonBreaking("model user field id default added: 1")
         )
       )
-    }
 
-    // TODO: Finish diff of field attributes
+      // TODO: Finish diff of field attributes
+      // Check required next and change from not required to required
+    }
 
   }
 

@@ -97,8 +97,8 @@ case class ServiceDiff(
     Helpers.diffStringBreaking(s"$prefix type", a.`type`, b.`type`) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
-    Helpers.diffRequired(s"$prefix required", a.required, b.required) ++
-    Helpers.diffDefault(s"$prefix default", a.default, b.default)
+    Helpers.diffRequired(prefix, a.required, b.required) ++
+    Helpers.diffDefault(prefix, a.default, b.default)
   }
 
   private def diffImports(): Seq[Difference] = {
