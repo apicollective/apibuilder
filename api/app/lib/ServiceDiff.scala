@@ -227,7 +227,7 @@ case class ServiceDiff(
         case None => Some(Difference.Breaking(Helpers.removed(s"$prefix field", fieldA.name)))
         case Some(fieldB) => diffField(modelName, fieldA, fieldB)
       }
-    } ++ b.find( f => added.contains(f.name) ).map { f =>
+    } ++ b.filter( f => added.contains(f.name) ).map { f =>
       (f.required, f.default) match {
         case (false, None) => Difference.NonBreaking(Helpers.added(s"$prefix optional field", f.name))
         case (false, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix optional field", s"${f.name}, defaults to ${Text.truncate(default)}"))
@@ -251,7 +251,133 @@ case class ServiceDiff(
     Helpers.diffOptionalStringNonBreaking(s"$prefix example", a.example, b.example)
   }
 
-  private def diffResources(): Seq[Difference] = Nil
+  private def diffResources(): Seq[Difference] = {
+    a.resources.flatMap { resourceA =>
+      b.resources.find(_.`type` == resourceA.`type`) match {
+        case None => Some(Difference.Breaking(Helpers.removed("resource", resourceA.`type`)))
+        case Some(resourceB) => diffResource(resourceA, resourceB)
+      }
+    } ++ Helpers.findNew("resource", a.resources.map(_.`type`), b.resources.map(_.`type`))
+  }
+
+  private def diffResource(a: Resource, b: Resource): Seq[Difference] = {
+    assert(a.`type` == b.`type`, "Resource types must be the same")
+    val prefix = s"resource ${a.`type`}"
+
+    Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    diffOperations(a.`type`, a.operations, b.operations)
+  }
+
+  private def operationKey(op: Operation): String = {
+    s"${op.method} ${op.path}".trim
+  }
+
+  private def diffOperations(resourceType: String, a: Seq[Operation], b: Seq[Operation]): Seq[Difference] = {
+    val added = b.filter(opB => a.find( opA => opA.method == opB.method && opA.path == opB.path ).isEmpty)
+    val prefix = s"resource $resourceType"
+
+    a.flatMap { opA =>
+      b.find(opB => opA.method == opB.method && opA.path == opB.path) match {
+        case None => Some(Difference.Breaking(Helpers.removed(s"$prefix operation", operationKey(opA))))
+        case Some(opB) => diffOperation(resourceType, opA, opB)
+      }
+    } ++ added.map { op =>
+      Difference.NonBreaking(Helpers.added(s"$prefix operation", operationKey(op)))
+    }
+  }
+
+  private def diffOperation(resourceType: String, a: Operation, b: Operation): Seq[Difference] = {
+    assert(a.method == b.method, "Operation methods must be the same")
+    assert(a.path == b.path, "Operation paths must be the same")
+    val prefix = "resource $resourceType operation " + operationKey(a)
+
+    Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    diffBody(prefix, a.body, b.body) ++
+    diffParameters(prefix, a.parameters, b.parameters) ++
+    diffResponses(prefix, a.responses, b.responses)
+  }
+
+  private def diffBody(prefix: String, a: Option[Body], b: Option[Body]): Seq[Difference] = {
+    (a, b) match {
+      case (None, None) => Nil
+      case (None, Some(bodyB)) => Seq(Difference.Breaking(Helpers.added(prefix, "body")))
+      case (Some(bodyB), None) => Seq(Difference.Breaking(Helpers.removed(prefix, "body")))
+      case (Some(bodyA), Some(bodyB)) => {
+        Helpers.diffStringBreaking(s"$prefix body type", bodyA.`type`, bodyB.`type`) ++
+        Helpers.diffOptionalStringNonBreaking(s"$prefix body description", bodyA.description, bodyB.description) ++
+        Helpers.diffDeprecation(s"$prefix body", bodyA.deprecation, bodyB.deprecation)
+      }
+    }
+  }
+
+  private def diffParameters(prefix: String, a: Seq[Parameter], b: Seq[Parameter]): Seq[Difference] = {
+    val added = b.map(_.name).filter(h => a.find(_.name == h).isEmpty)
+
+    a.flatMap { parameterA =>
+      b.find(_.name == parameterA.name) match {
+        case None => Some(Difference.Breaking(Helpers.removed(s"$prefix parameter", parameterA.name)))
+        case Some(parameterB) => diffParameter(prefix, parameterA, parameterB)
+      }
+    } ++ b.filter( p => added.contains(p.name) ).map { p =>
+      (p.required, p.default) match {
+        case (false, None) => Difference.NonBreaking(Helpers.added(s"$prefix optional parameter", p.name))
+        case (false, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix optional parameter", s"${p.name}, defaults to ${Text.truncate(default)}"))
+        case (true, None) => Difference.Breaking(Helpers.added(s"$prefix required parameter", p.name))
+        case (true, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix required parameter", s"${p.name}, defaults to ${Text.truncate(default)}"))
+      }
+    }
+  }
+
+  private def diffParameter(prefix: String, a: Parameter, b: Parameter): Seq[Difference] = {
+    assert(a.name == b.name, "Parameter name's must be the same")
+    val thisPrefix = s"prefix parameter ${a.name}"
+
+    Helpers.diffStringBreaking(s"$thisPrefix type", a.`type`, b.`type`) ++
+    Helpers.diffStringBreaking(s"$thisPrefix location", a.location.toString, b.location.toString) ++
+    Helpers.diffOptionalStringNonBreaking(s"$thisPrefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(thisPrefix, a.deprecation, b.deprecation) ++
+    Helpers.diffDefault(thisPrefix, a.default, b.default) ++
+    Helpers.diffRequired(thisPrefix, a.required, b.required) ++
+    Helpers.diffOptionalStringNonBreaking(s"$thisPrefix minimum", a.minimum.map(_.toString), b.minimum.map(_.toString)) ++
+    Helpers.diffOptionalStringNonBreaking(s"$thisPrefix maximum", a.maximum.map(_.toString), b.maximum.map(_.toString)) ++
+    Helpers.diffOptionalStringNonBreaking(s"$thisPrefix example", a.example, b.example)
+  }
+
+  /**
+    * Returns the response code as a string.
+    */
+  private def responseCode(r: Response): String = {
+    r.code match {
+      case ResponseCodeInt(code) => code.toString
+      case ResponseCodeUndefinedType(desc) => desc
+      case ResponseCodeOption.Default => ResponseCodeOption.Default.toString
+      case ResponseCodeOption.UNDEFINED(value) => value
+    }
+  }
+
+  private def diffResponses(prefix: String, a: Seq[Response], b: Seq[Response]): Seq[Difference] = {
+    val added = b.map(_.code).filter(code => a.find(_.code == code).isEmpty)
+
+    a.flatMap { responseA =>
+      b.find(_.code == responseA.code) match {
+        case None => Some(Difference.Breaking(Helpers.removed(s"$prefix response", responseCode(responseA))))
+        case Some(responseB) => diffResponse(prefix, responseA, responseB)
+      }
+    } ++ b.filter( r => added.contains(r.code) ).map { r =>
+      Difference.NonBreaking(Helpers.added(s"$prefix response", responseCode(r)))
+    }
+  }
+
+  private def diffResponse(prefix: String, a: Response, b: Response): Seq[Difference] = {
+    assert(responseCode(a) == responseCode(b), "Response codes must be the same")
+    val thisPrefix = s"$prefix response ${responseCode(a)}"
+    Helpers.diffStringBreaking(s"$thisPrefix type", a.`type`, b.`type`) ++
+    Helpers.diffOptionalStringNonBreaking(s"$thisPrefix description", a.description, b.description) ++
+    Helpers.diffDeprecation(thisPrefix, a.deprecation, b.deprecation)
+  }
 
   private object Helpers {
 
