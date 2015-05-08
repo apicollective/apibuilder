@@ -279,10 +279,14 @@ case class ServiceDiff(
     def diffDefault(label: String, a: Option[String], b: Option[String]): Seq[Difference] = {
       (a, b) match {
         case (None, None) => Nil
-        case (Some(_), Some(_)) => Nil
-        case (None, Some(_)) => Nil
-        case (Some(_), None) => {
-          Seq(Difference.Breaking(s"$label removed default"))
+        case (Some(from), Some(to)) => {
+          Seq(Difference.NonBreaking("$label default changed from ${Text.truncate(from)} to ${Text.truncate(to)}"))
+        }
+        case (None, Some(default)) => {
+          Seq(Difference.NonBreaking(s"$label default added: ${Text.truncate(default)}"))
+        }
+        case (Some(default), None) => {
+          Seq(Difference.Breaking(s"$label default removed: ${Text.truncate(default)}"))
         }
       }
     }

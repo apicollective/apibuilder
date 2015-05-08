@@ -228,6 +228,37 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       }
     }
 
+    describe("default") {
+
+      it("add") {
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(default = Some("test"))))
+        ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test default added: test")
+          )
+        )
+      }
+
+      it("remove") {
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(default = Some("test"))))
+        ServiceDiff(serviceWithHeader2, serviceWithHeader).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test default removed: test")
+          )
+        )
+      }
+
+      it("change") {
+        val serviceWithHeader2 = base.copy(headers = Seq(header.copy(default = Some("foo"))))
+        val serviceWithHeader3 = base.copy(headers = Seq(header.copy(default = Some("bar"))))
+        ServiceDiff(serviceWithHeader2, serviceWithHeader3).differences should be(
+          Seq(
+            Difference.NonBreaking("header x-test default changed from foo to bar")
+          )
+        )
+      }
+    }
+
   }
 
   describe("import") {
@@ -598,7 +629,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       val field2RequiredWithDefault = field.copy(name = "name", required = true, default = Some("test"))
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2Required))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user required field added: name, defaults to test")
+          Difference.NonBreaking("model user field name default added: test")
         )
       )
     }
