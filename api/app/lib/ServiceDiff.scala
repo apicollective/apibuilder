@@ -271,7 +271,7 @@ case class ServiceDiff(
       (a, b) match {
         case (true, true) => Nil
         case (false, false) => Nil
-        case (true, false) => Nil
+        case (true, false) => Seq(Difference.NonBreaking(s"$label is no longer required"))
         case (false, true) => Seq(Difference.Breaking(s"$label is now required"))
       }
     }

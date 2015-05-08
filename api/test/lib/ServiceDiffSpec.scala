@@ -657,8 +657,20 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         )
       )
 
+      val requiredField = field.copy(required = true)
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(requiredField))))).differences should be(
+        Seq(
+          Difference.Breaking("model user field id is now required")
+        )
+      )
+
+      ServiceDiff(base.copy(models = Seq(model.copy(fields = Seq(requiredField)))), serviceWithModel).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id is no longer required")
+        )
+      )
+
       // TODO: Finish diff of field attributes
-      // Check required next and change from not required to required
     }
 
   }
