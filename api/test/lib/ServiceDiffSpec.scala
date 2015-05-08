@@ -9,7 +9,6 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
   private lazy val service = TestHelper.readService("../spec/api.json")
 
-/*
   it("no changes") {
     ServiceDiff(service, service).differences should be(Nil)
   }
@@ -532,7 +531,6 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     }
 
   }
-*/
 
   // START
   describe("model") {
@@ -627,9 +625,9 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       )
 
       val field2RequiredWithDefault = field.copy(name = "name", required = true, default = Some("test"))
-      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2Required))))).differences should be(
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2RequiredWithDefault))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user field name default added: test")
+          Difference.NonBreaking("model user required field added: name, defaults to test")
         )
       )
     }
@@ -659,6 +657,8 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         )
       )
     }
+
+    // TODO: Finish diff of field attributes
 
   }
 

@@ -230,9 +230,9 @@ case class ServiceDiff(
     } ++ b.find( f => added.contains(f.name) ).map { f =>
       (f.required, f.default) match {
         case (false, None) => Difference.NonBreaking(Helpers.added(s"$prefix optional field", f.name))
-        case (false, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix optional field", s"$f.name, defaults to ${Text.truncate(default)}"))
+        case (false, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix optional field", s"${f.name}, defaults to ${Text.truncate(default)}"))
         case (true, None) => Difference.Breaking(Helpers.added(s"$prefix required field", f.name))
-        case (true, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix required field", s"$f.name, defaults to ${Text.truncate(default)}"))
+        case (true, Some(default)) => Difference.NonBreaking(Helpers.added(s"$prefix required field", s"${f.name}, defaults to ${Text.truncate(default)}"))
       }
     }
   }
