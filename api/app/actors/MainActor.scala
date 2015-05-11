@@ -22,6 +22,7 @@ object MainActor {
     case class ApplicationCreated(guid: UUID)
     case class UserCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
+    case class VersionReplaced(oldGuid: UUID, newGuid: UUID)
   }
 }
 
@@ -67,6 +68,12 @@ class MainActor(name: String) extends Actor with ActorLogging {
     case MainActor.Messages.VersionCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.VersionCreated($guid)", {
         emailActor ! EmailActor.Messages.VersionCreated(guid)
+      }
+    )
+
+    case MainActor.Messages.VersionReplaced(oldGuid, newGuid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.VersionReplaced($oldGuid, $newGuid)", {
+        emailActor ! EmailActor.Messages.VersionReplaced(oldGuid, newGuid)
       }
     )
 
