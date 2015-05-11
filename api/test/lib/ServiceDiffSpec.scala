@@ -671,13 +671,77 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1))))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id minimum added: 1")
+          Difference.Breaking("model user field id minimum added: 1")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1)))))),
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1))))))
+      ).differences should be(Nil)
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1)))))),
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(0))))))
+      ).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id minimum changed from 1 to 0")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(0)))))),
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1))))))
+      ).differences should be(
+        Seq(
+          Difference.Breaking("model user field id minimum changed from 0 to 1")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(0)))))),
+        base.copy(models = Seq(model.copy(fields = Seq(field))))
+      ).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id minimum removed: 0")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1))))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id maximum added: 1")
+          Difference.Breaking("model user field id maximum added: 1")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1)))))),
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1))))))
+      ).differences should be(Nil)
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1)))))),
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(0))))))
+      ).differences should be(
+        Seq(
+          Difference.Breaking("model user field id maximum changed from 1 to 0")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(0)))))),
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1))))))
+      ).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id maximum changed from 0 to 1")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(0)))))),
+        base.copy(models = Seq(model.copy(fields = Seq(field))))
+      ).differences should be(
+        Seq(
+          Difference.NonBreaking("model user field id maximum removed: 0")
         )
       )
 
@@ -842,9 +906,109 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
           )
         )
 
+        ServiceDiff(
+          withOp(operation.copy(body = Some(body))),
+          withOp(operation.copy(body = Some(body.copy(description = Some("test")))))
+        ).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid body description added: test")
+          )
+        )
+
+        ServiceDiff(
+          withOp(operation.copy(body = Some(body))),
+          withOp(operation.copy(body = Some(body.copy(deprecation = Some(Deprecation())))))
+        ).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid body deprecated")
+          )
+        )
+
         ServiceDiff(withOp(operation.copy(body = Some(body))), serviceWithOperation).differences should be(
           Seq(
             Difference.Breaking("resource user operation GET /users/:guid removed: body")
+          )
+        )
+
+      }
+
+      it("change operation parameters") {
+        val id = Parameter(
+          name = "id",
+          `type` = "long",
+          location = ParameterLocation.Query,
+          description = None,
+          deprecation = None,
+          default = None,
+          required = false,
+          minimum = None,
+          maximum = None,
+          example = None
+        )
+
+        ServiceDiff(serviceWithOperation, withOp(operation.copy(parameters = Seq(id)))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid optional parameter added: id")
+          )
+        )
+
+        ServiceDiff(serviceWithOperation, withOp(operation.copy(parameters = Seq(id.copy(required = true))))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid required parameter added: id")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), serviceWithOperation).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid parameter removed: id")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(`type` = "string"))))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid parameter id type changed from long to string")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(location = ParameterLocation.Form))))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid parameter id location changed from Query to Form")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(description = Some("test")))))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid parameter id description added: test")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(deprecation = Some(Deprecation())))))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid parameter id deprecated")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(default = Some("5")))))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid parameter id default added: 5")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(minimum = Some(1)))))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid parameter id minimum added: 1")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(maximum = Some(1)))))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid parameter id maximum added: 1")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(example = Some("1")))))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid parameter id example added: 1")
           )
         )
 

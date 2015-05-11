@@ -246,8 +246,8 @@ case class ServiceDiff(
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     Helpers.diffDefault(prefix, a.default, b.default) ++
     Helpers.diffRequired(prefix, a.required, b.required) ++
-    Helpers.diffOptionalStringNonBreaking(s"$prefix minimum", a.minimum.map(_.toString), b.minimum.map(_.toString)) ++
-    Helpers.diffOptionalStringNonBreaking(s"$prefix maximum", a.maximum.map(_.toString), b.maximum.map(_.toString)) ++
+    Helpers.diffMinimum(prefix, a.minimum, b.minimum) ++
+    Helpers.diffMaximum(prefix, a.maximum, b.maximum) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix example", a.example, b.example)
   }
 
@@ -333,7 +333,7 @@ case class ServiceDiff(
 
   private def diffParameter(prefix: String, a: Parameter, b: Parameter): Seq[Difference] = {
     assert(a.name == b.name, "Parameter name's must be the same")
-    val thisPrefix = s"prefix parameter ${a.name}"
+    val thisPrefix = s"$prefix parameter ${a.name}"
 
     Helpers.diffStringBreaking(s"$thisPrefix type", a.`type`, b.`type`) ++
     Helpers.diffStringBreaking(s"$thisPrefix location", a.location.toString, b.location.toString) ++
@@ -341,8 +341,8 @@ case class ServiceDiff(
     Helpers.diffDeprecation(thisPrefix, a.deprecation, b.deprecation) ++
     Helpers.diffDefault(thisPrefix, a.default, b.default) ++
     Helpers.diffRequired(thisPrefix, a.required, b.required) ++
-    Helpers.diffOptionalStringNonBreaking(s"$thisPrefix minimum", a.minimum.map(_.toString), b.minimum.map(_.toString)) ++
-    Helpers.diffOptionalStringNonBreaking(s"$thisPrefix maximum", a.maximum.map(_.toString), b.maximum.map(_.toString)) ++
+    Helpers.diffMinimum(thisPrefix, a.minimum, b.minimum) ++
+    Helpers.diffMaximum(thisPrefix, a.maximum, b.maximum) ++
     Helpers.diffOptionalStringNonBreaking(s"$thisPrefix example", a.example, b.example)
   }
 
@@ -399,6 +399,60 @@ case class ServiceDiff(
         case (false, false) => Nil
         case (true, false) => Seq(Difference.NonBreaking(s"$label is no longer required"))
         case (false, true) => Seq(Difference.Breaking(s"$label is now required"))
+      }
+    }
+
+    /**
+      * We consider a breaking change if a minimum is added or lowered.
+      */
+    def diffMinimum(label: String, a: Option[Long], b: Option[Long]): Seq[Difference] = {
+      (a, b) match {
+        case (None, None) => Nil
+        case (Some(from), Some(to)) => {
+          if (from == to) {
+            Nil
+          } else {
+            val desc = s"$label minimum changed from $from to $to"
+            if (from < to) {
+              Seq(Difference.Breaking(desc))
+            } else {
+              Seq(Difference.NonBreaking(desc))
+            }
+          }
+        }
+        case (None, Some(min)) => {
+          Seq(Difference.Breaking(s"$label minimum added: $min"))
+        }
+        case (Some(min), None) => {
+          Seq(Difference.NonBreaking(s"$label minimum removed: $min"))
+        }
+      }
+    }
+
+    /**
+      * We consider a breaking change if a maximum is added or increased.
+      */
+    def diffMaximum(label: String, a: Option[Long], b: Option[Long]): Seq[Difference] = {
+      (a, b) match {
+        case (None, None) => Nil
+        case (Some(from), Some(to)) => {
+          if (from == to) {
+            Nil
+          } else {
+            val desc = s"$label maximum changed from $from to $to"
+            if (from < to) {
+              Seq(Difference.NonBreaking(desc))
+            } else {
+              Seq(Difference.Breaking(desc))
+            }
+          }
+        }
+        case (None, Some(max)) => {
+          Seq(Difference.Breaking(s"$label maximum added: $max"))
+        }
+        case (Some(max), None) => {
+          Seq(Difference.NonBreaking(s"$label maximum removed: $max"))
+        }
       }
     }
 
