@@ -532,7 +532,6 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
   }
 
-  // START
   describe("model") {
 
     val field = Field(
@@ -685,6 +684,78 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(example = Some("foo"))))))).differences should be(
         Seq(
           Difference.NonBreaking("model user field id example added: foo")
+        )
+      )
+    }
+
+  }
+
+  describe("resource") {
+
+    val resource = Resource(
+      `type` = "user",
+      plural = "users",
+      description = None,
+      deprecation = None,
+      operations = Nil
+    )
+
+    val base = service.copy(resources = Nil)
+    val serviceWithResource = base.copy(resources = Seq(resource))
+
+    it("no change") {
+      ServiceDiff(serviceWithResource, serviceWithResource).differences should be(Nil)
+    }
+
+    it("add resource") {
+      ServiceDiff(base, serviceWithResource).differences should be(
+        Seq(
+          Difference.NonBreaking("resource added: user")
+        )
+      )
+    }
+
+    it("remove resource") {
+      ServiceDiff(serviceWithResource, base).differences should be(
+        Seq(
+          Difference.Breaking("resource removed: user")
+        )
+      )
+    }
+
+    it("change resource") {
+      ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(plural = "all_users")))).differences should be(
+        Seq(
+          Difference.NonBreaking("resource user plural changed from users to all_users")
+        )
+      )
+
+      ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(description = Some("test"))))).differences should be(
+        Seq(
+          Difference.NonBreaking("resource user description added: test")
+        )
+      )
+
+      ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(deprecation = Some(Deprecation()))))).differences should be(
+        Seq(
+          Difference.NonBreaking("resource user deprecated")
+        )
+      )
+
+      val op = Operation(
+        method = Method.Get,
+        path = "/users"
+      )
+
+      ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(operations = Seq(op))))).differences should be(
+        Seq(
+          Difference.NonBreaking("resource user operation added: GET /users")
+        )
+      )
+
+      ServiceDiff(base.copy(resources = Seq(resource.copy(operations = Seq(op)))), serviceWithResource).differences should be(
+        Seq(
+          Difference.Breaking("resource user operation removed: GET /users")
         )
       )
     }
