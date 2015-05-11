@@ -271,15 +271,15 @@ case class ServiceDiff(
   }
 
   private def operationKey(op: Operation): String = {
-    s"${op.method} ${op.path}".trim
+    s"${op.method.toString.toUpperCase} ${op.path}".trim
   }
 
   private def diffOperations(resourceType: String, a: Seq[Operation], b: Seq[Operation]): Seq[Difference] = {
-    val added = b.filter(opB => a.find( opA => opA.method == opB.method && opA.path == opB.path ).isEmpty)
+    val added = b.filter(opB => a.find( opA => operationKey(opB) == operationKey(opA) ).isEmpty)
     val prefix = s"resource $resourceType"
 
     a.flatMap { opA =>
-      b.find(opB => opA.method == opB.method && opA.path == opB.path) match {
+      b.find(opB => operationKey(opB) == operationKey(opA)) match {
         case None => Some(Difference.Breaking(Helpers.removed(s"$prefix operation", operationKey(opA))))
         case Some(opB) => diffOperation(resourceType, opA, opB)
       }
@@ -291,7 +291,7 @@ case class ServiceDiff(
   private def diffOperation(resourceType: String, a: Operation, b: Operation): Seq[Difference] = {
     assert(a.method == b.method, "Operation methods must be the same")
     assert(a.path == b.path, "Operation paths must be the same")
-    val prefix = "resource $resourceType operation " + operationKey(a)
+    val prefix = s"resource $resourceType operation " + operationKey(a)
 
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++

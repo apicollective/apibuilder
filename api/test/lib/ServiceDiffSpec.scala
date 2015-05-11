@@ -760,6 +760,97 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       )
     }
 
-  }
+    describe("operation") {
 
+      val operation = Operation(
+        method = Method.Get,
+        path = "/users/:guid",
+        description = None,
+        deprecation = None,
+        body = None,
+        parameters = Nil,
+        responses = Nil
+      )
+
+      def withOp(op: Operation): Service = {
+        service.copy(resources = Seq(resource.copy(operations = Seq(op))))
+      }
+
+      val base = service.copy(resources = Seq(resource))
+      val serviceWithOperation = withOp(operation)
+
+      it("no change") {
+        ServiceDiff(serviceWithOperation, serviceWithOperation).differences should be(Nil)
+      }
+
+      it("add operation") {
+        ServiceDiff(base, serviceWithOperation).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation added: GET /users/:guid")
+          )
+        )
+      }
+
+      it("remove operation") {
+        ServiceDiff(serviceWithOperation, base).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation removed: GET /users/:guid")
+          )
+        )
+      }
+
+      it("change operation") {
+        ServiceDiff(serviceWithOperation, withOp(operation.copy(method = Method.Post))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation removed: GET /users/:guid"),
+            Difference.NonBreaking("resource user operation added: POST /users/:guid")
+          )
+        )
+
+        ServiceDiff(serviceWithOperation, withOp(operation.copy(path = "/users/:id"))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation removed: GET /users/:guid"),
+            Difference.NonBreaking("resource user operation added: GET /users/:id")
+          )
+        )
+
+        ServiceDiff(serviceWithOperation, withOp(operation.copy(description = Some("test")))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid description added: test")
+          )
+        )
+
+        ServiceDiff(serviceWithOperation, withOp(operation.copy(deprecation = Some(Deprecation())))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid deprecated")
+          )
+        )
+
+        val body = Body(`type` = "user_form")
+        ServiceDiff(serviceWithOperation, withOp(operation.copy(body = Some(body)))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid added: body")
+          )
+        )
+
+        ServiceDiff(
+          withOp(operation.copy(body = Some(body))),
+          withOp(operation.copy(body = Some(body.copy(`type` = "string"))))
+        ).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid body type changed from user_form to string")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(body = Some(body))), serviceWithOperation).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid removed: body")
+          )
+        )
+
+      }
+
+    }
+
+  }
 }
