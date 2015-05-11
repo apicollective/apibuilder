@@ -1014,7 +1014,48 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
       }
 
+      it("change operation responses") {
+        val success = Response(
+          code = ResponseCodeInt(200),
+          `type` = "user",
+          description = None,
+          deprecation = None
+        )
+
+        ServiceDiff(serviceWithOperation, withOp(operation.copy(responses = Seq(success)))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid response added: 200")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(responses = Seq(success))), serviceWithOperation).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid response removed: 200")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(`type` = "string"))))).differences should be(
+          Seq(
+            Difference.Breaking("resource user operation GET /users/:guid response 200 type changed from user to string")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(description = Some("test")))))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid response 200 description added: test")
+          )
+        )
+
+        ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(deprecation = Some(Deprecation())))))).differences should be(
+          Seq(
+            Difference.NonBreaking("resource user operation GET /users/:guid response 200 deprecated")
+          )
+        )
+
+      }
+
     }
+
 
   }
 }
