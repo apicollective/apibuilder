@@ -1,3 +1,7 @@
+VersionsDao
+  - make isDeleted default to None
+  - add isDeleted to all findAll methods
+
 Expose permission check at www/app/views/generators/details.scala.html for removing a generator
 
 Consider supporting (from swagger):

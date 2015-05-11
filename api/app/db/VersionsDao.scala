@@ -35,7 +35,7 @@ object VersionsDao {
      left join originals on originals.version_guid = versions.guid and originals.deleted_at is null
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
-    where versions.deleted_at is null
+    where true
   """
 
   private val InsertQuery = """
@@ -70,20 +70,8 @@ object VersionsDao {
   """
 
   def create(user: User, application: Application, version: String, original: Original, service: Service): Version = {
-    val guid = UUID.randomUUID
-
-    DB.withTransaction { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'application_guid -> application.guid,
-        'version -> version.trim,
-        'version_sort_key -> VersionTag(version.trim).sortKey,
-        'created_by_guid -> user.guid
-      ).execute()
-
-      OriginalsDao.create(c, user, guid, original)
-      softDeleteService(c, user, guid)
-      insertService(c, user, guid, service)
+    val guid = DB.withTransaction { implicit c =>
+      doCreate(c, user, application, version, original, service)
     }
 
     global.Actors.mainActor ! actors.MainActor.Messages.VersionCreated(guid)
@@ -91,6 +79,31 @@ object VersionsDao {
     findAll(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {
       sys.error("Failed to create version")
     }
+  }
+
+  private def doCreate(
+    implicit c: java.sql.Connection,
+    user: User,
+    application: Application,
+    version: String,
+    original: Original,
+    service: Service
+  ): UUID = {
+    val guid = UUID.randomUUID
+
+    SQL(InsertQuery).on(
+      'guid -> guid,
+      'application_guid -> application.guid,
+      'version -> version.trim,
+      'version_sort_key -> VersionTag(version.trim).sortKey,
+      'created_by_guid -> user.guid
+    ).execute()
+
+    OriginalsDao.create(c, user, guid, original)
+    softDeleteService(c, user, guid)
+    insertService(c, user, guid, service)
+
+    guid
   }
 
   def softDelete(deletedBy: User, version: Version) {
@@ -106,9 +119,15 @@ object VersionsDao {
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
-    DB.withTransaction { implicit c =>
+    val guid = DB.withTransaction { implicit c =>
       softDelete(user, version)
-      VersionsDao.create(user, application, version.version, original, service)
+      doCreate(c, user, application, version.version, original, service)
+    }
+
+    global.Actors.mainActor ! actors.MainActor.Messages.VersionReplaced(version.guid, guid)
+
+    findAll(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {
+      sys.error(s"Failed to replace version[${version.guid}]")
     }
   }
 
@@ -131,8 +150,12 @@ object VersionsDao {
     ).headOption
   }
 
-  def findByGuid(authorization: Authorization, guid: UUID): Option[Version] = {
-    findAll(authorization, guid = Some(guid), limit = 1).headOption
+  def findByGuid(
+    authorization: Authorization,
+    guid: UUID,
+    isDeleted: Option[Boolean] = Some(false)
+  ): Option[Version] = {
+    findAll(authorization, guid = Some(guid), isDeleted = isDeleted, limit = 1).headOption
   }
 
   def findAll(
@@ -140,6 +163,7 @@ object VersionsDao {
     applicationGuid: Option[UUID] = None,
     guid: Option[UUID] = None,
     version: Option[String] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Version] = {
@@ -149,6 +173,12 @@ object VersionsDao {
       guid.map { v => "and versions.guid = {guid}::uuid" },
       applicationGuid.map { _ => "and versions.application_guid = {application_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },
+      isDeleted.map { v =>
+        v match {
+          case true => "and versions.deleted_at is not null"
+          case false => "and versions.deleted_at is null"
+        }
+      },
       Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
@@ -194,7 +224,7 @@ object VersionsDao {
     var bad = 0
 
     var user: Option[User] = None
-    val sql = BaseQuery.trim + " and services.guid is null and originals.data is not null"
+    val sql = BaseQuery.trim + " and versions.deleted_at is null and services.guid is null and originals.data is not null"
 
     DB.withConnection { implicit c =>
       SQL(sql)().toList.foreach { row =>

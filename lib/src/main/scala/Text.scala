@@ -51,9 +51,10 @@ object Text {
   private val Ellipsis = "..."
 
   /**
-   * if value is longer than maxLength characters, it wil be truncated to <= 97
-   * characters and an ellipsis added. We try to truncate on a space to avoid
-   * breaking a word in pieces.
+   * if value is longer than maxLength characters, it wil be truncated
+   * to <= (maxLength-Ellipsis.length) characters and an ellipsis
+   * added. We try to truncate on a space to avoid breaking a word in
+   * pieces.
    */
   def truncate(value: String, maxLength: Int = 100): String = {
     require(maxLength >= 10, "maxLength must be >= 10")

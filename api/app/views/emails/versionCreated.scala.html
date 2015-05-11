@@ -1,6 +1,9 @@
 @(org: com.gilt.apidoc.api.v0.models.Organization,
   application: com.gilt.apidoc.api.v0.models.Application,
-  version: com.gilt.apidoc.api.v0.models.Version)
+  version: com.gilt.apidoc.api.v0.models.Version,
+  breakingChanges: Seq[lib.Difference],
+  nonBreakingChanges: Seq[lib.Difference]
+)
 
 <p>
   Version @version.version has been uploaded for the application @org.name/@application.name 
@@ -11,6 +14,21 @@
     @desc
   </p>
 }
+
+<p><b>Breaking changes</b></p>
+@if(breakingChanges.isEmpty) {
+  <em>None</em>
+} else {
+  @Html(breakingChanges.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+}
+
+<p><b>Other non breaking changes</b></p>
+@if(nonBreakingChanges.isEmpty) {
+  <em>None</em>
+} else {
+  @Html(nonBreakingChanges.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+}
+
 
 <p>
   <a href="@lib.AppConfig.apidocWwwHost/@org.key/@application.key/@version.version">View version</a>
