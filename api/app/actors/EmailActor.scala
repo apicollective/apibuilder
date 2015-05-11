@@ -110,7 +110,7 @@ class EmailActor extends Actor {
     )
 
     case EmailActor.Messages.VersionCreated(guid) => Util.withVerboseErrorHandler(
-      s"EmailActor.Messages.ApplicationCreated($guid)", {
+      s"EmailActor.Messages.VersionCreated($guid)", {
         VersionsDao.findByGuid(Authorization.All, guid).map { version =>
           ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
             OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
@@ -127,7 +127,7 @@ class EmailActor extends Actor {
     )
 
     case EmailActor.Messages.EmailVerificationCreated(guid) => Util.withVerboseErrorHandler(
-      s"EmailActor.Messages.ApplicationCreated($guid)", {
+      s"EmailActor.Messages.EmailVerificationCreated($guid)", {
         EmailVerificationsDao.findByGuid(guid).map { verification =>
           UsersDao.findByGuid(verification.userGuid).map { user =>
             Email.sendHtml(
