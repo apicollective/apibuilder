@@ -23,6 +23,9 @@ object Util {
 
   val Host = Config.requiredString("apidoc.www.host")
 
+  val SubscriptionsText = "Subscriptions"
+  val SubscriptionsVersionsCreateText = "For applications that I watch, email me when a version is created."
+
   val AddApplicationText = "Add Application"
   val OrgDetailsText = "Org Details"
   val ServiceJsonText = "service.json"

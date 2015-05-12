@@ -1,5 +1,6 @@
 package controllers
 
+import lib.Util
 import com.gilt.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm}
 import java.util.UUID
 import scala.concurrent.{Await, Future}
@@ -19,7 +20,7 @@ object Subscriptions extends Controller {
       case Publication.MembershipRequestsCreate => "Email me when a user applies to join the org."
       case Publication.MembershipsCreate => "Email me when a user joins the org."
       case Publication.ApplicationsCreate => "Email me when an application is created."
-      case Publication.VersionsCreate => "For applications that I watch, email me when a version is created."
+      case Publication.VersionsCreate => Util.SubscriptionsVersionsCreateText
       case Publication.UNDEFINED(key) => key
     }
   }

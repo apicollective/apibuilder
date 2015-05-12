@@ -2,6 +2,38 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.9.11 - May 11 2015</h3>
+
+  <ul>
+
+    <li> Notifications on application update now send out a detailed
+    diff of what has changed in a service. An example email:
+
+    <pre>
+      Version 0.0.1 has been uploaded for the application Gilt/Referral
+      
+      Breaking changes
+
+      enum activation_type value removed: order_placed
+      model removed: placed_order
+      model removed: placed_order_form
+
+      Other non breaking changes
+
+      enum activation_type value added: order_shipped
+      model added: shipped_order
+      model added: shipped_order_form
+    </pre>
+
+    You can enable the notification by selecting the
+    &quot;@lib.Util.SubscriptionsText&quot; link in the navigation bar
+    after selecting your organization and then subscribing to
+    &quot;@lib.Util.SubscriptionsVersionsCreateText&quot;.
+    
+    </li>
+
+  </ul>
+
 <h3>0.9.5 - Apr 14 2015</h3>
 
   <ul>
@@ -17,12 +49,9 @@
     return 404s. Previously, any GET method that returned a singleton
     automatically inferred a
     404. See <a href='@lib.Util.GitHubUrl/pull/320'>PR 320</a>.
-
-</li>
+    </li>
 
   </ul>
-
-
 
 <h3>0.9.4 - Apr 10 2015</h3>
 

@@ -21,7 +21,7 @@
           <ul class="nav nav-sidebar">
             @metadata.org.map { org =>
               <li><a href="@routes.Organizations.show(org.key)">@org.name</a></li>
-              <li><a href="@routes.Subscriptions.index(orgKey = org.key)">Subscriptions</a></li>
+              <li><a href="@routes.Subscriptions.index(orgKey = org.key)">@lib.Util.SubscriptionsText</a></li>
 
               @if(metadata.isOrgMember) {
                 <li><a@if(metadata.settings.flatMap(_.section) == Some(models.SettingSection.Details)) { class="active" } href="@routes.Organizations.details(orgKey = org.key)">@lib.Util.OrgDetailsText</a></li>
