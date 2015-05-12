@@ -21,7 +21,7 @@ object OrganizationDomainsDao {
   private val BaseQuery = """
     select guid::varchar, organization_guid, domain
       from organization_domains
-     where deleted_at is null
+     where true
   """
 
   def create(createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
@@ -59,13 +59,15 @@ object OrganizationDomainsDao {
   def findAll(
     guid: Option[String] = None,
     organizationGuid: Option[UUID] = None,
-    domain: Option[String] = None
+    domain: Option[String] = None,
+    isDeleted: Option[Boolean] = Some(false)
   ): Seq[OrganizationDomain] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      guid.map { v => "and guid = {guid}::uuid" },
-      organizationGuid.map { v => "and organization_guid = {organization_guid}::uuid" },
-      domain.map { v => "and domain = lower(trim({domain}))" }
+      guid.map { v => "and organization_domains.guid = {guid}::uuid" },
+      organizationGuid.map { v => "and organization_domains.organization_guid = {organization_guid}::uuid" },
+      domain.map { v => "and organization_domains.domain = lower(trim({domain}))" },
+      isDeleted.map(Filters.isDeleted("organization_domains", _))
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

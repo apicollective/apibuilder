@@ -27,7 +27,7 @@ object SubscriptionsDao {
       from subscriptions
       join users on users.guid = subscriptions.user_guid and users.deleted_at is null
       join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null
-     where subscriptions.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -134,6 +134,7 @@ object SubscriptionsDao {
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     publication: Option[Publication] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Subscription] = {
@@ -145,6 +146,7 @@ object SubscriptionsDao {
       organizationKey.map { v => "and subscriptions.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))" },
       userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
       publication.map { v => "and subscriptions.publication = {publication}" },
+      isDeleted.map(Filters.isDeleted("subscriptions", _)),
       Some(s"order by subscriptions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

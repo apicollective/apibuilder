@@ -25,7 +25,7 @@ private[db] object EmailVerificationConfirmationsDao {
            email_verification_confirmations.email_verification_guid,
            email_verification_confirmations.created_at
       from email_verification_confirmations
-     where email_verification_confirmations.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -59,6 +59,7 @@ private[db] object EmailVerificationConfirmationsDao {
   private[db] def findAll(
     guid: Option[UUID] = None,
     emailVerificationGuid: Option[UUID] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[EmailVerificationConfirmation] = {
@@ -67,6 +68,7 @@ private[db] object EmailVerificationConfirmationsDao {
       Some(BaseQuery.trim),
       guid.map { v => "and email_verification_confirmations.guid = {guid}::uuid" },
       emailVerificationGuid.map { v => "and email_verification_confirmations.email_verification_guid = {email_verification_guid}::uuid" },
+      isDeleted.map(Filters.isDeleted("email_verification_confirmations", _)),
       Some(s"order by email_verification_confirmations.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

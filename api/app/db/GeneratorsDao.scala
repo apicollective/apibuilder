@@ -18,7 +18,7 @@ object GeneratorsDao {
            generators.uri,
            generators.visibility
       from generators
-     where generators.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -134,6 +134,7 @@ object GeneratorsDao {
     guid: Option[UUID] = None,
     key: Option[String] = None,
     keyAndUri: Option[(String, String)] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Generator] = {
@@ -149,6 +150,7 @@ object GeneratorsDao {
       guid.map(_ => "and generators.guid = {guid}::uuid"),
       key.map(_ => "and generators.key = {key}"),
       keyAndUri.map(_ => "and generators.key = {key} and generators.uri = {uri}"),
+      isDeleted.map(Filters.isDeleted("generators", _)),
       Some(s" order by lower(generators.key)"),
       Some(s" limit $limit offset $offset")
     ).flatten.mkString("\n   ")

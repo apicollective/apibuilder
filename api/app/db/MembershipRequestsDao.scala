@@ -31,7 +31,7 @@ object MembershipRequestsDao {
       from membership_requests
       join organizations on organizations.guid = membership_requests.organization_guid
       join users on users.guid = membership_requests.user_guid
-     where membership_requests.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -159,6 +159,7 @@ object MembershipRequestsDao {
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     role: Option[String] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[MembershipRequest] = {
@@ -171,6 +172,7 @@ object MembershipRequestsDao {
       organizationKey.map { v => "and membership_requests.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
       userGuid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
       role.map { v => "and membership_requests.role = {role}" },
+      isDeleted.map(Filters.isDeleted("membership_requests", _)),
       Some(s"order by membership_requests.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

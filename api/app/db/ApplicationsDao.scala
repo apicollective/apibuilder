@@ -16,7 +16,7 @@ object ApplicationsDao {
            organizations.key as organization_key
       from applications
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
-     where applications.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -182,6 +182,7 @@ object ApplicationsDao {
     key: Option[String] = None,
     version: Option[Version] = None,
     hasVersion: Option[Boolean] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Application] = {
@@ -199,6 +200,7 @@ object ApplicationsDao {
           case false => { "and not exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
         }
       },
+      isDeleted.map(Filters.isDeleted("applications", _)),
       Some(s"order by lower(applications.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

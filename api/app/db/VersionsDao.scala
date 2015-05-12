@@ -173,12 +173,7 @@ object VersionsDao {
       guid.map { v => "and versions.guid = {guid}::uuid" },
       applicationGuid.map { _ => "and versions.application_guid = {application_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },
-      isDeleted.map { v =>
-        v match {
-          case true => "and versions.deleted_at is not null"
-          case false => "and versions.deleted_at is null"
-        }
-      },
+      isDeleted.map(Filters.isDeleted("versions", _)),
       Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

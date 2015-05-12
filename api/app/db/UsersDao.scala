@@ -17,7 +17,7 @@ object UsersDao {
   private val BaseQuery = """
     select guid, email, name, nickname
       from users
-     where deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -156,10 +156,13 @@ object UsersDao {
     findByGuid(guid.toString)
   }
 
-  def findAll(guid: Option[String] = None,
-              email: Option[String] = None,
-              nickname: Option[String] = None,
-              token: Option[String] = None): Seq[User] = {
+  def findAll(
+    guid: Option[String] = None,
+    email: Option[String] = None,
+    nickname: Option[String] = None,
+    token: Option[String] = None,
+    isDeleted: Option[Boolean] = None
+  ): Seq[User] = {
     require(!guid.isEmpty || !email.isEmpty || !token.isEmpty || !nickname.isEmpty, "Must have either a guid, email, token, or nickname")
 
     val sql = Seq(
@@ -176,6 +179,7 @@ object UsersDao {
       email.map { v => "and users.email = trim(lower({email}))" },
       nickname.map { v => "and users.nickname = trim(lower({nickname}))" },
       token.map { v => "and users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)"},
+      isDeleted.map(Filters.isDeleted("users", _)),
       Some("limit 1")
     ).flatten.mkString("\n   ")
 

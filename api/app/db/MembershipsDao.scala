@@ -33,7 +33,7 @@ object MembershipsDao {
       from memberships
       join organizations on organizations.guid = memberships.organization_guid
       join users on users.guid = memberships.user_guid
-     where memberships.deleted_at is null
+     where true
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
@@ -136,6 +136,7 @@ object MembershipsDao {
     organizationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
     role: Option[String] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Membership] = {
@@ -148,6 +149,7 @@ object MembershipsDao {
       organizationKey.map { v => "and memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
       userGuid.map { v => "and memberships.user_guid = {user_guid}::uuid" },
       role.map { v => "and role = {role}" },
+      isDeleted.map(Filters.isDeleted("memberships", _)),
       Some(s"order by lower(users.name), lower(users.email) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
