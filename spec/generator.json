@@ -7,7 +7,7 @@
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.10/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.11/service.json" }
     ],
 
     "models": {
