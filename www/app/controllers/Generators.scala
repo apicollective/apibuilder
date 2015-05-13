@@ -1,6 +1,7 @@
 package controllers
 
 import com.gilt.apidoc.api.v0.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, User}
+import lib.Util
 import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
@@ -86,7 +87,7 @@ object Generators extends Controller {
           val futures: List[Future[Generator]] = valid.details.filter(_.selected).map { detail =>
             request.api.Generators.post(GeneratorCreateForm(
               key = detail.key,
-              uri = valid.uri,
+              uri = Util.formatUri(valid.uri),
               visibility = Visibility(detail.visibility)
             ))
           }
@@ -99,12 +100,7 @@ object Generators extends Controller {
           }
         }.getOrElse {
           // TODO: URI VALIDATION
-          val uri = if (valid.uri.toLowerCase.trim.startsWith("http")) {
-            valid.uri.trim
-          } else {
-            "http://" + valid.uri.trim
-          }
-
+          val uri = Util.formatUri(valid.uri)
           val existingGenF = request.api.Generators.get()
           val newGenF = new com.gilt.apidoc.generator.v0.Client(uri).generators.get()
           (for {
@@ -155,4 +151,5 @@ object Generators extends Controller {
       "enabled" -> optional(boolean)
     )(GeneratorUpdateData.apply)(GeneratorUpdateData.unapply)
   )
+
 }

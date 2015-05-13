@@ -42,4 +42,12 @@ object Util {
 
   def fullUrl(stub: String): String = s"$Host$stub"
 
+  def formatUri(value: String): String = {
+    if (value.toLowerCase.trim.startsWith("http")) {
+      value
+    } else {
+      "http://" + value
+    }
+  }
+
 }
