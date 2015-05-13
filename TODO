@@ -1,3 +1,5 @@
+Add search to apidoc
+
 VersionsDao
   - make isDeleted default to None
   - add isDeleted to all findAll methods
