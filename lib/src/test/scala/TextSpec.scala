@@ -181,6 +181,7 @@ class TextSpec extends FunSpec with Matchers {
         "price" -> "prices",
         "metadata" -> "metadata",
         "family" -> "families",
+        "history" -> "histories",
         "datum" -> "data",
         "person" -> "people",
         "species" -> "species",
