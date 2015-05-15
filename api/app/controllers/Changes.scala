@@ -18,6 +18,7 @@ trait Changes {
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
+/*
     val changes = ChangesDao.findAll(
       request.authorization,
       organizationKey = Some(organizationKey),
@@ -25,7 +26,8 @@ trait Changes {
       limit = limit,
       offset = offset
     )
-    Ok(Json.toJson(Nil))
+ */
+    Ok(Json.toJson("TODO"))
   }
 
 }

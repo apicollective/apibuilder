@@ -6,26 +6,49 @@
     },
 
     "unions": {
-	"task": {
+	"task_data": {
 	    "types": [
-		{ "type": "index_version_task", "description": "Task to update the search index following a change in application version" },
-		{ "type": "diff_version_task", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" }
+		{ "type": "task_data_index_version", "description": "Task to update the search index following a change in application version" },
+		{ "type": "task_data_diff_version", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" }
 	    ]
 	}
     },
 
     "models": {
 
-	"index_version_task": {
+        "reference": {
+            "description": "Represents a reference to another model.",
+            "fields": [
+                { "name": "guid", "type": "uuid" }
+	    ]
+	},
+
+	"task": {
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "data", "type": "task_data" },
+                { "name": "number_attempts", "type": "long", "default": 0, "description": "Records the number of times we have attempted to run this task. Commonly we increment number attempts, process the task, and if succeeds we then delete the task. If it fails, we update last_error. This allows us to retry a task say twice; after which we no longer process the task (can notify an admin of the error)." },
+                { "name": "last_error", "type": "string", "required": false }
+	    ]
+	},
+
+	"task_data_index_version": {
 	    "fields": [
                 { "name": "version_guid", "type": "uuid" }
 	    ]
 	},
 
-	"diff_version_task": {
+	"task_data_diff_version": {
 	    "fields": [
-                { "name": "version_a", "type": "uuid" },
-                { "name": "version_b", "type": "uuid" }
+                { "name": "old_version_guid", "type": "uuid" },
+                { "name": "new_version_guid", "type": "uuid" }
+	    ]
+	},
+
+	"version_change": {
+	    "fields": [
+                { "name": "version", "type": "reference" },
+                { "name": "description", "type": "string" }
 	    ]
 	}
 

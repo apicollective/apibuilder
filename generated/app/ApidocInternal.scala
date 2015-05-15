@@ -5,25 +5,44 @@
  */
 package com.gilt.apidoc.internal.v0.models {
 
-  sealed trait Task
+  sealed trait TaskData
 
-  case class DiffVersionTask(
-    versionA: _root_.java.util.UUID,
-    versionB: _root_.java.util.UUID
-  ) extends Task
+  /**
+   * Represents a reference to another model.
+   */
+  case class Reference(
+    guid: _root_.java.util.UUID
+  )
 
-  case class IndexVersionTask(
+  case class Task(
+    guid: _root_.java.util.UUID,
+    data: com.gilt.apidoc.internal.v0.models.TaskData,
+    numberAttempts: Long = 0,
+    lastError: _root_.scala.Option[String] = None
+  )
+
+  case class TaskDataDiffVersion(
+    oldVersionGuid: _root_.java.util.UUID,
+    newVersionGuid: _root_.java.util.UUID
+  ) extends TaskData
+
+  case class TaskDataIndexVersion(
     versionGuid: _root_.java.util.UUID
-  ) extends Task
+  ) extends TaskData
+
+  case class VersionChange(
+    version: com.gilt.apidoc.internal.v0.models.Reference,
+    description: String
+  )
 
   /**
    * Provides future compatibility in clients - in the future, when a type is added
-   * to the union Task, it will need to be handled in the client code. This
+   * to the union TaskData, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
    */
-  case class TaskUndefinedType(
+  case class TaskDataUndefinedType(
     description: String
-  ) extends Task
+  ) extends TaskData
 
 }
 
@@ -55,43 +74,85 @@ package com.gilt.apidoc.internal.v0.models {
       }
     }
 
-    implicit def jsonReadsApidocinternalDiffVersionTask: play.api.libs.json.Reads[DiffVersionTask] = {
-      (
-        (__ \ "version_a").read[_root_.java.util.UUID] and
-        (__ \ "version_b").read[_root_.java.util.UUID]
-      )(DiffVersionTask.apply _)
+    implicit def jsonReadsApidocinternalReference: play.api.libs.json.Reads[Reference] = {
+      (__ \ "guid").read[_root_.java.util.UUID].map { x => new Reference(guid = x) }
     }
 
-    implicit def jsonWritesApidocinternalDiffVersionTask: play.api.libs.json.Writes[DiffVersionTask] = {
-      (
-        (__ \ "version_a").write[_root_.java.util.UUID] and
-        (__ \ "version_b").write[_root_.java.util.UUID]
-      )(unlift(DiffVersionTask.unapply _))
-    }
-
-    implicit def jsonReadsApidocinternalIndexVersionTask: play.api.libs.json.Reads[IndexVersionTask] = {
-      (__ \ "version_guid").read[_root_.java.util.UUID].map { x => new IndexVersionTask(versionGuid = x) }
-    }
-
-    implicit def jsonWritesApidocinternalIndexVersionTask: play.api.libs.json.Writes[IndexVersionTask] = new play.api.libs.json.Writes[IndexVersionTask] {
-      def writes(x: IndexVersionTask) = play.api.libs.json.Json.obj(
-        "version_guid" -> play.api.libs.json.Json.toJson(x.versionGuid)
+    implicit def jsonWritesApidocinternalReference: play.api.libs.json.Writes[Reference] = new play.api.libs.json.Writes[Reference] {
+      def writes(x: Reference) = play.api.libs.json.Json.obj(
+        "guid" -> play.api.libs.json.Json.toJson(x.guid)
       )
     }
 
     implicit def jsonReadsApidocinternalTask: play.api.libs.json.Reads[Task] = {
       (
-        (__ \ "index_version_task").read(jsonReadsApidocinternalIndexVersionTask).asInstanceOf[play.api.libs.json.Reads[Task]]
-        orElse
-        (__ \ "diff_version_task").read(jsonReadsApidocinternalDiffVersionTask).asInstanceOf[play.api.libs.json.Reads[Task]]
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "data").read[com.gilt.apidoc.internal.v0.models.TaskData] and
+        (__ \ "number_attempts").read[Long] and
+        (__ \ "last_error").readNullable[String]
+      )(Task.apply _)
+    }
+
+    implicit def jsonWritesApidocinternalTask: play.api.libs.json.Writes[Task] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "data").write[com.gilt.apidoc.internal.v0.models.TaskData] and
+        (__ \ "number_attempts").write[Long] and
+        (__ \ "last_error").writeNullable[String]
+      )(unlift(Task.unapply _))
+    }
+
+    implicit def jsonReadsApidocinternalTaskDataDiffVersion: play.api.libs.json.Reads[TaskDataDiffVersion] = {
+      (
+        (__ \ "old_version_guid").read[_root_.java.util.UUID] and
+        (__ \ "new_version_guid").read[_root_.java.util.UUID]
+      )(TaskDataDiffVersion.apply _)
+    }
+
+    implicit def jsonWritesApidocinternalTaskDataDiffVersion: play.api.libs.json.Writes[TaskDataDiffVersion] = {
+      (
+        (__ \ "old_version_guid").write[_root_.java.util.UUID] and
+        (__ \ "new_version_guid").write[_root_.java.util.UUID]
+      )(unlift(TaskDataDiffVersion.unapply _))
+    }
+
+    implicit def jsonReadsApidocinternalTaskDataIndexVersion: play.api.libs.json.Reads[TaskDataIndexVersion] = {
+      (__ \ "version_guid").read[_root_.java.util.UUID].map { x => new TaskDataIndexVersion(versionGuid = x) }
+    }
+
+    implicit def jsonWritesApidocinternalTaskDataIndexVersion: play.api.libs.json.Writes[TaskDataIndexVersion] = new play.api.libs.json.Writes[TaskDataIndexVersion] {
+      def writes(x: TaskDataIndexVersion) = play.api.libs.json.Json.obj(
+        "version_guid" -> play.api.libs.json.Json.toJson(x.versionGuid)
       )
     }
 
-    implicit def jsonWritesApidocinternalTask: play.api.libs.json.Writes[Task] = new play.api.libs.json.Writes[Task] {
-      def writes(obj: Task) = obj match {
-        case x: com.gilt.apidoc.internal.v0.models.IndexVersionTask => play.api.libs.json.Json.obj("index_version_task" -> jsonWritesApidocinternalIndexVersionTask.writes(x))
-        case x: com.gilt.apidoc.internal.v0.models.DiffVersionTask => play.api.libs.json.Json.obj("diff_version_task" -> jsonWritesApidocinternalDiffVersionTask.writes(x))
-        case x: com.gilt.apidoc.internal.v0.models.TaskUndefinedType => sys.error(s"The type[com.gilt.apidoc.internal.v0.models.TaskUndefinedType] should never be serialized")
+    implicit def jsonReadsApidocinternalVersionChange: play.api.libs.json.Reads[VersionChange] = {
+      (
+        (__ \ "version").read[com.gilt.apidoc.internal.v0.models.Reference] and
+        (__ \ "description").read[String]
+      )(VersionChange.apply _)
+    }
+
+    implicit def jsonWritesApidocinternalVersionChange: play.api.libs.json.Writes[VersionChange] = {
+      (
+        (__ \ "version").write[com.gilt.apidoc.internal.v0.models.Reference] and
+        (__ \ "description").write[String]
+      )(unlift(VersionChange.unapply _))
+    }
+
+    implicit def jsonReadsApidocinternalTaskData: play.api.libs.json.Reads[TaskData] = {
+      (
+        (__ \ "task_data_index_version").read(jsonReadsApidocinternalTaskDataIndexVersion).asInstanceOf[play.api.libs.json.Reads[TaskData]]
+        orElse
+        (__ \ "task_data_diff_version").read(jsonReadsApidocinternalTaskDataDiffVersion).asInstanceOf[play.api.libs.json.Reads[TaskData]]
+      )
+    }
+
+    implicit def jsonWritesApidocinternalTaskData: play.api.libs.json.Writes[TaskData] = new play.api.libs.json.Writes[TaskData] {
+      def writes(obj: TaskData) = obj match {
+        case x: com.gilt.apidoc.internal.v0.models.TaskDataIndexVersion => play.api.libs.json.Json.obj("task_data_index_version" -> jsonWritesApidocinternalTaskDataIndexVersion.writes(x))
+        case x: com.gilt.apidoc.internal.v0.models.TaskDataDiffVersion => play.api.libs.json.Json.obj("task_data_diff_version" -> jsonWritesApidocinternalTaskDataDiffVersion.writes(x))
+        case x: com.gilt.apidoc.internal.v0.models.TaskDataUndefinedType => sys.error(s"The type[com.gilt.apidoc.internal.v0.models.TaskDataUndefinedType] should never be serialized")
       }
     }
   }

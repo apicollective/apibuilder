@@ -1,6 +1,8 @@
+drop table if exists tasks;
+
 create table tasks (
   guid                    uuid primary key,
-  task                    json not null,
+  data                    json not null,
   number_attempts         smallint default 0 not null check (number_attempts >= 0),
   last_error              text
 );
@@ -16,7 +18,7 @@ comment on table tasks is '
   actor will occassionally resubmit tasks that failed.
 ';
 
-comment on column tasks.task is '
+comment on column tasks.data is '
   A task is defined at http://www.apidoc.me/gilt/apidoc-internal/latest#model-task
 ';
 
