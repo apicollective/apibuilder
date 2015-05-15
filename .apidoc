@@ -13,6 +13,10 @@ code:
       version: latest
       generators:
         play_2_3_client: generated/app/ApidocGenerator.scala
+    apidoc-internal:
+      version: latest
+      generators:
+        play_2_x_json: generated/app/ApidocInternal.scala
     apidoc-api:
       version: latest
       generators:

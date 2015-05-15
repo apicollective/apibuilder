@@ -6,6 +6,16 @@
       "version": "0.9.11"
     },
 
+    "unions": {
+	"change": {
+	    "description": "Represents a single change in an application",
+	    "types": [
+		{ "type": "breaking_change" },
+		{ "type": "non_breaking_change" }
+	    ]
+	}
+    },
+
     "imports": [
 	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.11/service.json" }
     ],
@@ -350,6 +360,20 @@
             "fields": [
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
                 { "name": "message", "type": "string", "description": "Description of the error" }
+            ]
+        },
+
+        "breaking_change": {
+            "description": "Represents a single breaking change of an application version. A breaking change indicates that it is possible for an existing client to now experience an error or invalid data due to the change.",
+            "fields": [
+                { "name": "description", "type": "string", "example": "model removed: user" }
+            ]
+        },
+
+        "non_breaking_change": {
+            "description": "Represents a single NON breaking change of an application version.",
+            "fields": [
+                { "name": "description", "type": "string", "example": "name changed from foo to bar" }
             ]
         }
 
@@ -994,6 +1018,22 @@
                 }
 
 	    ]
+	},
+
+	"change": {
+            "path": "/:orgKey/changes",
+
+	    "operations": [
+		{
+		    "method": "GET",
+		    "parameters": [
+                        { "name": "application_key", "type": "string", "description": "Filter changes to those made for the application with this key.", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ]
+		}
+	    ]
+
 	}
 
     }

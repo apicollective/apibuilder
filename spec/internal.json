@@ -1,0 +1,34 @@
+{
+    "name": "apidoc internal",
+    "description": "Internal models used in the implementation of apidoc",
+    "apidoc": {
+      "version": "0.9.11"
+    },
+
+    "unions": {
+	"task": {
+	    "types": [
+		{ "type": "index_version_task", "description": "Task to update the search index following a change in application version" },
+		{ "type": "diff_version_task", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" }
+	    ]
+	}
+    },
+
+    "models": {
+
+	"index_version_task": {
+	    "fields": [
+                { "name": "version_guid", "type": "uuid" }
+	    ]
+	},
+
+	"diff_version_task": {
+	    "fields": [
+                { "name": "version_a", "type": "uuid" },
+                { "name": "version_b", "type": "uuid" }
+	    ]
+	}
+
+    }
+
+}

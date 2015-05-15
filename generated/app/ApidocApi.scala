@@ -6,6 +6,11 @@
 package com.gilt.apidoc.api.v0.models {
 
   /**
+   * Represents a single change in an application
+   */
+  sealed trait Change
+
+  /**
    * An application has a name and multiple versions of its API.
    */
   case class Application(
@@ -30,6 +35,15 @@ package com.gilt.apidoc.api.v0.models {
     updatedAt: _root_.org.joda.time.DateTime,
     updatedBy: com.gilt.apidoc.api.v0.models.ReferenceGuid
   )
+
+  /**
+   * Represents a single breaking change of an application version. A breaking change
+   * indicates that it is possible for an existing client to now experience an error
+   * or invalid data due to the change.
+   */
+  case class BreakingChange(
+    description: String
+  ) extends Change
 
   /**
    * Separate resource used only for the few actions that require the full token.
@@ -136,6 +150,13 @@ package com.gilt.apidoc.api.v0.models {
     organization: com.gilt.apidoc.api.v0.models.Organization,
     role: String
   )
+
+  /**
+   * Represents a single NON breaking change of an application version.
+   */
+  case class NonBreakingChange(
+    description: String
+  ) extends Change
 
   /**
    * An organization is used to group a set of applications together.
@@ -302,6 +323,15 @@ package com.gilt.apidoc.api.v0.models {
     organizationKey: String,
     applicationKey: String
   )
+
+  /**
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union Change, it will need to be handled in the client code. This
+   * implementation will deserialize these future types as an instance of this class.
+   */
+  case class ChangeUndefinedType(
+    description: String
+  ) extends Change
 
   sealed trait OriginalType
 
@@ -554,6 +584,16 @@ package com.gilt.apidoc.api.v0.models {
       )(unlift(Audit.unapply _))
     }
 
+    implicit def jsonReadsApidocapiBreakingChange: play.api.libs.json.Reads[BreakingChange] = {
+      (__ \ "description").read[String].map { x => new BreakingChange(description = x) }
+    }
+
+    implicit def jsonWritesApidocapiBreakingChange: play.api.libs.json.Writes[BreakingChange] = new play.api.libs.json.Writes[BreakingChange] {
+      def writes(x: BreakingChange) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
+    }
+
     implicit def jsonReadsApidocapiCleartextToken: play.api.libs.json.Reads[CleartextToken] = {
       (__ \ "token").read[String].map { x => new CleartextToken(token = x) }
     }
@@ -720,6 +760,16 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Organization] and
         (__ \ "role").write[String]
       )(unlift(MembershipRequest.unapply _))
+    }
+
+    implicit def jsonReadsApidocapiNonBreakingChange: play.api.libs.json.Reads[NonBreakingChange] = {
+      (__ \ "description").read[String].map { x => new NonBreakingChange(description = x) }
+    }
+
+    implicit def jsonWritesApidocapiNonBreakingChange: play.api.libs.json.Writes[NonBreakingChange] = new play.api.libs.json.Writes[NonBreakingChange] {
+      def writes(x: NonBreakingChange) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
     }
 
     implicit def jsonReadsApidocapiOrganization: play.api.libs.json.Reads[Organization] = {
@@ -1053,6 +1103,22 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "application_key").write[String]
       )(unlift(WatchForm.unapply _))
     }
+
+    implicit def jsonReadsApidocapiChange: play.api.libs.json.Reads[Change] = {
+      (
+        (__ \ "breaking_change").read(jsonReadsApidocapiBreakingChange).asInstanceOf[play.api.libs.json.Reads[Change]]
+        orElse
+        (__ \ "non_breaking_change").read(jsonReadsApidocapiNonBreakingChange).asInstanceOf[play.api.libs.json.Reads[Change]]
+      )
+    }
+
+    implicit def jsonWritesApidocapiChange: play.api.libs.json.Writes[Change] = new play.api.libs.json.Writes[Change] {
+      def writes(obj: Change) = obj match {
+        case x: com.gilt.apidoc.api.v0.models.BreakingChange => play.api.libs.json.Json.obj("breaking_change" -> jsonWritesApidocapiBreakingChange.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.NonBreakingChange => play.api.libs.json.Json.obj("non_breaking_change" -> jsonWritesApidocapiNonBreakingChange.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.ChangeUndefinedType => sys.error(s"The type[com.gilt.apidoc.api.v0.models.ChangeUndefinedType] should never be serialized")
+      }
+    }
   }
 }
 
@@ -1145,6 +1211,8 @@ package com.gilt.apidoc.api.v0 {
 
     def applications: Applications = Applications
 
+    def changes: Changes = Changes
+
     def code: Code = Code
 
     def domains: Domains = Domains
@@ -1232,6 +1300,26 @@ package com.gilt.apidoc.api.v0 {
         applicationKey: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}").map {
+          case r if r.status == 204 => Unit
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+        }
+      }
+    }
+
+    object Changes extends Changes {
+      override def getByOrgKey(
+        orgKey: String,
+        applicationKey: _root_.scala.Option[String] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        val queryParameters = Seq(
+          applicationKey.map("application_key" -> _),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/changes", queryParameters = queryParameters).map {
           case r if r.status == 204 => Unit
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2038,6 +2126,15 @@ package com.gilt.apidoc.api.v0 {
     def deleteByOrgKeyAndApplicationKey(
       orgKey: String,
       applicationKey: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait Changes {
+    def getByOrgKey(
+      orgKey: String,
+      applicationKey: _root_.scala.Option[String] = None,
+      limit: Long = 25,
+      offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
