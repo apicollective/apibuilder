@@ -96,7 +96,7 @@ object TasksDao {
       guid.map { v => "and tasks.guid = {guid}::uuid" },
       nOrFewerAttempts.map { v => "and tasks.number_attempts <= {n_or_fewer_attempts}" },
       nOrMoreAttempts.map { v => "and tasks.number_attempts >= {n_or_more_attempts}" },
-      nOrMoreMinutesOld.map { v => s"and tasks.updated_at < now() - interval '$v minutes'" },
+      nOrMoreMinutesOld.map { v => s"and tasks.updated_at <= timezone('utc', now()) - interval '$v minutes'" },
       isDeleted.map { Filters.isDeleted("tasks", _) },
       Some(s"order by tasks.number_attempts, tasks.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
