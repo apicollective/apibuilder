@@ -58,8 +58,8 @@ object OrganizationLogsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       authorization.organizationFilter().map(v => "and " + v),
-      organization.map(v => "and organization_guid = {organization_guid}::uuid"),
-      Some(s"order by created_at desc limit ${limit} offset ${offset}")
+      organization.map(v => "and organization_logs.organization_guid = {organization_guid}::uuid"),
+      Some(s"order by organization_logs.created_at desc limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

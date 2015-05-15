@@ -62,7 +62,7 @@ object WatchesDao {
       join users on users.guid = watches.user_guid and users.deleted_at is null
       join applications on applications.guid = watches.application_guid and applications.deleted_at is null
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
-     where watches.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -132,6 +132,7 @@ object WatchesDao {
     application: Option[Application] = None,
     applicationKey: Option[String] = None,
     userGuid: Option[UUID] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Watch] = {
@@ -143,6 +144,7 @@ object WatchesDao {
       organizationKey.map { v => "and organizations.key = lower(trim({organization_key}))" },
       application.map { v => "and watches.application_guid = {application_guid}::uuid" },
       applicationKey.map { v => "and applications.key = lower(trim({application_key}))" },
+      isDeleted.map(Filters.isDeleted("watches", _)),
       Some(s"order by applications.key, watches.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

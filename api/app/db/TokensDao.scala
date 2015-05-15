@@ -22,7 +22,7 @@ object TokensDao {
            users.name as user_name
       from tokens
       join users on users.guid = tokens.user_guid and users.deleted_at is null
-     where tokens.deleted_at is null
+     where true
   """
 
   private val FindCleartextQuery = s"""
@@ -104,6 +104,7 @@ object TokensDao {
     guid: Option[UUID] = None,
     userGuid: Option[UUID] = None,
     token: Option[String] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Token] = {
@@ -112,7 +113,8 @@ object TokensDao {
       authorization.tokenFilter(),
       guid.map { v => "tokens.guid = {guid}::uuid" },
       userGuid.map { v => "tokens.user_guid = {user_guid}::uuid" },
-      token.map { v => "tokens.token = {token}" }
+      token.map { v => "tokens.token = {token}" },
+      isDeleted.map(Filters.isDeleted("tokens", _))
     ).flatten.mkString("\n   and ") + s" order by tokens.created_at limit ${limit} offset ${offset}"
 
     val bind = Seq[Option[NamedParameter]](

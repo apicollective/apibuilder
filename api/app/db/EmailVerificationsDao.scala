@@ -29,7 +29,7 @@ object EmailVerificationsDao {
            email_verifications.token,
            email_verifications.expires_at
       from email_verifications
-     where email_verifications.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -108,6 +108,7 @@ object EmailVerificationsDao {
     email: Option[String] = None,
     token: Option[String] = None,
     isExpired: Option[Boolean] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[EmailVerification] = {
@@ -124,6 +125,7 @@ object EmailVerificationsDao {
           case false => { "and email_verifications.expires_at >= now()" }
         }
       },
+      isDeleted.map(Filters.isDeleted("email_verifications", _)),
       Some(s"order by email_verifications.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

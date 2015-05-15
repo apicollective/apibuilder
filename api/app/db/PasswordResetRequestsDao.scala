@@ -27,7 +27,7 @@ object PasswordResetRequestsDao {
            password_resets.token,
            password_resets.expires_at
       from password_resets
-     where password_resets.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -93,6 +93,7 @@ object PasswordResetRequestsDao {
     userGuid: Option[UUID] = None,
     token: Option[String] = None,
     isExpired: Option[Boolean] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[PasswordReset] = {
@@ -102,12 +103,8 @@ object PasswordResetRequestsDao {
       guid.map { v => "and password_resets.guid = {guid}::uuid" },
       userGuid.map { v => "and password_resets.user_guid = {user_guid}::uuid" },
       token.map { v => "and password_resets.token = {token}" },
-      isExpired.map { v =>
-        v match {
-          case true => { "and password_resets.expires_at < now()" }
-          case false => { "and password_resets.expires_at >= now()" }
-        }
-      },
+      isExpired.map(Filters.isExpired("password_resets", _)),
+      isDeleted.map(Filters.isDeleted("password_resets", _)),
       Some(s"order by password_resets.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 

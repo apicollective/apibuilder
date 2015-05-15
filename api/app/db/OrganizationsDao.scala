@@ -26,7 +26,7 @@ object OrganizationsDao {
              where deleted_at is null
                and organization_guid = organizations.guid) as domains
       from organizations
-     where organizations.deleted_at is null
+     where true
   """
 
   private val InsertQuery = """
@@ -231,6 +231,7 @@ object OrganizationsDao {
     key: Option[String] = None,
     name: Option[String] = None,
     namespace: Option[String] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Organization] = {
@@ -251,6 +252,7 @@ object OrganizationsDao {
       key.map { v => "and organizations.key = lower(trim({key}))" },
       name.map { v => "and lower(trim(organizations.name)) = lower(trim({name}))" },
       namespace.map { v => "and organizations.namespace = lower(trim({namespace}))" },
+      isDeleted.map(Filters.isDeleted("organizations", _)),
       Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
