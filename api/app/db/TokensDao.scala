@@ -111,11 +111,11 @@ object TokensDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       authorization.tokenFilter(),
-      guid.map { v => "tokens.guid = {guid}::uuid" },
-      userGuid.map { v => "tokens.user_guid = {user_guid}::uuid" },
-      token.map { v => "tokens.token = {token}" },
+      guid.map { v => "and tokens.guid = {guid}::uuid" },
+      userGuid.map { v => "and tokens.user_guid = {user_guid}::uuid" },
+      token.map { v => "and tokens.token = {token}" },
       isDeleted.map(Filters.isDeleted("tokens", _))
-    ).flatten.mkString("\n   and ") + s" order by tokens.created_at limit ${limit} offset ${offset}"
+    ).flatten.mkString("\n   ") + s" order by tokens.created_at limit ${limit} offset ${offset}"
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
