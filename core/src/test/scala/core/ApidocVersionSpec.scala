@@ -11,15 +11,10 @@ class ApidocVersionSpec extends FunSpec with Matchers {
       { "name": "Api Doc" }
     """
 
-    it("apidoc version is migrated automatically to 0.9.4") {
-      val validator = TestHelper.serviceValidatorFromApiJson(json, migration = VersionMigration(internal = true))
-      validator.errors.mkString("") should be("")
-      validator.service.apidoc.version should be("0.9.4")
-    }
-
-    it("validates that apidoc node is required") {
+    it("defaults to latest version") {
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be(s"Missing apidoc/version. Latest version of apidoc specification is ${com.gilt.apidoc.spec.v0.Constants.Version}")
+      validator.errors.mkString("") should be("")
+      validator.service.apidoc.version should be(com.gilt.apidoc.spec.v0.Constants.Version)
     }
 
   }
@@ -45,12 +40,6 @@ class ApidocVersionSpec extends FunSpec with Matchers {
       val json = baseJson.format("!")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be(s"Invalid apidoc version[!]. Latest version of apidoc specification is ${com.gilt.apidoc.spec.v0.Constants.Version}")
-    }
-
-    it("rejects empty version") {
-      val json = baseJson.format("")
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be(s"Missing apidoc/version. Latest version of apidoc specification is ${com.gilt.apidoc.spec.v0.Constants.Version}")
     }
 
   }

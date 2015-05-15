@@ -6,6 +6,4 @@ case class VersionMigration(
 
   def makeFieldsWithDefaultsRequired(): Boolean = internal
 
-  def injectApidocVersion(): Boolean = internal
-
 }

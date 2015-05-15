@@ -383,7 +383,7 @@ package com.gilt.apidoc.generator.v0 {
       lazy val errors = _root_.com.gilt.apidoc.generator.v0.Client.parseJson("Seq[com.gilt.apidoc.generator.v0.models.Error]", response, _.validate[Seq[com.gilt.apidoc.generator.v0.models.Error]])
     }
 
-    case class UnitResponse(status: Int) extends Exception
+    case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
 
     case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends Exception(s"HTTP $responseCode: $message")
 

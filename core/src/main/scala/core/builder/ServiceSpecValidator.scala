@@ -61,7 +61,7 @@ case class ServiceSpecValidator(
       case None => {
         Seq(s"Invalid apidoc version[${service.apidoc.version}]. Latest version of apidoc specification is $current")
       }
-      case Some(_) => {
+      case Some(major) => {
         Nil
       }
     }
