@@ -12,18 +12,23 @@ class TasksDaoSpec extends FunSpec with Matchers {
 
   lazy val user = Util.createRandomUser()
 
-  it("findByGuid") {
-    val oldGuid = UUID.randomUUID
-    val newGuid = UUID.randomUUID
-
+  private def createTaskDataDiffVersion(
+    oldGuid: UUID = UUID.randomUUID,
+    newGuid: UUID = UUID.randomUUID
+  ): Task = {
     val guid = DB.withConnection { implicit c =>
       TasksDao.insert(c, user, TaskDataDiffVersion(oldGuid, newGuid))
     }
 
-    val task = TasksDao.findByGuid(guid).getOrElse {
+    TasksDao.findByGuid(guid).getOrElse {
       sys.error("failed to create task")
     }
-    task should be(Task(guid, TaskDataDiffVersion(oldGuid, newGuid), task.numberAttempts, None))
+  }
+
+  it("findByGuid") {
+    val oldGuid = UUID.randomUUID
+    val newGuid = UUID.randomUUID
+    createTaskDataDiffVersion(oldGuid, newGuid).data should be(TaskDataDiffVersion(oldGuid, newGuid))
   }
 
 }
