@@ -13,7 +13,7 @@ object TasksDao {
 
   private val BaseQuery = """
     select tasks.guid,
-           tasks.data,
+           tasks.data::varchar,
            tasks.number_attempts,
            tasks.last_error
       from tasks
@@ -37,9 +37,9 @@ object TasksDao {
 
   private val InsertQuery = """
     insert into tasks
-    (guid, data, created_by_guid)
+    (guid, data, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {data}::json, {created_by_guid}::uuid)
+    ({guid}::uuid, {data}::json, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
   private[db] def insert(implicit c: java.sql.Connection, createdBy: User, data: TaskData): UUID = {
@@ -48,7 +48,8 @@ object TasksDao {
     SQL(InsertQuery).on(
       'guid -> guid,
       'data -> Json.toJson(data).toString,
-      'created_by_guid -> createdBy.guid
+      'created_by_guid -> createdBy.guid,
+      'updated_by_guid -> createdBy.guid
     ).execute()
 
     guid
@@ -86,6 +87,7 @@ object TasksDao {
     nOrFewerAttempts: Option[Long] = None,
     nOrMoreAttempts: Option[Long] = None,
     nOrMoreMinutesOld: Option[Long] = None,
+    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Task] = {
@@ -95,6 +97,7 @@ object TasksDao {
       nOrFewerAttempts.map { v => "and tasks.number_attempts <= {n_or_fewer_attempts}" },
       nOrMoreAttempts.map { v => "and tasks.number_attempts >= {n_or_more_attempts}" },
       nOrMoreMinutesOld.map { v => s"and tasks.updated_at < now() - interval '$v minutes'" },
+      isDeleted.map { Filters.isDeleted("tasks", _) },
       Some(s"order by tasks.number_attempts, tasks.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
