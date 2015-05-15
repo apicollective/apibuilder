@@ -69,7 +69,6 @@ case class ApiJsonServiceValidator(
         validateStructure match {
           case Nil => {
             validateKey ++
-            validateApidoc ++
             validateImports ++
             internalService.get.models.flatMap(_.warnings) ++
             internalService.get.enums.flatMap(_.warnings) ++
@@ -114,20 +113,6 @@ case class ApiJsonServiceValidator(
       optionalArraysOfObjects = Seq("imports", "headers"),
       optionalObjects = Seq("apidoc", "enums", "models", "unions", "resources")
     )
-  }
-
-  private def validateApidoc(): Seq[String] = {
-    migration.injectApidocVersion match {
-      case false => {
-        internalService.get.apidoc.flatMap(_.version) match {
-          case Some(_) => Nil
-          case None => Seq(s"Missing apidoc/version. Latest version of apidoc specification is ${com.gilt.apidoc.spec.v0.Constants.Version}")
-        }
-      }
-      case true => {
-        Nil
-      }
-    }
   }
 
   private def validateImports(): Seq[String] = {

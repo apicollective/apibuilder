@@ -53,7 +53,7 @@
 
 	"service": {
 	    "fields": [
-		{ "name": "apidoc", "type": "apidoc" },
+		{ "name": "apidoc", "type": "apidoc", "description": "Documents that this is an apidoc document, noting the specific version used. Internally the version is then used for backwards compatibility when applicable as new features are added to apidoc." },
 		{ "name": "name", "type": "string" },
 		{ "name": "organization", "type": "organization" },
 		{ "name": "application", "type": "application" },
