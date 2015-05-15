@@ -22,7 +22,7 @@
   @Html(breakingChanges.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
 
-<p><b>Other non breaking changes</b></p>
+<p><b>Other changes</b></p>
 @if(nonBreakingChanges.isEmpty) {
   <em>None</em>
 } else {
