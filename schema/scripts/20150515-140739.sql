@@ -9,6 +9,8 @@ create table tasks (
 
 select schema_evolution_manager.create_basic_audit_data('public', 'tasks');
 
+create index on tasks(guid) where deleted_at is null;
+
 comment on table tasks is '
   Stores a list of tasks that need to be completed. Common tasks are
   things like: Update the search index, create a diff of the service
