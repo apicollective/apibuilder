@@ -9,6 +9,26 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
+/**
+  * A task represents a bit of work that should be completed asynchronously. Example tasks include:
+  *
+  *   - generating a diff between two versions of a service
+  *   - updates a search index for a particular service
+  *
+  * Tasks provide for the following semantics:
+  *   - transactionally record to execute a task
+  *   - at least once execution
+  *   - near real time execution
+  *   - mostly sequential execution of tasks (but not guaranteed)
+  *
+  * The implementation works by:
+  *   - caller inserts a task transactionally
+  *   - to trigger real time execution, send a TaskCreated message to
+  *     the Main Actor - send this AFTER the transaction commits or the
+  *     actor may not see the task
+  *   - periodically, the task system picks up tasks that have not
+  *     been processed and executes them
+  */
 object TasksDao {
 
   private val BaseQuery = """
