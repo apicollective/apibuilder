@@ -1,5 +1,6 @@
 package lib
 
+import com.gilt.apidoc.internal.v0.models.{Difference, DifferenceBreaking, DifferenceNonBreaking}
 import com.gilt.apidoc.spec.v0.models._
 import org.scalatest.{FunSpec, ShouldMatchers}
 
@@ -16,7 +17,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
   it("apidoc version") {
     ServiceDiff(service, service.copy(apidoc = Apidoc(version = "0.0.1"))).differences should be(
       Seq(
-        Difference.NonBreaking(s"apidoc/version changed from ${service.apidoc.version} to 0.0.1")
+        DifferenceNonBreaking(s"apidoc/version changed from ${service.apidoc.version} to 0.0.1")
       )
     )
   }
@@ -24,7 +25,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
   it("name") {
     ServiceDiff(service, service.copy(name = "test")).differences should be(
       Seq(
-        Difference.NonBreaking(s"name changed from ${service.name} to test")
+        DifferenceNonBreaking(s"name changed from ${service.name} to test")
       )
     )
   }
@@ -32,7 +33,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
   it("organization key") {
     ServiceDiff(service, service.copy(organization = Organization(key = "foo"))).differences should be(
       Seq(
-        Difference.NonBreaking(s"organization/key changed from ${service.organization.key} to foo")
+        DifferenceNonBreaking(s"organization/key changed from ${service.organization.key} to foo")
       )
     )
   }
@@ -40,7 +41,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
   it("application key") {
     ServiceDiff(service, service.copy(application = Application(key = "foo"))).differences should be(
       Seq(
-        Difference.NonBreaking(s"application/key changed from ${service.application.key} to foo")
+        DifferenceNonBreaking(s"application/key changed from ${service.application.key} to foo")
       )
     )
   }
@@ -48,7 +49,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
   it("namespace") {
     ServiceDiff(service, service.copy(namespace = "test")).differences should be(
       Seq(
-        Difference.Breaking(s"namespace changed from ${service.namespace} to test")
+        DifferenceBreaking(s"namespace changed from ${service.namespace} to test")
       )
     )
   }
@@ -56,7 +57,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
   it("version") {
     ServiceDiff(service, service.copy(version = "0.0.1")).differences should be(
       Seq(
-        Difference.NonBreaking(s"version changed from ${service.version} to 0.0.1")
+        DifferenceNonBreaking(s"version changed from ${service.version} to 0.0.1")
       )
     )
   }
@@ -68,13 +69,13 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
     ServiceDiff(base, base.copy(baseUrl = Some("http://foo.com"))).differences should be(
       Seq(
-        Difference.NonBreaking(s"base_url added: http://foo.com")
+        DifferenceNonBreaking(s"base_url added: http://foo.com")
       )
     )
 
     ServiceDiff(base.copy(baseUrl = Some("http://foo.com")), base).differences should be(
       Seq(
-        Difference.NonBreaking(s"base_url removed: http://foo.com")
+        DifferenceNonBreaking(s"base_url removed: http://foo.com")
       )
     )
 
@@ -83,7 +84,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       base.copy(baseUrl = Some("http://foobar.com"))
     ).differences should be(
       Seq(
-        Difference.NonBreaking(s"base_url changed from http://foo.com to http://foobar.com")
+        DifferenceNonBreaking(s"base_url changed from http://foo.com to http://foobar.com")
       )
     )
   }
@@ -95,13 +96,13 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
     ServiceDiff(base, base.copy(description = Some("foo"))).differences should be(
       Seq(
-        Difference.NonBreaking(s"description added: foo")
+        DifferenceNonBreaking(s"description added: foo")
       )
     )
 
     ServiceDiff(base.copy(description = Some("foo")), base).differences should be(
       Seq(
-        Difference.NonBreaking(s"description removed: foo")
+        DifferenceNonBreaking(s"description removed: foo")
       )
     )
 
@@ -110,7 +111,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       base.copy(description = Some("foobar"))
     ).differences should be(
       Seq(
-        Difference.NonBreaking(s"description changed from foo to foobar")
+        DifferenceNonBreaking(s"description changed from foo to foobar")
       )
     )
   }
@@ -135,7 +136,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("remove header") {
       ServiceDiff(serviceWithHeader, base).differences should be(
         Seq(
-          Difference.NonBreaking("header removed: x-test")
+          DifferenceNonBreaking("header removed: x-test")
         )
       )
     }
@@ -143,7 +144,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("add optional header") {
       ServiceDiff(base, serviceWithHeader).differences should be(
         Seq(
-          Difference.NonBreaking("optional header added: x-test")
+          DifferenceNonBreaking("optional header added: x-test")
         )
       )
     }
@@ -152,7 +153,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       val serviceWithRequiredHeader = base.copy(headers = Seq(header.copy(required = true)))
       ServiceDiff(base, serviceWithRequiredHeader).differences should be(
         Seq(
-          Difference.Breaking("required header added: x-test")
+          DifferenceBreaking("required header added: x-test")
         )
       )
     }
@@ -161,7 +162,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       val serviceWithHeader2 = base.copy(headers = Seq(header.copy(`type` = "long")))
       ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
         Seq(
-          Difference.Breaking("header x-test type changed from string to long")
+          DifferenceBreaking("header x-test type changed from string to long")
         )
       )
     }
@@ -172,7 +173,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("foo"))))
         ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test description added: foo")
+            DifferenceNonBreaking("header x-test description added: foo")
           )
         )
       }
@@ -181,7 +182,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("foo"))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test description removed: foo")
+            DifferenceNonBreaking("header x-test description removed: foo")
           )
         )
       }
@@ -191,7 +192,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(description = Some("bar"))))
         ServiceDiff(serviceWithHeader1, serviceWithHeader2).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test description changed from foo to bar")
+            DifferenceNonBreaking("header x-test description changed from foo to bar")
           )
         )
       }
@@ -203,7 +204,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation()))))
         ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test deprecated")
+            DifferenceNonBreaking("header x-test deprecated")
           )
         )
       }
@@ -212,7 +213,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation(description = Some("test"))))))
         ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test deprecated: test")
+            DifferenceNonBreaking("header x-test deprecated: test")
           )
         )
       }
@@ -221,7 +222,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(deprecation = Some(Deprecation()))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test removed: deprecation")
+            DifferenceNonBreaking("header x-test removed: deprecation")
           )
         )
       }
@@ -233,7 +234,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(default = Some("test"))))
         ServiceDiff(serviceWithHeader, serviceWithHeader2).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test default added: test")
+            DifferenceNonBreaking("header x-test default added: test")
           )
         )
       }
@@ -242,7 +243,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader2 = base.copy(headers = Seq(header.copy(default = Some("test"))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader).differences should be(
           Seq(
-            Difference.Breaking("header x-test default removed: test")
+            DifferenceBreaking("header x-test default removed: test")
           )
         )
       }
@@ -252,7 +253,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         val serviceWithHeader3 = base.copy(headers = Seq(header.copy(default = Some("bar"))))
         ServiceDiff(serviceWithHeader2, serviceWithHeader3).differences should be(
           Seq(
-            Difference.NonBreaking("header x-test default changed from foo to bar")
+            DifferenceNonBreaking("header x-test default changed from foo to bar")
           )
         )
       }
@@ -283,7 +284,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("remove import") {
       ServiceDiff(serviceWithImport, base).differences should be(
         Seq(
-          Difference.NonBreaking("import removed: http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json")
+          DifferenceNonBreaking("import removed: http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json")
         )
       )
     }
@@ -291,7 +292,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("add import") {
       ServiceDiff(base, serviceWithImport).differences should be(
         Seq(
-          Difference.NonBreaking("import added: http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json")
+          DifferenceNonBreaking("import added: http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json")
         )
       )
     }
@@ -312,43 +313,43 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(namespace = imp2.namespace)))).differences should be(
         Seq(
-          Difference.NonBreaking(s"$prefix namespace changed from com.gilt.apidoc.spec.v0 to com.gilt.apidoc.spec.v1")
+          DifferenceNonBreaking(s"$prefix namespace changed from com.gilt.apidoc.spec.v0 to com.gilt.apidoc.spec.v1")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(organization = imp2.organization)))).differences should be(
         Seq(
-          Difference.NonBreaking(s"$prefix organization/key changed from gilt to gilt2")
+          DifferenceNonBreaking(s"$prefix organization/key changed from gilt to gilt2")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(application = imp2.application)))).differences should be(
         Seq(
-          Difference.NonBreaking(s"$prefix application/key changed from apidoc-spec to apidoc-spec2")
+          DifferenceNonBreaking(s"$prefix application/key changed from apidoc-spec to apidoc-spec2")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(version = imp2.version)))).differences should be(
         Seq(
-          Difference.NonBreaking(s"$prefix version changed from 0.9.6 to 1.0.0")
+          DifferenceNonBreaking(s"$prefix version changed from 0.9.6 to 1.0.0")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(enums = imp2.enums)))).differences should be(
         Seq(
-          Difference.NonBreaking(s"$prefix enums changed from [method, parameter_location, response_code_option] to [foo]")
+          DifferenceNonBreaking(s"$prefix enums changed from [method, parameter_location, response_code_option] to [foo]")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(unions = imp2.unions)))).differences should be(
         Seq(
-          Difference.NonBreaking(s"$prefix unions changed from [response_code] to [bar]")
+          DifferenceNonBreaking(s"$prefix unions changed from [response_code] to [bar]")
         )
       )
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(models = imp2.models)))).differences should be(
         Seq(
-          Difference.NonBreaking(s"$prefix models changed from [apidoc, application] to [baz]")
+          DifferenceNonBreaking(s"$prefix models changed from [apidoc, application] to [baz]")
         )
       )
 
@@ -382,7 +383,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("add enum") {
       ServiceDiff(base, serviceWithEnum).differences should be(
         Seq(
-          Difference.NonBreaking("enum added: age_group")
+          DifferenceNonBreaking("enum added: age_group")
         )
       )
     }
@@ -390,7 +391,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("remove enum") {
       ServiceDiff(serviceWithEnum, base).differences should be(
         Seq(
-          Difference.Breaking("enum removed: age_group")
+          DifferenceBreaking("enum removed: age_group")
         )
       )
     }
@@ -398,32 +399,32 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("change enum") {
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(plural = "groups")))).differences should be(
         Seq(
-          Difference.NonBreaking("enum age_group plural changed from age_groups to groups")
+          DifferenceNonBreaking("enum age_group plural changed from age_groups to groups")
         )
       )
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(description = Some("test"))))).differences should be(
         Seq(
-          Difference.NonBreaking("enum age_group description added: test")
+          DifferenceNonBreaking("enum age_group description added: test")
         )
       )
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(deprecation = Some(Deprecation()))))).differences should be(
         Seq(
-          Difference.NonBreaking("enum age_group deprecated")
+          DifferenceNonBreaking("enum age_group deprecated")
         )
       )
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Nil)))).differences should be(
         Seq(
-          Difference.Breaking("enum age_group value removed: 18-25")
+          DifferenceBreaking("enum age_group value removed: 18-25")
         )
       )
 
       val value2 = value.copy(name = "26-35")
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value, value2))))).differences should be(
         Seq(
-          Difference.NonBreaking("enum age_group value added: 26-35")
+          DifferenceNonBreaking("enum age_group value added: 26-35")
         )
       )
     }
@@ -431,13 +432,13 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("change enumValues") {
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value.copy(description = Some("test"))))))).differences should be(
         Seq(
-          Difference.NonBreaking("enum age_group value 18-25 description added: test")
+          DifferenceNonBreaking("enum age_group value 18-25 description added: test")
         )
       )
 
       ServiceDiff(serviceWithEnum, base.copy(enums = Seq(enum.copy(values = Seq(value.copy(deprecation = Some(Deprecation()))))))).differences should be(
         Seq(
-          Difference.NonBreaking("enum age_group value 18-25 deprecated")
+          DifferenceNonBreaking("enum age_group value 18-25 deprecated")
         )
       )
     }
@@ -470,7 +471,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("add union") {
       ServiceDiff(base, serviceWithUnion).differences should be(
         Seq(
-          Difference.NonBreaking("union added: user")
+          DifferenceNonBreaking("union added: user")
         )
       )
     }
@@ -478,7 +479,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("remove union") {
       ServiceDiff(serviceWithUnion, base).differences should be(
         Seq(
-          Difference.Breaking("union removed: user")
+          DifferenceBreaking("union removed: user")
         )
       )
     }
@@ -486,32 +487,32 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("change union") {
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(plural = "all_users")))).differences should be(
         Seq(
-          Difference.NonBreaking("union user plural changed from users to all_users")
+          DifferenceNonBreaking("union user plural changed from users to all_users")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(description = Some("test"))))).differences should be(
         Seq(
-          Difference.NonBreaking("union user description added: test")
+          DifferenceNonBreaking("union user description added: test")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(deprecation = Some(Deprecation()))))).differences should be(
         Seq(
-          Difference.NonBreaking("union user deprecated")
+          DifferenceNonBreaking("union user deprecated")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Nil)))).differences should be(
         Seq(
-          Difference.Breaking("union user type removed: registered")
+          DifferenceBreaking("union user type removed: registered")
         )
       )
 
       val unionType2 = unionType.copy(`type` = "guest")
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType, unionType2))))).differences should be(
         Seq(
-          Difference.NonBreaking("union user type added: guest")
+          DifferenceNonBreaking("union user type added: guest")
         )
       )
     }
@@ -519,13 +520,13 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("change unionTypes") {
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType.copy(description = Some("test"))))))).differences should be(
         Seq(
-          Difference.NonBreaking("union user type registered description added: test")
+          DifferenceNonBreaking("union user type registered description added: test")
         )
       )
 
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType.copy(deprecation = Some(Deprecation()))))))).differences should be(
         Seq(
-          Difference.NonBreaking("union user type registered deprecated")
+          DifferenceNonBreaking("union user type registered deprecated")
         )
       )
     }
@@ -564,7 +565,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("add model") {
       ServiceDiff(base, serviceWithModel).differences should be(
         Seq(
-          Difference.NonBreaking("model added: user")
+          DifferenceNonBreaking("model added: user")
         )
       )
     }
@@ -572,7 +573,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("remove model") {
       ServiceDiff(serviceWithModel, base).differences should be(
         Seq(
-          Difference.Breaking("model removed: user")
+          DifferenceBreaking("model removed: user")
         )
       )
     }
@@ -580,53 +581,53 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("change model") {
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(plural = "all_users")))).differences should be(
         Seq(
-          Difference.NonBreaking("model user plural changed from users to all_users")
+          DifferenceNonBreaking("model user plural changed from users to all_users")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(description = Some("test"))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user description added: test")
+          DifferenceNonBreaking("model user description added: test")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(deprecation = Some(Deprecation()))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user deprecated")
+          DifferenceNonBreaking("model user deprecated")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Nil)))).differences should be(
         Seq(
-          Difference.Breaking("model user field removed: id")
+          DifferenceBreaking("model user field removed: id")
         )
       )
 
       val field2 = field.copy(name = "name")
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user optional field added: name")
+          DifferenceNonBreaking("model user optional field added: name")
         )
       )
 
       val field2WithDefault = field.copy(name = "name", default = Some("test"))
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2WithDefault))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user optional field added: name, defaults to test")
+          DifferenceNonBreaking("model user optional field added: name, defaults to test")
         )
       )
 
       val field2Required = field.copy(name = "name", required = true)
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2Required))))).differences should be(
         Seq(
-          Difference.Breaking("model user required field added: name")
+          DifferenceBreaking("model user required field added: name")
         )
       )
 
       val field2RequiredWithDefault = field.copy(name = "name", required = true, default = Some("test"))
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field, field2RequiredWithDefault))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user required field added: name, defaults to test")
+          DifferenceNonBreaking("model user required field added: name, defaults to test")
         )
       )
     }
@@ -634,44 +635,44 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("change fields") {
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(`type` = "uuid")))))).differences should be(
         Seq(
-          Difference.Breaking("model user field id type changed from long to uuid")
+          DifferenceBreaking("model user field id type changed from long to uuid")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(description = Some("test"))))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id description added: test")
+          DifferenceNonBreaking("model user field id description added: test")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(deprecation = Some(Deprecation()))))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id deprecated")
+          DifferenceNonBreaking("model user field id deprecated")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(default = Some("1"))))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id default added: 1")
+          DifferenceNonBreaking("model user field id default added: 1")
         )
       )
 
       val requiredField = field.copy(required = true)
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(requiredField))))).differences should be(
         Seq(
-          Difference.Breaking("model user field id is now required")
+          DifferenceBreaking("model user field id is now required")
         )
       )
 
       ServiceDiff(base.copy(models = Seq(model.copy(fields = Seq(requiredField)))), serviceWithModel).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id is no longer required")
+          DifferenceNonBreaking("model user field id is no longer required")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1))))))).differences should be(
         Seq(
-          Difference.Breaking("model user field id minimum added: 1")
+          DifferenceBreaking("model user field id minimum added: 1")
         )
       )
 
@@ -685,7 +686,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(0))))))
       ).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id minimum changed from 1 to 0")
+          DifferenceNonBreaking("model user field id minimum changed from 1 to 0")
         )
       )
 
@@ -694,7 +695,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         base.copy(models = Seq(model.copy(fields = Seq(field.copy(minimum = Some(1))))))
       ).differences should be(
         Seq(
-          Difference.Breaking("model user field id minimum changed from 0 to 1")
+          DifferenceBreaking("model user field id minimum changed from 0 to 1")
         )
       )
 
@@ -703,13 +704,13 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         base.copy(models = Seq(model.copy(fields = Seq(field))))
       ).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id minimum removed: 0")
+          DifferenceNonBreaking("model user field id minimum removed: 0")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1))))))).differences should be(
         Seq(
-          Difference.Breaking("model user field id maximum added: 1")
+          DifferenceBreaking("model user field id maximum added: 1")
         )
       )
 
@@ -723,7 +724,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(0))))))
       ).differences should be(
         Seq(
-          Difference.Breaking("model user field id maximum changed from 1 to 0")
+          DifferenceBreaking("model user field id maximum changed from 1 to 0")
         )
       )
 
@@ -732,7 +733,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         base.copy(models = Seq(model.copy(fields = Seq(field.copy(maximum = Some(1))))))
       ).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id maximum changed from 0 to 1")
+          DifferenceNonBreaking("model user field id maximum changed from 0 to 1")
         )
       )
 
@@ -741,13 +742,13 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
         base.copy(models = Seq(model.copy(fields = Seq(field))))
       ).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id maximum removed: 0")
+          DifferenceNonBreaking("model user field id maximum removed: 0")
         )
       )
 
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(example = Some("foo"))))))).differences should be(
         Seq(
-          Difference.NonBreaking("model user field id example added: foo")
+          DifferenceNonBreaking("model user field id example added: foo")
         )
       )
     }
@@ -774,7 +775,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("add resource") {
       ServiceDiff(base, serviceWithResource).differences should be(
         Seq(
-          Difference.NonBreaking("resource added: user")
+          DifferenceNonBreaking("resource added: user")
         )
       )
     }
@@ -782,7 +783,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("remove resource") {
       ServiceDiff(serviceWithResource, base).differences should be(
         Seq(
-          Difference.Breaking("resource removed: user")
+          DifferenceBreaking("resource removed: user")
         )
       )
     }
@@ -790,19 +791,19 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("change resource") {
       ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(plural = "all_users")))).differences should be(
         Seq(
-          Difference.NonBreaking("resource user plural changed from users to all_users")
+          DifferenceNonBreaking("resource user plural changed from users to all_users")
         )
       )
 
       ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(description = Some("test"))))).differences should be(
         Seq(
-          Difference.NonBreaking("resource user description added: test")
+          DifferenceNonBreaking("resource user description added: test")
         )
       )
 
       ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(deprecation = Some(Deprecation()))))).differences should be(
         Seq(
-          Difference.NonBreaking("resource user deprecated")
+          DifferenceNonBreaking("resource user deprecated")
         )
       )
 
@@ -813,13 +814,13 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
       ServiceDiff(serviceWithResource, base.copy(resources = Seq(resource.copy(operations = Seq(op))))).differences should be(
         Seq(
-          Difference.NonBreaking("resource user operation added: GET /users")
+          DifferenceNonBreaking("resource user operation added: GET /users")
         )
       )
 
       ServiceDiff(base.copy(resources = Seq(resource.copy(operations = Seq(op)))), serviceWithResource).differences should be(
         Seq(
-          Difference.Breaking("resource user operation removed: GET /users")
+          DifferenceBreaking("resource user operation removed: GET /users")
         )
       )
     }
@@ -850,7 +851,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       it("add operation") {
         ServiceDiff(base, serviceWithOperation).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation added: GET /users/:guid")
+            DifferenceNonBreaking("resource user operation added: GET /users/:guid")
           )
         )
       }
@@ -858,7 +859,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       it("remove operation") {
         ServiceDiff(serviceWithOperation, base).differences should be(
           Seq(
-            Difference.Breaking("resource user operation removed: GET /users/:guid")
+            DifferenceBreaking("resource user operation removed: GET /users/:guid")
           )
         )
       }
@@ -866,34 +867,34 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       it("change operation") {
         ServiceDiff(serviceWithOperation, withOp(operation.copy(method = Method.Post))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation removed: GET /users/:guid"),
-            Difference.NonBreaking("resource user operation added: POST /users/:guid")
+            DifferenceBreaking("resource user operation removed: GET /users/:guid"),
+            DifferenceNonBreaking("resource user operation added: POST /users/:guid")
           )
         )
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(path = "/users/:id"))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation removed: GET /users/:guid"),
-            Difference.NonBreaking("resource user operation added: GET /users/:id")
+            DifferenceBreaking("resource user operation removed: GET /users/:guid"),
+            DifferenceNonBreaking("resource user operation added: GET /users/:id")
           )
         )
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(description = Some("test")))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid description added: test")
+            DifferenceNonBreaking("resource user operation GET /users/:guid description added: test")
           )
         )
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(deprecation = Some(Deprecation())))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid deprecated")
+            DifferenceNonBreaking("resource user operation GET /users/:guid deprecated")
           )
         )
 
         val body = Body(`type` = "user_form")
         ServiceDiff(serviceWithOperation, withOp(operation.copy(body = Some(body)))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid added: body")
+            DifferenceBreaking("resource user operation GET /users/:guid added: body")
           )
         )
 
@@ -902,7 +903,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
           withOp(operation.copy(body = Some(body.copy(`type` = "string"))))
         ).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid body type changed from user_form to string")
+            DifferenceBreaking("resource user operation GET /users/:guid body type changed from user_form to string")
           )
         )
 
@@ -911,7 +912,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
           withOp(operation.copy(body = Some(body.copy(description = Some("test")))))
         ).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid body description added: test")
+            DifferenceNonBreaking("resource user operation GET /users/:guid body description added: test")
           )
         )
 
@@ -920,13 +921,13 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
           withOp(operation.copy(body = Some(body.copy(deprecation = Some(Deprecation())))))
         ).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid body deprecated")
+            DifferenceNonBreaking("resource user operation GET /users/:guid body deprecated")
           )
         )
 
         ServiceDiff(withOp(operation.copy(body = Some(body))), serviceWithOperation).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid removed: body")
+            DifferenceBreaking("resource user operation GET /users/:guid removed: body")
           )
         )
 
@@ -948,67 +949,67 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(parameters = Seq(id)))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid optional parameter added: id")
+            DifferenceNonBreaking("resource user operation GET /users/:guid optional parameter added: id")
           )
         )
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(parameters = Seq(id.copy(required = true))))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid required parameter added: id")
+            DifferenceBreaking("resource user operation GET /users/:guid required parameter added: id")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), serviceWithOperation).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid parameter removed: id")
+            DifferenceBreaking("resource user operation GET /users/:guid parameter removed: id")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(`type` = "string"))))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid parameter id type changed from long to string")
+            DifferenceBreaking("resource user operation GET /users/:guid parameter id type changed from long to string")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(location = ParameterLocation.Form))))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid parameter id location changed from Query to Form")
+            DifferenceBreaking("resource user operation GET /users/:guid parameter id location changed from Query to Form")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(description = Some("test")))))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid parameter id description added: test")
+            DifferenceNonBreaking("resource user operation GET /users/:guid parameter id description added: test")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(deprecation = Some(Deprecation())))))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid parameter id deprecated")
+            DifferenceNonBreaking("resource user operation GET /users/:guid parameter id deprecated")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(default = Some("5")))))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid parameter id default added: 5")
+            DifferenceNonBreaking("resource user operation GET /users/:guid parameter id default added: 5")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(minimum = Some(1)))))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid parameter id minimum added: 1")
+            DifferenceBreaking("resource user operation GET /users/:guid parameter id minimum added: 1")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(maximum = Some(1)))))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid parameter id maximum added: 1")
+            DifferenceBreaking("resource user operation GET /users/:guid parameter id maximum added: 1")
           )
         )
 
         ServiceDiff(withOp(operation.copy(parameters = Seq(id))), withOp(operation.copy(parameters = Seq(id.copy(example = Some("1")))))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid parameter id example added: 1")
+            DifferenceNonBreaking("resource user operation GET /users/:guid parameter id example added: 1")
           )
         )
 
@@ -1024,31 +1025,31 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
         ServiceDiff(serviceWithOperation, withOp(operation.copy(responses = Seq(success)))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid response added: 200")
+            DifferenceNonBreaking("resource user operation GET /users/:guid response added: 200")
           )
         )
 
         ServiceDiff(withOp(operation.copy(responses = Seq(success))), serviceWithOperation).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid response removed: 200")
+            DifferenceBreaking("resource user operation GET /users/:guid response removed: 200")
           )
         )
 
         ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(`type` = "string"))))).differences should be(
           Seq(
-            Difference.Breaking("resource user operation GET /users/:guid response 200 type changed from user to string")
+            DifferenceBreaking("resource user operation GET /users/:guid response 200 type changed from user to string")
           )
         )
 
         ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(description = Some("test")))))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid response 200 description added: test")
+            DifferenceNonBreaking("resource user operation GET /users/:guid response 200 description added: test")
           )
         )
 
         ServiceDiff(withOp(operation.copy(responses = Seq(success))), withOp(operation.copy(responses = Seq(success.copy(deprecation = Some(Deprecation())))))).differences should be(
           Seq(
-            Difference.NonBreaking("resource user operation GET /users/:guid response 200 deprecated")
+            DifferenceNonBreaking("resource user operation GET /users/:guid response 200 deprecated")
           )
         )
 

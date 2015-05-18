@@ -4,6 +4,7 @@ import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import core.VersionMigration
 import builder.OriginalValidator
 import com.gilt.apidoc.api.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
+import com.gilt.apidoc.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexVersion}
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 import lib.VersionTag
@@ -119,14 +120,19 @@ object VersionsDao {
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
-    val guid = DB.withTransaction { implicit c =>
+    val (versionGuid, taskGuids) = DB.withTransaction { implicit c =>
       softDelete(user, version)
-      doCreate(c, user, application, version.version, original, service)
+      val versionGuid = doCreate(c, user, application, version.version, original, service)
+      val taskGuid = TasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = version.guid, newVersionGuid = versionGuid))
+      // TODO: Add task to update search index
+      (versionGuid, Seq(taskGuid))
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.VersionReplaced(version.guid, guid)
+    taskGuids.foreach { taskGuid =>
+      global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+    }
 
-    findAll(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {
+    findAll(Authorization.All, guid = Some(versionGuid), limit = 1).headOption.getOrElse {
       sys.error(s"Failed to replace version[${version.guid}]")
     }
   }
@@ -218,7 +224,6 @@ object VersionsDao {
     var good = 0
     var bad = 0
 
-    var user: Option[User] = None
     val sql = BaseQuery.trim + " and versions.deleted_at is null and services.guid is null and originals.data is not null"
 
     DB.withConnection { implicit c =>
@@ -254,13 +259,7 @@ object VersionsDao {
               bad += 1
             }
             case Right(service) => {
-              if (user.isEmpty) {
-                user = Some(UsersDao.findByEmail(UsersDao.AdminUserEmail).getOrElse {
-                  sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmail}]")
-                })
-              }
-
-              insertService(c, user.get, versionGuid, service)
+              insertService(c, UsersDao.AdminUser, versionGuid, service)
               good += 1
             }
           }

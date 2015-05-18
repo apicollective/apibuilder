@@ -14,6 +14,10 @@ object UsersDao {
 
   val AdminUserEmail = "admin@apidoc.me"
 
+  lazy val AdminUser = UsersDao.findByEmail(AdminUserEmail).getOrElse {
+    sys.error(s"Failed to find background user w/ email[$AdminUserEmail]")
+  }
+
   private val BaseQuery = """
     select guid, email, name, nickname
       from users
