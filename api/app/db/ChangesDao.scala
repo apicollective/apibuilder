@@ -9,6 +9,8 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import org.postgresql.util.PSQLException
+import scala.util.{Try, Success, Failure}
 
 object ChangesDao {
 
@@ -21,19 +23,25 @@ object ChangesDao {
            changes.type,
            changes.description
       from changes
-      join versions from_version on versions.guid = changes.from_version_guid
-      join versions to_version on versions.guid = changes.to_version_guid
+      join applications on applications.guid = changes.application_guid
+      join versions from_version on from_version.guid = changes.from_version_guid
+      join versions to_version on to_version.guid = changes.to_version_guid
      where true
   """
 
   private val InsertQuery = """
     insert into changes
-    (guid, from_version_guid, to_version_guid, description, created_by_guid)
+    (guid, application_guid, from_version_guid, to_version_guid, type, description, created_by_guid)
     values
-    ({guid}::uuid, {to_version_guid}::uuid, {to_version_guid}::uuid, {description}, {created_by_guid}::uuid)
+    ({guid}::uuid, {application_guid}::uuid, {from_version_guid}::uuid, {to_version_guid}::uuid, {type}, {description}, {created_by_guid}::uuid)
   """
 
   def upsert(createdBy: User, fromVersion: Version, toVersion: Version, differences: Seq[Difference]) {
+    assert(
+      fromVersion.guid != toVersion.guid,
+      "Versions must be different"
+    )
+
     assert(
       fromVersion.application.guid == toVersion.application.guid,
       "Versions must belong to same application"
@@ -41,7 +49,7 @@ object ChangesDao {
 
     DB.withTransaction { implicit c =>
 
-      differences.foreach { d =>
+      differences.distinct.foreach { d =>
         val (differenceType, description) = d match {
           case DifferenceBreaking(desc) => ("breaking", desc)
           case DifferenceNonBreaking(desc) => ("non_breaking", desc)
@@ -50,15 +58,31 @@ object ChangesDao {
           }
         }
 
-        // TODO: Handle unique constraint PSQLException
-        SQL(InsertQuery).on(
-          'guid -> UUID.randomUUID,
-          'from_version_guid -> fromVersion.guid,
-          'to_version_guid -> toVersion.guid,
-          'type -> differenceType,
-          'description -> description,
-          'created_by_guid -> createdBy.guid
-        ).execute()
+        Try(
+          SQL(InsertQuery).on(
+            'guid -> UUID.randomUUID,
+            'application_guid -> fromVersion.application.guid,
+            'from_version_guid -> fromVersion.guid,
+            'to_version_guid -> toVersion.guid,
+            'type -> differenceType,
+            'description -> description,
+            'created_by_guid -> createdBy.guid
+          ).execute()
+        ) match {
+          case Success(_) => {}
+          case Failure(e) => e match {
+            case e: PSQLException => {
+              findAll(
+                Authorization.All,
+                fromVersionGuid = Some(fromVersion.guid),
+                toVersionGuid = Some(toVersion.guid),
+                description = Some(description)
+              ).headOption.getOrElse {
+                sys.error("Failed to create change: " + e)
+              }
+            }
+          }
+        }
       }
     }
 
@@ -71,22 +95,31 @@ object ChangesDao {
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
-    application: Option[Application] = None,
+    applicationGuid: Option[UUID] = None,
+    fromVersionGuid: Option[UUID] = None,
+    toVersionGuid: Option[UUID] = None,
+    description: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Change] = {
-    // TODO: Authorization on versions
     val sql = Seq(
       Some(BaseQuery.trim),
+      authorization.applicationFilter().map(v => "and " + v),
       guid.map { v => "and changes.guid = {guid}::uuid" },
-      application.map { v => "and changes.from_version_guid in (select guid from versions where deleted_at is null and application_guid = {application_guid}::uuid)" },
-      Some(s"order by changes.number_attempts, changes.created_at limit ${limit} offset ${offset}")
+      applicationGuid.map { v => "and changes.from_version_guid in (select guid from versions where deleted_at is null and application_guid = {application_guid}::uuid)" },
+      fromVersionGuid.map { v => "and changes.from_version_guid = {from_version_guid}::uuid" },
+      toVersionGuid.map { v => "and changes.to_version_guid = {to_version_guid}::uuid" },
+      description.map { v => "and lower(changes.description) = lower(trim({description}))" },
+      Some(s"order by changes.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      application.map('application_guid -> _.guid.toString)
-    ).flatten
+      applicationGuid.map('application_guid -> _.toString),
+      fromVersionGuid.map('from_version_guid -> _.toString),
+      toVersionGuid.map('to_version_guid -> _.toString),
+      description.map('description -> _)
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq

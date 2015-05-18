@@ -1,8 +1,9 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Publication, Subscription, SubscriptionForm, User, UserForm, Visibility}
-import com.gilt.apidoc.spec.v0.models.Service
+import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType, Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
+import com.gilt.apidoc.spec.v0.models.{Service}
 import com.gilt.apidoc.spec.v0.{models => spec}
+import play.api.libs.json.{Json, JsObject}
 import lib.Role
 import java.util.UUID
 
@@ -68,7 +69,7 @@ object Util {
   }
 
   def createApplicationForm(
-    name: String = UUID.randomUUID.toString,
+    name: String = "Test " + UUID.randomUUID.toString,
     key: Option[String] = None,
     description: Option[String] = None,
     visibility: Visibility = Visibility.Organization
@@ -78,6 +79,33 @@ object Util {
     description = description,
     visibility = visibility
   )
+
+  def createVersion(
+    application: Application = createApplication(),
+    version: String = "1.0.0",
+    original: Original = createOriginal(),
+    service: Option[Service] = None
+  ): Version = {
+    VersionsDao.create(
+      Util.createdBy,
+      application,
+      version,
+      original,
+      service.getOrElse { Util.createService(application) }
+    )
+  }
+
+  def createOriginal(): Original = {
+    com.gilt.apidoc.api.v0.models.Original(
+      `type` = OriginalType.ApiJson,
+      data = Json.obj(
+        "apidoc" -> Json.obj(
+          "version" -> com.gilt.apidoc.spec.v0.Constants.Version
+        ),
+        "name" -> s"test-${UUID.randomUUID}"
+      ).toString
+    )
+  }
 
   def createMembership(
     org: Organization,
