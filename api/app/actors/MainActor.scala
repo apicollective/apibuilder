@@ -75,7 +75,6 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
     case MainActor.Messages.TaskCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.TaskCreated($guid)", {
-        //taskActor ! EmailActor.Messages.VersionReplaced(oldGuid, newGuid)
         taskActor ! TaskActor.Messages.TaskCreated(guid)
       }
     )
