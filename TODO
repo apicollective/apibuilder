@@ -1,3 +1,7 @@
+Tasks:
+  - add actors to execute tasks that have not been completed in 1 minute
+  - add daily actor to delete old tasks (> 3 months to start)
+
 Add search to apidoc
 
 VersionsDao
