@@ -14,6 +14,7 @@ package com.gilt.apidoc.internal.v0.models {
    */
   case class Change(
     guid: _root_.java.util.UUID,
+    application: com.gilt.apidoc.api.v0.models.Reference,
     fromVersion: com.gilt.apidoc.internal.v0.models.ChangeVersion,
     toVersion: com.gilt.apidoc.internal.v0.models.ChangeVersion,
     difference: com.gilt.apidoc.internal.v0.models.Difference
@@ -35,13 +36,6 @@ package com.gilt.apidoc.internal.v0.models {
   case class DifferenceNonBreaking(
     description: String
   ) extends Difference
-
-  /**
-   * Represents a reference to another model.
-   */
-  case class Reference(
-    guid: _root_.java.util.UUID
-  )
 
   case class Task(
     guid: _root_.java.util.UUID,
@@ -86,6 +80,7 @@ package com.gilt.apidoc.internal.v0.models {
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
+    import com.gilt.apidoc.api.v0.models.json._
     import com.gilt.apidoc.internal.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
@@ -110,6 +105,7 @@ package com.gilt.apidoc.internal.v0.models {
     implicit def jsonReadsApidocinternalChange: play.api.libs.json.Reads[Change] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "application").read[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "from_version").read[com.gilt.apidoc.internal.v0.models.ChangeVersion] and
         (__ \ "to_version").read[com.gilt.apidoc.internal.v0.models.ChangeVersion] and
         (__ \ "difference").read[com.gilt.apidoc.internal.v0.models.Difference]
@@ -119,6 +115,7 @@ package com.gilt.apidoc.internal.v0.models {
     implicit def jsonWritesApidocinternalChange: play.api.libs.json.Writes[Change] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "application").write[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "from_version").write[com.gilt.apidoc.internal.v0.models.ChangeVersion] and
         (__ \ "to_version").write[com.gilt.apidoc.internal.v0.models.ChangeVersion] and
         (__ \ "difference").write[com.gilt.apidoc.internal.v0.models.Difference]
@@ -156,16 +153,6 @@ package com.gilt.apidoc.internal.v0.models {
     implicit def jsonWritesApidocinternalDifferenceNonBreaking: play.api.libs.json.Writes[DifferenceNonBreaking] = new play.api.libs.json.Writes[DifferenceNonBreaking] {
       def writes(x: DifferenceNonBreaking) = play.api.libs.json.Json.obj(
         "description" -> play.api.libs.json.Json.toJson(x.description)
-      )
-    }
-
-    implicit def jsonReadsApidocinternalReference: play.api.libs.json.Reads[Reference] = {
-      (__ \ "guid").read[_root_.java.util.UUID].map { x => new Reference(guid = x) }
-    }
-
-    implicit def jsonWritesApidocinternalReference: play.api.libs.json.Writes[Reference] = new play.api.libs.json.Writes[Reference] {
-      def writes(x: Reference) = play.api.libs.json.Json.obj(
-        "guid" -> play.api.libs.json.Json.toJson(x.guid)
       )
     }
 

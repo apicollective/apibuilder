@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.Application
+import com.gilt.apidoc.api.v0.models.{Application, Reference}
 import com.gilt.apidoc.internal.v0.models.{Change, ChangeVersion, Difference, DifferenceBreaking, DifferenceNonBreaking, DifferenceUndefinedType}
 import com.gilt.apidoc.internal.v0.models.json._
 import com.gilt.apidoc.api.v0.models.{User, Version}
@@ -16,6 +16,8 @@ object ChangesDao {
 
   private val BaseQuery = """
     select changes.guid,
+           applications.guid as application_guid,
+           applications.key as application_key,
            from_version.guid::varchar as from_guid,
            from_version.version as from_version,
            to_version.guid::varchar as to_guid,
@@ -49,43 +51,44 @@ object ChangesDao {
 
     DB.withTransaction { implicit c =>
 
-      differences.distinct.foreach { d =>
-        val (differenceType, description) = d match {
+      differences.map { d =>
+        d match {
           case DifferenceBreaking(desc) => ("breaking", desc)
           case DifferenceNonBreaking(desc) => ("non_breaking", desc)
           case DifferenceUndefinedType(desc) => {
             sys.error(s"Unrecognized difference type: $desc")
           }
         }
-
-        Try(
-          SQL(InsertQuery).on(
-            'guid -> UUID.randomUUID,
-            'application_guid -> fromVersion.application.guid,
-            'from_version_guid -> fromVersion.guid,
-            'to_version_guid -> toVersion.guid,
-            'type -> differenceType,
-            'description -> description,
-            'created_by_guid -> createdBy.guid
-          ).execute()
-        ) match {
-          case Success(_) => {}
-          case Failure(e) => e match {
-            case e: PSQLException => {
-              findAll(
-                Authorization.All,
-                fromVersionGuid = Some(fromVersion.guid),
-                toVersionGuid = Some(toVersion.guid),
-                description = Some(description)
-              ).headOption.getOrElse {
-                sys.error("Failed to create change: " + e)
+      }.distinct.foreach {
+        case (differenceType, description) => {
+          Try(
+            SQL(InsertQuery).on(
+              'guid -> UUID.randomUUID,
+              'application_guid -> fromVersion.application.guid,
+              'from_version_guid -> fromVersion.guid,
+              'to_version_guid -> toVersion.guid,
+              'type -> differenceType,
+              'description -> description,
+              'created_by_guid -> createdBy.guid
+            ).execute()
+          ) match {
+            case Success(_) => {}
+            case Failure(e) => e match {
+              case e: PSQLException => {
+                findAll(
+                  Authorization.All,
+                  fromVersionGuid = Some(fromVersion.guid),
+                  toVersionGuid = Some(toVersion.guid),
+                  description = Some(description)
+                ).headOption.getOrElse {
+                  sys.error("Failed to create change: " + e)
+                }
               }
             }
           }
         }
       }
     }
-
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Change] = {
@@ -131,6 +134,7 @@ object ChangesDao {
   ): Change = {
     Change(
       guid = row[UUID]("guid"),
+      application = Reference(row[UUID]("application_guid"), row[String]("application_key")),
       fromVersion = ChangeVersion(row[UUID]("from_guid"), row[String]("from_version")),
       toVersion = ChangeVersion(row[UUID]("to_guid"), row[String]("to_version")),
       difference = row[String]("type") match {

@@ -5,6 +5,10 @@
       "version": "0.9.11"
     },
 
+    "imports": [
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-api/0.9.11/service.json" }
+    ],
+
     "unions": {
 	"task_data": {
 	    "types": [
@@ -23,13 +27,6 @@
     },
 
     "models": {
-
-        "reference": {
-            "description": "Represents a reference to another model.",
-            "fields": [
-                { "name": "guid", "type": "uuid" }
-	    ]
-	},
 
 	"task": {
 	    "fields": [
@@ -69,6 +66,7 @@
 	    "description": "Represents a single change from one version of a service to another",
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
+                { "name": "application", "type": "com.gilt.apidoc.api.v0.models.reference" },
                 { "name": "from_version", "type": "change_version" },
                 { "name": "to_version", "type": "change_version" },
                 { "name": "difference", "type": "difference" }

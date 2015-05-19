@@ -1,15 +1,31 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.Version
-import com.gilt.apidoc.internal.v0.models.{DifferenceBreaking, DifferenceNonBreaking}
+import com.gilt.apidoc.api.v0.models.{Application, Version}
+import com.gilt.apidoc.internal.v0.models.{Change, DifferenceBreaking, DifferenceNonBreaking}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
 class ChangesDaoSpec extends FunSpec with Matchers {
 
-  describe("with a valid from and to version") {
+  private def getApplication(version: Version): Application = {
+    ApplicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {
+      sys.error("Could not find application for version: " + version)
+    }
+  }
 
-    def getApplication(version: Version) = ApplicationsDao.findByGuid(Authorization.All, version.application.guid).get
+  private def createChange(): Change = {
+    val fromVersion = Util.createVersion(version = "1.0.0")
+    val toVersion = Util.createVersion(version = "1.0.1", application = getApplication(fromVersion))
+    val diff = DifferenceBreaking("Breaking difference - " + UUID.randomUUID.toString)
+    ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
+
+    ChangesDao.findAll(
+      Authorization.All,
+      fromVersionGuid = Some(fromVersion.guid)
+    ).head
+  }
+
+  describe("with a valid from and to version") {
 
     it("upsert is a no-op with no differences") {
       val fromVersion = Util.createVersion(version = "1.0.0")
@@ -62,6 +78,34 @@ class ChangesDaoSpec extends FunSpec with Matchers {
     intercept[AssertionError] {
       ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Nil)
     }.getMessage should be("assertion failed: Versions must belong to same application")
+  }
+
+  describe("findAll") {
+
+    it("guid") {
+      val change = createChange()
+      ChangesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
+    }
+
+    it("applicationGuid") {
+      val change = createChange()
+      ChangesDao.findAll(Authorization.All, applicationGuid = Some(UUID.randomUUID)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, applicationGuid = Some(change.application.guid)).map(_.guid) should be(Seq(change.guid))
+    }
+
+    it("fromVersionGuid") {
+      val change = createChange()
+      ChangesDao.findAll(Authorization.All, fromVersionGuid = Some(UUID.randomUUID)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, fromVersionGuid = Some(change.fromVersion.guid)).map(_.guid) should be(Seq(change.guid))
+    }
+
+    it("toVersionGuid") {
+      val change = createChange()
+      ChangesDao.findAll(Authorization.All, toVersionGuid = Some(UUID.randomUUID)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, toVersionGuid = Some(change.toVersion.guid)).map(_.guid) should be(Seq(change.guid))
+    }
+
   }
 
 }
