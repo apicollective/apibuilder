@@ -1,6 +1,6 @@
 package actors
 
-import lib.ServiceDiff
+import lib.{ServiceDiff, Text}
 import com.gilt.apidoc.api.v0.models.{Publication, Version}
 import com.gilt.apidoc.internal.v0.models.{Difference, DifferenceBreaking, DifferenceNonBreaking, DifferenceUndefinedType}
 import com.gilt.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexVersion, TaskDataUndefinedType}
@@ -15,6 +15,7 @@ object TaskActor {
     case class TaskCreated(guid: UUID)
     case object RestartDroppedTasks
     case object PurgeOldTasks
+    case object NotifyFailed
   }
 
 }
@@ -45,6 +46,7 @@ class TaskActor extends Actor {
                   }
                 }
               }
+              TasksDao.softDelete(UsersDao.AdminUser, task)
             }
 
             case TaskDataIndexVersion(versionGuid) => {
@@ -61,7 +63,33 @@ class TaskActor extends Actor {
 
     case TaskActor.Messages.RestartDroppedTasks => Util.withVerboseErrorHandler(
       "TaskActor.Messages.RestartDroppedTasks", {
-        // TODO
+        TasksDao.findAll(
+          nOrFewerAttempts = Some(2),
+          nOrMoreMinutesOld = Some(1)
+        ).foreach { task =>
+          global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(task.guid)
+        }
+      }
+    )
+
+    case TaskActor.Messages.NotifyFailed => Util.withVerboseErrorHandler(
+      "TaskActor.Messages.NotifyFailed", {
+        val errors = TasksDao.findAll(
+          nOrMoreAttempts = Some(2)
+        ).map { task =>
+          val errorType = task.data match {
+            case TaskDataDiffVersion(_, _) => "Diff version"
+            case TaskDataIndexVersion(_) => "Index version"
+            case TaskDataUndefinedType(desc) => desc
+          }
+
+          val errorMsg = Text.truncate(task.lastError.getOrElse("No information on error"))
+          s"$errorType task ${task.guid}: $errorMsg"
+        }
+        Emails.sendErrors(
+          subject = "One or more tasks failed",
+          errors = errors
+        )
       }
     )
 
@@ -81,7 +109,6 @@ class TaskActor extends Actor {
     }
 
   }
-
 
   private def versionUpdated(
     oldVersion: Version,
@@ -120,4 +147,3 @@ class TaskActor extends Actor {
   }
 
 }
-

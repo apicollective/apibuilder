@@ -35,8 +35,9 @@ class MainActor(name: String) extends Actor with ActorLogging {
   private val taskActor = Akka.system.actorOf(Props[TaskActor], name = s"$name:taskActor")
   private val userActor = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor")
 
-  Akka.system.scheduler.schedule(15.seconds, 1.minute, taskActor, TaskActor.Messages.RestartDroppedTasks)
-  Akka.system.scheduler.schedule(5.minutes, 1.hour, taskActor, TaskActor.Messages.PurgeOldTasks)
+  Akka.system.scheduler.schedule(5.seconds, 1.minute, taskActor, TaskActor.Messages.RestartDroppedTasks)
+  Akka.system.scheduler.schedule(1.hour, 1.hour, taskActor, TaskActor.Messages.PurgeOldTasks)
+  Akka.system.scheduler.schedule(12.hours, 1.day, taskActor, TaskActor.Messages.NotifyFailed)
 
   def receive = akka.event.LoggingReceive {
 
