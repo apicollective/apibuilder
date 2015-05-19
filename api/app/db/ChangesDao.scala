@@ -26,6 +26,7 @@ object ChangesDao {
            changes.description
       from changes
       join applications on applications.guid = changes.application_guid
+      join organizations on organizations.guid = applications.organization_guid
       join versions from_version on from_version.guid = changes.from_version_guid
       join versions to_version on to_version.guid = changes.to_version_guid
      where true

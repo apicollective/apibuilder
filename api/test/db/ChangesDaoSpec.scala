@@ -121,6 +121,23 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       ChangesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1, offset = 1).map(_.guid) should be(Nil)
     }
 
+    it("authorization") {
+      val change = createChange()
+
+      val user = Util.createRandomUser()
+      ChangesDao.findAll(Authorization.User(user.guid), guid = Some(change.guid)).map(_.guid) should be(Nil)
+      ChangesDao.findAll(Authorization.PublicOnly, guid = Some(change.guid)).map(_.guid) should be(Nil)
+
+      val app = ApplicationsDao.findByGuid(Authorization.All, change.application.guid).get
+      Util.createMembership(
+        OrganizationsDao.findByGuid(
+          Authorization.All,
+          app.organization.guid
+        ).get,
+        user
+      )
+      ChangesDao.findAll(Authorization.User(Util.createdBy.guid), guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
+    }
   }
 
 }

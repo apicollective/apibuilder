@@ -151,7 +151,7 @@ object Util {
   )
 
 
-  lazy val createdBy = Util.upsertUser("admin@apidoc.me")
+  lazy val createdBy = UsersDao.AdminUser
 
   lazy val gilt = upsertOrganization("Gilt Test Org")
 
