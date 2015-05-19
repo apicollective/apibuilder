@@ -110,7 +110,7 @@ object TokensDao {
   ): Seq[Token] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.tokenFilter(),
+      authorization.tokenFilter().map(s => s"and $s"),
       guid.map { v => "and tokens.guid = {guid}::uuid" },
       userGuid.map { v => "and tokens.user_guid = {user_guid}::uuid" },
       token.map { v => "and tokens.token = {token}" },
