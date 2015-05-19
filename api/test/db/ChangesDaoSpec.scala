@@ -13,10 +13,12 @@ class ChangesDaoSpec extends FunSpec with Matchers {
     }
   }
 
-  private def createChange(): Change = {
+  private def createChange(
+    description: String = "Breaking difference - " + UUID.randomUUID.toString
+  ): Change = {
     val fromVersion = Util.createVersion(version = "1.0.0")
     val toVersion = Util.createVersion(version = "1.0.1", application = getApplication(fromVersion))
-    val diff = DifferenceBreaking("Breaking difference - " + UUID.randomUUID.toString)
+    val diff = DifferenceBreaking(description)
     ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
 
     ChangesDao.findAll(
@@ -104,6 +106,19 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       val change = createChange()
       ChangesDao.findAll(Authorization.All, toVersionGuid = Some(UUID.randomUUID)) should be(Nil)
       ChangesDao.findAll(Authorization.All, toVersionGuid = Some(change.toVersion.guid)).map(_.guid) should be(Seq(change.guid))
+    }
+
+    it("description") {
+      val desc = UUID.randomUUID.toString
+      val change = createChange(description = desc)
+      ChangesDao.findAll(Authorization.All, description = Some(UUID.randomUUID.toString)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, description = Some(desc)).map(_.guid) should be(Seq(change.guid))
+    }
+
+    it("limit and offset") {
+      val change = createChange()
+      ChangesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1).map(_.guid) should be(Seq(change.guid))
+      ChangesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1, offset = 1).map(_.guid) should be(Nil)
     }
 
   }
