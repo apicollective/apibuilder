@@ -7,6 +7,8 @@ import java.util.UUID
 
 class ChangesDaoSpec extends FunSpec with Matchers {
 
+  new play.core.StaticApplication(new java.io.File("."))
+
   private def getApplication(version: Version): Application = {
     ApplicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {
       sys.error("Could not find application for version: " + version)
