@@ -13,11 +13,15 @@ object TaskActor {
 
   object Messages {
     case class TaskCreated(guid: UUID)
+    case object RestartDroppedTasks
+    case object PurgeOldTasks
   }
 
 }
 
 class TaskActor extends Actor {
+
+  private val NumberDaysBeforePurge = 90
 
   def receive = {
 
@@ -51,6 +55,23 @@ class TaskActor extends Actor {
               TasksDao.recordError(UsersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
             }
           }
+        }
+      }
+    )
+
+    case TaskActor.Messages.RestartDroppedTasks => Util.withVerboseErrorHandler(
+      "TaskActor.Messages.RestartDroppedTasks", {
+        // TODO
+      }
+    )
+
+    case TaskActor.Messages.PurgeOldTasks => Util.withVerboseErrorHandler(
+      "TaskActor.Messages.PurgeOldTasks", {
+        TasksDao.findAll(
+          isDeleted = Some(true),
+          deletedAtLeastNDaysAgo = Some(NumberDaysBeforePurge)
+        ).foreach { task =>
+          TasksDao.purge(UsersDao.AdminUser, task)
         }
       }
     )

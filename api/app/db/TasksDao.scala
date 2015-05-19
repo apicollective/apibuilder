@@ -54,12 +54,15 @@ object TasksDao {
      where guid = {guid}::uuid
   """
 
-
   private val InsertQuery = """
     insert into tasks
     (guid, data, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {data}::json, {created_by_guid}::uuid, {updated_by_guid}::uuid)
+  """
+
+  private val PurgeQuery = """
+    delete from tasks where guid = {guid}::uuid
   """
 
   private[db] def insert(implicit c: java.sql.Connection, createdBy: User, data: TaskData): UUID = {
@@ -77,6 +80,12 @@ object TasksDao {
 
   def softDelete(deletedBy: User, task: Task) {
     SoftDelete.delete("tasks", deletedBy, task.guid)
+  }
+
+  def purge(deletedBy: User, task: Task) {
+    DB.withConnection { implicit c =>
+      SQL(PurgeQuery).on('guid -> task.guid).execute()
+    }
   }
 
   def incrementNumberAttempts(user: User, task: Task) {
@@ -108,9 +117,17 @@ object TasksDao {
     nOrMoreAttempts: Option[Long] = None,
     nOrMoreMinutesOld: Option[Long] = None,
     isDeleted: Option[Boolean] = Some(false),
+    deletedAtLeastNDaysAgo: Option[Long] = None,
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Task] = {
+    deletedAtLeastNDaysAgo.map { n =>
+      isDeleted match {
+        case None | Some(true) => {}
+        case Some(false) => sys.error("When filtering by deletedAtLeastNDaysAgo, you must also set isDeleted")
+      }
+    }
+
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and tasks.guid = {guid}::uuid" },
@@ -118,6 +135,7 @@ object TasksDao {
       nOrMoreAttempts.map { v => "and tasks.number_attempts >= {n_or_more_attempts}" },
       nOrMoreMinutesOld.map { v => s"and tasks.updated_at <= timezone('utc', now()) - interval '$v minutes'" },
       isDeleted.map { Filters.isDeleted("tasks", _) },
+      deletedAtLeastNDaysAgo.map { v => s"and tasks.deleted_at <= timezone('utc', now()) - interval '$v days'" },
       Some(s"order by tasks.number_attempts, tasks.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
