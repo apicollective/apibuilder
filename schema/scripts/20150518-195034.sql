@@ -7,8 +7,8 @@ create table changes (
   to_version_guid         uuid not null references versions,
   constraint changes_from_version_guid_ne_to_version_guid_ck check (from_version_guid != to_version_guid),
   -- enforce application guid is the same for both versions
-  constraint changes_application_from_version_fk foreign key (from_version_guid, application_guid) references versions(guid, application_guid),
-  constraint changes_application_to_version_fk foreign key (to_version_guid, application_guid) references versions(guid, application_guid),
+  constraint changes_application_from_version_fk foreign key (application_guid, from_version_guid) references versions(application_guid, guid),
+  constraint changes_application_to_version_fk foreign key (application_guid, to_version_guid) references versions(application_guid, guid),
   type                    text not null check(enum(type)),
   description             text not null check(trim(description) = description)
 );
