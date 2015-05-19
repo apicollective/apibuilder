@@ -25,16 +25,20 @@ class TaskActor extends Actor {
       s"TaskActor.Messages.TaskCreated($guid)", {
         TasksDao.findByGuid(guid).map { task =>
           TasksDao.incrementNumberAttempts(UsersDao.AdminUser, task)
-          println("TASK: " + task)
 
           task.data match {
             case TaskDataDiffVersion(oldVersionGuid, newVersionGuid) => {
-              println(" - TaskDataDiffVersion")
               VersionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
                 VersionsDao.findByGuid(Authorization.All, newVersionGuid, isDeleted = None).map { newVersion =>
-                  val diff = ServiceDiff(oldVersion.service, newVersion.service).differences
-                  ChangesDao.upsert(UsersDao.AdminUser, oldVersion, newVersion, diff)
-                  versionUpdated(oldVersion, newVersion, diff)
+                  ServiceDiff(oldVersion.service, newVersion.service).differences match {
+                    case Nil => {
+                      // No-op
+                    }
+                    case diffs => {
+                      ChangesDao.upsert(UsersDao.AdminUser, oldVersion, newVersion, diffs)
+                      versionUpdated(oldVersion, newVersion, diffs)
+                    }
+                  }
                 }
               }
             }
@@ -73,6 +77,7 @@ class TaskActor extends Actor {
             org,
             application,
             newVersion,
+            oldVersion = Some(oldVersion),
             breakingChanges = diff.filter { d =>
               d match {
                 case DifferenceBreaking(desc) => true
