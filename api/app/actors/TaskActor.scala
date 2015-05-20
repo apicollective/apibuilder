@@ -4,7 +4,7 @@ import lib.{ServiceDiff, Text}
 import com.gilt.apidoc.api.v0.models.{Publication, Version}
 import com.gilt.apidoc.internal.v0.models.{Difference, DifferenceBreaking, DifferenceNonBreaking, DifferenceUndefinedType}
 import com.gilt.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexVersion, TaskDataUndefinedType}
-import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao}
+import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, SearchVersionsDao, TasksDao, UsersDao, VersionsDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -51,6 +51,8 @@ class TaskActor extends Actor {
 
             case TaskDataIndexVersion(versionGuid) => {
               println(" - TaskDataIndexVersion")
+              SearchVersionsDao.upsert(versionGuid)
+              TasksDao.softDelete(UsersDao.AdminUser, task)
             }
 
             case TaskDataUndefinedType(desc) => {
