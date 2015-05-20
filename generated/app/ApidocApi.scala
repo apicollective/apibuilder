@@ -132,7 +132,7 @@ package com.gilt.apidoc.api.v0.models {
    * and item_guid to enable creating the appropriate link.
    */
   case class Item(
-    id: String,
+    guid: _root_.java.util.UUID,
     `type`: com.gilt.apidoc.api.v0.models.ItemType,
     label: String,
     description: _root_.scala.Option[String] = None
@@ -784,7 +784,7 @@ package com.gilt.apidoc.api.v0.models {
 
     implicit def jsonReadsApidocapiItem: play.api.libs.json.Reads[Item] = {
       (
-        (__ \ "id").read[String] and
+        (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "type").read[com.gilt.apidoc.api.v0.models.ItemType] and
         (__ \ "label").read[String] and
         (__ \ "description").readNullable[String]
@@ -793,7 +793,7 @@ package com.gilt.apidoc.api.v0.models {
 
     implicit def jsonWritesApidocapiItem: play.api.libs.json.Writes[Item] = {
       (
-        (__ \ "id").write[String] and
+        (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "type").write[com.gilt.apidoc.api.v0.models.ItemType] and
         (__ \ "label").write[String] and
         (__ \ "description").writeNullable[String]

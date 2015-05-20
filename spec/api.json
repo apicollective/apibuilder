@@ -387,7 +387,7 @@
         "item": {
             "description": "When searching for content, the results of the search will be a list of items. Each item will have enough information to render for the user, including a type and item_guid to enable creating the appropriate link.",
             "fields": [
-                { "name": "id", "type": "string", "description": "Uniquely identifies this item - for example, if the type of item is application, this guid will be the application key." },
+                { "name": "guid", "type": "uuid", "description": "Unique identifer for this item. By using a UUID, you can combine with the type to figure out the URI for the resource" },
                 { "name": "type", "type": "item_type" },
                 { "name": "label", "type": "string" },
                 { "name": "description", "type": "string", "required": false }

@@ -3,10 +3,10 @@ set search_path to search;
 drop table if exists items;
 
 create table items (
-  id                    text primary key check(public.enum(id)),
+  guid                  uuid primary key,
   type                  text not null check(public.enum(type)),
-  label                 text not null,
-  description           text,
+  label                 text not null check(trim(label) = label),
+  description           text check(trim(description) = description),
   content               text not null check(content = trim(lower(content))),
   created_at            timestamptz not null default now()
 );
@@ -16,9 +16,9 @@ comment on table items is '
 ';
 
 
-comment on column items.id is '
-  The specific id of the item that was indexed. For versions, this will
-  be the version_guid. For applications, this will be the application.key,
+comment on column items.guid is '
+  The specific guid of the item that was indexed. For versions, this will
+  be the version_guid. For applications, this will be the application_guid,
   etc.
 ';
 comment on column items.label is '
