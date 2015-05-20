@@ -127,6 +127,18 @@ package com.gilt.apidoc.api.v0.models {
   )
 
   /**
+   * When searching for content, the results of the search will be a list of items.
+   * Each item will have enough information to render for the user, including a type
+   * and item_guid to enable creating the appropriate link.
+   */
+  case class Item(
+    id: String,
+    `type`: com.gilt.apidoc.api.v0.models.ItemType,
+    label: String,
+    description: _root_.scala.Option[String] = None
+  )
+
+  /**
    * A membership represents a user in a specific role to an organization.
    * Memberships cannot be created directly. Instead you first create a membership
    * request, then that request is either accepted or declined.
@@ -333,6 +345,45 @@ package com.gilt.apidoc.api.v0.models {
     description: String
   ) extends Change
 
+  /**
+   * Identifies the specific type of item that was indexed by search
+   */
+  sealed trait ItemType
+
+  object ItemType {
+
+    /**
+     * Represents that the item indexed was an application
+     */
+    case object Application extends ItemType { override def toString = "application" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends ItemType
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Application)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): ItemType = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[ItemType] = byName.get(value.toLowerCase)
+
+  }
+
   sealed trait OriginalType
 
   object OriginalType {
@@ -509,6 +560,11 @@ package com.gilt.apidoc.api.v0.models {
         val str = dateTime.print(x)
         JsString(str)
       }
+    }
+
+    implicit val jsonReadsApidocapiItemType = __.read[String].map(ItemType.apply)
+    implicit val jsonWritesApidocapiItemType = new Writes[ItemType] {
+      def writes(x: ItemType) = JsString(x.toString)
     }
 
     implicit val jsonReadsApidocapiOriginalType = __.read[String].map(OriginalType.apply)
@@ -724,6 +780,24 @@ package com.gilt.apidoc.api.v0.models {
       def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
         "status" -> play.api.libs.json.Json.toJson(x.status)
       )
+    }
+
+    implicit def jsonReadsApidocapiItem: play.api.libs.json.Reads[Item] = {
+      (
+        (__ \ "id").read[String] and
+        (__ \ "type").read[com.gilt.apidoc.api.v0.models.ItemType] and
+        (__ \ "label").read[String] and
+        (__ \ "description").readNullable[String]
+      )(Item.apply _)
+    }
+
+    implicit def jsonWritesApidocapiItem: play.api.libs.json.Writes[Item] = {
+      (
+        (__ \ "id").write[String] and
+        (__ \ "type").write[com.gilt.apidoc.api.v0.models.ItemType] and
+        (__ \ "label").write[String] and
+        (__ \ "description").writeNullable[String]
+      )(unlift(Item.unapply _))
     }
 
     implicit def jsonReadsApidocapiMembership: play.api.libs.json.Reads[Membership] = {
@@ -1147,6 +1221,17 @@ package com.gilt.apidoc.api.v0 {
 
     implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[org.joda.time.LocalDate](
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
+    )
+
+    // Enum: ItemType
+    private val enumItemTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.api.v0.models.ItemType.all.mkString(", ")}"
+
+    implicit val pathBindableEnumItemType = new PathBindable.Parsing[com.gilt.apidoc.api.v0.models.ItemType] (
+      ItemType.fromString(_).get, _.toString, enumItemTypeNotFound
+    )
+
+    implicit val queryStringBindableEnumItemType = new QueryStringBindable.Parsing[com.gilt.apidoc.api.v0.models.ItemType](
+      ItemType.fromString(_).get, _.toString, enumItemTypeNotFound
     )
 
     // Enum: OriginalType

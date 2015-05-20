@@ -46,6 +46,13 @@
 		{ "name": "swagger_json", "description": "The original in the swagger.json format" },
 		{ "name": "avro_idl", "description": "The original is in Avro Idl format" }
 	    ]
+	},
+
+	"item_type": {
+	    "description": "Identifies the specific type of item that was indexed by search",
+	    "values": [
+		{ "name": "application", "description": "Represents that the item indexed was an application" }
+	    ]
 	}
 
     },
@@ -374,6 +381,16 @@
             "description": "Represents a single NON breaking change of an application version.",
             "fields": [
                 { "name": "description", "type": "string", "example": "name changed from foo to bar" }
+            ]
+        },
+
+        "item": {
+            "description": "When searching for content, the results of the search will be a list of items. Each item will have enough information to render for the user, including a type and item_guid to enable creating the appropriate link.",
+            "fields": [
+                { "name": "id", "type": "string", "description": "Uniquely identifies this item - for example, if the type of item is application, this guid will be the application key." },
+                { "name": "type", "type": "item_type" },
+                { "name": "label", "type": "string" },
+                { "name": "description", "type": "string", "required": false }
             ]
         }
 
