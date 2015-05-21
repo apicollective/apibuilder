@@ -1057,13 +1057,25 @@
 	},
 
 	"item": {
-	    "path": "/:org/search",
+	    "path": "",
 
 	    "operations": [
 		{
 		    "method": "GET",
+		    "path": "/items/:guid",
+                    "responses": {
+                        "200": { "type": "item" },
+                        "404": { "type": "unit" }			
+                    }
+		},
+
+		{
+		    "method": "GET",
+		    "path": "/:orgKey/search",
 		    "parameters": [
-			{ "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." }
+			{ "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 		    ],
                     "responses": {
                         "200": { "type": "[item]" }

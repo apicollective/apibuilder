@@ -62,7 +62,15 @@ object ItemsDao {
     SQL(DeleteQuery).on('guid -> guid).execute()
   }
 
+  def findByGuid(
+    authorization: Authorization,
+    guid: UUID
+  ): Option[Item] = {
+    findAll(authorization, guid = Some(guid)).headOption
+  }
+
   def findAll(
+    authorization: Authorization = Authorization.All, // TODO
     guid: Option[UUID] = None,
     orgKey: Option[String] = None,
     `type`: Option[ItemType] = None,

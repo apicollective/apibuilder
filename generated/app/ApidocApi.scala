@@ -1549,15 +1549,29 @@ package com.gilt.apidoc.api.v0 {
     }
 
     object Items extends Items {
-      override def getSearchByOrg(
-        org: String,
-        q: _root_.scala.Option[String] = None
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Item] = {
+        _executeRequest("GET", s"/items/${guid}").map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.api.v0.models.Item", r, _.validate[com.gilt.apidoc.api.v0.models.Item])
+          case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+        }
+      }
+
+      override def getSearchByOrgKey(
+        orgKey: String,
+        q: _root_.scala.Option[String] = None,
+        limit: Long = 25,
+        offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Item]] = {
         val queryParameters = Seq(
-          q.map("q" -> _)
+          q.map("q" -> _),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/search", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/search", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.Item]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.Item]])
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2319,9 +2333,15 @@ package com.gilt.apidoc.api.v0 {
   }
 
   trait Items {
-    def getSearchByOrg(
-      org: String,
-      q: _root_.scala.Option[String] = None
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Item]
+
+    def getSearchByOrgKey(
+      orgKey: String,
+      q: _root_.scala.Option[String] = None,
+      limit: Long = 25,
+      offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Item]]
   }
 
