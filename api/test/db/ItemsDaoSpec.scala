@@ -65,7 +65,6 @@ class ItemsDaoSpec extends FunSpec with Matchers {
       ItemsDao.findAll(orgKey = Some(org.key + "2")) should be(Nil)
     }
 
-
     it("type") {
       val guid = UUID.randomUUID
     
