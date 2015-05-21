@@ -2,12 +2,32 @@ package actors
 
 import com.gilt.apidoc.api.v0.models.ItemType
 import org.scalatest.{FunSpec, Matchers}
+import java.util.UUID
 
 class SearchSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
   describe("indexApplication") {
+
+    it("q") {
+      val description = UUID.randomUUID.toString
+      val form = db.Util.createApplicationForm().copy(description = Some(description))
+      val app = db.Util.createApplication(form = form)
+      Search.indexApplication(app.guid)
+
+      Seq(
+        app.name,
+        app.key,
+        description
+      ).foreach { query =>
+        db.ItemsDao.findAll(q = Some(query)).map(_.guid) should be(Seq(app.guid))
+        db.ItemsDao.findAll(q = Some(s"   $query   ")).map(_.guid) should be(Seq(app.guid))
+        db.ItemsDao.findAll(q = Some(query.toUpperCase)).map(_.guid) should be(Seq(app.guid))
+      }
+
+      db.ItemsDao.findAll(q = Some(UUID.randomUUID.toString)) should be(Nil)
+    }
 
     it("on create") {
       val app = db.Util.createApplication()
