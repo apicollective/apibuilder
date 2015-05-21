@@ -56,6 +56,7 @@ object ItemsDao {
 
   def findAll(
     guid: Option[UUID] = None,
+    `type`: Option[ItemType] = None,
     q: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0
@@ -63,12 +64,14 @@ object ItemsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and items.guid = {guid}::uuid" },
+      `type`.map { v => "and items.type = {type}" },
       q.map { v => "and items.content like '%' || lower(trim({q})) || '%' " },
       Some(s"order by lower(items.label) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      `type`.map('type -> _.toString),
       q.map('q -> _)
     ).flatten
 

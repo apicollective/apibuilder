@@ -49,6 +49,14 @@ class ItemsDaoSpec extends FunSpec with Matchers {
 
   describe("findAll") {
 
+    it("type") {
+      val guid = UUID.randomUUID
+    
+      upsertItem(guid = guid, `type` = ItemType.Application)
+      ItemsDao.findAll(guid = Some(guid), `type` = Some(ItemType.Application)).map(_.guid) should be(Seq(guid))
+      ItemsDao.findAll(guid = Some(guid), `type` = Some(ItemType.UNDEFINED("foo"))).map(_.guid) should be(Nil)
+    }
+    
     it("q") {
       val guid = UUID.randomUUID
     
