@@ -10,7 +10,14 @@ object Search {
     getInfo(applicationGuid) match {
       case Some((org, app)) => {
         val content = s"""${app.name} ${app.key} ${app.description.getOrElse("")}""".trim.toLowerCase
-        ItemsDao.upsert(app.guid, ItemType.Application, app.name, app.description, content)
+        ItemsDao.upsert(
+          guid = app.guid,
+          organizationGuid = org.guid,
+          `type` = ItemType.Application,
+          label = app.name,
+          description = app.description,
+          content = content
+        )
       }
       case None => {
         ItemsDao.delete(applicationGuid)

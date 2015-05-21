@@ -13,13 +13,22 @@ class ItemsDaoSpec extends FunSpec with Matchers {
   new play.core.StaticApplication(new java.io.File("."))
 
   private def upsertItem(
+    organizationGuid: UUID = Util.createOrganization().guid,
     guid: UUID = UUID.randomUUID,
     `type`: ItemType = ItemType.Application,
     label: String = "Test",
     description: Option[String] = None,
     content: String = "test"
   ): Item = {
-    ItemsDao.upsert(guid, `type`, label, description, content)
+    ItemsDao.upsert(
+      guid = guid,
+      organizationGuid = organizationGuid,
+      `type` = `type`,
+      label = label,
+      description = description,
+      content = content
+    )
+
     ItemsDao.findAll(guid = Some(guid)).headOption.getOrElse {
       sys.error("Failed to upsert item")
     }
@@ -48,6 +57,14 @@ class ItemsDaoSpec extends FunSpec with Matchers {
   }
 
   describe("findAll") {
+
+    it("orgKey") {
+      val org = Util.createOrganization()
+      val item = upsertItem(organizationGuid = org.guid)
+      ItemsDao.findAll(orgKey = Some(org.key)).map(_.guid) should be(Seq(item.guid))
+      ItemsDao.findAll(orgKey = Some(org.key + "2")) should be(Nil)
+    }
+
 
     it("type") {
       val guid = UUID.randomUUID

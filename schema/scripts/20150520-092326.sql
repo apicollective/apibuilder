@@ -4,6 +4,7 @@ drop table if exists items;
 
 create table items (
   guid                  uuid primary key,
+  organization_guid     uuid not null references public.organizations,
   type                  text not null check(public.enum(type)),
   label                 text not null check(trim(label) = label),
   description           text check(trim(description) = description),
@@ -11,16 +12,23 @@ create table items (
   created_at            timestamptz not null default now()
 );
 
+create index items_organization_guid_content_idx on items(organization_guid, content);
+
 comment on table items is '
   A denormalization of the data in the items table optimized for search
 ';
 
+comment on column items.organization_guid is '
+  We denormalize the organization guid into the search items table to enable
+  filtering all of the content easily by organization.
+';
 
 comment on column items.guid is '
   The specific guid of the item that was indexed. For versions, this will
   be the version_guid. For applications, this will be the application_guid,
   etc.
 ';
+
 comment on column items.label is '
   Label to display in the search results. e.g. apidoc
 ';

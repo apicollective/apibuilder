@@ -21,21 +21,29 @@ object ItemsDao {
 
   private val InsertQuery = """
     insert into search.items
-    (guid, type, label, description, content)
+    (guid, organization_guid, type, label, description, content)
     values
-    ({guid}::uuid, {type}, {label}, {description}, {content})
+    ({guid}::uuid, {organization_guid}::uuid, {type}, {label}, {description}, {content})
   """
 
   private val DeleteQuery = """
     delete from search.items where guid = {guid}::uuid
   """
 
-  def upsert(guid: UUID, `type`: ItemType, label: String, description: Option[String], content: String) {
+  def upsert(
+    guid: UUID,
+    organizationGuid: UUID,
+    `type`: ItemType,
+    label: String,
+    description: Option[String],
+    content: String
+  ) {
     DB.withTransaction { implicit c =>
       delete(c, guid)
 
       SQL(InsertQuery).on(
         'guid -> guid,
+        'organization_guid -> organizationGuid,
         'type -> `type`.toString,
         'label -> label.trim,
         'description -> description.map(_.trim).map(Text.truncate(_)),
@@ -56,6 +64,7 @@ object ItemsDao {
 
   def findAll(
     guid: Option[UUID] = None,
+    orgKey: Option[String] = None,
     `type`: Option[ItemType] = None,
     q: Option[String] = None,
     limit: Long = 25,
@@ -64,6 +73,7 @@ object ItemsDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and items.guid = {guid}::uuid" },
+      orgKey.map { v => "and items.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({org_key})))" },
       `type`.map { v => "and items.type = {type}" },
       q.map { v => "and items.content like '%' || lower(trim({q})) || '%' " },
       Some(s"order by lower(items.label) limit ${limit} offset ${offset}")
@@ -71,6 +81,7 @@ object ItemsDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      orgKey.map('org_key -> _),
       `type`.map('type -> _.toString),
       q.map('q -> _)
     ).flatten
