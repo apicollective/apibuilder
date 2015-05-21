@@ -12,7 +12,7 @@
     "unions": {
 	"task_data": {
 	    "types": [
-		{ "type": "task_data_index_version", "description": "Task to update the search index following a change in application version" },
+		{ "type": "task_data_index_application", "description": "Task to update the search index following a change in application" },
 		{ "type": "task_data_diff_version", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" }
 	    ]
 	},
@@ -37,7 +37,7 @@
 	    ]
 	},
 
-	"task_data_index_version": {
+	"task_data_index_application": {
 	    "fields": [
                 { "name": "version_guid", "type": "uuid" }
 	    ]

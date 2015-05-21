@@ -4,7 +4,7 @@ import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import core.VersionMigration
 import builder.OriginalValidator
 import com.gilt.apidoc.api.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
-import com.gilt.apidoc.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexVersion}
+import com.gilt.apidoc.internal.v0.models.TaskDataDiffVersion
 import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 import lib.VersionTag
@@ -124,7 +124,6 @@ object VersionsDao {
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
       val taskGuid = TasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = version.guid, newVersionGuid = versionGuid))
-      // TODO: Add task to update search index
       (versionGuid, Seq(taskGuid))
     }
 

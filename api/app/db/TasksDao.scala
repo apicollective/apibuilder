@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.internal.v0.models.{Task, TaskData, TaskDataDiffVersion, TaskDataIndexVersion, TaskDataUndefinedType}
+import com.gilt.apidoc.internal.v0.models.{Task, TaskData}
 import com.gilt.apidoc.internal.v0.models.json._
 import com.gilt.apidoc.api.v0.models.{User}
 import anorm._

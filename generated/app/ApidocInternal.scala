@@ -49,7 +49,7 @@ package com.gilt.apidoc.internal.v0.models {
     newVersionGuid: _root_.java.util.UUID
   ) extends TaskData
 
-  case class TaskDataIndexVersion(
+  case class TaskDataIndexApplication(
     versionGuid: _root_.java.util.UUID
   ) extends TaskData
 
@@ -188,12 +188,12 @@ package com.gilt.apidoc.internal.v0.models {
       )(unlift(TaskDataDiffVersion.unapply _))
     }
 
-    implicit def jsonReadsApidocinternalTaskDataIndexVersion: play.api.libs.json.Reads[TaskDataIndexVersion] = {
-      (__ \ "version_guid").read[_root_.java.util.UUID].map { x => new TaskDataIndexVersion(versionGuid = x) }
+    implicit def jsonReadsApidocinternalTaskDataIndexApplication: play.api.libs.json.Reads[TaskDataIndexApplication] = {
+      (__ \ "version_guid").read[_root_.java.util.UUID].map { x => new TaskDataIndexApplication(versionGuid = x) }
     }
 
-    implicit def jsonWritesApidocinternalTaskDataIndexVersion: play.api.libs.json.Writes[TaskDataIndexVersion] = new play.api.libs.json.Writes[TaskDataIndexVersion] {
-      def writes(x: TaskDataIndexVersion) = play.api.libs.json.Json.obj(
+    implicit def jsonWritesApidocinternalTaskDataIndexApplication: play.api.libs.json.Writes[TaskDataIndexApplication] = new play.api.libs.json.Writes[TaskDataIndexApplication] {
+      def writes(x: TaskDataIndexApplication) = play.api.libs.json.Json.obj(
         "version_guid" -> play.api.libs.json.Json.toJson(x.versionGuid)
       )
     }
@@ -216,7 +216,7 @@ package com.gilt.apidoc.internal.v0.models {
 
     implicit def jsonReadsApidocinternalTaskData: play.api.libs.json.Reads[TaskData] = {
       (
-        (__ \ "task_data_index_version").read(jsonReadsApidocinternalTaskDataIndexVersion).asInstanceOf[play.api.libs.json.Reads[TaskData]]
+        (__ \ "task_data_index_application").read(jsonReadsApidocinternalTaskDataIndexApplication).asInstanceOf[play.api.libs.json.Reads[TaskData]]
         orElse
         (__ \ "task_data_diff_version").read(jsonReadsApidocinternalTaskDataDiffVersion).asInstanceOf[play.api.libs.json.Reads[TaskData]]
       )
@@ -224,7 +224,7 @@ package com.gilt.apidoc.internal.v0.models {
 
     implicit def jsonWritesApidocinternalTaskData: play.api.libs.json.Writes[TaskData] = new play.api.libs.json.Writes[TaskData] {
       def writes(obj: TaskData) = obj match {
-        case x: com.gilt.apidoc.internal.v0.models.TaskDataIndexVersion => play.api.libs.json.Json.obj("task_data_index_version" -> jsonWritesApidocinternalTaskDataIndexVersion.writes(x))
+        case x: com.gilt.apidoc.internal.v0.models.TaskDataIndexApplication => play.api.libs.json.Json.obj("task_data_index_application" -> jsonWritesApidocinternalTaskDataIndexApplication.writes(x))
         case x: com.gilt.apidoc.internal.v0.models.TaskDataDiffVersion => play.api.libs.json.Json.obj("task_data_diff_version" -> jsonWritesApidocinternalTaskDataDiffVersion.writes(x))
         case x: com.gilt.apidoc.internal.v0.models.TaskDataUndefinedType => sys.error(s"The type[com.gilt.apidoc.internal.v0.models.TaskDataUndefinedType] should never be serialized")
       }

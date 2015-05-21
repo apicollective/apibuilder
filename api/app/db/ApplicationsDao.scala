@@ -1,6 +1,7 @@
 package db
 
 import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Error, Organization, Reference, User, Version, Visibility}
+import com.gilt.apidoc.internal.v0.models.TaskDataIndexApplication
 import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._
@@ -145,6 +146,7 @@ object ApplicationsDao {
     }
 
     global.Actors.mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
+    // TODO add task to index application
 
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create application")

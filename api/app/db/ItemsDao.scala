@@ -1,5 +1,6 @@
 package db
 
+import lib.Text
 import com.gilt.apidoc.api.v0.models.{User, Item, ItemType}
 import anorm._
 import play.api.db._
@@ -37,7 +38,7 @@ object ItemsDao {
         'guid -> guid,
         'type -> `type`.toString,
         'label -> label.trim,
-        'description -> description.map(_.trim),
+        'description -> description.map(_.trim).map(Text.truncate(_)),
 	'content -> content.trim.toLowerCase
       ).execute()
     }
