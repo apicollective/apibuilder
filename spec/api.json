@@ -1047,10 +1047,29 @@
                         { "name": "application_key", "type": "string", "description": "Filter changes to those made for the application with this key.", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-		    ]
+		    ],
+                    "responses": {
+                        "200": { "type": "[change]" }
+                    }
 		}
 	    ]
 
+	},
+
+	"item": {
+	    "path": "/:org/search",
+
+	    "operations": [
+		{
+		    "method": "GET",
+		    "parameters": [
+			{ "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." }
+		    ],
+                    "responses": {
+                        "200": { "type": "[item]" }
+                    }
+		}
+	    ]
 	}
 
     }
