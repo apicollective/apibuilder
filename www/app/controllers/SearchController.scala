@@ -4,7 +4,7 @@ import lib.{Pagination, PaginatedCollection}
 import play.api._
 import play.api.mvc._
 
-object Searches extends Controller {
+object SearchController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -17,8 +17,10 @@ object Searches extends Controller {
         offset = page * Pagination.DefaultLimit
       )
     } yield {
-      Ok(views.html.searches.index(
-        request.mainTemplate().copy(title = Some("Search Results")),
+      Ok(views.html.search.index(
+        request.mainTemplate().copy(
+          query = q
+        ),
         q = q,
         items = PaginatedCollection(page, items)
       ))

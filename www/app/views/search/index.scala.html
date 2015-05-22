@@ -25,10 +25,10 @@
     @if(items.hasPrevious || items.hasNext) {
       <ul class="pager">
         @if(items.hasPrevious) {
-          <li><a href="@routes.Searches.index(tpl.org.get.key, q, items.page - 1)">Previous</a></li>
+          <li><a href="@routes.SearchController.index(tpl.org.get.key, q, items.page - 1)">Previous</a></li>
         }
         @if(items.hasNext) {
-          <li><a href="@routes.Searches.index(tpl.org.get.key, q, items.page + 1)">Next</a></li>
+          <li><a href="@routes.SearchController.index(tpl.org.get.key, q, items.page + 1)">Next</a></li>
         }
       </ul>
     }

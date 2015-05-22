@@ -35,6 +35,7 @@ case class MainTemplate(
   isOrgAdmin: Boolean = false,
   isOrgMember: Boolean = false,
   service: Option[Service] = None,
+  query: Option[String] = None,
   requestPath: String
 ) {
 
