@@ -1,6 +1,6 @@
 Tasks:
-  - add actors to execute tasks that have not been completed in 1 minute
-  - add daily actor to delete old tasks (> 3 months to start)
+  - Migrate tasks for changes
+  - Implement authorization in items and changes daos
 
 Add search to apidoc
 
