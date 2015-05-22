@@ -72,6 +72,8 @@ POST    /:orgKey/domains/:domain/remove                           controllers.Do
 GET     /:orgKey/domains/create                                   controllers.Domains.create(orgKey: String)
 POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
 
+GET     /:orgKey/history                                          controllers.HistoryController.index(orgKey: String, page: Int ?= 0)
+
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/downloadCsv                              controllers.Members.downloadCsv(orgKey: String)
 GET     /:orgKey/members/add                                      controllers.Members.add(orgKey: String)
@@ -104,6 +106,7 @@ POST    /:orgKey/:applicationKey/:version/settings/postEdit       controllers.Ap
 POST    /:orgKey/:applicationKey/settings/postDelete              controllers.ApplicationSettings.postDelete(orgKey: String, applicationKey: String)
 
 GET     /:orgKey/:applicationKey                                  controllers.Versions.redirectToLatest(orgKey: String, applicationKey: String)
+GET     /:orgKey/:applicationKey/history                          controllers.HistoryController.application(orgKey: String, applicationKey: String, page: Int ?= 0)
 GET     /:orgKey/:applicationKey/:version                         controllers.Versions.show(orgKey: String, applicationKey: String, version: String)
 GET     /:orgKey/:applicationKey/:version/original                controllers.Versions.original(orgKey: String, applicationKey: String, version: String)
 GET     /:orgKey/:applicationKey/:version/service.json            controllers.Versions.serviceJson(orgKey: String, applicationKey: String, version: String)

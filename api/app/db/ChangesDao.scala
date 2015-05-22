@@ -25,8 +25,8 @@ object ChangesDao {
            changes.type,
            changes.description
       from changes
-      join applications on applications.guid = changes.application_guid
-      join organizations on organizations.guid = applications.organization_guid
+      join applications on applications.guid = changes.application_guid and applications.deleted_at is null
+      join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
       join versions from_version on from_version.guid = changes.from_version_guid
       join versions to_version on to_version.guid = changes.to_version_guid
      where true
@@ -99,6 +99,8 @@ object ChangesDao {
   def findAll(
     authorization: Authorization,
     guid: Option[UUID] = None,
+    organizationGuid: Option[UUID] = None,
+    applicationKey: Option[String] = None,
     applicationGuid: Option[UUID] = None,
     fromVersionGuid: Option[UUID] = None,
     toVersionGuid: Option[UUID] = None,
@@ -110,7 +112,9 @@ object ChangesDao {
       Some(BaseQuery.trim),
       authorization.applicationFilter().map(v => "and " + v),
       guid.map { v => "and changes.guid = {guid}::uuid" },
-      applicationGuid.map { v => "and changes.from_version_guid in (select guid from versions where deleted_at is null and application_guid = {application_guid}::uuid)" },
+      organizationGuid.map { v => "and organizations.guid = {organization_guid}::uuid" },
+      applicationGuid.map { v => "and applications.guid = {application_guid}::uuid" },
+      applicationKey.map { v => "and applications.key = lower(trim({application_key}))" },
       fromVersionGuid.map { v => "and changes.from_version_guid = {from_version_guid}::uuid" },
       toVersionGuid.map { v => "and changes.to_version_guid = {to_version_guid}::uuid" },
       description.map { v => "and lower(changes.description) = lower(trim({description}))" },
@@ -119,7 +123,9 @@ object ChangesDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      organizationGuid.map('organization_guid -> _.toString),
       applicationGuid.map('application_guid -> _.toString),
+      applicationKey.map('application_key -> _.toString),
       fromVersionGuid.map('from_version_guid -> _.toString),
       toVersionGuid.map('to_version_guid -> _.toString),
       description.map('description -> _)

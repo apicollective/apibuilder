@@ -1,0 +1,54 @@
+@(tpl: models.MainTemplate,
+  changes: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Change]
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  @if(changes.isEmpty) {
+    <em>No changes found</em>
+
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @changes.items.map { change =>
+         <tr>
+           <td>
+             @{change match {
+               case com.gilt.apidoc.api.v0.models.BreakingChange(desc) => "Breaking"
+               case com.gilt.apidoc.api.v0.models.NonBreakingChange(desc) => "Non Breaking"
+               case com.gilt.apidoc.api.v0.models.ChangeUndefinedType(desc) => "Unkonwn"
+             }}
+           </td>
+           <td>
+             @{change match {
+               case com.gilt.apidoc.api.v0.models.BreakingChange(desc) => desc
+               case com.gilt.apidoc.api.v0.models.NonBreakingChange(desc) => desc
+               case com.gilt.apidoc.api.v0.models.ChangeUndefinedType(desc) => desc
+             }}
+           </td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+    @if(changes.hasPrevious || changes.hasNext) {
+      <ul class="pager">
+        @if(changes.hasPrevious) {
+          @if(tpl.application.isEmpty) {
+            <li><a href="@routes.HistoryController.index(orgKey = tpl.org.get.key, changes.page - 1)">Previous</a></li>
+          } else {
+            <li><a href="@routes.HistoryController.application(orgKey = tpl.org.get.key, applicationKey = tpl.application.get.key, changes.page - 1)">Previous</a></li>
+          }
+        }
+        @if(changes.hasNext) {
+          @if(tpl.application.isEmpty) {
+            <li><a href="@routes.HistoryController.index(tpl.org.get.key, changes.page + 1)">Next</a></li>
+          } else {
+            <li><a href="@routes.HistoryController.application(orgKey = tpl.org.get.key, applicationKey = tpl.application.get.key, changes.page + 1)">Next</a></li>
+          }
+        }
+      </ul>
+    }
+  }
+
+}

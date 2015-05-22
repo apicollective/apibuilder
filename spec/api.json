@@ -727,6 +727,15 @@
                 },
 
                 {
+                    "method": "GET",
+		    "path": "/:key",
+                    "responses": {
+                        "200": { "type": "application" },
+                        "404": { "type": "unit" }
+                    }
+                },
+
+                {
                     "method": "POST",
                     "description": "Create an application.",
 		    "body": { "type": "application_form" },
@@ -1049,7 +1058,8 @@
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 		    ],
                     "responses": {
-                        "200": { "type": "[change]" }
+                        "200": { "type": "[change]" },
+                        "404": { "type": "unit", "description": "Returned if the specified org key was not found" }
                     }
 		}
 	    ]

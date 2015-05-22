@@ -29,6 +29,16 @@ object Applications extends Controller {
     Ok(Json.toJson(applications))
   }
 
+  def getByOrgKeyAndKey(
+    orgKey: String,
+    key: String
+  ) = AnonymousRequest { request =>
+    ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, key) match {
+      case None => NotFound
+      case Some(app) => Ok(Json.toJson(app))
+    }
+  }
+
   def postByOrgKey(orgKey: String) = Authenticated(parse.json) { request =>
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound

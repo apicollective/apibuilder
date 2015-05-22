@@ -140,6 +140,8 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       )
       ChangesDao.findAll(Authorization.User(Util.createdBy.guid), guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
     }
+
+    // TODO: Test find by org guid, application key
   }
 
 }
