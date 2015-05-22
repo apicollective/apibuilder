@@ -88,7 +88,7 @@ object ApplicationsDao {
     app: Application,
     form: ApplicationForm
   ): Application = {
-    DB.withConnection { implicit c =>
+    withTasks(updatedBy, app.guid, { implicit c =>
       SQL(UpdateQuery).on(
         'guid -> app.guid,
         'name -> form.name.trim,
@@ -96,7 +96,8 @@ object ApplicationsDao {
         'description -> form.description.map(_.trim),
         'updated_by_guid -> updatedBy.guid
       ).execute()
-    }
+    })
+
     findByGuid(Authorization.All, app.guid).getOrElse {
       sys.error("Error updating application")
     }
@@ -133,7 +134,7 @@ object ApplicationsDao {
     val guid = UUID.randomUUID
     val key = keyOption.getOrElse(UrlKey.generate(form.name))
 
-    val taskGuid = DB.withTransaction { implicit c =>
+    withTasks(createdBy, guid, { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> org.guid,
@@ -144,22 +145,19 @@ object ApplicationsDao {
         'created_by_guid -> createdBy.guid,
         'updated_by_guid -> createdBy.guid
       ).execute()
-
-      TasksDao.insert(c, createdBy, TaskDataIndexApplication(guid))
-    }
+    })
 
     global.Actors.mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
-    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
     
-    // TODO add task to index application
-
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create application")
     }
   }
 
   def softDelete(deletedBy: User, application: Application) {
-    SoftDelete.delete("applications", deletedBy, application.guid)
+    withTasks(deletedBy, application.guid, { c =>
+      SoftDelete.delete(c, "applications", deletedBy, application.guid)
+    })
   }
 
   def canUserUpdate(user: User, app: Application): Boolean = {
@@ -245,6 +243,18 @@ object ApplicationsDao {
       visibility = Visibility(row[String](s"${p}visibility")),
       description = row[Option[String]](s"${p}description")
     )
+  }
+
+  private def withTasks(
+    user: User,
+    guid: UUID,
+    f: java.sql.Connection => Unit
+  ) {
+    val taskGuid = DB.withTransaction { implicit c =>
+      f(c)
+      TasksDao.insert(c, user, TaskDataIndexApplication(guid))
+    }
+    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
   }
 
 }
