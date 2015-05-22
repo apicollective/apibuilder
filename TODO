@@ -1,6 +1,8 @@
 Tasks:
   - Migrate tasks for changes
   - Implement authorization in items and changes daos
+  - Wire up diff when uploading a new version (vs. replacing an existing)
+  - double check all the task messages - finish applications dao update
 
 Add search to apidoc
 
