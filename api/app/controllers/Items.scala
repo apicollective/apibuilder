@@ -11,6 +11,21 @@ object Items extends Controller with Items
 trait Items {
   this: Controller =>
 
+  def get(
+    orgKey: Option[String],
+    q: Option[String],
+    limit: Long = 25,
+    offset: Long = 0
+  ) = Authenticated { request =>
+    val items = ItemsDao.findAll(
+      orgKey = orgKey,
+      q = q,
+      limit = limit,
+      offset = offset
+    )
+    Ok(Json.toJson(items))
+  }
+
   def getByGuid(
     guid: UUID
   ) = Authenticated { request =>
@@ -18,21 +33,6 @@ trait Items {
       case None => NotFound
       case Some(item) => Ok(Json.toJson(item))
     }
-  }
-
-  def getSearchByOrgKey(
-    orgKey: String,
-    q: Option[String],
-    limit: Long = 25,
-    offset: Long = 0
-  ) = Authenticated { request =>
-    val items = ItemsDao.findAll(
-      orgKey = Some(orgKey),
-      q = q,
-      limit = limit,
-      offset = offset
-    )
-    Ok(Json.toJson(items))
   }
 
 }

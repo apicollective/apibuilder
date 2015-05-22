@@ -101,6 +101,13 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       ChangesDao.findAll(Authorization.All, organizationGuid = Some(org.guid)).map(_.guid) should be(Seq(change.guid))
     }
 
+    it("organizationKey") {
+      val org = Util.createOrganization()
+      val change = createChange(org = org)
+      ChangesDao.findAll(Authorization.All, organizationKey = Some(UUID.randomUUID.toString)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, organizationKey = Some(org.key)).map(_.guid) should be(Seq(change.guid))
+    }
+
     it("applicationGuid") {
       val change = createChange()
       ChangesDao.findAll(Authorization.All, applicationGuid = Some(UUID.randomUUID)) should be(Nil)

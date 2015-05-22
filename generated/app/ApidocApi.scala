@@ -1336,6 +1336,7 @@ package com.gilt.apidoc.api.v0 {
       override def getByOrgKey(
         orgKey: String,
         name: _root_.scala.Option[String] = None,
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         key: _root_.scala.Option[String] = None,
         hasVersion: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
@@ -1343,6 +1344,7 @@ package com.gilt.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Application]] = {
         val queryParameters = Seq(
           name.map("name" -> _),
+          guid.map("guid" -> _.toString),
           key.map("key" -> _),
           hasVersion.map("has_version" -> _.toString),
           Some("limit" -> limit.toString),
@@ -1352,17 +1354,6 @@ package com.gilt.apidoc.api.v0 {
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.Application]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.Application]])
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
-        }
-      }
-
-      override def getByOrgKeyAndGuid(
-        orgKey: String,
-        guid: _root_.java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Application] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${guid}").map {
-          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.api.v0.models.Application", r, _.validate[com.gilt.apidoc.api.v0.models.Application])
-          case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
-          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
 
@@ -1405,22 +1396,22 @@ package com.gilt.apidoc.api.v0 {
     }
 
     object Changes extends Changes {
-      override def getByOrgKey(
-        orgKey: String,
+      override def get(
+        orgKey: _root_.scala.Option[String] = None,
         applicationKey: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Change]] = {
         val queryParameters = Seq(
+          orgKey.map("org_key" -> _),
           applicationKey.map("application_key" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/changes", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/changes", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.Change]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.Change]])
-          case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
-          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
       }
     }
@@ -1561,6 +1552,25 @@ package com.gilt.apidoc.api.v0 {
     }
 
     object Items extends Items {
+      override def get(
+        orgKey: _root_.scala.Option[String] = None,
+        q: _root_.scala.Option[String] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Item]] = {
+        val queryParameters = Seq(
+          orgKey.map("org_key" -> _),
+          q.map("q" -> _),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/items", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.Item]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.Item]])
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+
       override def getByGuid(
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Item] = {
@@ -1568,24 +1578,6 @@ package com.gilt.apidoc.api.v0 {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.api.v0.models.Item", r, _.validate[com.gilt.apidoc.api.v0.models.Item])
           case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
-        }
-      }
-
-      override def getSearchByOrgKey(
-        orgKey: String,
-        q: _root_.scala.Option[String] = None,
-        limit: Long = 25,
-        offset: Long = 0
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Item]] = {
-        val queryParameters = Seq(
-          q.map("q" -> _),
-          Some("limit" -> limit.toString),
-          Some("offset" -> offset.toString)
-        ).flatten
-
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/search", queryParameters = queryParameters).map {
-          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.Item]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.Item]])
-          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
       }
     }
@@ -2226,16 +2218,12 @@ package com.gilt.apidoc.api.v0 {
     def getByOrgKey(
       orgKey: String,
       name: _root_.scala.Option[String] = None,
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       key: _root_.scala.Option[String] = None,
       hasVersion: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Application]]
-
-    def getByOrgKeyAndGuid(
-      orgKey: String,
-      guid: _root_.java.util.UUID
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Application]
 
     /**
      * Create an application.
@@ -2264,8 +2252,8 @@ package com.gilt.apidoc.api.v0 {
   }
 
   trait Changes {
-    def getByOrgKey(
-      orgKey: String,
+    def get(
+      orgKey: _root_.scala.Option[String] = None,
       applicationKey: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0
@@ -2350,16 +2338,16 @@ package com.gilt.apidoc.api.v0 {
   }
 
   trait Items {
-    def getByGuid(
-      guid: _root_.java.util.UUID
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Item]
-
-    def getSearchByOrgKey(
-      orgKey: String,
+    def get(
+      orgKey: _root_.scala.Option[String] = None,
       q: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Item]]
+
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Item]
   }
 
   trait MembershipRequests {

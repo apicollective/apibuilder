@@ -1,7 +1,6 @@
 package controllers
 
 import com.gilt.apidoc.api.v0.models.ItemType
-import com.gilt.apidoc.api.v0.errors.UnitResponse
 import lib.{Pagination, PaginatedCollection}
 import play.api._
 import play.api.mvc._
@@ -15,8 +14,8 @@ object SearchController extends Controller {
 
   def index(orgKey: String, q: Option[String], page: Int = 0) = AnonymousOrg.async { implicit request =>
     for {
-      items <- request.api.items.getSearchByOrgKey(
-        orgKey = orgKey,
+      items <- request.api.items.get(
+        orgKey = Some(orgKey),
         q = q,
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
@@ -36,10 +35,11 @@ object SearchController extends Controller {
     itemType match {
 
       case ItemType.Application => {
-        request.api.applications.getByOrgKeyAndGuid(orgKey, guid).map { app =>
-          Redirect(routes.Versions.show(orgKey, app.key, "latest"))
-        }.recover {
-          case UnitResponse(404) => Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> "Application not found")
+        request.api.applications.getByOrgKey(orgKey, guid = Some(guid), limit = 1).map { apps =>
+          apps.headOption match {
+            case None => Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> "Application not found")
+            case Some(app) => Redirect(routes.Versions.show(orgKey, app.key, "latest"))
+          }
         }
       }
 

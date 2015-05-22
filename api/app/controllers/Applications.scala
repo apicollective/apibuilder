@@ -13,6 +13,7 @@ object Applications extends Controller {
   def getByOrgKey(
     orgKey: String,
     name: Option[String],
+    guid: Option[UUID],
     key: Option[String],
     hasVersion: Option[Boolean],
     limit: Long = 25,
@@ -23,26 +24,12 @@ object Applications extends Controller {
       orgKey = Some(orgKey),
       name = name,
       key = key,
+      guid = guid,
       hasVersion = hasVersion,
       limit = limit,
       offset = offset
     )
     Ok(Json.toJson(applications))
-  }
-
-  def getByOrgKeyAndGuid(
-    orgKey: String,
-    guid: UUID
-  ) = AnonymousRequest { request =>
-    ApplicationsDao.findAll(
-      request.authorization,
-      orgKey = Some(orgKey),
-      guid = Some(guid),
-      limit = 1
-    ).headOption match {
-      case None => NotFound
-      case Some(app) => Ok(Json.toJson(app))
-    }
   }
 
   def postByOrgKey(orgKey: String) = Authenticated(parse.json) { request =>

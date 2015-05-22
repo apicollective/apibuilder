@@ -716,6 +716,7 @@
                     "parameters": [
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to search applications" },
                         { "name": "name", "type": "string", "required": false, "description": "The name of an application. Case in-sensitive. Exact match", "required": false },
+                        { "name": "guid", "type": "uuid", "required": false, "description": "The guid of an application. Exact match", "required": false },
                         { "name": "key", "type": "string", "required": false, "description": "The key of an application. Case in-sensitive. Exact match", "required": false },
 			{ "name": "has_version", "type": "boolean", "description": "If true, we return applications that have at least one version. If false, we return applications that have no versions in the system", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
@@ -723,15 +724,6 @@
                     ],
                     "responses": {
                         "200": { "type": "[application]" }
-                    }
-                },
-
-                {
-                    "method": "GET",
-		    "path": "/:guid",
-                    "responses": {
-                        "200": { "type": "application" },
-                        "404": { "type": "unit" }
                     }
                 },
 
@@ -785,6 +777,7 @@
                 }
             ]
         },
+
 
         "version": {
             "path": "/:orgKey",
@@ -1047,19 +1040,18 @@
 	},
 
 	"change": {
-            "path": "/:orgKey/changes",
 
 	    "operations": [
 		{
 		    "method": "GET",
 		    "parameters": [
+                        { "name": "org_key", "type": "string", "description": "Filter changes to those made for the organization with this key.", "required": false },
                         { "name": "application_key", "type": "string", "description": "Filter changes to those made for the application with this key.", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 		    ],
                     "responses": {
-                        "200": { "type": "[change]" },
-                        "404": { "type": "unit", "description": "Returned if the specified org key was not found" }
+                        "200": { "type": "[change]" }
                     }
 		}
 	    ]
@@ -1067,22 +1059,12 @@
 	},
 
 	"item": {
-	    "path": "",
 
 	    "operations": [
 		{
 		    "method": "GET",
-		    "path": "/items/:guid",
-                    "responses": {
-                        "200": { "type": "item" },
-                        "404": { "type": "unit" }			
-                    }
-		},
-
-		{
-		    "method": "GET",
-		    "path": "/:orgKey/search",
 		    "parameters": [
+                        { "name": "org_key", "type": "string", "description": "Filter changes to those made for the organization with this key.", "required": false },
 			{ "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
@@ -1090,7 +1072,17 @@
                     "responses": {
                         "200": { "type": "[item]" }
                     }
+		},
+
+		{
+		    "method": "GET",
+		    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "item" },
+                        "404": { "type": "unit" }			
+                    }
 		}
+
 	    ]
 	}
 

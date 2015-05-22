@@ -11,8 +11,8 @@ object HistoryController extends Controller {
 
   def index(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
     for {
-      changes <- request.api.changes.getByOrgKey(
-        orgKey = orgKey,
+      changes <- request.api.changes.get(
+        orgKey = Some(orgKey),
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
       )
@@ -34,8 +34,8 @@ object HistoryController extends Controller {
         }
         case Some(app) => {
           for {
-            changes <- request.api.changes.getByOrgKey(
-              orgKey = orgKey,
+            changes <- request.api.changes.get(
+              orgKey = Some(orgKey),
               applicationKey = Some(applicationKey),
               limit = Pagination.DefaultLimit+1,
               offset = page * Pagination.DefaultLimit

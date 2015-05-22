@@ -100,6 +100,7 @@ object ChangesDao {
     authorization: Authorization,
     guid: Option[UUID] = None,
     organizationGuid: Option[UUID] = None,
+    organizationKey: Option[String] = None,
     applicationKey: Option[String] = None,
     applicationGuid: Option[UUID] = None,
     fromVersionGuid: Option[UUID] = None,
@@ -113,6 +114,7 @@ object ChangesDao {
       authorization.applicationFilter().map(v => "and " + v),
       guid.map { v => "and changes.guid = {guid}::uuid" },
       organizationGuid.map { v => "and organizations.guid = {organization_guid}::uuid" },
+      organizationKey.map { v => "and organizations.key = {organization_key}" },
       applicationGuid.map { v => "and applications.guid = {application_guid}::uuid" },
       applicationKey.map { v => "and applications.key = lower(trim({application_key}))" },
       fromVersionGuid.map { v => "and changes.from_version_guid = {from_version_guid}::uuid" },
@@ -124,8 +126,9 @@ object ChangesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       organizationGuid.map('organization_guid -> _.toString),
+      organizationKey.map('organization_key -> _),
       applicationGuid.map('application_guid -> _.toString),
-      applicationKey.map('application_key -> _.toString),
+      applicationKey.map('application_key -> _),
       fromVersionGuid.map('from_version_guid -> _.toString),
       toVersionGuid.map('to_version_guid -> _.toString),
       description.map('description -> _)
