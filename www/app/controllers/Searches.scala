@@ -19,6 +19,7 @@ object Searches extends Controller {
     } yield {
       Ok(views.html.searches.index(
         request.mainTemplate().copy(title = Some("Search Results")),
+        q = q,
         items = PaginatedCollection(page, items)
       ))
     }
