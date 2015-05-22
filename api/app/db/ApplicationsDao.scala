@@ -132,7 +132,8 @@ object ApplicationsDao {
   ): Application = {
     val guid = UUID.randomUUID
     val key = keyOption.getOrElse(UrlKey.generate(form.name))
-    DB.withConnection { implicit c =>
+
+    val taskGuid = DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> org.guid,
@@ -143,9 +144,13 @@ object ApplicationsDao {
         'created_by_guid -> createdBy.guid,
         'updated_by_guid -> createdBy.guid
       ).execute()
+
+      TasksDao.insert(c, createdBy, TaskDataIndexApplication(guid))
     }
 
     global.Actors.mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
+    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+    
     // TODO add task to index application
 
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {

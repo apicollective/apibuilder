@@ -1,7 +1,7 @@
 package actors
 
-import lib.{ServiceDiff, Text}
-import com.gilt.apidoc.api.v0.models.{Publication, Version}
+import lib.{Pager, ServiceDiff, Text}
+import com.gilt.apidoc.api.v0.models.{Application, Publication, Version}
 import com.gilt.apidoc.internal.v0.models.{Difference, DifferenceBreaking, DifferenceNonBreaking, DifferenceUndefinedType}
 import com.gilt.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao}
@@ -16,6 +16,7 @@ object TaskActor {
     case object RestartDroppedTasks
     case object PurgeOldTasks
     case object NotifyFailed
+    case object Migrate
   }
 
 }
@@ -92,6 +93,17 @@ class TaskActor extends Actor {
           subject = "One or more tasks failed",
           errors = errors
         )
+      }
+    )
+
+    case TaskActor.Messages.Migrate => Util.withVerboseErrorHandler(
+      "TaskActor.Messages.Migrate", {
+        Pager.eachPage[Application] { offset =>
+          ApplicationsDao.findAll(Authorization.All, limit = 100, offset = offset)
+        } { app =>
+          println(s"Search.indexApplication(${app.guid}) // ${app.key}")
+          Search.indexApplication(app.guid)
+        }
       }
     )
 

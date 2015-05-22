@@ -120,16 +120,14 @@ object VersionsDao {
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
-    val (versionGuid, taskGuids) = DB.withTransaction { implicit c =>
+    val (versionGuid, taskGuid) = DB.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
       val taskGuid = TasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = version.guid, newVersionGuid = versionGuid))
-      (versionGuid, Seq(taskGuid))
+      (versionGuid, taskGuid)
     }
 
-    taskGuids.foreach { taskGuid =>
-      global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
-    }
+    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
 
     findAll(Authorization.All, guid = Some(versionGuid), limit = 1).headOption.getOrElse {
       sys.error(s"Failed to replace version[${version.guid}]")
