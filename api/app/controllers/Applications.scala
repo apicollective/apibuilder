@@ -6,6 +6,7 @@ import db.{Authorization, OrganizationsDao, ApplicationsDao}
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
+import java.util.UUID
 
 object Applications extends Controller {
 
@@ -29,11 +30,16 @@ object Applications extends Controller {
     Ok(Json.toJson(applications))
   }
 
-  def getByOrgKeyAndKey(
+  def getByOrgKeyAndGuid(
     orgKey: String,
-    key: String
+    guid: UUID
   ) = AnonymousRequest { request =>
-    ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, key) match {
+    ApplicationsDao.findAll(
+      request.authorization,
+      orgKey = Some(orgKey),
+      guid = Some(guid),
+      limit = 1
+    ).headOption match {
       case None => NotFound
       case Some(app) => Ok(Json.toJson(app))
     }

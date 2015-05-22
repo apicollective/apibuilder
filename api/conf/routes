@@ -47,7 +47,7 @@ GET        /watches/check                                      controllers.Watch
 POST       /watches                                            controllers.Watches.post()
 DELETE     /watches/:guid                                      controllers.Watches.deleteByGuid(guid: _root_.java.util.UUID)
 GET        /:orgKey                                            controllers.Applications.getByOrgKey(orgKey: String, name: _root_.scala.Option[String], key: _root_.scala.Option[String], has_version: _root_.scala.Option[Boolean], limit: Long ?= 25, offset: Long ?= 0)
-GET        /:orgKey/:key                                       controllers.Applications.getByOrgKeyAndKey(orgKey: String, key: String)
+GET        /:orgKey/:guid                                      controllers.Applications.getByOrgKeyAndGuid(orgKey: String, guid: _root_.java.util.UUID)
 POST       /:orgKey                                            controllers.Applications.postByOrgKey(orgKey: String)
 PUT        /:orgKey/:applicationKey                            controllers.Applications.putByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String)
 DELETE     /:orgKey/:applicationKey                            controllers.Applications.deleteByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String)

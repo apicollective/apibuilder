@@ -1355,11 +1355,11 @@ package com.gilt.apidoc.api.v0 {
         }
       }
 
-      override def getByOrgKeyAndKey(
+      override def getByOrgKeyAndGuid(
         orgKey: String,
-        key: String
+        guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Application] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${guid}").map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.api.v0.models.Application", r, _.validate[com.gilt.apidoc.api.v0.models.Application])
           case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2232,9 +2232,9 @@ package com.gilt.apidoc.api.v0 {
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Application]]
 
-    def getByOrgKeyAndKey(
+    def getByOrgKeyAndGuid(
       orgKey: String,
-      key: String
+      guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Application]
 
     /**

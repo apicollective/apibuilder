@@ -728,7 +728,7 @@
 
                 {
                     "method": "GET",
-		    "path": "/:key",
+		    "path": "/:guid",
                     "responses": {
                         "200": { "type": "application" },
                         "404": { "type": "unit" }
