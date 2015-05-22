@@ -700,18 +700,18 @@ private[api_json] object InternalDatatype {
         case Some(true) => {
           // User explicitly marked this required
           dt match {
-            case InternalDatatype.List(name, _) => InternalDatatype.List(name, true)
-            case InternalDatatype.Map(name, _) => InternalDatatype.Map(name, true)
-            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(name, true)
+            case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), true)
+            case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), true)
+            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), true)
           }
         }
 
         case Some(false) => {
           // User explicitly marked this optional
           dt match {
-            case InternalDatatype.List(name, _) => InternalDatatype.List(name, false)
-            case InternalDatatype.Map(name, _) => InternalDatatype.Map(name, false)
-            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(name, false)
+            case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), false)
+            case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), false)
+            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), false)
           }
         }
       }
