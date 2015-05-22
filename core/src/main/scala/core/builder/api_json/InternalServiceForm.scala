@@ -672,10 +672,21 @@ private[api_json] object InternalDatatype {
 
   def apply(value: String): InternalDatatype = {
     value match {
-      case ListRx(name) => InternalDatatype.List(name, true)
-      case MapRx(name) => InternalDatatype.Map(name, true)
+      case ListRx(name) => InternalDatatype.List(formatName(name), true)
+      case MapRx(name) => InternalDatatype.Map(formatName(name), true)
       case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString, true)
-      case _ => InternalDatatype.Singleton(value, true)
+      case _ => InternalDatatype.Singleton(formatName(value), true)
+    }
+  }
+
+  /**
+    * Make primitive datatype names case insensitive to user
+    * input. e.g. accept both 'UUID' and 'uuid' as the uuid type.
+    */
+  private def formatName(name: String): String = {
+    Primitives(name) match {
+      case None => name
+      case Some(p) => p.toString
     }
   }
 

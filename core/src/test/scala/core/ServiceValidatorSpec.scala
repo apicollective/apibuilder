@@ -73,6 +73,25 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     validator.errors.mkString should be("user.foo has invalid type[foo]")
   }
 
+  it("types are lowercased in service definition") {
+    val json = """
+    {
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "id", "type": "UUID" }
+          ]
+        }
+      }
+    }
+    """
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString should be("")
+
+    validator.service.models.head.fields.head.`type` should be("uuid")
+  }
+
   it("base_url is optional") {
     val json = """
     {
