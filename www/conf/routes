@@ -94,6 +94,7 @@ GET     /:orgKey/version/create                                   controllers.Ve
 POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String, application: Option[String] ?= None)
 
 GET     /:orgKey/search                                           controllers.SearchController.index(orgKey: String, q: Option[String] ?= None, page: Int ?= 0)
+GET     /:orgKey/search/:itemType/:guid                           controllers.SearchController.redirect(orgKey: String, itemType: com.gilt.apidoc.api.v0.models.ItemType, guid: java.util.UUID)
 
 GET     /:orgKey/subscriptions/                                   controllers.Subscriptions.index(orgKey: String)
 POST    /:orgKey/subscriptions/:publication/toggle                controllers.Subscriptions.postToggle(orgKey: String, publication: com.gilt.apidoc.api.v0.models.Publication)

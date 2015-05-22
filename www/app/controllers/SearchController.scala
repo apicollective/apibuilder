@@ -1,8 +1,13 @@
 package controllers
 
+import com.gilt.apidoc.api.v0.models.ItemType
+import com.gilt.apidoc.api.v0.errors.UnitResponse
 import lib.{Pagination, PaginatedCollection}
 import play.api._
 import play.api.mvc._
+import play.api.Logger
+import java.util.UUID
+import scala.concurrent.Future
 
 object SearchController extends Controller {
 
@@ -27,4 +32,24 @@ object SearchController extends Controller {
     }
   }
   
+  def redirect(orgKey: String, itemType: ItemType, guid: UUID) = AnonymousOrg.async { implicit request =>
+    itemType match {
+
+      case ItemType.Application => {
+        request.api.applications.getByOrgKeyAndGuid(orgKey, guid).map { app =>
+          Redirect(routes.Versions.show(orgKey, app.key, "latest"))
+        }.recover {
+          case UnitResponse(404) => Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> "Application not found")
+        }
+      }
+
+      case ItemType.UNDEFINED(desc) => {
+        Logger.warn(s"Undefined search item type[$desc] w/ guid[$guid]")
+        Future {
+          Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> "Unrecognized search result")
+        }
+      }
+    }
+  }
+
 }

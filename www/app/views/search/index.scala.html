@@ -14,7 +14,7 @@
         @items.items.map { item =>
          <tr>
            <td>
-             <a href="#TODO">@item.label</a>
+             <a href="@routes.SearchController.redirect(tpl.org.get.key, item.`type`, item.guid)">@item.label</a>
              <br/><em>@item.description</em>
            </td>
          </tr>
