@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, Version}
+import com.gilt.apidoc.api.v0.models.{Application, Organization, Version}
 import com.gilt.apidoc.internal.v0.models.{Change, DifferenceBreaking, DifferenceNonBreaking}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
@@ -16,10 +16,12 @@ class ChangesDaoSpec extends FunSpec with Matchers {
   }
 
   private def createChange(
-    description: String = "Breaking difference - " + UUID.randomUUID.toString
+    description: String = "Breaking difference - " + UUID.randomUUID.toString,
+    org: Organization = Util.createOrganization()
   ): Change = {
-    val fromVersion = Util.createVersion(version = "1.0.0")
-    val toVersion = Util.createVersion(version = "1.0.1", application = getApplication(fromVersion))
+    val app = Util.createApplication(org = org)
+    val fromVersion = Util.createVersion(application = app, version = "1.0.0")
+    val toVersion = Util.createVersion(application = app, version = "1.0.1")
     val diff = DifferenceBreaking(description)
     ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
 
@@ -92,10 +94,23 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       ChangesDao.findAll(Authorization.All, guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
     }
 
+    it("organizationGuid") {
+      val org = Util.createOrganization()
+      val change = createChange(org = org)
+      ChangesDao.findAll(Authorization.All, organizationGuid = Some(UUID.randomUUID)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, organizationGuid = Some(org.guid)).map(_.guid) should be(Seq(change.guid))
+    }
+
     it("applicationGuid") {
       val change = createChange()
       ChangesDao.findAll(Authorization.All, applicationGuid = Some(UUID.randomUUID)) should be(Nil)
       ChangesDao.findAll(Authorization.All, applicationGuid = Some(change.application.guid)).map(_.guid) should be(Seq(change.guid))
+    }
+
+    it("applicationKey") {
+      val change = createChange()
+      ChangesDao.findAll(Authorization.All, applicationKey = Some(UUID.randomUUID.toString)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, applicationKey = Some(change.application.key)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("fromVersionGuid") {
@@ -140,8 +155,6 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       )
       ChangesDao.findAll(Authorization.User(Util.createdBy.guid), guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
     }
-
-    // TODO: Test find by org guid, application key
   }
 
 }
