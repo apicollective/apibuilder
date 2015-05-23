@@ -13,17 +13,17 @@
         @changes.items.map { change =>
          <tr>
            <td>
-             @{change match {
-               case com.gilt.apidoc.api.v0.models.BreakingChange(desc) => "Breaking"
-               case com.gilt.apidoc.api.v0.models.NonBreakingChange(desc) => "Non Breaking"
-               case com.gilt.apidoc.api.v0.models.ChangeUndefinedType(desc) => "Unkonwn"
+             @{change.diff match {
+               case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => "Breaking"
+               case com.gilt.apidoc.api.v0.models.DiffNonBreaking(desc) => "Non Breaking"
+               case com.gilt.apidoc.api.v0.models.DiffUndefinedType(desc) => "Unkonwn"
              }}
            </td>
            <td>
-             @{change match {
-               case com.gilt.apidoc.api.v0.models.BreakingChange(desc) => desc
-               case com.gilt.apidoc.api.v0.models.NonBreakingChange(desc) => desc
-               case com.gilt.apidoc.api.v0.models.ChangeUndefinedType(desc) => desc
+             @{change.diff match {
+               case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => desc
+               case com.gilt.apidoc.api.v0.models.DiffNonBreaking(desc) => desc
+               case com.gilt.apidoc.api.v0.models.DiffUndefinedType(desc) => desc
              }}
            </td>
          </tr>
