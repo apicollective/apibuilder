@@ -8,7 +8,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private lazy val service = TestHelper.readService("../spec/api.json")
+  private lazy val service = TestHelper.readService("../spec/service.json")
 
   it("no changes") {
     ServiceDiff(service, service).differences should be(Nil)
