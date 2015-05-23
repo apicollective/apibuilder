@@ -672,10 +672,21 @@ private[api_json] object InternalDatatype {
 
   def apply(value: String): InternalDatatype = {
     value match {
-      case ListRx(name) => InternalDatatype.List(name, true)
-      case MapRx(name) => InternalDatatype.Map(name, true)
+      case ListRx(name) => InternalDatatype.List(formatName(name), true)
+      case MapRx(name) => InternalDatatype.Map(formatName(name), true)
       case DefaultMapRx() => InternalDatatype.Map(Primitives.String.toString, true)
-      case _ => InternalDatatype.Singleton(value, true)
+      case _ => InternalDatatype.Singleton(formatName(value), true)
+    }
+  }
+
+  /**
+    * Make primitive datatype names case insensitive to user
+    * input. e.g. accept both 'UUID' and 'uuid' as the uuid type.
+    */
+  private def formatName(name: String): String = {
+    Primitives(name) match {
+      case None => name
+      case Some(p) => p.toString
     }
   }
 
@@ -689,18 +700,18 @@ private[api_json] object InternalDatatype {
         case Some(true) => {
           // User explicitly marked this required
           dt match {
-            case InternalDatatype.List(name, _) => InternalDatatype.List(name, true)
-            case InternalDatatype.Map(name, _) => InternalDatatype.Map(name, true)
-            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(name, true)
+            case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), true)
+            case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), true)
+            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), true)
           }
         }
 
         case Some(false) => {
           // User explicitly marked this optional
           dt match {
-            case InternalDatatype.List(name, _) => InternalDatatype.List(name, false)
-            case InternalDatatype.Map(name, _) => InternalDatatype.Map(name, false)
-            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(name, false)
+            case InternalDatatype.List(name, _) => InternalDatatype.List(formatName(name), false)
+            case InternalDatatype.Map(name, _) => InternalDatatype.Map(formatName(name), false)
+            case InternalDatatype.Singleton(name, _) => InternalDatatype.Singleton(formatName(name), false)
           }
         }
       }
