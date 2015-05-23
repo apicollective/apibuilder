@@ -57,7 +57,7 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       ChangesDao.findAll(
         Authorization.All,
         fromVersionGuid = Some(fromVersion.guid)
-      ).map(_.diff) should be(diffs)
+      ).map(_.diff) should be(diffs.reverse)
     }
 
     it("upsert does not throw error on duplicate") {
