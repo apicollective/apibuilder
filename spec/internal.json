@@ -5,25 +5,13 @@
       "version": "0.9.11"
     },
 
-    "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-api/0.9.11/service.json" }
-    ],
-
     "unions": {
 	"task_data": {
 	    "types": [
 		{ "type": "task_data_index_application", "description": "Task to update the search index following a change in application" },
 		{ "type": "task_data_diff_version", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" }
 	    ]
-	},
-
-	"difference": {
-	    "types": [
-		{ "type": "difference_breaking" },
-		{ "type": "difference_non_breaking" }
-	    ]
 	}
-
     },
 
     "models": {
@@ -47,37 +35,6 @@
 	    "fields": [
                 { "name": "old_version_guid", "type": "uuid" },
                 { "name": "new_version_guid", "type": "uuid" }
-	    ]
-	},
-
-	"difference_breaking": {
-	    "fields": [
-                { "name": "description", "type": "string" }
-	    ]
-	},
-
-	"difference_non_breaking": {
-	    "fields": [
-                { "name": "description", "type": "string" }
-	    ]
-	},
-
-	"change": {
-	    "description": "Represents a single change from one version of a service to another",
-	    "fields": [
-                { "name": "guid", "type": "uuid" },
-                { "name": "application", "type": "com.gilt.apidoc.api.v0.models.reference" },
-                { "name": "from_version", "type": "change_version" },
-                { "name": "to_version", "type": "change_version" },
-                { "name": "difference", "type": "difference" }
-	    ]
-	},
-
-	"change_version": {
-	    "description": "Represents a simpler model of a version specifically for the use case of displaying changes",
-	    "fields": [
-                { "name": "guid", "type": "uuid" },
-                { "name": "version", "type": "string" }
 	    ]
 	}
 

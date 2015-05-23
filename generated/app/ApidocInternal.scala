@@ -5,37 +5,7 @@
  */
 package com.gilt.apidoc.internal.v0.models {
 
-  sealed trait Difference
-
   sealed trait TaskData
-
-  /**
-   * Represents a single change from one version of a service to another
-   */
-  case class Change(
-    guid: _root_.java.util.UUID,
-    application: com.gilt.apidoc.api.v0.models.Reference,
-    fromVersion: com.gilt.apidoc.internal.v0.models.ChangeVersion,
-    toVersion: com.gilt.apidoc.internal.v0.models.ChangeVersion,
-    difference: com.gilt.apidoc.internal.v0.models.Difference
-  )
-
-  /**
-   * Represents a simpler model of a version specifically for the use case of
-   * displaying changes
-   */
-  case class ChangeVersion(
-    guid: _root_.java.util.UUID,
-    version: String
-  )
-
-  case class DifferenceBreaking(
-    description: String
-  ) extends Difference
-
-  case class DifferenceNonBreaking(
-    description: String
-  ) extends Difference
 
   case class Task(
     guid: _root_.java.util.UUID,
@@ -55,15 +25,6 @@ package com.gilt.apidoc.internal.v0.models {
 
   /**
    * Provides future compatibility in clients - in the future, when a type is added
-   * to the union Difference, it will need to be handled in the client code. This
-   * implementation will deserialize these future types as an instance of this class.
-   */
-  case class DifferenceUndefinedType(
-    description: String
-  ) extends Difference
-
-  /**
-   * Provides future compatibility in clients - in the future, when a type is added
    * to the union TaskData, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
    */
@@ -80,7 +41,6 @@ package com.gilt.apidoc.internal.v0.models {
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
-    import com.gilt.apidoc.api.v0.models.json._
     import com.gilt.apidoc.internal.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
@@ -100,60 +60,6 @@ package com.gilt.apidoc.internal.v0.models {
         val str = dateTime.print(x)
         JsString(str)
       }
-    }
-
-    implicit def jsonReadsApidocinternalChange: play.api.libs.json.Reads[Change] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "application").read[com.gilt.apidoc.api.v0.models.Reference] and
-        (__ \ "from_version").read[com.gilt.apidoc.internal.v0.models.ChangeVersion] and
-        (__ \ "to_version").read[com.gilt.apidoc.internal.v0.models.ChangeVersion] and
-        (__ \ "difference").read[com.gilt.apidoc.internal.v0.models.Difference]
-      )(Change.apply _)
-    }
-
-    implicit def jsonWritesApidocinternalChange: play.api.libs.json.Writes[Change] = {
-      (
-        (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "application").write[com.gilt.apidoc.api.v0.models.Reference] and
-        (__ \ "from_version").write[com.gilt.apidoc.internal.v0.models.ChangeVersion] and
-        (__ \ "to_version").write[com.gilt.apidoc.internal.v0.models.ChangeVersion] and
-        (__ \ "difference").write[com.gilt.apidoc.internal.v0.models.Difference]
-      )(unlift(Change.unapply _))
-    }
-
-    implicit def jsonReadsApidocinternalChangeVersion: play.api.libs.json.Reads[ChangeVersion] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "version").read[String]
-      )(ChangeVersion.apply _)
-    }
-
-    implicit def jsonWritesApidocinternalChangeVersion: play.api.libs.json.Writes[ChangeVersion] = {
-      (
-        (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "version").write[String]
-      )(unlift(ChangeVersion.unapply _))
-    }
-
-    implicit def jsonReadsApidocinternalDifferenceBreaking: play.api.libs.json.Reads[DifferenceBreaking] = {
-      (__ \ "description").read[String].map { x => new DifferenceBreaking(description = x) }
-    }
-
-    implicit def jsonWritesApidocinternalDifferenceBreaking: play.api.libs.json.Writes[DifferenceBreaking] = new play.api.libs.json.Writes[DifferenceBreaking] {
-      def writes(x: DifferenceBreaking) = play.api.libs.json.Json.obj(
-        "description" -> play.api.libs.json.Json.toJson(x.description)
-      )
-    }
-
-    implicit def jsonReadsApidocinternalDifferenceNonBreaking: play.api.libs.json.Reads[DifferenceNonBreaking] = {
-      (__ \ "description").read[String].map { x => new DifferenceNonBreaking(description = x) }
-    }
-
-    implicit def jsonWritesApidocinternalDifferenceNonBreaking: play.api.libs.json.Writes[DifferenceNonBreaking] = new play.api.libs.json.Writes[DifferenceNonBreaking] {
-      def writes(x: DifferenceNonBreaking) = play.api.libs.json.Json.obj(
-        "description" -> play.api.libs.json.Json.toJson(x.description)
-      )
     }
 
     implicit def jsonReadsApidocinternalTask: play.api.libs.json.Reads[Task] = {
@@ -196,22 +102,6 @@ package com.gilt.apidoc.internal.v0.models {
       def writes(x: TaskDataIndexApplication) = play.api.libs.json.Json.obj(
         "version_guid" -> play.api.libs.json.Json.toJson(x.versionGuid)
       )
-    }
-
-    implicit def jsonReadsApidocinternalDifference: play.api.libs.json.Reads[Difference] = {
-      (
-        (__ \ "difference_breaking").read(jsonReadsApidocinternalDifferenceBreaking).asInstanceOf[play.api.libs.json.Reads[Difference]]
-        orElse
-        (__ \ "difference_non_breaking").read(jsonReadsApidocinternalDifferenceNonBreaking).asInstanceOf[play.api.libs.json.Reads[Difference]]
-      )
-    }
-
-    implicit def jsonWritesApidocinternalDifference: play.api.libs.json.Writes[Difference] = new play.api.libs.json.Writes[Difference] {
-      def writes(obj: Difference) = obj match {
-        case x: com.gilt.apidoc.internal.v0.models.DifferenceBreaking => play.api.libs.json.Json.obj("difference_breaking" -> jsonWritesApidocinternalDifferenceBreaking.writes(x))
-        case x: com.gilt.apidoc.internal.v0.models.DifferenceNonBreaking => play.api.libs.json.Json.obj("difference_non_breaking" -> jsonWritesApidocinternalDifferenceNonBreaking.writes(x))
-        case x: com.gilt.apidoc.internal.v0.models.DifferenceUndefinedType => sys.error(s"The type[com.gilt.apidoc.internal.v0.models.DifferenceUndefinedType] should never be serialized")
-      }
     }
 
     implicit def jsonReadsApidocinternalTaskData: play.api.libs.json.Reads[TaskData] = {
