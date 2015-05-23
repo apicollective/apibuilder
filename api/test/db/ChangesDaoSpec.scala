@@ -47,17 +47,19 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       val fromVersion = Util.createVersion(version = "1.0.0")
       val toVersion = Util.createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
-      val diffs = Seq(
-        DiffBreaking("Breaking difference - " + UUID.randomUUID.toString),
-        DiffNonBreaking("Non breaking difference - " + UUID.randomUUID.toString)
-      )
+      val breaking = DiffBreaking("Breaking difference - " + UUID.randomUUID.toString)
+      val nonBreaking = DiffNonBreaking("Non breaking difference - " + UUID.randomUUID.toString)
 
-      ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, diffs)
+      ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(breaking, nonBreaking))
 
-      ChangesDao.findAll(
+      val actual = ChangesDao.findAll(
         Authorization.All,
         fromVersionGuid = Some(fromVersion.guid)
-      ).map(_.diff) should be(diffs.reverse)
+      ).map(_.diff)
+
+      actual.size should be(2)
+      actual.contains(breaking) should be(true)
+      actual.contains(nonBreaking) should be(true)
     }
 
     it("upsert does not throw error on duplicate") {
