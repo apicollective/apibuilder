@@ -2,7 +2,7 @@ package db
 
 import com.gilt.apidoc.internal.v0.models.{Task, TaskData}
 import com.gilt.apidoc.internal.v0.models.json._
-import com.gilt.apidoc.api.v0.models.{User}
+import com.gilt.apidoc.api.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current

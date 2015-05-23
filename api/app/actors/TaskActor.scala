@@ -1,8 +1,7 @@
 package actors
 
 import lib.{Pager, ServiceDiff, Text}
-import com.gilt.apidoc.api.v0.models.{Application, Publication, Version}
-import com.gilt.apidoc.internal.v0.models.{Difference, DifferenceBreaking, DifferenceNonBreaking, DifferenceUndefinedType}
+import com.gilt.apidoc.api.v0.models.{Application, Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
 import com.gilt.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao}
 import play.api.Logger
@@ -127,7 +126,7 @@ class TaskActor extends Actor {
   private def versionUpdated(
     oldVersion: Version,
     newVersion: Version,
-    diff: Seq[Difference]
+    diff: Seq[Diff]
   ) {
     ApplicationsDao.findAll(Authorization.All, version = Some(newVersion), limit = 1).headOption.map { application =>
       OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
@@ -140,20 +139,20 @@ class TaskActor extends Actor {
             application,
             newVersion,
             oldVersion = Some(oldVersion),
-            breakingChanges = diff.filter { d =>
+            breakingDiffs = diff.filter { d =>
               d match {
-                case DifferenceBreaking(desc) => true
-                case DifferenceNonBreaking(desc) => false
-                case DifferenceUndefinedType(desc) => false
+                case DiffBreaking(desc) => true
+                case DiffNonBreaking(desc) => false
+                case DiffUndefinedType(desc) => false
               }
-            }.map(_.asInstanceOf[DifferenceBreaking]),
-            nonChangeBreakings = diff.filter { d =>
+            }.map(_.asInstanceOf[DiffBreaking]),
+            nonDiffBreakings = diff.filter { d =>
               d match {
-                case DifferenceBreaking(desc) => false
-                case DifferenceNonBreaking(desc) => true
-                case DifferenceUndefinedType(desc) => false
+                case DiffBreaking(desc) => false
+                case DiffNonBreaking(desc) => true
+                case DiffUndefinedType(desc) => false
               }
-            }.map(_.asInstanceOf[DifferenceNonBreaking])
+            }.map(_.asInstanceOf[DiffNonBreaking])
           ).toString
         )
       }

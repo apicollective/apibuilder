@@ -123,8 +123,8 @@ class EmailActor extends Actor {
                   application,
                   version,
                   oldVersion = None,
-                  breakingChanges = Nil,
-                  nonChangeBreakings = Nil
+                  breakingDiffs = Nil,
+                  nonDiffBreakings = Nil
                 ).toString
               )
             }

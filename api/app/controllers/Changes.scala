@@ -1,7 +1,7 @@
 package controllers
 
 import db.{Authorization, ChangesDao, OrganizationsDao}
-import com.gilt.apidoc.internal.v0.models.json._
+import com.gilt.apidoc.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 

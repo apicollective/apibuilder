@@ -1,7 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, Organization, Version}
-import com.gilt.apidoc.internal.v0.models.{Change, DifferenceBreaking, DifferenceNonBreaking}
+import com.gilt.apidoc.api.v0.models.{Application, Change, Diff, DiffBreaking, DiffNonBreaking, Organization, Version}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
@@ -22,7 +21,7 @@ class ChangesDaoSpec extends FunSpec with Matchers {
     val app = Util.createApplication(org = org)
     val fromVersion = Util.createVersion(application = app, version = "1.0.0")
     val toVersion = Util.createVersion(application = app, version = "1.0.1")
-    val diff = DifferenceBreaking(description)
+    val diff = DiffBreaking(description)
     ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
 
     ChangesDao.findAll(
@@ -49,8 +48,8 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       val toVersion = Util.createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
       val diffs = Seq(
-        DifferenceBreaking("Breaking difference - " + UUID.randomUUID.toString),
-        DifferenceNonBreaking("Non breaking difference - " + UUID.randomUUID.toString)
+        DiffBreaking("Breaking difference - " + UUID.randomUUID.toString),
+        DiffNonBreaking("Non breaking difference - " + UUID.randomUUID.toString)
       )
 
       ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, diffs)
@@ -58,21 +57,21 @@ class ChangesDaoSpec extends FunSpec with Matchers {
       ChangesDao.findAll(
         Authorization.All,
         fromVersionGuid = Some(fromVersion.guid)
-      ).map(_.difference) should be(diffs)
+      ).map(_.diff) should be(diffs)
     }
 
     it("upsert does not throw error on duplicate") {
       val fromVersion = Util.createVersion(version = "1.0.0")
       val toVersion = Util.createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
-      val diff = DifferenceBreaking("Breaking difference - " + UUID.randomUUID.toString)
+      val diff = DiffBreaking("Breaking difference - " + UUID.randomUUID.toString)
       ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff, diff))
       ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
 
       ChangesDao.findAll(
         Authorization.All,
         fromVersionGuid = Some(fromVersion.guid)
-      ).map(_.difference) should be(Seq(diff))
+      ).map(_.diff) should be(Seq(diff))
     }
 
   }

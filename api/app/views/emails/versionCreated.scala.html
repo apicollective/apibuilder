@@ -2,8 +2,8 @@
   application: com.gilt.apidoc.api.v0.models.Application,
   version: com.gilt.apidoc.api.v0.models.Version,
   oldVersion: Option[com.gilt.apidoc.api.v0.models.Version],
-  breakingChanges: Seq[com.gilt.apidoc.internal.v0.models.DifferenceBreaking],
-  nonChangeBreakings: Seq[com.gilt.apidoc.internal.v0.models.DifferenceNonBreaking]
+  breakingDiffs: Seq[com.gilt.apidoc.api.v0.models.DiffBreaking],
+  nonDiffBreakings: Seq[com.gilt.apidoc.api.v0.models.DiffNonBreaking]
 )
 
 <p>
@@ -22,17 +22,17 @@
 }
 
 <p><b>Breaking changes</b></p>
-@if(breakingChanges.isEmpty) {
+@if(breakingDiffs.isEmpty) {
   <em>None</em>
 } else {
-  @Html(breakingChanges.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+  @Html(breakingDiffs.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
 
 <p><b>Other changes</b></p>
-@if(nonChangeBreakings.isEmpty) {
+@if(nonDiffBreakings.isEmpty) {
   <em>None</em>
 } else {
-  @Html(nonChangeBreakings.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+  @Html(nonDiffBreakings.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
 
 

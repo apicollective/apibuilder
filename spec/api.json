@@ -7,11 +7,11 @@
     },
 
     "unions": {
-	"change": {
-	    "description": "Represents a single change in an application",
+	"diff": {
+	    "description": "Represents a single diff in an application",
 	    "types": [
-		{ "type": "change_breaking" },
-		{ "type": "change_non_breaking" }
+		{ "type": "diff_breaking" },
+		{ "type": "diff_non_breaking" }
 	    ]
 	}
     },
@@ -370,17 +370,17 @@
             ]
         },
 
-        "change_breaking": {
-            "description": "Represents a single breaking change of an application version. A breaking change indicates that it is possible for an existing client to now experience an error or invalid data due to the change.",
+        "diff_breaking": {
+            "description": "Represents a single breaking diff of an application version. A breaking diff indicates that it is possible for an existing client to now experience an error or invalid data due to the diff.",
             "fields": [
                 { "name": "description", "type": "string", "example": "model removed: user" }
             ]
         },
 
-        "change_non_breaking": {
-            "description": "Represents a single NON breaking change of an application version.",
+        "diff_non_breaking": {
+            "description": "Represents a single NON breaking diff of an application version.",
             "fields": [
-                { "name": "description", "type": "string", "example": "name changed from foo to bar" }
+                { "name": "description", "type": "string", "example": "name diffd from foo to bar" }
             ]
         },
 
@@ -392,7 +392,26 @@
                 { "name": "label", "type": "string" },
                 { "name": "description", "type": "string", "required": false }
             ]
-        }
+        },
+
+        "change": {
+	    "description": "Represents a single change from one version of a service to another",
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "application", "type": "reference" },
+                { "name": "from_version", "type": "change_version" },
+                { "name": "to_version", "type": "change_version" },
+                { "name": "diff", "type": "diff" }
+	    ]
+	},
+
+	"change_version": {
+	    "description": "Represents a simpler model of a version specifically for the use case of displaying changes",
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "version", "type": "string" }
+	    ]
+	}
 
     },
 

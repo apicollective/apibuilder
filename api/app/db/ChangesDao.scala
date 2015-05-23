@@ -1,9 +1,8 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, Reference}
-import com.gilt.apidoc.internal.v0.models.{Change, ChangeVersion, Difference, DifferenceBreaking, DifferenceNonBreaking, DifferenceUndefinedType}
+import com.gilt.apidoc.api.v0.models.{Application, Change, ChangeVersion, Reference, User, Version}
+import com.gilt.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
 import com.gilt.apidoc.internal.v0.models.json._
-import com.gilt.apidoc.api.v0.models.{User, Version}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -39,7 +38,7 @@ object ChangesDao {
     ({guid}::uuid, {application_guid}::uuid, {from_version_guid}::uuid, {to_version_guid}::uuid, {type}, {description}, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, fromVersion: Version, toVersion: Version, differences: Seq[Difference]) {
+  def upsert(createdBy: User, fromVersion: Version, toVersion: Version, differences: Seq[Diff]) {
     assert(
       fromVersion.guid != toVersion.guid,
       "Versions must be different"
@@ -54,9 +53,9 @@ object ChangesDao {
 
       differences.map { d =>
         d match {
-          case DifferenceBreaking(desc) => ("breaking", desc)
-          case DifferenceNonBreaking(desc) => ("non_breaking", desc)
-          case DifferenceUndefinedType(desc) => {
+          case DiffBreaking(desc) => ("breaking", desc)
+          case DiffNonBreaking(desc) => ("non_breaking", desc)
+          case DiffUndefinedType(desc) => {
             sys.error(s"Unrecognized difference type: $desc")
           }
         }
@@ -147,10 +146,10 @@ object ChangesDao {
       application = Reference(row[UUID]("application_guid"), row[String]("application_key")),
       fromVersion = ChangeVersion(row[UUID]("from_guid"), row[String]("from_version")),
       toVersion = ChangeVersion(row[UUID]("to_guid"), row[String]("to_version")),
-      difference = row[String]("type") match {
-        case "breaking" => DifferenceBreaking(row[String]("description"))
-        case "non_breaking" => DifferenceNonBreaking(row[String]("description"))
-        case other => DifferenceUndefinedType(other)
+      diff = row[String]("type") match {
+        case "breaking" => DiffBreaking(row[String]("description"))
+        case "non_breaking" => DiffNonBreaking(row[String]("description"))
+        case other => DiffUndefinedType(other)
       }
     )
   }

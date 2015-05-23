@@ -6,9 +6,9 @@
 package com.gilt.apidoc.api.v0.models {
 
   /**
-   * Represents a single change in an application
+   * Represents a single diff in an application
    */
-  sealed trait Change
+  sealed trait Diff
 
   /**
    * An application has a name and multiple versions of its API.
@@ -37,20 +37,24 @@ package com.gilt.apidoc.api.v0.models {
   )
 
   /**
-   * Represents a single breaking change of an application version. A breaking change
-   * indicates that it is possible for an existing client to now experience an error
-   * or invalid data due to the change.
+   * Represents a single change from one version of a service to another
    */
-  case class ChangeBreaking(
-    description: String
-  ) extends Change
+  case class Change(
+    guid: _root_.java.util.UUID,
+    application: com.gilt.apidoc.api.v0.models.Reference,
+    fromVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
+    toVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
+    diff: com.gilt.apidoc.api.v0.models.Diff
+  )
 
   /**
-   * Represents a single NON breaking change of an application version.
+   * Represents a simpler model of a version specifically for the use case of
+   * displaying changes
    */
-  case class ChangeNonBreaking(
-    description: String
-  ) extends Change
+  case class ChangeVersion(
+    guid: _root_.java.util.UUID,
+    version: String
+  )
 
   /**
    * Separate resource used only for the few actions that require the full token.
@@ -66,6 +70,22 @@ package com.gilt.apidoc.api.v0.models {
     generator: com.gilt.apidoc.api.v0.models.Generator,
     source: String
   )
+
+  /**
+   * Represents a single breaking diff of an application version. A breaking diff
+   * indicates that it is possible for an existing client to now experience an error
+   * or invalid data due to the diff.
+   */
+  case class DiffBreaking(
+    description: String
+  ) extends Diff
+
+  /**
+   * Represents a single NON breaking diff of an application version.
+   */
+  case class DiffNonBreaking(
+    description: String
+  ) extends Diff
 
   /**
    * Represents a single domain name (e.g. www.apidoc.me). When a new user registers
@@ -338,12 +358,12 @@ package com.gilt.apidoc.api.v0.models {
 
   /**
    * Provides future compatibility in clients - in the future, when a type is added
-   * to the union Change, it will need to be handled in the client code. This
+   * to the union Diff, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
    */
-  case class ChangeUndefinedType(
+  case class DiffUndefinedType(
     description: String
-  ) extends Change
+  ) extends Diff
 
   /**
    * Identifies the specific type of item that was indexed by search
@@ -640,24 +660,38 @@ package com.gilt.apidoc.api.v0.models {
       )(unlift(Audit.unapply _))
     }
 
-    implicit def jsonReadsApidocapiChangeBreaking: play.api.libs.json.Reads[ChangeBreaking] = {
-      (__ \ "description").read[String].map { x => new ChangeBreaking(description = x) }
+    implicit def jsonReadsApidocapiChange: play.api.libs.json.Reads[Change] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "application").read[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "from_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
+        (__ \ "to_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
+        (__ \ "diff").read[com.gilt.apidoc.api.v0.models.Diff]
+      )(Change.apply _)
     }
 
-    implicit def jsonWritesApidocapiChangeBreaking: play.api.libs.json.Writes[ChangeBreaking] = new play.api.libs.json.Writes[ChangeBreaking] {
-      def writes(x: ChangeBreaking) = play.api.libs.json.Json.obj(
-        "description" -> play.api.libs.json.Json.toJson(x.description)
-      )
+    implicit def jsonWritesApidocapiChange: play.api.libs.json.Writes[Change] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "application").write[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "from_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
+        (__ \ "to_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
+        (__ \ "diff").write[com.gilt.apidoc.api.v0.models.Diff]
+      )(unlift(Change.unapply _))
     }
 
-    implicit def jsonReadsApidocapiChangeNonBreaking: play.api.libs.json.Reads[ChangeNonBreaking] = {
-      (__ \ "description").read[String].map { x => new ChangeNonBreaking(description = x) }
+    implicit def jsonReadsApidocapiChangeVersion: play.api.libs.json.Reads[ChangeVersion] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "version").read[String]
+      )(ChangeVersion.apply _)
     }
 
-    implicit def jsonWritesApidocapiChangeNonBreaking: play.api.libs.json.Writes[ChangeNonBreaking] = new play.api.libs.json.Writes[ChangeNonBreaking] {
-      def writes(x: ChangeNonBreaking) = play.api.libs.json.Json.obj(
-        "description" -> play.api.libs.json.Json.toJson(x.description)
-      )
+    implicit def jsonWritesApidocapiChangeVersion: play.api.libs.json.Writes[ChangeVersion] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "version").write[String]
+      )(unlift(ChangeVersion.unapply _))
     }
 
     implicit def jsonReadsApidocapiCleartextToken: play.api.libs.json.Reads[CleartextToken] = {
@@ -682,6 +716,26 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "generator").write[com.gilt.apidoc.api.v0.models.Generator] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
+    }
+
+    implicit def jsonReadsApidocapiDiffBreaking: play.api.libs.json.Reads[DiffBreaking] = {
+      (__ \ "description").read[String].map { x => new DiffBreaking(description = x) }
+    }
+
+    implicit def jsonWritesApidocapiDiffBreaking: play.api.libs.json.Writes[DiffBreaking] = new play.api.libs.json.Writes[DiffBreaking] {
+      def writes(x: DiffBreaking) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
+    }
+
+    implicit def jsonReadsApidocapiDiffNonBreaking: play.api.libs.json.Reads[DiffNonBreaking] = {
+      (__ \ "description").read[String].map { x => new DiffNonBreaking(description = x) }
+    }
+
+    implicit def jsonWritesApidocapiDiffNonBreaking: play.api.libs.json.Writes[DiffNonBreaking] = new play.api.libs.json.Writes[DiffNonBreaking] {
+      def writes(x: DiffNonBreaking) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
     }
 
     implicit def jsonReadsApidocapiDomain: play.api.libs.json.Reads[Domain] = {
@@ -1178,19 +1232,19 @@ package com.gilt.apidoc.api.v0.models {
       )(unlift(WatchForm.unapply _))
     }
 
-    implicit def jsonReadsApidocapiChange: play.api.libs.json.Reads[Change] = {
+    implicit def jsonReadsApidocapiDiff: play.api.libs.json.Reads[Diff] = {
       (
-        (__ \ "change_breaking").read(jsonReadsApidocapiChangeBreaking).asInstanceOf[play.api.libs.json.Reads[Change]]
+        (__ \ "diff_breaking").read(jsonReadsApidocapiDiffBreaking).asInstanceOf[play.api.libs.json.Reads[Diff]]
         orElse
-        (__ \ "change_non_breaking").read(jsonReadsApidocapiChangeNonBreaking).asInstanceOf[play.api.libs.json.Reads[Change]]
+        (__ \ "diff_non_breaking").read(jsonReadsApidocapiDiffNonBreaking).asInstanceOf[play.api.libs.json.Reads[Diff]]
       )
     }
 
-    implicit def jsonWritesApidocapiChange: play.api.libs.json.Writes[Change] = new play.api.libs.json.Writes[Change] {
-      def writes(obj: Change) = obj match {
-        case x: com.gilt.apidoc.api.v0.models.ChangeBreaking => play.api.libs.json.Json.obj("change_breaking" -> jsonWritesApidocapiChangeBreaking.writes(x))
-        case x: com.gilt.apidoc.api.v0.models.ChangeNonBreaking => play.api.libs.json.Json.obj("change_non_breaking" -> jsonWritesApidocapiChangeNonBreaking.writes(x))
-        case x: com.gilt.apidoc.api.v0.models.ChangeUndefinedType => sys.error(s"The type[com.gilt.apidoc.api.v0.models.ChangeUndefinedType] should never be serialized")
+    implicit def jsonWritesApidocapiDiff: play.api.libs.json.Writes[Diff] = new play.api.libs.json.Writes[Diff] {
+      def writes(obj: Diff) = obj match {
+        case x: com.gilt.apidoc.api.v0.models.DiffBreaking => play.api.libs.json.Json.obj("diff_breaking" -> jsonWritesApidocapiDiffBreaking.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.DiffNonBreaking => play.api.libs.json.Json.obj("diff_non_breaking" -> jsonWritesApidocapiDiffNonBreaking.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.DiffUndefinedType => sys.error(s"The type[com.gilt.apidoc.api.v0.models.DiffUndefinedType] should never be serialized")
       }
     }
   }
