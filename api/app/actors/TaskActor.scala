@@ -147,7 +147,7 @@ class TaskActor extends Actor {
                 case DifferenceUndefinedType(desc) => false
               }
             }.map(_.asInstanceOf[DifferenceBreaking]),
-            nonBreakingChanges = diff.filter { d =>
+            nonChangeBreakings = diff.filter { d =>
               d match {
                 case DifferenceBreaking(desc) => false
                 case DifferenceNonBreaking(desc) => true

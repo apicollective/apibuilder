@@ -3,7 +3,7 @@
   version: com.gilt.apidoc.api.v0.models.Version,
   oldVersion: Option[com.gilt.apidoc.api.v0.models.Version],
   breakingChanges: Seq[com.gilt.apidoc.internal.v0.models.DifferenceBreaking],
-  nonBreakingChanges: Seq[com.gilt.apidoc.internal.v0.models.DifferenceNonBreaking]
+  nonChangeBreakings: Seq[com.gilt.apidoc.internal.v0.models.DifferenceNonBreaking]
 )
 
 <p>
@@ -29,10 +29,10 @@
 }
 
 <p><b>Other changes</b></p>
-@if(nonBreakingChanges.isEmpty) {
+@if(nonChangeBreakings.isEmpty) {
   <em>None</em>
 } else {
-  @Html(nonBreakingChanges.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+  @Html(nonChangeBreakings.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
 
 

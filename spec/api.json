@@ -10,8 +10,8 @@
 	"change": {
 	    "description": "Represents a single change in an application",
 	    "types": [
-		{ "type": "breaking_change" },
-		{ "type": "non_breaking_change" }
+		{ "type": "change_breaking" },
+		{ "type": "change_non_breaking" }
 	    ]
 	}
     },
@@ -370,14 +370,14 @@
             ]
         },
 
-        "breaking_change": {
+        "change_breaking": {
             "description": "Represents a single breaking change of an application version. A breaking change indicates that it is possible for an existing client to now experience an error or invalid data due to the change.",
             "fields": [
                 { "name": "description", "type": "string", "example": "model removed: user" }
             ]
         },
 
-        "non_breaking_change": {
+        "change_non_breaking": {
             "description": "Represents a single NON breaking change of an application version.",
             "fields": [
                 { "name": "description", "type": "string", "example": "name changed from foo to bar" }

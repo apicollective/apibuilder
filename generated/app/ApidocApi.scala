@@ -41,7 +41,14 @@ package com.gilt.apidoc.api.v0.models {
    * indicates that it is possible for an existing client to now experience an error
    * or invalid data due to the change.
    */
-  case class BreakingChange(
+  case class ChangeBreaking(
+    description: String
+  ) extends Change
+
+  /**
+   * Represents a single NON breaking change of an application version.
+   */
+  case class ChangeNonBreaking(
     description: String
   ) extends Change
 
@@ -162,13 +169,6 @@ package com.gilt.apidoc.api.v0.models {
     organization: com.gilt.apidoc.api.v0.models.Organization,
     role: String
   )
-
-  /**
-   * Represents a single NON breaking change of an application version.
-   */
-  case class NonBreakingChange(
-    description: String
-  ) extends Change
 
   /**
    * An organization is used to group a set of applications together.
@@ -640,12 +640,22 @@ package com.gilt.apidoc.api.v0.models {
       )(unlift(Audit.unapply _))
     }
 
-    implicit def jsonReadsApidocapiBreakingChange: play.api.libs.json.Reads[BreakingChange] = {
-      (__ \ "description").read[String].map { x => new BreakingChange(description = x) }
+    implicit def jsonReadsApidocapiChangeBreaking: play.api.libs.json.Reads[ChangeBreaking] = {
+      (__ \ "description").read[String].map { x => new ChangeBreaking(description = x) }
     }
 
-    implicit def jsonWritesApidocapiBreakingChange: play.api.libs.json.Writes[BreakingChange] = new play.api.libs.json.Writes[BreakingChange] {
-      def writes(x: BreakingChange) = play.api.libs.json.Json.obj(
+    implicit def jsonWritesApidocapiChangeBreaking: play.api.libs.json.Writes[ChangeBreaking] = new play.api.libs.json.Writes[ChangeBreaking] {
+      def writes(x: ChangeBreaking) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
+    }
+
+    implicit def jsonReadsApidocapiChangeNonBreaking: play.api.libs.json.Reads[ChangeNonBreaking] = {
+      (__ \ "description").read[String].map { x => new ChangeNonBreaking(description = x) }
+    }
+
+    implicit def jsonWritesApidocapiChangeNonBreaking: play.api.libs.json.Writes[ChangeNonBreaking] = new play.api.libs.json.Writes[ChangeNonBreaking] {
+      def writes(x: ChangeNonBreaking) = play.api.libs.json.Json.obj(
         "description" -> play.api.libs.json.Json.toJson(x.description)
       )
     }
@@ -834,16 +844,6 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Organization] and
         (__ \ "role").write[String]
       )(unlift(MembershipRequest.unapply _))
-    }
-
-    implicit def jsonReadsApidocapiNonBreakingChange: play.api.libs.json.Reads[NonBreakingChange] = {
-      (__ \ "description").read[String].map { x => new NonBreakingChange(description = x) }
-    }
-
-    implicit def jsonWritesApidocapiNonBreakingChange: play.api.libs.json.Writes[NonBreakingChange] = new play.api.libs.json.Writes[NonBreakingChange] {
-      def writes(x: NonBreakingChange) = play.api.libs.json.Json.obj(
-        "description" -> play.api.libs.json.Json.toJson(x.description)
-      )
     }
 
     implicit def jsonReadsApidocapiOrganization: play.api.libs.json.Reads[Organization] = {
@@ -1180,16 +1180,16 @@ package com.gilt.apidoc.api.v0.models {
 
     implicit def jsonReadsApidocapiChange: play.api.libs.json.Reads[Change] = {
       (
-        (__ \ "breaking_change").read(jsonReadsApidocapiBreakingChange).asInstanceOf[play.api.libs.json.Reads[Change]]
+        (__ \ "change_breaking").read(jsonReadsApidocapiChangeBreaking).asInstanceOf[play.api.libs.json.Reads[Change]]
         orElse
-        (__ \ "non_breaking_change").read(jsonReadsApidocapiNonBreakingChange).asInstanceOf[play.api.libs.json.Reads[Change]]
+        (__ \ "change_non_breaking").read(jsonReadsApidocapiChangeNonBreaking).asInstanceOf[play.api.libs.json.Reads[Change]]
       )
     }
 
     implicit def jsonWritesApidocapiChange: play.api.libs.json.Writes[Change] = new play.api.libs.json.Writes[Change] {
       def writes(obj: Change) = obj match {
-        case x: com.gilt.apidoc.api.v0.models.BreakingChange => play.api.libs.json.Json.obj("breaking_change" -> jsonWritesApidocapiBreakingChange.writes(x))
-        case x: com.gilt.apidoc.api.v0.models.NonBreakingChange => play.api.libs.json.Json.obj("non_breaking_change" -> jsonWritesApidocapiNonBreakingChange.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.ChangeBreaking => play.api.libs.json.Json.obj("change_breaking" -> jsonWritesApidocapiChangeBreaking.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.ChangeNonBreaking => play.api.libs.json.Json.obj("change_non_breaking" -> jsonWritesApidocapiChangeNonBreaking.writes(x))
         case x: com.gilt.apidoc.api.v0.models.ChangeUndefinedType => sys.error(s"The type[com.gilt.apidoc.api.v0.models.ChangeUndefinedType] should never be serialized")
       }
     }
