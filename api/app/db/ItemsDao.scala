@@ -1,7 +1,8 @@
 package db
 
 import lib.Text
-import com.gilt.apidoc.api.v0.models.{User, Item, ItemType}
+import com.gilt.apidoc.api.v0.models.{ApplicationSummary, Item, ItemDetail, User}
+import com.gilt.apidoc.api.v0.models.json._
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -12,7 +13,7 @@ object ItemsDao {
 
   private val BaseQuery = """
     select items.guid::varchar,
-           items.type,
+           items.detail::varchar,
            items.label,
            items.description
       from search.items
@@ -21,9 +22,9 @@ object ItemsDao {
 
   private val InsertQuery = """
     insert into search.items
-    (guid, organization_guid, type, label, description, content)
+    (guid, organization_guid, detail, label, description, content)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {type}, {label}, {description}, {content})
+    ({guid}::uuid, {organization_guid}::uuid, {detail}::json, {label}, {description}, {content})
   """
 
   private val DeleteQuery = """
@@ -33,7 +34,7 @@ object ItemsDao {
   def upsert(
     guid: UUID,
     organizationGuid: UUID,
-    `type`: ItemType,
+    detail: ItemDetail,
     label: String,
     description: Option[String],
     content: String
@@ -44,7 +45,7 @@ object ItemsDao {
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> organizationGuid,
-        'type -> `type`.toString,
+        'detail -> Json.toJson(detail).toString,
         'label -> label.trim,
         'description -> description.map(_.trim).map(Text.truncate(_)),
 	'content -> content.trim.toLowerCase
@@ -72,25 +73,27 @@ object ItemsDao {
   def findAll(
     authorization: Authorization = Authorization.All, // TODO
     guid: Option[UUID] = None,
-    orgKey: Option[String] = None,
-    `type`: Option[ItemType] = None,
     q: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Item] = {
+    // TODO: Parse query and extract out org:xxx, guid:yyy and use that for orgKey
+    val orgKey = None
+    val guidFromQuery = None
+
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and items.guid = {guid}::uuid" },
+      guidFromQuery.map { v => "and items.guid = {guid_from_query}::uuid" },
       orgKey.map { v => "and items.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({org_key})))" },
-      `type`.map { v => "and items.type = {type}" },
       q.map { v => "and items.content like '%' || lower(trim({q})) || '%' " },
       Some(s"order by lower(items.label) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      guidFromQuery.map('guid_from_query -> _.toString),
       orgKey.map('org_key -> _),
-      `type`.map('type -> _.toString),
       q.map('q -> _)
     ).flatten
 
@@ -104,7 +107,7 @@ object ItemsDao {
   ): Item = {
     Item(
       guid = row[UUID]("guid"),
-      `type` = ItemType(row[String]("type")),
+      detail = Json.parse(row[String]("detail")).as[ItemDetail],
       label = row[String]("label"),
       description = row[Option[String]]("description")
     )

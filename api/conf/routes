@@ -13,7 +13,7 @@ PUT        /generators/:key                                    controllers.Gener
 DELETE     /generators/:key                                    controllers.Generators.deleteByKey(key: String)
 GET        /_internal_/healthcheck                             controllers.Healthchecks.getInternalAndHealthcheck()
 GET        /_internal_/migrate                                 controllers.Healthchecks.getInternalAndMigrate()
-GET        /items                                              controllers.Items.get(org_key: _root_.scala.Option[String], q: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
+GET        /items                                              controllers.Items.get(q: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /items/:guid                                        controllers.Items.getByGuid(guid: _root_.java.util.UUID)
 GET        /memberships                                        controllers.Memberships.get(org_guid: _root_.scala.Option[_root_.java.util.UUID], org_key: _root_.scala.Option[String], user_guid: _root_.scala.Option[_root_.java.util.UUID], role: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /memberships/:guid                                  controllers.Memberships.getByGuid(guid: _root_.java.util.UUID)

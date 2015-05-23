@@ -50,4 +50,17 @@ object Util {
     }
   }
 
+  def defaultQuery(query: Option[String], orgKey: Option[String]): String = {
+    query match {
+      case Some(q) => q
+      case None => {
+        orgKey match {
+          case Some(key) => s"org:$key"
+          case None => ""
+        }
+      }
+    }
+  }
+
+
 }

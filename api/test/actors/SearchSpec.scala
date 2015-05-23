@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.apidoc.api.v0.models.ItemType
+import com.gilt.apidoc.api.v0.models.ApplicationSummary
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
@@ -35,8 +35,7 @@ class SearchSpec extends FunSpec with Matchers {
       Search.indexApplication(app.guid)
 
       db.ItemsDao.findAll(
-        guid = Some(app.guid),
-        `type` = Some(ItemType.Application)
+        guid = Some(app.guid)
       ).map(_.label) should be(Seq(app.name))
     }
 
@@ -57,8 +56,7 @@ class SearchSpec extends FunSpec with Matchers {
       Search.indexApplication(app.guid)
 
       db.ItemsDao.findAll(
-        guid = Some(app.guid),
-        `type` = Some(ItemType.Application)
+        guid = Some(app.guid)
       ).map(_.label) should be(Seq(newName))
     }
 

@@ -12,13 +12,11 @@ trait Items {
   this: Controller =>
 
   def get(
-    orgKey: Option[String],
     q: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
     val items = ItemsDao.findAll(
-      orgKey = orgKey,
       q = q,
       limit = limit,
       offset = offset

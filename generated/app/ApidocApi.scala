@@ -11,6 +11,11 @@ package com.gilt.apidoc.api.v0.models {
   sealed trait Diff
 
   /**
+   * Identifies the specific type of item that was indexed by search
+   */
+  sealed trait ItemDetail
+
+  /**
    * An application has a name and multiple versions of its API.
    */
   case class Application(
@@ -28,6 +33,15 @@ package com.gilt.apidoc.api.v0.models {
     description: _root_.scala.Option[String] = None,
     visibility: com.gilt.apidoc.api.v0.models.Visibility
   )
+
+  /**
+   * Summary of an application sufficient for display and links
+   */
+  case class ApplicationSummary(
+    guid: _root_.java.util.UUID,
+    organization: com.gilt.apidoc.api.v0.models.Reference,
+    key: String
+  ) extends ItemDetail
 
   case class Audit(
     createdAt: _root_.org.joda.time.DateTime,
@@ -160,7 +174,7 @@ package com.gilt.apidoc.api.v0.models {
    */
   case class Item(
     guid: _root_.java.util.UUID,
-    `type`: com.gilt.apidoc.api.v0.models.ItemType,
+    detail: com.gilt.apidoc.api.v0.models.ItemDetail,
     label: String,
     description: _root_.scala.Option[String] = None
   )
@@ -366,43 +380,13 @@ package com.gilt.apidoc.api.v0.models {
   ) extends Diff
 
   /**
-   * Identifies the specific type of item that was indexed by search
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union ItemDetail, it will need to be handled in the client code. This
+   * implementation will deserialize these future types as an instance of this class.
    */
-  sealed trait ItemType
-
-  object ItemType {
-
-    /**
-     * Represents that the item indexed was an application
-     */
-    case object Application extends ItemType { override def toString = "application" }
-
-    /**
-     * UNDEFINED captures values that are sent either in error or
-     * that were added by the server after this library was
-     * generated. We want to make it easy and obvious for users of
-     * this library to handle this case gracefully.
-     *
-     * We use all CAPS for the variable name to avoid collisions
-     * with the camel cased values above.
-     */
-    case class UNDEFINED(override val toString: String) extends ItemType
-
-    /**
-     * all returns a list of all the valid, known values. We use
-     * lower case to avoid collisions with the camel cased values
-     * above.
-     */
-    val all = Seq(Application)
-
-    private[this]
-    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
-
-    def apply(value: String): ItemType = fromString(value).getOrElse(UNDEFINED(value))
-
-    def fromString(value: String): _root_.scala.Option[ItemType] = byName.get(value.toLowerCase)
-
-  }
+  case class ItemDetailUndefinedType(
+    description: String
+  ) extends ItemDetail
 
   sealed trait OriginalType
 
@@ -582,11 +566,6 @@ package com.gilt.apidoc.api.v0.models {
       }
     }
 
-    implicit val jsonReadsApidocapiItemType = __.read[String].map(ItemType.apply)
-    implicit val jsonWritesApidocapiItemType = new Writes[ItemType] {
-      def writes(x: ItemType) = JsString(x.toString)
-    }
-
     implicit val jsonReadsApidocapiOriginalType = __.read[String].map(OriginalType.apply)
     implicit val jsonWritesApidocapiOriginalType = new Writes[OriginalType] {
       def writes(x: OriginalType) = JsString(x.toString)
@@ -640,6 +619,22 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "description").writeNullable[String] and
         (__ \ "visibility").write[com.gilt.apidoc.api.v0.models.Visibility]
       )(unlift(ApplicationForm.unapply _))
+    }
+
+    implicit def jsonReadsApidocapiApplicationSummary: play.api.libs.json.Reads[ApplicationSummary] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "key").read[String]
+      )(ApplicationSummary.apply _)
+    }
+
+    implicit def jsonWritesApidocapiApplicationSummary: play.api.libs.json.Writes[ApplicationSummary] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "key").write[String]
+      )(unlift(ApplicationSummary.unapply _))
     }
 
     implicit def jsonReadsApidocapiAudit: play.api.libs.json.Reads[Audit] = {
@@ -849,7 +844,7 @@ package com.gilt.apidoc.api.v0.models {
     implicit def jsonReadsApidocapiItem: play.api.libs.json.Reads[Item] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "type").read[com.gilt.apidoc.api.v0.models.ItemType] and
+        (__ \ "detail").read[com.gilt.apidoc.api.v0.models.ItemDetail] and
         (__ \ "label").read[String] and
         (__ \ "description").readNullable[String]
       )(Item.apply _)
@@ -858,7 +853,7 @@ package com.gilt.apidoc.api.v0.models {
     implicit def jsonWritesApidocapiItem: play.api.libs.json.Writes[Item] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "type").write[com.gilt.apidoc.api.v0.models.ItemType] and
+        (__ \ "detail").write[com.gilt.apidoc.api.v0.models.ItemDetail] and
         (__ \ "label").write[String] and
         (__ \ "description").writeNullable[String]
       )(unlift(Item.unapply _))
@@ -1247,6 +1242,19 @@ package com.gilt.apidoc.api.v0.models {
         case x: com.gilt.apidoc.api.v0.models.DiffUndefinedType => sys.error(s"The type[com.gilt.apidoc.api.v0.models.DiffUndefinedType] should never be serialized")
       }
     }
+
+    implicit def jsonReadsApidocapiItemDetail: play.api.libs.json.Reads[ItemDetail] = {
+      (
+        (__ \ "application_summary").read(jsonReadsApidocapiApplicationSummary).asInstanceOf[play.api.libs.json.Reads[ItemDetail]]
+      )
+    }
+
+    implicit def jsonWritesApidocapiItemDetail: play.api.libs.json.Writes[ItemDetail] = new play.api.libs.json.Writes[ItemDetail] {
+      def writes(obj: ItemDetail) = obj match {
+        case x: com.gilt.apidoc.api.v0.models.ApplicationSummary => play.api.libs.json.Json.obj("application_summary" -> jsonWritesApidocapiApplicationSummary.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.ItemDetailUndefinedType => sys.error(s"The type[com.gilt.apidoc.api.v0.models.ItemDetailUndefinedType] should never be serialized")
+      }
+    }
   }
 }
 
@@ -1275,17 +1283,6 @@ package com.gilt.apidoc.api.v0 {
 
     implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[org.joda.time.LocalDate](
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
-
-    // Enum: ItemType
-    private val enumItemTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.api.v0.models.ItemType.all.mkString(", ")}"
-
-    implicit val pathBindableEnumItemType = new PathBindable.Parsing[com.gilt.apidoc.api.v0.models.ItemType] (
-      ItemType.fromString(_).get, _.toString, enumItemTypeNotFound
-    )
-
-    implicit val queryStringBindableEnumItemType = new QueryStringBindable.Parsing[com.gilt.apidoc.api.v0.models.ItemType](
-      ItemType.fromString(_).get, _.toString, enumItemTypeNotFound
     )
 
     // Enum: OriginalType
@@ -1607,13 +1604,11 @@ package com.gilt.apidoc.api.v0 {
 
     object Items extends Items {
       override def get(
-        orgKey: _root_.scala.Option[String] = None,
         q: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Item]] = {
         val queryParameters = Seq(
-          orgKey.map("org_key" -> _),
           q.map("q" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
@@ -2393,7 +2388,6 @@ package com.gilt.apidoc.api.v0 {
 
   trait Items {
     def get(
-      orgKey: _root_.scala.Option[String] = None,
       q: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0

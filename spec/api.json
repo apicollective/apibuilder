@@ -13,7 +13,15 @@
 		{ "type": "diff_breaking" },
 		{ "type": "diff_non_breaking" }
 	    ]
+	},
+
+	"item_detail": {
+	    "description": "Identifies the specific type of item that was indexed by search",
+	    "types": [
+		{ "type": "application_summary", "description": "Represents that the item indexed was an application" }
+	    ]
 	}
+
     },
 
     "imports": [
@@ -45,13 +53,6 @@
 		{ "name": "api_json", "description": "The original is in the api.json format" },
 		{ "name": "swagger_json", "description": "The original in the swagger.json format" },
 		{ "name": "avro_idl", "description": "The original is in Avro Idl format" }
-	    ]
-	},
-
-	"item_type": {
-	    "description": "Identifies the specific type of item that was indexed by search",
-	    "values": [
-		{ "name": "application", "description": "Represents that the item indexed was an application" }
 	    ]
 	}
 
@@ -203,6 +204,16 @@
                 { "name": "visibility", "type": "visibility" }
             ]
         },
+
+	"application_summary": {
+	    "description": "Summary of an application sufficient for display and links",
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "organization", "type": "reference" },
+                { "name": "key", "type": "string" }
+	    ]
+	},
+
 
 	"original": {
 	    "description": "Represents the original input used to create an application version",
@@ -388,7 +399,7 @@
             "description": "When searching for content, the results of the search will be a list of items. Each item will have enough information to render for the user, including a type and item_guid to enable creating the appropriate link.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Unique identifer for this item. By using a UUID, you can combine with the type to figure out the URI for the resource" },
-                { "name": "type", "type": "item_type" },
+                { "name": "detail", "type": "item_detail" },
                 { "name": "label", "type": "string" },
                 { "name": "description", "type": "string", "required": false }
             ]
@@ -1083,7 +1094,6 @@
 		{
 		    "method": "GET",
 		    "parameters": [
-                        { "name": "org_key", "type": "string", "description": "Filter changes to those made for the organization with this key.", "required": false },
 			{ "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }

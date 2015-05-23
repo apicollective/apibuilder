@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.apidoc.api.v0.models.{Application, ItemType, Organization}
+import com.gilt.apidoc.api.v0.models.{Application, ApplicationSummary, Organization, Reference}
 import db.{ApplicationsDao, Authorization, ItemsDao, OrganizationsDao}
 import java.util.UUID
 
@@ -13,7 +13,11 @@ object Search {
         ItemsDao.upsert(
           guid = app.guid,
           organizationGuid = org.guid,
-          `type` = ItemType.Application,
+          detail = ApplicationSummary(
+            guid = app.guid,
+            organization = Reference(guid = org.guid, key = org.key),
+            key = app.key
+          ),
           label = app.name,
           description = app.description,
           content = content

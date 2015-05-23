@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Item, ItemType}
+import com.gilt.apidoc.api.v0.models.{ApplicationSummary, Item, Organization, Reference}
 import org.scalatest.{FunSpec, Matchers}
 import org.postgresql.util.PSQLException
 import java.util.UUID
@@ -13,17 +13,21 @@ class ItemsDaoSpec extends FunSpec with Matchers {
   new play.core.StaticApplication(new java.io.File("."))
 
   private def upsertItem(
-    organizationGuid: UUID = Util.createOrganization().guid,
+    org: Organization = Util.createOrganization(),
     guid: UUID = UUID.randomUUID,
-    `type`: ItemType = ItemType.Application,
     label: String = "Test",
     description: Option[String] = None,
     content: String = "test"
   ): Item = {
+    val app = Util.createApplication(org = org)
     ItemsDao.upsert(
       guid = guid,
-      organizationGuid = organizationGuid,
-      `type` = `type`,
+      organizationGuid = org.guid,
+      detail = ApplicationSummary(
+        guid = app.guid,
+        organization = Reference(org.guid, org.key),
+        key = app.key
+      ),
       label = label,
       description = description,
       content = content
@@ -58,30 +62,32 @@ class ItemsDaoSpec extends FunSpec with Matchers {
 
   describe("findAll") {
 
-    it("orgKey") {
-      val org = Util.createOrganization()
-      val item = upsertItem(organizationGuid = org.guid)
-      ItemsDao.findAll(orgKey = Some(org.key)).map(_.guid) should be(Seq(item.guid))
-      ItemsDao.findAll(orgKey = Some(org.key + "2")) should be(Nil)
-    }
+    describe("q") {
 
-    it("type") {
-      val guid = UUID.randomUUID
+      it("keywords") {
+        val guid = UUID.randomUUID
     
-      upsertItem(guid = guid, `type` = ItemType.Application)
-      ItemsDao.findAll(guid = Some(guid), `type` = Some(ItemType.Application)).map(_.guid) should be(Seq(guid))
-      ItemsDao.findAll(guid = Some(guid), `type` = Some(ItemType.UNDEFINED("foo"))).map(_.guid) should be(Nil)
-    }
-    
-    it("q") {
-      val guid = UUID.randomUUID
-    
-      upsertItem(guid = guid, content = "foo")
-      ItemsDao.findAll(guid = Some(guid), q = Some("foo")).map(_.guid) should be(Seq(guid))
+        upsertItem(guid = guid, content = "foo")
+        ItemsDao.findAll(guid = Some(guid), q = Some("foo")).map(_.guid) should be(Seq(guid))
 
-      upsertItem(guid = guid, content = "bar")
-      ItemsDao.findAll(guid = Some(guid), q = Some("foo")).map(_.guid) should be(Nil)
-      ItemsDao.findAll(guid = Some(guid), q = Some("bar")).map(_.guid) should be(Seq(guid))
+        upsertItem(guid = guid, content = "bar")
+        ItemsDao.findAll(guid = Some(guid), q = Some("foo")).map(_.guid) should be(Nil)
+        ItemsDao.findAll(guid = Some(guid), q = Some("bar")).map(_.guid) should be(Seq(guid))
+      }
+
+      it("guid") {
+        val org = Util.createOrganization()
+        val item = upsertItem(org = org)
+        ItemsDao.findAll(q = Some(s"guid:${item.guid}")).map(_.guid) should be(Seq(item.guid))
+        ItemsDao.findAll(q = Some(s"guid:${UUID.randomUUID.toString}")).map(_.guid) should be(Nil)
+      }
+
+      it("orgKey") {
+        val org = Util.createOrganization()
+        val item = upsertItem(org = org)
+        ItemsDao.findAll(q = Some(s"org:${org.key}")).map(_.guid) should be(Seq(item.guid))
+        ItemsDao.findAll(q = Some(s"org:${org.key}2")).map(_.guid) should be(Nil)
+      }
     }
 
     it("limit and offset") {

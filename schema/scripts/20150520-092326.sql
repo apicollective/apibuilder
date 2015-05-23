@@ -5,7 +5,7 @@ drop table if exists items;
 create table items (
   guid                  uuid primary key,
   organization_guid     uuid not null references public.organizations,
-  type                  text not null check(public.enum(type)),
+  detail                json not null,
   label                 text not null check(trim(label) = label),
   description           text check(trim(description) = description),
   content               text not null check(content = trim(lower(content))),
@@ -16,6 +16,12 @@ create index items_organization_guid_content_idx on items(organization_guid, con
 
 comment on table items is '
   A denormalization of the data in the items table optimized for search
+';
+
+comment on column items.detail is '
+  Actual information about this particular item. The contents will vary
+  based on the type - in the API the data here are identified by a union
+  type.
 ';
 
 comment on column items.organization_guid is '
