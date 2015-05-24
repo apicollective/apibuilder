@@ -14,7 +14,7 @@
         @items.items.map { item =>
          <tr>
            <td>
-             <a href="@routes.SearchController.redirect(tpl.org.get.key, item.`type`, item.guid)">@item.label</a>
+	     <a href="@lib.Util.searchUrl(item.detail).getOrElse("#")">@item.label</a>
              <br/><em>@item.description</em>
            </td>
          </tr>
@@ -25,10 +25,10 @@
     @if(items.hasPrevious || items.hasNext) {
       <ul class="pager">
         @if(items.hasPrevious) {
-          <li><a href="@routes.SearchController.index(tpl.org.get.key, q, items.page - 1)">Previous</a></li>
+          <li><a href="@routes.SearchController.index(q, items.page - 1)">Previous</a></li>
         }
         @if(items.hasNext) {
-          <li><a href="@routes.SearchController.index(tpl.org.get.key, q, items.page + 1)">Next</a></li>
+          <li><a href="@routes.SearchController.index(q, items.page + 1)">Next</a></li>
         }
       </ul>
     }
