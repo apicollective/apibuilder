@@ -75,13 +75,6 @@ class ItemsDaoSpec extends FunSpec with Matchers {
         ItemsDao.findAll(guid = Some(guid), q = Some("bar")).map(_.guid) should be(Seq(guid))
       }
 
-      it("guid") {
-        val org = Util.createOrganization()
-        val item = upsertItem(org = org)
-        ItemsDao.findAll(q = Some(s"guid:${item.guid}")).map(_.guid) should be(Seq(item.guid))
-        ItemsDao.findAll(q = Some(s"guid:${UUID.randomUUID.toString}")).map(_.guid) should be(Nil)
-      }
-
       it("orgKey") {
         val org = Util.createOrganization()
         val item = upsertItem(org = org)

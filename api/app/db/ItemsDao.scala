@@ -1,6 +1,7 @@
 package db
 
 import lib.Text
+import lib.query.{Query, QueryParser}
 import com.gilt.apidoc.api.v0.models.{ApplicationSummary, Item, ItemDetail, User}
 import com.gilt.apidoc.api.v0.models.json._
 import anorm._
@@ -77,24 +78,23 @@ object ItemsDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Item] = {
-    // TODO: Parse query and extract out org:xxx, guid:yyy and use that for orgKey
-    val orgKey = None
-    val guidFromQuery = None
+    val (keywords, orgKey) = q.flatMap(QueryParser(_)) match {
+      case None => (None, None)
+      case Some(query) => parseQuery(query)
+    }
 
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and items.guid = {guid}::uuid" },
-      guidFromQuery.map { v => "and items.guid = {guid_from_query}::uuid" },
+      keywords.map { v => "and items.content like '%' || lower(trim({keywords})) || '%' " },
       orgKey.map { v => "and items.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({org_key})))" },
-      q.map { v => "and items.content like '%' || lower(trim({q})) || '%' " },
       Some(s"order by lower(items.label) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      guidFromQuery.map('guid_from_query -> _.toString),
-      orgKey.map('org_key -> _),
-      q.map('q -> _)
+      keywords.map('keywords -> _),
+      orgKey.map('org_key -> _)
     ).flatten
 
     DB.withConnection { implicit c =>
@@ -111,6 +111,23 @@ object ItemsDao {
       label = row[String]("label"),
       description = row[Option[String]]("description")
     )
+  }
+
+  private def parseQuery(query: Query): (Option[String], Option[String]) = {
+    val keywords = query.words match {
+      case Nil => None
+      case words => Some(words.mkString(" "))
+    }
+    val orgKey = query.orgKeys match {
+      case Nil => None
+      case multiple => {
+        // TODO: Decide if we want to support this use case of
+        // specifying multiple org keys. For now we only use the first
+        // org key.
+        multiple.headOption
+      }
+    }
+    (keywords, orgKey)
   }
 
 }
