@@ -1,19 +1,12 @@
 Tasks:
   - Migrate tasks for changes
   - Implement authorization in items and changes daos
-  - Wire up diff when uploading a new version (vs. replacing an existing)
-  - double check all the task messages - finish applications dao update
   - Add actual timestamp to the changes api to record when the change happened
     vs. when the change was created
   - Add actual user who created the change to the Change API as well
-  - Search / Changes UI - remove /gilt prefix from the UI to match the API
+  - Changes UI - remove /gilt prefix from the UI to match the API
     and enable a user to see their changes across all orgs
-
-Add search to apidoc
-
-VersionsDao
-  - make isDeleted default to None
-  - add isDeleted to all findAll methods
+  - Search: cleanup UI in search box to hide org when starting a search
 
 Expose permission check at www/app/views/generators/details.scala.html for removing a generator
 
