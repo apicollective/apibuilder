@@ -48,7 +48,7 @@ object UrlKey {
     "change", "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
     "history", "internal", "login", "logout", "member", "members", "metadatum", "metadata",
     "org", "password", "private", "reject", "service.json", "session", "setting", "scms",
-    "source", "subaccount", "subscription", "team", "types", "user", "util", "version", "watch"
+    "search", "source", "subaccount", "subscription", "team", "types", "user", "util", "version", "watch"
   ).map(UrlKey.generate(_))
 
 }
