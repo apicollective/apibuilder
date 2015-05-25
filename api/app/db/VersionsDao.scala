@@ -23,6 +23,7 @@ object VersionsDao {
 
   private val BaseQuery = s"""
     select versions.guid, versions.version,
+           ${AuditsDao.queryCreation("versions")},
            originals.type as original_type,
            originals.data as original_data,
            organizations.guid as organization_guid,
@@ -211,7 +212,8 @@ object VersionsDao {
           ),
           version = version,
           original = original,
-          service = service
+          service = service,
+          audit = AuditsDao.fromRowCreation(row)
         )
       }.toSeq
     }

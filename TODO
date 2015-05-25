@@ -7,6 +7,8 @@ Tasks:
     and enable a user to see their changes across all orgs
   - Search: cleanup UI in search box to hide org when starting a search
 
+Add Audit to all DAOs
+
 Expose permission check at www/app/views/generators/details.scala.html for removing a generator
 
 Consider supporting (from swagger):

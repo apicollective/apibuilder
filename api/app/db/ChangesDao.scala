@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, Change, ChangeVersion, Reference, User, Version}
+import com.gilt.apidoc.api.v0.models.{Application, Change, ChangeVersion, Reference, ReferenceGuid, User, Version}
 import com.gilt.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
 import com.gilt.apidoc.internal.v0.models.json._
 import anorm._
@@ -10,6 +10,7 @@ import play.api.libs.json._
 import java.util.UUID
 import org.postgresql.util.PSQLException
 import scala.util.{Try, Success, Failure}
+import org.joda.time.DateTime
 
 object ChangesDao {
 
@@ -22,7 +23,9 @@ object ChangesDao {
            to_version.guid::varchar as to_guid,
            to_version.version as to_version,
            changes.type,
-           changes.description
+           changes.description,
+           changes.changed_at,
+           changes.changed_by_guid::uuid
       from changes
       join applications on applications.guid = changes.application_guid and applications.deleted_at is null
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
@@ -33,12 +36,17 @@ object ChangesDao {
 
   private val InsertQuery = """
     insert into changes
-    (guid, application_guid, from_version_guid, to_version_guid, type, description, created_by_guid)
+    (guid, application_guid, from_version_guid, to_version_guid, type, description, changed_at, changed_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {application_guid}::uuid, {from_version_guid}::uuid, {to_version_guid}::uuid, {type}, {description}, {created_by_guid}::uuid)
+    ({guid}::uuid, {application_guid}::uuid, {from_version_guid}::uuid, {to_version_guid}::uuid, {type}, {description}, {changed_at}, {changed_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, fromVersion: Version, toVersion: Version, differences: Seq[Diff]) {
+  def upsert(
+    createdBy: User,
+    fromVersion: Version,
+    toVersion: Version,
+    differences: Seq[Diff]
+  ) {
     assert(
       fromVersion.guid != toVersion.guid,
       "Versions must be different"
@@ -69,6 +77,8 @@ object ChangesDao {
               'to_version_guid -> toVersion.guid,
               'type -> differenceType,
               'description -> description,
+              'changed_at -> toVersion.audit.createdAt,
+              'changed_by_guid -> toVersion.audit.createdBy.guid,
               'created_by_guid -> createdBy.guid
             ).execute()
           ) match {
@@ -150,7 +160,9 @@ object ChangesDao {
         case "breaking" => DiffBreaking(row[String]("description"))
         case "non_breaking" => DiffNonBreaking(row[String]("description"))
         case other => DiffUndefinedType(other)
-      }
+      },
+      changedAt = row[DateTime]("changed_at"),
+      changedBy = ReferenceGuid(row[UUID]("changed_by_guid"))
     )
   }
 

@@ -58,7 +58,9 @@ package com.gilt.apidoc.api.v0.models {
     application: com.gilt.apidoc.api.v0.models.Reference,
     fromVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
     toVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
-    diff: com.gilt.apidoc.api.v0.models.Diff
+    diff: com.gilt.apidoc.api.v0.models.Diff,
+    changedAt: _root_.org.joda.time.DateTime,
+    changedBy: com.gilt.apidoc.api.v0.models.ReferenceGuid
   )
 
   /**
@@ -345,7 +347,8 @@ package com.gilt.apidoc.api.v0.models {
     application: com.gilt.apidoc.api.v0.models.Reference,
     version: String,
     original: _root_.scala.Option[com.gilt.apidoc.api.v0.models.Original] = None,
-    service: com.gilt.apidoc.spec.v0.models.Service
+    service: com.gilt.apidoc.spec.v0.models.Service,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   case class VersionForm(
@@ -661,7 +664,9 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "application").read[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "from_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
         (__ \ "to_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
-        (__ \ "diff").read[com.gilt.apidoc.api.v0.models.Diff]
+        (__ \ "diff").read[com.gilt.apidoc.api.v0.models.Diff] and
+        (__ \ "changed_at").read[_root_.org.joda.time.DateTime] and
+        (__ \ "changed_by").read[com.gilt.apidoc.api.v0.models.ReferenceGuid]
       )(Change.apply _)
     }
 
@@ -671,7 +676,9 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "application").write[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "from_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
         (__ \ "to_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
-        (__ \ "diff").write[com.gilt.apidoc.api.v0.models.Diff]
+        (__ \ "diff").write[com.gilt.apidoc.api.v0.models.Diff] and
+        (__ \ "changed_at").write[_root_.org.joda.time.DateTime] and
+        (__ \ "changed_by").write[com.gilt.apidoc.api.v0.models.ReferenceGuid]
       )(unlift(Change.unapply _))
     }
 
@@ -1164,7 +1171,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "application").read[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "version").read[String] and
         (__ \ "original").readNullable[com.gilt.apidoc.api.v0.models.Original] and
-        (__ \ "service").read[com.gilt.apidoc.spec.v0.models.Service]
+        (__ \ "service").read[com.gilt.apidoc.spec.v0.models.Service] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Version.apply _)
     }
 
@@ -1175,7 +1183,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "application").write[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "version").write[String] and
         (__ \ "original").writeNullable[com.gilt.apidoc.api.v0.models.Original] and
-        (__ \ "service").write[com.gilt.apidoc.spec.v0.models.Service]
+        (__ \ "service").write[com.gilt.apidoc.spec.v0.models.Service] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Version.unapply _))
     }
 

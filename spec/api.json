@@ -238,7 +238,8 @@
                 { "name": "application", "type": "reference" },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
 		{ "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
-		{ "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" }
+		{ "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" },
+                { "name": "audit", "type": "audit" }
             ]
         },
 
@@ -412,7 +413,9 @@
                 { "name": "application", "type": "reference" },
                 { "name": "from_version", "type": "change_version" },
                 { "name": "to_version", "type": "change_version" },
-                { "name": "diff", "type": "diff" }
+                { "name": "diff", "type": "diff" },
+                { "name": "changed_at", "type": "date-time-iso8601", "description": "Records the timestamp of when the actual change occurred (vs. when we created the changed record)" },
+		{ "name": "changed_by", "type": "reference_guid", "description": "Records who made the actual change" }
 	    ]
 	},
 

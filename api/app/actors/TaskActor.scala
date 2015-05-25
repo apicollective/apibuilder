@@ -40,7 +40,12 @@ class TaskActor extends Actor {
                       // No-op
                     }
                     case diffs => {
-                      ChangesDao.upsert(UsersDao.AdminUser, oldVersion, newVersion, diffs)
+                      ChangesDao.upsert(
+                        createdBy = UsersDao.AdminUser,
+                        fromVersion = oldVersion,
+                        toVersion = newVersion,
+                        differences = diffs
+                      )
                       versionUpdated(oldVersion, newVersion, diffs)
                     }
                   }
