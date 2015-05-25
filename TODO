@@ -1,7 +1,6 @@
 Tasks:
   - Migrate tasks for changes
-  - Changes UI - remove /gilt prefix from the UI to match the API
-    and enable a user to see their changes across all orgs
+  - Changes UI - add links to the hierarchical history pages
 
 Add Audit to all DAOs
 
