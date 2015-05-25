@@ -62,6 +62,7 @@ GET     /org/edit                                                 controllers.Or
 POST    /org/editPost                                             controllers.Organizations.editPost(org_key: String)
 POST    /org/deletePost                                           controllers.Organizations.deletePost(org_key: String)
 
+GET     /history                                                  controllers.HistoryController.index(page: Int ?= 0)
 GET     /search                                                   controllers.SearchController.index(q: Option[String] ?= None, org: Option[String] ?= None, page: Int ?= 0)
 
 # Start dynamic routing by org key
@@ -74,7 +75,7 @@ POST    /:orgKey/domains/:domain/remove                           controllers.Do
 GET     /:orgKey/domains/create                                   controllers.Domains.create(orgKey: String)
 POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
 
-GET     /:orgKey/history                                          controllers.HistoryController.index(orgKey: String, page: Int ?= 0)
+GET     /:orgKey/history                                          controllers.HistoryController.organization(orgKey: String, page: Int ?= 0)
 
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/downloadCsv                              controllers.Members.downloadCsv(orgKey: String)

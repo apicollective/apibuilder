@@ -12,6 +12,9 @@
       <tbody>
         @changes.items.map { change =>
          <tr>
+           <td>@lib.DateHelper.shortDate(tpl.timeZone, change.changedAt)</td>
+           <td><a href="">@change.application.key</a></td>
+           <td>@change.fromVersion.version - @change.toVersion.version</td>
            <td>
              @{change.diff match {
                case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => "Breaking"
@@ -34,17 +37,25 @@
     @if(changes.hasPrevious || changes.hasNext) {
       <ul class="pager">
         @if(changes.hasPrevious) {
-          @if(tpl.application.isEmpty) {
-            <li><a href="@routes.HistoryController.index(orgKey = tpl.org.get.key, changes.page - 1)">Previous</a></li>
+          @if(tpl.org.isEmpty) {
+            <li><a href="@routes.HistoryController.index(changes.page - 1)">Previous</a></li>
           } else {
-            <li><a href="@routes.HistoryController.application(orgKey = tpl.org.get.key, applicationKey = tpl.application.get.key, changes.page - 1)">Previous</a></li>
+            @if(tpl.application.isEmpty) {
+              <li><a href="@routes.HistoryController.organization(orgKey = tpl.org.get.key, changes.page - 1)">Previous</a></li>
+            } else {
+              <li><a href="@routes.HistoryController.application(orgKey = tpl.org.get.key, applicationKey = tpl.application.get.key, changes.page - 1)">Previous</a></li>
+            }
           }
         }
         @if(changes.hasNext) {
-          @if(tpl.application.isEmpty) {
-            <li><a href="@routes.HistoryController.index(tpl.org.get.key, changes.page + 1)">Next</a></li>
+          @if(tpl.org.isEmpty) {
+            <li><a href="@routes.HistoryController.index(changes.page + 1)">Next</a></li>
           } else {
-            <li><a href="@routes.HistoryController.application(orgKey = tpl.org.get.key, applicationKey = tpl.application.get.key, changes.page + 1)">Next</a></li>
+            @if(tpl.application.isEmpty) {
+              <li><a href="@routes.HistoryController.organization(tpl.org.get.key, changes.page + 1)">Next</a></li>
+            } else {
+              <li><a href="@routes.HistoryController.application(orgKey = tpl.org.get.key, applicationKey = tpl.application.get.key, changes.page + 1)">Next</a></li>
+            }
           }
         }
       </ul>

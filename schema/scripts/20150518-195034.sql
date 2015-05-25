@@ -10,7 +10,9 @@ create table changes (
   constraint changes_application_from_version_fk foreign key (application_guid, from_version_guid) references versions(application_guid, guid),
   constraint changes_application_to_version_fk foreign key (application_guid, to_version_guid) references versions(application_guid, guid),
   type                    text not null check(enum(type)),
-  description             text not null check(trim(description) = description)
+  description             text not null check(trim(description) = description),
+  changed_at              timestamptz not null,
+  changed_by_guid         uuid not null
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'changes');

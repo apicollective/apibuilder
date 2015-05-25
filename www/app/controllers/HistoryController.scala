@@ -9,7 +9,21 @@ object HistoryController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def index(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
+  def index(page: Int = 0) = Anonymous.async { implicit request =>
+    for {
+      changes <- request.api.changes.get(
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
+      )
+    } yield {
+      Ok(views.html.history.index(
+        request.mainTemplate().copy(title = Some("History")),
+        changes = PaginatedCollection(page, changes)
+      ))
+    }
+  }
+
+  def organization(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
     for {
       changes <- request.api.changes.get(
         orgKey = Some(orgKey),
