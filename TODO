@@ -1,8 +1,5 @@
 Tasks:
   - Migrate tasks for changes
-  - Add actual timestamp to the changes api to record when the change happened
-    vs. when the change was created
-  - Add actual user who created the change to the Change API as well
   - Changes UI - remove /gilt prefix from the UI to match the API
     and enable a user to see their changes across all orgs
   - Search: cleanup UI in search box to hide org when starting a search
