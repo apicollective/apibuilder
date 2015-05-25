@@ -120,7 +120,7 @@
                       <li><a href="@routes.Versions.show(service.organization.key, service.application.key, version)">@version</a></li>
                     }
                   }
-                  <li><a href="#">Differences</a></li>
+                  <li><a href="@routes.HistoryController.application(service.organization.key, service.application.key)">History</a></li>
                 }
               </ul>
             </div>

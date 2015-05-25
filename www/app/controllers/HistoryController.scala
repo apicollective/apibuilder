@@ -33,7 +33,8 @@ object HistoryController extends Controller {
     } yield {
       Ok(views.html.history.index(
         request.mainTemplate().copy(title = Some("History")),
-        changes = PaginatedCollection(page, changes)
+        changes = PaginatedCollection(page, changes),
+        org = Some(request.org)
       ))
     }
   }
@@ -57,7 +58,9 @@ object HistoryController extends Controller {
           } yield {
             Ok(views.html.history.index(
               request.mainTemplate().copy(title = Some("History"), application = Some(app)),
-              changes = PaginatedCollection(page, changes)
+              changes = PaginatedCollection(page, changes),
+              org = Some(request.org),
+              app = Some(app)
             ))
           }
         }

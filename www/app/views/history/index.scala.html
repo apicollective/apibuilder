@@ -1,8 +1,20 @@
 @(tpl: models.MainTemplate,
-  changes: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Change]
+  changes: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Change],
+  org: Option[com.gilt.apidoc.api.v0.models.Organization] = None,
+  app: Option[com.gilt.apidoc.api.v0.models.Application] = None
 )(implicit flash: Flash)
 
 @main(tpl) {
+
+  @if(!org.isEmpty && !app.isEmpty) {
+    <a href="@routes.HistoryController.index()">All</a> /
+    <a href="@routes.HistoryController.organization(org.get.key)">@org.get.key</a> /
+    @app.get.key
+  } else {
+    @if(!org.isEmpty) {
+      <a href="@routes.HistoryController.index()">All</a> / @org.get.key
+    }
+  }
 
   @if(changes.isEmpty) {
     <em>No changes found</em>
@@ -40,24 +52,24 @@
     @if(changes.hasPrevious || changes.hasNext) {
       <ul class="pager">
         @if(changes.hasPrevious) {
-          @if(tpl.org.isEmpty) {
+          @if(org.isEmpty) {
             <li><a href="@routes.HistoryController.index(changes.page - 1)">Previous</a></li>
           } else {
-            @if(tpl.application.isEmpty) {
-              <li><a href="@routes.HistoryController.organization(orgKey = tpl.org.get.key, changes.page - 1)">Previous</a></li>
+            @if(app.isEmpty) {
+              <li><a href="@routes.HistoryController.organization(orgKey = org.get.key, changes.page - 1)">Previous</a></li>
             } else {
-              <li><a href="@routes.HistoryController.application(orgKey = tpl.org.get.key, applicationKey = tpl.application.get.key, changes.page - 1)">Previous</a></li>
+              <li><a href="@routes.HistoryController.application(orgKey = org.get.key, applicationKey = app.get.key, changes.page - 1)">Previous</a></li>
             }
           }
         }
         @if(changes.hasNext) {
-          @if(tpl.org.isEmpty) {
+          @if(org.isEmpty) {
             <li><a href="@routes.HistoryController.index(changes.page + 1)">Next</a></li>
           } else {
-            @if(tpl.application.isEmpty) {
-              <li><a href="@routes.HistoryController.organization(tpl.org.get.key, changes.page + 1)">Next</a></li>
+            @if(app.isEmpty) {
+              <li><a href="@routes.HistoryController.organization(org.get.key, changes.page + 1)">Next</a></li>
             } else {
-              <li><a href="@routes.HistoryController.application(orgKey = tpl.org.get.key, applicationKey = tpl.application.get.key, changes.page + 1)">Next</a></li>
+              <li><a href="@routes.HistoryController.application(orgKey = org.get.key, applicationKey = app.get.key, changes.page + 1)">Next</a></li>
             }
           }
         }
