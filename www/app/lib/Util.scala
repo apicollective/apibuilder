@@ -52,18 +52,6 @@ object Util {
     }
   }
 
-  def defaultQuery(query: Option[String], orgKey: Option[String]): String = {
-    query match {
-      case Some(q) => q
-      case None => {
-        orgKey match {
-          case Some(key) => s"org:$key"
-          case None => ""
-        }
-      }
-    }
-  }
-
   def searchUrl(detail: ItemDetail): Option[String] = {
     detail match {
       case com.gilt.apidoc.api.v0.models.ApplicationSummary(guid, org, key) => {

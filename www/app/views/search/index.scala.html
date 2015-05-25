@@ -1,5 +1,6 @@
 @(tpl: models.MainTemplate,
   q: Option[String],
+  org: Option[String],
   items: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Item]
 )(implicit flash: Flash)
 
@@ -25,10 +26,10 @@
     @if(items.hasPrevious || items.hasNext) {
       <ul class="pager">
         @if(items.hasPrevious) {
-          <li><a href="@routes.SearchController.index(q, items.page - 1)">Previous</a></li>
+          <li><a href="@routes.SearchController.index(q, org, items.page - 1)">Previous</a></li>
         }
         @if(items.hasNext) {
-          <li><a href="@routes.SearchController.index(q, items.page + 1)">Next</a></li>
+          <li><a href="@routes.SearchController.index(q, org, items.page + 1)">Next</a></li>
         }
       </ul>
     }
