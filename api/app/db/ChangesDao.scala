@@ -18,6 +18,8 @@ object ChangesDao {
     select changes.guid,
            applications.guid as application_guid,
            applications.key as application_key,
+           organizations.guid as organization_guid,
+           organizations.key as organization_key,
            from_version.guid::varchar as from_guid,
            from_version.version as from_version,
            to_version.guid::varchar as to_guid,
@@ -154,6 +156,7 @@ object ChangesDao {
     Change(
       guid = row[UUID]("guid"),
       application = Reference(row[UUID]("application_guid"), row[String]("application_key")),
+      organization = Reference(row[UUID]("organization_guid"), row[String]("organization_key")),
       fromVersion = ChangeVersion(row[UUID]("from_guid"), row[String]("from_version")),
       toVersion = ChangeVersion(row[UUID]("to_guid"), row[String]("to_version")),
       diff = row[String]("type") match {

@@ -55,6 +55,7 @@ package com.gilt.apidoc.api.v0.models {
    */
   case class Change(
     guid: _root_.java.util.UUID,
+    organization: com.gilt.apidoc.api.v0.models.Reference,
     application: com.gilt.apidoc.api.v0.models.Reference,
     fromVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
     toVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
@@ -661,6 +662,7 @@ package com.gilt.apidoc.api.v0.models {
     implicit def jsonReadsApidocapiChange: play.api.libs.json.Reads[Change] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "application").read[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "from_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
         (__ \ "to_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
@@ -673,6 +675,7 @@ package com.gilt.apidoc.api.v0.models {
     implicit def jsonWritesApidocapiChange: play.api.libs.json.Writes[Change] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "application").write[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "from_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
         (__ \ "to_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and

@@ -410,6 +410,7 @@
 	    "description": "Represents a single change from one version of a service to another",
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
+                { "name": "organization", "type": "reference" },
                 { "name": "application", "type": "reference" },
                 { "name": "from_version", "type": "change_version" },
                 { "name": "to_version", "type": "change_version" },
