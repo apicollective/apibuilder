@@ -2,7 +2,7 @@ package db
 
 import lib.Text
 import lib.query.{Query, QueryParser}
-import com.gilt.apidoc.api.v0.models.{ApplicationSummary, Item, ItemDetail, User}
+import com.gilt.apidoc.api.v0.models.{ApplicationSummary, Item, ItemDetail, ItemDetailUndefinedType, User}
 import com.gilt.apidoc.api.v0.models.json._
 import anorm._
 import play.api.db._
@@ -12,20 +12,26 @@ import java.util.UUID
 
 object ItemsDao {
 
+  // For authorization purposes, we assume the only thing we've
+  // indexed is the application and thus join applications and
+  // organizations. This is ONLY used to enforce the authorization
+  // filter in findAll
   private val BaseQuery = """
     select items.guid::varchar,
            items.detail::varchar,
            items.label,
            items.description
       from search.items
+      join organizations on organizations.guid = items.organization_guid and organizations.deleted_at is null
+      left join applications on items.application_guid = applications.guid and applications.deleted_at is null
      where true
   """
 
   private val InsertQuery = """
     insert into search.items
-    (guid, organization_guid, detail, label, description, content)
+    (guid, organization_guid, application_guid, detail, label, description, content)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {detail}::json, {label}, {description}, {content})
+    ({guid}::uuid, {organization_guid}::uuid, {application_guid}::uuid, {detail}::json, {label}, {description}, {content})
   """
 
   private val DeleteQuery = """
@@ -34,18 +40,30 @@ object ItemsDao {
 
   def upsert(
     guid: UUID,
-    organizationGuid: UUID,
     detail: ItemDetail,
     label: String,
     description: Option[String],
     content: String
   ) {
+    val organizationGuid = detail match {
+      case ApplicationSummary(guid, org, key) => Some(org.guid)
+      case ItemDetailUndefinedType(desc) => {
+        sys.error(s"Could not determine organization guid from detail: $detail")
+      }
+    }
+
+    val applicationGuid = detail match {
+      case ApplicationSummary(guid, org, key) => Some(guid)
+      case ItemDetailUndefinedType(desc) => None
+    }
+
     DB.withTransaction { implicit c =>
       delete(c, guid)
 
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> organizationGuid,
+        'application_guid -> applicationGuid,
         'detail -> Json.toJson(detail).toString,
         'label -> label.trim,
         'description -> description.map(_.trim).map(Text.truncate(_)),
@@ -72,7 +90,7 @@ object ItemsDao {
   }
 
   def findAll(
-    authorization: Authorization = Authorization.All, // TODO
+    authorization: Authorization,
     guid: Option[UUID] = None,
     q: Option[String] = None,
     limit: Long = 25,
@@ -85,6 +103,7 @@ object ItemsDao {
 
     val sql = Seq(
       Some(BaseQuery.trim),
+      authorization.applicationFilter().map(v => "and " + v),
       guid.map { v => "and items.guid = {guid}::uuid" },
       keywords.map { v => "and items.content like '%' || lower(trim({keywords})) || '%' " },
       orgKey.map { v => "and items.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({org_key})))" },
@@ -95,7 +114,7 @@ object ItemsDao {
       guid.map('guid -> _.toString),
       keywords.map('keywords -> _),
       orgKey.map('org_key -> _)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq

@@ -15,8 +15,9 @@ trait Items {
     q: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Authenticated { request =>
+  ) = AnonymousRequest { request =>
     val items = ItemsDao.findAll(
+      request.authorization,
       q = q,
       limit = limit,
       offset = offset
@@ -26,7 +27,7 @@ trait Items {
 
   def getByGuid(
     guid: UUID
-  ) = Authenticated { request =>
+  ) = AnonymousRequest { request =>
     ItemsDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(item) => Ok(Json.toJson(item))

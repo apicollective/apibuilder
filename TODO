@@ -1,6 +1,5 @@
 Tasks:
   - Migrate tasks for changes
-  - Implement authorization in items and changes daos
   - Add actual timestamp to the changes api to record when the change happened
     vs. when the change was created
   - Add actual user who created the change to the Change API as well

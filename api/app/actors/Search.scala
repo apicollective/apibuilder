@@ -12,7 +12,6 @@ object Search {
         val content = s"""${app.name} ${app.key} ${app.description.getOrElse("")}""".trim.toLowerCase
         ItemsDao.upsert(
           guid = app.guid,
-          organizationGuid = org.guid,
           detail = ApplicationSummary(
             guid = app.guid,
             organization = Reference(guid = org.guid, key = org.key),

@@ -5,6 +5,7 @@ drop table if exists items;
 create table items (
   guid                  uuid primary key,
   organization_guid     uuid not null references public.organizations,
+  application_guid      uuid references public.applications,
   detail                json not null,
   label                 text not null check(trim(label) = label),
   description           text check(trim(description) = description),
@@ -12,7 +13,9 @@ create table items (
   created_at            timestamptz not null default now()
 );
 
-create index items_organization_guid_content_idx on items(organization_guid, content);
+create index items_organization_guid_idx on items(organization_guid);
+create index items_application_guid_idx on items(application_guid);
+create index items_organization_content_idx on items(content);
 
 comment on table items is '
   A denormalization of the data in the items table optimized for search
@@ -26,7 +29,13 @@ comment on column items.detail is '
 
 comment on column items.organization_guid is '
   We denormalize the organization guid into the search items table to enable
-  filtering all of the content easily by organization.
+  filtering all of the content easily by organization and to enable authorization
+  checks for the user/organization.
+';
+
+comment on column items.application_guid is '
+  We denormalize the organization guid into the search items table to authorization
+  checks for the user/application.
 ';
 
 comment on column items.guid is '

@@ -1,5 +1,6 @@
 package actors
 
+import db.Authorization
 import com.gilt.apidoc.api.v0.models.ApplicationSummary
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
@@ -21,12 +22,12 @@ class SearchSpec extends FunSpec with Matchers {
         app.key,
         description
       ).foreach { query =>
-        db.ItemsDao.findAll(q = Some(query)).map(_.guid) should be(Seq(app.guid))
-        db.ItemsDao.findAll(q = Some(s"   $query   ")).map(_.guid) should be(Seq(app.guid))
-        db.ItemsDao.findAll(q = Some(query.toUpperCase)).map(_.guid) should be(Seq(app.guid))
+        db.ItemsDao.findAll(Authorization.All, q = Some(query)).map(_.guid) should be(Seq(app.guid))
+        db.ItemsDao.findAll(Authorization.All, q = Some(s"   $query   ")).map(_.guid) should be(Seq(app.guid))
+        db.ItemsDao.findAll(Authorization.All, q = Some(query.toUpperCase)).map(_.guid) should be(Seq(app.guid))
       }
 
-      db.ItemsDao.findAll(q = Some(UUID.randomUUID.toString)) should be(Nil)
+      db.ItemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) should be(Nil)
     }
 
     it("on create") {
@@ -34,7 +35,7 @@ class SearchSpec extends FunSpec with Matchers {
 
       Search.indexApplication(app.guid)
 
-      db.ItemsDao.findAll(
+      db.ItemsDao.findAll(Authorization.All, 
         guid = Some(app.guid)
       ).map(_.label) should be(Seq(app.name))
     }
@@ -55,7 +56,7 @@ class SearchSpec extends FunSpec with Matchers {
 
       Search.indexApplication(app.guid)
 
-      db.ItemsDao.findAll(
+      db.ItemsDao.findAll(Authorization.All, 
         guid = Some(app.guid)
       ).map(_.label) should be(Seq(newName))
     }
@@ -66,7 +67,7 @@ class SearchSpec extends FunSpec with Matchers {
 
       db.ApplicationsDao.softDelete(db.Util.createdBy, app)
       Search.indexApplication(app.guid)
-      db.ItemsDao.findAll(guid = Some(app.guid)) should be(Nil)
+      db.ItemsDao.findAll(Authorization.All, guid = Some(app.guid)) should be(Nil)
     }
 
   }
