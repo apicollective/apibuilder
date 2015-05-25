@@ -17,7 +17,7 @@ object Search {
             organization = Reference(guid = org.guid, key = org.key),
             key = app.key
           ),
-          label = app.name,
+          label = s"${org.key}/${app.key}",
           description = app.description,
           content = content
         )
