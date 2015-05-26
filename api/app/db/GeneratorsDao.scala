@@ -38,7 +38,7 @@ object GeneratorsDao {
         }
       }
       case Failure(e) => e match {
-        case e: MalformedURLException => Seq("URL is not valid")
+        case e: MalformedURLException => Seq(s"URL is not valid: ${e.getMessage}")
       }
     }
 
@@ -132,15 +132,10 @@ object GeneratorsDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     key: Option[String] = None,
-    keyAndUri: Option[(String, String)] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Generator] = {
-    require(
-      key.isEmpty || keyAndUri.isEmpty,
-      "Cannot specify key and keyAndUri"
-    )
     // TODO: Implement Authorization
 
     // Query generators
@@ -148,7 +143,6 @@ object GeneratorsDao {
       Some(BaseQuery.trim),
       guid.map(_ => "and generators.guid = {guid}::uuid"),
       key.map(_ => "and generators.key = {key}"),
-      keyAndUri.map(_ => "and generators.key = {key} and generators.uri = {uri}"),
       isDeleted.map(Filters.isDeleted("generators", _)),
       Some(s" order by lower(generators.key)"),
       Some(s" limit $limit offset $offset")
@@ -156,9 +150,7 @@ object GeneratorsDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),
-      key.map('key -> _),
-      keyAndUri.map('key -> _._1),
-      keyAndUri.map('uri -> _._2)
+      key.map('key -> _)
     ).flatten
 
     DB.withConnection { implicit c =>
