@@ -233,7 +233,7 @@ object Organizations extends Controller {
     key: Option[String],
     visibility: String
   )
-  private val orgForm = Form(
+  private[this] val orgForm = Form(
     mapping(
       "name" -> nonEmptyText,
       "namespace" -> nonEmptyText,

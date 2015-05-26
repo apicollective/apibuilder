@@ -7,7 +7,7 @@ import play.api.libs.json._
 
 object Healthchecks extends Controller {
 
-  private val Result = Json.toJson(Map("status" -> "healthy"))
+  private[this] val Result = Json.toJson(Map("status" -> "healthy"))
 
   def getInternalAndHealthcheck() = Action { request =>
     OrganizationsDao.findAll(Authorization.PublicOnly, limit = 1).headOption

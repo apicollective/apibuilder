@@ -34,7 +34,7 @@ sealed trait PasswordAlgorithm {
 
 case class BcryptPasswordAlgorithm(override val key: String) extends PasswordAlgorithm {
 
-  private val LogRounds = 10
+  private[this] val LogRounds = 10
 
   override def hash(password: String): HashedPassword = {
     val salt = BCrypt.gensalt(LogRounds)
@@ -85,22 +85,22 @@ case class UserPassword(guid: UUID, userGuid: UUID, algorithm: PasswordAlgorithm
 
 object UserPasswordsDao {
 
-  private val MinLength = 5
+  private[this] val MinLength = 5
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select guid::varchar, user_guid::varchar, algorithm_key, hash
       from user_passwords
      where deleted_at is null
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into user_passwords
     (guid, user_guid, algorithm_key, hash, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {user_guid}::uuid, {algorithm_key}, {hash}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
-  private val SoftDeleteByUserGuidQuery = """
+  private[this] val SoftDeleteByUserGuidQuery = """
     update user_passwords
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
      where user_guid = {user_guid}::uuid

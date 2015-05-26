@@ -25,7 +25,7 @@ object TaskActor {
 
 class TaskActor extends Actor {
 
-  private val NumberDaysBeforePurge = 90
+  private[this] val NumberDaysBeforePurge = 90
 
   def receive = {
 
@@ -152,7 +152,7 @@ class TaskActor extends Actor {
 
   }
 
-  private def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID) {
+  private[this] def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID) {
     VersionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
       VersionsDao.findByGuid(Authorization.All, newVersionGuid, isDeleted = None).map { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
@@ -173,7 +173,7 @@ class TaskActor extends Actor {
     }
   }
 
-  private def versionUpdated(
+  private[this] def versionUpdated(
     oldVersion: Version,
     newVersion: Version,
     diff: Seq[Diff]

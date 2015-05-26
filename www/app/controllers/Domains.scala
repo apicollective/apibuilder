@@ -62,7 +62,7 @@ object Domains extends Controller {
   }
  
   case class DomainData(name: String)
-  private val domainForm = Form(
+  private[this] val domainForm = Form(
     mapping(
       "name" -> nonEmptyText
     )(DomainData.apply)(DomainData.unapply)

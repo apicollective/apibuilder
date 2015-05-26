@@ -17,10 +17,10 @@ private[db] case class EmailVerificationConfirmation(
 
 private[db] object EmailVerificationConfirmationsDao {
 
-  private val TokenLength = 80
-  private val HoursUntilTokenExpires = 168
+  private[this] val TokenLength = 80
+  private[this] val HoursUntilTokenExpires = 168
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select email_verification_confirmations.guid,
            email_verification_confirmations.email_verification_guid,
            email_verification_confirmations.created_at
@@ -28,7 +28,7 @@ private[db] object EmailVerificationConfirmationsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into email_verification_confirmations
     (guid, email_verification_guid, created_by_guid)
     values

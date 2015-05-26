@@ -16,8 +16,8 @@ import java.io.File
 
 object Versions extends Controller {
 
-  private val DefaultVersion = "0.0.1-dev"
-  private val LatestVersion = "latest"
+  private[this] val DefaultVersion = "0.0.1-dev"
+  private[this] val LatestVersion = "latest"
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -304,7 +304,7 @@ object Versions extends Controller {
     )
   }
 
-  private def isWatching(
+  private[this] def isWatching(
     api: com.gilt.apidoc.api.v0.Client,
     user: Option[User],
     orgKey: String,
@@ -333,7 +333,7 @@ object Versions extends Controller {
     originalType: Option[String]
   )
 
-  private val uploadForm = Form(
+  private[this] val uploadForm = Form(
     mapping(
       "version" -> nonEmptyText,
       "visibility" -> nonEmptyText,

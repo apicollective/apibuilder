@@ -15,7 +15,7 @@ object ApplicationSettings extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  private def mainTemplate(
+  private[this] def mainTemplate(
     api: com.gilt.apidoc.api.v0.Client,
     base: MainTemplate,
     applicationKey: String,
@@ -96,7 +96,7 @@ object ApplicationSettings extends Controller {
   }
 
   case class Settings(visibility: String)
-  private val settingsForm = Form(
+  private[this] val settingsForm = Form(
     mapping(
       "visibility" -> text
     )(Settings.apply)(Settings.unapply)

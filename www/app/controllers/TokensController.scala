@@ -107,7 +107,7 @@ object TokensController extends Controller {
     description: Option[String]
   )
 
-  private val tokenForm = Form(
+  private[this] val tokenForm = Form(
     mapping(
       "description" -> optional(nonEmptyText)
     )(TokenData.apply)(TokenData.unapply)

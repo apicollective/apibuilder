@@ -12,7 +12,7 @@ object SubscriptionsDao {
 
   val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select subscriptions.guid,
            subscriptions.publication,
            users.guid as user_guid,
@@ -30,7 +30,7 @@ object SubscriptionsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into subscriptions
     (guid, organization_guid, publication, user_guid, created_by_guid)
     values

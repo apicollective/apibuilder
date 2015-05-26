@@ -103,7 +103,7 @@ object AnonymousRequest {
   /**
     * Blocking call to fetch an organization
     */
-  private def getOrganization(user: Option[User], key: String): Option[Organization] = {
+  private[this] def getOrganization(user: Option[User], key: String): Option[Organization] = {
     ApiClient.awaitCallWith404( Authenticated.api(user).Organizations.getByKey(key) )
   }
 

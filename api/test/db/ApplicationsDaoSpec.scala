@@ -13,12 +13,12 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
 
   private lazy val baseUrl = "http://localhost"
 
-  private val Original = com.gilt.apidoc.api.v0.models.Original(
+  private[this] val Original = com.gilt.apidoc.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
     data = Json.obj("name" -> s"test-${UUID.randomUUID}").toString
   )
 
-  private def upsertApplication(
+  private[this] def upsertApplication(
     nameOption: Option[String] = None,
     org: Organization = Util.testOrg,
     visibility: Visibility = Visibility.Organization
@@ -34,7 +34,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
     }
   }
 
-  private def findByKey(org: Organization, key: String): Option[Application] = {
+  private[this] def findByKey(org: Organization, key: String): Option[Application] = {
     ApplicationsDao.findAll(Authorization.All, orgKey = Some(org.key), key = Some(key), limit = 1).headOption
   }
 

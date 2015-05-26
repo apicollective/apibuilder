@@ -8,14 +8,14 @@ import java.util.UUID
 
 object OriginalsDao {
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into originals
     (version_guid, type, data, created_by_guid)
     values
     ({version_guid}::uuid, {type}, {data}, {created_by_guid}::uuid)
   """
 
-  private val SoftDeleteByVersionGuidQuery = """
+  private[this] val SoftDeleteByVersionGuidQuery = """
     update originals
        set deleted_at = now(),
            deleted_by_guid = {deleted_by_guid}::uuid

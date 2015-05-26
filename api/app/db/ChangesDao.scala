@@ -14,7 +14,7 @@ import org.joda.time.DateTime
 
 object ChangesDao {
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select changes.guid,
            applications.guid as application_guid,
            applications.key as application_key,
@@ -36,7 +36,7 @@ object ChangesDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into changes
     (guid, application_guid, from_version_guid, to_version_guid, type, description, changed_at, changed_by_guid, created_by_guid)
     values

@@ -54,10 +54,10 @@ sealed trait Authorization {
 
 object Authorization {
 
-  private val OrgsByUserQuery =
+  private[this] val OrgsByUserQuery =
     s"select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid"
 
-  private val PublicApplicationsQuery = s"%s.visibility = '${Visibility.Public.toString}'"
+  private[this] val PublicApplicationsQuery = s"%s.visibility = '${Visibility.Public.toString}'"
 
   case object PublicOnly extends Authorization {
 

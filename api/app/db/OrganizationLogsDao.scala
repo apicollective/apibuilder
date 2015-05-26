@@ -13,13 +13,13 @@ case class OrganizationLogsDao(guid: String, organization_guid: UUID, message: S
  */
 object OrganizationLogsDao {
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select guid::varchar, organization_guid, message
       from organization_logs
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into organization_logs
     (guid, organization_guid, message, created_by_guid)
     values

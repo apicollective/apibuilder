@@ -30,7 +30,7 @@ object Global extends WithFilters(LoggingFilter) {
     Future.successful(InternalServerError(Json.toJson(Validation.serverError(ex.getMessage))))
   }
 
-  private def ensureServices() {
+  private[this] def ensureServices() {
     Logger.info("Starting ensureServices()")
     val result = VersionsDao.migrate()
     Logger.info("ensureServices() completed: " + result)

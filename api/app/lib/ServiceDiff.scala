@@ -30,39 +30,39 @@ case class ServiceDiff(
     diffResources()
   ).flatten
 
-  private def diffApidoc(): Seq[Diff] = {
+  private[this] def diffApidoc(): Seq[Diff] = {
     Helpers.diffStringNonBreaking("apidoc/version", a.apidoc.version, b.apidoc.version)
   }
 
-  private def diffName(): Seq[Diff] = {
+  private[this] def diffName(): Seq[Diff] = {
     Helpers.diffStringNonBreaking("name", a.name, b.name)
   }
 
-  private def diffOrganization(): Seq[Diff] = {
+  private[this] def diffOrganization(): Seq[Diff] = {
     Helpers.diffStringNonBreaking("organization/key", a.organization.key, b.organization.key)
   }
 
-  private def diffApplication(): Seq[Diff] = {
+  private[this] def diffApplication(): Seq[Diff] = {
     Helpers.diffStringNonBreaking("application/key", a.application.key, b.application.key)
   }
 
-  private def diffNamespace(): Seq[Diff] = {
+  private[this] def diffNamespace(): Seq[Diff] = {
     Helpers.diffStringBreaking("namespace", a.namespace, b.namespace)
   }
 
-  private def diffVersion(): Seq[Diff] = {
+  private[this] def diffVersion(): Seq[Diff] = {
     Helpers.diffStringNonBreaking("version", a.version, b.version)
   }
 
-  private def diffBaseUrl(): Seq[Diff] = {
+  private[this] def diffBaseUrl(): Seq[Diff] = {
     Helpers.diffOptionalStringNonBreaking("base_url", a.baseUrl, b.baseUrl)
   }
 
-  private def diffDescription(): Seq[Diff] = {
+  private[this] def diffDescription(): Seq[Diff] = {
     Helpers.diffOptionalStringNonBreaking("description", a.description, b.description)
   }
 
-  private def diffHeaders(): Seq[Diff] = {
+  private[this] def diffHeaders(): Seq[Diff] = {
     val added = b.headers.map(_.name).filter(h => a.headers.find(_.name == h).isEmpty)
 
     a.headers.flatMap { headerA =>
@@ -78,7 +78,7 @@ case class ServiceDiff(
     }
   }
 
-  private def diffHeader(a: Header, b: Header): Seq[Diff] = {
+  private[this] def diffHeader(a: Header, b: Header): Seq[Diff] = {
     assert(a.name == b.name, "Header names must be the same")
     val prefix = s"header ${a.name}"
 
@@ -89,7 +89,7 @@ case class ServiceDiff(
     Helpers.diffDefault(prefix, a.default, b.default)
   }
 
-  private def diffImports(): Seq[Diff] = {
+  private[this] def diffImports(): Seq[Diff] = {
     a.imports.flatMap { importA =>
       b.imports.find(_.uri == importA.uri) match {
         case None => Some(DiffNonBreaking(Helpers.removed("import", importA.uri)))
@@ -98,7 +98,7 @@ case class ServiceDiff(
     } ++ Helpers.findNew("import", a.imports.map(_.uri), b.imports.map(_.uri))
   }
 
-  private def diffImport(a: Import, b: Import): Seq[Diff] = {
+  private[this] def diffImport(a: Import, b: Import): Seq[Diff] = {
     assert(a.uri == b.uri, "Import uri's must be the same")
     val prefix = s"import ${a.uri}"
 
@@ -111,7 +111,7 @@ case class ServiceDiff(
     Helpers.diffArrayNonBreaking(s"$prefix models", a.models, b.models)
   }
 
-  private def diffEnums(): Seq[Diff] = {
+  private[this] def diffEnums(): Seq[Diff] = {
     a.enums.flatMap { enumA =>
       b.enums.find(_.name == enumA.name) match {
         case None => Some(DiffBreaking(Helpers.removed("enum", enumA.name)))
@@ -120,7 +120,7 @@ case class ServiceDiff(
     } ++ Helpers.findNew("enum", a.enums.map(_.name), b.enums.map(_.name))
   }
 
-  private def diffEnum(a: Enum, b: Enum): Seq[Diff] = {
+  private[this] def diffEnum(a: Enum, b: Enum): Seq[Diff] = {
     assert(a.name == b.name, "Enum name's must be the same")
     val prefix = s"enum ${a.name}"
 
@@ -130,7 +130,7 @@ case class ServiceDiff(
     diffEnumValues(a.name, a.values, b.values)
   }
 
-  private def diffEnumValues(enumName: String, a: Seq[EnumValue], b: Seq[EnumValue]): Seq[Diff] = {
+  private[this] def diffEnumValues(enumName: String, a: Seq[EnumValue], b: Seq[EnumValue]): Seq[Diff] = {
     val prefix = s"enum $enumName value"
 
     a.flatMap { valueA =>
@@ -141,7 +141,7 @@ case class ServiceDiff(
     } ++ Helpers.findNew(prefix, a.map(_.name), b.map(_.name))
   }
 
-  private def diffEnumValue(enumName: String, a: EnumValue, b: EnumValue): Seq[Diff] = {
+  private[this] def diffEnumValue(enumName: String, a: EnumValue, b: EnumValue): Seq[Diff] = {
     assert(a.name == b.name, "Enum value name's must be the same")
     val prefix = s"enum $enumName value ${a.name}"
 
@@ -149,7 +149,7 @@ case class ServiceDiff(
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
   }
 
-  private def diffUnions(): Seq[Diff] = {
+  private[this] def diffUnions(): Seq[Diff] = {
     a.unions.flatMap { unionA =>
       b.unions.find(_.name == unionA.name) match {
         case None => Some(DiffBreaking(Helpers.removed("union", unionA.name)))
@@ -158,7 +158,7 @@ case class ServiceDiff(
     } ++ Helpers.findNew("union", a.unions.map(_.name), b.unions.map(_.name))
   }
 
-  private def diffUnion(a: Union, b: Union): Seq[Diff] = {
+  private[this] def diffUnion(a: Union, b: Union): Seq[Diff] = {
     assert(a.name == b.name, "Union name's must be the same")
     val prefix = s"union ${a.name}"
 
@@ -168,7 +168,7 @@ case class ServiceDiff(
     diffUnionTypes(a.name, a.types, b.types)
   }
 
-  private def diffUnionTypes(unionName: String, a: Seq[UnionType], b: Seq[UnionType]): Seq[Diff] = {
+  private[this] def diffUnionTypes(unionName: String, a: Seq[UnionType], b: Seq[UnionType]): Seq[Diff] = {
     val prefix = s"union $unionName type"
 
     a.flatMap { typeA =>
@@ -179,7 +179,7 @@ case class ServiceDiff(
     } ++ Helpers.findNew(prefix, a.map(_.`type`), b.map(_.`type`))
   }
 
-  private def diffUnionType(unionName: String, a: UnionType, b: UnionType): Seq[Diff] = {
+  private[this] def diffUnionType(unionName: String, a: UnionType, b: UnionType): Seq[Diff] = {
     assert(a.`type` == b.`type`, "Union type name's must be the same")
     val prefix = s"union $unionName type ${a.`type`}"
 
@@ -187,7 +187,7 @@ case class ServiceDiff(
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
   }
 
-  private def diffModels(): Seq[Diff] = {
+  private[this] def diffModels(): Seq[Diff] = {
     a.models.flatMap { modelA =>
       b.models.find(_.name == modelA.name) match {
         case None => Some(DiffBreaking(Helpers.removed("model", modelA.name)))
@@ -196,7 +196,7 @@ case class ServiceDiff(
     } ++ Helpers.findNew("model", a.models.map(_.name), b.models.map(_.name))
   }
 
-  private def diffModel(a: Model, b: Model): Seq[Diff] = {
+  private[this] def diffModel(a: Model, b: Model): Seq[Diff] = {
     assert(a.name == b.name, "Model name's must be the same")
     val prefix = s"model ${a.name}"
 
@@ -206,7 +206,7 @@ case class ServiceDiff(
     diffFields(a.name, a.fields, b.fields)
   }
 
-  private def diffFields(modelName: String, a: Seq[Field], b: Seq[Field]): Seq[Diff] = {
+  private[this] def diffFields(modelName: String, a: Seq[Field], b: Seq[Field]): Seq[Diff] = {
     val added = b.map(_.name).filter(h => a.find(_.name == h).isEmpty)
     val prefix = s"model $modelName"
 
@@ -225,7 +225,7 @@ case class ServiceDiff(
     }
   }
 
-  private def diffField(modelName: String, a: Field, b: Field): Seq[Diff] = {
+  private[this] def diffField(modelName: String, a: Field, b: Field): Seq[Diff] = {
     assert(a.name == b.name, "Model field name's must be the same")
     val prefix = s"model $modelName field ${a.name}"
 
@@ -239,7 +239,7 @@ case class ServiceDiff(
     Helpers.diffOptionalStringNonBreaking(s"$prefix example", a.example, b.example)
   }
 
-  private def diffResources(): Seq[Diff] = {
+  private[this] def diffResources(): Seq[Diff] = {
     a.resources.flatMap { resourceA =>
       b.resources.find(_.`type` == resourceA.`type`) match {
         case None => Some(DiffBreaking(Helpers.removed("resource", resourceA.`type`)))
@@ -248,7 +248,7 @@ case class ServiceDiff(
     } ++ Helpers.findNew("resource", a.resources.map(_.`type`), b.resources.map(_.`type`))
   }
 
-  private def diffResource(a: Resource, b: Resource): Seq[Diff] = {
+  private[this] def diffResource(a: Resource, b: Resource): Seq[Diff] = {
     assert(a.`type` == b.`type`, "Resource types must be the same")
     val prefix = s"resource ${a.`type`}"
 
@@ -258,11 +258,11 @@ case class ServiceDiff(
     diffOperations(a.`type`, a.operations, b.operations)
   }
 
-  private def operationKey(op: Operation): String = {
+  private[this] def operationKey(op: Operation): String = {
     s"${op.method.toString.toUpperCase} ${op.path}".trim
   }
 
-  private def diffOperations(resourceType: String, a: Seq[Operation], b: Seq[Operation]): Seq[Diff] = {
+  private[this] def diffOperations(resourceType: String, a: Seq[Operation], b: Seq[Operation]): Seq[Diff] = {
     val added = b.filter(opB => a.find( opA => operationKey(opB) == operationKey(opA) ).isEmpty)
     val prefix = s"resource $resourceType"
 
@@ -276,7 +276,7 @@ case class ServiceDiff(
     }
   }
 
-  private def diffOperation(resourceType: String, a: Operation, b: Operation): Seq[Diff] = {
+  private[this] def diffOperation(resourceType: String, a: Operation, b: Operation): Seq[Diff] = {
     assert(a.method == b.method, "Operation methods must be the same")
     assert(a.path == b.path, "Operation paths must be the same")
     val prefix = s"resource $resourceType operation " + operationKey(a)
@@ -288,7 +288,7 @@ case class ServiceDiff(
     diffResponses(prefix, a.responses, b.responses)
   }
 
-  private def diffBody(prefix: String, a: Option[Body], b: Option[Body]): Seq[Diff] = {
+  private[this] def diffBody(prefix: String, a: Option[Body], b: Option[Body]): Seq[Diff] = {
     (a, b) match {
       case (None, None) => Nil
       case (None, Some(bodyB)) => Seq(DiffBreaking(Helpers.added(prefix, "body")))
@@ -301,7 +301,7 @@ case class ServiceDiff(
     }
   }
 
-  private def diffParameters(prefix: String, a: Seq[Parameter], b: Seq[Parameter]): Seq[Diff] = {
+  private[this] def diffParameters(prefix: String, a: Seq[Parameter], b: Seq[Parameter]): Seq[Diff] = {
     val added = b.map(_.name).filter(h => a.find(_.name == h).isEmpty)
 
     a.flatMap { parameterA =>
@@ -319,7 +319,7 @@ case class ServiceDiff(
     }
   }
 
-  private def diffParameter(prefix: String, a: Parameter, b: Parameter): Seq[Diff] = {
+  private[this] def diffParameter(prefix: String, a: Parameter, b: Parameter): Seq[Diff] = {
     assert(a.name == b.name, "Parameter name's must be the same")
     val thisPrefix = s"$prefix parameter ${a.name}"
 
@@ -337,7 +337,7 @@ case class ServiceDiff(
   /**
     * Returns the response code as a string.
     */
-  private def responseCode(r: Response): String = {
+  private[this] def responseCode(r: Response): String = {
     r.code match {
       case ResponseCodeInt(code) => code.toString
       case ResponseCodeUndefinedType(desc) => desc
@@ -346,7 +346,7 @@ case class ServiceDiff(
     }
   }
 
-  private def diffResponses(prefix: String, a: Seq[Response], b: Seq[Response]): Seq[Diff] = {
+  private[this] def diffResponses(prefix: String, a: Seq[Response], b: Seq[Response]): Seq[Diff] = {
     val added = b.map(_.code).filter(code => a.find(_.code == code).isEmpty)
 
     a.flatMap { responseA =>
@@ -359,7 +359,7 @@ case class ServiceDiff(
     }
   }
 
-  private def diffResponse(prefix: String, a: Response, b: Response): Seq[Diff] = {
+  private[this] def diffResponse(prefix: String, a: Response, b: Response): Seq[Diff] = {
     assert(responseCode(a) == responseCode(b), "Response codes must be the same")
     val thisPrefix = s"$prefix response ${responseCode(a)}"
     Helpers.diffStringBreaking(s"$thisPrefix type", a.`type`, b.`type`) ++

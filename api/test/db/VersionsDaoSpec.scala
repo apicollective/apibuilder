@@ -13,7 +13,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private val Original = com.gilt.apidoc.api.v0.models.Original(
+  private[this] val Original = com.gilt.apidoc.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
     data = Json.obj(
       "apidoc" -> Json.obj(
@@ -23,7 +23,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
     ).toString
   )
 
-  private def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.gilt.apidoc.api.v0.models.Application = {
+  private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.gilt.apidoc.api.v0.models.Application = {
     Util.createApplication(
       org = Util.testOrg,
       form = Util.createApplicationForm().copy(key = Some(key))

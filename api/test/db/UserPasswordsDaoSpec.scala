@@ -8,7 +8,7 @@ class UserPasswordsDaoSpec extends FlatSpec {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private val user = Util.upsertUser("michael@mailinator.com")
+  private[this] val user = Util.upsertUser("michael@mailinator.com")
 
   it should "have distinct keys for all algorithms" in {
     val keys = PasswordAlgorithm.All.map(_.key.toLowerCase)

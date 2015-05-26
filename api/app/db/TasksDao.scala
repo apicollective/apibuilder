@@ -31,7 +31,7 @@ import java.util.UUID
   */
 object TasksDao {
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select tasks.guid,
            tasks.data::varchar,
            tasks.number_attempts,
@@ -54,14 +54,14 @@ object TasksDao {
      where guid = {guid}::uuid
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into tasks
     (guid, data, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {data}::json, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
-  private val PurgeQuery = """
+  private[this] val PurgeQuery = """
     delete from tasks where guid = {guid}::uuid
   """
 

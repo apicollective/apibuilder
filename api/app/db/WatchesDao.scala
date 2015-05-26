@@ -15,7 +15,7 @@ case class FullWatchForm(
   form: WatchForm
 ) {
 
-  private val auth = Authorization.User(createdBy.guid)
+  private[this] val auth = Authorization.User(createdBy.guid)
 
   val org: Option[Organization] = OrganizationsDao.findByKey(auth, form.organizationKey)
   val application: Option[Application] = org.flatMap { o =>
@@ -42,7 +42,7 @@ case class FullWatchForm(
 
 object WatchesDao {
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select watches.guid,
            users.guid as user_guid,
            users.email as user_email,
@@ -65,7 +65,7 @@ object WatchesDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into watches
     (guid, user_guid, application_guid, created_by_guid)
     values

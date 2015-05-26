@@ -20,9 +20,9 @@ object Person {
 
 object Email {
 
-  private val subjectPrefix = Config.requiredString("mail.subjectPrefix")
+  private[this] val subjectPrefix = Config.requiredString("mail.subjectPrefix")
 
-  private val from = Person(
+  private[this] val from = Person(
     email = Config.requiredString("mail.defaultFromEmail"),
     name = Some(Config.requiredString("mail.defaultFromName"))
   )
@@ -32,7 +32,7 @@ object Email {
   // Initialize sendgrid on startup to verify that all of our settings
   // are here. If using localDeliveryDir, set password to a test
   // string.
-  private val sendgrid = {
+  private[this] val sendgrid = {
     localDeliveryDir match {
       case None => new SendGrid(Config.requiredString("sendgrid.apiUser"), Config.requiredString("sendgrid.apiKey"))
       case Some(_) => new SendGrid(Config.requiredString("sendgrid.apiUser"), "development")
@@ -66,7 +66,7 @@ object Email {
     }
   }
 
-  private def localDelivery(dir: Path, to: Person, subject: String, body: String): String = {
+  private[this] def localDelivery(dir: Path, to: Person, subject: String, body: String): String = {
     val timestamp = UrlKey.generate(ISODateTimeFormat.dateTimeNoMillis.print(new DateTime()))
 
     Files.createDirectories(dir)

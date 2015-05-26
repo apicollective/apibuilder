@@ -11,14 +11,14 @@ import java.util.UUID
 
 object MembershipsDao {
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into memberships
     (guid, organization_guid, user_guid, role, created_by_guid)
     values
     ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
   """
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select memberships.guid,
            role,
            organizations.guid as organization_guid,
