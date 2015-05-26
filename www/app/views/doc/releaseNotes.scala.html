@@ -2,6 +2,23 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.9.12 - May 26 2015</h3>
+
+  <ul>
+
+    <li> Online history of all changes now available. To access, when
+    viewing a service, select the 'History' link from the versions
+    dropdown in the upper right corner. Or
+    visit <a href="@routes.HistoryController.index()">@routes.HistoryController.index()</a>
+    to view changes for all applications that you can view.</li>
+
+    <li> Search is now available - you will see the search bar in the
+    upper right corner. The current implementation offers basic
+    keyword search across all of the applications that you have access
+    to.</li>
+
+  </ul>
+
 <h3>0.9.11 - May 11 2015</h3>
 
   <ul>

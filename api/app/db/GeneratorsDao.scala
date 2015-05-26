@@ -6,7 +6,7 @@ import play.api.db._
 import play.api.Play.current
 import lib.{UrlKey, Validation}
 import java.net.{MalformedURLException, URL}
-import java.util.{Date, UUID}
+import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 object GeneratorsDao {
@@ -38,12 +38,11 @@ object GeneratorsDao {
         }
       }
       case Failure(e) => e match {
-        case e: MalformedURLException => Seq("URL is not valid")
+        case e: MalformedURLException => Seq(s"URL is not valid: ${e.getMessage}")
       }
     }
 
-    val formattedKey = form.key.trim.toLowerCase
-    val keyErrors = UrlKey.validate(formattedKey)
+    val keyErrors = UrlKey.validate(form.key)
 
     Validation.errors(urlErrors ++ keyErrors)
   }
@@ -133,15 +132,10 @@ object GeneratorsDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     key: Option[String] = None,
-    keyAndUri: Option[(String, String)] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Generator] = {
-    require(
-      key.isEmpty || keyAndUri.isEmpty,
-      "Cannot specify key and keyAndUri"
-    )
     // TODO: Implement Authorization
 
     // Query generators
@@ -149,7 +143,6 @@ object GeneratorsDao {
       Some(BaseQuery.trim),
       guid.map(_ => "and generators.guid = {guid}::uuid"),
       key.map(_ => "and generators.key = {key}"),
-      keyAndUri.map(_ => "and generators.key = {key} and generators.uri = {uri}"),
       isDeleted.map(Filters.isDeleted("generators", _)),
       Some(s" order by lower(generators.key)"),
       Some(s" limit $limit offset $offset")
@@ -157,9 +150,7 @@ object GeneratorsDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _),
-      key.map('key -> _),
-      keyAndUri.map('key -> _._1),
-      keyAndUri.map('uri -> _._2)
+      key.map('key -> _)
     ).flatten
 
     DB.withConnection { implicit c =>
@@ -179,16 +170,6 @@ object GeneratorsDao {
         )
       }.toSeq
     }
-  }
-
-  def isOwner(userGuid: UUID, owner: User): Boolean = userGuid == owner.guid
-
-  val trustedUris = Seq("http://generator.apidoc.me", "http://generator.origin.apidoc.me", "http://localhost:9003")
-
-  def isTrusted(uri: String): Boolean = trustedUris.contains(uri)
-
-  def isOrgEnabled(visibility: Visibility, generatorGuid: UUID, orgEnabledGenerators: Set[UUID]): Boolean = {
-    visibility == Visibility.Organization && orgEnabledGenerators.contains(generatorGuid)
   }
 
 }

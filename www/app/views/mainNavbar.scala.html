@@ -1,4 +1,6 @@
 @(user: Option[com.gilt.apidoc.api.v0.models.User],
+  org: Option[com.gilt.apidoc.api.v0.models.Organization],
+  query: Option[String] = None,
   requestPath: String)
 
 <div class="main-navbar navbar navbar-default navbar-fixed-top" role="navigation">
@@ -9,12 +11,28 @@
         <li><a href="@routes.DocController.index()">Documentation</a></li>
         <li><a href="@lib.Util.GitHubUrl">github</a></li>
       </ul>
+
+      <div class="col-sm-3 col-md-3 pull-right">
+          <form class="navbar-form" role="search" action="@routes.SearchController.index()">
+              <div class="input-group">
+                  <input type="text" class="form-control" placeholder="Search" name="q" value="@query.getOrElse("")">
+                  @org.map { o =>
+                    <input type="hidden" class="form-control" placeholder="Search" name="org" value="@o.key">
+                  }
+                  <div class="input-group-btn">
+                      <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                  </div>
+              </div>
+          </form>
+      </div> 
+
       @if(user.isEmpty) {
         <ul class="nav navbar-nav navbar-right">
           <li><a href="@routes.LoginController.index(return_url = Some(requestPath))">Login/Register</a></li>
         </ul>
       } else {
-        <ul class="nav navbar-nav navbar-right">
+
+       <ul class="nav navbar-nav navbar-right">
           <li class="dropdown">
             <a href="/account" class="dropdown-toggle" data-toggle="dropdown">@user.get.nickname <b class="caret"></b></a>
             <ul class="dropdown-menu">

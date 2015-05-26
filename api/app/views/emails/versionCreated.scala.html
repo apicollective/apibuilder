@@ -1,12 +1,18 @@
 @(org: com.gilt.apidoc.api.v0.models.Organization,
   application: com.gilt.apidoc.api.v0.models.Application,
   version: com.gilt.apidoc.api.v0.models.Version,
-  breakingChanges: Seq[lib.Difference],
-  nonBreakingChanges: Seq[lib.Difference]
+  oldVersion: Option[com.gilt.apidoc.api.v0.models.Version],
+  breakingDiffs: Seq[com.gilt.apidoc.api.v0.models.DiffBreaking],
+  nonDiffBreakings: Seq[com.gilt.apidoc.api.v0.models.DiffNonBreaking]
 )
 
 <p>
-  Version @version.version has been uploaded for the application @org.name/@application.name 
+  Version @version.version has been uploaded for the application @org.key/@application.key
+  @{oldVersion match {
+    case None => "."
+    case Some(old) => s" replacing version ${old.version}."
+  }}
+
 </p>
 
 @application.description.map { desc =>
@@ -16,17 +22,17 @@
 }
 
 <p><b>Breaking changes</b></p>
-@if(breakingChanges.isEmpty) {
+@if(breakingDiffs.isEmpty) {
   <em>None</em>
 } else {
-  @Html(breakingChanges.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+  @Html(breakingDiffs.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
 
 <p><b>Other changes</b></p>
-@if(nonBreakingChanges.isEmpty) {
+@if(nonDiffBreakings.isEmpty) {
   <em>None</em>
 } else {
-  @Html(nonBreakingChanges.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+  @Html(nonDiffBreakings.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
 
 

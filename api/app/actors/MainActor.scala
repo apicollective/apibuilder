@@ -22,7 +22,8 @@ object MainActor {
     case class ApplicationCreated(guid: UUID)
     case class UserCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
-    case class VersionReplaced(oldGuid: UUID, newGuid: UUID)
+
+    case class TaskCreated(guid: UUID)
   }
 }
 
@@ -31,7 +32,14 @@ class MainActor(name: String) extends Actor with ActorLogging {
   import scala.concurrent.duration._
 
   private val emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
+  private val taskActor = Akka.system.actorOf(Props[TaskActor], name = s"$name:taskActor")
   private val userActor = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor")
+
+  Akka.system.scheduler.schedule(5.seconds, 1.minute, taskActor, TaskActor.Messages.RestartDroppedTasks)
+  Akka.system.scheduler.schedule(1.hour, 1.hour, taskActor, TaskActor.Messages.PurgeOldTasks)
+  Akka.system.scheduler.schedule(12.hours, 1.day, taskActor, TaskActor.Messages.NotifyFailed)
+  Akka.system.scheduler.scheduleOnce(5.seconds, taskActor, TaskActor.Messages.MigrateSearch)
+  Akka.system.scheduler.scheduleOnce(5.seconds, taskActor, TaskActor.Messages.MigrateChanges)
 
   def receive = akka.event.LoggingReceive {
 
@@ -71,9 +79,9 @@ class MainActor(name: String) extends Actor with ActorLogging {
       }
     )
 
-    case MainActor.Messages.VersionReplaced(oldGuid, newGuid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.VersionReplaced($oldGuid, $newGuid)", {
-        emailActor ! EmailActor.Messages.VersionReplaced(oldGuid, newGuid)
+    case MainActor.Messages.TaskCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.TaskCreated($guid)", {
+        taskActor ! TaskActor.Messages.TaskCreated(guid)
       }
     )
 

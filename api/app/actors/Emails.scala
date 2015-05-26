@@ -2,12 +2,14 @@ package actors
 
 import com.gilt.apidoc.api.v0.models.{Organization, Publication, Subscription}
 import db.{Authorization, SubscriptionsDao}
-import lib.{Email, Pager, Person}
+import lib.{Config, Email, Pager, Person}
 import akka.actor._
 import play.api.Logger
 import play.api.Play.current
 
 object Emails {
+
+  private lazy val sendErrorsTo = Config.requiredString("apidoc.sendErrorsTo").split("\\s+")
 
   def deliver(
     org: Organization,
@@ -40,6 +42,25 @@ object Emails {
       )
     } { subscription =>
       f(subscription)
+    }
+  }
+
+  def sendErrors(
+    subject: String,
+    errors: Seq[String]
+  ) {
+    errors match {
+      case Nil => {}
+      case errors => {
+        val body = views.html.emails.errors(errors).toString
+        sendErrorsTo.foreach { email =>
+          Email.sendHtml(
+            to = Person(email),
+            subject = subject,
+            body = body
+          )
+        }
+      }
     }
   }
 

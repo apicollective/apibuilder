@@ -82,9 +82,9 @@ object Generators extends Controller {
         val form = s.get
         GeneratorsDao.validate(form) match {
           case Nil => {
-            GeneratorsDao.findAll(request.authorization, keyAndUri = Some(form.key -> form.uri)).headOption match {
+            GeneratorsDao.findAll(request.authorization, key = Some(form.key)).headOption match {
               case Some(d) =>
-                Future.successful(Conflict(Json.toJson(Validation.error(s"generator ${form.key} already exists"))))
+                Future.successful(Conflict(Json.toJson(Validation.error(s"A generator with the key ${form.key} already exists"))))
               case None =>
                 new Client(form.uri).generators.getByKey(form.key).map { meta =>
                   val generator = GeneratorsDao.create(request.user, form.key, form.uri, form.visibility, meta.name, meta.description, meta.language)

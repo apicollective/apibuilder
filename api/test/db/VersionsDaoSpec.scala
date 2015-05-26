@@ -24,13 +24,10 @@ class VersionsDaoSpec extends FunSpec with Matchers {
   )
 
   private def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.gilt.apidoc.api.v0.models.Application = {
-    val applicationForm = ApplicationForm(
-      name = key,
-      key = Some(key),
-      description = None,
-      visibility = Visibility.Organization
+    Util.createApplication(
+      org = Util.testOrg,
+      form = Util.createApplicationForm().copy(key = Some(key))
     )
-    ApplicationsDao.create(Util.createdBy, Util.testOrg, applicationForm)
   }
 
   describe("with an application") {
@@ -41,7 +38,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
     it("create") {
       val version = VersionsDao.create(Util.createdBy, application, "1.0.0", Original, service)
-      version.version should be("1.0.0")
+      Util.createVersion().version should be("1.0.0")
     }
 
     it("findByApplicationAndVersion") {
@@ -54,7 +51,10 @@ class VersionsDaoSpec extends FunSpec with Matchers {
       VersionsDao.softDelete(Util.createdBy, version1)
 
       val version2 = VersionsDao.create(Util.createdBy, application, "1.0.2", Original, service)
-      version2.copy(guid = version1.guid) should be(version1)
+      version2.copy(
+        guid = version1.guid,
+        audit = version1.audit
+      ) should be(version1)
       version2.guid shouldNot be(version1.guid)
     }
 

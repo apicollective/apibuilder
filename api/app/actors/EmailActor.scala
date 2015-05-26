@@ -1,7 +1,7 @@
 package actors
 
 import com.gilt.apidoc.api.v0.models.{Application, Membership, Publication, Version}
-import lib.{Difference, Email, Person, Role, ServiceDiff}
+import lib.{Email, Person, Role}
 import db._
 import play.api.Logger
 import akka.actor.Actor
@@ -18,7 +18,6 @@ object EmailActor {
     case class PasswordResetRequestCreated(guid: UUID)
     case class ApplicationCreated(guid: UUID)
     case class VersionCreated(guid: UUID)
-    case class VersionReplaced(oldGuid: UUID, newGuid: UUID)
   }
 
 }
@@ -112,18 +111,23 @@ class EmailActor extends Actor {
 
     case EmailActor.Messages.VersionCreated(guid) => Util.withVerboseErrorHandler(
       s"EmailActor.Messages.VersionCreated($guid)", {
-        versionCreated(guid, oldVersion = None)
-      }
-    )
-
-    case EmailActor.Messages.VersionReplaced(oldGuid, newGuid) => Util.withVerboseErrorHandler(
-      s"EmailActor.Messages.VersionReplaced($oldGuid, $newGuid)", {
-        VersionsDao.findByGuid(Authorization.All, oldGuid, isDeleted = None) match {
-          case None => {
-            versionCreated(newGuid, oldVersion = None)
-          }
-          case Some(oldVersion) => {
-            versionCreated(newGuid, oldVersion = Some(oldVersion))
+        VersionsDao.findByGuid(Authorization.All, guid).map { version =>
+          ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
+            OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
+              Emails.deliver(
+                org = org,
+                publication = Publication.VersionsCreate,
+                subject = s"${org.name}/${application.name}: Initial Version Uploaded (${version.version}) ",
+                body = views.html.emails.versionCreated(
+                  org,
+                  application,
+                  version,
+                  oldVersion = None,
+                  breakingDiffs = Nil,
+                  nonDiffBreakings = Nil
+                ).toString
+              )
+            }
           }
         }
       }
@@ -147,45 +151,6 @@ class EmailActor extends Actor {
       Logger.error("Email actor got an unhandled message: " + m)
     }
 
-  }
-
-  private def versionCreated(
-    guid: UUID,
-    oldVersion: Option[Version]
-  ) {
-    VersionsDao.findByGuid(Authorization.All, guid).map { version =>
-      ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
-        OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
-          val diff = oldVersion match {
-            case None => Nil
-            case Some(old) => ServiceDiff(old.service, version.service).differences
-          }
-
-          Emails.deliver(
-            org = org,
-            publication = Publication.VersionsCreate,
-            subject = s"${org.name}/${application.name}: New Version Uploaded (${version.version}) ",
-            body = views.html.emails.versionCreated(
-              org,
-              application,
-              version,
-              breakingChanges = diff.filter { d =>
-                d match {
-                  case Difference.Breaking(desc) => true
-                  case Difference.NonBreaking(desc) => false
-                }
-              },
-              nonBreakingChanges = diff.filter { d =>
-                d match {
-                  case Difference.Breaking(desc) => false
-                  case Difference.NonBreaking(desc) => true
-                }
-              }
-            ).toString
-          )
-        }
-      }
-    }
   }
 
 }

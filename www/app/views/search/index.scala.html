@@ -1,0 +1,38 @@
+@(tpl: models.MainTemplate,
+  q: Option[String],
+  org: Option[String],
+  items: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Item]
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  @if(items.isEmpty) {
+    <em>No applications found</em>
+
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @items.items.map { item =>
+         <tr>
+           <td>
+	     <a href="@lib.Util.searchUrl(item.detail).getOrElse("#")">@item.label</a>
+             <br/><em>@item.description</em>
+           </td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+    @if(items.hasPrevious || items.hasNext) {
+      <ul class="pager">
+        @if(items.hasPrevious) {
+          <li><a href="@routes.SearchController.index(q, org, items.page - 1)">Previous</a></li>
+        }
+        @if(items.hasNext) {
+          <li><a href="@routes.SearchController.index(q, org, items.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

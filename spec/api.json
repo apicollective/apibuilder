@@ -6,6 +6,24 @@
       "version": "0.9.11"
     },
 
+    "unions": {
+	"diff": {
+	    "description": "Represents a single diff in an application",
+	    "types": [
+		{ "type": "diff_breaking" },
+		{ "type": "diff_non_breaking" }
+	    ]
+	},
+
+	"item_detail": {
+	    "description": "Identifies the specific type of item that was indexed by search",
+	    "types": [
+		{ "type": "application_summary", "description": "Represents that the item indexed was an application" }
+	    ]
+	}
+
+    },
+
     "imports": [
 	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.11/service.json" }
     ],
@@ -187,6 +205,16 @@
             ]
         },
 
+	"application_summary": {
+	    "description": "Summary of an application sufficient for display and links",
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "organization", "type": "reference" },
+                { "name": "key", "type": "string" }
+	    ]
+	},
+
+
 	"original": {
 	    "description": "Represents the original input used to create an application version",
             "fields": [
@@ -210,7 +238,8 @@
                 { "name": "application", "type": "reference" },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
 		{ "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
-		{ "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" }
+		{ "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" },
+                { "name": "audit", "type": "audit" }
             ]
         },
 
@@ -351,7 +380,53 @@
                 { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
                 { "name": "message", "type": "string", "description": "Description of the error" }
             ]
-        }
+        },
+
+        "diff_breaking": {
+            "description": "Represents a single breaking diff of an application version. A breaking diff indicates that it is possible for an existing client to now experience an error or invalid data due to the diff.",
+            "fields": [
+                { "name": "description", "type": "string", "example": "model removed: user" }
+            ]
+        },
+
+        "diff_non_breaking": {
+            "description": "Represents a single NON breaking diff of an application version.",
+            "fields": [
+                { "name": "description", "type": "string", "example": "name diffd from foo to bar" }
+            ]
+        },
+
+        "item": {
+            "description": "When searching for content, the results of the search will be a list of items. Each item will have enough information to render for the user, including a type and item_guid to enable creating the appropriate link.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Unique identifer for this item. By using a UUID, you can combine with the type to figure out the URI for the resource" },
+                { "name": "detail", "type": "item_detail" },
+                { "name": "label", "type": "string" },
+                { "name": "description", "type": "string", "required": false }
+            ]
+        },
+
+        "change": {
+	    "description": "Represents a single change from one version of a service to another",
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "organization", "type": "reference" },
+                { "name": "application", "type": "reference" },
+                { "name": "from_version", "type": "change_version" },
+                { "name": "to_version", "type": "change_version" },
+                { "name": "diff", "type": "diff" },
+                { "name": "changed_at", "type": "date-time-iso8601", "description": "Records the timestamp of when the actual change occurred (vs. when we created the changed record)" },
+		{ "name": "changed_by", "type": "reference_guid", "description": "Records who made the actual change" }
+	    ]
+	},
+
+	"change_version": {
+	    "description": "Represents a simpler model of a version specifically for the use case of displaying changes",
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "version", "type": "string" }
+	    ]
+	}
 
     },
 
@@ -675,6 +750,7 @@
                     "parameters": [
                         { "name": "orgKey", "type": "string", "description": "The organization key for which to search applications" },
                         { "name": "name", "type": "string", "required": false, "description": "The name of an application. Case in-sensitive. Exact match", "required": false },
+                        { "name": "guid", "type": "uuid", "required": false, "description": "The guid of an application. Exact match", "required": false },
                         { "name": "key", "type": "string", "required": false, "description": "The key of an application. Case in-sensitive. Exact match", "required": false },
 			{ "name": "has_version", "type": "boolean", "description": "If true, we return applications that have at least one version. If false, we return applications that have no versions in the system", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
@@ -735,6 +811,7 @@
                 }
             ]
         },
+
 
         "version": {
             "path": "/:orgKey",
@@ -992,6 +1069,52 @@
                         "409": { "type": "[error]" }
                     }
                 }
+
+	    ]
+	},
+
+	"change": {
+
+	    "operations": [
+		{
+		    "method": "GET",
+		    "parameters": [
+                        { "name": "org_key", "type": "string", "description": "Filter changes to those made for the organization with this key.", "required": false },
+                        { "name": "application_key", "type": "string", "description": "Filter changes to those made for the application with this key.", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ],
+                    "responses": {
+                        "200": { "type": "[change]" }
+                    }
+		}
+	    ]
+
+	},
+
+	"item": {
+
+	    "operations": [
+		{
+		    "method": "GET",
+		    "parameters": [
+			{ "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+		    ],
+                    "responses": {
+                        "200": { "type": "[item]" }
+                    }
+		},
+
+		{
+		    "method": "GET",
+		    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "item" },
+                        "404": { "type": "unit" }			
+                    }
+		}
 
 	    ]
 	}

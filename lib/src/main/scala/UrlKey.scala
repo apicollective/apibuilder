@@ -45,10 +45,10 @@ object UrlKey {
 
   val ReservedKeys = Seq(
     "_internal_", "api.json", "account", "admin", "api", "api.json", "accept", "asset", "bucket",
-    "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
-    "internal", "login", "logout", "member", "members", "metadatum", "metadata",
+    "change", "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
+    "history", "internal", "login", "logout", "member", "members", "metadatum", "metadata",
     "org", "password", "private", "reject", "service.json", "session", "setting", "scms",
-    "source", "subaccount", "subscription", "team", "types", "user", "util", "version", "watch"
+    "search", "source", "subaccount", "subscription", "team", "types", "user", "util", "version", "watch"
   ).map(UrlKey.generate(_))
 
 }

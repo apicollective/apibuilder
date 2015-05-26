@@ -1,0 +1,64 @@
+@(tpl: models.MainTemplate,
+  changes: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Change],
+  orgKey: Option[String] = None,
+  appKey: Option[String] = None
+)(implicit flash: Flash)
+
+@main(tpl) {
+
+  @if(!orgKey.isEmpty && !appKey.isEmpty) {
+    <a href="@routes.HistoryController.index()">All</a> /
+    <a href="@routes.HistoryController.index(org = orgKey)">@orgKey.get</a> /
+    @appKey
+  } else {
+    @if(!orgKey.isEmpty) {
+      <a href="@routes.HistoryController.index()">All</a> / @orgKey.get
+    }
+  }
+
+  @if(changes.isEmpty) {
+    <p><em>No changes found</em></p>
+
+  } else {
+    <table class="table table-hover table-condensed">
+      <tbody>
+        @changes.items.map { change =>
+         <tr>
+           <td>@lib.DateHelper.shortDate(tpl.timeZone, change.changedAt)</td>
+           <td>@change.organization.key/@change.application.key</td>
+           <td>
+             <a href="@routes.Versions.show(change.organization.key, change.application.key, change.fromVersion.version)">@change.fromVersion.version</a> -
+             <a href="@routes.Versions.show(change.organization.key, change.application.key, change.toVersion.version)">@change.toVersion.version</a>
+           </td>
+           <td>
+             @{change.diff match {
+               case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => "Breaking"
+               case com.gilt.apidoc.api.v0.models.DiffNonBreaking(desc) => "Non Breaking"
+               case com.gilt.apidoc.api.v0.models.DiffUndefinedType(desc) => "Unkonwn"
+             }}
+           </td>
+           <td>
+             @{change.diff match {
+               case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => desc
+               case com.gilt.apidoc.api.v0.models.DiffNonBreaking(desc) => desc
+               case com.gilt.apidoc.api.v0.models.DiffUndefinedType(desc) => desc
+             }}
+           </td>
+         </tr>
+       }
+      </tbody>
+    </table>
+
+    @if(changes.hasPrevious || changes.hasNext) {
+      <ul class="pager">
+        @if(changes.hasPrevious) {
+          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, changes.page - 1)">Previous</a></li>
+        }
+        @if(changes.hasNext) {
+          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, changes.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

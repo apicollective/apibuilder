@@ -12,7 +12,7 @@
 
   <body data-spy="scroll" data-target=".models">
 
-    @mainNavbar(metadata.user, metadata.requestPath)
+    @mainNavbar(user = metadata.user, org = metadata.org, query = metadata.query, requestPath = metadata.requestPath)
 
     <div class="container-fluid main-container">
       <div class="row">
@@ -120,7 +120,7 @@
                       <li><a href="@routes.Versions.show(service.organization.key, service.application.key, version)">@version</a></li>
                     }
                   }
-                  <li><a href="#">Differences</a></li>
+                  <li><a href="@routes.HistoryController.index(org = Some(service.organization.key), app = Some(service.application.key))">History</a></li>
                 }
               </ul>
             </div>

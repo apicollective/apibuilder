@@ -6,12 +6,14 @@ import db.{Authorization, OrganizationsDao, ApplicationsDao}
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
+import java.util.UUID
 
 object Applications extends Controller {
 
   def getByOrgKey(
     orgKey: String,
     name: Option[String],
+    guid: Option[UUID],
     key: Option[String],
     hasVersion: Option[Boolean],
     limit: Long = 25,
@@ -22,6 +24,7 @@ object Applications extends Controller {
       orgKey = Some(orgKey),
       name = name,
       key = key,
+      guid = guid,
       hasVersion = hasVersion,
       limit = limit,
       offset = offset

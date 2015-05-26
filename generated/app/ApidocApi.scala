@@ -6,6 +6,16 @@
 package com.gilt.apidoc.api.v0.models {
 
   /**
+   * Represents a single diff in an application
+   */
+  sealed trait Diff
+
+  /**
+   * Identifies the specific type of item that was indexed by search
+   */
+  sealed trait ItemDetail
+
+  /**
    * An application has a name and multiple versions of its API.
    */
   case class Application(
@@ -24,11 +34,43 @@ package com.gilt.apidoc.api.v0.models {
     visibility: com.gilt.apidoc.api.v0.models.Visibility
   )
 
+  /**
+   * Summary of an application sufficient for display and links
+   */
+  case class ApplicationSummary(
+    guid: _root_.java.util.UUID,
+    organization: com.gilt.apidoc.api.v0.models.Reference,
+    key: String
+  ) extends ItemDetail
+
   case class Audit(
     createdAt: _root_.org.joda.time.DateTime,
     createdBy: com.gilt.apidoc.api.v0.models.ReferenceGuid,
     updatedAt: _root_.org.joda.time.DateTime,
     updatedBy: com.gilt.apidoc.api.v0.models.ReferenceGuid
+  )
+
+  /**
+   * Represents a single change from one version of a service to another
+   */
+  case class Change(
+    guid: _root_.java.util.UUID,
+    organization: com.gilt.apidoc.api.v0.models.Reference,
+    application: com.gilt.apidoc.api.v0.models.Reference,
+    fromVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
+    toVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
+    diff: com.gilt.apidoc.api.v0.models.Diff,
+    changedAt: _root_.org.joda.time.DateTime,
+    changedBy: com.gilt.apidoc.api.v0.models.ReferenceGuid
+  )
+
+  /**
+   * Represents a simpler model of a version specifically for the use case of
+   * displaying changes
+   */
+  case class ChangeVersion(
+    guid: _root_.java.util.UUID,
+    version: String
   )
 
   /**
@@ -45,6 +87,22 @@ package com.gilt.apidoc.api.v0.models {
     generator: com.gilt.apidoc.api.v0.models.Generator,
     source: String
   )
+
+  /**
+   * Represents a single breaking diff of an application version. A breaking diff
+   * indicates that it is possible for an existing client to now experience an error
+   * or invalid data due to the diff.
+   */
+  case class DiffBreaking(
+    description: String
+  ) extends Diff
+
+  /**
+   * Represents a single NON breaking diff of an application version.
+   */
+  case class DiffNonBreaking(
+    description: String
+  ) extends Diff
 
   /**
    * Represents a single domain name (e.g. www.apidoc.me). When a new user registers
@@ -110,6 +168,18 @@ package com.gilt.apidoc.api.v0.models {
 
   case class Healthcheck(
     status: String
+  )
+
+  /**
+   * When searching for content, the results of the search will be a list of items.
+   * Each item will have enough information to render for the user, including a type
+   * and item_guid to enable creating the appropriate link.
+   */
+  case class Item(
+    guid: _root_.java.util.UUID,
+    detail: com.gilt.apidoc.api.v0.models.ItemDetail,
+    label: String,
+    description: _root_.scala.Option[String] = None
   )
 
   /**
@@ -278,7 +348,8 @@ package com.gilt.apidoc.api.v0.models {
     application: com.gilt.apidoc.api.v0.models.Reference,
     version: String,
     original: _root_.scala.Option[com.gilt.apidoc.api.v0.models.Original] = None,
-    service: com.gilt.apidoc.spec.v0.models.Service
+    service: com.gilt.apidoc.spec.v0.models.Service,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   case class VersionForm(
@@ -302,6 +373,24 @@ package com.gilt.apidoc.api.v0.models {
     organizationKey: String,
     applicationKey: String
   )
+
+  /**
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union Diff, it will need to be handled in the client code. This
+   * implementation will deserialize these future types as an instance of this class.
+   */
+  case class DiffUndefinedType(
+    description: String
+  ) extends Diff
+
+  /**
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union ItemDetail, it will need to be handled in the client code. This
+   * implementation will deserialize these future types as an instance of this class.
+   */
+  case class ItemDetailUndefinedType(
+    description: String
+  ) extends ItemDetail
 
   sealed trait OriginalType
 
@@ -536,6 +625,22 @@ package com.gilt.apidoc.api.v0.models {
       )(unlift(ApplicationForm.unapply _))
     }
 
+    implicit def jsonReadsApidocapiApplicationSummary: play.api.libs.json.Reads[ApplicationSummary] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "key").read[String]
+      )(ApplicationSummary.apply _)
+    }
+
+    implicit def jsonWritesApidocapiApplicationSummary: play.api.libs.json.Writes[ApplicationSummary] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "key").write[String]
+      )(unlift(ApplicationSummary.unapply _))
+    }
+
     implicit def jsonReadsApidocapiAudit: play.api.libs.json.Reads[Audit] = {
       (
         (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
@@ -552,6 +657,46 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "updated_at").write[_root_.org.joda.time.DateTime] and
         (__ \ "updated_by").write[com.gilt.apidoc.api.v0.models.ReferenceGuid]
       )(unlift(Audit.unapply _))
+    }
+
+    implicit def jsonReadsApidocapiChange: play.api.libs.json.Reads[Change] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "application").read[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "from_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
+        (__ \ "to_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
+        (__ \ "diff").read[com.gilt.apidoc.api.v0.models.Diff] and
+        (__ \ "changed_at").read[_root_.org.joda.time.DateTime] and
+        (__ \ "changed_by").read[com.gilt.apidoc.api.v0.models.ReferenceGuid]
+      )(Change.apply _)
+    }
+
+    implicit def jsonWritesApidocapiChange: play.api.libs.json.Writes[Change] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "application").write[com.gilt.apidoc.api.v0.models.Reference] and
+        (__ \ "from_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
+        (__ \ "to_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
+        (__ \ "diff").write[com.gilt.apidoc.api.v0.models.Diff] and
+        (__ \ "changed_at").write[_root_.org.joda.time.DateTime] and
+        (__ \ "changed_by").write[com.gilt.apidoc.api.v0.models.ReferenceGuid]
+      )(unlift(Change.unapply _))
+    }
+
+    implicit def jsonReadsApidocapiChangeVersion: play.api.libs.json.Reads[ChangeVersion] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "version").read[String]
+      )(ChangeVersion.apply _)
+    }
+
+    implicit def jsonWritesApidocapiChangeVersion: play.api.libs.json.Writes[ChangeVersion] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "version").write[String]
+      )(unlift(ChangeVersion.unapply _))
     }
 
     implicit def jsonReadsApidocapiCleartextToken: play.api.libs.json.Reads[CleartextToken] = {
@@ -576,6 +721,26 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "generator").write[com.gilt.apidoc.api.v0.models.Generator] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
+    }
+
+    implicit def jsonReadsApidocapiDiffBreaking: play.api.libs.json.Reads[DiffBreaking] = {
+      (__ \ "description").read[String].map { x => new DiffBreaking(description = x) }
+    }
+
+    implicit def jsonWritesApidocapiDiffBreaking: play.api.libs.json.Writes[DiffBreaking] = new play.api.libs.json.Writes[DiffBreaking] {
+      def writes(x: DiffBreaking) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
+    }
+
+    implicit def jsonReadsApidocapiDiffNonBreaking: play.api.libs.json.Reads[DiffNonBreaking] = {
+      (__ \ "description").read[String].map { x => new DiffNonBreaking(description = x) }
+    }
+
+    implicit def jsonWritesApidocapiDiffNonBreaking: play.api.libs.json.Writes[DiffNonBreaking] = new play.api.libs.json.Writes[DiffNonBreaking] {
+      def writes(x: DiffNonBreaking) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
     }
 
     implicit def jsonReadsApidocapiDomain: play.api.libs.json.Reads[Domain] = {
@@ -684,6 +849,24 @@ package com.gilt.apidoc.api.v0.models {
       def writes(x: Healthcheck) = play.api.libs.json.Json.obj(
         "status" -> play.api.libs.json.Json.toJson(x.status)
       )
+    }
+
+    implicit def jsonReadsApidocapiItem: play.api.libs.json.Reads[Item] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "detail").read[com.gilt.apidoc.api.v0.models.ItemDetail] and
+        (__ \ "label").read[String] and
+        (__ \ "description").readNullable[String]
+      )(Item.apply _)
+    }
+
+    implicit def jsonWritesApidocapiItem: play.api.libs.json.Writes[Item] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "detail").write[com.gilt.apidoc.api.v0.models.ItemDetail] and
+        (__ \ "label").write[String] and
+        (__ \ "description").writeNullable[String]
+      )(unlift(Item.unapply _))
     }
 
     implicit def jsonReadsApidocapiMembership: play.api.libs.json.Reads[Membership] = {
@@ -991,7 +1174,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "application").read[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "version").read[String] and
         (__ \ "original").readNullable[com.gilt.apidoc.api.v0.models.Original] and
-        (__ \ "service").read[com.gilt.apidoc.spec.v0.models.Service]
+        (__ \ "service").read[com.gilt.apidoc.spec.v0.models.Service] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Version.apply _)
     }
 
@@ -1002,7 +1186,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "application").write[com.gilt.apidoc.api.v0.models.Reference] and
         (__ \ "version").write[String] and
         (__ \ "original").writeNullable[com.gilt.apidoc.api.v0.models.Original] and
-        (__ \ "service").write[com.gilt.apidoc.spec.v0.models.Service]
+        (__ \ "service").write[com.gilt.apidoc.spec.v0.models.Service] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Version.unapply _))
     }
 
@@ -1052,6 +1237,35 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "organization_key").write[String] and
         (__ \ "application_key").write[String]
       )(unlift(WatchForm.unapply _))
+    }
+
+    implicit def jsonReadsApidocapiDiff: play.api.libs.json.Reads[Diff] = {
+      (
+        (__ \ "diff_breaking").read(jsonReadsApidocapiDiffBreaking).asInstanceOf[play.api.libs.json.Reads[Diff]]
+        orElse
+        (__ \ "diff_non_breaking").read(jsonReadsApidocapiDiffNonBreaking).asInstanceOf[play.api.libs.json.Reads[Diff]]
+      )
+    }
+
+    implicit def jsonWritesApidocapiDiff: play.api.libs.json.Writes[Diff] = new play.api.libs.json.Writes[Diff] {
+      def writes(obj: Diff) = obj match {
+        case x: com.gilt.apidoc.api.v0.models.DiffBreaking => play.api.libs.json.Json.obj("diff_breaking" -> jsonWritesApidocapiDiffBreaking.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.DiffNonBreaking => play.api.libs.json.Json.obj("diff_non_breaking" -> jsonWritesApidocapiDiffNonBreaking.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.DiffUndefinedType => sys.error(s"The type[com.gilt.apidoc.api.v0.models.DiffUndefinedType] should never be serialized")
+      }
+    }
+
+    implicit def jsonReadsApidocapiItemDetail: play.api.libs.json.Reads[ItemDetail] = {
+      (
+        (__ \ "application_summary").read(jsonReadsApidocapiApplicationSummary).asInstanceOf[play.api.libs.json.Reads[ItemDetail]]
+      )
+    }
+
+    implicit def jsonWritesApidocapiItemDetail: play.api.libs.json.Writes[ItemDetail] = new play.api.libs.json.Writes[ItemDetail] {
+      def writes(obj: ItemDetail) = obj match {
+        case x: com.gilt.apidoc.api.v0.models.ApplicationSummary => play.api.libs.json.Json.obj("application_summary" -> jsonWritesApidocapiApplicationSummary.writes(x))
+        case x: com.gilt.apidoc.api.v0.models.ItemDetailUndefinedType => sys.error(s"The type[com.gilt.apidoc.api.v0.models.ItemDetailUndefinedType] should never be serialized")
+      }
     }
   }
 }
@@ -1145,6 +1359,8 @@ package com.gilt.apidoc.api.v0 {
 
     def applications: Applications = Applications
 
+    def changes: Changes = Changes
+
     def code: Code = Code
 
     def domains: Domains = Domains
@@ -1154,6 +1370,8 @@ package com.gilt.apidoc.api.v0 {
     def generators: Generators = Generators
 
     def healthchecks: Healthchecks = Healthchecks
+
+    def items: Items = Items
 
     def membershipRequests: MembershipRequests = MembershipRequests
 
@@ -1181,6 +1399,7 @@ package com.gilt.apidoc.api.v0 {
       override def getByOrgKey(
         orgKey: String,
         name: _root_.scala.Option[String] = None,
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         key: _root_.scala.Option[String] = None,
         hasVersion: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
@@ -1188,6 +1407,7 @@ package com.gilt.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Application]] = {
         val queryParameters = Seq(
           name.map("name" -> _),
+          guid.map("guid" -> _.toString),
           key.map("key" -> _),
           hasVersion.map("has_version" -> _.toString),
           Some("limit" -> limit.toString),
@@ -1234,6 +1454,27 @@ package com.gilt.apidoc.api.v0 {
         _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}").map {
           case r if r.status == 204 => Unit
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+        }
+      }
+    }
+
+    object Changes extends Changes {
+      override def get(
+        orgKey: _root_.scala.Option[String] = None,
+        applicationKey: _root_.scala.Option[String] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Change]] = {
+        val queryParameters = Seq(
+          orgKey.map("org_key" -> _),
+          applicationKey.map("application_key" -> _),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/changes", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.Change]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.Change]])
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
       }
     }
@@ -1369,6 +1610,35 @@ package com.gilt.apidoc.api.v0 {
         _executeRequest("GET", s"/_internal_/migrate").map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Map[String, String]", r, _.validate[Map[String, String]])
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+    }
+
+    object Items extends Items {
+      override def get(
+        q: _root_.scala.Option[String] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Item]] = {
+        val queryParameters = Seq(
+          q.map("q" -> _),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/items", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.Item]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.Item]])
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Item] = {
+        _executeRequest("GET", s"/items/${guid}").map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.api.v0.models.Item", r, _.validate[com.gilt.apidoc.api.v0.models.Item])
+          case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
     }
@@ -2009,6 +2279,7 @@ package com.gilt.apidoc.api.v0 {
     def getByOrgKey(
       orgKey: String,
       name: _root_.scala.Option[String] = None,
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       key: _root_.scala.Option[String] = None,
       hasVersion: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
@@ -2039,6 +2310,15 @@ package com.gilt.apidoc.api.v0 {
       orgKey: String,
       applicationKey: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait Changes {
+    def get(
+      orgKey: _root_.scala.Option[String] = None,
+      applicationKey: _root_.scala.Option[String] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Change]]
   }
 
   trait Code {
@@ -2116,6 +2396,18 @@ package com.gilt.apidoc.api.v0 {
     def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Healthcheck]
 
     def getInternalAndMigrate()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Map[String, String]]
+  }
+
+  trait Items {
+    def get(
+      q: _root_.scala.Option[String] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Item]]
+
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Item]
   }
 
   trait MembershipRequests {
