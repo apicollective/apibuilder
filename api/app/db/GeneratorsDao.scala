@@ -6,7 +6,7 @@ import play.api.db._
 import play.api.Play.current
 import lib.{UrlKey, Validation}
 import java.net.{MalformedURLException, URL}
-import java.util.{Date, UUID}
+import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 object GeneratorsDao {
@@ -42,8 +42,7 @@ object GeneratorsDao {
       }
     }
 
-    val formattedKey = form.key.trim.toLowerCase
-    val keyErrors = UrlKey.validate(formattedKey)
+    val keyErrors = UrlKey.validate(form.key)
 
     Validation.errors(urlErrors ++ keyErrors)
   }
@@ -179,16 +178,6 @@ object GeneratorsDao {
         )
       }.toSeq
     }
-  }
-
-  def isOwner(userGuid: UUID, owner: User): Boolean = userGuid == owner.guid
-
-  val trustedUris = Seq("http://generator.apidoc.me", "http://generator.origin.apidoc.me", "http://localhost:9003")
-
-  def isTrusted(uri: String): Boolean = trustedUris.contains(uri)
-
-  def isOrgEnabled(visibility: Visibility, generatorGuid: UUID, orgEnabledGenerators: Set[UUID]): Boolean = {
-    visibility == Visibility.Organization && orgEnabledGenerators.contains(generatorGuid)
   }
 
 }
