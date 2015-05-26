@@ -15,7 +15,7 @@ trait Changes {
     applicationKey: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Authenticated { request =>
+  ) = AnonymousRequest { request =>
     val changes = ChangesDao.findAll(
       request.authorization,
       organizationKey = orgKey,
