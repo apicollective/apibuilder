@@ -15,25 +15,24 @@ Generators:
   - Cache the generators
 
 UX:
-
   - On adding watch, check subscription and offer the user to enable
     the relevant subscriptions if not subscribed
-
   - On service visibility - if service is public and org is NOT, add
     note that the service will not be visible until the org is made
     public.
 
-Ability to diff two versions of a service, producing a human readable
-output of the changes. Use this as the basis for determining backwards
-incompatible changes.
+Consider adding an organization level setting to enable semver
+versioning (default on)
+  - This would then add validation messages that all incoming version
+    numbers were in fact semver
 
-Org level setting to enable semver versioning (default on)
-  - prevent backwards incompatible changes once at major version 1
-
-Implement backwards compatibility layer - each new version of a
-service should be automatically validated against the latest version
-with the same major version number. Consider if we require semver
-versioning or not.
+Implement backwards compatibility layer - when a user creates a new
+version of a service, if the new version has backwards incompatible
+changes AND the major version number was not incremented, prompt the
+user to confirm the change. Considerations:
+  - should this be an org level setting?
+  - should this only apply with semver versions?
+  - If using semver, we should probably ignore -xxx versions (e.g. -dev)
 
 Automate end to tests of generated clients. Currently client libraries
 are tested offline and manually. Need to think through how testing
