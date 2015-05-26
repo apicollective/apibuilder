@@ -97,6 +97,10 @@ object TasksDao {
     }
   }
 
+  def recordError(user: User, task: Task, error: Throwable) {
+    recordError(user, task, error.toString)
+  }
+
   def recordError(user: User, task: Task, error: String) {
     DB.withConnection { implicit c =>
       SQL(RecordErrorQuery).on(

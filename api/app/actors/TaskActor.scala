@@ -7,6 +7,7 @@ import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDa
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 object TaskActor {
 
@@ -33,31 +34,30 @@ class TaskActor extends Actor {
 
           task.data match {
             case TaskDataDiffVersion(oldVersionGuid, newVersionGuid) => {
-              VersionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
-                VersionsDao.findByGuid(Authorization.All, newVersionGuid, isDeleted = None).map { newVersion =>
-                  ServiceDiff(oldVersion.service, newVersion.service).differences match {
-                    case Nil => {
-                      // No-op
-                    }
-                    case diffs => {
-                      ChangesDao.upsert(
-                        createdBy = UsersDao.AdminUser,
-                        fromVersion = oldVersion,
-                        toVersion = newVersion,
-                        differences = diffs
-                      )
-                      versionUpdated(oldVersion, newVersion, diffs)
-                    }
-                  }
+              Try(
+                diffVersion(oldVersionGuid, newVersionGuid)
+              ) match {
+                case Success(_) => {
+                  TasksDao.softDelete(UsersDao.AdminUser, task)
+                }
+                case Failure(ex) => {
+                  TasksDao.recordError(UsersDao.AdminUser, task, ex)
                 }
               }
-              TasksDao.softDelete(UsersDao.AdminUser, task)
             }
 
             case TaskDataIndexApplication(applicationGuid) => {
-              println(" - TaskDataIndexApplication")
-              Search.indexApplication(applicationGuid)
-              TasksDao.softDelete(UsersDao.AdminUser, task)
+              println(" - TaskDataIndexApplication($applicationGuid)")
+              Try(
+                Search.indexApplication(applicationGuid)
+              ) match {
+                case Success(_) => {
+                  TasksDao.softDelete(UsersDao.AdminUser, task)
+                }
+                case Failure(ex) => {
+                  TasksDao.recordError(UsersDao.AdminUser, task, ex)
+                }
+              }
             }
 
             case TaskDataUndefinedType(desc) => {
@@ -105,8 +105,16 @@ class TaskActor extends Actor {
         Pager.eachPage[Application] { offset =>
           ApplicationsDao.findAll(Authorization.All, limit = 100, offset = offset)
         } { app =>
-          println(s"Search.indexApplication(${app.guid}) // ${app.key}")
-          Search.indexApplication(app.guid)
+          println(" - Migration actor. indexApplication(${app.organization.key}/${app.key})")
+          Try(
+            Search.indexApplication(app.guid)
+          ) match {
+            case Success(_) => {}
+            case Failure(ex) => {
+              ex.printStackTrace(System.err)
+              Logger.warn(s"Error indexing application[${app.guid}]: $ex")
+            }
+          }
         }
       }
     )
@@ -126,6 +134,27 @@ class TaskActor extends Actor {
       Logger.error("Task actor got an unhandled message: " + m)
     }
 
+  }
+
+  private def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID) {
+    VersionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
+      VersionsDao.findByGuid(Authorization.All, newVersionGuid, isDeleted = None).map { newVersion =>
+        ServiceDiff(oldVersion.service, newVersion.service).differences match {
+          case Nil => {
+            // No-op
+          }
+          case diffs => {
+            ChangesDao.upsert(
+              createdBy = UsersDao.AdminUser,
+              fromVersion = oldVersion,
+              toVersion = newVersion,
+              differences = diffs
+            )
+            versionUpdated(oldVersion, newVersion, diffs)
+          }
+        }
+      }
+    }
   }
 
   private def versionUpdated(
