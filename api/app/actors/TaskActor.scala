@@ -66,9 +66,9 @@ class TaskActor extends Actor {
           nOrMoreAttempts = Some(2)
         ).map { task =>
           val errorType = task.data match {
-            case TaskDataDiffVersion(_, _) => "Diff version"
-            case TaskDataIndexApplication(_) => "Index version"
-            case TaskDataUndefinedType(desc) => desc
+            case TaskDataDiffVersion(a, b) => s"TaskDataDiffVersion($a, $b)"
+            case TaskDataIndexApplication(guid) => s"TaskDataIndexApplication($guid)"
+            case TaskDataUndefinedType(desc) => s"TaskDataUndefinedType($desc)"
           }
 
           val errorMsg = Text.truncate(task.lastError.getOrElse("No information on error"))
