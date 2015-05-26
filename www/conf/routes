@@ -62,7 +62,7 @@ GET     /org/edit                                                 controllers.Or
 POST    /org/editPost                                             controllers.Organizations.editPost(org_key: String)
 POST    /org/deletePost                                           controllers.Organizations.deletePost(org_key: String)
 
-GET     /history                                                  controllers.HistoryController.index(page: Int ?= 0)
+GET     /history                                                  controllers.HistoryController.index(org: Option[String] ?= None, app: Option[String] ?= None, page: Int ?= 0)
 GET     /search                                                   controllers.SearchController.index(q: Option[String] ?= None, org: Option[String] ?= None, page: Int ?= 0)
 
 # Start dynamic routing by org key
@@ -74,8 +74,6 @@ GET     /:orgKey/domains                                          controllers.Do
 POST    /:orgKey/domains/:domain/remove                           controllers.Domains.postRemove(orgKey: String, domain: String)
 GET     /:orgKey/domains/create                                   controllers.Domains.create(orgKey: String)
 POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
-
-GET     /:orgKey/history                                          controllers.HistoryController.organization(orgKey: String, page: Int ?= 0)
 
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/downloadCsv                              controllers.Members.downloadCsv(orgKey: String)
@@ -107,7 +105,6 @@ POST    /:orgKey/:applicationKey/:version/settings/postEdit       controllers.Ap
 POST    /:orgKey/:applicationKey/settings/postDelete              controllers.ApplicationSettings.postDelete(orgKey: String, applicationKey: String)
 
 GET     /:orgKey/:applicationKey                                  controllers.Versions.redirectToLatest(orgKey: String, applicationKey: String)
-GET     /:orgKey/:applicationKey/history                          controllers.HistoryController.application(orgKey: String, applicationKey: String, page: Int ?= 0)
 GET     /:orgKey/:applicationKey/:version                         controllers.Versions.show(orgKey: String, applicationKey: String, version: String)
 GET     /:orgKey/:applicationKey/:version/original                controllers.Versions.original(orgKey: String, applicationKey: String, version: String)
 GET     /:orgKey/:applicationKey/:version/service.json            controllers.Versions.serviceJson(orgKey: String, applicationKey: String, version: String)

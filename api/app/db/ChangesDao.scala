@@ -131,7 +131,7 @@ object ChangesDao {
       fromVersionGuid.map { v => "and changes.from_version_guid = {from_version_guid}::uuid" },
       toVersionGuid.map { v => "and changes.to_version_guid = {to_version_guid}::uuid" },
       description.map { v => "and lower(changes.description) = lower(trim({description}))" },
-      Some(s"order by lower(organizations.name), lower(applications.name), changes.created_at desc limit ${limit} offset ${offset}")
+      Some(s"order by changes.created_at desc, lower(organizations.key), lower(applications.key), changes.type, lower(changes.description) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

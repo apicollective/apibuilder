@@ -1,18 +1,18 @@
 @(tpl: models.MainTemplate,
   changes: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Change],
-  org: Option[com.gilt.apidoc.api.v0.models.Organization] = None,
-  app: Option[com.gilt.apidoc.api.v0.models.Application] = None
+  orgKey: Option[String] = None,
+  appKey: Option[String] = None
 )(implicit flash: Flash)
 
 @main(tpl) {
 
-  @if(!org.isEmpty && !app.isEmpty) {
+  @if(!orgKey.isEmpty && !appKey.isEmpty) {
     <a href="@routes.HistoryController.index()">All</a> /
-    <a href="@routes.HistoryController.organization(org.get.key)">@org.get.key</a> /
-    @app.get.key
+    <a href="@routes.HistoryController.index(org = orgKey)">@orgKey.get</a> /
+    @appKey
   } else {
-    @if(!org.isEmpty) {
-      <a href="@routes.HistoryController.index()">All</a> / @org.get.key
+    @if(!orgKey.isEmpty) {
+      <a href="@routes.HistoryController.index()">All</a> / @orgKey.get
     }
   }
 
@@ -52,26 +52,10 @@
     @if(changes.hasPrevious || changes.hasNext) {
       <ul class="pager">
         @if(changes.hasPrevious) {
-          @if(org.isEmpty) {
-            <li><a href="@routes.HistoryController.index(changes.page - 1)">Previous</a></li>
-          } else {
-            @if(app.isEmpty) {
-              <li><a href="@routes.HistoryController.organization(orgKey = org.get.key, changes.page - 1)">Previous</a></li>
-            } else {
-              <li><a href="@routes.HistoryController.application(orgKey = org.get.key, applicationKey = app.get.key, changes.page - 1)">Previous</a></li>
-            }
-          }
+          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, changes.page - 1)">Previous</a></li>
         }
         @if(changes.hasNext) {
-          @if(org.isEmpty) {
-            <li><a href="@routes.HistoryController.index(changes.page + 1)">Next</a></li>
-          } else {
-            @if(app.isEmpty) {
-              <li><a href="@routes.HistoryController.organization(org.get.key, changes.page + 1)">Next</a></li>
-            } else {
-              <li><a href="@routes.HistoryController.application(orgKey = org.get.key, applicationKey = app.get.key, changes.page + 1)">Next</a></li>
-            }
-          }
+          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, changes.page + 1)">Next</a></li>
         }
       </ul>
     }
