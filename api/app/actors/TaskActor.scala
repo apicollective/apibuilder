@@ -16,9 +16,6 @@ object TaskActor {
     case object RestartDroppedTasks
     case object PurgeOldTasks
     case object NotifyFailed
-
-    case object MigrateChanges
-    case object MigrateSearch
   }
 
 }
@@ -80,58 +77,6 @@ class TaskActor extends Actor {
           subject = "One or more tasks failed",
           errors = errors
         )
-      }
-    )
-
-    case TaskActor.Messages.MigrateChanges => Util.withVerboseErrorHandler(
-      "TaskActor.Messages.MigrateChanges", {
-        Pager.eachPage[Application] { offset =>
-          ApplicationsDao.findAll(Authorization.All, limit = 100, offset = offset)
-        } { app =>
-          println(s"TaskActor.Messages.MigrateChanges app[${app.key}]")
-          var priorVersion: Option[Version] = None
-          val versions = VersionsDao.findAll(Authorization.All, applicationGuid = Some(app.guid), limit = 10000).reverse
-
-          versions.foreach { version =>
-            println(s" - version[${version.version}] (${version.guid})")
-
-            priorVersion match {
-              case None => {}
-              case Some(prior) => {
-                println(s" - TaskActor.Messages.MigrateChanges for app ${app.organization.key}/${app.key}:${prior.version} to ${version.version}")
-                Try(
-                  diffVersion(prior.guid, version.guid)
-                ) match {
-                  case Success(_) => {}
-                  case Failure(ex) => {
-                    ex.printStackTrace(System.err)
-                    Logger.warn(s"Error in background task to diff app ${app.organization.key}/${app.key}:${prior.version} to ${version.version}")
-                  }
-                }
-              }
-            }
-            priorVersion = Some(version)
-          }
-        }
-      }
-    )
-
-    case TaskActor.Messages.MigrateSearch => Util.withVerboseErrorHandler(
-      "TaskActor.Messages.MigrateSearch", {
-        Pager.eachPage[Application] { offset =>
-          ApplicationsDao.findAll(Authorization.All, limit = 100, offset = offset)
-        } { app =>
-          println(s" - TaskActor.Messages.MigrateSearch for app ${app.organization.key}/${app.key}")
-          Try(
-            Search.indexApplication(app.guid)
-          ) match {
-            case Success(_) => {}
-            case Failure(ex) => {
-              ex.printStackTrace(System.err)
-              Logger.warn(s"Error indexing application[${app.guid}]: $ex")
-            }
-          }
-        }
       }
     )
 
