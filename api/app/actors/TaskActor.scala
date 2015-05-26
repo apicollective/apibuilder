@@ -34,30 +34,11 @@ class TaskActor extends Actor {
 
           task.data match {
             case TaskDataDiffVersion(oldVersionGuid, newVersionGuid) => {
-              Try(
-                diffVersion(oldVersionGuid, newVersionGuid)
-              ) match {
-                case Success(_) => {
-                  TasksDao.softDelete(UsersDao.AdminUser, task)
-                }
-                case Failure(ex) => {
-                  TasksDao.recordError(UsersDao.AdminUser, task, ex)
-                }
-              }
+              processTask(task, Try(diffVersion(oldVersionGuid, newVersionGuid)))
             }
 
             case TaskDataIndexApplication(applicationGuid) => {
-              println(" - TaskDataIndexApplication($applicationGuid)")
-              Try(
-                Search.indexApplication(applicationGuid)
-              ) match {
-                case Success(_) => {
-                  TasksDao.softDelete(UsersDao.AdminUser, task)
-                }
-                case Failure(ex) => {
-                  TasksDao.recordError(UsersDao.AdminUser, task, ex)
-                }
-              }
+              processTask(task, Try(Search.indexApplication(applicationGuid)))
             }
 
             case TaskDataUndefinedType(desc) => {
@@ -189,6 +170,17 @@ class TaskActor extends Actor {
             }.map(_.asInstanceOf[DiffNonBreaking])
           ).toString
         )
+      }
+    }
+  }
+
+  def processTask[T](task: Task, attempt: Try[T]) {
+    attempt match {
+      case Success(_) => {
+        TasksDao.softDelete(UsersDao.AdminUser, task)
+      }
+      case Failure(ex) => {
+        TasksDao.recordError(UsersDao.AdminUser, task, ex)
       }
     }
   }
