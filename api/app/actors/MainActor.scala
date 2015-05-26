@@ -38,7 +38,8 @@ class MainActor(name: String) extends Actor with ActorLogging {
   Akka.system.scheduler.schedule(5.seconds, 1.minute, taskActor, TaskActor.Messages.RestartDroppedTasks)
   Akka.system.scheduler.schedule(1.hour, 1.hour, taskActor, TaskActor.Messages.PurgeOldTasks)
   Akka.system.scheduler.schedule(12.hours, 1.day, taskActor, TaskActor.Messages.NotifyFailed)
-  Akka.system.scheduler.scheduleOnce(5.seconds, taskActor, TaskActor.Messages.Migrate)
+  Akka.system.scheduler.scheduleOnce(5.seconds, taskActor, TaskActor.Messages.MigrateSearch)
+  Akka.system.scheduler.scheduleOnce(5.seconds, taskActor, TaskActor.Messages.MigrateChanges)
 
   def receive = akka.event.LoggingReceive {
 

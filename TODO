@@ -1,6 +1,3 @@
-Tasks:
-  - Migrate tasks for changes
-
 Add Audit to all DAOs
 
 Expose permission check at www/app/views/generators/details.scala.html for removing a generator
