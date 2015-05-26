@@ -37,7 +37,7 @@ class SearchSpec extends FunSpec with Matchers {
 
       db.ItemsDao.findAll(Authorization.All, 
         guid = Some(app.guid)
-      ).map(_.label) should be(Seq(app.name))
+      ).map(_.label) should be(Seq(s"${app.organization.key}/${app.key}"))
     }
 
     it("on update") {
@@ -46,7 +46,7 @@ class SearchSpec extends FunSpec with Matchers {
 
       Search.indexApplication(app.guid)
 
-      val newName = app.name + " 2"
+      val newName = app.name + "2"
 
       db.ApplicationsDao.update(
         updatedBy = db.Util.createdBy,
@@ -56,9 +56,12 @@ class SearchSpec extends FunSpec with Matchers {
 
       Search.indexApplication(app.guid)
 
+      val existing = db.ApplicationsDao.findByGuid(Authorization.All, app.guid).get
+
       db.ItemsDao.findAll(Authorization.All, 
-        guid = Some(app.guid)
-      ).map(_.label) should be(Seq(newName))
+        guid = Some(app.guid),
+        q = Some(newName)
+      ).size should be(1)
     }
 
     it("on delete") {

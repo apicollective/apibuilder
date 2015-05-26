@@ -23,7 +23,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
     org: Organization = Util.testOrg,
     visibility: Visibility = Visibility.Organization
   ): Application = {
-    val n = nameOption.getOrElse("Application %s".format(UUID.randomUUID))
+    val n = nameOption.getOrElse("Test %s".format(UUID.randomUUID))
     ApplicationsDao.findAll(Authorization.All, orgKey = Some(org.key), name = Some(n), limit = 1).headOption.getOrElse {
       val applicationForm = ApplicationForm(
         name = n,
@@ -39,7 +39,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
   }
 
   it("create") {
-    val name = "Application %s".format(UUID.randomUUID)
+    val name = "Test %s".format(UUID.randomUUID)
     val application = upsertApplication(Some(name))
     application.name should be(name)
   }
@@ -63,7 +63,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
   describe("validate") {
 
     def createForm() = ApplicationForm(
-      name = "Application %s".format(UUID.randomUUID),
+      name = "Test %s".format(UUID.randomUUID),
       key = None,
       description = None,
       visibility = Visibility.Organization
@@ -108,7 +108,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
     }
 
     it("name") {
-      val name = "Application %s".format(UUID.randomUUID)
+      val name = "Test %s".format(UUID.randomUUID)
       val application = upsertApplication(Some(name))
       val newName = application.name + "2"
       ApplicationsDao.update(Util.createdBy, application, toForm(application).copy(name = newName))
@@ -117,7 +117,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers {
 
     it("description") {
       val application = upsertApplication()
-      val newDescription = "Application %s".format(UUID.randomUUID)
+      val newDescription = "Test %s".format(UUID.randomUUID)
       findByKey(Util.testOrg, application.key).get.description should be(None)
       ApplicationsDao.update(Util.createdBy, application, toForm(application).copy(description = Some(newDescription)))
       findByKey(Util.testOrg, application.key).get.description should be(Some(newDescription))
