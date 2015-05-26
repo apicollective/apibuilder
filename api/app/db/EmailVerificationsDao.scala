@@ -19,10 +19,10 @@ case class EmailVerification(
 
 object EmailVerificationsDao {
 
-  private val TokenLength = 80
-  private val HoursUntilTokenExpires = 168
+  private[this] val TokenLength = 80
+  private[this] val HoursUntilTokenExpires = 168
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select email_verifications.guid,
            email_verifications.user_guid,
            email_verifications.email,
@@ -32,7 +32,7 @@ object EmailVerificationsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into email_verifications
     (guid, user_guid, email, token, expires_at, created_by_guid)
     values

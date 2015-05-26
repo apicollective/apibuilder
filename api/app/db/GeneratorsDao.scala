@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
 
 object GeneratorsDao {
 
-  private val BaseQuery = s"""
+  private[this] val BaseQuery = s"""
     select generators.guid,
            generators.key,
            generators.created_at,
@@ -21,7 +21,7 @@ object GeneratorsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into generators
     (guid, key, uri, user_guid, visibility, created_by_guid)
     values

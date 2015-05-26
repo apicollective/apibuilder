@@ -70,7 +70,7 @@ object AccountProfileController extends Controller {
     name: Option[String]
   )
 
-  private val profileForm = Form(
+  private[this] val profileForm = Form(
     mapping(
       "email" -> nonEmptyText,
       "nickname" -> nonEmptyText,

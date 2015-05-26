@@ -16,7 +16,7 @@ object ItemsDao {
   // indexed is the application and thus join applications and
   // organizations. This is ONLY used to enforce the authorization
   // filter in findAll
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select items.guid::varchar,
            items.detail::varchar,
            items.label,
@@ -27,14 +27,14 @@ object ItemsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into search.items
     (guid, organization_guid, application_guid, detail, label, description, content)
     values
     ({guid}::uuid, {organization_guid}::uuid, {application_guid}::uuid, {detail}::json, {label}, {description}, {content})
   """
 
-  private val DeleteQuery = """
+  private[this] val DeleteQuery = """
     delete from search.items where guid = {guid}::uuid
   """
 
@@ -78,7 +78,7 @@ object ItemsDao {
     }
   }
   
-  private def delete(implicit c: java.sql.Connection, guid: UUID) {
+  private[this] def delete(implicit c: java.sql.Connection, guid: UUID) {
     SQL(DeleteQuery).on('guid -> guid).execute()
   }
 
@@ -132,7 +132,7 @@ object ItemsDao {
     )
   }
 
-  private def parseQuery(query: Query): (Option[String], Option[String]) = {
+  private[this] def parseQuery(query: Query): (Option[String], Option[String]) = {
     val keywords = query.words match {
       case Nil => None
       case words => Some(words.mkString(" "))

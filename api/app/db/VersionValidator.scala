@@ -14,14 +14,14 @@ case class VersionValidator(
 
   private lazy val existing = existingApplicationKey.flatMap { ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, _) }
 
-  private def validateAuthorization(): Seq[String] = {
+  private[this] def validateAuthorization(): Seq[String] = {
     MembershipsDao.isUserMember(user, org) match {
       case true => Seq.empty
       case false => Seq("You must be a member of this organization to update applications")
     }
   }
 
-  private def validateKey(): Seq[String] = {
+  private[this] def validateKey(): Seq[String] = {
     existing match {
       case None => {
         ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, newApplicationKey) match {

@@ -12,7 +12,7 @@ class ItemsDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private def upsertItem(
+  private[this] def upsertItem(
     org: Organization = Util.createOrganization(),
     guid: UUID = UUID.randomUUID,
     label: String = "Test",

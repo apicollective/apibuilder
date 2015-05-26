@@ -11,7 +11,7 @@ import java.util.UUID
 
 object ApplicationsDao {
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
            organizations.guid as organization_guid,
            organizations.key as organization_key
@@ -20,14 +20,14 @@ object ApplicationsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into applications
     (guid, organization_guid, name, description, key, visibility, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {organization_guid}::uuid, {name}, {description}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private val UpdateQuery = """
+  private[this] val UpdateQuery = """
     update applications
        set name = {name},
            visibility = {visibility},
@@ -36,7 +36,7 @@ object ApplicationsDao {
      where guid = {guid}::uuid
   """
 
-  private val UpdateVisibilityQuery = """
+  private[this] val UpdateVisibilityQuery = """
     update applications
        set visibility = {visibility},
            updated_by_guid = {updated_by_guid}::uuid
@@ -245,7 +245,7 @@ object ApplicationsDao {
     )
   }
 
-  private def withTasks(
+  private[this] def withTasks(
     user: User,
     guid: UUID,
     f: java.sql.Connection => Unit

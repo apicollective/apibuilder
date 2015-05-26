@@ -12,7 +12,7 @@ import play.api.libs.json._
 
 object Versions extends Controller {
 
-  private val DefaultVisibility = Visibility.Organization
+  private[this] val DefaultVisibility = Visibility.Organization
 
   def getByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
     val versions = ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
@@ -144,7 +144,7 @@ object Versions extends Controller {
     NoContent
   }
 
-  private def upsertVersion(
+  private[this] def upsertVersion(
     user: User,
     org: Organization,
     versionName: String,
@@ -178,7 +178,7 @@ object Versions extends Controller {
     }
   }
 
-  private def toServiceConfiguration(
+  private[this] def toServiceConfiguration(
     org: Organization,
     version: String
   ) = ServiceConfiguration(
@@ -187,7 +187,7 @@ object Versions extends Controller {
     version = version
   )
 
-  private def validateVersion(
+  private[this] def validateVersion(
     user: User,
     org: Organization,
     applicationKey: String,

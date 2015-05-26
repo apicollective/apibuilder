@@ -8,13 +8,13 @@ class ChangesDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private def getApplication(version: Version): Application = {
+  private[this] def getApplication(version: Version): Application = {
     ApplicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {
       sys.error("Could not find application for version: " + version)
     }
   }
 
-  private def createChange(
+  private[this] def createChange(
     description: String = "Breaking difference - " + UUID.randomUUID.toString,
     org: Organization = Util.createOrganization()
   ): Change = {

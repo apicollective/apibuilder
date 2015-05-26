@@ -9,7 +9,7 @@ import java.util.UUID
 
 object ApiClient {
 
-  private val unauthenticatedClient = ApiClient(None).client
+  private[this] val unauthenticatedClient = ApiClient(None).client
 
   def callWith404[T](
     f: Future[T]
@@ -48,9 +48,9 @@ object ApiClient {
 
 case class ApiClient(user: Option[User]) {
 
-  private val apiHost = Config.requiredString("apidoc.api.host")
-  private val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
-  private val defaultHeaders = Seq(
+  private[this] val apiHost = Config.requiredString("apidoc.api.host")
+  private[this] val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
+  private[this] val defaultHeaders = Seq(
     user.map { u =>
       ("X-User-Guid", u.guid.toString)
     }

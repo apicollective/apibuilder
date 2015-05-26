@@ -55,7 +55,7 @@ object Generators extends Controller {
     }
   }
 
-  private def fillInGeneratorMeta(generator: Generator): Future[Either[Status, Generator]] = {
+  private[this] def fillInGeneratorMeta(generator: Generator): Future[Either[Status, Generator]] = {
     new Client(generator.uri).generators.getByKey(generator.key).map { meta =>
       Right(generator.copy(name = meta.name, description = meta.description, language = meta.language))
     }.recover {
@@ -63,7 +63,7 @@ object Generators extends Controller {
     }
   }
 
-  private def fillInGeneratorMeta(generators: Seq[Generator]): Future[Seq[Generator]] = {
+  private[this] def fillInGeneratorMeta(generators: Seq[Generator]): Future[Seq[Generator]] = {
       val futures: Seq[Future[Option[Generator]]] = generators.map {
         fillInGeneratorMeta(_).map {
           case Right(g) => Some(g)

@@ -131,7 +131,7 @@ object Generators extends Controller {
   case class GeneratorDetails(key: String, visibility: String, selected: Boolean)
 
   case class GeneratorCreateData(uri: String, details: List[GeneratorDetails])
-  private val generatorCreateForm = Form(
+  private[this] val generatorCreateForm = Form(
     mapping(
       "uri" -> nonEmptyText,
       "details" -> Forms.list(
@@ -145,7 +145,7 @@ object Generators extends Controller {
   )
 
   case class GeneratorUpdateData(visibility: Option[String], enabled: Option[Boolean])
-  private val generatorUpdateForm = Form(
+  private[this] val generatorUpdateForm = Form(
     mapping(
       "visibility" -> optional(nonEmptyText),
       "enabled" -> optional(boolean)

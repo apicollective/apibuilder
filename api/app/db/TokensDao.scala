@@ -11,7 +11,7 @@ import lib.Validation
 
 object TokensDao {
 
-  private val BaseQuery = s"""
+  private[this] val BaseQuery = s"""
     select tokens.guid,
            tokens.token,
            tokens.description,
@@ -25,11 +25,11 @@ object TokensDao {
      where true
   """
 
-  private val FindCleartextQuery = s"""
+  private[this] val FindCleartextQuery = s"""
     select token from tokens where guid = {guid}::uuid and deleted_at is null
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into tokens
     (guid, user_guid, token, description, created_by_guid)
     values

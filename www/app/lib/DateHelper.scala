@@ -7,7 +7,7 @@ import com.gilt.apidoc.api.v0.models.User
 
 object DateHelper {
 
-  private val DefaultLabel = "N/A"
+  private[this] val DefaultLabel = "N/A"
 
   def shortDate(
     tz: UserTimeZone,

@@ -18,10 +18,10 @@ case class PasswordReset(
 
 object PasswordResetRequestsDao {
 
-  private val TokenLength = 80
-  private val HoursUntilTokenExpires = 72
+  private[this] val TokenLength = 80
+  private[this] val HoursUntilTokenExpires = 72
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select password_resets.guid,
            password_resets.user_guid,
            password_resets.token,
@@ -30,7 +30,7 @@ object PasswordResetRequestsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into password_resets
     (guid, user_guid, token, expires_at, created_by_guid)
     values

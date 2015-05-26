@@ -28,11 +28,11 @@ case class TypeLabel(
     case Some(Datatype.Singleton(t)) => typeLink(t)
   }
 
-  private def typeLink(t: Type): String = {
+  private[this] def typeLink(t: Type): String = {
     Href(org.key, app.key, version, t).html
   }
 
-  private def resolveImportedType(typeName: String): Option[String] = {
+  private[this] def resolveImportedType(typeName: String): Option[String] = {
     service.imports.flatMap { imp =>
       imp.enums.find { name => s"${imp.namespace}.enums.name" == typeName } match {
         case Some(shortName) => Some(importLink(imp, Kind.Enum, shortName, typeName))
@@ -51,7 +51,7 @@ case class TypeLabel(
     }.headOption
   }
 
-  private def importLink(imp: Import, kind: Kind, shortName: String, fullName: String): String = {
+  private[this] def importLink(imp: Import, kind: Kind, shortName: String, fullName: String): String = {
     s"<a href='/${imp.organization.key}/${imp.application.key}/${imp.version}#$kind-$shortName'>$fullName:${imp.version}</a>"
 
   }

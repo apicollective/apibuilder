@@ -17,11 +17,11 @@ import java.util.UUID
 
 object VersionsDao {
 
-  private val LatestVersion = "latest"
+  private[this] val LatestVersion = "latest"
 
-  private val ServiceVersionNumber: String = com.gilt.apidoc.spec.v0.Constants.Version.toLowerCase
+  private[this] val ServiceVersionNumber: String = com.gilt.apidoc.spec.v0.Constants.Version.toLowerCase
 
-  private val BaseQuery = s"""
+  private[this] val BaseQuery = s"""
     select versions.guid, versions.version,
            ${AuditsDao.queryCreation("versions")},
            originals.type as original_type,
@@ -40,14 +40,14 @@ object VersionsDao {
     where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into versions
     (guid, application_guid, version, version_sort_key, created_by_guid)
     values
     ({guid}::uuid, {application_guid}::uuid, {version}, {version_sort_key}, {created_by_guid}::uuid)
   """
 
-  private val DeleteQuery = """
+  private[this] val DeleteQuery = """
     update versions
        set deleted_at = now(),
            deleted_by_guid = {deleted_by_guid}::uuid
@@ -55,14 +55,14 @@ object VersionsDao {
        and guid = {guid}::uuid
   """
 
-  private val InsertServiceQuery = """
+  private[this] val InsertServiceQuery = """
     insert into cache.services
     (guid, version_guid, version, json, created_by_guid)
     values
     ({guid}::uuid, {version_guid}::uuid, {version}, {json}::json, {user_guid}::uuid)
   """
 
-  private val SoftDeleteServiceByVersionGuidAndVersionNumberQuery = """
+  private[this] val SoftDeleteServiceByVersionGuidAndVersionNumberQuery = """
     update cache.services
        set deleted_at = now(),
            deleted_by_guid = {user_guid}::uuid
@@ -83,7 +83,7 @@ object VersionsDao {
     }
   }
 
-  private def doCreate(
+  private[this] def doCreate(
     implicit c: java.sql.Connection,
     user: User,
     application: Application,
@@ -277,7 +277,7 @@ object VersionsDao {
     )
   }
 
-  private def softDeleteService(
+  private[this] def softDeleteService(
     implicit c: java.sql.Connection,
     user: User,
     versionGuid: UUID
@@ -289,7 +289,7 @@ object VersionsDao {
     )
   }
 
-  private def insertService(
+  private[this] def insertService(
     implicit c: java.sql.Connection,
     user: User,
     versionGuid: UUID,

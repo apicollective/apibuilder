@@ -150,7 +150,7 @@ object Members extends Controller {
     }
   }
 
-  private def createMembership(api: com.gilt.apidoc.api.v0.Client, org: Organization, userGuid: UUID, role: Role) {
+  private[this] def createMembership(api: com.gilt.apidoc.api.v0.Client, org: Organization, userGuid: UUID, role: Role) {
     val membershipRequest = Await.result(
       api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role.key),
       1500.millis
@@ -162,7 +162,7 @@ object Members extends Controller {
   }
 
   case class AddMemberData(role: String, email: String)
-  private val addMemberForm = Form(
+  private[this] val addMemberForm = Form(
     mapping(
       "role" -> nonEmptyText,
       "email" -> nonEmptyText

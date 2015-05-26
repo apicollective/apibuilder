@@ -12,7 +12,7 @@ class TasksDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private def setDeletedAt(task: Task, days: Int) {
+  private[this] def setDeletedAt(task: Task, days: Int) {
     val query = s"""
       update tasks set deleted_at = timezone('utc', now()) - interval '$days days' where guid = {guid}::uuid
     """
@@ -24,7 +24,7 @@ class TasksDaoSpec extends FunSpec with Matchers {
 
   lazy val user = Util.createRandomUser()
 
-  private def createTaskDataDiffVersion(
+  private[this] def createTaskDataDiffVersion(
     oldGuid: UUID = UUID.randomUUID,
     newGuid: UUID = UUID.randomUUID,
     numberAttempts: Int = 0

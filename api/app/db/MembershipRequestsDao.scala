@@ -15,7 +15,7 @@ object MembershipRequestsDao {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select membership_requests.guid,
            membership_requests.role,
            membership_requests.created_at::varchar,
@@ -34,7 +34,7 @@ object MembershipRequestsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
    insert into membership_requests
    (guid, organization_guid, user_guid, role, created_by_guid)
    values
@@ -89,7 +89,7 @@ object MembershipRequestsDao {
     doAccept(createdBy, request, s"$email joined as ${r.name} by verifying their email address")
   }
 
-  private def doAccept(createdBy: User, request: MembershipRequest, message: String) {
+  private[this] def doAccept(createdBy: User, request: MembershipRequest, message: String) {
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
@@ -122,7 +122,7 @@ object MembershipRequestsDao {
     global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestDeclined(request.organization.guid, request.user.guid, r)
   }
 
-  private def assertUserCanReview(user: User, request: MembershipRequest) {
+  private[this] def assertUserCanReview(user: User, request: MembershipRequest) {
     require(
       MembershipsDao.isUserAdmin(user, request.organization),
       s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"

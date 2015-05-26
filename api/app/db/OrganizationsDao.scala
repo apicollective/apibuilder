@@ -11,9 +11,9 @@ import java.util.UUID
 
 object OrganizationsDao {
 
-  private val DefaultVisibility = Visibility.Organization
+  private[this] val DefaultVisibility = Visibility.Organization
 
-  private val MinNameLength = 4
+  private[this] val MinNameLength = 4
 
   private[db] val BaseQuery = """
     select organizations.guid,
@@ -29,14 +29,14 @@ object OrganizationsDao {
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into organizations
     (guid, name, key, namespace, visibility, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {name}, {key}, {namespace}, {visibility}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
-  private val UpdateQuery = """
+  private[this] val UpdateQuery = """
     update organizations
        set name = {name},
            key = {key},
@@ -123,7 +123,7 @@ object OrganizationsDao {
 
 
   // We just care that the domain does not have a space in it
-  private val DomainRx = """^[^\s]+$""".r
+  private[this] val DomainRx = """^[^\s]+$""".r
   private[db] def isDomainValid(domain: String): Boolean = {
     domain match {
       case DomainRx() => true
@@ -174,7 +174,7 @@ object OrganizationsDao {
     }
   }
 
-  private def create(implicit c: java.sql.Connection, user: User, form: OrganizationForm): Organization = {
+  private[this] def create(implicit c: java.sql.Connection, user: User, form: OrganizationForm): Organization = {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 

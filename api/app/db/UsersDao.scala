@@ -18,20 +18,20 @@ object UsersDao {
     sys.error(s"Failed to find background user w/ email[$AdminUserEmail]")
   }
 
-  private val BaseQuery = """
+  private[this] val BaseQuery = """
     select guid, email, name, nickname
       from users
      where true
   """
 
-  private val InsertQuery = """
+  private[this] val InsertQuery = """
     insert into users
     (guid, email, name, nickname, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {email}, {name}, {nickname}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
-  private val UpdateQuery = """
+  private[this] val UpdateQuery = """
   update users
      set email = {email},
          name = {name},

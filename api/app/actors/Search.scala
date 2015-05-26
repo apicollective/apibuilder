@@ -28,7 +28,7 @@ object Search {
     }
   }
 
-  private def getInfo(applicationGuid: UUID): Option[(Organization, Application)] = {
+  private[this] def getInfo(applicationGuid: UUID): Option[(Organization, Application)] = {
     ApplicationsDao.findByGuid(Authorization.All, applicationGuid).flatMap { application =>
       OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
         (org, application)
