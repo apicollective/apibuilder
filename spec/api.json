@@ -278,7 +278,7 @@
           "fields": [
             { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this generator." },
             { "name": "key", "type": "string", "description": "A human readable key identifying this generator." },
-            { "name": "uri", "type": "string", "description": "The uri of the generator" },
+            { "name": "uri", "type": "string", "description": "The base uri of the service providing this generator" },
             { "name": "name", "type": "string" },
             { "name": "language", "type": "string", "required": false },
             { "name": "description", "type": "string", "required": false },
