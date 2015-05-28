@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{User, Visibility}
+import com.gilt.apidoc.api.v0.models.{GeneratorServiceForm, User, Visibility}
 import com.gilt.apidoc.generator.v0.models.{Generator}
 import lib.{Pagination, PaginatedCollection, Util}
 import models.MainTemplate
@@ -32,16 +32,18 @@ object Generators extends Controller {
     }
   }
 
-  def getByKey(key: String) = Authenticated.async { implicit request =>
+  def show(key: String) = Authenticated.async { implicit request =>
     for {
       generator <- lib.ApiClient.callWith404(request.api.comGiltApidocGeneratorV0ModelsGenerators.getGeneratorsByKey(key))
+      services <- request.api.generatorServices.get(generatorKey = Some(key))
     } yield {
       generator match {
         case None => Redirect(routes.Generators.index()).flashing("warning" -> s"Generator not found")
         case Some(g) => {
           Ok(views.html.generators.show(
             request.mainTemplate().copy(title = Some(g.name)),
-            g
+            g,
+            services.headOption
           ))
         }
       }
@@ -57,6 +59,34 @@ object Generators extends Controller {
     )
 
     Ok(views.html.generators.create(request.mainTemplate(), filledForm))
+  }
+
+  def createPost = Authenticated.async { implicit request =>
+    val tpl = request.mainTemplate(Some("Add Generator"))
+
+    val form = generatorServiceCreateFormData.bindFromRequest
+    form.fold (
+
+      errors => Future {
+        Ok(views.html.generators.create(request.mainTemplate(), errors))
+      },
+
+      valid => {
+        request.api.generatorServices.post(
+          GeneratorServiceForm(
+            uri = valid.uri,
+            visibility = Visibility(valid.visibility)
+          )
+        ).map { generator =>
+          Redirect(routes.Generators.index()).flashing("success" -> "Generator created")
+        }.recover {
+          case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+            Ok(views.html.generators.create(request.mainTemplate(), form, r.errors.map(_.message)))
+          }
+        }
+      }
+
+    )
   }
 
   case class GeneratorServiceCreateFormData(

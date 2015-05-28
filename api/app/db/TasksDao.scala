@@ -66,9 +66,11 @@ object TasksDao {
   """
 
   def create(createdBy: User, data: TaskData): UUID = {
-    DB.withConnection { implicit c =>
+    val taskGuid = DB.withConnection { implicit c =>
       insert(c, createdBy, data)
     }
+    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+    taskGuid
   }
 
   private[db] def insert(implicit c: java.sql.Connection, createdBy: User, data: TaskData): UUID = {

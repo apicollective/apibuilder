@@ -13,7 +13,7 @@
     </div>
   }
 
-  @if(tpl.generators.isEmpty) {
+  @if(generators.isEmpty) {
     <em>No generators</em>
 
   } else {
@@ -23,20 +23,31 @@
         <tr>
           <th>Key</th>
           <th>Name</th>
-          <th>Description</th>
           <th>Language</th>
+          <th>Description</th>
         </tr>
 
         @generators.items.map { generator =>
           <tr>
-            <td>@generator.key</td>
+            <td><a href="@routes.Generators.show(generator.key)">@generator.key</a></td>
             <td>@generator.name</td>
-            <td>@Html(lib.Markdown(generator.description.map(lib.Text.truncate(_, 25))))</td>
             <td>@generator.language.getOrElse("")</td>
+            <td>@Html(lib.Markdown(generator.description.map(lib.Text.truncate(_))))</td>
           </tr>
         }
       </tbody>
     </table>
+
+    @if(generators.hasPrevious || generators.hasNext) {
+      <ul class="pager">
+        @if(generators.hasPrevious) {
+          <li><a href="@routes.Generators.index(generators.page - 1)">Previous</a></li>
+        }
+        @if(generators.hasNext) {
+          <li><a href="@routes.Generators.index(generators.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
 
   }
 

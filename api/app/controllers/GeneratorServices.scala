@@ -13,9 +13,10 @@ object GeneratorServices extends Controller with GeneratorServices
 trait GeneratorServices {
   this: Controller =>
 
-  def getGeneratorsAndServices(
+  def get(
     guid: Option[UUID],
     uri: Option[String],
+    generatorKey: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
@@ -23,20 +24,21 @@ trait GeneratorServices {
       request.authorization,
       guid = guid,
       uri = uri,
+      generatorKey = generatorKey,
       limit = limit,
       offset = offset
     )
     Ok(Json.toJson(services))
   }
 
-  def getGeneratorsAndServicesByGuid(guid: _root_.java.util.UUID) = AnonymousRequest { request =>
+  def getByGuid(guid: _root_.java.util.UUID) = AnonymousRequest { request =>
     ServicesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(service) => Ok(Json.toJson(service))
     }
   }
 
-  def postGeneratorsAndServices() = Authenticated(parse.json) { request =>
+  def post() = Authenticated(parse.json) { request =>
     request.body.validate[GeneratorServiceForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -56,7 +58,7 @@ trait GeneratorServices {
     }
   }
 
-  def deleteGeneratorsAndServicesByGuid(
+  def deleteByGuid(
     guid: UUID
   ) = Authenticated(parse.json) { request =>
     ServicesDao.findByGuid(request.authorization, guid).map { service =>

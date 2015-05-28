@@ -2,32 +2,23 @@
   cancelUrl: play.api.mvc.Call
 )(implicit flash: Flash)
 
-<div class="container">
+<fieldset>
+    @helper.inputText(
+        form("uri"),
+        '_label -> "Service URI",
+        '_help -> "The full URI to the service providing the code generator.",
+        '_error -> form.error("uri")
+    )
 
-  @helper.form(action = routes.Organizations.createPost) {
+    @helper.select(
+        form("visibility"),
+        Seq( ("" -> "-- select --") ) ++ Seq( (com.gilt.apidoc.api.v0.models.Visibility.Public.toString -> "Everybody"), (com.gilt.apidoc.api.v0.models.Visibility.User.toString -> "Just me") ),
+        '_label -> "Visibility",
+        '_error -> form.error("visibility"),
+        '_help -> "Determines who can see this code generator."
+    )
 
-    <fieldset>
-        @helper.inputText(
-            form("uri"),
-            '_label -> "Service URI",
-            '_help -> "The full URI to the service providing the code generator.",
-            '_error -> form.error("uri")
-        )
+</fieldset>
 
-        @helper.select(
-            form("visibility"),
-            Seq( ("" -> "-- select --") ) ++ Seq( (com.gilt.apidoc.api.v0.models.Visibility.Public.toString -> "Everybody"), (com.gilt.apidoc.api.v0.models.Visibility.User.toString -> "Just me") ),
-            '_label -> "Visibility",
-            '_error -> form.error("visibility"),
-            '_help -> "Determines who can see this code generator."
-        )
-
-    </fieldset>
-
-    <button class="btn btn-large btn-primary" type="submit">Submit</button>
-    <a href="@cancelUrl" class="btn">Cancel</a>
-
-  }
-
-</div>
-
+<button class="btn btn-large btn-primary" type="submit">Submit</button>
+<a href="@cancelUrl" class="btn">Cancel</a>

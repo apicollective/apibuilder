@@ -1,6 +1,7 @@
 @(
   tpl: models.MainTemplate,
-  generator: com.gilt.apidoc.generator.v0.models.Generator
+  generator: com.gilt.apidoc.generator.v0.models.Generator,
+  service: Option[com.gilt.apidoc.api.v0.models.GeneratorService]
 )(implicit flash: Flash)
 
 @import com.gilt.apidoc.api.v0.models.Visibility
@@ -8,6 +9,7 @@
 @main(tpl) {
 
   <ul>
+    <li> Service: @service.map(_.uri).getOrElse("N/A")</li>
     <li> Key: @generator.key</li>
     <li> Name: @generator.name</li>
     <li> Language: @generator.language.getOrElse("not specified")</li>

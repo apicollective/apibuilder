@@ -855,8 +855,6 @@
 
         "generator_service": {
 
-          "path": "/generators/services",
-
           "operations": [
             {
               "method": "GET",
@@ -864,6 +862,7 @@
               "parameters": [
                   { "name": "guid", "type": "uuid", "required": false },
                   { "name": "uri", "type": "string", "required": false },
+                  { "name": "generator_key", "type": "string", "required": false },
                   { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                   { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
               ],

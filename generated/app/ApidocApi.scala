@@ -1514,51 +1514,53 @@ package com.gilt.apidoc.api.v0 {
     }
 
     object GeneratorServices extends GeneratorServices {
-      override def getGeneratorsAndServices(
+      override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         uri: _root_.scala.Option[String] = None,
+        generatorKey: _root_.scala.Option[String] = None,
         limit: Long = 100,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.GeneratorService]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           uri.map("uri" -> _),
+          generatorKey.map("generator_key" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/generators/services", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/generator_services", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.GeneratorService]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.GeneratorService]])
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
       }
 
-      override def getGeneratorsAndServicesByGuid(
+      override def getByGuid(
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.GeneratorService] = {
-        _executeRequest("GET", s"/generators/services/${guid}").map {
+        _executeRequest("GET", s"/generator_services/${guid}").map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.api.v0.models.GeneratorService", r, _.validate[com.gilt.apidoc.api.v0.models.GeneratorService])
           case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
 
-      override def postGeneratorsAndServices(
+      override def post(
         generatorServiceForm: com.gilt.apidoc.api.v0.models.GeneratorServiceForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.GeneratorService] = {
         val payload = play.api.libs.json.Json.toJson(generatorServiceForm)
 
-        _executeRequest("POST", s"/generators/services", body = Some(payload)).map {
+        _executeRequest("POST", s"/generator_services", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.api.v0.models.GeneratorService", r, _.validate[com.gilt.apidoc.api.v0.models.GeneratorService])
           case r if r.status == 409 => throw new com.gilt.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
         }
       }
 
-      override def deleteGeneratorsAndServicesByGuid(
+      override def deleteByGuid(
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/generators/services/${guid}").map {
+        _executeRequest("DELETE", s"/generator_services/${guid}").map {
           case r if r.status == 204 => Unit
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2348,25 +2350,26 @@ package com.gilt.apidoc.api.v0 {
     /**
      * List all generator services
      */
-    def getGeneratorsAndServices(
+    def get(
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       uri: _root_.scala.Option[String] = None,
+      generatorKey: _root_.scala.Option[String] = None,
       limit: Long = 100,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.GeneratorService]]
 
-    def getGeneratorsAndServicesByGuid(
+    def getByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.GeneratorService]
 
-    def postGeneratorsAndServices(
+    def post(
       generatorServiceForm: com.gilt.apidoc.api.v0.models.GeneratorServiceForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.GeneratorService]
 
     /**
      * Deletes a generator service.
      */
-    def deleteGeneratorsAndServicesByGuid(
+    def deleteByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }

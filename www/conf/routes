@@ -40,8 +40,9 @@ GET     /email-verifications/:token                               controllers.Em
 
 GET     /generators                                               controllers.Generators.redirect()
 GET     /generators/                                              controllers.Generators.index(page: Int ?= 0)
-GET     /generators/show/:key                                     controllers.Generators.getByKey(key: String)
+GET     /generators/show/:key                                     controllers.Generators.show(key: String)
 GET     /generators/create                                        controllers.Generators.create()
+POST    /generators/createPost                                    controllers.Generators.createPost()
 
 #POST    /generators/:key/remove                                   controllers.Generators.postRemove(key: String)
 #POST    /generators/postCreate                                    controllers.Generators.postCreate()
