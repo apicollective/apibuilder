@@ -18,3 +18,19 @@ case class Refresh(
   source: ReferenceGuid,
   checkedAt: DateTime
 )
+
+case class Generator(
+  guid: UUID,
+  source: Source,
+  key: String,
+  name: String,
+  language: Option[String] = None,
+  description: Option[String] = None
+)
+
+case class GeneratorForm(
+  key: String,
+  name: String,
+  language: Option[String] = None,
+  description: Option[String] = None
+)

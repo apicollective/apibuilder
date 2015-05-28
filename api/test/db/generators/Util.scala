@@ -27,4 +27,27 @@ object Util {
     }
   }
 
+  def createGenerator(
+    source: Source = createGeneratorSource(),
+    form: GeneratorForm = createGeneratorForm()
+  ): Generator = {
+    GeneratorsDao.upsert(db.Util.createdBy, source, form)
+    GeneratorsDao.findAll(
+      sourceGuid = Some(source.guid),
+      key = Some(form.key),
+      limit = 1
+    ).headOption.getOrElse {
+      sys.error("Failed to create generator")
+    }
+  }
+
+  def createGeneratorForm(): GeneratorForm = {
+    val value = UUID.randomUUID.toString.toLowerCase
+    GeneratorForm(
+      key = "test_" + value,
+      name = "Test " + value,
+      description = None,
+      language = None
+    )
+  }
 }

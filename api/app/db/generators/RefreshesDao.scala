@@ -56,11 +56,9 @@ object RefreshesDao {
   }
 
   private def update(user: User, refresh: Refresh) = {
-    val guid = UUID.randomUUID
-
     DB.withConnection { implicit c =>
       SQL(UpdateQuery).on(
-        'guid -> guid,
+        'guid -> refresh.guid,
         'checked_at -> DateTime.now,
         'updated_by_guid -> user.guid
       ).execute()
