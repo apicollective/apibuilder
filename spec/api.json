@@ -95,6 +95,14 @@
             ]
         },
 
+        "user_summary": {
+	    "description": "Summary of a user sufficient for display",
+            "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "nickname", "type": "string" }
+            ]
+        },
+
         "user_form": {
             "fields": [
                 { "name": "email", "type": "string" },
@@ -387,7 +395,7 @@
                 { "name": "to_version", "type": "change_version" },
                 { "name": "diff", "type": "diff" },
                 { "name": "changed_at", "type": "date-time-iso8601", "description": "Records the timestamp of when the actual change occurred (vs. when we created the changed record)" },
-		{ "name": "changed_by", "type": "reference_guid", "description": "Records who made the actual change" },
+		{ "name": "changed_by", "type": "user_summary", "description": "Records who made the actual change" },
                 { "name": "audit", "type": "audit" }
 	    ]
 	},

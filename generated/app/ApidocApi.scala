@@ -62,7 +62,7 @@ package com.gilt.apidoc.api.v0.models {
     toVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
     diff: com.gilt.apidoc.api.v0.models.Diff,
     changedAt: _root_.org.joda.time.DateTime,
-    changedBy: com.gilt.apidoc.api.v0.models.ReferenceGuid,
+    changedBy: com.gilt.apidoc.api.v0.models.UserSummary,
     audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
@@ -305,6 +305,14 @@ package com.gilt.apidoc.api.v0.models {
     password: String,
     nickname: _root_.scala.Option[String] = None,
     name: _root_.scala.Option[String] = None
+  )
+
+  /**
+   * Summary of a user sufficient for display
+   */
+  case class UserSummary(
+    guid: _root_.java.util.UUID,
+    nickname: String
   )
 
   case class UserUpdateForm(
@@ -655,7 +663,7 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "to_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
         (__ \ "diff").read[com.gilt.apidoc.api.v0.models.Diff] and
         (__ \ "changed_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "changed_by").read[com.gilt.apidoc.api.v0.models.ReferenceGuid] and
+        (__ \ "changed_by").read[com.gilt.apidoc.api.v0.models.UserSummary] and
         (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Change.apply _)
     }
@@ -669,7 +677,7 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "to_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
         (__ \ "diff").write[com.gilt.apidoc.api.v0.models.Diff] and
         (__ \ "changed_at").write[_root_.org.joda.time.DateTime] and
-        (__ \ "changed_by").write[com.gilt.apidoc.api.v0.models.ReferenceGuid] and
+        (__ \ "changed_by").write[com.gilt.apidoc.api.v0.models.UserSummary] and
         (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Change.unapply _))
     }
@@ -1096,6 +1104,20 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "nickname").writeNullable[String] and
         (__ \ "name").writeNullable[String]
       )(unlift(UserForm.unapply _))
+    }
+
+    implicit def jsonReadsApidocapiUserSummary: play.api.libs.json.Reads[UserSummary] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "nickname").read[String]
+      )(UserSummary.apply _)
+    }
+
+    implicit def jsonWritesApidocapiUserSummary: play.api.libs.json.Writes[UserSummary] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "nickname").write[String]
+      )(unlift(UserSummary.unapply _))
     }
 
     implicit def jsonReadsApidocapiUserUpdateForm: play.api.libs.json.Reads[UserUpdateForm] = {

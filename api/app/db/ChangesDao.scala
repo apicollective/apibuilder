@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, Change, ChangeVersion, Reference, ReferenceGuid, User, Version}
+import com.gilt.apidoc.api.v0.models.{Application, Change, ChangeVersion, Reference, ReferenceGuid, User, UserSummary, Version}
 import com.gilt.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
 import com.gilt.apidoc.internal.v0.models.json._
 import anorm._
@@ -16,6 +16,11 @@ object ChangesDao {
 
   private[this] val BaseQuery = s"""
     select changes.guid,
+           changes.type,
+           changes.description,
+           changes.changed_at,
+           changes.changed_by_guid::uuid,
+           ${AuditsDao.queryCreation("changes")},
            applications.guid as application_guid,
            applications.key as application_key,
            organizations.guid as organization_guid,
@@ -24,16 +29,14 @@ object ChangesDao {
            from_version.version as from_version,
            to_version.guid::varchar as to_guid,
            to_version.version as to_version,
-           changes.type,
-           changes.description,
-           changes.changed_at,
-           changes.changed_by_guid::uuid,
-           ${AuditsDao.queryCreation("changes")}
+           users.guid as user_guid,
+           users.nickname as user_nickname
       from changes
       join applications on applications.guid = changes.application_guid and applications.deleted_at is null
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
       join versions from_version on from_version.guid = changes.from_version_guid
       join versions to_version on to_version.guid = changes.to_version_guid
+      join users on users.guid = changes.changed_by_guid
      where true
   """
 
@@ -166,7 +169,10 @@ object ChangesDao {
         case other => DiffUndefinedType(other)
       },
       changedAt = row[DateTime]("changed_at"),
-      changedBy = ReferenceGuid(row[UUID]("changed_by_guid")),
+      changedBy = UserSummary(
+        guid = row[UUID]("user_guid"),
+        nickname = row[String]("user_nickname")
+      ),
       audit = AuditsDao.fromRowCreation(row)
     )
   }

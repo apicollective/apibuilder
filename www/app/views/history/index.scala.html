@@ -25,6 +25,7 @@
         @changes.items.map { change =>
          <tr>
            <td>@lib.DateHelper.shortDate(tpl.timeZone, change.changedAt)</td>
+           <td>@change.changedBy.nickname</td>
            <td>@change.organization.key/@change.application.key</td>
            <td>
              <a href="@routes.Versions.show(change.organization.key, change.application.key, change.fromVersion.version)">@change.fromVersion.version</a> -
