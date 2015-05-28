@@ -65,6 +65,12 @@ object TasksDao {
     delete from tasks where guid = {guid}::uuid
   """
 
+  def create(createdBy: User, data: TaskData): UUID = {
+    DB.withConnection { implicit c =>
+      insert(c, createdBy, data)
+    }
+  }
+
   private[db] def insert(implicit c: java.sql.Connection, createdBy: User, data: TaskData): UUID = {
     val guid = UUID.randomUUID
 

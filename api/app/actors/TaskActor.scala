@@ -2,7 +2,7 @@ package actors
 
 import lib.{ServiceDiff, Text}
 import com.gilt.apidoc.api.v0.models.{Application, Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
-import com.gilt.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
+import com.gilt.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataSyncService, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao}
 import play.api.Logger
 import akka.actor.Actor
@@ -40,6 +40,10 @@ class TaskActor extends Actor {
               processTask(task, Try(Search.indexApplication(applicationGuid)))
             }
 
+            case TaskDataSyncService(serviceGuid) => {
+              processTask(task, Try(GeneratorServiceActor.sync(serviceGuid)))
+            }
+
             case TaskDataUndefinedType(desc) => {
               TasksDao.recordError(UsersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
             }
@@ -67,6 +71,7 @@ class TaskActor extends Actor {
           val errorType = task.data match {
             case TaskDataDiffVersion(a, b) => s"TaskDataDiffVersion($a, $b)"
             case TaskDataIndexApplication(guid) => s"TaskDataIndexApplication($guid)"
+            case TaskDataSyncService(guid) => s"TaskDataSyncService($guid)"
             case TaskDataUndefinedType(desc) => s"TaskDataUndefinedType($desc)"
           }
 

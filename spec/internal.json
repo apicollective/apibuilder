@@ -9,7 +9,8 @@
 	"task_data": {
 	    "types": [
 		{ "type": "task_data_index_application", "description": "Task to update the search index following a change in application" },
-		{ "type": "task_data_diff_version", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" }
+		{ "type": "task_data_diff_version", "description": "Task triggered whenever a version changes. Diffs the service to record what actually changed" },
+		{ "type": "task_data_sync_service", "description": "Task to refresh a generator service" }
 	    ]
 	}
     },
@@ -35,6 +36,13 @@
 	    "fields": [
                 { "name": "old_version_guid", "type": "uuid" },
                 { "name": "new_version_guid", "type": "uuid" }
+	    ]
+	},
+
+
+	"task_data_sync_service": {
+	    "fields": [
+                { "name": "service_guid", "type": "uuid" }
 	    ]
 	}
 

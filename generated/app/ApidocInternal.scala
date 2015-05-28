@@ -23,6 +23,10 @@ package com.gilt.apidoc.internal.v0.models {
     versionGuid: _root_.java.util.UUID
   ) extends TaskData
 
+  case class TaskDataSyncService(
+    serviceGuid: _root_.java.util.UUID
+  ) extends TaskData
+
   /**
    * Provides future compatibility in clients - in the future, when a type is added
    * to the union TaskData, it will need to be handled in the client code. This
@@ -104,11 +108,23 @@ package com.gilt.apidoc.internal.v0.models {
       )
     }
 
+    implicit def jsonReadsApidocinternalTaskDataSyncService: play.api.libs.json.Reads[TaskDataSyncService] = {
+      (__ \ "service_guid").read[_root_.java.util.UUID].map { x => new TaskDataSyncService(serviceGuid = x) }
+    }
+
+    implicit def jsonWritesApidocinternalTaskDataSyncService: play.api.libs.json.Writes[TaskDataSyncService] = new play.api.libs.json.Writes[TaskDataSyncService] {
+      def writes(x: TaskDataSyncService) = play.api.libs.json.Json.obj(
+        "service_guid" -> play.api.libs.json.Json.toJson(x.serviceGuid)
+      )
+    }
+
     implicit def jsonReadsApidocinternalTaskData: play.api.libs.json.Reads[TaskData] = {
       (
         (__ \ "task_data_index_application").read(jsonReadsApidocinternalTaskDataIndexApplication).asInstanceOf[play.api.libs.json.Reads[TaskData]]
         orElse
         (__ \ "task_data_diff_version").read(jsonReadsApidocinternalTaskDataDiffVersion).asInstanceOf[play.api.libs.json.Reads[TaskData]]
+        orElse
+        (__ \ "task_data_sync_service").read(jsonReadsApidocinternalTaskDataSyncService).asInstanceOf[play.api.libs.json.Reads[TaskData]]
       )
     }
 
@@ -116,6 +132,7 @@ package com.gilt.apidoc.internal.v0.models {
       def writes(obj: TaskData) = obj match {
         case x: com.gilt.apidoc.internal.v0.models.TaskDataIndexApplication => play.api.libs.json.Json.obj("task_data_index_application" -> jsonWritesApidocinternalTaskDataIndexApplication.writes(x))
         case x: com.gilt.apidoc.internal.v0.models.TaskDataDiffVersion => play.api.libs.json.Json.obj("task_data_diff_version" -> jsonWritesApidocinternalTaskDataDiffVersion.writes(x))
+        case x: com.gilt.apidoc.internal.v0.models.TaskDataSyncService => play.api.libs.json.Json.obj("task_data_sync_service" -> jsonWritesApidocinternalTaskDataSyncService.writes(x))
         case x: com.gilt.apidoc.internal.v0.models.TaskDataUndefinedType => sys.error(s"The type[com.gilt.apidoc.internal.v0.models.TaskDataUndefinedType] should never be serialized")
       }
     }

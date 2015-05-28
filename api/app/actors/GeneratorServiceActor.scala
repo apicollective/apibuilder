@@ -4,7 +4,8 @@ import lib.Pager
 import com.gilt.apidoc.api.v0.models.GeneratorService
 import com.gilt.apidoc.generator.v0.Client
 import com.gilt.apidoc.generator.v0.models.Generator
-import db.{Authorization, UsersDao}
+import com.gilt.apidoc.internal.v0.models.TaskDataSyncService
+import db.{Authorization, TasksDao, UsersDao}
 import db.generators.{GeneratorsDao, RefreshesDao, ServicesDao}
 import play.api.Logger
 import akka.actor.Actor
@@ -19,6 +20,25 @@ object GeneratorServiceActor {
     case object Sync
   }
 
+  def sync(serviceGuid: UUID) {
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    ServicesDao.findByGuid(Authorization.All, serviceGuid).map { service =>
+      val client = new Client(service.uri)
+
+      Pager.eachPage[Generator] { offset =>
+        Await.result(
+          client.generators.get(offset = offset),
+          5000.millis
+        )
+      } { gen =>
+        GeneratorsDao.upsert(UsersDao.AdminUser, service, gen)
+      }
+
+      RefreshesDao.upsert(UsersDao.AdminUser, service)
+    }
+  }
+
 }
 
 class GeneratorServiceActor extends Actor {
@@ -27,9 +47,7 @@ class GeneratorServiceActor extends Actor {
 
     case GeneratorServiceActor.Messages.GeneratorServiceCreated(guid) => Util.withVerboseErrorHandler(
       s"GeneratorServiceActor.Messages.GeneratorServiceCreated($guid)", {
-        ServicesDao.findByGuid(Authorization.All, guid).map { service =>
-          sync(service)
-        }
+        createSyncTask(guid)
       }
     )
 
@@ -41,28 +59,16 @@ class GeneratorServiceActor extends Actor {
             offset = offset
           )
         } { service =>
-          sync(service)
+          createSyncTask(service.guid)
         }
       }
     )
 
   }
 
-  def sync(service: GeneratorService) {
-    import scala.concurrent.ExecutionContext.Implicits.global
-
-    val client = new Client(service.uri)
-
-    Pager.eachPage[Generator] { offset =>
-      Await.result(
-        client.generators.get(offset = offset),
-        5000.millis
-      )
-    } { gen =>
-      GeneratorsDao.upsert(UsersDao.AdminUser, service, gen)
-    }
-
-    RefreshesDao.upsert(UsersDao.AdminUser, service)
+  def createSyncTask(serviceGuid: UUID) {
+    TasksDao.create(UsersDao.AdminUser, TaskDataSyncService(serviceGuid))
   }
 
 }
+
