@@ -1,7 +1,6 @@
 package actors
 
 import lib.Pager
-import com.gilt.apidoc.api.v0.models.GeneratorService
 import com.gilt.apidoc.generator.v0.Client
 import com.gilt.apidoc.generator.v0.models.Generator
 import com.gilt.apidoc.internal.v0.models.TaskDataSyncService
@@ -51,7 +50,7 @@ class GeneratorServiceActor extends Actor {
 
     case GeneratorServiceActor.Messages.Sync => Util.withVerboseErrorHandler(
       s"GeneratorServiceActor.Messages.Sync", {
-        Pager.eachPage[GeneratorService] { offset =>
+        Pager.eachPage { offset =>
           ServicesDao.findAll(
             Authorization.All,
             offset = offset
