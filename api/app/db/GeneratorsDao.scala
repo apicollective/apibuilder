@@ -66,8 +66,8 @@ object GeneratorsDao {
 
     SQL(InsertQuery).on(
       'guid -> generator.guid,
-      'key -> generator.key,
-      'uri -> generator.uri,
+      'key -> generator.key.trim,
+      'uri -> generator.uri.trim,
       'user_guid -> createdBy.guid,
       'visibility -> visibility.toString,
       'created_by_guid -> createdBy.guid
