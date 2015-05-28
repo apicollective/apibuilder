@@ -54,6 +54,22 @@ object TestHelper {
     TestServiceValidator(validator).service
   }
 
+  private lazy val generatorService: Service = {
+    val config = ServiceConfiguration(
+      orgKey = "gilt",
+      orgNamespace = "com.gilt",
+      version = "0.0.41"
+    )
+
+    val fetcher = MockServiceFetcher()
+    val version = com.gilt.apidoc.spec.v0.Constants.Version
+    fetcher.add(s"http://www.apidoc.me/gilt/apidoc-spec/$version/service.json", specService)
+
+    val contents = readFile("spec/generator.json")
+    val validator = OriginalValidator(config, Original(OriginalType.ApiJson, contents), fetcher)
+    TestServiceValidator(validator).service
+  }
+
   def responseCode(responseCode: ResponseCode): String = {
     responseCode match {
       case ResponseCodeInt(value) => value.toString
@@ -97,8 +113,8 @@ object TestHelper {
     val fetcher = MockServiceFetcher()
     if (filename == "spec/api.json") {
       val version = com.gilt.apidoc.spec.v0.Constants.Version
-      fetcher.add(s"http://localhost:9000/gilt/apidoc-spec/$version/service.json", specService)
       fetcher.add(s"http://www.apidoc.me/gilt/apidoc-spec/$version/service.json", specService)
+      fetcher.add(s"http://www.apidoc.me/gilt/apidoc-generator/$version/service.json", generatorService)
     }
     parseFile(filename, fetcher)
   }
