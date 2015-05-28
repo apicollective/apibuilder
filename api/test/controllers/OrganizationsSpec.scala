@@ -57,13 +57,13 @@ class OrganizationsSpec extends BaseSpec {
     val org2 = createOrganization()
 
     await(client.organizations.get(key = Some(UUID.randomUUID.toString))) must be(Seq.empty)
-    await(client.organizations.get(key = Some(org1.key))).head must be(org1)
-    await(client.organizations.get(key = Some(org2.key))).head must be(org2)
+    await(client.organizations.get(key = Some(org1.key))).head.guid must be(org1.guid)
+    await(client.organizations.get(key = Some(org2.key))).head.guid must be(org2.guid)
   }
 
   "GET /organizations/:key" in new WithServer {
     val org = createOrganization()
-    await(client.organizations.getByKey(org.key)) must be(org)
+    await(client.organizations.getByKey(org.key)).guid must be(org.guid)
     intercept[UnitResponse] {
       await(client.organizations.getByKey(UUID.randomUUID.toString))
     }.status must be(404)

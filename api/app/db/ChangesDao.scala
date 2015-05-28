@@ -14,7 +14,7 @@ import org.joda.time.DateTime
 
 object ChangesDao {
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = s"""
     select changes.guid,
            applications.guid as application_guid,
            applications.key as application_key,
@@ -27,7 +27,8 @@ object ChangesDao {
            changes.type,
            changes.description,
            changes.changed_at,
-           changes.changed_by_guid::uuid
+           changes.changed_by_guid::uuid,
+           ${AuditsDao.queryCreation("changes")}
       from changes
       join applications on applications.guid = changes.application_guid and applications.deleted_at is null
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
@@ -165,7 +166,8 @@ object ChangesDao {
         case other => DiffUndefinedType(other)
       },
       changedAt = row[DateTime]("changed_at"),
-      changedBy = ReferenceGuid(row[UUID]("changed_by_guid"))
+      changedBy = ReferenceGuid(row[UUID]("changed_by_guid")),
+      audit = AuditsDao.fromRowCreation(row)
     )
   }
 

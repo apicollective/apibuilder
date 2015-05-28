@@ -12,18 +12,21 @@ object SubscriptionsDao {
 
   val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = s"""
     select subscriptions.guid,
            subscriptions.publication,
+           ${AuditsDao.queryCreation("subscriptions")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
            users.name as user_name,
+           ${AuditsDao.queryWithAlias("users", "user")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,
            organizations.name as organization_name,
            organizations.namespace as organization_namespace,
-           organizations.visibility as organization_visibility
+           organizations.visibility as organization_visibility,
+           ${AuditsDao.queryWithAlias("organizations", "organization")}
       from subscriptions
       join users on users.guid = subscriptions.user_guid and users.deleted_at is null
       join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null
@@ -170,7 +173,8 @@ object SubscriptionsDao {
       guid = row[UUID]("guid"),
       organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
       user = UsersDao.fromRow(row, Some("user")),
-      publication = Publication(row[String]("publication"))
+      publication = Publication(row[String]("publication")),
+      audit = AuditsDao.fromRowCreation(row)
     )
   }
 

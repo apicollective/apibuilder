@@ -90,7 +90,8 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this user." },
                 { "name": "email", "type": "string" },
                 { "name": "nickname", "type": "string", "description": "Public unique identifier for this user." },
-                { "name": "name", "type": "string", "required": false }
+                { "name": "name", "type": "string", "required": false },
+                { "name": "audit", "type": "audit" }
             ]
         },
 
@@ -144,7 +145,8 @@
                 { "name": "name", "type": "string", "description": "The name of this organization." },
                 { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.gilt" },
                 { "name": "visibility", "type": "visibility" },
-                { "name": "domains", "type": "[domain]", "default": "[]" }
+                { "name": "domains", "type": "[domain]", "default": "[]" },
+                { "name": "audit", "type": "audit" }
             ]
         },
 
@@ -171,7 +173,8 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this membership." },
                 { "name": "user", "type": "user" },
                 { "name": "organization", "type": "organization" },
-                { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" }
+                { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" },
+                { "name": "audit", "type": "audit" }
             ]
         },
 
@@ -181,7 +184,8 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this membership request." },
                 { "name": "user", "type": "user" },
                 { "name": "organization", "type": "organization" },
-                { "name": "role", "type": "string", "description": "The requested role for membership to this organization. Typically member or admin.", "example": "member" }
+                { "name": "role", "type": "string", "description": "The requested role for membership to this organization. Typically member or admin.", "example": "member" },
+                { "name": "audit", "type": "audit" }
             ]
         },
 
@@ -193,7 +197,8 @@
                 { "name": "name", "type": "string", "description": "The unique name for this application." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the application name." },
                 { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this application" },
-                { "name": "description", "type": "string", "required": false }
+                { "name": "description", "type": "string", "required": false },
+                { "name": "audit", "type": "audit" }
             ]
         },
 
@@ -280,7 +285,8 @@
 		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this subscription record" },
 		{ "name": "organization", "type": "organization" },
 		{ "name": "user", "type": "user" },
-		{ "name": "publication", "type": "publication" }
+		{ "name": "publication", "type": "publication" },
+                { "name": "audit", "type": "audit" }
 	    ]
 	},
 
@@ -298,7 +304,8 @@
 		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this watch" },
 		{ "name": "user", "type": "user" },
 		{ "name": "organization", "type": "organization" },
-		{ "name": "application", "type": "application" }
+		{ "name": "application", "type": "application" },
+                { "name": "audit", "type": "audit" }
 	    ]
 	},
 
@@ -380,7 +387,8 @@
                 { "name": "to_version", "type": "change_version" },
                 { "name": "diff", "type": "diff" },
                 { "name": "changed_at", "type": "date-time-iso8601", "description": "Records the timestamp of when the actual change occurred (vs. when we created the changed record)" },
-		{ "name": "changed_by", "type": "reference_guid", "description": "Records who made the actual change" }
+		{ "name": "changed_by", "type": "reference_guid", "description": "Records who made the actual change" },
+                { "name": "audit", "type": "audit" }
 	    ]
 	},
 
@@ -396,7 +404,8 @@
 	    "description": "Defines a service that provides one or more code generators",
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
-                { "name": "uri", "type": "string" }
+                { "name": "uri", "type": "string" },
+                { "name": "audit", "type": "audit" }
 	    ]
 	},
 

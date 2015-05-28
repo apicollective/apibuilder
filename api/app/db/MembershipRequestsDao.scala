@@ -15,19 +15,22 @@ object MembershipRequestsDao {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = s"""
     select membership_requests.guid,
            membership_requests.role,
            membership_requests.created_at::varchar,
+           ${AuditsDao.queryCreation("membership_requests")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
+           ${AuditsDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
-           users.name as user_name
+           users.name as user_name,
+           ${AuditsDao.queryWithAlias("users", "user")}
       from membership_requests
       join organizations on organizations.guid = membership_requests.organization_guid
       join users on users.guid = membership_requests.user_guid
@@ -190,7 +193,8 @@ object MembershipRequestsDao {
           guid = row[UUID]("guid"),
           organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
           user = UsersDao.fromRow(row, Some("user")),
-          role = row[String]("role")
+          role = row[String]("role"),
+          audit = AuditsDao.fromRowCreation(row)
         )
       }.toSeq
     }

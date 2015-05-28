@@ -24,7 +24,8 @@ package com.gilt.apidoc.api.v0.models {
     name: String,
     key: String,
     visibility: com.gilt.apidoc.api.v0.models.Visibility,
-    description: _root_.scala.Option[String] = None
+    description: _root_.scala.Option[String] = None,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   case class ApplicationForm(
@@ -61,7 +62,8 @@ package com.gilt.apidoc.api.v0.models {
     toVersion: com.gilt.apidoc.api.v0.models.ChangeVersion,
     diff: com.gilt.apidoc.api.v0.models.Diff,
     changedAt: _root_.org.joda.time.DateTime,
-    changedBy: com.gilt.apidoc.api.v0.models.ReferenceGuid
+    changedBy: com.gilt.apidoc.api.v0.models.ReferenceGuid,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   /**
@@ -134,7 +136,8 @@ package com.gilt.apidoc.api.v0.models {
    */
   case class GeneratorService(
     guid: _root_.java.util.UUID,
-    uri: String
+    uri: String,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   case class GeneratorServiceForm(
@@ -166,7 +169,8 @@ package com.gilt.apidoc.api.v0.models {
     guid: _root_.java.util.UUID,
     user: com.gilt.apidoc.api.v0.models.User,
     organization: com.gilt.apidoc.api.v0.models.Organization,
-    role: String
+    role: String,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   /**
@@ -179,7 +183,8 @@ package com.gilt.apidoc.api.v0.models {
     guid: _root_.java.util.UUID,
     user: com.gilt.apidoc.api.v0.models.User,
     organization: com.gilt.apidoc.api.v0.models.Organization,
-    role: String
+    role: String,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   /**
@@ -191,7 +196,8 @@ package com.gilt.apidoc.api.v0.models {
     name: String,
     namespace: String,
     visibility: com.gilt.apidoc.api.v0.models.Visibility,
-    domains: Seq[com.gilt.apidoc.api.v0.models.Domain] = Nil
+    domains: Seq[com.gilt.apidoc.api.v0.models.Domain] = Nil,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   case class OrganizationForm(
@@ -257,7 +263,8 @@ package com.gilt.apidoc.api.v0.models {
     guid: _root_.java.util.UUID,
     organization: com.gilt.apidoc.api.v0.models.Organization,
     user: com.gilt.apidoc.api.v0.models.User,
-    publication: com.gilt.apidoc.api.v0.models.Publication
+    publication: com.gilt.apidoc.api.v0.models.Publication,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   case class SubscriptionForm(
@@ -289,7 +296,8 @@ package com.gilt.apidoc.api.v0.models {
     guid: _root_.java.util.UUID,
     email: String,
     nickname: String,
-    name: _root_.scala.Option[String] = None
+    name: _root_.scala.Option[String] = None,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   case class UserForm(
@@ -340,7 +348,8 @@ package com.gilt.apidoc.api.v0.models {
     guid: _root_.java.util.UUID,
     user: com.gilt.apidoc.api.v0.models.User,
     organization: com.gilt.apidoc.api.v0.models.Organization,
-    application: com.gilt.apidoc.api.v0.models.Application
+    application: com.gilt.apidoc.api.v0.models.Application,
+    audit: com.gilt.apidoc.api.v0.models.Audit
   )
 
   case class WatchForm(
@@ -568,7 +577,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "name").read[String] and
         (__ \ "key").read[String] and
         (__ \ "visibility").read[com.gilt.apidoc.api.v0.models.Visibility] and
-        (__ \ "description").readNullable[String]
+        (__ \ "description").readNullable[String] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Application.apply _)
     }
 
@@ -579,7 +589,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "name").write[String] and
         (__ \ "key").write[String] and
         (__ \ "visibility").write[com.gilt.apidoc.api.v0.models.Visibility] and
-        (__ \ "description").writeNullable[String]
+        (__ \ "description").writeNullable[String] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Application.unapply _))
     }
 
@@ -644,7 +655,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "to_version").read[com.gilt.apidoc.api.v0.models.ChangeVersion] and
         (__ \ "diff").read[com.gilt.apidoc.api.v0.models.Diff] and
         (__ \ "changed_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "changed_by").read[com.gilt.apidoc.api.v0.models.ReferenceGuid]
+        (__ \ "changed_by").read[com.gilt.apidoc.api.v0.models.ReferenceGuid] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Change.apply _)
     }
 
@@ -657,7 +669,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "to_version").write[com.gilt.apidoc.api.v0.models.ChangeVersion] and
         (__ \ "diff").write[com.gilt.apidoc.api.v0.models.Diff] and
         (__ \ "changed_at").write[_root_.org.joda.time.DateTime] and
-        (__ \ "changed_by").write[com.gilt.apidoc.api.v0.models.ReferenceGuid]
+        (__ \ "changed_by").write[com.gilt.apidoc.api.v0.models.ReferenceGuid] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Change.unapply _))
     }
 
@@ -756,14 +769,16 @@ package com.gilt.apidoc.api.v0.models {
     implicit def jsonReadsApidocapiGeneratorService: play.api.libs.json.Reads[GeneratorService] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "uri").read[String]
+        (__ \ "uri").read[String] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(GeneratorService.apply _)
     }
 
     implicit def jsonWritesApidocapiGeneratorService: play.api.libs.json.Writes[GeneratorService] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "uri").write[String]
+        (__ \ "uri").write[String] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(GeneratorService.unapply _))
     }
 
@@ -810,7 +825,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "user").read[com.gilt.apidoc.api.v0.models.User] and
         (__ \ "organization").read[com.gilt.apidoc.api.v0.models.Organization] and
-        (__ \ "role").read[String]
+        (__ \ "role").read[String] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Membership.apply _)
     }
 
@@ -819,7 +835,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "user").write[com.gilt.apidoc.api.v0.models.User] and
         (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Organization] and
-        (__ \ "role").write[String]
+        (__ \ "role").write[String] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Membership.unapply _))
     }
 
@@ -828,7 +845,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "user").read[com.gilt.apidoc.api.v0.models.User] and
         (__ \ "organization").read[com.gilt.apidoc.api.v0.models.Organization] and
-        (__ \ "role").read[String]
+        (__ \ "role").read[String] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(MembershipRequest.apply _)
     }
 
@@ -837,7 +855,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "user").write[com.gilt.apidoc.api.v0.models.User] and
         (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Organization] and
-        (__ \ "role").write[String]
+        (__ \ "role").write[String] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(MembershipRequest.unapply _))
     }
 
@@ -848,7 +867,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "name").read[String] and
         (__ \ "namespace").read[String] and
         (__ \ "visibility").read[com.gilt.apidoc.api.v0.models.Visibility] and
-        (__ \ "domains").read[Seq[com.gilt.apidoc.api.v0.models.Domain]]
+        (__ \ "domains").read[Seq[com.gilt.apidoc.api.v0.models.Domain]] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Organization.apply _)
     }
 
@@ -859,7 +879,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "name").write[String] and
         (__ \ "namespace").write[String] and
         (__ \ "visibility").write[com.gilt.apidoc.api.v0.models.Visibility] and
-        (__ \ "domains").write[Seq[com.gilt.apidoc.api.v0.models.Domain]]
+        (__ \ "domains").write[Seq[com.gilt.apidoc.api.v0.models.Domain]] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Organization.unapply _))
     }
 
@@ -974,7 +995,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "organization").read[com.gilt.apidoc.api.v0.models.Organization] and
         (__ \ "user").read[com.gilt.apidoc.api.v0.models.User] and
-        (__ \ "publication").read[com.gilt.apidoc.api.v0.models.Publication]
+        (__ \ "publication").read[com.gilt.apidoc.api.v0.models.Publication] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Subscription.apply _)
     }
 
@@ -983,7 +1005,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Organization] and
         (__ \ "user").write[com.gilt.apidoc.api.v0.models.User] and
-        (__ \ "publication").write[com.gilt.apidoc.api.v0.models.Publication]
+        (__ \ "publication").write[com.gilt.apidoc.api.v0.models.Publication] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Subscription.unapply _))
     }
 
@@ -1042,7 +1065,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "email").read[String] and
         (__ \ "nickname").read[String] and
-        (__ \ "name").readNullable[String]
+        (__ \ "name").readNullable[String] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(User.apply _)
     }
 
@@ -1051,7 +1075,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "email").write[String] and
         (__ \ "nickname").write[String] and
-        (__ \ "name").writeNullable[String]
+        (__ \ "name").writeNullable[String] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(User.unapply _))
     }
 
@@ -1146,7 +1171,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "user").read[com.gilt.apidoc.api.v0.models.User] and
         (__ \ "organization").read[com.gilt.apidoc.api.v0.models.Organization] and
-        (__ \ "application").read[com.gilt.apidoc.api.v0.models.Application]
+        (__ \ "application").read[com.gilt.apidoc.api.v0.models.Application] and
+        (__ \ "audit").read[com.gilt.apidoc.api.v0.models.Audit]
       )(Watch.apply _)
     }
 
@@ -1155,7 +1181,8 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "user").write[com.gilt.apidoc.api.v0.models.User] and
         (__ \ "organization").write[com.gilt.apidoc.api.v0.models.Organization] and
-        (__ \ "application").write[com.gilt.apidoc.api.v0.models.Application]
+        (__ \ "application").write[com.gilt.apidoc.api.v0.models.Application] and
+        (__ \ "audit").write[com.gilt.apidoc.api.v0.models.Audit]
       )(unlift(Watch.unapply _))
     }
 

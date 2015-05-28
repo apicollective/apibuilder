@@ -18,8 +18,12 @@ object UsersDao {
     sys.error(s"Failed to find background user w/ email[$AdminUserEmail]")
   }
 
-  private[this] val BaseQuery = """
-    select guid, email, name, nickname
+  private[this] val BaseQuery = s"""
+    select users.guid,
+           users.email,
+           users.name,
+           users.nickname,
+           ${AuditsDao.query("users")}
       from users
      where true
   """
@@ -230,7 +234,8 @@ object UsersDao {
       guid = row[UUID](s"${p}guid"),
       email = row[String](s"${p}email"),
       nickname = row[String](s"${p}nickname"),
-      name = row[Option[String]](s"${p}name")
+      name = row[Option[String]](s"${p}name"),
+      audit = AuditsDao.fromRow(row, prefix)
     )
   }
 

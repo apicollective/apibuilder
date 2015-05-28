@@ -11,10 +11,12 @@ import java.util.UUID
 
 object ApplicationsDao {
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = s"""
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
+           ${AuditsDao.query("applications")},
            organizations.guid as organization_guid,
-           organizations.key as organization_key
+           organizations.key as organization_key,
+           ${AuditsDao.queryWithAlias("organizations", "organization")}
       from applications
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
      where true
@@ -241,7 +243,8 @@ object ApplicationsDao {
       name = row[String](s"${p}name"),
       key = row[String](s"${p}key"),
       visibility = Visibility(row[String](s"${p}visibility")),
-      description = row[Option[String]](s"${p}description")
+      description = row[Option[String]](s"${p}description"),
+      audit = AuditsDao.fromRow(row, prefix)
     )
   }
 

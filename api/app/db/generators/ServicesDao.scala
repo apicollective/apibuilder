@@ -1,7 +1,7 @@
 package db.generators
 
 import com.gilt.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
-import db.{Authorization, SoftDelete}
+import db.{AuditsDao, Authorization, SoftDelete}
 import com.gilt.apidoc.api.v0.models.{Error, User}
 import core.Util
 import lib.{Pager, Validation}
@@ -14,7 +14,8 @@ object ServicesDao {
 
   private[this] val BaseQuery = s"""
     select services.guid,
-           services.uri
+           services.uri,
+           ${AuditsDao.queryCreation("services")}
       from generators.services
      where true
   """
@@ -125,7 +126,8 @@ object ServicesDao {
     val p = prefix.map(v => v + "_").getOrElse("")
     GeneratorService(
       guid = row[UUID](s"${p}guid"),
-      uri = row[String](s"${p}uri")
+      uri = row[String](s"${p}uri"),
+      audit = AuditsDao.fromRowCreation(row)
     )
   }
 

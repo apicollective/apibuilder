@@ -8,6 +8,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import org.joda.time.DateTime
 
 object OrganizationsDao {
 
@@ -15,12 +16,13 @@ object OrganizationsDao {
 
   private[this] val MinNameLength = 4
 
-  private[db] val BaseQuery = """
+  private[db] val BaseQuery = s"""
     select organizations.guid,
            organizations.name,
            organizations.key,
            organizations.visibility,
            organizations.namespace,
+           ${AuditsDao.query("organizations")},
            (select array_to_string(array_agg(domain), ' ') 
               from organization_domains
              where deleted_at is null
@@ -170,7 +172,7 @@ object OrganizationsDao {
     // might be to remove domains from organization_form
 
     findByGuid(Authorization.All, existing.guid).getOrElse {
-      sys.error("Update failed")
+      sys.error("Failed to update org")
     }
   }
 
@@ -184,7 +186,13 @@ object OrganizationsDao {
       name = form.name.trim,
       namespace = form.namespace.trim,
       visibility = form.visibility,
-      domains = form.domains.getOrElse(Nil).map(Domain(_))
+      domains = form.domains.getOrElse(Nil).map(Domain(_)),
+      audit = Audit(
+        createdAt = DateTime.now,
+        createdBy = ReferenceGuid(user.guid),
+        updatedAt = DateTime.now,
+        updatedBy = ReferenceGuid(user.guid)
+      )
     )
 
     SQL(InsertQuery).on(
@@ -289,7 +297,8 @@ object OrganizationsDao {
       key = row[String](s"${p}key"),
       name = row[String](s"${p}name"),
       namespace = row[String](s"${p}namespace"),
-      visibility = Visibility(row[String](s"${p}visibility"))
+      visibility = Visibility(row[String](s"${p}visibility")),
+      audit = AuditsDao.fromRow(row, prefix)
     )
   }
 

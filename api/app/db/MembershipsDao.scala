@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Membership, Organization, User}
+import com.gilt.apidoc.api.v0.models.{Audit, Membership, Organization, ReferenceGuid, User}
 import com.gilt.apidoc.api.v0.models.json._
 import lib.Role
 import anorm._
@@ -8,6 +8,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import org.joda.time.DateTime
 
 object MembershipsDao {
 
@@ -18,18 +19,21 @@ object MembershipsDao {
     ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
   """
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = s"""
     select memberships.guid,
-           role,
+           memberships.role,
+           ${AuditsDao.queryCreation("memberships")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
+           ${AuditsDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
-           users.name as user_name
+           users.name as user_name,
+           ${AuditsDao.queryWithAlias("users", "user")}
       from memberships
       join organizations on organizations.guid = memberships.organization_guid
       join users on users.guid = memberships.user_guid
@@ -65,7 +69,13 @@ object MembershipsDao {
       guid = UUID.randomUUID,
       organization = organization,
       user = user,
-      role = role.key
+      role = role.key,
+      audit = Audit(
+        createdAt = DateTime.now,
+        createdBy = ReferenceGuid(user.guid),
+        updatedAt = DateTime.now,
+        updatedBy = ReferenceGuid(user.guid)
+      )
     )
 
     SQL(InsertQuery).on(
@@ -167,7 +177,8 @@ object MembershipsDao {
           guid = row[UUID]("guid"),
           organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
           user = UsersDao.fromRow(row, Some("user")),
-          role = row[String]("role")
+          role = row[String]("role"),
+          audit = AuditsDao.fromRowCreation(row)
         )
       }.toSeq
     }
