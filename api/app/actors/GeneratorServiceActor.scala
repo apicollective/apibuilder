@@ -6,7 +6,7 @@ import com.gilt.apidoc.generator.v0.Client
 import com.gilt.apidoc.generator.v0.models.Generator
 import com.gilt.apidoc.internal.v0.models.TaskDataSyncService
 import db.{Authorization, TasksDao, UsersDao}
-import db.generators.{GeneratorsDao, RefreshesDao, ServicesDao}
+import db.generators.{GeneratorsDao, ServicesDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -34,8 +34,6 @@ object GeneratorServiceActor {
       } { gen =>
         GeneratorsDao.upsert(UsersDao.AdminUser, service, gen)
       }
-
-      RefreshesDao.upsert(UsersDao.AdminUser, service)
     }
   }
 

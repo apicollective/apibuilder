@@ -23,15 +23,6 @@ object Util {
     )
   }
 
-  def createGeneratorRefresh(
-    service: GeneratorService = createGeneratorService()
-  ): Refresh = {
-    RefreshesDao.upsert(db.Util.createdBy, service)
-    RefreshesDao.findAll(serviceGuid = Some(service.guid)).headOption.getOrElse {
-      sys.error("Failed to create refresh")
-    }
-  }
-
   def createGenerator(
     service: GeneratorService = createGeneratorService()
   ): Generator = {

@@ -1,7 +1,6 @@
 set search_path to generators;
 
 drop table if exists generators;
-drop table if exists refreshes;
 drop table if exists services;
 
 create table services (
@@ -17,22 +16,6 @@ create unique index services_lower_uri_not_deleted_un_idx on services(lower(uri)
 
 comment on table services is '
   Stores the URI of each generator service.
-';
-
-create table refreshes (
-  guid                    uuid primary key,
-  service_guid             uuid not null references services,
-  checked_at              timestamptz not null
-);
-
-select schema_evolution_manager.create_basic_audit_data('generators', 'refreshes');
-create index on refreshes(service_guid);
-create unique index on refreshes(service_guid) where refreshes.deleted_at is null;
-
-comment on table refreshes is '
-  For each service, we periodically refresh the generator information
-  and store it in the generators table. This table records when we
-  last checked the generator information.
 ';
 
 create table generators (
