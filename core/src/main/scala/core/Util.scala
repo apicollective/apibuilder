@@ -1,6 +1,8 @@
 package core
 
 import com.gilt.apidoc.spec.v0.models.Enum
+import java.net.{MalformedURLException, URL}
+import scala.util.{Failure, Success, Try}
 
 object Util {
 
@@ -31,7 +33,12 @@ object Util {
     } else if (formatted.endsWith("/")) {
       Seq(s"URI[$value] cannot end with a '/'")
     } else {
-      Seq.empty
+      Try(new URL(value)) match {
+        case Success(url) => Nil
+        case Failure(e) => e match {
+          case e: MalformedURLException => Seq(s"URL is not valid: ${e.getMessage}")
+        }
+      }
     }
   }
 
