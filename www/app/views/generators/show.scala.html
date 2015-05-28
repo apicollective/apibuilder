@@ -1,0 +1,21 @@
+@(
+  tpl: models.MainTemplate,
+  generator: com.gilt.apidoc.generator.v0.models.Generator
+)(implicit flash: Flash)
+
+@import com.gilt.apidoc.api.v0.models.Visibility
+
+@main(tpl) {
+
+  <ul>
+    <li> Key: @generator.key</li>
+    <li> Name: @generator.name</li>
+    <li> Language: @generator.language.getOrElse("not specified")</li>
+    <li> Description:
+         <blockquote>@Html(lib.Markdown(generator.description))</blockquote>
+    </li>
+  </ul>
+
+}
+
+    

@@ -1,0 +1,19 @@
+@(tpl: models.MainTemplate,
+  form: Form[controllers.Generators.GeneratorServiceCreateFormData],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash)
+
+@main(tpl.copy(title = Some("Add Generator")), errorMessages = errorMessages) {
+
+  <div class="container">
+
+    @helper.form(action = routes.Organizations.createPost()) {
+
+      @generatorForm(form, routes.Generators.index())
+
+    }
+
+  </div>
+
+}
+

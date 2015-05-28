@@ -32,7 +32,7 @@ object Versions extends Controller {
       versionOption <- lib.ApiClient.callWith404(
         request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
       )
-      generators <- request.api.Generators.get()
+      generators <- request.api.comGiltApidocGeneratorV0ModelsGenerators.getGenerators()
       watches <- isWatching(request.api, request.user, orgKey, applicationKey)
     } yield {
       applicationResponse.headOption match {

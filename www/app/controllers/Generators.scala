@@ -1,7 +1,8 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{GeneratorCreateForm, GeneratorUpdateForm, Generator, Visibility, User}
-import lib.Util
+import com.gilt.apidoc.api.v0.models.{User, Visibility}
+import com.gilt.apidoc.generator.v0.models.{Generator}
+import lib.{Pagination, PaginatedCollection, Util}
 import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
@@ -14,36 +15,63 @@ object Generators extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def redirect = Action { implicit request =>
-    Redirect(routes.Generators.index)
+    Redirect(routes.Generators.index())
   }
 
-  def index() = Authenticated.async { implicit request =>
-    request.api.Generators.get().recover {
-      case ex: Exception => Seq.empty
-    }.map { generators =>
-      Ok(views.html.generators.index(request.mainTemplate().copy(
-        title = Some("Generators"),
-        generators = generators
-      )))
+  def index(page: Int = 0) = Authenticated.async { implicit request =>
+    for {
+      generators <- request.api.comGiltApidocGeneratorV0ModelsGenerators.getGenerators(
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
+      )
+    } yield {
+      Ok(views.html.generators.index(
+        request.mainTemplate().copy(title = Some("Generators")),
+        generators = PaginatedCollection(page, generators)
+      ))
     }
   }
 
   def getByKey(key: String) = Authenticated.async { implicit request =>
     for {
-      generator <- lib.ApiClient.callWith404(request.api.Generators.getByKey(key))
+      generator <- lib.ApiClient.callWith404(request.api.comGiltApidocGeneratorV0ModelsGenerators.getGeneratorsByKey(key))
     } yield {
       generator match {
         case None => Redirect(routes.Generators.index()).flashing("warning" -> s"Generator not found")
         case Some(g) => {
-          Ok(views.html.generators.details(request.mainTemplate().copy(
-            title = Some("Generator Details"),
-            generators = Seq(g)
-          )))
+          Ok(views.html.generators.show(
+            request.mainTemplate().copy(title = Some(g.name)),
+            g
+          ))
         }
       }
     }
   }
 
+  def create() = Authenticated { implicit request =>
+    val filledForm = generatorServiceCreateFormData.fill(
+      GeneratorServiceCreateFormData(
+        uri = "",
+        visibility = Visibility.Public.toString
+      )
+    )
+
+    Ok(views.html.generators.create(request.mainTemplate(), filledForm))
+  }
+
+  case class GeneratorServiceCreateFormData(
+    uri: String,
+    visibility: String
+  )
+
+  private[this] val generatorServiceCreateFormData = Form(
+    mapping(
+      "uri" -> nonEmptyText,
+      "visibility" -> nonEmptyText
+    )(GeneratorServiceCreateFormData.apply)(GeneratorServiceCreateFormData.unapply)
+  )
+
+/*
   def postUpdate(key: String) = Authenticated.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Generator"))
     val boundForm = generatorUpdateForm.bindFromRequest
@@ -63,14 +91,6 @@ object Generators extends Controller {
         ).map(_ => Ok)
       }
     )
-  }
-
-  def create() = Authenticated { implicit request =>
-    Ok(views.html.generators.form(
-      request.mainTemplate(Some("Add Generator")),
-      1,
-      generatorCreateForm
-    ))
   }
 
   def postCreate() = Authenticated.async { implicit request =>
@@ -151,5 +171,6 @@ object Generators extends Controller {
       "enabled" -> optional(boolean)
     )(GeneratorUpdateData.apply)(GeneratorUpdateData.unapply)
   )
+ */
 
 }

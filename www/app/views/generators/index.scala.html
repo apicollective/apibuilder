@@ -1,44 +1,43 @@
-@(tpl: models.MainTemplate)(implicit flash: Flash)
+@(
+  tpl: models.MainTemplate,
+  generators: lib.PaginatedCollection[com.gilt.apidoc.generator.v0.models.Generator]
+)(implicit flash: Flash)
 
 @import com.gilt.apidoc.api.v0.models.Visibility
 
 @main(tpl) {
 
-  <p>
-    Users can provide generators to add additional code generation targets.
-  </p>
-
   @tpl.user.map { user =>
     <div class="pull-right">
       <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Generators.create()">Add generator</a>
     </div>
+  }
 
-    @if(tpl.generators.isEmpty) {
-      <em>No generators</em>
+  @if(tpl.generators.isEmpty) {
+    <em>No generators</em>
 
-    } else {
+  } else {
 
-      <table class="table table-hover table-condensed">
-          <tbody>
-          <tr>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Language</th>
-              <th>Enabled</th>
-          </tr>
-      @tpl.generators.map { generator =>
+    <table class="table table-hover table-condensed">
+      <tbody>
         <tr>
-            <td class="generator-select" data-generator-guid="@generator.guid">@generator.name</td>
-            <td class="generator-select" data-generator-guid="@generator.guid">@Html(lib.Markdown(generator.description))</td>
-            <td class="generator-select" data-generator-guid="@generator.guid">@generator.language.getOrElse("")</td>
-            <td>
-                <input type="checkbox" name="enabled" value="true" class="generator-enable-setter" data-generator-guid="@generator.guid" checked="checked"/>
-            </td>
+          <th>Key</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Language</th>
         </tr>
-      }
-          </tbody>
-      </table>
-    }
+
+        @generators.items.map { generator =>
+          <tr>
+            <td>@generator.key</td>
+            <td>@generator.name</td>
+            <td>@Html(lib.Markdown(generator.description.map(lib.Text.truncate(_, 25))))</td>
+            <td>@generator.language.getOrElse("")</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
   }
 
 }

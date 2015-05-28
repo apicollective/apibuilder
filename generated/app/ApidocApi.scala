@@ -1442,7 +1442,7 @@ package com.gilt.apidoc.api.v0 {
     }
 
     object ComGiltApidocGeneratorV0ModelsGenerators extends ComGiltApidocGeneratorV0ModelsGenerators {
-      override def get(
+      override def getGenerators(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         serviceUri: _root_.scala.Option[String] = None,
         key: _root_.scala.Option[String] = None,
@@ -1457,16 +1457,16 @@ package com.gilt.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/generators", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.generator.v0.models.Generator]", r, _.validate[Seq[com.gilt.apidoc.generator.v0.models.Generator]])
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
       }
 
-      override def getByKey(
+      override def getGeneratorsByKey(
         key: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.generator.v0.models.Generator] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.generator.v0.models.Generator", r, _.validate[com.gilt.apidoc.generator.v0.models.Generator])
           case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2304,7 +2304,7 @@ package com.gilt.apidoc.api.v0 {
     /**
      * List all generators visible by this user
      */
-    def get(
+    def getGenerators(
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       serviceUri: _root_.scala.Option[String] = None,
       key: _root_.scala.Option[String] = None,
@@ -2312,7 +2312,7 @@ package com.gilt.apidoc.api.v0 {
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.generator.v0.models.Generator]]
 
-    def getByKey(
+    def getGeneratorsByKey(
       key: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.generator.v0.models.Generator]
   }

@@ -11,7 +11,7 @@ object ComGiltApidocGeneratorV0ModelsGenerators extends Controller with ComGiltA
 trait ComGiltApidocGeneratorV0ModelsGenerators {
   this: Controller =>
 
-  def get(
+  def getGenerators(
     guid: Option[_root_.java.util.UUID],
     serviceUri: Option[String],
     key: Option[String],
@@ -29,7 +29,7 @@ trait ComGiltApidocGeneratorV0ModelsGenerators {
     Ok(Json.toJson(generators))
   }
 
-  def getByKey(key: String) = AnonymousRequest { request =>
+  def getGeneratorsByKey(key: String) = AnonymousRequest { request =>
     GeneratorsDao.findAll(
       request.authorization,
       key = Some(key),

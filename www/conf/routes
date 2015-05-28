@@ -39,12 +39,13 @@ GET     /doc/playUnionTypes                                       controllers.Do
 GET     /email-verifications/:token                               controllers.EmailVerifications.get(token: String)
 
 GET     /generators                                               controllers.Generators.redirect()
-GET     /generators/                                              controllers.Generators.index()
-POST    /generators/:key/remove                                   controllers.Generators.postRemove(key: String)
+GET     /generators/                                              controllers.Generators.index(page: Int ?= 0)
+GET     /generators/show/:key                                     controllers.Generators.getByKey(key: String)
 GET     /generators/create                                        controllers.Generators.create()
-GET     /generators/:key                                          controllers.Generators.getByKey(key: String)
-POST    /generators/postCreate                                    controllers.Generators.postCreate()
-POST    /generators/postUpdate                                    controllers.Generators.postUpdate(key: String)
+
+#POST    /generators/:key/remove                                   controllers.Generators.postRemove(key: String)
+#POST    /generators/postCreate                                    controllers.Generators.postCreate()
+#POST    /generators/postUpdate                                    controllers.Generators.postUpdate(key: String)
 
 GET     /tokens                                                   controllers.TokensController.redirect()
 GET     /tokens/                                                  controllers.TokensController.index(page: Int ?= 0)
