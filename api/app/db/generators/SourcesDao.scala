@@ -8,17 +8,7 @@ import lib.Validation
 import anorm._
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import java.util.UUID
-
-case class Source(
-  guid: UUID,
-  uri: String
-)
-
-case class SourceForm(
-  uri: String
-)
 
 object SourcesDao {
 
