@@ -273,43 +273,6 @@
             ]
         },
 
-        "generator": {
-          "description": "An apidoc generator",
-          "fields": [
-            { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this generator." },
-            { "name": "key", "type": "string", "description": "A human readable key identifying this generator." },
-            { "name": "uri", "type": "string", "description": "The base uri of the service providing this generator" },
-            { "name": "name", "type": "string" },
-            { "name": "language", "type": "string", "required": false },
-            { "name": "description", "type": "string", "required": false },
-            { "name": "visibility", "type": "visibility" }
-          ]
-        },
-
-        "generator_create_form": {
-          "description": "Form to create a new generator",
-          "fields": [
-            { "name": "key", "type": "string" },
-            { "name": "uri", "type": "string" },
-            { "name": "visibility", "type": "visibility" }
-          ]
-        },
-
-        "generator_update_form": {
-          "description": "Form to update a generator",
-          "fields": [
-            { "name": "visibility", "type": "visibility", "required": false, "description": "Used to change the visibility of the generator. If present on the request, the visibility is set to the specified value." },
-            { "name": "enabled", "type": "boolean", "required": false, "description": "Used to enable or disable the generator for this user. If present on the request, the enabled flag is set to the specified value (true/false)." }
-          ]
-        },
-
-        "generator_org_form": {
-          "description": "Form to enable or disable a generator for an organization",
-          "fields": [
-            { "name": "enabled", "type": "boolean" }
-          ]
-        },
-
 	"subscription": {
 	    "description": "Represents a user that is currently subscribed to a publication",
 	    "fields": [
@@ -425,6 +388,34 @@
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
                 { "name": "version", "type": "string" }
+	    ]
+	},
+
+	"generator": {
+	    "description": "Defines a single code generator",
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "service", "type": "generator_service" },
+                { "name": "key", "type": "string" },
+                { "name": "name", "type": "string" },
+                { "name": "language", "type": "string", "required": false },
+                { "name": "description", "type": "string", "required": false }
+	    ]
+	},
+
+	"generator_service": {
+	    "description": "Defines a service that provides one or more code generators",
+	    "fields": [
+                { "name": "guid", "type": "uuid" },
+                { "name": "uri", "type": "string" },
+                { "name": "visibility", "type": "visibility" }
+	    ]
+	},
+
+	"generator_service_form": {
+	    "fields": [
+                { "name": "uri", "type": "string" },
+                { "name": "visibility", "type": "visibility" }
 	    ]
 	}
 
@@ -873,13 +864,60 @@
             ]
         },
 
+        "generator_service": {
+
+          "path": "/generators/services",
+
+          "operations": [
+            {
+              "method": "GET",
+              "description": "List all generator services",
+              "parameters": [
+                  { "name": "guid", "type": "uuid", "required": false },
+                  { "name": "uri", "type": "string", "required": false },
+                  { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                  { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+              ],
+              "responses": {
+                "200": { "type": "[generator_service]" }
+              }
+            },
+
+            {
+              "method": "GET",
+              "path": "/:guid",
+              "responses": {
+                  "200": { "type": "generator_service" },
+                  "404": { "type": "unit" }
+              }
+            },
+
+            {
+              "method": "POST",
+              "body": { "type": "generator_service_form" },
+              "responses": {
+                "200": { "type": "generator_service" },
+                "409": { "type": "[error]" }
+              }
+            },
+
+            {
+              "method": "DELETE",
+              "path": "/:guid",
+              "description": "Deletes a generator service."
+            }
+	  ]
+          
+        },
+
         "generator": {
           "operations": [
             {
               "method": "GET",
               "description": "List all generators visible by this user",
               "parameters": [
-                  { "name": "guid", "type": "uuid", "required": false, "description": "Filter to generator with this uuid" },
+                  { "name": "guid", "type": "uuid", "required": false, "description": "Filter to generator with this guid" },
+                  { "name": "service_uri", "type": "string", "required": false, "description": "Filter to generator from this service URI" },
                   { "name": "key", "type": "string", "required": false, "description": "Filter to generator with this key" },
                   { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                   { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
@@ -896,31 +934,6 @@
                   "200": { "type": "generator" },
                   "404": { "type": "unit" }
               }
-            },
-
-            {
-              "method": "POST",
-              "body": { "type": "generator_create_form" },
-              "responses": {
-                "200": { "type": "generator" },
-                "409": { "type": "[error]" }
-              }
-            },
-
-            {
-              "method": "PUT",
-              "path": "/:key",
-              "body": { "type": "generator_update_form" },
-              "responses": {
-                "200": { "type": "generator" },
-                "409": { "type": "[error]" }
-              }
-            },
-
-            {
-              "method": "DELETE",
-              "path": "/:key",
-              "description": "Deletes a generator."
             }
           ]
         },

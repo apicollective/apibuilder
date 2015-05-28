@@ -48,6 +48,16 @@ sealed trait Authorization {
     organizationsTableName: String = "organizations"
   ): Option[String]
 
+  /**
+    * Generates a sql filter to restrict the returned set of generator
+    * services to those that this user is authorized to access.
+    * 
+    * @param generatorServicessTableName e.g "services"
+    */
+  def generatorServicesFilter(
+    generatorServicessTableName: String = "services"
+  ): Option[String]
+
   def bindVariables(): Seq[NamedParameter] = Seq.empty
 
 }
@@ -83,6 +93,10 @@ object Authorization {
       organizationsTableName: String = "organizations"
     ): Option[String] = Some("false")
 
+    def generatorServicesFilter(
+      generatorServicessTableName: String = "services"
+    ): Option[String] = Some(PublicApplicationsQuery.format(generatorServicessTableName))
+
   }
 
   case object All extends Authorization {
@@ -103,6 +117,10 @@ object Authorization {
     override def subscriptionFilter(
       subscriptionsTableName: String = "subscriptions",
       organizationsTableName: String = "organizations"
+    ): Option[String] = None
+
+    def generatorServicesFilter(
+      generatorServicessTableName: String = "services"
     ): Option[String] = None
 
   }
@@ -138,6 +156,12 @@ object Authorization {
     ): Option[String] = {
       val orgsFilter = s"$organizationsTableName.guid in ($OrgsByUserQuery)"
       Some(s"(${subscriptionsTableName}.user_guid = {authorization_user_guid}::uuid or $orgsFilter)")
+    }
+
+    def generatorServicesFilter(
+      generatorServicessTableName: String = "services"
+    ): Option[String] = {
+      Some(s"(${generatorServicessTableName}.created_by_guid = {authorization_user_guid}::uuid or ${generatorServicessTableName}.visibility = '${Visibility.Public.toString}')")
     }
 
     override def bindVariables(): Seq[NamedParameter] = {

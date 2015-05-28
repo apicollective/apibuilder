@@ -1,7 +1,7 @@
 package db.generators
 
 import db.SoftDelete
-import com.gilt.apidoc.api.v0.models.{ReferenceGuid, User}
+import com.gilt.apidoc.api.v0.models.{GeneratorService, User}
 import org.joda.time.DateTime
 import anorm._
 import play.api.db._
@@ -13,8 +13,12 @@ object RefreshesDao {
   private[this] val BaseQuery = s"""
     select refreshes.guid,
            refreshes.service_guid,
-           refreshes.checked_at
+           refreshes.checked_at,
+           services.guid as service_guid,
+           services.uri as service_uri,
+           services.visibility as service_visibility
       from generators.refreshes
+      join generators.services on services.guid = refreshes.service_guid and services.deleted_at is null
      where true
   """
 
@@ -32,14 +36,14 @@ object RefreshesDao {
      where guid = {guid}::uuid
   """
 
-  def upsert(user: User, service: Service) {
+  def upsert(user: User, service: GeneratorService) {
     findAll(serviceGuid = Some(service.guid), limit = 1).headOption match {
       case None => create(user, service)
       case Some(refresh) => update(user, refresh)
     }
   }
 
-  private def create(user: User, service: Service): UUID = {
+  private def create(user: User, service: GeneratorService): UUID = {
     val guid = UUID.randomUUID
 
     DB.withConnection { implicit c =>
@@ -97,7 +101,7 @@ object RefreshesDao {
     row: anorm.Row
   ) = Refresh(
     guid = row[UUID]("guid"),
-    service = ReferenceGuid(guid = row[UUID]("service_guid")),
+    service = ServicesDao.fromRow(row, Some("service")),
     checkedAt = row[DateTime]("checked_at")
   )
 

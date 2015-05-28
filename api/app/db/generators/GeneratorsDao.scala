@@ -1,7 +1,7 @@
 package db.generators
 
-import db.SoftDelete
-import com.gilt.apidoc.api.v0.models.{Error, User}
+import db.{Authorization, SoftDelete}
+import com.gilt.apidoc.api.v0.models.{Error, User, Generator, GeneratorService}
 import core.Util
 import lib.Validation
 import anorm._
@@ -19,7 +19,8 @@ object GeneratorsDao {
            generators.description,
            generators.language,
            services.guid as service_guid,
-           services.uri as service_uri
+           services.uri as service_uri,
+           services.visibility as service_visibility
       from generators.generators
       join generators.services on services.guid = generators.service_guid and services.deleted_at is null
      where true
@@ -32,8 +33,9 @@ object GeneratorsDao {
     ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {created_by_guid}::uuid)
   """
 
-  def upsert(user: User, service: Service, form: GeneratorForm) {
+  def upsert(user: User, service: GeneratorService, form: GeneratorForm) {
     findAll(
+      Authorization.User(user.guid),
       serviceGuid = Some(service.guid),
       key = Some(form.key.trim),
       limit = 1
@@ -61,7 +63,7 @@ object GeneratorsDao {
     }
   }
 
-  private def create(implicit c: java.sql.Connection, user: User, service: Service, form: GeneratorForm): UUID = {
+  private def create(implicit c: java.sql.Connection, user: User, service: GeneratorService, form: GeneratorForm): UUID = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
@@ -89,8 +91,10 @@ object GeneratorsDao {
   }
 
   def findAll(
+    authorization: Authorization,
     guid: Option[UUID] = None,
     serviceGuid: Option[UUID] = None,
+    serviceUri: Option[String] = None,
     key: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -98,8 +102,10 @@ object GeneratorsDao {
   ): Seq[Generator] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      authorization.generatorServicesFilter().map { v => s"and $v" },
       guid.map { v => "and generators.guid = {guid}::uuid" },
       serviceGuid.map { v => "and generators.service_guid = {service_guid}::uuid" },
+      serviceUri.map { v => "and lower(services.uri) = lower(trim({uri}))" },
       key.map { v => "and generators.key = {key}" },
       isDeleted.map(db.Filters.isDeleted("generators", _))
     ).flatten.mkString("\n   ") + s" order by lower(generators.name), lower(generators.key), generators.created_at desc limit ${limit} offset ${offset}"
@@ -107,8 +113,9 @@ object GeneratorsDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       serviceGuid.map('service_guid -> _.toString),
+      serviceUri.map('service_uri -> _),
       key.map('key -> _)
-    ).flatten
+    ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
@@ -119,10 +126,7 @@ object GeneratorsDao {
     row: anorm.Row
   ) = Generator(
     guid = row[UUID]("guid"),
-    service = Service(
-      guid = row[UUID]("service_guid"),
-      uri = row[String]("service_uri")
-    ),
+    service = ServicesDao.fromRow(row, Some("service")),
     key = row[String]("key"),
     name = row[String]("name"),
     description = row[Option[String]]("description"),

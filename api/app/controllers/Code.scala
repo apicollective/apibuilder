@@ -2,16 +2,16 @@ package controllers
 
 import java.util.UUID
 
-import com.gilt.apidoc.api.v0.models.{Generator, Version}
 import com.gilt.apidoc.api.v0.models.json._
 
-import com.gilt.apidoc.spec.v0.models.{Service}
+import com.gilt.apidoc.spec.v0.models.Service
 import com.gilt.apidoc.spec.v0.models.json._
 
 import com.gilt.apidoc.generator.v0.Client
 import com.gilt.apidoc.generator.v0.models.InvocationForm
 
-import db.{GeneratorsDao, Authorization, VersionsDao}
+import db.{Authorization, VersionsDao}
+import db.generators.GeneratorsDao
 import lib.{Config, AppConfig, Validation}
 
 import play.api.mvc._
@@ -42,10 +42,10 @@ object Code extends Controller {
             Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
           }
 
-          case Some(generator: Generator) => {
+          case Some(generator) => {
             val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${generator.key}"
 
-            new Client(generator.uri).invocations.postByKey(
+            new Client(generator.service.uri).invocations.postByKey(
               key = generator.key,
               invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
             ).map { invocation =>
