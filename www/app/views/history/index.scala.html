@@ -26,21 +26,13 @@
          <tr>
            <td>@lib.DateHelper.shortDate(tpl.timeZone, change.changedAt)</td>
            <td>@change.changedBy.nickname</td>
-           <td>@change.organization.key/@change.application.key</td>
-           <td>
+           <td>@change.organization.key/@change.application.key:
              <a href="@routes.Versions.show(change.organization.key, change.application.key, change.fromVersion.version)">@change.fromVersion.version</a> -
              <a href="@routes.Versions.show(change.organization.key, change.application.key, change.toVersion.version)">@change.toVersion.version</a>
            </td>
            <td>
              @{change.diff match {
-               case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => "Breaking"
-               case com.gilt.apidoc.api.v0.models.DiffNonBreaking(desc) => "Non Breaking"
-               case com.gilt.apidoc.api.v0.models.DiffUndefinedType(desc) => "Unkonwn"
-             }}
-           </td>
-           <td>
-             @{change.diff match {
-               case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => desc
+               case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => s"Breaking: $desc"
                case com.gilt.apidoc.api.v0.models.DiffNonBreaking(desc) => desc
                case com.gilt.apidoc.api.v0.models.DiffUndefinedType(desc) => desc
              }}
