@@ -134,13 +134,11 @@ package com.gilt.apidoc.api.v0.models {
    */
   case class GeneratorService(
     guid: _root_.java.util.UUID,
-    uri: String,
-    visibility: com.gilt.apidoc.api.v0.models.Visibility
+    uri: String
   )
 
   case class GeneratorServiceForm(
-    uri: String,
-    visibility: com.gilt.apidoc.api.v0.models.Visibility
+    uri: String
   )
 
   case class Healthcheck(
@@ -758,31 +756,25 @@ package com.gilt.apidoc.api.v0.models {
     implicit def jsonReadsApidocapiGeneratorService: play.api.libs.json.Reads[GeneratorService] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "uri").read[String] and
-        (__ \ "visibility").read[com.gilt.apidoc.api.v0.models.Visibility]
+        (__ \ "uri").read[String]
       )(GeneratorService.apply _)
     }
 
     implicit def jsonWritesApidocapiGeneratorService: play.api.libs.json.Writes[GeneratorService] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "uri").write[String] and
-        (__ \ "visibility").write[com.gilt.apidoc.api.v0.models.Visibility]
+        (__ \ "uri").write[String]
       )(unlift(GeneratorService.unapply _))
     }
 
     implicit def jsonReadsApidocapiGeneratorServiceForm: play.api.libs.json.Reads[GeneratorServiceForm] = {
-      (
-        (__ \ "uri").read[String] and
-        (__ \ "visibility").read[com.gilt.apidoc.api.v0.models.Visibility]
-      )(GeneratorServiceForm.apply _)
+      (__ \ "uri").read[String].map { x => new GeneratorServiceForm(uri = x) }
     }
 
-    implicit def jsonWritesApidocapiGeneratorServiceForm: play.api.libs.json.Writes[GeneratorServiceForm] = {
-      (
-        (__ \ "uri").write[String] and
-        (__ \ "visibility").write[com.gilt.apidoc.api.v0.models.Visibility]
-      )(unlift(GeneratorServiceForm.unapply _))
+    implicit def jsonWritesApidocapiGeneratorServiceForm: play.api.libs.json.Writes[GeneratorServiceForm] = new play.api.libs.json.Writes[GeneratorServiceForm] {
+      def writes(x: GeneratorServiceForm) = play.api.libs.json.Json.obj(
+        "uri" -> play.api.libs.json.Json.toJson(x.uri)
+      )
     }
 
     implicit def jsonReadsApidocapiHealthcheck: play.api.libs.json.Reads[Healthcheck] = {

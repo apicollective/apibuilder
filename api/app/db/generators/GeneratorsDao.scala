@@ -20,8 +20,7 @@ object GeneratorsDao {
            generators.description,
            generators.language,
            services.guid as service_guid,
-           services.uri as service_uri,
-           services.visibility as service_visibility
+           services.uri as service_uri
       from generators.generators
       join generators.services on services.guid = generators.service_guid and services.deleted_at is null
      where true

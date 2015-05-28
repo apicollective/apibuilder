@@ -1,6 +1,6 @@
 package db.generators
 
-import com.gilt.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm, Visibility}
+import com.gilt.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
 import db.{Authorization, SoftDelete}
 import com.gilt.apidoc.api.v0.models.{Error, User}
 import core.Util
@@ -14,17 +14,16 @@ object ServicesDao {
 
   private[this] val BaseQuery = s"""
     select services.guid,
-           services.uri,
-           services.visibility
+           services.uri
       from generators.services
      where true
   """
 
   private[this] val InsertQuery = """
     insert into generators.services
-    (guid, uri, visibility, created_by_guid)
+    (guid, uri, created_by_guid)
     values
-    ({guid}::uuid, {uri}, {visibility}, {created_by_guid}::uuid)
+    ({guid}::uuid, {uri}, {created_by_guid}::uuid)
   """
 
   def validate(
@@ -58,7 +57,6 @@ object ServicesDao {
       SQL(InsertQuery).on(
         'guid -> guid,
         'uri -> form.uri.trim,
-        'visibility -> form.visibility.toString,
         'created_by_guid -> user.guid
       ).execute()
     }
@@ -114,8 +112,7 @@ object ServicesDao {
     val p = prefix.map(v => v + "_").getOrElse("")
     GeneratorService(
       guid = row[UUID](s"${p}guid"),
-      uri = row[String](s"${p}uri"),
-      visibility = Visibility(row[String](s"${p}visibility"))
+      uri = row[String](s"${p}uri")
     )
   }
 

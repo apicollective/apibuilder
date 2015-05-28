@@ -5,8 +5,7 @@ drop table if exists services;
 
 create table services (
   guid                    uuid primary key,
-  uri                     text not null check(trim(uri) = uri),
-  visibility              text not null check(public.enum(visibility))
+  uri                     text not null check(trim(uri) = uri)
 );
 
 

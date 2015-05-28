@@ -396,15 +396,13 @@
 	    "description": "Defines a service that provides one or more code generators",
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
-                { "name": "uri", "type": "string" },
-                { "name": "visibility", "type": "visibility" }
+                { "name": "uri", "type": "string" }
 	    ]
 	},
 
 	"generator_service_form": {
 	    "fields": [
-                { "name": "uri", "type": "string" },
-                { "name": "visibility", "type": "visibility" }
+                { "name": "uri", "type": "string" }
 	    ]
 	}
 

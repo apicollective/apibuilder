@@ -1,7 +1,7 @@
 package db.generators
 
 import db.Authorization
-import com.gilt.apidoc.api.v0.models.{GeneratorServiceForm, Visibility}
+import com.gilt.apidoc.api.v0.models.{GeneratorServiceForm}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
@@ -45,36 +45,6 @@ class ServicesDaoSpec extends FunSpec with Matchers {
   }
 
   describe("findAll") {
-
-    it("authorization") {
-      val u1 = db.Util.createRandomUser()
-      val u2 = db.Util.createRandomUser()
-      val u3 = db.Util.createRandomUser()
-
-      val public = ServicesDao.create(u1, Util.createGeneratorServiceForm(visibility = Visibility.Public))
-      val user = ServicesDao.create(u2, Util.createGeneratorServiceForm(visibility = Visibility.User))
-      val org = ServicesDao.create(u3, Util.createGeneratorServiceForm(visibility = Visibility.Organization))
-
-      ServicesDao.findAll(Authorization.All, uri = Some(public.uri)).map(_.guid) should be(Seq(public.guid))
-      ServicesDao.findAll(Authorization.All, uri = Some(user.uri)).map(_.guid) should be(Seq(user.guid))
-      ServicesDao.findAll(Authorization.All, uri = Some(org.uri)).map(_.guid) should be(Seq(org.guid))
-
-      val u1Auth = Authorization.User(u1.guid)
-      val u2Auth = Authorization.User(u2.guid)
-      val u3Auth = Authorization.User(u3.guid)
-
-      ServicesDao.findAll(u1Auth, uri = Some(public.uri)).map(_.guid) should be(Seq(public.guid))
-      ServicesDao.findAll(u1Auth, uri = Some(user.uri)).map(_.guid) should be(Nil)
-      ServicesDao.findAll(u1Auth, uri = Some(org.uri)).map(_.guid) should be(Nil)
-
-      ServicesDao.findAll(u2Auth, uri = Some(public.uri)).map(_.guid) should be(Seq(public.guid))
-      ServicesDao.findAll(u2Auth, uri = Some(user.uri)).map(_.guid) should be(Seq(user.guid))
-      ServicesDao.findAll(u2Auth, uri = Some(org.uri)).map(_.guid) should be(Nil)
-
-      // ServicesDao.findAll(u1Auth, uri = Some(public.uri)).map(_.guid) should be(Seq(public.guid))
-      // ServicesDao.findAll(u1Auth, uri = Some(user.uri)).map(_.guid) should be(Seq(user.guid))
-      // ServicesDao.findAll(u1Auth, uri = Some(org.uri)).map(_.guid) should be(Nil)
-    }
 
     it("uri") {
       val form = Util.createGeneratorServiceForm()

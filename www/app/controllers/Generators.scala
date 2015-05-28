@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{GeneratorServiceForm, User, Visibility}
+import com.gilt.apidoc.api.v0.models.{GeneratorServiceForm, User}
 import com.gilt.apidoc.generator.v0.models.{Generator}
 import lib.{Pagination, PaginatedCollection, Util}
 import models.MainTemplate
@@ -53,8 +53,7 @@ object Generators extends Controller {
   def create() = Authenticated { implicit request =>
     val filledForm = generatorServiceCreateFormData.fill(
       GeneratorServiceCreateFormData(
-        uri = "",
-        visibility = Visibility.Public.toString
+        uri = ""
       )
     )
 
@@ -74,8 +73,7 @@ object Generators extends Controller {
       valid => {
         request.api.generatorServices.post(
           GeneratorServiceForm(
-            uri = valid.uri,
-            visibility = Visibility(valid.visibility)
+            uri = valid.uri
           )
         ).map { generator =>
           Redirect(routes.Generators.index()).flashing("success" -> "Generator created")
@@ -90,14 +88,12 @@ object Generators extends Controller {
   }
 
   case class GeneratorServiceCreateFormData(
-    uri: String,
-    visibility: String
+    uri: String
   )
 
   private[this] val generatorServiceCreateFormData = Form(
     mapping(
-      "uri" -> nonEmptyText,
-      "visibility" -> nonEmptyText
+      "uri" -> nonEmptyText
     )(GeneratorServiceCreateFormData.apply)(GeneratorServiceCreateFormData.unapply)
   )
 
