@@ -1,6 +1,6 @@
 package db.generators
 
-//import com.gilt.apidoc.api.v0.models.{Source, SourceForm}
+//import com.gilt.apidoc.api.v0.models.{Service, ServiceForm}
 import db.SoftDelete
 import com.gilt.apidoc.api.v0.models.{Error, User}
 import core.Util
@@ -10,28 +10,28 @@ import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-object SourcesDao {
+object ServicesDao {
 
   private[this] val BaseQuery = s"""
-    select sources.guid,
-           sources.uri
-      from generators.sources
+    select services.guid,
+           services.uri
+      from generators.services
      where true
   """
 
   private[this] val InsertQuery = """
-    insert into generators.sources
+    insert into generators.services
     (guid, uri, created_by_guid)
     values
     ({guid}::uuid, {uri}, {created_by_guid}::uuid)
   """
 
   def validate(
-    form: SourceForm
+    form: ServiceForm
   ): Seq[Error] = {
-    val uriErrors = Util.validateUri(form.uri) match {
+    val uriErrors = Util.validateUri(form.uri.trim) match {
       case Nil => {
-        SourcesDao.findAll(uri = Some(form.uri)).headOption match {
+        ServicesDao.findAll(uri = Some(form.uri.trim)).headOption match {
           case None => Nil
           case Some(uri) => {
             Seq(s"URI[${form.uri.trim}] already exists")
@@ -44,7 +44,7 @@ object SourcesDao {
     Validation.errors(uriErrors)
   }
 
-  def create(user: User, form: SourceForm): Source = {
+  def create(user: User, form: ServiceForm): Service = {
     val errors = validate(form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
@@ -59,15 +59,15 @@ object SourcesDao {
     }
 
     findByGuid(guid).getOrElse {
-      sys.error("Failed to create source")
+      sys.error("Failed to create service")
     }
   }
 
-  def softDelete(deletedBy: User, source: Source) {
-    SoftDelete.delete("generators.sources", deletedBy, source.guid)
+  def softDelete(deletedBy: User, service: Service) {
+    SoftDelete.delete("generators.services", deletedBy, service.guid)
   }
 
-  def findByGuid(guid: UUID): Option[Source] = {
+  def findByGuid(guid: UUID): Option[Service] = {
     findAll(guid = Some(guid)).headOption
   }
 
@@ -77,13 +77,13 @@ object SourcesDao {
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[Source] = {
+  ): Seq[Service] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      guid.map { v => "and sources.guid = {guid}::uuid" },
-      uri.map { v => "and lower(sources.uri) = lower(trim({uri}))" },
-      isDeleted.map(db.Filters.isDeleted("sources", _))
-    ).flatten.mkString("\n   ") + s" order by lower(sources.uri) limit ${limit} offset ${offset}"
+      guid.map { v => "and services.guid = {guid}::uuid" },
+      uri.map { v => "and lower(services.uri) = lower(trim({uri}))" },
+      isDeleted.map(db.Filters.isDeleted("services", _))
+    ).flatten.mkString("\n   ") + s" order by lower(services.uri) limit ${limit} offset ${offset}"
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
@@ -97,7 +97,7 @@ object SourcesDao {
 
   private[db] def fromRow(
     row: anorm.Row
-  ) = Source(
+  ) = Service(
     guid = row[UUID]("guid"),
     uri = row[String]("uri")
   )

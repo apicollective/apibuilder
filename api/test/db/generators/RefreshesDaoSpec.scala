@@ -8,18 +8,18 @@ class RefreshesDaoSpec extends FunSpec with Matchers {
   new play.core.StaticApplication(new java.io.File("."))
 
   it("upsert") {
-    val source = Util.createGeneratorSource()
-    RefreshesDao.findAll(sourceGuid = Some(source.guid)) should be(Nil)
+    val service = Util.createGeneratorService()
+    RefreshesDao.findAll(serviceGuid = Some(service.guid)) should be(Nil)
 
-    RefreshesDao.upsert(db.Util.createdBy, source)
-    val refresh = RefreshesDao.findAll(sourceGuid = Some(source.guid)).headOption.getOrElse {
+    RefreshesDao.upsert(db.Util.createdBy, service)
+    val refresh = RefreshesDao.findAll(serviceGuid = Some(service.guid)).headOption.getOrElse {
       sys.error("Failed to create refresh record")
     }
 
-    refresh.source.guid should be(source.guid)
+    refresh.service.guid should be(service.guid)
 
-    RefreshesDao.upsert(db.Util.createdBy, source)
-    val second = RefreshesDao.findAll(sourceGuid = Some(source.guid)).headOption.getOrElse {
+    RefreshesDao.upsert(db.Util.createdBy, service)
+    val second = RefreshesDao.findAll(serviceGuid = Some(service.guid)).headOption.getOrElse {
       sys.error("Failed to create refresh record")
     }
     second.guid should be(refresh.guid)
@@ -34,10 +34,10 @@ class RefreshesDaoSpec extends FunSpec with Matchers {
 
   describe("findAll") {
 
-    it("sourceGuid") {
+    it("serviceGuid") {
       val refresh = Util.createGeneratorRefresh()
-      RefreshesDao.findAll(sourceGuid = Some(refresh.source.guid)).map(_.guid) should be(Seq(refresh.guid))
-      RefreshesDao.findAll(sourceGuid = Some(UUID.randomUUID)).map(_.guid) should be(Nil)
+      RefreshesDao.findAll(serviceGuid = Some(refresh.service.guid)).map(_.guid) should be(Seq(refresh.guid))
+      RefreshesDao.findAll(serviceGuid = Some(UUID.randomUUID)).map(_.guid) should be(Nil)
     }
 
     it("isDeleted") {

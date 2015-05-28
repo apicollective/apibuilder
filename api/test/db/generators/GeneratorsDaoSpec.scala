@@ -10,43 +10,43 @@ class GeneratorsDaoSpec extends FunSpec with Matchers {
   describe("upsert") {
 
     it("is a no-op if no data has changed") {
-      val source = Util.createGeneratorSource()
+      val service = Util.createGeneratorService()
       val form = Util.createGeneratorForm()
-      GeneratorsDao.findAll(sourceGuid = Some(source.guid)) should be(Nil)
+      GeneratorsDao.findAll(serviceGuid = Some(service.guid)) should be(Nil)
 
-      GeneratorsDao.upsert(db.Util.createdBy, source, form)
-      val generator = GeneratorsDao.findAll(sourceGuid = Some(source.guid)).headOption.getOrElse {
+      GeneratorsDao.upsert(db.Util.createdBy, service, form)
+      val generator = GeneratorsDao.findAll(serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
-      generator.source.guid should be(source.guid)
+      generator.service.guid should be(service.guid)
       generator.key should be(form.key)
 
-      GeneratorsDao.upsert(db.Util.createdBy, source, form)
-      val second = GeneratorsDao.findAll(sourceGuid = Some(source.guid)).headOption.getOrElse {
+      GeneratorsDao.upsert(db.Util.createdBy, service, form)
+      val second = GeneratorsDao.findAll(serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       second.guid should be(generator.guid)
     }
 
     it("change record if no data has changed") {
-      val source = Util.createGeneratorSource()
+      val service = Util.createGeneratorService()
       val form = Util.createGeneratorForm()
-      GeneratorsDao.findAll(sourceGuid = Some(source.guid)) should be(Nil)
+      GeneratorsDao.findAll(serviceGuid = Some(service.guid)) should be(Nil)
 
-      GeneratorsDao.upsert(db.Util.createdBy, source, form)
-      val generator = GeneratorsDao.findAll(sourceGuid = Some(source.guid)).headOption.getOrElse {
+      GeneratorsDao.upsert(db.Util.createdBy, service, form)
+      val generator = GeneratorsDao.findAll(serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
-      generator.source.guid should be(source.guid)
+      generator.service.guid should be(service.guid)
       generator.key should be(form.key)
 
       val newForm = form.copy(name = form.name + "2")
-      GeneratorsDao.upsert(db.Util.createdBy, source, newForm)
-      val second = GeneratorsDao.findAll(sourceGuid = Some(source.guid)).headOption.getOrElse {
+      GeneratorsDao.upsert(db.Util.createdBy, service, newForm)
+      val second = GeneratorsDao.findAll(serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       second.guid should not be(generator.guid)
-      second.source.guid should be(source.guid)
+      second.service.guid should be(service.guid)
       second.key should be(form.key)
       second.name should be(newForm.name)
     }
@@ -61,10 +61,10 @@ class GeneratorsDaoSpec extends FunSpec with Matchers {
 
   describe("findAll") {
 
-    it("sourceGuid") {
+    it("serviceGuid") {
       val generator = Util.createGenerator()
-      GeneratorsDao.findAll(sourceGuid = Some(generator.source.guid)).map(_.guid) should be(Seq(generator.guid))
-      GeneratorsDao.findAll(sourceGuid = Some(UUID.randomUUID)).map(_.guid) should be(Nil)
+      GeneratorsDao.findAll(serviceGuid = Some(generator.service.guid)).map(_.guid) should be(Seq(generator.guid))
+      GeneratorsDao.findAll(serviceGuid = Some(UUID.randomUUID)).map(_.guid) should be(Nil)
     }
 
     it("isDeleted") {

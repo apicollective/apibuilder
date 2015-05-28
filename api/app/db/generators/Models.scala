@@ -4,24 +4,24 @@ import com.gilt.apidoc.api.v0.models.ReferenceGuid
 import org.joda.time.DateTime
 import java.util.UUID
 
-case class Source(
+case class Service(
   guid: UUID,
   uri: String
 )
 
-case class SourceForm(
+case class ServiceForm(
   uri: String
 )
 
 case class Refresh(
   guid: UUID,
-  source: ReferenceGuid,
+  service: ReferenceGuid,
   checkedAt: DateTime
 )
 
 case class Generator(
   guid: UUID,
-  source: Source,
+  service: Service,
   key: String,
   name: String,
   language: Option[String] = None,

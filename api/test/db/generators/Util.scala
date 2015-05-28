@@ -4,36 +4,36 @@ import java.util.UUID
 
 object Util {
 
-  def createGeneratorSource(
-    form: SourceForm = createGeneratorSourceForm()
-  ): Source = {
-    SourcesDao.create(db.Util.createdBy, form)
+  def createGeneratorService(
+    form: ServiceForm = createGeneratorServiceForm()
+  ): Service = {
+    ServicesDao.create(db.Util.createdBy, form)
   }
 
-  def createGeneratorSourceForm(
+  def createGeneratorServiceForm(
     uri: String = s"http://test.generator.${UUID.randomUUID}"
-  ): SourceForm = {
-    SourceForm(
+  ): ServiceForm = {
+    ServiceForm(
       uri = uri
     )
   }
 
   def createGeneratorRefresh(
-    source: Source = createGeneratorSource()
+    service: Service = createGeneratorService()
   ): Refresh = {
-    RefreshesDao.upsert(db.Util.createdBy, source)
-    RefreshesDao.findAll(sourceGuid = Some(source.guid)).headOption.getOrElse {
+    RefreshesDao.upsert(db.Util.createdBy, service)
+    RefreshesDao.findAll(serviceGuid = Some(service.guid)).headOption.getOrElse {
       sys.error("Failed to create refresh")
     }
   }
 
   def createGenerator(
-    source: Source = createGeneratorSource(),
+    service: Service = createGeneratorService(),
     form: GeneratorForm = createGeneratorForm()
   ): Generator = {
-    GeneratorsDao.upsert(db.Util.createdBy, source, form)
+    GeneratorsDao.upsert(db.Util.createdBy, service, form)
     GeneratorsDao.findAll(
-      sourceGuid = Some(source.guid),
+      serviceGuid = Some(service.guid),
       key = Some(form.key),
       limit = 1
     ).headOption.getOrElse {
