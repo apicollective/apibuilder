@@ -14,7 +14,7 @@ class ServicesDaoSpec extends FunSpec with Matchers {
     ServicesDao.validate(form) should be(Nil)
     ServicesDao.validate(form.copy(uri = "foo")).map(_.message) should be(Seq("URI[foo] must start with http://, https://, or file://"))
 
-    val gen = ServicesDao.create(db.Util.createdBy, form)
+    val service = ServicesDao.create(db.Util.createdBy, form)
     ServicesDao.validate(form).map(_.message) should be(Seq(s"URI[${form.uri}] already exists"))
   }
 
@@ -22,8 +22,8 @@ class ServicesDaoSpec extends FunSpec with Matchers {
 
     it("creates a service") {
       val form = Util.createGeneratorServiceForm()
-      val gen = ServicesDao.create(db.Util.createdBy, form)
-      gen.uri should be(form.uri)
+      val service = ServicesDao.create(db.Util.createdBy, form)
+      service.uri should be(form.uri)
     }
 
     it("raises error on duplicate uri") {
@@ -37,11 +37,11 @@ class ServicesDaoSpec extends FunSpec with Matchers {
   }
 
   it("softDelete") {
-    val gen = ServicesDao.create(db.Util.createdBy, Util.createGeneratorServiceForm())
-    ServicesDao.softDelete(db.Util.createdBy, gen)
-    ServicesDao.findByGuid(Authorization.All, gen.guid) should be(None)
-    ServicesDao.findAll(Authorization.All, guid = Some(gen.guid), isDeleted = None).map(_.guid) should be(Seq(gen.guid))
-    ServicesDao.findAll(Authorization.All, guid = Some(gen.guid), isDeleted = Some(true)).map(_.guid) should be(Seq(gen.guid))
+    val service = ServicesDao.create(db.Util.createdBy, Util.createGeneratorServiceForm())
+    ServicesDao.softDelete(db.Util.createdBy, service)
+    ServicesDao.findByGuid(Authorization.All, service.guid) should be(None)
+    ServicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = None).map(_.guid) should be(Seq(service.guid))
+    ServicesDao.findAll(Authorization.All, guid = Some(service.guid), isDeleted = Some(true)).map(_.guid) should be(Seq(service.guid))
   }
 
   describe("findAll") {
@@ -78,9 +78,18 @@ class ServicesDaoSpec extends FunSpec with Matchers {
 
     it("uri") {
       val form = Util.createGeneratorServiceForm()
-      val gen = ServicesDao.create(db.Util.createdBy, form)
+      val service = ServicesDao.create(db.Util.createdBy, form)
       ServicesDao.findAll(Authorization.All, uri = Some(form.uri)).map(_.uri) should be(Seq(form.uri))
       ServicesDao.findAll(Authorization.All, uri = Some(form.uri + "2")) should be(Nil)
+    }
+
+    it("generatorKey") {
+      val form = Util.createGeneratorServiceForm()
+      val service = ServicesDao.create(db.Util.createdBy, form)
+      val generator = Util.createGenerator(service)
+
+      ServicesDao.findAll(Authorization.All, generatorKey = Some(generator.key)).map(_.guid) should be(Seq(service.guid))
+      ServicesDao.findAll(Authorization.All, generatorKey = Some(generator.key + "2")) should be(Nil)
     }
 
   }

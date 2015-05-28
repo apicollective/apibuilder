@@ -19,14 +19,13 @@ class GeneratorsDaoSpec extends FunSpec with Matchers {
       val generator = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
-      generator.service.guid should be(service.guid)
       generator.key should be(form.key)
 
       GeneratorsDao.upsert(db.Util.createdBy, service, form)
       val second = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
-      second.guid should be(generator.guid)
+      second should be(generator)
     }
 
     it("change record if no data has changed") {
@@ -38,7 +37,6 @@ class GeneratorsDaoSpec extends FunSpec with Matchers {
       val generator = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
-      generator.service.guid should be(service.guid)
       generator.key should be(form.key)
 
       val newForm = form.copy(name = form.name + "2")
@@ -46,10 +44,7 @@ class GeneratorsDaoSpec extends FunSpec with Matchers {
       val second = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
-      second.guid should not be(generator.guid)
-      second.service.guid should be(service.guid)
-      second.key should be(form.key)
-      second.name should be(newForm.name)
+      second should not be(generator)
     }
 
   }
@@ -57,25 +52,26 @@ class GeneratorsDaoSpec extends FunSpec with Matchers {
   it("softDelete") {
     val generator = Util.createGenerator()
     GeneratorsDao.softDelete(db.Util.createdBy, generator)
-    GeneratorsDao.findAll(Authorization.All, guid = Some(generator.guid)) should be(Nil)
+    GeneratorsDao.findAll(Authorization.All, key = Some(generator.key)) should be(Nil)
   }
 
   describe("findAll") {
 
     it("serviceGuid") {
-      val generator = Util.createGenerator()
-      GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(generator.service.guid)).map(_.guid) should be(Seq(generator.guid))
-      GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(UUID.randomUUID)).map(_.guid) should be(Nil)
+      val service = Util.createGeneratorService()
+      val generator = Util.createGenerator(service)
+      GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).map(_.key) should be(Seq(generator.key))
+      GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(UUID.randomUUID)) should be(Nil)
     }
 
     it("isDeleted") {
       val generator = Util.createGenerator()
-      GeneratorsDao.findAll(Authorization.All, guid = Some(generator.guid)).map(_.guid) should be(Seq(generator.guid))
+      GeneratorsDao.findAll(Authorization.All, key = Some(generator.key)).map(_.key) should be(Seq(generator.key))
 
       GeneratorsDao.softDelete(db.Util.createdBy, generator)
-      GeneratorsDao.findAll(Authorization.All, guid = Some(generator.guid), isDeleted = None).map(_.guid) should be(Seq(generator.guid))
-      GeneratorsDao.findAll(Authorization.All, guid = Some(generator.guid), isDeleted = Some(true)).map(_.guid) should be(Seq(generator.guid))
-      GeneratorsDao.findAll(Authorization.All, guid = Some(generator.guid), isDeleted = Some(false)) should be(Nil)
+      GeneratorsDao.findAll(Authorization.All, key = Some(generator.key), isDeleted = None).map(_.key) should be(Seq(generator.key))
+      GeneratorsDao.findAll(Authorization.All, key = Some(generator.key), isDeleted = Some(true)).map(_.key) should be(Seq(generator.key))
+      GeneratorsDao.findAll(Authorization.All, key = Some(generator.key), isDeleted = Some(false)) should be(Nil)
     }
 
   }

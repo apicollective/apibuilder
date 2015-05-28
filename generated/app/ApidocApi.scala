@@ -84,7 +84,7 @@ package com.gilt.apidoc.api.v0.models {
    * Generated source code.
    */
   case class Code(
-    generator: com.gilt.apidoc.api.v0.models.Generator,
+    generator: com.gilt.apidoc.generator.v0.models.Generator,
     source: String
   )
 
@@ -127,18 +127,6 @@ package com.gilt.apidoc.api.v0.models {
   case class Error(
     code: String,
     message: String
-  )
-
-  /**
-   * Defines a single code generator
-   */
-  case class Generator(
-    guid: _root_.java.util.UUID,
-    service: com.gilt.apidoc.api.v0.models.GeneratorService,
-    key: String,
-    name: String,
-    language: _root_.scala.Option[String] = None,
-    description: _root_.scala.Option[String] = None
   )
 
   /**
@@ -538,6 +526,7 @@ package com.gilt.apidoc.api.v0.models {
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
     import com.gilt.apidoc.api.v0.models.json._
+    import com.gilt.apidoc.generator.v0.models.json._
     import com.gilt.apidoc.spec.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
@@ -700,14 +689,14 @@ package com.gilt.apidoc.api.v0.models {
 
     implicit def jsonReadsApidocapiCode: play.api.libs.json.Reads[Code] = {
       (
-        (__ \ "generator").read[com.gilt.apidoc.api.v0.models.Generator] and
+        (__ \ "generator").read[com.gilt.apidoc.generator.v0.models.Generator] and
         (__ \ "source").read[String]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApidocapiCode: play.api.libs.json.Writes[Code] = {
       (
-        (__ \ "generator").write[com.gilt.apidoc.api.v0.models.Generator] and
+        (__ \ "generator").write[com.gilt.apidoc.generator.v0.models.Generator] and
         (__ \ "source").write[String]
       )(unlift(Code.unapply _))
     }
@@ -764,28 +753,6 @@ package com.gilt.apidoc.api.v0.models {
         (__ \ "code").write[String] and
         (__ \ "message").write[String]
       )(unlift(Error.unapply _))
-    }
-
-    implicit def jsonReadsApidocapiGenerator: play.api.libs.json.Reads[Generator] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "service").read[com.gilt.apidoc.api.v0.models.GeneratorService] and
-        (__ \ "key").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "language").readNullable[String] and
-        (__ \ "description").readNullable[String]
-      )(Generator.apply _)
-    }
-
-    implicit def jsonWritesApidocapiGenerator: play.api.libs.json.Writes[Generator] = {
-      (
-        (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "service").write[com.gilt.apidoc.api.v0.models.GeneratorService] and
-        (__ \ "key").write[String] and
-        (__ \ "name").write[String] and
-        (__ \ "language").writeNullable[String] and
-        (__ \ "description").writeNullable[String]
-      )(unlift(Generator.unapply _))
     }
 
     implicit def jsonReadsApidocapiGeneratorService: play.api.libs.json.Reads[GeneratorService] = {
@@ -1328,6 +1295,7 @@ package com.gilt.apidoc.api.v0 {
     defaultHeaders: Seq[(String, String)] = Nil
   ) {
     import com.gilt.apidoc.api.v0.models.json._
+    import com.gilt.apidoc.generator.v0.models.json._
     import com.gilt.apidoc.spec.v0.models.json._
 
     private[this] val logger = play.api.Logger("com.gilt.apidoc.api.v0.Client")
@@ -1340,11 +1308,11 @@ package com.gilt.apidoc.api.v0 {
 
     def code: Code = Code
 
+    def comGiltApidocGeneratorV0ModelsGenerators: ComGiltApidocGeneratorV0ModelsGenerators = ComGiltApidocGeneratorV0ModelsGenerators
+
     def domains: Domains = Domains
 
     def emailVerificationConfirmationForms: EmailVerificationConfirmationForms = EmailVerificationConfirmationForms
-
-    def generators: Generators = Generators
 
     def generatorServices: GeneratorServices = GeneratorServices
 
@@ -1473,6 +1441,39 @@ package com.gilt.apidoc.api.v0 {
       }
     }
 
+    object ComGiltApidocGeneratorV0ModelsGenerators extends ComGiltApidocGeneratorV0ModelsGenerators {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        serviceUri: _root_.scala.Option[String] = None,
+        key: _root_.scala.Option[String] = None,
+        limit: Long = 100,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.generator.v0.models.Generator]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          serviceUri.map("service_uri" -> _),
+          key.map("key" -> _),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.generator.v0.models.Generator]", r, _.validate[Seq[com.gilt.apidoc.generator.v0.models.Generator]])
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+
+      override def getByKey(
+        key: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.generator.v0.models.Generator] = {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.generator.v0.models.Generator", r, _.validate[com.gilt.apidoc.generator.v0.models.Generator])
+          case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+        }
+      }
+    }
+
     object Domains extends Domains {
       override def postByOrgKey(
         orgKey: String,
@@ -1508,39 +1509,6 @@ package com.gilt.apidoc.api.v0 {
           case r if r.status == 204 => Unit
           case r if r.status == 409 => throw new com.gilt.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 409")
-        }
-      }
-    }
-
-    object Generators extends Generators {
-      override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        serviceUri: _root_.scala.Option[String] = None,
-        key: _root_.scala.Option[String] = None,
-        limit: Long = 100,
-        offset: Long = 0
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Generator]] = {
-        val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          serviceUri.map("service_uri" -> _),
-          key.map("key" -> _),
-          Some("limit" -> limit.toString),
-          Some("offset" -> offset.toString)
-        ).flatten
-
-        _executeRequest("GET", s"/generators", queryParameters = queryParameters).map {
-          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("Seq[com.gilt.apidoc.api.v0.models.Generator]", r, _.validate[Seq[com.gilt.apidoc.api.v0.models.Generator]])
-          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
-        }
-      }
-
-      override def getByKey(
-        key: String
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Generator] = {
-        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
-          case r if r.status == 200 => _root_.com.gilt.apidoc.api.v0.Client.parseJson("com.gilt.apidoc.api.v0.models.Generator", r, _.validate[com.gilt.apidoc.api.v0.models.Generator])
-          case r if r.status == 404 => throw new com.gilt.apidoc.api.v0.errors.UnitResponse(r.status)
-          case r => throw new com.gilt.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
     }
@@ -2332,6 +2300,23 @@ package com.gilt.apidoc.api.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Code]
   }
 
+  trait ComGiltApidocGeneratorV0ModelsGenerators {
+    /**
+     * List all generators visible by this user
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      serviceUri: _root_.scala.Option[String] = None,
+      key: _root_.scala.Option[String] = None,
+      limit: Long = 100,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.generator.v0.models.Generator]]
+
+    def getByKey(
+      key: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.generator.v0.models.Generator]
+  }
+
   trait Domains {
     /**
      * Add a domain to this organization
@@ -2357,23 +2342,6 @@ package com.gilt.apidoc.api.v0 {
     def postEmailVerificationConfirmations(
       emailVerificationConfirmationForm: com.gilt.apidoc.api.v0.models.EmailVerificationConfirmationForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
-  }
-
-  trait Generators {
-    /**
-     * List all generators visible by this user
-     */
-    def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      serviceUri: _root_.scala.Option[String] = None,
-      key: _root_.scala.Option[String] = None,
-      limit: Long = 100,
-      offset: Long = 0
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.gilt.apidoc.api.v0.models.Generator]]
-
-    def getByKey(
-      key: String
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.gilt.apidoc.api.v0.models.Generator]
   }
 
   trait GeneratorServices {
@@ -2749,6 +2717,7 @@ package com.gilt.apidoc.api.v0 {
   package errors {
 
     import com.gilt.apidoc.api.v0.models.json._
+    import com.gilt.apidoc.generator.v0.models.json._
     import com.gilt.apidoc.spec.v0.models.json._
 
     case class ErrorsResponse(

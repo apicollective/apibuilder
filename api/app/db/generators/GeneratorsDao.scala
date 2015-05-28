@@ -1,7 +1,8 @@
 package db.generators
 
 import db.{Authorization, SoftDelete}
-import com.gilt.apidoc.api.v0.models.{Error, User, Generator, GeneratorService}
+import com.gilt.apidoc.api.v0.models.{Error, User, GeneratorService}
+import com.gilt.apidoc.generator.v0.models.Generator
 import core.Util
 import lib.Validation
 import anorm._
@@ -33,46 +34,45 @@ object GeneratorsDao {
     ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {created_by_guid}::uuid)
   """
 
-  def upsert(user: User, service: GeneratorService, form: GeneratorForm) {
+  private[this] val SoftDeleteByKeyQuery = """
+    update generators.generators
+       set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
+     where key = {key}
+  """
+
+  def upsert(user: User, service: GeneratorService, gen: Generator) {
     findAll(
       Authorization.User(user.guid),
       serviceGuid = Some(service.guid),
-      key = Some(form.key.trim),
+      key = Some(gen.key.trim),
       limit = 1
     ).headOption match {
       case None => {
         DB.withConnection { implicit c =>
-          create(c, user, service, form)
+          create(c, user, service, gen)
         }
       }
-      case Some(generator) => {
-        val existing = GeneratorForm(
-          key = generator.key,
-          name = generator.name,
-          description = generator.description,
-          language = generator.language
-        )
-
-        if (existing != form) {
+      case Some(existing) => {
+        if (existing != gen) {
           DB.withConnection { implicit c =>
-            softDelete(c, user, generator)
-            create(c, user, service, form)
+            softDelete(c, user, gen)
+            create(c, user, service, gen)
           }
         }
       }
     }
   }
 
-  private def create(implicit c: java.sql.Connection, user: User, service: GeneratorService, form: GeneratorForm): UUID = {
+  private def create(implicit c: java.sql.Connection, user: User, service: GeneratorService, gen: Generator): UUID = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
       'guid -> guid,
       'service_guid -> service.guid,
-      'key -> form.key.trim,
-      'name -> form.name.trim,
-      'description -> form.description.map(_.trim),
-      'language -> form.language.map(_.trim),
+      'key -> gen.key.trim,
+      'name -> gen.name.trim,
+      'description -> gen.description.map(_.trim),
+      'language -> gen.language.map(_.trim),
       'created_by_guid -> user.guid,
       'updated_by_guid -> user.guid
     ).execute()
@@ -82,12 +82,12 @@ object GeneratorsDao {
 
   def softDelete(deletedBy: User, generator: Generator) {
     DB.withConnection { implicit c =>
-      softDelete(c, deletedBy: User, generator: Generator)
+      softDelete(c, deletedBy, generator)
     }
   }
 
   private[this] def softDelete(implicit c: java.sql.Connection, deletedBy: User, generator: Generator) {
-    SoftDelete.delete(c, "generators.generators", deletedBy, generator.guid)
+    SQL(SoftDeleteByKeyQuery).on('deleted_by_guid -> deletedBy.guid, 'key -> generator.key).execute()
   }
 
   def findAll(
@@ -125,8 +125,6 @@ object GeneratorsDao {
   private[db] def fromRow(
     row: anorm.Row
   ) = Generator(
-    guid = row[UUID]("guid"),
-    service = ServicesDao.fromRow(row, Some("service")),
     key = row[String]("key"),
     name = row[String]("name"),
     description = row[Option[String]]("description"),

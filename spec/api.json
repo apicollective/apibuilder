@@ -25,7 +25,8 @@
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.11/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.15/service.json" },
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-generator/0.9.15/service.json" }
     ],
 
     "enums": {
@@ -268,7 +269,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "generator", "type": "generator" },
+                { "name": "generator", "type": "com.gilt.apidoc.generator.v0.models.generator" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -388,18 +389,6 @@
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
                 { "name": "version", "type": "string" }
-	    ]
-	},
-
-	"generator": {
-	    "description": "Defines a single code generator",
-	    "fields": [
-                { "name": "guid", "type": "uuid" },
-                { "name": "service", "type": "generator_service" },
-                { "name": "key", "type": "string" },
-                { "name": "name", "type": "string" },
-                { "name": "language", "type": "string", "required": false },
-                { "name": "description", "type": "string", "required": false }
 	    ]
 	},
 
@@ -910,7 +899,7 @@
           
         },
 
-        "generator": {
+        "com.gilt.apidoc.generator.v0.models.generator": {
           "operations": [
             {
               "method": "GET",
@@ -923,7 +912,7 @@
                   { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
               ],
               "responses": {
-                "200": { "type": "[generator]" }
+                "200": { "type": "[com.gilt.apidoc.generator.v0.models.generator]" }
               }
             },
 
@@ -931,7 +920,7 @@
               "method": "GET",
               "path": "/:key",
               "responses": {
-                  "200": { "type": "generator" },
+                  "200": { "type": "com.gilt.apidoc.generator.v0.models.generator" },
                   "404": { "type": "unit" }
               }
             }

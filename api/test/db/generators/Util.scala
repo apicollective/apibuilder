@@ -1,7 +1,8 @@
 package db.generators
 
 import db.Authorization
-import com.gilt.apidoc.api.v0.models.{Generator, GeneratorService, GeneratorServiceForm, Visibility}
+import com.gilt.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm, Visibility}
+import com.gilt.apidoc.generator.v0.models.Generator
 import java.util.UUID
 
 object Util {
@@ -32,23 +33,24 @@ object Util {
   }
 
   def createGenerator(
-    service: GeneratorService = createGeneratorService(),
-    form: GeneratorForm = createGeneratorForm()
+    service: GeneratorService = createGeneratorService()
   ): Generator = {
-    GeneratorsDao.upsert(db.Util.createdBy, service, form)
+    val gen = createGeneratorForm()
+
+    GeneratorsDao.upsert(db.Util.createdBy, service, gen)
     GeneratorsDao.findAll(
       Authorization.All,
       serviceGuid = Some(service.guid),
-      key = Some(form.key),
+      key = Some(gen.key),
       limit = 1
     ).headOption.getOrElse {
       sys.error("Failed to create generator")
     }
   }
 
-  def createGeneratorForm(): GeneratorForm = {
+  def createGeneratorForm(): Generator = {
     val value = UUID.randomUUID.toString.toLowerCase
-    GeneratorForm(
+    Generator(
       key = "test_" + value,
       name = "Test " + value,
       description = None,

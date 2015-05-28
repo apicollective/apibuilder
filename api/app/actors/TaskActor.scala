@@ -1,6 +1,6 @@
 package actors
 
-import lib.{Pager, ServiceDiff, Text}
+import lib.{ServiceDiff, Text}
 import com.gilt.apidoc.api.v0.models.{Application, Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
 import com.gilt.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao}

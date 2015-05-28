@@ -1,14 +1,14 @@
 package controllers
 
 import db.generators.GeneratorsDao
-import com.gilt.apidoc.api.v0.models.json._
+import com.gilt.apidoc.generator.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-object Generators extends Controller with Generators
+object ComGiltApidocGeneratorV0ModelsGenerators extends Controller with ComGiltApidocGeneratorV0ModelsGenerators
 
-trait Generators {
+trait ComGiltApidocGeneratorV0ModelsGenerators {
   this: Controller =>
 
   def get(

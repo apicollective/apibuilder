@@ -9,10 +9,3 @@ case class Refresh(
   service: GeneratorService,
   checkedAt: DateTime
 )
-
-case class GeneratorForm(
-  key: String,
-  name: String,
-  language: Option[String] = None,
-  description: Option[String] = None
-)

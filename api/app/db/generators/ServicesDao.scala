@@ -63,6 +63,8 @@ object ServicesDao {
       ).execute()
     }
 
+    global.Actors.mainActor ! actors.MainActor.Messages.GeneratorServiceCreated(guid)
+
     findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create service")
     }
@@ -80,6 +82,7 @@ object ServicesDao {
     authorization: Authorization,
     guid: Option[UUID] = None,
     uri: Option[String] = None,
+    generatorKey: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -89,12 +92,14 @@ object ServicesDao {
       authorization.generatorServicesFilter().map { v => s"and $v" },
       guid.map { v => "and services.guid = {guid}::uuid" },
       uri.map { v => "and lower(services.uri) = lower(trim({uri}))" },
+      generatorKey.map { v => "and guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))" },
       isDeleted.map(db.Filters.isDeleted("services", _))
     ).flatten.mkString("\n   ") + s" order by lower(services.uri) limit ${limit} offset ${offset}"
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      uri.map('uri ->_)
+      uri.map('uri ->_),
+      generatorKey.map('generator_key -> _)
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
