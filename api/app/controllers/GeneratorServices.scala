@@ -7,6 +7,7 @@ import com.gilt.apidoc.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 object GeneratorServices extends Controller with GeneratorServices
 
@@ -48,7 +49,16 @@ trait GeneratorServices {
         ServicesDao.validate(form) match {
           case Nil => {
             val service = ServicesDao.create(request.user, form)
-            Ok(Json.toJson(service))
+
+            // Now to the initial update
+            Try(actors.GeneratorServiceActor.sync(service)) match {
+              case Success(_) => Ok(Json.toJson(service))
+              case Failure(ex) => {
+                ServicesDao.softDelete(request.user, service)
+                Conflict(Json.toJson(Validation.error(s"Failed to fetch generators from service: ${ex.getMessage}")))
+              }
+            }
+            
           }
           case errors => {
             Conflict(Json.toJson(errors))

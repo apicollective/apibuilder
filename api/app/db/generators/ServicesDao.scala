@@ -4,7 +4,7 @@ import com.gilt.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
 import db.{Authorization, SoftDelete}
 import com.gilt.apidoc.api.v0.models.{Error, User}
 import core.Util
-import lib.Validation
+import lib.{Pager, Validation}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -68,7 +68,20 @@ object ServicesDao {
     }
   }
 
+  /**
+    * Also will soft delete all generators for this service
+    */
   def softDelete(deletedBy: User, service: GeneratorService) {
+    Pager.eachPage { offset =>
+      // Note we do not include offset in the query as each iteration
+      // deletes records which will then NOT show up in the next loop
+      GeneratorsDao.findAll(
+        Authorization.All,
+        serviceGuid = Some(service.guid)
+      )
+    } { gen =>
+      GeneratorsDao.softDelete(deletedBy, gen)
+    }
     SoftDelete.delete("generators.services", deletedBy, service.guid)
   }
 

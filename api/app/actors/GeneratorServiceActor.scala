@@ -1,6 +1,7 @@
 package actors
 
 import lib.Pager
+import com.gilt.apidoc.api.v0.models.GeneratorService
 import com.gilt.apidoc.generator.v0.Client
 import com.gilt.apidoc.generator.v0.models.Generator
 import com.gilt.apidoc.internal.v0.models.TaskDataSyncService
@@ -20,19 +21,24 @@ object GeneratorServiceActor {
   }
 
   def sync(serviceGuid: UUID) {
+    ServicesDao.findByGuid(Authorization.All, serviceGuid).map { sync(_) }
+  }
+
+  def sync(service: GeneratorService) {
     import scala.concurrent.ExecutionContext.Implicits.global
 
-    ServicesDao.findByGuid(Authorization.All, serviceGuid).map { service =>
-      val client = new Client(service.uri)
+    val client = new Client(service.uri)
 
-      Pager.eachPage[Generator] { offset =>
-        Await.result(
-          client.generators.get(offset = offset),
-          5000.millis
-        )
-      } { gen =>
-        GeneratorsDao.upsert(UsersDao.AdminUser, service, gen)
-      }
+    Pager.eachPage[Generator] { offset =>
+      println(s"syncService(${service.uri}) - offset[$offset]")
+      val results = Await.result(
+        client.generators.get(limit = 100, offset = offset),
+        5000.millis
+      )
+      assert(offset < 25, s"Likely infinite loop fetching generators for service at URI[${service.uri}]")
+      results
+    } { gen =>
+      GeneratorsDao.upsert(UsersDao.AdminUser, service, gen)
     }
   }
 

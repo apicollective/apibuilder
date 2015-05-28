@@ -9,15 +9,6 @@
         '_help -> "The full URI to the service providing the code generator.",
         '_error -> form.error("uri")
     )
-
-    @helper.select(
-        form("visibility"),
-        Seq( ("" -> "-- select --") ) ++ Seq( (com.gilt.apidoc.api.v0.models.Visibility.Public.toString -> "Everybody"), (com.gilt.apidoc.api.v0.models.Visibility.User.toString -> "Just me") ),
-        '_label -> "Visibility",
-        '_error -> form.error("visibility"),
-        '_help -> "Determines who can see this code generator."
-    )
-
 </fieldset>
 
 <button class="btn btn-large btn-primary" type="submit">Submit</button>
