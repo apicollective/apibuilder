@@ -1,7 +1,7 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType, Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
-import com.gilt.apidoc.spec.v0.models.{Service}
+import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType}
+import com.gilt.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
 import com.gilt.apidoc.spec.v0.{models => spec}
 import play.api.libs.json.{Json, JsObject}
 import lib.Role
@@ -84,7 +84,7 @@ object Util {
     application: Application = createApplication(),
     version: String = "1.0.0",
     original: Original = createOriginal(),
-    service: Option[Service] = None
+    service: Option[spec.Service] = None
   ): Version = {
     VersionsDao.create(
       Util.createdBy,
@@ -135,8 +135,9 @@ object Util {
     )
   }
 
-  def createService(app: com.gilt.apidoc.api.v0.models.Application): Service = Service(
+  def createService(app: com.gilt.apidoc.api.v0.models.Application): spec.Service = spec.Service(
     apidoc = spec.Apidoc(version = com.gilt.apidoc.spec.v0.Constants.Version),
+    info = spec.Info(contact = None, license = None),
     name = app.name,
     organization = spec.Organization(key = app.organization.key),
     application = spec.Application(key = app.key),

@@ -2,13 +2,22 @@
     "name": "apidoc generator",
     "description": "Documentation for an apidoc code generator API",
     "base_url": "http://www.apidoc.me",
-    "apidoc": {
-      "version": "0.9.11"
-    },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.15/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.16/service.json" }
     ],
+
+    "info": {
+	"contact": {
+	    "name": "Michael Bryzek",
+	    "email": "mbryzek@alum.mit.edu",
+	    "url": "http://twitter.com/mbryzek"
+	},
+	"license": {
+	    "name": "MIT",
+	    "url": "http://opensource.org/licenses/MIT"
+	}
+    },
 
     "models": {
 

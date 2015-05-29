@@ -1,8 +1,17 @@
 {
     "name": "apidoc internal",
     "description": "Internal models used in the implementation of apidoc",
-    "apidoc": {
-      "version": "0.9.11"
+
+    "info": {
+	"contact": {
+	    "name": "Michael Bryzek",
+	    "email": "mbryzek@alum.mit.edu",
+	    "url": "http://twitter.com/mbryzek"
+	},
+	"license": {
+	    "name": "MIT",
+	    "url": "http://opensource.org/licenses/MIT"
+	}
     },
 
     "unions": {

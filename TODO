@@ -1,14 +1,10 @@
 Consider supporting (from swagger):
-  - add license, info, documentation. Remove description from top level (replaced with info.description)
   - parameter locations: header, cookie
   - add headers to response object
 
 Think about:
   - replace base_url with urls which would be an array of [ url, description ]
   - add authentication object support from swagger spec
-
-Generators:
-  - Cache the generators
 
 UX:
   - On adding watch, check subscription and offer the user to enable

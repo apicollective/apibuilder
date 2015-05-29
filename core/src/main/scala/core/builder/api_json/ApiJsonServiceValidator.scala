@@ -68,6 +68,7 @@ case class ApiJsonServiceValidator(
       case Some(sd: InternalServiceForm) => {
         validateStructure match {
           case Nil => {
+            validateInfo ++
             validateKey ++
             validateImports ++
             internalService.get.models.flatMap(_.warnings) ++
@@ -85,6 +86,23 @@ case class ApiJsonServiceValidator(
           }
           case errors => {
             errors
+          }
+        }
+      }
+    }
+  }
+
+  private def validateInfo(): Seq[String] = {
+    internalService.get.info match {
+      case None => Nil
+      case Some(info) => {
+        info.license match {
+          case None => Nil
+          case Some(l) => {
+            l.name match {
+              case None => Seq("License must have a name")
+              case Some(_) => Nil
+            }
           }
         }
       }
@@ -111,7 +129,7 @@ case class ApiJsonServiceValidator(
       strings = Seq("name"),
       optionalStrings = Seq("base_url", "description", "namespace"),
       optionalArraysOfObjects = Seq("imports", "headers"),
-      optionalObjects = Seq("apidoc", "enums", "models", "unions", "resources")
+      optionalObjects = Seq("apidoc", "info", "enums", "models", "unions", "resources")
     )
   }
 

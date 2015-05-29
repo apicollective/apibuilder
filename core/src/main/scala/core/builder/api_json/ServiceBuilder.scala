@@ -40,11 +40,20 @@ case class ServiceBuilder(
     val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val resources = internal.resources.map { ResourceBuilder(models, enums, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
+    val info = internal.info match {
+      case None => Info(
+        contact = None,
+        license = None
+      )
+      case Some(i) => InfoBuilder(i)
+    }
+
     Service(
       apidoc = internal.apidoc.flatMap(_.version) match {
         case Some(v) => Apidoc(version = v)
         case None => Apidoc(version = com.gilt.apidoc.spec.v0.Constants.Version)
       },
+      info = info,
       name = name,
       namespace = namespace,
       organization = Organization(key = config.orgKey),
@@ -266,6 +275,35 @@ case class ServiceBuilder(
       )
     }
 
+  }
+
+  object InfoBuilder {
+
+    def apply(internal: InternalInfoForm): Info = {
+      Info(
+        contact = internal.contact.flatMap { c =>
+          if (c.name.isEmpty && c.email.isEmpty && c.url.isEmpty) {
+            None
+          } else {
+            Some(
+              Contact(
+                name = c.name,
+                url = c.url,
+                email = c.email
+              )
+            )
+          }
+        },
+        license = internal.license.map { l =>
+          License(
+            name = l.name.getOrElse {
+              sys.error("License is missing name")
+            },
+            url = l.url
+          )
+        }
+      )
+    }
   }
 
   object ImportBuilder {
