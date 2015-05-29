@@ -1,9 +1,6 @@
 {
     "name": "apidoc internal",
     "description": "Internal models used in the implementation of apidoc",
-    "apidoc": {
-      "version": "0.9.11"
-    },
 
     "unions": {
 	"task_data": {

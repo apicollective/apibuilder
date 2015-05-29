@@ -1,9 +1,6 @@
 {
     "name": "apidoc spec",
     "description": "Specification of apidoc api.json schema",
-    "apidoc": {
-      "version": "0.9.11"
-    },
 
     "enums": {
 	"method": {
