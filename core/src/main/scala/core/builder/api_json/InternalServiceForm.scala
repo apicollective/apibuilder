@@ -23,7 +23,9 @@ private[api_json] case class InternalServiceForm(
   lazy val namespace = JsonUtil.asOptString(json \ "namespace")
   lazy val baseUrl = JsonUtil.asOptString(json \ "base_url")
   lazy val basePath = JsonUtil.asOptString(json \ "base_path")
-  lazy val description = JsonUtil.asOptString(json \ "description")
+
+  private lazy val legacyDescription = JsonUtil.asOptString(json \ "description")
+  lazy val info = (json \ "info").asOpt[JsValue].map { InternalInfoForm(_, legacyDescription) }
 
   lazy val imports: Seq[InternalImportForm] = {
     (json \ "imports").asOpt[JsArray] match {
@@ -135,6 +137,24 @@ case class InternalImportForm(
 
 case class InternalApidocForm(
   version: Option[String]
+)
+
+case class InternalInfoForm(
+  description: Option[String],
+  contact: Option[InternalInfoContactForm],
+  license: Option[InternalInfoLicenseForm],
+  warnings: Seq[String]
+)
+
+case class InternalInfoContactForm(
+  name: Option[String],
+  email: Option[String],
+  url: Option[String]
+)
+
+case class InternalInfoLicenseForm(
+  name: Option[String],
+  url: Option[String]
 )
 
 case class InternalDeprecationForm(
@@ -268,6 +288,40 @@ object InternalApidocForm {
   def apply(value: JsValue): InternalApidocForm = {
     InternalApidocForm(
       version = JsonUtil.asOptString(value \ "version")
+    )
+  }
+
+}
+
+object InternalInfoForm {
+
+  def apply(
+    value: JsValue,
+    legacyDescription: Option[String]
+  ): InternalInfoForm = {
+    val infoDescription = JsonUtil.asOptString(value \ "description")
+    
+
+    InternalInfoForm(
+      description = description,
+      contact = (value \ "contact").asOpt[JsValue].map { o =>
+        InternalInfoContactForm(
+          name = JsonUtil.asOptString(o \ "name"),
+          email = JsonUtil.asOptString(o \ "email"),
+          url = JsonUtil.asOptString(o \ "url")
+        )
+      },
+      license = (value \ "license").asOpt[JsValue].map { o =>
+        InternalInfoLicenseForm(
+          name = JsonUtil.asOptString(o \ "name"),
+          url = JsonUtil.asOptString(o \ "url")
+        )
+      },
+      warnings = JsonUtil.validate(
+        value,
+        optionalObjects = Seq("contact", "license"),
+        optionalStrings = Seq("description")
+      )
     )
   }
 

@@ -25,7 +25,7 @@ case class Parser(config: ServiceConfiguration) {
     val swagger = Option(new SwaggerParser().read(path.toString)).getOrElse {
       sys.error("File is not a valid swagger.json format")
     }
-    val info = swagger.getInfo()
+    val info = swagger.getInfo() // TODO
     val applicationKey = UrlKey.generate(info.getTitle())
     val specModels = models(swagger)
     val resolver = Resolver(models = specModels)
@@ -33,6 +33,10 @@ case class Parser(config: ServiceConfiguration) {
     Service(
       apidoc = Apidoc(version = com.gilt.apidoc.spec.v0.Constants.Version),
       name = info.getTitle(),
+      info = Info(
+        contact = None,
+        license = None
+      ),
       description = Option(info.getDescription()),
       baseUrl = translators.BaseUrl(Util.toArray(swagger.getSchemes).map(_.toString), swagger.getHost, Option(swagger.getBasePath)).headOption,
       namespace = config.applicationNamespace(applicationKey),

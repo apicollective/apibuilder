@@ -22,6 +22,15 @@ package com.gilt.apidoc.spec.v0.models {
   )
 
   /**
+   * Describes the primary contact for this service
+   */
+  case class Contact(
+    name: _root_.scala.Option[String] = None,
+    email: _root_.scala.Option[String] = None,
+    url: _root_.scala.Option[String] = None
+  )
+
+  /**
    * Indicates that this particular element is considered deprecated in the API. See
    * the description for details
    */
@@ -77,6 +86,22 @@ package com.gilt.apidoc.spec.v0.models {
     enums: Seq[String] = Nil,
     unions: Seq[String] = Nil,
     models: Seq[String] = Nil
+  )
+
+  /**
+   * General metadata about this service
+   */
+  case class Info(
+    license: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.License] = None,
+    contact: _root_.scala.Option[com.gilt.apidoc.spec.v0.models.Contact] = None
+  )
+
+  /**
+   * Describes the software license contact for this service
+   */
+  case class License(
+    name: String,
+    url: _root_.scala.Option[String] = None
   )
 
   case class Model(
@@ -138,6 +163,7 @@ package com.gilt.apidoc.spec.v0.models {
     version: String,
     baseUrl: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
+    info: com.gilt.apidoc.spec.v0.models.Info,
     headers: Seq[com.gilt.apidoc.spec.v0.models.Header] = Nil,
     imports: Seq[com.gilt.apidoc.spec.v0.models.Import] = Nil,
     enums: Seq[com.gilt.apidoc.spec.v0.models.Enum] = Nil,
@@ -370,6 +396,22 @@ package com.gilt.apidoc.spec.v0.models {
       )(unlift(Body.unapply _))
     }
 
+    implicit def jsonReadsApidocspecContact: play.api.libs.json.Reads[Contact] = {
+      (
+        (__ \ "name").readNullable[String] and
+        (__ \ "email").readNullable[String] and
+        (__ \ "url").readNullable[String]
+      )(Contact.apply _)
+    }
+
+    implicit def jsonWritesApidocspecContact: play.api.libs.json.Writes[Contact] = {
+      (
+        (__ \ "name").writeNullable[String] and
+        (__ \ "email").writeNullable[String] and
+        (__ \ "url").writeNullable[String]
+      )(unlift(Contact.unapply _))
+    }
+
     implicit def jsonReadsApidocspecDeprecation: play.api.libs.json.Reads[Deprecation] = {
       (__ \ "description").readNullable[String].map { x => new Deprecation(description = x) }
     }
@@ -490,6 +532,34 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "unions").write[Seq[String]] and
         (__ \ "models").write[Seq[String]]
       )(unlift(Import.unapply _))
+    }
+
+    implicit def jsonReadsApidocspecInfo: play.api.libs.json.Reads[Info] = {
+      (
+        (__ \ "license").readNullable[com.gilt.apidoc.spec.v0.models.License] and
+        (__ \ "contact").readNullable[com.gilt.apidoc.spec.v0.models.Contact]
+      )(Info.apply _)
+    }
+
+    implicit def jsonWritesApidocspecInfo: play.api.libs.json.Writes[Info] = {
+      (
+        (__ \ "license").writeNullable[com.gilt.apidoc.spec.v0.models.License] and
+        (__ \ "contact").writeNullable[com.gilt.apidoc.spec.v0.models.Contact]
+      )(unlift(Info.unapply _))
+    }
+
+    implicit def jsonReadsApidocspecLicense: play.api.libs.json.Reads[License] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "url").readNullable[String]
+      )(License.apply _)
+    }
+
+    implicit def jsonWritesApidocspecLicense: play.api.libs.json.Writes[License] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "url").writeNullable[String]
+      )(unlift(License.unapply _))
     }
 
     implicit def jsonReadsApidocspecModel: play.api.libs.json.Reads[Model] = {
@@ -624,6 +694,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "version").read[String] and
         (__ \ "base_url").readNullable[String] and
         (__ \ "description").readNullable[String] and
+        (__ \ "info").read[com.gilt.apidoc.spec.v0.models.Info] and
         (__ \ "headers").read[Seq[com.gilt.apidoc.spec.v0.models.Header]] and
         (__ \ "imports").read[Seq[com.gilt.apidoc.spec.v0.models.Import]] and
         (__ \ "enums").read[Seq[com.gilt.apidoc.spec.v0.models.Enum]] and
@@ -643,6 +714,7 @@ package com.gilt.apidoc.spec.v0.models {
         (__ \ "version").write[String] and
         (__ \ "base_url").writeNullable[String] and
         (__ \ "description").writeNullable[String] and
+        (__ \ "info").write[com.gilt.apidoc.spec.v0.models.Info] and
         (__ \ "headers").write[Seq[com.gilt.apidoc.spec.v0.models.Header]] and
         (__ \ "imports").write[Seq[com.gilt.apidoc.spec.v0.models.Import]] and
         (__ \ "enums").write[Seq[com.gilt.apidoc.spec.v0.models.Enum]] and
@@ -744,7 +816,7 @@ package com.gilt.apidoc.spec.v0 {
     )
 
     // Enum: Method
-    private[this] val enumMethodNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.Method.all.mkString(", ")}"
+    private val enumMethodNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.Method.all.mkString(", ")}"
 
     implicit val pathBindableEnumMethod = new PathBindable.Parsing[com.gilt.apidoc.spec.v0.models.Method] (
       Method.fromString(_).get, _.toString, enumMethodNotFound
@@ -755,7 +827,7 @@ package com.gilt.apidoc.spec.v0 {
     )
 
     // Enum: ParameterLocation
-    private[this] val enumParameterLocationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.ParameterLocation.all.mkString(", ")}"
+    private val enumParameterLocationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.ParameterLocation.all.mkString(", ")}"
 
     implicit val pathBindableEnumParameterLocation = new PathBindable.Parsing[com.gilt.apidoc.spec.v0.models.ParameterLocation] (
       ParameterLocation.fromString(_).get, _.toString, enumParameterLocationNotFound
@@ -766,7 +838,7 @@ package com.gilt.apidoc.spec.v0 {
     )
 
     // Enum: ResponseCodeOption
-    private[this] val enumResponseCodeOptionNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.ResponseCodeOption.all.mkString(", ")}"
+    private val enumResponseCodeOptionNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.spec.v0.models.ResponseCodeOption.all.mkString(", ")}"
 
     implicit val pathBindableEnumResponseCodeOption = new PathBindable.Parsing[com.gilt.apidoc.spec.v0.models.ResponseCodeOption] (
       ResponseCodeOption.fromString(_).get, _.toString, enumResponseCodeOptionNotFound
@@ -798,7 +870,7 @@ package com.gilt.apidoc.spec.v0 {
   ) {
     import com.gilt.apidoc.spec.v0.models.json._
 
-    private[this] val logger = play.api.Logger("com.gilt.apidoc.spec.v0.Client")
+    private val logger = play.api.Logger("com.gilt.apidoc.spec.v0.Client")
 
     logger.info(s"Initializing com.gilt.apidoc.spec.v0.Client for url $apiUrl")
 

@@ -1,5 +1,6 @@
 Consider supporting (from swagger):
-  - add license, info, documentation. Remove description from top level (replaced with info.description)
+  - add license, info, documentation
+  - Consider moving top level description into info.description in api.json
   - parameter locations: header, cookie
   - add headers to response object
 

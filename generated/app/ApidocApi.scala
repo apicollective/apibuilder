@@ -1283,7 +1283,7 @@ package com.gilt.apidoc.api.v0 {
     )
 
     // Enum: OriginalType
-    private[this] val enumOriginalTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.api.v0.models.OriginalType.all.mkString(", ")}"
+    private val enumOriginalTypeNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.api.v0.models.OriginalType.all.mkString(", ")}"
 
     implicit val pathBindableEnumOriginalType = new PathBindable.Parsing[com.gilt.apidoc.api.v0.models.OriginalType] (
       OriginalType.fromString(_).get, _.toString, enumOriginalTypeNotFound
@@ -1294,7 +1294,7 @@ package com.gilt.apidoc.api.v0 {
     )
 
     // Enum: Publication
-    private[this] val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.api.v0.models.Publication.all.mkString(", ")}"
+    private val enumPublicationNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.api.v0.models.Publication.all.mkString(", ")}"
 
     implicit val pathBindableEnumPublication = new PathBindable.Parsing[com.gilt.apidoc.api.v0.models.Publication] (
       Publication.fromString(_).get, _.toString, enumPublicationNotFound
@@ -1305,7 +1305,7 @@ package com.gilt.apidoc.api.v0 {
     )
 
     // Enum: Visibility
-    private[this] val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.api.v0.models.Visibility.all.mkString(", ")}"
+    private val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.gilt.apidoc.api.v0.models.Visibility.all.mkString(", ")}"
 
     implicit val pathBindableEnumVisibility = new PathBindable.Parsing[com.gilt.apidoc.api.v0.models.Visibility] (
       Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
@@ -1339,7 +1339,7 @@ package com.gilt.apidoc.api.v0 {
     import com.gilt.apidoc.generator.v0.models.json._
     import com.gilt.apidoc.spec.v0.models.json._
 
-    private[this] val logger = play.api.Logger("com.gilt.apidoc.api.v0.Client")
+    private val logger = play.api.Logger("com.gilt.apidoc.api.v0.Client")
 
     logger.info(s"Initializing com.gilt.apidoc.api.v0.Client for url $apiUrl")
 

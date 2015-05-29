@@ -61,6 +61,7 @@
 		{ "name": "version", "type": "string", "example": "1.0.0" },
 		{ "name": "base_url", "type": "string", "required": false },
 		{ "name": "description", "type": "string", "required": false },
+		{ "name": "info", "type": "info" },
 		{ "name": "headers", "type": "[header]", "default": "[]" },
 		{ "name": "imports", "type": "[import]", "default": "[]" },
 		{ "name": "enums", "type": "[enum]", "default": "[]" },
@@ -194,6 +195,31 @@
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false }
+	    ]
+	},
+
+	"info": {
+	    "description": "General metadata about this service",
+	    "fields": [
+		{ "name": "license", "type": "license", "required": false },
+		{ "name": "contact", "type": "contact", "required": false }
+	    ]
+	},
+
+	"license": {
+	    "description": "Describes the software license contact for this service",
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "url", "type": "string", "required": false }
+	    ]
+	},
+
+	"contact": {
+	    "description": "Describes the primary contact for this service",
+	    "fields": [
+		{ "name": "name", "type": "string", "example": "Joe Smith", "required": false  },
+		{ "name": "email", "type": "string", "example": "joe@test.apidoc.me", "required": false  },
+		{ "name": "url", "type": "string", "example": "http://www.apidoc.me", "required": false  }
 	    ]
 	},
 
