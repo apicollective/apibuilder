@@ -15,6 +15,7 @@ case class ServiceDiff(
 
   val differences: Seq[Diff] = Seq(
     diffApidoc(),
+    diffInfo(),
     diffName(),
     diffOrganization(),
     diffApplication(),
@@ -32,6 +33,21 @@ case class ServiceDiff(
 
   private[this] def diffApidoc(): Seq[Diff] = {
     Helpers.diffStringNonBreaking("apidoc/version", a.apidoc.version, b.apidoc.version)
+  }
+
+  private[this] def diffInfo(): Seq[Diff] = {
+    diffContact() ++ diffLicense()
+  }
+
+  private[this] def diffContact(): Seq[Diff] = {
+    Helpers.diffOptionalStringNonBreaking("contact/name", a.info.contact.flatMap(_.name), b.info.contact.flatMap(_.name)) ++
+    Helpers.diffOptionalStringNonBreaking("contact/url", a.info.contact.flatMap(_.url), b.info.contact.flatMap(_.url)) ++
+    Helpers.diffOptionalStringNonBreaking("contact/email", a.info.contact.flatMap(_.email), b.info.contact.flatMap(_.email))
+  }
+
+  private[this] def diffLicense(): Seq[Diff] = {
+    Helpers.diffOptionalStringNonBreaking("license/name", a.info.license.map(_.name), b.info.license.map(_.name)) ++
+    Helpers.diffOptionalStringNonBreaking("license/url", a.info.license.flatMap(_.url), b.info.license.flatMap(_.url))
   }
 
   private[this] def diffName(): Seq[Diff] = {

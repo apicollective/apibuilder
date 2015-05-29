@@ -22,6 +22,41 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     )
   }
 
+  describe("info") {
+    lazy val base = service.copy(info = Info(contact = None, license = None))
+
+    it("contact") {
+      val contact = Contact(
+        name = Some("Mike"),
+        url = Some("http://foo.com"),
+        email = Some("mbryzek@mailinator.com")
+      )
+
+      ServiceDiff(base, base.copy(info = Info(contact = Some(contact)))).differences should be(
+        Seq(
+          DiffNonBreaking(s"contact/name added: Mike"),
+          DiffNonBreaking(s"contact/url added: http://foo.com"),
+          DiffNonBreaking(s"contact/email added: mbryzek@mailinator.com")
+        )
+      )
+    }
+
+    it("license") {
+      val license = License(
+        name = "MIT",
+        url = Some("http://opensource.org/licenses/MIT")
+      )
+
+      ServiceDiff(base, base.copy(info = Info(license = Some(license)))).differences should be(
+        Seq(
+          DiffNonBreaking(s"license/name added: MIT"),
+          DiffNonBreaking(s"license/url added: http://opensource.org/licenses/MIT")
+        )
+      )
+    }
+
+  }
+
   it("name") {
     ServiceDiff(service, service.copy(name = "test")).differences should be(
       Seq(
@@ -1056,7 +1091,6 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
       }
 
     }
-
 
   }
 }
