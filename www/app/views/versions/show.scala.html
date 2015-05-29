@@ -28,25 +28,25 @@
       }
 
       <ul>
-        @service.info.contact.map { contact =>
-          <li> Contact:
+        <li> Contact:
+          @service.info.contact.map { contact =>
             @Html(contact.email match {
               case None => contact.name.getOrElse("")
               case Some(email) => s"<a href='mailto:$email'>${contact.name.getOrElse(email)}</a>"
             })
             @Html(contact.url.map { url => s"<a href='$url'>$url</a>" }.getOrElse(""))
-          </li>
-        }
+          }.getOrElse("N/A")
+        </li>
 
-        @service.info.license.map { license =>
-          <li> License:
-            @Html(license.url match {
+        <li> License:
+         @service.info.license.map { license =>
+             @Html(license.url match {
               case None => license.name
               case Some(url) => s"<a href='$url'>${license.name}</a>"
             })
-          </li>
-        }
-      </ul>
+          }.getOrElse("N/A")
+        </li>
+    </ul>
     </div>
   </div>
  
