@@ -3,6 +3,18 @@
     "description": "Host API documentation for applications providing REST APIs, facilitating the design of good resource first APIs.",
     "base_url": "http://api.apidoc.me",
 
+    "info": {
+	"contact": {
+	    "name": "Michael Bryzek",
+	    "email": "mbryzek@alum.mit.edu",
+	    "url": "http://twitter.com/mbryzek"
+	},
+	"license": {
+	    "name": "MIT",
+	    "url": "http://opensource.org/licenses/MIT"
+	}
+    },
+
     "unions": {
 	"diff": {
 	    "description": "Represents a single diff in an application",
@@ -22,8 +34,8 @@
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.15/service.json" },
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-generator/0.9.15/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.16/service.json" },
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-generator/0.9.16/service.json" }
     ],
 
     "enums": {

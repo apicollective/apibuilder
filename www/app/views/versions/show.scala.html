@@ -20,13 +20,34 @@
       }
     </div>
 
-    @service.description.map { desc =>
-      <div class="pull-left">
+    <div class="pull-left">
+      @service.description.map { desc =>
         <p class="service-description">
           @Html(lib.Markdown.toHtml(desc))
         </p>
-      </div>
-    }
+      }
+
+      <ul>
+        @service.info.contact.map { contact =>
+          <li> Contact:
+            @Html(contact.email match {
+              case None => contact.name.getOrElse("")
+              case Some(email) => s"<a href='mailto:$email'>${contact.name.getOrElse(email)}</a>"
+            })
+            @Html(contact.url.map { url => s"<a href='$url'>$url</a>" }.getOrElse(""))
+          </li>
+        }
+
+        @service.info.license.map { license =>
+          <li> License:
+            @Html(license.url match {
+              case None => license.name
+              case Some(url) => s"<a href='$url'>${license.name}</a>"
+            })
+          </li>
+        }
+      </ul>
+    </div>
   </div>
  
   <div class="versions-show">

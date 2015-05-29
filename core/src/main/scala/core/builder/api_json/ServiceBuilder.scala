@@ -288,8 +288,8 @@ case class ServiceBuilder(
             Some(
               Contact(
                 name = c.name,
-                email = c.email,
-                url = c.url
+                url = c.url,
+                email = c.email
               )
             )
           }

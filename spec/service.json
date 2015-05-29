@@ -2,6 +2,18 @@
     "name": "apidoc spec",
     "description": "Specification of apidoc api.json schema",
 
+    "info": {
+	"contact": {
+	    "name": "Michael Bryzek",
+	    "email": "mbryzek@alum.mit.edu",
+	    "url": "http://twitter.com/mbryzek"
+	},
+	"license": {
+	    "name": "MIT",
+	    "url": "http://opensource.org/licenses/MIT"
+	}
+    },
+
     "enums": {
 	"method": {
 	    "values": [
@@ -206,17 +218,17 @@
 	"license": {
 	    "description": "Describes the software license contact for this service",
 	    "fields": [
-		{ "name": "name", "type": "string" },
-		{ "name": "url", "type": "string", "required": false }
+		{ "name": "name", "type": "string", "example": "MIT" },
+		{ "name": "url", "type": "string", "required": false, "example": "http://opensource.org/licenses/MIT" }
 	    ]
 	},
 
 	"contact": {
 	    "description": "Describes the primary contact for this service",
 	    "fields": [
-		{ "name": "name", "type": "string", "example": "Joe Smith", "required": false  },
-		{ "name": "email", "type": "string", "example": "joe@test.apidoc.me", "required": false  },
-		{ "name": "url", "type": "string", "example": "http://www.apidoc.me", "required": false  }
+		{ "name": "name", "type": "string", "example": "Michael Bryzek", "required": false  },
+		{ "name": "url", "type": "string", "example": "http://www.apidoc.me", "required": false  },
+		{ "name": "email", "type": "string", "example": "michael@test.apidoc.me", "required": false  }
 	    ]
 	},
 

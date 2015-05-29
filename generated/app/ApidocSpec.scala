@@ -26,8 +26,8 @@ package com.gilt.apidoc.spec.v0.models {
    */
   case class Contact(
     name: _root_.scala.Option[String] = None,
-    email: _root_.scala.Option[String] = None,
-    url: _root_.scala.Option[String] = None
+    url: _root_.scala.Option[String] = None,
+    email: _root_.scala.Option[String] = None
   )
 
   /**
@@ -399,16 +399,16 @@ package com.gilt.apidoc.spec.v0.models {
     implicit def jsonReadsApidocspecContact: play.api.libs.json.Reads[Contact] = {
       (
         (__ \ "name").readNullable[String] and
-        (__ \ "email").readNullable[String] and
-        (__ \ "url").readNullable[String]
+        (__ \ "url").readNullable[String] and
+        (__ \ "email").readNullable[String]
       )(Contact.apply _)
     }
 
     implicit def jsonWritesApidocspecContact: play.api.libs.json.Writes[Contact] = {
       (
         (__ \ "name").writeNullable[String] and
-        (__ \ "email").writeNullable[String] and
-        (__ \ "url").writeNullable[String]
+        (__ \ "url").writeNullable[String] and
+        (__ \ "email").writeNullable[String]
       )(unlift(Contact.unapply _))
     }
 

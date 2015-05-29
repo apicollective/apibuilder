@@ -9,6 +9,7 @@
     {
       "name": <em>string</em>,
       "apidoc": <em>JSON Object of <a href="#apidoc">Apidoc</a> (optional)</em>,
+      "info": <em>JSON Object of <a href="#info">Info</a> (optional)</em>,
       "namespace": <em>string (optional)</em>,
       "base_url": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
@@ -25,6 +26,7 @@
     <ul>
       <li><em>name</em>: the human readable name of this service. Used for display, and as the basis for generating a unique key for URL.</li>
       <li><em>apidoc</em>: optionally specify the specific version of apidoc for which your service is written. If not provided, we automatically default to the current production version. See <a href="#apidoc">Apidoc</a></li></li>
+      <li><em>info</em>: optionally specify additional metadata about this service (e.g. contact info, license). See <a href="#info">Info</a></li></li>
       <li><em>namespace</em>: specifies the namespace for this service. Namespace is primarily used when other services import definitions from your service and in the code generators when defining things like package names. If not specified, we will automatically generate a namespace based on [organization namespace].[formatted service name].[major version number]. Note that by default apidoc includes the major version number in the package name which allows service authors and clients to interact with multiple versions of the service where changes have been made in a non backwards compatible way.</li>
       <li><em>baseUrl</em>: the base URL where this service is hosted. Must start with http.</li>
       @description("service")
@@ -35,6 +37,65 @@
       <li><em>resources</em> JSON object defining all of the resources in this API. The key of each object is the name of a type that this resource represents. The type must be the name of a model or an enum. See <a href="#resource">Resource</a></li>
     </ul>
 
+  </p>
+
+  <a name="info"></a>
+  <h2>Info declaration</h2>
+  <p>
+    The info node is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "contact": <em>JSON Object of <a href="#contact">Contact</a> (optional)</em>,
+      "license": <em>JSON Object of <a href="#license">License</a> (optional)</em>
+    }
+    </pre>
+
+    where:
+    <ul>
+      <li><em>contact</em> specifies contact information for this service. See <a href="#contact">Contact</a></li>
+      <li><em>license</em> specifies the license under which this service is released. See <a href="#license">License</a></li>
+    </ul>
+  </p>
+
+  <a name="contact"></a>
+  <h2>Contact declaration</h2>
+  <p>
+    The contact node is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "name": <em>string (optional)</em>,
+      "url": <em>string (optional)</em>,
+      "email": <em>string (optional)</em>
+    }
+    </pre>
+
+    where:
+    <ul>
+      <li><em>name</em> Identifying name of the contact person/organization</li>
+      <li><em>url</em> URL pointing to the contact information</li>
+      <li><em>email</em> Email address of the contact person/organization</li>
+    </ul>
+  </p>
+
+  <a name="license"></a>
+  <h2>License declaration</h2>
+  <p>
+    The license node is represented as a JSON object of the form:
+
+    <pre>
+    {
+      "name": <em>string</em>,
+      "url": <em>string (optional)</em>
+    }
+    </pre>
+
+    where:
+    <ul>
+      <li><em>name</em> Name of the license - e.g. MIT</li>
+      <li><em>url</em> URL of the license itself</li>
+    </ul>
   </p>
 
   <a name="apidoc"></a>
