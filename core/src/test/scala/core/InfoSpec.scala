@@ -6,19 +6,6 @@ import org.scalatest.{FunSpec, Matchers}
 
 class InfoSpec extends FunSpec with Matchers {
 
-  it("migrates legacy description to info object") {
-    val json = """
-    {
-      "name": "Api Doc",
-      "description": "foo"
-    }
-    """
-
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("")
-    validator.service.info.get.description should be(Some("foo"))
-  }
-
   describe("with info") {
 
     val baseJson = """
@@ -37,14 +24,7 @@ class InfoSpec extends FunSpec with Matchers {
       val json = baseJson.format("")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
-      validator.service.info should be(Some(Info(None, None, None)))
-    }
-
-    it("description") {
-      val json = baseJson.format(""" "description": "hey" """)
-      val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be("")
-      validator.service.info should be(Some(Info(description = Some("hey"))))
+      validator.service.info should be(Info(license = None, contact = None))
     }
 
     it("contact") {
@@ -62,7 +42,7 @@ class InfoSpec extends FunSpec with Matchers {
         email = Some("Foo@test.apidoc.me"),
         url = Some("http://www.apidoc.me")
       )
-      validator.service.info should be(Some(Info(contact = Some(contact))))
+      validator.service.info should be(Info(contact = Some(contact)))
     }
 
     it("license") {
@@ -78,7 +58,7 @@ class InfoSpec extends FunSpec with Matchers {
         name = "MIT",
         url = Some("http://opensource.org/licenses/MIT")
       )
-      validator.service.info should be(Some(Info(license = Some(license))))
+      validator.service.info should be(Info(license = Some(license)))
     }
 
     it("validates license requires name") {

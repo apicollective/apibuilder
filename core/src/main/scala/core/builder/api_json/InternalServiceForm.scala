@@ -24,8 +24,8 @@ private[api_json] case class InternalServiceForm(
   lazy val baseUrl = JsonUtil.asOptString(json \ "base_url")
   lazy val basePath = JsonUtil.asOptString(json \ "base_path")
 
-  private lazy val legacyDescription = JsonUtil.asOptString(json \ "description")
-  lazy val info = (json \ "info").asOpt[JsValue].map { InternalInfoForm(_, legacyDescription) }
+  lazy val description = JsonUtil.asOptString(json \ "description")
+  lazy val info = (json \ "info").asOpt[JsValue].map { InternalInfoForm(_) }
 
   lazy val imports: Seq[InternalImportForm] = {
     (json \ "imports").asOpt[JsArray] match {
@@ -140,7 +140,6 @@ case class InternalApidocForm(
 )
 
 case class InternalInfoForm(
-  description: Option[String],
   contact: Option[InternalInfoContactForm],
   license: Option[InternalInfoLicenseForm],
   warnings: Seq[String]
@@ -296,14 +295,9 @@ object InternalApidocForm {
 object InternalInfoForm {
 
   def apply(
-    value: JsValue,
-    legacyDescription: Option[String]
+    value: JsValue
   ): InternalInfoForm = {
-    val infoDescription = JsonUtil.asOptString(value \ "description")
-    
-
     InternalInfoForm(
-      description = description,
       contact = (value \ "contact").asOpt[JsValue].map { o =>
         InternalInfoContactForm(
           name = JsonUtil.asOptString(o \ "name"),

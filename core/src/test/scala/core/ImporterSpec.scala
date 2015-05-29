@@ -34,6 +34,7 @@ class ImporterSpec extends FunSpec with Matchers {
       "unions": [],
       "enums": [],
       "resources": [],
+      "info": {},
 
       "models": [
         {
