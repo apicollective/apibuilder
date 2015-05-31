@@ -75,7 +75,7 @@ class TaskActor extends Actor {
             case TaskDataUndefinedType(desc) => s"TaskDataUndefinedType($desc)"
           }
 
-          val errorMsg = Text.truncate(task.lastError.getOrElse("No information on error"))
+          val errorMsg = Text.truncate(task.lastError.getOrElse("No information on error"), 500)
           s"$errorType task ${task.guid}: $errorMsg"
         }
         Emails.sendErrors(
