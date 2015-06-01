@@ -21,7 +21,8 @@ Deploying
 Releasing a schema change
 =========================
 
-    sudo yum install postgresql93
+    sudo yum install http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-ami201503-94-9.4-1.noarch.rpm
+    sudo yum install postgresql94
 
     cd /web/apidoc/schema
     sem-dist
