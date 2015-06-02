@@ -6,29 +6,34 @@ class UrlKeySpec extends FunSpec with Matchers {
 
   describe("generate") {
 
+    it("does not generate reserved keys") {
+      val key = UrlKey.generate("members")
+      UrlKey.validate(key) should be(Nil)
+    }
+
     it("good urls alone") {
-      UrlKey.generate("foo") should be("foo")
-      UrlKey.generate("foo-bar") should be("foo-bar")
+      UrlKey.generate("foos") should be("foos")
+      UrlKey.generate("foos-bar") should be("foos-bar")
     }
 
     it("numbers") {
-      UrlKey.generate("foo123") should be("foo123")
+      UrlKey.generate("foos123") should be("foos123")
     }
 
     it("lower case") {
-      UrlKey.generate("FOO-BAR") should be("foo-bar")
+      UrlKey.generate("FOOS-BAR") should be("foos-bar")
     }
 
     it("trim") {
-      UrlKey.generate("  foo-bar  ") should be("foo-bar")
+      UrlKey.generate("  foos-bar  ") should be("foos-bar")
     }
 
     it("leading garbage") {
-      UrlKey.generate("!foo") should be("foo")
+      UrlKey.generate("!foos") should be("foos")
     }
 
     it("trailing garbage") {
-      UrlKey.generate("foo!") should be("foo")
+      UrlKey.generate("foos!") should be("foos")
     }
 
     it("allows underscores") {

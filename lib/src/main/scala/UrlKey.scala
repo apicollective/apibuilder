@@ -17,6 +17,20 @@ object UrlKey {
   private val RegexpTrailingSpaces = """\-+$""".r
 
   def generate(value: String): String = {
+    val key = format(value)
+    validate(key) match {
+      case Nil => key
+      case errors => {
+        // The provided value was insufficent. Iterate. Note that we
+        // key the prefix key- here to ensure that it itself is not
+        // formatted away. It is also long enough to satisy min length
+        // requirements for the key.
+        generate("key-" + value)
+      }
+    }
+  }
+
+  private def format(value: String): String = {
     RegexpTrailingSpaces.replaceAllIn(
       RegexpLeadingSpaces.replaceAllIn(
         Regexp3.replaceAllIn(
@@ -30,7 +44,7 @@ object UrlKey {
   }
 
   def validate(key: String): Seq[String] = {
-    val generated = UrlKey.generate(key)
+    val generated = UrlKey.format(key)
     if (key.length < MinKeyLength) {
       Seq(s"Key must be at least $MinKeyLength characters")
     } else if (key != generated) {
@@ -49,6 +63,6 @@ object UrlKey {
     "history", "internal", "login", "logout", "member", "members", "metadatum", "metadata",
     "org", "password", "private", "reject", "service.json", "session", "setting", "scms",
     "search", "source", "subaccount", "subscription", "team", "types", "user", "util", "version", "watch"
-  ).map(UrlKey.generate(_))
+  ).map(UrlKey.format(_))
 
 }
