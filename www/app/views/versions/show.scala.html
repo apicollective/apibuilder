@@ -10,7 +10,7 @@
     <div class="pull-right">
       @if(tpl.isOrgMember) {
         <a href="@routes.Versions.create(orgKey = tpl.org.get.key, application = Some(service.application.key))">Upload new version</a> |
-        <a class="delete" text="Are you sure?" href="@routes.Versions.postDelete(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Delete this version</a> |
+        <a class="delete" data-confirm="Are you sure you want to delete version @{service.version}?" href="@routes.Versions.postDelete(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Delete this version</a> |
       }
 
       @if(isWatching) {

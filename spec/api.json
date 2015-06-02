@@ -430,6 +430,12 @@
 	    "fields": [
                 { "name": "uri", "type": "string" }
 	    ]
+	},
+
+	"move_form": {
+	    "fields": [
+                { "name": "org_key", "type": "string", "description": "The key of the organization to which we are moving this item" }
+	    ]
 	}
 
     },
@@ -790,8 +796,19 @@
                     "method": "DELETE",
                     "description": "Deletes a specific application and its associated versions.",
                     "path": "/:applicationKey"
-                }
+                },
 
+                {
+                    "method": "POST",
+                    "description": "Moves application to a new organization.",
+		    "path": "/:applicationKey/move",
+		    "body": { "type": "move_form" },
+                    "responses": {
+                        "200": { "type": "application" },
+			"409": { "type": "[error]" }
+                    }
+                }
+		
             ]
         },
 

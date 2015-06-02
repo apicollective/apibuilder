@@ -78,19 +78,26 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   def createApplication(
     org: Organization,
-    key: String = "z-test-app-" + UUID.randomUUID.toString
+    form: ApplicationForm = createApplicationForm()
   ): Application = {
     db.ApplicationsDao.create(
       createdBy = TestUser,
       org = org,
-      form = ApplicationForm(
-        name = key,
-        key = Some(key),
-        description = None,
-        visibility = Visibility.Organization
-      )
+      form = form
     )
   }
+
+  def createApplicationForm(
+    name: String = "Test " + UUID.randomUUID.toString,
+    key: Option[String] = None,
+    description: Option[String] = None,
+    visibility: Visibility = Visibility.Organization
+  ) = db.Util.createApplicationForm(
+    name = name,
+    key = key,
+    description = description,
+    visibility = visibility
+  )
 
   def createPasswordRequest(email: String) {
     await(client.passwordResetRequests.post(PasswordResetRequest(email = email)))

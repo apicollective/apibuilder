@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.ApplicationForm
+import com.gilt.apidoc.api.v0.models.{ApplicationForm, MoveForm}
 import com.gilt.apidoc.api.v0.models.json._
 import db.{Authorization, OrganizationsDao, ApplicationsDao}
 import lib.Validation
@@ -71,7 +71,7 @@ object Applications extends Controller {
           }
           case s: JsSuccess[ApplicationForm] => {
             val form = s.get
-            ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.User(request.user.guid), org.key, applicationKey) match {
+            ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
               case None => Conflict(Json.toJson(Validation.error(s"application[$applicationKey] not found or inaccessible")))
               case Some(existing) => {
                 ApplicationsDao.validate(org, form, Some(existing)) match {
@@ -92,13 +92,43 @@ object Applications extends Controller {
   }
 
   def deleteByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String) = Authenticated { request =>
-    OrganizationsDao.findByKey(Authorization.User(request.user.guid), orgKey) map { org =>
+    OrganizationsDao.findByKey(request.authorization, orgKey) map { org =>
       request.requireMember(org)
-      ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.User(request.user.guid), orgKey, applicationKey).map { application =>
+      ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
         ApplicationsDao.softDelete(request.user, application)
       }
     }
     NoContent
   }
 
+  def postMoveByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
+    OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
+      case None => NotFound
+      case Some(org) => {
+        request.requireAdmin(org)
+        ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
+          case None => NotFound
+          case Some(app) => {
+            request.body.validate[MoveForm] match {
+              case e: JsError => {
+                Conflict(Json.toJson(Validation.invalidJson(e)))
+              }
+              case s: JsSuccess[MoveForm] => {
+                val form = s.get
+                ApplicationsDao.validateMove(request.authorization, app, form) match {
+                  case Nil => {
+                    val updatedApp = ApplicationsDao.move(request.user, app, form)
+                    Ok(Json.toJson(updatedApp))
+                  }
+                  case errors => {
+                    Conflict(Json.toJson(errors))
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }

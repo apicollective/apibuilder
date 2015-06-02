@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Error, Organization, Reference, User, Version, Visibility}
+import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, Reference, User, Version, Visibility}
 import com.gilt.apidoc.internal.v0.models.TaskDataIndexApplication
 import lib.{UrlKey, Validation}
 import anorm._
@@ -38,12 +38,31 @@ object ApplicationsDao {
      where guid = {guid}::uuid
   """
 
+  private[this] val UpdateOrganizationQuery = """
+    update applications
+       set organization_guid = {org_guid}::uuid,
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
+  """
+
   private[this] val UpdateVisibilityQuery = """
     update applications
        set visibility = {visibility},
            updated_by_guid = {updated_by_guid}::uuid
      where guid = {guid}::uuid
   """
+
+  def validateMove(
+    authorization: Authorization,
+    app: Application,
+    form: MoveForm
+  ): Seq[Error] = {
+    val orgErrors = OrganizationsDao.findByKey(authorization, form.orgKey) match {
+      case None => Seq(s"Organization with key[${form.orgKey}] not found")
+      case Some(newOrg) => Nil
+    }
+    Validation.errors(orgErrors)
+  }
 
   def validate(
     org: Organization,
@@ -90,6 +109,12 @@ object ApplicationsDao {
     app: Application,
     form: ApplicationForm
   ): Application = {
+    val org = OrganizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.organization.guid).getOrElse {
+      sys.error(s"User[${updatedBy.guid}] does not have access to org[${app.organization.guid}]")
+    }
+    val errors = validate(org, form, Some(app))
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
+
     withTasks(updatedBy, app.guid, { implicit c =>
       SQL(UpdateQuery).on(
         'guid -> app.guid,
@@ -105,6 +130,27 @@ object ApplicationsDao {
     }
   }
 
+  def move(
+    updatedBy: User,
+    app: Application,
+    form: MoveForm
+  ): Application = {
+    val errors = validateMove(Authorization.User(updatedBy.guid), app, form)
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
+
+    withTasks(updatedBy, app.guid, { implicit c =>
+      SQL(UpdateOrganizationQuery).on(
+        'guid -> app.guid,
+        'org_guid -> app.organization.guid,
+        'updated_by_guid -> updatedBy.guid
+      ).execute()
+    })
+
+    findByGuid(Authorization.All, app.guid).getOrElse {
+      sys.error("Error updating visibility")
+    }
+  }
+
   def setVisibility(
     updatedBy: User,
     app: Application,
@@ -115,13 +161,14 @@ object ApplicationsDao {
       "User[${user.guid}] not authorized to update app[${app.key}]"
     )
 
-    DB.withConnection { implicit c =>
+    withTasks(updatedBy, app.guid, { implicit c =>
       SQL(UpdateVisibilityQuery).on(
         'guid -> app.guid,
         'visibility -> visibility.toString,
         'updated_by_guid -> updatedBy.guid
       ).execute()
-    }
+    })
+
     findByGuid(Authorization.All, app.guid).getOrElse {
       sys.error("Error updating visibility")
     }
@@ -133,6 +180,9 @@ object ApplicationsDao {
     form: ApplicationForm,
     keyOption: Option[String] = None
   ): Application = {
+    val errors = validate(org, form)
+    assert(errors.isEmpty, errors.map(_.message).mkString(" "))
+
     val guid = UUID.randomUUID
     val key = keyOption.getOrElse(UrlKey.generate(form.name))
 
@@ -140,8 +190,8 @@ object ApplicationsDao {
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> org.guid,
-        'name -> form.name,
-        'description -> form.description,
+        'name -> form.name.trim,
+        'description -> form.description.map(_.trim),
         'key -> key,
         'visibility -> form.visibility.toString,
         'created_by_guid -> createdBy.guid,
