@@ -45,7 +45,7 @@ case class MainTemplate(
 
   def canEditApplication(applicationKey: String): Boolean = isOrgMember
 
-  def canDeleteApplication(applicationKey: String): Boolean = isOrgMember
+  def canAdminApplication(applicationKey: String): Boolean = isOrgMember
 
   def canDeleteOrganization(): Boolean = isOrgAdmin
 

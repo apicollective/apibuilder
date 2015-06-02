@@ -1,0 +1,28 @@
+@(tpl: models.MainTemplate,
+  form: Form[controllers.ApplicationSettings.MoveOrgData],
+  errors: Seq[String] = Seq.empty
+)(implicit flash: Flash)
+
+@main(tpl, errorMessages = errors) {
+  <div class="container">
+
+    @helper.form(action = routes.ApplicationSettings.postMove(tpl.org.get.key, tpl.application.get.key)) {
+
+      <fieldset>
+        @helper.inputText(
+            form("org_key"),
+            '_label -> "New Organization Key",
+            '_error -> form.error("org_key")
+        )
+      </fieldset>
+
+      <div class="actions">
+        <button class="btn btn-large btn-primary" type="submit">Submit</button>
+        <a href="@routes.ApplicationSettings.show(tpl.org.get.key, tpl.application.get.key, tpl.version.get)" class="btn">Cancel</a>
+      </div>
+
+    }
+
+  </div>
+
+}
