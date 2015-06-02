@@ -25,7 +25,11 @@ object UrlKey {
         // key the prefix key- here to ensure that it itself is not
         // formatted away. It is also long enough to satisy min length
         // requirements for the key.
-        generate("key-" + value)
+        val key2 = format("key-" + value)
+        validate(key2) match {
+          case Nil => key2
+          case errors => sys.error(s"Could not generate a valid key from value[$value]")
+        }
       }
     }
   }
