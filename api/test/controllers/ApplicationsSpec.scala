@@ -18,7 +18,6 @@ class ApplicationsSpec extends BaseSpec {
 
   private lazy val org = db.Util.createOrganization(createdBy = TestUser)
 
-  /*
   "POST /:orgKey" in new WithServer {
     val key = "test-" + UUID.randomUUID.toString
     val form = createApplicationForm(key = Some(key))
@@ -69,17 +68,16 @@ class ApplicationsSpec extends BaseSpec {
     await(client.applications.getByOrgKey(org.key, key = Some(app1.key))).map(_.guid) must be(Seq(app1.guid))
     await(client.applications.getByOrgKey(org.key, key = Some(app2.key.toUpperCase))).map(_.guid) must be(Seq(app2.guid))
   }
-  */
 
   "GET /:orgKey by hasVersion" in new WithServer {
+    val org = createOrganization()
     val app1 = createApplication(org)
     val app2 = createApplication(org)
+    val version = createVersion(app2)
 
-    await(client.applications.getByOrgKey(org.key, key = Some(UUID.randomUUID.toString))) must be(Seq.empty)
-    await(client.applications.getByOrgKey(org.key, key = Some(app1.key))).map(_.guid) must be(Seq(app1.guid))
-    await(client.applications.getByOrgKey(org.key, key = Some(app2.key.toUpperCase))).map(_.guid) must be(Seq(app2.guid))
+    await(client.applications.getByOrgKey(org.key, hasVersion = None)).map(_.key).sorted must be(Seq(app2.key, app1.key).sorted)
+    await(client.applications.getByOrgKey(org.key, hasVersion = Some(false))).map(_.key) must be(Seq(app1.key))
+    await(client.applications.getByOrgKey(org.key, hasVersion = Some(true))).map(_.key) must be(Seq(app2.key))
   }
-
-  //  name: _root_.scala.Option[String], guid: _root_.scala.Option[_root_.java.util.UUID], key: _root_.scala.Option[String], has_version: _root_.scala.Option[Boolean], limit: Long ?= 25, offset: Long ?= 0)
 
 }

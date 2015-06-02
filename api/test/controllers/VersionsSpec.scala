@@ -15,7 +15,7 @@ class VersionsSpec extends BaseSpec {
 
   "POST /:orgKey/:version stores the original in the proper format" in new WithServer {
     val form = createVersionForm()
-    val version = createVersion(application, form)
+    val version = createVersion(application, Some(form))
 
     // Now test that we stored the appropriate original
     version.original match {
