@@ -14,7 +14,14 @@ object Global extends WithFilters(LoggingFilter) {
 
   override def onStart(app: Application): Unit = {
     global.Actors.mainActor
-    ensureServices()
+
+    import play.api.libs.concurrent.Akka
+    import scala.concurrent.duration._
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    Akka.system.scheduler.scheduleOnce(5.seconds) {
+      ensureServices()
+    }
   }
 
   override def onHandlerNotFound(request: RequestHeader) = {
