@@ -64,7 +64,7 @@ class WatchesSpec extends BaseSpec {
     val application1 = createApplication(org1)
 
     val org2 = createOrganization()
-    val application2 = createApplication(org2, key = application1.key)
+    val application2 = createApplication(org2, createApplicationForm(key = Some(application1.key)))
     val application3 = createApplication(org2)
 
     val user = createUser()
