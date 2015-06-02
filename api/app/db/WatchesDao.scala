@@ -142,7 +142,7 @@ object WatchesDao {
   ): Seq[Watch] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      authorization.organizationFilter().map(v => "and " + v),
+      authorization.applicationFilter().map(v => "and " + v),
       guid.map { v => "and watches.guid = {guid}::uuid" },
       userGuid.map { v => "and watches.user_guid = {user_guid}::uuid" },
       organizationKey.map { v => "and organizations.key = lower(trim({organization_key}))" },
@@ -151,7 +151,6 @@ object WatchesDao {
       isDeleted.map(Filters.isDeleted("watches", _)),
       Some(s"order by applications.key, watches.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
-
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
