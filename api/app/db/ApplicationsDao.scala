@@ -177,14 +177,13 @@ object ApplicationsDao {
   def create(
     createdBy: User,
     org: Organization,
-    form: ApplicationForm,
-    keyOption: Option[String] = None
+    form: ApplicationForm
   ): Application = {
     val errors = validate(org, form)
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
     val guid = UUID.randomUUID
-    val key = keyOption.getOrElse(UrlKey.generate(form.name))
+    val key = form.key.getOrElse(UrlKey.generate(form.name))
 
     withTasks(createdBy, guid, { implicit c =>
       SQL(InsertQuery).on(

@@ -156,11 +156,12 @@ object Versions extends Controller {
     val application = applicationKey.flatMap { key => ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) } match {
       case None => {
         val appForm = ApplicationForm(
+          key = applicationKey,
           name = service.name,
           description = service.description,
           visibility = form.visibility.getOrElse(DefaultVisibility)
         )
-        ApplicationsDao.create(user, org, appForm, applicationKey)
+        ApplicationsDao.create(user, org, appForm)
       }
       case Some(app) => {
         form.visibility.map { v =>
