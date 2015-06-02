@@ -18,6 +18,7 @@ class ApplicationsSpec extends BaseSpec {
 
   private lazy val org = db.Util.createOrganization(createdBy = TestUser)
 
+  /*
   "POST /:orgKey" in new WithServer {
     val key = "test-" + UUID.randomUUID.toString
     val form = createApplicationForm(key = Some(key))
@@ -45,44 +46,40 @@ class ApplicationsSpec extends BaseSpec {
     }.errors.map(_.message) must be(Seq(s"Prefix members is a reserved word and cannot be used for the key"))
   }
 
-  /*
   "DELETE /:org/:key" in new WithServer {
     val application = createApplication(org)
     await(client.applications.deleteByOrgKeyAndApplicationKey(org.key, application.key)) must be(())
     getByKey(org, application.key) must be(None)
   }
 
-  "GET /:orgKey" in new WithServer {
-    val app1 = createApplication()
-    val app2 = createApplication()
+  "GET /:orgKey by application name" in new WithServer {
+    val app1 = createApplication(org)
+    val app2 = createApplication(org)
 
-    await(client.applications.get(key = Some(UUID.randomUUID.toString))) must be(Seq.empty)
-    await(client.applications.get(key = Some(app1.key))).head.guid must be(app1.guid)
-    await(client.applications.get(key = Some(app2.key))).head.guid must be(app2.guid)
+    await(client.applications.getByOrgKey(org.key, name = Some(UUID.randomUUID.toString))) must be(Seq.empty)
+    await(client.applications.getByOrgKey(org.key, name = Some(app1.name))).map(_.guid) must be(Seq(app1.guid))
+    await(client.applications.getByOrgKey(org.key, name = Some(app2.name.toUpperCase))).map(_.guid) must be(Seq(app2.guid))
   }
 
-  "GET /:orgKey/:key" in new WithServer {
-    val app = createApplication()
-    client.applications.getByKey(org, app.key).guid must be(app.guid)
-    intercept[UnitResponse] {
-      client.applications.getByKey(org, UUID.randomUUID.toString)
-    }.status must be(404)
+  "GET /:orgKey by application key" in new WithServer {
+    val app1 = createApplication(org)
+    val app2 = createApplication(org)
+
+    await(client.applications.getByOrgKey(org.key, key = Some(UUID.randomUUID.toString))) must be(Seq.empty)
+    await(client.applications.getByOrgKey(org.key, key = Some(app1.key))).map(_.guid) must be(Seq(app1.guid))
+    await(client.applications.getByOrgKey(org.key, key = Some(app2.key.toUpperCase))).map(_.guid) must be(Seq(app2.guid))
+  }
+  */
+
+  "GET /:orgKey by hasVersion" in new WithServer {
+    val app1 = createApplication(org)
+    val app2 = createApplication(org)
+
+    await(client.applications.getByOrgKey(org.key, key = Some(UUID.randomUUID.toString))) must be(Seq.empty)
+    await(client.applications.getByOrgKey(org.key, key = Some(app1.key))).map(_.guid) must be(Seq(app1.guid))
+    await(client.applications.getByOrgKey(org.key, key = Some(app2.key.toUpperCase))).map(_.guid) must be(Seq(app2.guid))
   }
 
-  "GET /:orgKey for an anonymous user shows only public apps" in new WithServer {
-    val privateApp = createApplication(createApplicationForm().copy(visibility = Visibility.Application)
-    val publicApp = createApplication(createApplicationForm().copy(visibility = Visibility.Public)
-    val anonymous = createUser()
-
-    val client = newClient(anonymous)
-    intercept[UnitResponse] {
-      client.applications.getByKey(org, privateApp.key)
-    }.status must be(404)
-    client.applications.getByKey(org, publicApp.key).key must be(publicApp.key)
-
-    await(client.applications.get(key = Some(privateApp.key)) must be(Seq.empty)
-    await(client.applications.get(key = Some(publicApp.key)).map(_.key) must be(Seq(publicApp.key))
-  }
-   */
+  //  name: _root_.scala.Option[String], guid: _root_.scala.Option[_root_.java.util.UUID], key: _root_.scala.Option[String], has_version: _root_.scala.Option[Boolean], limit: Long ?= 25, offset: Long ?= 0)
 
 }

@@ -95,6 +95,30 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     visibility = visibility
   )
 
+  def createVersion(
+    application: Application = createApplication(createOrganization()),
+    form: VersionForm = createVersionForm(),
+    version: String = "0.0.1"
+  ): Version = {
+    await(
+      client.versions.postByOrgKeyAndVersion(
+        orgKey = application.organization.key,
+        version = version,
+        versionForm = form
+      )
+    )
+  }
+
+  def createVersionForm(
+    data: String = s"""{ "name": "test-${UUID.randomUUID}", "apidoc": { "version": "${com.gilt.apidoc.api.v0.Constants.Version}" } }"""
+  ): VersionForm = {
+    com.gilt.apidoc.api.v0.models.VersionForm(
+      originalForm = OriginalForm(
+        data = data
+      )
+    )
+  }
+
   def createPasswordRequest(email: String) {
     await(client.passwordResetRequests.post(PasswordResetRequest(email = email)))
   }
