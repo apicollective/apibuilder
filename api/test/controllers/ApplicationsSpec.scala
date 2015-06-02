@@ -12,55 +12,47 @@ class ApplicationsSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private def getByKey(org: Organization, key: String): Application = {
-    await(client.applications.getByOrgKey(org.key, key = Some(key), limit = 1)).headOption.getOrElse {
-      sys.error(s"Could not find application with key[$key]")
-    }
+  private def getByKey(org: Organization, key: String): Option[Application] = {
+    await(client.applications.getByOrgKey(org.key, key = Some(key), limit = 1)).headOption
   }
 
-  private lazy val org = db.Util.createOrganization()
+  private lazy val org = db.Util.createOrganization(createdBy = TestUser)
 
-  "POST /applications" in new WithServer {
+  "POST /:orgKey" in new WithServer {
     val key = "test-" + UUID.randomUUID.toString
     val form = createApplicationForm(key = Some(key))
     createApplication(org, form).key must be(key)
   }
 
-  "POST /applications trims whitespace in name" in new WithServer {
+  "POST /:orgKey trims whitespace in name" in new WithServer {
     val name = UUID.randomUUID.toString
     createApplication(org, createApplicationForm(name = " " + name + " ")).name must be(name)
   }
 
-  /*
-  "POST /applications validates key is valid" in new WithServer {
+  "POST /:orgKey validates key is valid" in new WithServer {
     intercept[ErrorsResponse] {
-      createApplication(createApplicationForm(name = UUID.randomUUID.toString, key = Some("a")))
+      createApplication(org, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a")))
     }.errors.map(_.message) must be(Seq(s"Key must be at least 4 characters"))
 
     intercept[ErrorsResponse] {
-      createApplication(createApplicationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
+      createApplication(org, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
     }.errors.map(_.message) must be(Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-key"))
   }
 
-  "POST /applications validates key is not reserved" in new WithServer {
+  "POST /:orgKey validates key is not reserved" in new WithServer {
     intercept[ErrorsResponse] {
-      createApplication(createApplicationForm(name = "members"))
-    }.errors.map(_.message) must be(Seq(s"Prefix member is a reserved word and cannot be used for the key of an application"))
+      createApplication(org, createApplicationForm(name = "members", key = Some("members")))
+    }.errors.map(_.message) must be(Seq(s"Prefix members is a reserved word and cannot be used for the key"))
   }
 
-  "POST /applications validates key is not reserved when just a prefix" in new WithServer {
-    intercept[ErrorsResponse] {
-      createApplication(createApplicationForm(name = "membership_request"))
-    }.errors.map(_.message) must be(Seq(s"Prefix member is a reserved word and cannot be used for the key of an application"))
+  /*
+  "DELETE /:org/:key" in new WithServer {
+    val application = createApplication(org)
+    await(client.applications.deleteByOrgKeyAndApplicationKey(org.key, application.key)) must be(())
+    getByKey(org, application.key) must be(None)
   }
 
-  "DELETE /applications/:key" in new WithServer {
-    val app = createApplication()
-    await(client.applications.deleteByKey(app.key)) must be(())
-    await(client.applications.get(key = Some(app.key))) must be(Seq.empty)
-  }
-
-  "GET /applications" in new WithServer {
+  "GET /:orgKey" in new WithServer {
     val app1 = createApplication()
     val app2 = createApplication()
 
@@ -69,7 +61,7 @@ class ApplicationsSpec extends BaseSpec {
     await(client.applications.get(key = Some(app2.key))).head.guid must be(app2.guid)
   }
 
-  "GET /applications/:key" in new WithServer {
+  "GET /:orgKey/:key" in new WithServer {
     val app = createApplication()
     client.applications.getByKey(org, app.key).guid must be(app.guid)
     intercept[UnitResponse] {
@@ -77,7 +69,7 @@ class ApplicationsSpec extends BaseSpec {
     }.status must be(404)
   }
 
-  "GET /applications for an anonymous user shows only public apps" in new WithServer {
+  "GET /:orgKey for an anonymous user shows only public apps" in new WithServer {
     val privateApp = createApplication(createApplicationForm().copy(visibility = Visibility.Application)
     val publicApp = createApplication(createApplicationForm().copy(visibility = Visibility.Public)
     val anonymous = createUser()

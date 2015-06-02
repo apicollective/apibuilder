@@ -80,11 +80,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     org: Organization,
     form: ApplicationForm = createApplicationForm()
   ): Application = {
-    db.ApplicationsDao.create(
-      createdBy = TestUser,
-      org = org,
-      form = form
-    )
+    await(client.applications.postByOrgKey(org.key, form))
   }
 
   def createApplicationForm(

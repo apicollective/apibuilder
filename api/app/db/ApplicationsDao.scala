@@ -83,15 +83,20 @@ object ApplicationsDao {
     val keyErrors = form.key match {
       case None => Seq.empty
       case Some(key) => {
-        findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) match {
-          case None => Seq.empty
-          case Some(application: Application) => {
-            if (existing.map(_.guid) == Some(application.guid)) {
-              Seq.empty
-            } else {
-              Seq("Application with this key already exists")
+        UrlKey.validate(key) match {
+          case Nil => {
+            findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) match {
+              case None => Seq.empty
+              case Some(application: Application) => {
+                if (existing.map(_.guid) == Some(application.guid)) {
+                  Seq.empty
+                } else {
+                  Seq("Application with this key already exists")
+                }
+              }
             }
           }
+          case errors => errors
         }
       }
     }
