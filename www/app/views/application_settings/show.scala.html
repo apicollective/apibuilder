@@ -16,9 +16,10 @@
       <li>Visibility: @application.visibility</li>
     </ul>
 
-    @if(tpl.canDeleteApplication(application.key)) {
+    @if(tpl.canAdminApplication(application.key)) {
+      <a href="@routes.ApplicationSettings.move(org.key, application.key)">Move to new organization</a> |
       <a href="@routes.ApplicationSettings.postDelete(org.key, application.key)" class="delete" data-confirm="Are you sure?">Delete this application</a>
     }
-  }
+}
 
 }

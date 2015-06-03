@@ -70,7 +70,7 @@
         } else {
           <a href="@routes.Versions.show(tpl.service.get.organization.key, tpl.service.get.application.key, "latest")" class="btn">Cancel</a>
         }
-        @if(isFirstVersion.getOrElse(false) && !tpl.org.isEmpty && !applicationKey.isEmpty && tpl.canDeleteApplication(applicationKey.get)) {
+        @if(isFirstVersion.getOrElse(false) && !tpl.org.isEmpty && !applicationKey.isEmpty && tpl.canAdminApplication(applicationKey.get)) {
           <a href="@routes.ApplicationSettings.postDelete(tpl.org.get.key, applicationKey.get)" class="delete" data-confirm="Are you sure?">Delete this application</a>
         }
       </div>

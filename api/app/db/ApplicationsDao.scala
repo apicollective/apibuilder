@@ -40,7 +40,7 @@ object ApplicationsDao {
 
   private[this] val UpdateOrganizationQuery = """
     update applications
-       set organization_guid = {org_guid}::uuid,
+       set organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({org_key}))),
            updated_by_guid = {updated_by_guid}::uuid
      where guid = {guid}::uuid
   """
@@ -146,7 +146,7 @@ object ApplicationsDao {
     withTasks(updatedBy, app.guid, { implicit c =>
       SQL(UpdateOrganizationQuery).on(
         'guid -> app.guid,
-        'org_guid -> app.organization.guid,
+        'org_key -> form.orgKey,
         'updated_by_guid -> updatedBy.guid
       ).execute()
     })
