@@ -80,4 +80,21 @@ class ApplicationsSpec extends BaseSpec {
     await(client.applications.getByOrgKey(org.key, hasVersion = Some(true))).map(_.key) must be(Seq(app2.key))
   }
 
+  "POST /:orgKey/:applicationKey/move" in new WithServer {
+    val org2 = createOrganization()
+    val application = createApplication(org)
+
+    val updated = await(client.applications.postMoveByOrgKeyAndApplicationKey(org.key, application.key, MoveForm(orgKey = org2.key)))
+    updated.organization.guid must be(org2.guid)
+  }
+
+  "POST /:orgKey/:applicationKey/move validates org key" in new WithServer {
+    val application = createApplication(org)
+    val key = UUID.randomUUID.toString
+
+    intercept[ErrorsResponse] {
+      await(client.applications.postMoveByOrgKeyAndApplicationKey(org.key, application.key, MoveForm(orgKey = key)))
+    }.errors.map(_.message) must be(Seq(s"Organization with key[$key] not found"))
+  }
+
 }
