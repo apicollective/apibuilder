@@ -94,7 +94,21 @@ class ApplicationsSpec extends BaseSpec {
 
     intercept[ErrorsResponse] {
       await(client.applications.postMoveByOrgKeyAndApplicationKey(org.key, application.key, MoveForm(orgKey = key)))
-    }.errors.map(_.message) must be(Seq(s"Organization with key[$key] not found"))
+    }.errors.map(_.message) must be(Seq(s"Organization[$key] not found"))
+  }
+
+  "POST /:orgKey/:applicationKey/move validates duplicate application key" in new WithServer {
+    val application = createApplication(org)
+    val org2 = createOrganization()
+    createApplication(org2, createApplicationForm().copy(key = Some(application.key)))
+
+    // Test no-op if moving own app
+    await(client.applications.postMoveByOrgKeyAndApplicationKey(org.key, application.key, MoveForm(orgKey = org.key)))
+
+    // Test validation if org key already defined for the org to which we are moving the app
+    intercept[ErrorsResponse] {
+      await(client.applications.postMoveByOrgKeyAndApplicationKey(org.key, application.key, MoveForm(orgKey = org2.key)))
+    }.errors.map(_.message) must be(Seq(s"Organization[${org2.key}] already has an application[${application.key}]]"))
   }
 
 }

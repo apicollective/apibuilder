@@ -58,10 +58,22 @@ object ApplicationsDao {
     form: MoveForm
   ): Seq[Error] = {
     val orgErrors = OrganizationsDao.findByKey(authorization, form.orgKey) match {
-      case None => Seq(s"Organization with key[${form.orgKey}] not found")
+      case None => Seq(s"Organization[${form.orgKey}] not found")
       case Some(newOrg) => Nil
     }
-    Validation.errors(orgErrors)
+
+    val appErrors = ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, form.orgKey, app.key) match {
+      case None => Nil
+      case Some(existing) => {
+        if (existing.guid == app.guid) {
+          Nil
+        } else {
+          Seq(s"Organization[${form.orgKey}] already has an application[${app.key}]]")
+        }
+      }
+    }
+
+    Validation.errors(orgErrors ++ appErrors)
   }
 
   def validate(
