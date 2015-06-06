@@ -1,4 +1,4 @@
-@(user: Option[com.gilt.apidoc.api.v0.models.User])
+@(user: Option[com.bryzek.apidoc.api.v0.models.User])
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
@@ -235,11 +235,11 @@ are support for union types and imports.</p>
 
     is now
 
-    <pre>class Client(apiUrl: String, auth: scala.Option[com.gilt.apidoc.api.v0.Authorization] = None)</pre>
+    <pre>class Client(apiUrl: String, auth: scala.Option[com.bryzek.apidoc.api.v0.Authorization] = None)</pre>
 
     In order to use a token, create an instance of basic authorization with:
 
-    <pre>com.gilt.apidoc.api.v0.Authorization.Basic("token")</pre>
+    <pre>com.bryzek.apidoc.api.v0.Authorization.Basic("token")</pre>
 
     <li>The scala code generators generate new package names:
 
@@ -261,11 +261,11 @@ are support for union types and imports.</p>
       override this behavior by explicitly providing a namespace in
       the api.json file you upload to apidoc.</li>
 
-      <pre>package com.gilt.apidocspec</pre>
+      <pre>package com.bryzek.apidocspec</pre>
 
       is now
 
-      <pre>package com.gilt.apidoc.spec.v0</pre>
+      <pre>package com.bryzek.apidoc.spec.v0</pre>
 
     </ul>
 
@@ -305,7 +305,7 @@ are support for union types and imports.</p>
     </ol>
 
     <pre>
-      def postByOrgKey(domain: com.gilt.apidoc.api.v0.models.Domain,
+      def postByOrgKey(domain: com.bryzek.apidoc.api.v0.models.Domain,
         orgKey: String
       )
     </pre>
@@ -315,7 +315,7 @@ are support for union types and imports.</p>
     <pre>
       def postByOrgKey(
         orgKey: String,
-        domain: com.gilt.apidoc.models.Domain
+        domain: com.bryzek.apidoc.models.Domain
       )
     </pre>
 
@@ -387,8 +387,8 @@ are support for union types and imports.</p>
     The service name is converted to a namespace by converting to
     lower case, under score separated (converting from camel case
     automatically), and then splitting on underscore. Thus for the
-    organization namespace com.gilt, version 1 of an application named
-    apidoc-spec will result in a namespace of com.gilt.apidoc.spec.v1.
+    organization namespace com.bryzek, version 1 of an application named
+    apidoc-spec will result in a namespace of com.bryzek.apidoc.spec.v1.
 
     <ol>
 
@@ -424,9 +424,9 @@ are support for union types and imports.</p>
       <li> To use a type from an imported service, reference that type
       using the fully qualified name for the type. For example, if the
       service you are importing has a namespace of
-      &quot;com.gilt.apidoc.spec.v1&quot; and you want to use the type
+      &quot;com.bryzek.apidoc.spec.v1&quot; and you want to use the type
       &quot;service&quot;, you would declare the type of your field as
-      &quot;com.gilt.apidoc.spec.v1.service&quot;</li>
+      &quot;com.bryzek.apidoc.spec.v1.service&quot;</li>
 
     </ol>
 

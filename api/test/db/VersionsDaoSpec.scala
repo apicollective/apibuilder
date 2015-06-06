@@ -2,9 +2,9 @@ package db
 
 import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import builder.OriginalValidator
-import com.gilt.apidoc.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
-import com.gilt.apidoc.spec.v0.models.{Application, Organization, Service}
-import com.gilt.apidoc.spec.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
+import com.bryzek.apidoc.spec.v0.models.{Application, Organization, Service}
+import com.bryzek.apidoc.spec.v0.models.json._
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 import play.api.libs.json.{Json, JsObject}
@@ -13,17 +13,17 @@ class VersionsDaoSpec extends FunSpec with Matchers {
 
   new play.core.StaticApplication(new java.io.File("."))
 
-  private[this] val Original = com.gilt.apidoc.api.v0.models.Original(
+  private[this] val Original = com.bryzek.apidoc.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
     data = Json.obj(
       "apidoc" -> Json.obj(
-        "version" -> com.gilt.apidoc.spec.v0.Constants.Version
+        "version" -> com.bryzek.apidoc.spec.v0.Constants.Version
       ),
       "name" -> s"test-${UUID.randomUUID}"
     ).toString
   )
 
-  private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.gilt.apidoc.api.v0.models.Application = {
+  private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.bryzek.apidoc.api.v0.models.Application = {
     Util.createApplication(
       org = Util.testOrg,
       form = Util.createApplicationForm().copy(key = Some(key))
@@ -33,7 +33,7 @@ class VersionsDaoSpec extends FunSpec with Matchers {
   describe("with an application") {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
-    val application: com.gilt.apidoc.api.v0.models.Application = createApplication(applicationKey)
+    val application: com.bryzek.apidoc.api.v0.models.Application = createApplication(applicationKey)
     val service = Util.createService(application)
 
     it("create") {

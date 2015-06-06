@@ -1,8 +1,8 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, MoveForm, Organization, User, Visibility}
-import com.gilt.apidoc.spec.v0.models.Service
-import com.gilt.apidoc.spec.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, MoveForm, Organization, User, Visibility}
+import com.bryzek.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.json._
 import models._
 import play.api._
 import play.api.mvc._
@@ -16,7 +16,7 @@ object ApplicationSettings extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] def mainTemplate(
-    api: com.gilt.apidoc.api.v0.Client,
+    api: com.bryzek.apidoc.api.v0.Client,
     base: MainTemplate,
     applicationKey: String,
     versionName: String = "latest"
@@ -81,7 +81,7 @@ object ApplicationSettings extends Controller {
           ).map { app =>
             Redirect(routes.ApplicationSettings.show(request.org.key, application.key, versionName)).flashing("success" -> s"Settings updated")
           }.recover {
-            case response: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+            case response: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
               Ok(views.html.application_settings.form(tpl, boundForm, response.errors.map(_.message)))
             }
           }
@@ -124,7 +124,7 @@ object ApplicationSettings extends Controller {
           ).map { app =>
             Redirect(routes.ApplicationSettings.show(app.organization.key, app.key, "latest")).flashing("success" -> s"Application moved")
           }.recover {
-            case response: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+            case response: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
               Ok(views.html.application_settings.move_form(tpl, boundForm, response.errors.map(_.message)))
             }
           }

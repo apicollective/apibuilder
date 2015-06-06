@@ -97,7 +97,7 @@ GET     /:orgKey/version/create                                   controllers.Ve
 POST    /:orgKey/version/createPost                               controllers.Versions.createPost(orgKey: String, application: Option[String] ?= None)
 
 GET     /:orgKey/subscriptions/                                   controllers.Subscriptions.index(orgKey: String)
-POST    /:orgKey/subscriptions/:publication/toggle                controllers.Subscriptions.postToggle(orgKey: String, publication: com.gilt.apidoc.api.v0.models.Publication)
+POST    /:orgKey/subscriptions/:publication/toggle                controllers.Subscriptions.postToggle(orgKey: String, publication: com.bryzek.apidoc.api.v0.models.Publication)
 
 # Start dynamic routing by application key
 

@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.apidoc.api.v0.models.{Application, ApplicationSummary, Organization, Reference}
+import com.bryzek.apidoc.api.v0.models.{Application, ApplicationSummary, Organization, Reference}
 import db.{ApplicationsDao, Authorization, ItemsDao, OrganizationsDao}
 import java.util.UUID
 

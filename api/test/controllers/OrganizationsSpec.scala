@@ -1,8 +1,8 @@
 package controllers
 
 import db.OrganizationsDao
-import com.gilt.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
-import com.gilt.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
+import com.bryzek.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
+import com.bryzek.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._

@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidoc.spec.v0.models.ParameterLocation
+import com.bryzek.apidoc.spec.v0.models.ParameterLocation
 import org.scalatest.{FunSpec, Matchers}
 
 class ApiJsonStructureSpec extends FunSpec with Matchers {

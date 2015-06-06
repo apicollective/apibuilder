@@ -1,8 +1,8 @@
 package db.generators
 
 import db.{Authorization, SoftDelete}
-import com.gilt.apidoc.api.v0.models.{Error, User, GeneratorService}
-import com.gilt.apidoc.generator.v0.models.Generator
+import com.bryzek.apidoc.api.v0.models.{Error, User, GeneratorService}
+import com.bryzek.apidoc.generator.v0.models.Generator
 import core.Util
 import lib.Validation
 import anorm._

@@ -1,11 +1,6 @@
 Deploying apidoc
 ================
 
- - Deployed to gilt-architecture EC2 subaccount
-
- - Credentials and information for the EC2 account in gerrit repo
-   metadata-architecture
-
  - Runs in EC2 on docker images. Database is RDS Postgresql
 
 Installing Docker on mac
@@ -31,15 +26,15 @@ Releasing a schema change
     tar xfz schema-apidoc-*.tar.gz
     cd schema-apidoc-*
 
-    echo "apidoc.prod.rds.gilt.local:5432:apidoc:api:PASSWORD" > ~/.pgpass
+    echo "host:5432:apidoc:api:PASSWORD" > ~/.pgpass
     chmod 0600 ~/.pgpass
 
-    sem-apply --user apoi --host apidoc.prod.rds.gilt.local --name apidoc
+    sem-apply --user apoi --host host --name apidoc
 
 Database backup
 ===============
 
-    pg_dump  -Fc -h apidoc.prod.rds.gilt.local -U api -f apidoc.dmp apidoc
+    pg_dump  -Fc -h host -U api -f apidoc.dmp apidoc
     pg_restore -U api -c -d apidoc apidoc.dmp
 
 Debugging

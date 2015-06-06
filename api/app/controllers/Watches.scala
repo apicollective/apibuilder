@@ -2,8 +2,8 @@ package controllers
 
 import db.{Authorization, WatchesDao, FullWatchForm}
 import lib.Validation
-import com.gilt.apidoc.api.v0.models.{User, Watch, WatchForm}
-import com.gilt.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{User, Watch, WatchForm}
+import com.bryzek.apidoc.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID

@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{ApplicationSummary, Item, Organization, Reference}
+import com.bryzek.apidoc.api.v0.models.{ApplicationSummary, Item, Organization, Reference}
 import org.scalatest.{FunSpec, Matchers}
 import org.postgresql.util.PSQLException
 import java.util.UUID

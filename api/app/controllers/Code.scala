@@ -2,13 +2,13 @@ package controllers
 
 import java.util.UUID
 
-import com.gilt.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.json._
 
-import com.gilt.apidoc.spec.v0.models.Service
-import com.gilt.apidoc.spec.v0.models.json._
+import com.bryzek.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.json._
 
-import com.gilt.apidoc.generator.v0.Client
-import com.gilt.apidoc.generator.v0.models.InvocationForm
+import com.bryzek.apidoc.generator.v0.Client
+import com.bryzek.apidoc.generator.v0.models.InvocationForm
 
 import db.{Authorization, VersionsDao}
 import db.generators.{GeneratorsDao, ServicesDao}
@@ -54,9 +54,9 @@ object Code extends Controller {
                   key = generator.key,
                   invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
                 ).map { invocation =>
-                  Ok(Json.toJson(com.gilt.apidoc.api.v0.models.Code(generator, invocation.source)))
+                  Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(generator, invocation.source)))
                 }.recover {
-                  case r: com.gilt.apidoc.generator.v0.errors.ErrorsResponse => {
+                  case r: com.bryzek.apidoc.generator.v0.errors.ErrorsResponse => {
                     Conflict(Json.toJson(Validation.errors(r.errors.map(_.message))))
                   }
                 }

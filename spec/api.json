@@ -34,8 +34,8 @@
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.21/service.json" },
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-generator/0.9.21/service.json" }
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.21/service.json" },
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.9.21/service.json" }
     ],
 
     "enums": {
@@ -160,7 +160,7 @@
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this organization." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the organization name." },
                 { "name": "name", "type": "string", "description": "The name of this organization." },
-                { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.gilt" },
+                { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.bryzek" },
                 { "name": "visibility", "type": "visibility" },
                 { "name": "domains", "type": "[domain]", "default": "[]" },
                 { "name": "audit", "type": "audit" }
@@ -171,14 +171,14 @@
             "fields": [
                 { "name": "name", "type": "string" },
                 { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" },
-                { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.gilt" },
+                { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.bryzek" },
                 { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "default": "organization" },
                 { "name": "domains", "type": "[string]", "required": false, "example": "apidoc.me" }
             ]
         },
 
         "domain": {
-            "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@gilt.com, we will automatically create a membership request on your behalf to join the organization with domain gilt.com.",
+            "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@bryzek.com, we will automatically create a membership request on your behalf to join the organization with domain bryzek.com.",
             "fields": [
                 { "name": "name", "type": "string", "description": "The domain name", "example": "www.apidoc.me" }
             ]
@@ -261,7 +261,7 @@
                 { "name": "application", "type": "reference" },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
 		{ "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
-		{ "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" },
+		{ "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" },
                 { "name": "audit", "type": "audit" }
             ]
         },
@@ -291,7 +291,7 @@
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "generator", "type": "com.gilt.apidoc.generator.v0.models.generator" },
+                { "name": "generator", "type": "com.bryzek.apidoc.generator.v0.models.generator" },
                 { "name": "source", "type": "string", "description": "The actual source code." }
             ]
         },
@@ -939,7 +939,7 @@
           
         },
 
-        "com.gilt.apidoc.generator.v0.models.generator": {
+        "com.bryzek.apidoc.generator.v0.models.generator": {
           "path": "/generators",
 
           "operations": [
@@ -954,7 +954,7 @@
                   { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
               ],
               "responses": {
-                "200": { "type": "[com.gilt.apidoc.generator.v0.models.generator]" }
+                "200": { "type": "[com.bryzek.apidoc.generator.v0.models.generator]" }
               }
             },
 
@@ -962,7 +962,7 @@
               "method": "GET",
               "path": "/:key",
               "responses": {
-                  "200": { "type": "com.gilt.apidoc.generator.v0.models.generator" },
+                  "200": { "type": "com.bryzek.apidoc.generator.v0.models.generator" },
                   "404": { "type": "unit" }
               }
             }

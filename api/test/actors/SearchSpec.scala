@@ -1,7 +1,7 @@
 package actors
 
 import db.Authorization
-import com.gilt.apidoc.api.v0.models.ApplicationSummary
+import com.bryzek.apidoc.api.v0.models.ApplicationSummary
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 

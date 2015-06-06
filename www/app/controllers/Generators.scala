@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{GeneratorServiceForm, User}
-import com.gilt.apidoc.generator.v0.models.{Generator}
+import com.bryzek.apidoc.api.v0.models.{GeneratorServiceForm, User}
+import com.bryzek.apidoc.generator.v0.models.{Generator}
 import lib.{Pagination, PaginatedCollection, Util}
 import models.MainTemplate
 import play.api.data.Forms._
@@ -78,7 +78,7 @@ object Generators extends Controller {
         ).map { generator =>
           Redirect(routes.Generators.index()).flashing("success" -> "Generator created")
         }.recover {
-          case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.generators.create(request.mainTemplate(), form, r.errors.map(_.message)))
           }
         }

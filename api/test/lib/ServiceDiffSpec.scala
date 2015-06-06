@@ -1,7 +1,7 @@
 package lib
 
-import com.gilt.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
-import com.gilt.apidoc.spec.v0.models._
+import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
+import com.bryzek.apidoc.spec.v0.models._
 import org.scalatest.{FunSpec, ShouldMatchers}
 
 class ServiceDiffSpec extends FunSpec with ShouldMatchers {
@@ -300,7 +300,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
     val imp = Import(
       uri = "http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json",
-      namespace = "com.gilt.apidoc.spec.v0",
+      namespace = "com.bryzek.apidoc.spec.v0",
       organization = Organization(key = "gilt"),
       application = Application(key = "apidoc-spec"),
       version = "0.9.6",
@@ -335,7 +335,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
     it("change import") {
       val imp2 = Import(
         uri = "http://www.apidoc.me/gilt/apidoc-spec/0.9.6/service.json",
-        namespace = "com.gilt.apidoc.spec.v1",
+        namespace = "com.bryzek.apidoc.spec.v1",
         organization = Organization(key = "gilt2"),
         application = Application(key = "apidoc-spec2"),
         version = "1.0.0",
@@ -348,7 +348,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(namespace = imp2.namespace)))).differences should be(
         Seq(
-          DiffNonBreaking(s"$prefix namespace changed from com.gilt.apidoc.spec.v0 to com.gilt.apidoc.spec.v1")
+          DiffNonBreaking(s"$prefix namespace changed from com.bryzek.apidoc.spec.v0 to com.bryzek.apidoc.spec.v1")
         )
       )
 

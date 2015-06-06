@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.apidoc.api.v0.models.{ApplicationSummary, ItemDetail, ItemDetailUndefinedType}
+import com.bryzek.apidoc.api.v0.models.{ApplicationSummary, ItemDetail, ItemDetailUndefinedType}
 
 case class ExampleService(
   organizationKey: String,
@@ -54,10 +54,10 @@ object Util {
 
   def searchUrl(detail: ItemDetail): Option[String] = {
     detail match {
-      case com.gilt.apidoc.api.v0.models.ApplicationSummary(guid, org, key) => {
+      case com.bryzek.apidoc.api.v0.models.ApplicationSummary(guid, org, key) => {
 	Some(s"/${org.key}/${key}/latest")
       }
-      case com.gilt.apidoc.api.v0.models.ItemDetailUndefinedType(desc) => {
+      case com.bryzek.apidoc.api.v0.models.ItemDetailUndefinedType(desc) => {
 	None
       }
     }

@@ -1,8 +1,8 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType}
-import com.gilt.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
-import com.gilt.apidoc.spec.v0.{models => spec}
+import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType}
+import com.bryzek.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
+import com.bryzek.apidoc.spec.v0.{models => spec}
 import play.api.libs.json.{Json, JsObject}
 import lib.Role
 import java.util.UUID
@@ -96,11 +96,11 @@ object Util {
   }
 
   def createOriginal(): Original = {
-    com.gilt.apidoc.api.v0.models.Original(
+    com.bryzek.apidoc.api.v0.models.Original(
       `type` = OriginalType.ApiJson,
       data = Json.obj(
         "apidoc" -> Json.obj(
-          "version" -> com.gilt.apidoc.spec.v0.Constants.Version
+          "version" -> com.bryzek.apidoc.spec.v0.Constants.Version
         ),
         "name" -> s"test-${UUID.randomUUID}"
       ).toString
@@ -111,7 +111,7 @@ object Util {
     org: Organization,
     user: User = Util.createRandomUser(),
     role: Role = Role.Admin
-  ): com.gilt.apidoc.api.v0.models.Membership = {
+  ): com.bryzek.apidoc.api.v0.models.Membership = {
     val request = MembershipRequestsDao.upsert(Util.createdBy, org, user, role)
     MembershipRequestsDao.accept(Util.createdBy, request)
 
@@ -135,8 +135,8 @@ object Util {
     )
   }
 
-  def createService(app: com.gilt.apidoc.api.v0.models.Application): spec.Service = spec.Service(
-    apidoc = spec.Apidoc(version = com.gilt.apidoc.spec.v0.Constants.Version),
+  def createService(app: com.bryzek.apidoc.api.v0.models.Application): spec.Service = spec.Service(
+    apidoc = spec.Apidoc(version = com.bryzek.apidoc.spec.v0.Constants.Version),
     info = spec.Info(contact = None, license = None),
     name = app.name,
     organization = spec.Organization(key = app.organization.key),

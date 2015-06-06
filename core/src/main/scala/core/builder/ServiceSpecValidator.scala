@@ -1,7 +1,7 @@
 package builder
 
 import core.{Importer, TypeValidator, TypesProvider}
-import com.gilt.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type, VersionTag}
 import scala.util.{Failure, Success, Try}
 
@@ -56,7 +56,7 @@ case class ServiceSpecValidator(
 
   private def validateApidoc(): Seq[String] = {
     val specified = VersionTag(service.apidoc.version)
-    val current = com.gilt.apidoc.spec.v0.Constants.Version
+    val current = com.bryzek.apidoc.spec.v0.Constants.Version
     specified.major match {
       case None => {
         Seq(s"Invalid apidoc version[${service.apidoc.version}]. Latest version of apidoc specification is $current")

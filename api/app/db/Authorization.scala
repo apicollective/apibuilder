@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.Visibility
+import com.bryzek.apidoc.api.v0.models.Visibility
 import java.util.UUID
 import anorm.NamedParameter
 

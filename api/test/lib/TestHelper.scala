@@ -2,8 +2,8 @@ package lib
 
 import db.Authorization
 import builder.OriginalValidator
-import com.gilt.apidoc.api.v0.models.{Original, OriginalType}
-import com.gilt.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
+import com.bryzek.apidoc.api.v0.models.{Original, OriginalType}
+import com.bryzek.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
 
 import org.scalatest.{FunSpec, ShouldMatchers}
 
@@ -16,7 +16,7 @@ object TestHelper {
   def readService(path: String): Service = {
     val config = ServiceConfiguration(
       orgKey = "gilt",
-      orgNamespace = "com.gilt",
+      orgNamespace = "com.bryzek",
       version = "0.9.10"
     )
 

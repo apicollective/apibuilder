@@ -1,10 +1,10 @@
 package actors
 
 import lib.Pager
-import com.gilt.apidoc.api.v0.models.GeneratorService
-import com.gilt.apidoc.generator.v0.Client
-import com.gilt.apidoc.generator.v0.models.Generator
-import com.gilt.apidoc.internal.v0.models.TaskDataSyncService
+import com.bryzek.apidoc.api.v0.models.GeneratorService
+import com.bryzek.apidoc.generator.v0.Client
+import com.bryzek.apidoc.generator.v0.models.Generator
+import com.bryzek.apidoc.internal.v0.models.TaskDataSyncService
 import db.{Authorization, TasksDao, UsersDao}
 import db.generators.{GeneratorsDao, ServicesDao}
 import play.api.Logger

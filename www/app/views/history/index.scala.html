@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  changes: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Change],
+  changes: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Change],
   orgKey: Option[String] = None,
   appKey: Option[String] = None
 )(implicit flash: Flash)
@@ -32,9 +32,9 @@
            </td>
            <td>
              @{change.diff match {
-               case com.gilt.apidoc.api.v0.models.DiffBreaking(desc) => s"Breaking: $desc"
-               case com.gilt.apidoc.api.v0.models.DiffNonBreaking(desc) => desc
-               case com.gilt.apidoc.api.v0.models.DiffUndefinedType(desc) => desc
+               case com.bryzek.apidoc.api.v0.models.DiffBreaking(desc) => s"Breaking: $desc"
+               case com.bryzek.apidoc.api.v0.models.DiffNonBreaking(desc) => desc
+               case com.bryzek.apidoc.api.v0.models.DiffUndefinedType(desc) => desc
              }}
            </td>
          </tr>

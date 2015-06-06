@@ -4,7 +4,7 @@ import lib.{Pagination, PaginatedCollection}
 import play.api._
 import play.api.mvc._
 import scala.concurrent.Future
-import com.gilt.apidoc.api.v0.errors.UnitResponse
+import com.bryzek.apidoc.api.v0.errors.UnitResponse
 
 object HistoryController extends Controller {
 

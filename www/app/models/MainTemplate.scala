@@ -1,8 +1,8 @@
 package models
 
-import com.gilt.apidoc.api.v0.models.{Application, Organization, User, Version}
-import com.gilt.apidoc.generator.v0.models.Generator
-import com.gilt.apidoc.spec.v0.models.{Resource, Service}
+import com.bryzek.apidoc.api.v0.models.{Application, Organization, User, Version}
+import com.bryzek.apidoc.generator.v0.models.Generator
+import com.bryzek.apidoc.spec.v0.models.{Resource, Service}
 import play.api.Play.current
 
 case class UserTimeZone(

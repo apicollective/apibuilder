@@ -1,7 +1,7 @@
 package db
 
-import com.gilt.apidoc.api.v0.models._
-import com.gilt.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.api.v0.models._
+import com.bryzek.apidoc.api.v0.models.json._
 import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
 import play.api.db._
@@ -51,7 +51,7 @@ object OrganizationsDao {
   def validate(
     form: OrganizationForm,
     existing: Option[Organization] = None
-  ): Seq[com.gilt.apidoc.api.v0.models.Error] = {
+  ): Seq[com.bryzek.apidoc.api.v0.models.Error] = {
 
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
@@ -105,7 +105,7 @@ object OrganizationsDao {
       case None => {
         isDomainValid(form.namespace.trim) match {
           case true => Seq.empty
-          case false => Seq("Namespace is not valid. Expected a name like com.gilt or me.apidoc")
+          case false => Seq("Namespace is not valid. Expected a name like com.bryzek or me.apidoc")
         }
       }
       case Some(org: Organization) => {

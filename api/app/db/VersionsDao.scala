@@ -3,10 +3,10 @@ package db
 import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import core.VersionMigration
 import builder.OriginalValidator
-import com.gilt.apidoc.api.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
-import com.gilt.apidoc.internal.v0.models.TaskDataDiffVersion
-import com.gilt.apidoc.spec.v0.models.Service
-import com.gilt.apidoc.spec.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{Application, Original, OriginalType, Reference, User, Version, VersionForm, Visibility}
+import com.bryzek.apidoc.internal.v0.models.TaskDataDiffVersion
+import com.bryzek.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.json._
 import lib.VersionTag
 import anorm._
 import play.api.db._
@@ -19,7 +19,7 @@ object VersionsDao {
 
   private[this] val LatestVersion = "latest"
 
-  private[this] val ServiceVersionNumber: String = com.gilt.apidoc.spec.v0.Constants.Version.toLowerCase
+  private[this] val ServiceVersionNumber: String = com.bryzek.apidoc.spec.v0.Constants.Version.toLowerCase
 
   private[this] val BaseQuery = s"""
     select versions.guid, versions.version,

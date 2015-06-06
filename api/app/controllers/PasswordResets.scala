@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{PasswordReset, PasswordResetSuccess}
-import com.gilt.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{PasswordReset, PasswordResetSuccess}
+import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
 import db.{PasswordResetRequestsDao, UserPasswordsDao, UsersDao}
 import play.api.mvc._

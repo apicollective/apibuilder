@@ -36,7 +36,7 @@
 
           @helper.select(
             form("visibility"),
-            com.gilt.apidoc.api.v0.models.Visibility.all.map { v => (v.toString -> v.toString) },
+            com.bryzek.apidoc.api.v0.models.Visibility.all.map { v => (v.toString -> v.toString) },
             '_label -> "Visibility",
             '_error -> form.error("visibility"),
             '_help -> "Set to public if anybody can view this service, or organization to limit to other members of your org."
@@ -50,12 +50,12 @@
 
           @helper.select(
             form("original_type"),
-	    Seq( ("", "-- auto detect --") ) ++ com.gilt.apidoc.api.v0.models.OriginalType.all.map { t =>
+	    Seq( ("", "-- auto detect --") ) ++ com.bryzek.apidoc.api.v0.models.OriginalType.all.map { t =>
 	      t match {
-                      case com.gilt.apidoc.api.v0.models.OriginalType.AvroIdl => (t.toString, "Avro IDL (experimental)")
-                      case com.gilt.apidoc.api.v0.models.OriginalType.ApiJson => (t.toString, "api.json")
-                      case com.gilt.apidoc.api.v0.models.OriginalType.SwaggerJson => (t.toString, "swagger.json (2.0, experimental))")
-                      case com.gilt.apidoc.api.v0.models.OriginalType.UNDEFINED(name) => (t.toString, name)
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.AvroIdl => (t.toString, "Avro IDL (experimental)")
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.ApiJson => (t.toString, "api.json")
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.SwaggerJson => (t.toString, "swagger.json (2.0, experimental))")
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.UNDEFINED(name) => (t.toString, name)
               }
             },
             '_label -> "Type"

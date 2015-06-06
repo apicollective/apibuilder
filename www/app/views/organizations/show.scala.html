@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  applications: lib.PaginatedCollection[com.gilt.apidoc.api.v0.models.Application],
+  applications: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Application],
   haveRequests: Boolean)(implicit flash: Flash)
 
 @main(tpl) {
@@ -30,9 +30,9 @@
              <a href="@routes.Versions.show(tpl.org.get.key, application.key, "latest")">@application.name</a>
 
              @{application.visibility match {
-                case com.gilt.apidoc.api.v0.models.Visibility.Public => ""
-                case com.gilt.apidoc.api.v0.models.Visibility.Organization | com.gilt.apidoc.api.v0.models.Visibility.User => icon("icons/lock-locked-2x.png", "Private")
-                case com.gilt.apidoc.api.v0.models.Visibility.UNDEFINED(name) => name
+                case com.bryzek.apidoc.api.v0.models.Visibility.Public => ""
+                case com.bryzek.apidoc.api.v0.models.Visibility.Organization | com.bryzek.apidoc.api.v0.models.Visibility.User => icon("icons/lock-locked-2x.png", "Private")
+                case com.bryzek.apidoc.api.v0.models.Visibility.UNDEFINED(name) => name
              }}
            </td>
            <td>@lib.Text.truncate(application.description.getOrElse(""))</td>

@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidoc.spec.v0.models.{Contact, Info, License}
+import com.bryzek.apidoc.spec.v0.models.{Contact, Info, License}
 import lib.VersionTag
 import org.scalatest.{FunSpec, Matchers}
 

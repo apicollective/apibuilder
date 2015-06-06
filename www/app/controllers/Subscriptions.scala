@@ -1,7 +1,7 @@
 package controllers
 
 import lib.Util
-import com.gilt.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm}
+import com.bryzek.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm}
 import java.util.UUID
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._

@@ -5,8 +5,8 @@ import me.apidoc.avro.AvroIdlServiceValidator
 import api_json.ApiJsonServiceValidator
 import lib.{ServiceConfiguration, ServiceValidator}
 import core.{ServiceFetcher, VersionMigration}
-import com.gilt.apidoc.api.v0.models.{Original, OriginalType}
-import com.gilt.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.api.v0.models.{Original, OriginalType}
+import com.bryzek.apidoc.spec.v0.models.Service
 
 object OriginalValidator {
 

@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{TokenForm}
+import com.bryzek.apidoc.api.v0.models.{TokenForm}
 import lib.{Pagination, PaginatedCollection}
 import models.MainTemplate
 import play.api.data.Forms._
@@ -86,7 +86,7 @@ object TokensController extends Controller {
         ).map { token =>
           Redirect(routes.TokensController.show(token.guid)).flashing("success" -> "Token created")
         }.recover {
-          case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.tokens.create(tpl, form, r.errors.map(_.message)))
           }
         }

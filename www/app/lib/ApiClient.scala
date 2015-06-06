@@ -1,7 +1,7 @@
 package lib
 
-import com.gilt.apidoc.api.v0.models.User
-import com.gilt.apidoc.api.v0.{Authorization, Client}
+import com.bryzek.apidoc.api.v0.models.User
+import com.bryzek.apidoc.api.v0.{Authorization, Client}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
@@ -17,7 +17,7 @@ object ApiClient {
     f.map {
       value => Some(value)
     }.recover {
-      case com.gilt.apidoc.api.v0.errors.UnitResponse(404) => None
+      case com.bryzek.apidoc.api.v0.errors.UnitResponse(404) => None
       case ex: Throwable => throw ex
     }
   }
@@ -56,7 +56,7 @@ case class ApiClient(user: Option[User]) {
     }
   ).flatten
 
-  val client: Client = new com.gilt.apidoc.api.v0.Client(
+  val client: Client = new com.bryzek.apidoc.api.v0.Client(
     apiUrl = apiHost,
     auth = Some(apiAuth),
     defaultHeaders = defaultHeaders

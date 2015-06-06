@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Domain, Organization, User}
+import com.bryzek.apidoc.api.v0.models.{Domain, Organization, User}
 import lib.{Role, UrlKey}
 import anorm._
 import play.api.db._

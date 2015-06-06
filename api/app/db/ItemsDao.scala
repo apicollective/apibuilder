@@ -2,8 +2,8 @@ package db
 
 import lib.Text
 import lib.query.{Query, QueryParser}
-import com.gilt.apidoc.api.v0.models.{ApplicationSummary, Item, ItemDetail, ItemDetailUndefinedType, User}
-import com.gilt.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{ApplicationSummary, Item, ItemDetail, ItemDetailUndefinedType, User}
+import com.bryzek.apidoc.api.v0.models.json._
 import anorm._
 import play.api.db._
 import play.api.Play.current

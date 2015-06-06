@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.User
+import com.bryzek.apidoc.api.v0.models.User
 import lib.TokenGenerator
 import anorm._
 import AnormHelper._

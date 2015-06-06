@@ -1,6 +1,6 @@
 package core
 
-import com.gilt.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.Service
 import builder.JsonUtil
 import lib.{Datatype, PrimitiveMetadata, Primitives, Type, Kind}
 import java.util.UUID

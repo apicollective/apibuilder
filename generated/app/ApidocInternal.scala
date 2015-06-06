@@ -3,13 +3,13 @@
  * Service version: 0.9.19
  * apidoc:0.9.18 http://www.apidoc.me/gilt/apidoc-internal/0.9.19/play_2_x_json
  */
-package com.gilt.apidoc.internal.v0.models {
+package com.bryzek.apidoc.internal.v0.models {
 
   sealed trait TaskData
 
   case class Task(
     guid: _root_.java.util.UUID,
-    data: com.gilt.apidoc.internal.v0.models.TaskData,
+    data: com.bryzek.apidoc.internal.v0.models.TaskData,
     numberAttempts: Long = 0,
     lastError: _root_.scala.Option[String] = None
   )
@@ -38,14 +38,14 @@ package com.gilt.apidoc.internal.v0.models {
 
 }
 
-package com.gilt.apidoc.internal.v0.models {
+package com.bryzek.apidoc.internal.v0.models {
 
   package object json {
     import play.api.libs.json.__
     import play.api.libs.json.JsString
     import play.api.libs.json.Writes
     import play.api.libs.functional.syntax._
-    import com.gilt.apidoc.internal.v0.models.json._
+    import com.bryzek.apidoc.internal.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
@@ -69,7 +69,7 @@ package com.gilt.apidoc.internal.v0.models {
     implicit def jsonReadsApidocinternalTask: play.api.libs.json.Reads[Task] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "data").read[com.gilt.apidoc.internal.v0.models.TaskData] and
+        (__ \ "data").read[com.bryzek.apidoc.internal.v0.models.TaskData] and
         (__ \ "number_attempts").read[Long] and
         (__ \ "last_error").readNullable[String]
       )(Task.apply _)
@@ -78,7 +78,7 @@ package com.gilt.apidoc.internal.v0.models {
     implicit def jsonWritesApidocinternalTask: play.api.libs.json.Writes[Task] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "data").write[com.gilt.apidoc.internal.v0.models.TaskData] and
+        (__ \ "data").write[com.bryzek.apidoc.internal.v0.models.TaskData] and
         (__ \ "number_attempts").write[Long] and
         (__ \ "last_error").writeNullable[String]
       )(unlift(Task.unapply _))
@@ -130,23 +130,23 @@ package com.gilt.apidoc.internal.v0.models {
 
     implicit def jsonWritesApidocinternalTaskData: play.api.libs.json.Writes[TaskData] = new play.api.libs.json.Writes[TaskData] {
       def writes(obj: TaskData) = obj match {
-        case x: com.gilt.apidoc.internal.v0.models.TaskDataIndexApplication => play.api.libs.json.Json.obj("task_data_index_application" -> jsonWritesApidocinternalTaskDataIndexApplication.writes(x))
-        case x: com.gilt.apidoc.internal.v0.models.TaskDataDiffVersion => play.api.libs.json.Json.obj("task_data_diff_version" -> jsonWritesApidocinternalTaskDataDiffVersion.writes(x))
-        case x: com.gilt.apidoc.internal.v0.models.TaskDataSyncService => play.api.libs.json.Json.obj("task_data_sync_service" -> jsonWritesApidocinternalTaskDataSyncService.writes(x))
-        case x: com.gilt.apidoc.internal.v0.models.TaskDataUndefinedType => sys.error(s"The type[com.gilt.apidoc.internal.v0.models.TaskDataUndefinedType] should never be serialized")
+        case x: com.bryzek.apidoc.internal.v0.models.TaskDataIndexApplication => play.api.libs.json.Json.obj("task_data_index_application" -> jsonWritesApidocinternalTaskDataIndexApplication.writes(x))
+        case x: com.bryzek.apidoc.internal.v0.models.TaskDataDiffVersion => play.api.libs.json.Json.obj("task_data_diff_version" -> jsonWritesApidocinternalTaskDataDiffVersion.writes(x))
+        case x: com.bryzek.apidoc.internal.v0.models.TaskDataSyncService => play.api.libs.json.Json.obj("task_data_sync_service" -> jsonWritesApidocinternalTaskDataSyncService.writes(x))
+        case x: com.bryzek.apidoc.internal.v0.models.TaskDataUndefinedType => sys.error(s"The type[com.bryzek.apidoc.internal.v0.models.TaskDataUndefinedType] should never be serialized")
       }
     }
   }
 }
 
-package com.gilt.apidoc.internal.v0 {
+package com.bryzek.apidoc.internal.v0 {
 
   object Bindables {
 
     import play.api.mvc.{PathBindable, QueryStringBindable}
     import org.joda.time.{DateTime, LocalDate}
     import org.joda.time.format.ISODateTimeFormat
-    import com.gilt.apidoc.internal.v0.models._
+    import com.bryzek.apidoc.internal.v0.models._
 
     // Type: date-time-iso8601
     implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[org.joda.time.DateTime](

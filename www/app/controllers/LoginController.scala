@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
+import com.bryzek.apidoc.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
 import models.MainTemplate
 import play.api._
 import play.api.mvc._
@@ -37,7 +37,7 @@ object LoginController extends Controller {
         Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { user =>
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
-          case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.login.index(tpl, Tab.Login, form, registerForm, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
@@ -61,7 +61,7 @@ object LoginController extends Controller {
         Authenticated.api().Users.post(UserForm(name = validForm.name, email = validForm.email, password = validForm.password)).map { user =>
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
-          case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.login.index(tpl, Tab.Register, loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
@@ -119,7 +119,7 @@ object LoginController extends Controller {
             flashing("success" -> "Your password has been reset and you are now logged in")
         
         }.recover {
-          case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.login.resetPassword(tpl, token, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }

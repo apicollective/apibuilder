@@ -2,9 +2,9 @@ package controllers
 
 import models.MainTemplate
 import lib.{UrlKey, Util, VersionedName, VersionTag}
-import com.gilt.apidoc.api.v0.models.{Application, OriginalForm, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
-import com.gilt.apidoc.spec.v0.models.Service
-import com.gilt.apidoc.spec.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{Application, OriginalForm, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
+import com.bryzek.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.json._
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._
@@ -277,7 +277,7 @@ object Versions extends Controller {
                 ).map { version =>
                   Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version updated" )
                 }.recover {
-                  case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+                  case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
                     Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }
@@ -292,7 +292,7 @@ object Versions extends Controller {
                 ).map { version =>
                   Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version created" )
                 }.recover {
-                  case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+                  case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
                     Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }
@@ -305,7 +305,7 @@ object Versions extends Controller {
   }
 
   private[this] def isWatching(
-    api: com.gilt.apidoc.api.v0.Client,
+    api: com.bryzek.apidoc.api.v0.Client,
     user: Option[User],
     orgKey: String,
     applicationKey: String

@@ -1,8 +1,8 @@
 package controllers
 
 import db.PasswordResetRequestsDao
-import com.gilt.apidoc.api.v0.models.{PasswordReset, PasswordResetSuccess, PasswordResetRequest, User}
-import com.gilt.apidoc.api.v0.errors.ErrorsResponse
+import com.bryzek.apidoc.api.v0.models.{PasswordReset, PasswordResetSuccess, PasswordResetRequest, User}
+import com.bryzek.apidoc.api.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

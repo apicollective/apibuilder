@@ -8,7 +8,7 @@ import com.wordnik.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
 import java.io.File
 
 import scala.collection.JavaConversions._
-import com.gilt.apidoc.spec.v0.models._
+import com.bryzek.apidoc.spec.v0.models._
 import scala.annotation.tailrec
 
 case class Parser(config: ServiceConfiguration) {
@@ -31,7 +31,7 @@ case class Parser(config: ServiceConfiguration) {
     val resolver = Resolver(models = specModels)
 
     Service(
-      apidoc = Apidoc(version = com.gilt.apidoc.spec.v0.Constants.Version),
+      apidoc = Apidoc(version = com.bryzek.apidoc.spec.v0.Constants.Version),
       name = info.getTitle(),
       info = Info(
         contact = None,

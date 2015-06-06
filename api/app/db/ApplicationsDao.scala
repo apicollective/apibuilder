@@ -1,7 +1,7 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, Reference, User, Version, Visibility}
-import com.gilt.apidoc.internal.v0.models.TaskDataIndexApplication
+import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, Reference, User, Version, Visibility}
+import com.bryzek.apidoc.internal.v0.models.TaskDataIndexApplication
 import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._

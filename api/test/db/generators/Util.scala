@@ -1,8 +1,8 @@
 package db.generators
 
 import db.Authorization
-import com.gilt.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
-import com.gilt.apidoc.generator.v0.models.Generator
+import com.bryzek.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
+import com.bryzek.apidoc.generator.v0.models.Generator
 import java.util.UUID
 
 object Util {

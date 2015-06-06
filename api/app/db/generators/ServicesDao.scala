@@ -1,8 +1,8 @@
 package db.generators
 
-import com.gilt.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
+import com.bryzek.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
 import db.{AuditsDao, Authorization, SoftDelete}
-import com.gilt.apidoc.api.v0.models.{Error, User}
+import com.bryzek.apidoc.api.v0.models.{Error, User}
 import core.Util
 import lib.{Pager, Validation}
 import anorm._

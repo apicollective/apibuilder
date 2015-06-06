@@ -2,7 +2,7 @@ package me.apidoc.swagger
 
 import lib.{ServiceConfiguration, ServiceValidator}
 import scala.util.{Failure, Success, Try}
-import com.gilt.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.Service
 
 case class SwaggerServiceValidator(
   config: ServiceConfiguration,

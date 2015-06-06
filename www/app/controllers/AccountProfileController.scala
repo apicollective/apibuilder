@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{UserForm, UserUpdateForm}
+import com.bryzek.apidoc.api.v0.models.{UserForm, UserUpdateForm}
 import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
@@ -55,7 +55,7 @@ object AccountProfileController extends Controller {
         ).map { user =>
           Redirect(routes.AccountProfileController.index()).flashing("success" -> "Profile updated")
         }.recover {
-          case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.account.profile.edit(tpl, request.user, form, r.errors.map(_.message)))
           }
         }

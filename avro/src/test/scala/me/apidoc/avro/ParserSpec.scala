@@ -9,7 +9,7 @@ class ParserSpec extends FunSpec with Matchers {
   val dir = "avro/src/test/resources/me/apidoc/avro"
   val config = ServiceConfiguration(
     orgKey = "gilt",
-    orgNamespace = "com.gilt",
+    orgNamespace = "com.bryzek",
     version = "0.0.1-dev"
   )
 

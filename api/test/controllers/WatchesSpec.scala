@@ -1,7 +1,7 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{Organization, Application, User, Watch, WatchForm}
-import com.gilt.apidoc.api.v0.errors.{ErrorsResponse, FailedRequest}
+import com.bryzek.apidoc.api.v0.models.{Organization, Application, User, Watch, WatchForm}
+import com.bryzek.apidoc.api.v0.errors.{ErrorsResponse, FailedRequest}
 import java.util.UUID
 
 import play.api.test._

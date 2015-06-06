@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models._
+import com.bryzek.apidoc.api.v0.models._
 import db.{Authorization, TokensDao, UsersDao}
 import java.util.UUID
 
@@ -22,12 +22,12 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     TokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
 
-  lazy val apiAuth = com.gilt.apidoc.api.v0.Authorization.Basic(apiToken)
+  lazy val apiAuth = com.bryzek.apidoc.api.v0.Authorization.Basic(apiToken)
 
   lazy val client = newClient(TestUser)
 
   def newClient(user: User) = {
-    new com.gilt.apidoc.api.v0.Client(s"http://localhost:$port", Some(apiAuth)) {
+    new com.bryzek.apidoc.api.v0.Client(s"http://localhost:$port", Some(apiAuth)) {
       override def _requestHolder(path: String) = {
         super._requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
       }
@@ -114,7 +114,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     name: String = UUID.randomUUID.toString
   ): VersionForm = {
     val data = s"""{ "name": "$name" }"""
-    com.gilt.apidoc.api.v0.models.VersionForm(
+    com.bryzek.apidoc.api.v0.models.VersionForm(
       originalForm = OriginalForm(
         data = data
       )

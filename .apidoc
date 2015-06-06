@@ -1,10 +1,10 @@
 upload:
-  gilt:
+  bryzek:
     apidoc-spec:
       path: service/service.json
 
 code:
-  gilt:
+  bryzek:
     apidoc-spec:
       version: latest
       generators:

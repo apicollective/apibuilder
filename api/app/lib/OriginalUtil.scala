@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.apidoc.api.v0.models.{Original, OriginalForm, OriginalType}
+import com.bryzek.apidoc.api.v0.models.{Original, OriginalForm, OriginalType}
 import play.api.libs.json.{Json, JsString, JsObject}
 import scala.util.{Failure, Success, Try}
 

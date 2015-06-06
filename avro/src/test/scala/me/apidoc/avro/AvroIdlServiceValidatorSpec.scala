@@ -11,7 +11,7 @@ class AvroIdlServiceValidatorSpec extends FunSpec with Matchers {
 
   val config = ServiceConfiguration(
     orgKey = "gilt",
-    orgNamespace = "com.gilt",
+    orgNamespace = "com.bryzek",
     version = "0.0.1-dev"
   )
 

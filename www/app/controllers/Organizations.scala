@@ -3,7 +3,7 @@ package controllers
 import lib.Role
 import lib.{Pagination, PaginatedCollection, Role}
 import models.{MainTemplate, SettingSection, SettingsMenu}
-import com.gilt.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
+import com.bryzek.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
 import play.api._
 import play.api.mvc._
 import play.api.data._
@@ -148,7 +148,7 @@ object Organizations extends Controller {
         ).map { org =>
           Redirect(routes.Organizations.show(org.key)).flashing("success" -> "Org created")
         }.recover {
-          case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.organizations.create(tpl, form, r.errors.map(_.message)))
           }
         }
@@ -208,7 +208,7 @@ object Organizations extends Controller {
               ).map { org =>
                 Redirect(routes.Organizations.details(updatedKey)).flashing("success" -> "Org updated")
               }.recover {
-                case r: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+                case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
                   Ok(views.html.organizations.edit(tpl, org, form, r.errors.map(_.message)))
                 }
               }

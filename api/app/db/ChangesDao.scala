@@ -1,8 +1,8 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Application, Change, ChangeVersion, Reference, ReferenceGuid, User, UserSummary, Version}
-import com.gilt.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
-import com.gilt.apidoc.internal.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{Application, Change, ChangeVersion, Reference, ReferenceGuid, User, UserSummary, Version}
+import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
+import com.bryzek.apidoc.internal.v0.models.json._
 import anorm._
 import play.api.db._
 import play.api.Play.current

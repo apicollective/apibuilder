@@ -2,7 +2,7 @@ package me.apidoc.swagger.translators
 
 import lib.Text
 import me.apidoc.swagger.Util
-import com.gilt.apidoc.spec.v0.{ models => apidoc }
+import com.bryzek.apidoc.spec.v0.{ models => apidoc }
 import com.wordnik.swagger.{ models => swagger }
 
 object Model {

@@ -1,6 +1,6 @@
 package actors
 
-import com.gilt.apidoc.api.v0.models.{Application, Membership, Publication, Version}
+import com.bryzek.apidoc.api.v0.models.{Application, Membership, Publication, Version}
 import lib.{Email, Person, Role}
 import db._
 import play.api.Logger

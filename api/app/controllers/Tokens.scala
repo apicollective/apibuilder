@@ -2,8 +2,8 @@ package controllers
 
 import db.{Authorization, TokensDao}
 import lib.Validation
-import com.gilt.apidoc.api.v0.models.{User, Token, TokenForm}
-import com.gilt.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.api.v0.models.{User, Token, TokenForm}
+import com.bryzek.apidoc.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID

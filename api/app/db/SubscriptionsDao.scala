@@ -1,6 +1,6 @@
 package db
 
-import com.gilt.apidoc.api.v0.models.{Error, Organization, Publication, Subscription, SubscriptionForm, User}
+import com.bryzek.apidoc.api.v0.models.{Error, Organization, Publication, Subscription, SubscriptionForm, User}
 import anorm._
 import lib.Validation
 import play.api.db._

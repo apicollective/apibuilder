@@ -1,7 +1,7 @@
-@(org: com.gilt.apidoc.api.v0.models.Organization,
-  application: com.gilt.apidoc.api.v0.models.Application,
+@(org: com.bryzek.apidoc.api.v0.models.Organization,
+  application: com.bryzek.apidoc.api.v0.models.Application,
   version: String,
-  service: com.gilt.apidoc.spec.v0.models.Service
+  service: com.bryzek.apidoc.spec.v0.models.Service
 )
 
 @service.resources.map { resource =>
@@ -53,10 +53,10 @@
                @operation.responses.map { response =>
                  <p>
                    HTTP @{response.code match {
-                     case com.gilt.apidoc.spec.v0.models.ResponseCodeInt(value) => value
-                     case com.gilt.apidoc.spec.v0.models.ResponseCodeOption.Default => "*"
-                     case com.gilt.apidoc.spec.v0.models.ResponseCodeOption.UNDEFINED(value) => value
-                     case com.gilt.apidoc.spec.v0.models.ResponseCodeUndefinedType(value) => value
+                     case com.bryzek.apidoc.spec.v0.models.ResponseCodeInt(value) => value
+                     case com.bryzek.apidoc.spec.v0.models.ResponseCodeOption.Default => "*"
+                     case com.bryzek.apidoc.spec.v0.models.ResponseCodeOption.UNDEFINED(value) => value
+                     case com.bryzek.apidoc.spec.v0.models.ResponseCodeUndefinedType(value) => value
                    }}:
                    @datatype(org, application, version, service, response.`type`)
                    @Html(lib.Markdown(response.description))

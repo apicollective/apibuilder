@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{ Domain, Organization, User }
+import com.bryzek.apidoc.api.v0.models.{ Domain, Organization, User }
 import models._
 import play.api._
 import play.api.mvc._
@@ -41,7 +41,7 @@ object Domains extends Controller {
         ).map { d =>
           Redirect(routes.Domains.index(request.org.key)).flashing("success" -> s"Domain added")
         }.recover {
-          case response: com.gilt.apidoc.api.v0.errors.ErrorsResponse => {
+          case response: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.domains.form(tpl, boundForm, response.errors.map(_.message)))
           }
         }

@@ -2,8 +2,8 @@ package core
 
 import lib.{ServiceConfiguration, ServiceValidator}
 import builder.OriginalValidator
-import com.gilt.apidoc.api.v0.models.{Original, OriginalType}
-import com.gilt.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
+import com.bryzek.apidoc.api.v0.models.{Original, OriginalType}
+import com.bryzek.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
 import lib.Text
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
@@ -45,7 +45,7 @@ object TestHelper {
   private lazy val specService: Service = {
     val config = ServiceConfiguration(
       orgKey = "gilt",
-      orgNamespace = "com.gilt",
+      orgNamespace = "com.bryzek",
       version = "0.0.41"
     )
 
@@ -57,12 +57,12 @@ object TestHelper {
   private lazy val generatorService: Service = {
     val config = ServiceConfiguration(
       orgKey = "gilt",
-      orgNamespace = "com.gilt",
+      orgNamespace = "com.bryzek",
       version = "0.0.41"
     )
 
     val fetcher = MockServiceFetcher()
-    val version = com.gilt.apidoc.spec.v0.Constants.Version
+    val version = com.bryzek.apidoc.spec.v0.Constants.Version
     fetcher.add(s"http://www.apidoc.me/gilt/apidoc-spec/$version/service.json", specService)
 
     val contents = readFile("spec/generator.json")
@@ -112,7 +112,7 @@ object TestHelper {
   def parseFile(filename: String): ServiceValidatorForSpecs = {
     val fetcher = MockServiceFetcher()
     if (filename == "spec/api.json") {
-      val version = com.gilt.apidoc.spec.v0.Constants.Version
+      val version = com.bryzek.apidoc.spec.v0.Constants.Version
       fetcher.add(s"http://www.apidoc.me/gilt/apidoc-spec/$version/service.json", specService)
       fetcher.add(s"http://www.apidoc.me/gilt/apidoc-generator/$version/service.json", generatorService)
     }

@@ -1,6 +1,6 @@
 package lib
 
-import com.gilt.apidoc.api.v0.models.User
+import com.bryzek.apidoc.api.v0.models.User
 
 import java.util.UUID
 import java.nio.file.{Path, Paths, Files}

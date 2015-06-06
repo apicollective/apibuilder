@@ -42,10 +42,10 @@
                   }
                   @metadata.versionObject.flatMap(_.original).map { original =>
                     <li><a href="@routes.Versions.original(service.organization.key, service.application.key, version)">original (@{original.`type` match {
-                      case com.gilt.apidoc.api.v0.models.OriginalType.AvroIdl => "Avro IDL"
-                      case com.gilt.apidoc.api.v0.models.OriginalType.ApiJson => "api.json"
-                      case com.gilt.apidoc.api.v0.models.OriginalType.SwaggerJson => "swagger.json"
-                      case com.gilt.apidoc.api.v0.models.OriginalType.UNDEFINED(name) => name
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.AvroIdl => "Avro IDL"
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.ApiJson => "api.json"
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.SwaggerJson => "swagger.json"
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.UNDEFINED(name) => name
                     }})</a></li>
                   }
                   <li><a href="@routes.Versions.serviceJson(service.organization.key, service.application.key, version)">@lib.Util.ServiceJsonText</a></li>

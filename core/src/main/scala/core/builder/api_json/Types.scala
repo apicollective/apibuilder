@@ -1,7 +1,7 @@
 package builder.api_json
 
 import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum}
-import com.gilt.apidoc.spec.v0.models.{Import, Service}
+import com.bryzek.apidoc.spec.v0.models.{Import, Service}
 import lib.{Datatype, DatatypeResolver, Type}
 
 private[api_json] case class InternalServiceFormTypesProvider(internal: InternalServiceForm) extends TypesProvider {

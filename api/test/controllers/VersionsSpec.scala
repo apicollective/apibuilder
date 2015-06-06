@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{Application, Organization, OriginalForm, OriginalType, Version, VersionForm}
+import com.bryzek.apidoc.api.v0.models.{Application, Organization, OriginalForm, OriginalType, Version, VersionForm}
 import java.util.UUID
 
 import play.api.test._

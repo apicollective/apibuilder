@@ -1,6 +1,6 @@
 package controllers
 
-import com.gilt.apidoc.api.v0.models.{Organization, User}
+import com.bryzek.apidoc.api.v0.models.{Organization, User}
 import db.{Authorization, MembershipsDao, UsersDao}
 import play.api.mvc._
 import play.api.mvc.Results.Unauthorized

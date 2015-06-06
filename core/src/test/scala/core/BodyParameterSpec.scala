@@ -1,7 +1,7 @@
 package core
 
 import lib.Methods
-import com.gilt.apidoc.spec.v0.models.ParameterLocation
+import com.bryzek.apidoc.spec.v0.models.ParameterLocation
 import org.scalatest.{FunSpec, Matchers}
 
 class BodyParameterSpec extends FunSpec with Matchers {
