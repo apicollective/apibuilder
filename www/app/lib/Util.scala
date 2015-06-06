@@ -38,9 +38,9 @@ object Util {
   val ApidocSpecExample = ExampleService("gilt", "apidoc-spec")
   val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
 
-  val ApidocCliGitHubUrl = "https://github.com/gilt/apidoc-cli"
-  val GitHubUrl = "https://github.com/gilt/apidoc"
-  val GeneratorGitHubUrl = "https://github.com/gilt/apidoc-generator"
+  val ApidocCliGitHubUrl = "https://github.com/bryzek/apidoc-cli"
+  val GitHubUrl = "https://github.com/bryzek/apidoc"
+  val GeneratorGitHubUrl = "https://github.com/bryzek/apidoc-generator"
 
   def fullUrl(stub: String): String = s"$Host$stub"
 

@@ -63,7 +63,7 @@ object TestHelper {
 
     val fetcher = MockServiceFetcher()
     val version = com.bryzek.apidoc.spec.v0.Constants.Version
-    fetcher.add(s"http://www.apidoc.me/gilt/apidoc-spec/$version/service.json", specService)
+    fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
 
     val contents = readFile("spec/generator.json")
     val validator = OriginalValidator(config, Original(OriginalType.ApiJson, contents), fetcher)
@@ -113,8 +113,8 @@ object TestHelper {
     val fetcher = MockServiceFetcher()
     if (filename == "spec/api.json") {
       val version = com.bryzek.apidoc.spec.v0.Constants.Version
-      fetcher.add(s"http://www.apidoc.me/gilt/apidoc-spec/$version/service.json", specService)
-      fetcher.add(s"http://www.apidoc.me/gilt/apidoc-generator/$version/service.json", generatorService)
+      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
+      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-generator/$version/service.json", generatorService)
     }
     parseFile(filename, fetcher)
   }

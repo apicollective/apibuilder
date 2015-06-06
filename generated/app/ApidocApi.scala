@@ -110,8 +110,8 @@ package com.bryzek.apidoc.api.v0.models {
    * Represents a single domain name (e.g. www.apidoc.me). When a new user registers
    * and confirms their email, we automatically associate that user with a member of
    * the organization associated with their domain. For example, if you confirm your
-   * account with an email address of foo@gilt.com, we will automatically create a
-   * membership request on your behalf to join the organization with domain gilt.com.
+   * account with an email address of foo@bryzek.com, we will automatically create a
+   * membership request on your behalf to join the organization with domain bryzek.com.
    */
   case class Domain(
     name: String

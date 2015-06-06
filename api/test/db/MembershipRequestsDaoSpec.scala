@@ -10,8 +10,8 @@ class MembershipRequestsDaoSpec extends FlatSpec {
   new play.core.StaticApplication(new java.io.File("."))
 
   lazy val org = Util.createOrganization()
-  lazy val member = Util.upsertUser("gilt-member@gilt.com")
-  lazy val admin = Util.upsertUser("gilt-admin@gilt.com")
+  lazy val member = Util.upsertUser("gilt-member@bryzek.com")
+  lazy val admin = Util.upsertUser("gilt-admin@bryzek.com")
 
   it should "create member" in {
     val thisOrg = Util.createOrganization()
