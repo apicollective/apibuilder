@@ -34,8 +34,8 @@
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.16/service.json" },
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-generator/0.9.16/service.json" }
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.21/service.json" },
+	{ "uri": "http://www.apidoc.me/gilt/apidoc-generator/0.9.21/service.json" }
     ],
 
     "enums": {

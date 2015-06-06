@@ -54,15 +54,22 @@ object UrlKey {
     } else if (key != generated) {
       Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: $generated")
     } else {
-      ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
-        case Some(prefix) => Seq(s"Prefix $key is a reserved word and cannot be used for the key")
-        case None => Seq.empty
+      ExactMatchKeys.find(_ == generated) match {
+        case Some(value) => Seq(s"$key is a reserved word and cannot be used for the key")
+        case None => {
+          ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
+            case Some(prefix) => Seq(s"Prefix $key is a reserved word and cannot be used for the key")
+            case None => Seq.empty
+          }
+        }
       }
     }
   }
 
+  private val ExactMatchKeys = Seq("api")
+
   val ReservedKeys = Seq(
-    "_internal_", "api.json", "account", "admin", "api", "api.json", "accept", "asset", "bucket",
+    "_internal_", "api.json", "account", "admin", "accept", "asset", "bucket",
     "change", "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
     "history", "internal", "login", "logout", "member", "members", "metadatum", "metadata",
     "org", "password", "private", "reject", "service.json", "session", "setting", "scms",

@@ -11,6 +11,13 @@ class UrlKeySpec extends FunSpec with Matchers {
       UrlKey.validate(key) should be(Nil)
     }
 
+    it("allows apidoc keys") {
+      Seq("apidoc-spec", "apidoc-generator", "apidoc-api").foreach { key =>
+        UrlKey.generate(key) should be(key)
+        UrlKey.validate(key) should be(Nil)
+      }
+    }
+
     it("good urls alone") {
       UrlKey.generate("foos") should be("foos")
       UrlKey.generate("foos-bar") should be("foos-bar")
