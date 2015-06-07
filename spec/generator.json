@@ -4,7 +4,7 @@
     "base_url": "http://www.apidoc.me",
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/gilt/apidoc-spec/0.9.21/service.json" }
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.21/service.json" }
     ],
 
     "info": {
@@ -40,7 +40,7 @@
 
         "invocation_form": {
           "fields": [
-            { "name": "service", "type": "com.gilt.apidoc.spec.v0.models.service" },
+            { "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service" },
             { "name": "user_agent", "type": "string", "required": "false" }
           ]
         },
