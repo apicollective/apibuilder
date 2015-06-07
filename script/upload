@@ -71,7 +71,7 @@ end
 
 def upload(profile, host, version, application, path)
   dir = File.dirname(__FILE__)
-  cli("upload gilt #{application} #{File.join(dir, path)} --version #{version}", :profile => profile)
+  cli("upload bryzek #{application} #{File.join(dir, path)} --version #{version}", :profile => profile)
 end
 
 upload(profile, host, version, "apidoc-spec", "../spec/service.json")

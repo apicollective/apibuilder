@@ -3,7 +3,7 @@ import scoverage.ScoverageSbtPlugin.ScoverageKeys._
 
 name := "apidoc"
 
-organization := "com.gilt.apidoc"
+organization := "com.bryzek.apidoc"
 
 scalaVersion in ThisBuild := "2.11.6"
 
@@ -69,7 +69,7 @@ lazy val api = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    routesImport += "com.gilt.apidoc.api.v0.Bindables._",
+    routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
     libraryDependencies ++= Seq(
       ws,
       jdbc,
@@ -88,7 +88,7 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    routesImport += "com.gilt.apidoc.api.v0.Bindables._",
+    routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
     libraryDependencies ++= Seq(
       "com.github.tototoshi" %% "scala-csv" % "1.2.1",
       "org.pegdown" % "pegdown" % "1.5.0"
@@ -109,7 +109,7 @@ lazy val spec = project
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
-  organization := "com.gilt.apidoc",
+  organization := "com.bryzek.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.1",
     "org.scalatest" %% "scalatest" % "2.2.0" % "test"
