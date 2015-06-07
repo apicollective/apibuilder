@@ -111,7 +111,8 @@ package com.bryzek.apidoc.api.v0.models {
    * and confirms their email, we automatically associate that user with a member of
    * the organization associated with their domain. For example, if you confirm your
    * account with an email address of foo@bryzek.com, we will automatically create a
-   * membership request on your behalf to join the organization with domain bryzek.com.
+   * membership request on your behalf to join the organization with domain
+   * bryzek.com.
    */
   case class Domain(
     name: String
@@ -1363,7 +1364,7 @@ package com.bryzek.apidoc.api.v0 {
 
     def code: Code = Code
 
-    def comGiltApidocGeneratorV0ModelsGenerators: ComGiltApidocGeneratorV0ModelsGenerators = ComGiltApidocGeneratorV0ModelsGenerators
+    def comBryzekApidocGeneratorV0ModelsGenerators: ComBryzekApidocGeneratorV0ModelsGenerators = ComBryzekApidocGeneratorV0ModelsGenerators
 
     def domains: Domains = Domains
 
@@ -1510,7 +1511,7 @@ package com.bryzek.apidoc.api.v0 {
       }
     }
 
-    object ComGiltApidocGeneratorV0ModelsGenerators extends ComGiltApidocGeneratorV0ModelsGenerators {
+    object ComBryzekApidocGeneratorV0ModelsGenerators extends ComBryzekApidocGeneratorV0ModelsGenerators {
       override def getGenerators(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         serviceUri: _root_.scala.Option[String] = None,
@@ -2380,7 +2381,7 @@ package com.bryzek.apidoc.api.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Code]
   }
 
-  trait ComGiltApidocGeneratorV0ModelsGenerators {
+  trait ComBryzekApidocGeneratorV0ModelsGenerators {
     /**
      * List all generators visible by this user
      */
