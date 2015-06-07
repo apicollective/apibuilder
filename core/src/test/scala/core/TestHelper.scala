@@ -44,7 +44,7 @@ object TestHelper {
 
   private lazy val specService: Service = {
     val config = ServiceConfiguration(
-      orgKey = "gilt",
+      orgKey = "bryzek",
       orgNamespace = "com.bryzek",
       version = "0.0.41"
     )
@@ -56,7 +56,7 @@ object TestHelper {
 
   private lazy val generatorService: Service = {
     val config = ServiceConfiguration(
-      orgKey = "gilt",
+      orgKey = "bryzek",
       orgNamespace = "com.bryzek",
       version = "0.0.41"
     )
