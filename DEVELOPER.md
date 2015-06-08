@@ -1,9 +1,14 @@
-
+Overview
+========
 
 Designed to host API documentation for REST services. See spec/api.json for
-description of the API.
+description of the API. Code generators for various languages & frameworks are independent of this application. Official generators can be found in [apidoc-generators](https://github.com/mbryzek/apidoc-generator). 
 
-There are four SBT subprojects
+
+Projects
+============
+
+There are several projects within the apidoc repo.
 
 core
 ====
