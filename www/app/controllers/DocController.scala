@@ -13,8 +13,8 @@ object DocController extends Controller {
     Ok(views.html.doc.index(request.user))
   }
 
-  def gettingStarted = Anonymous { implicit request =>
-    Ok(views.html.doc.gettingStarted(request.user))
+  def start = Anonymous { implicit request =>
+    Ok(views.html.doc.start(request.user))
   }
 
   def apiJson = Anonymous { implicit request =>
