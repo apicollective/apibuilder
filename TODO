@@ -2,9 +2,6 @@ Revise documentation (com.gilt vs. com.bryzek)
 
 In getting started guide, add links to apidoc-cli
 
-When moving projects we should record the move record as first class -
-that allows us to do redirection in the future.
-
 Consider supporting (from swagger):
   - parameter locations: header, cookie
   - add headers to response object
