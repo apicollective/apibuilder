@@ -34,16 +34,10 @@ class OrganizationsSpec extends BaseSpec {
     }.errors.map(_.message) must be(Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-key"))
   }
 
-  "POST /organizations validates key is not reserved" in new WithServer {
-    intercept[ErrorsResponse] {
+  "POST /organizations does not generate a reserved key from name" in new WithServer {
+    db.OrganizationsDao.findAll(db.Authorization.All, name = Some("members")).headOption.getOrElse {
       createOrganization(createOrganizationForm(name = "members"))
-    }.errors.map(_.message) must be(Seq(s"Prefix member is a reserved word and cannot be used for the key of an organization"))
-  }
-
-  "POST /organizations validates key is not reserved when just a prefix" in new WithServer {
-    intercept[ErrorsResponse] {
-      createOrganization(createOrganizationForm(name = "membership_request"))
-    }.errors.map(_.message) must be(Seq(s"Prefix member is a reserved word and cannot be used for the key of an organization"))
+    }.key must be("key-members")
   }
 
   "DELETE /organizations/:key" in new WithServer {
