@@ -17,21 +17,21 @@ class ServiceUriSpec extends FunSpec with ShouldMatchers {
     it("valid URIs") {
       ServiceUri.parse("http://localhost:9000/bryzek/apidoc/latest/service.json") should be(Some(ServiceUri(
         host = "localhost:9000",
-        org = "gilt",
+        org = "bryzek",
         app = "apidoc",
         version = "latest"
       )))
 
       ServiceUri.parse("http://localhost:9000/bryzek/apidoc/0.9.1-dev/service.json") should be(Some(ServiceUri(
         host = "localhost:9000",
-        org = "gilt",
+        org = "bryzek",
         app = "apidoc",
         version = "0.9.1-dev"
       )))
 
       ServiceUri.parse(" HTTPS://localhost:9000/bryzek/apidoc/0.9.1-dev/service.json") should be(Some(ServiceUri(
         host = "localhost:9000",
-        org = "gilt",
+        org = "bryzek",
         app = "apidoc",
         version = "0.9.1-dev"
       )))
