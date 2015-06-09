@@ -14,7 +14,7 @@ class VersionsSpec extends BaseSpec {
   lazy val application = createApplication(org)
 
   "POST /:orgKey/:version stores the original in the proper format" in new WithServer {
-    val form = createVersionForm()
+    val form = createVersionForm(name = application.name)
     val version = createVersion(application, Some(form))
 
     // Now test that we stored the appropriate original
