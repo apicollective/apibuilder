@@ -5,7 +5,7 @@ begin
   values
   (
    p_guid,
-   (select guid from applications where deleted_at is null and key = p_application_key),
+   (select guid from applications where deleted_at is null and key = p_application_key and organization_guid = (select guid from organizations where deleted_at is null and key = 'gilt')),
    (select guid from organizations where deleted_at is null and key = 'gilt'),
    (select guid from organizations where deleted_at is null and key = 'bryzek'),
    coalesce(
