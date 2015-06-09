@@ -20,7 +20,7 @@ object Generators extends Controller {
 
   def index(page: Int = 0) = Authenticated.async { implicit request =>
     for {
-      generators <- request.api.comGiltApidocGeneratorV0ModelsGenerators.getGenerators(
+      generators <- request.api.comBryzekApidocGeneratorV0ModelsGenerators.getGenerators(
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
       )
@@ -34,7 +34,7 @@ object Generators extends Controller {
 
   def show(key: String) = Authenticated.async { implicit request =>
     for {
-      generator <- lib.ApiClient.callWith404(request.api.comGiltApidocGeneratorV0ModelsGenerators.getGeneratorsByKey(key))
+      generator <- lib.ApiClient.callWith404(request.api.comBryzekApidocGeneratorV0ModelsGenerators.getGeneratorsByKey(key))
       services <- request.api.generatorServices.get(generatorKey = Some(key))
     } yield {
       generator match {
