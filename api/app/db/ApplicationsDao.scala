@@ -38,9 +38,16 @@ object ApplicationsDao {
      where guid = {guid}::uuid
   """
 
+  private[this] val InsertMoveQuery = """
+    insert into application_moves
+    (guid, application_guid, from_organization_guid, to_organization_guid, created_by_guid)
+    values
+    ({guid}::uuid, {application_guid}::uuid, {from_organization_guid}::uuid, {to_organization_guid}::uuid, {created_by_guid}::uuid)
+  """
+
   private[this] val UpdateOrganizationQuery = """
     update applications
-       set organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({org_key}))),
+       set organization_guid = {org_guid}::uuid,
            updated_by_guid = {updated_by_guid}::uuid
      where guid = {guid}::uuid
   """
@@ -155,16 +162,35 @@ object ApplicationsDao {
     val errors = validateMove(Authorization.User(updatedBy.guid), app, form)
     assert(errors.isEmpty, errors.map(_.message).mkString(" "))
 
-    withTasks(updatedBy, app.guid, { implicit c =>
-      SQL(UpdateOrganizationQuery).on(
-        'guid -> app.guid,
-        'org_key -> form.orgKey,
-        'updated_by_guid -> updatedBy.guid
-      ).execute()
-    })
+    if (app.organization.key == form.orgKey) {
+      // No-op
+      app
 
-    findByGuid(Authorization.All, app.guid).getOrElse {
-      sys.error("Error updating visibility")
+    } else {
+      OrganizationsDao.findByKey(Authorization.All, form.orgKey) match {
+        case None => sys.error(s"Could not find organization with key[${form.orgKey}]")
+        case Some(newOrg) => {
+          withTasks(updatedBy, app.guid, { implicit c =>
+            SQL(InsertMoveQuery).on(
+              'guid -> UUID.randomUUID,
+              'application_guid -> app.guid,
+              'from_organization_guid -> app.organization.guid,
+              'to_organization_guid -> newOrg.guid,
+              'created_by_guid -> updatedBy.guid
+            ).execute()
+
+            SQL(UpdateOrganizationQuery).on(
+              'guid -> app.guid,
+              'org_guid -> newOrg.guid,
+              'updated_by_guid -> updatedBy.guid
+            ).execute()
+          })
+        }
+      }
+
+      findByGuid(Authorization.All, app.guid).getOrElse {
+        sys.error("Error updating visibility")
+      }
     }
   }
 
