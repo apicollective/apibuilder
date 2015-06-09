@@ -106,7 +106,9 @@ object TasksDao {
   }
 
   def recordError(user: User, task: Task, error: Throwable) {
-    recordError(user, task, error.toString)
+    val sw = new java.io.StringWriter
+    error.printStackTrace(new java.io.PrintWriter(sw))
+    recordError(user, task, sw.toString)
   }
 
   def recordError(user: User, task: Task, error: String) {
