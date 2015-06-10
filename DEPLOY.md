@@ -2,6 +2,10 @@ Deploying apidoc
 ================
 
  - Runs in EC2 on docker images. Database is RDS Postgresql
+ - yum install docker
+ - service docker start
+ - docker pull airinc/apidoc:0.9.26
+ - docker run ...
 
 Installing Docker on mac
 ========================
