@@ -1,7 +1,3 @@
-Revise documentation (com.gilt vs. com.bryzek)
-
-In getting started guide, add links to apidoc-cli
-
 Consider supporting (from swagger):
   - parameter locations: header, cookie
   - add headers to response object
