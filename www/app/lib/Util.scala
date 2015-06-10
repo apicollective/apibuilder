@@ -32,10 +32,10 @@ object Util {
   val OrgDetailsText = "Org Details"
   val ServiceJsonText = "service.json"
 
-  val ApidocExample = ExampleService("mbryzek", "apidoc-api")
-  val ApidocExampleWithVersionNumber = ExampleService("mbryzek", "apidoc-api", Config.requiredString("git.version"))
-  val ApidocGeneratorExample = ExampleService("mbryzek", "apidoc-generator")
-  val ApidocSpecExample = ExampleService("mbryzek", "apidoc-spec")
+  val ApidocExample = ExampleService("bryzek", "apidoc-api")
+  val ApidocExampleWithVersionNumber = ExampleService("bryzek", "apidoc-api", Config.requiredString("git.version"))
+  val ApidocGeneratorExample = ExampleService("bryzek", "apidoc-generator")
+  val ApidocSpecExample = ExampleService("bryzek", "apidoc-spec")
   val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
 
   private val gitHub = "https://github.com/mbryzek"
