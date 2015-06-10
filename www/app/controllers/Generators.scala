@@ -18,7 +18,7 @@ object Generators extends Controller {
     Redirect(routes.Generators.index())
   }
 
-  def index(page: Int = 0) = Authenticated.async { implicit request =>
+  def index(page: Int = 0) = Anonymous.async { implicit request =>
     for {
       generators <- request.api.comBryzekApidocGeneratorV0ModelsGenerators.getGenerators(
         limit = Pagination.DefaultLimit+1,
@@ -32,7 +32,7 @@ object Generators extends Controller {
     }
   }
 
-  def show(key: String) = Authenticated.async { implicit request =>
+  def show(key: String) = Anonymous.async { implicit request =>
     for {
       generator <- lib.ApiClient.callWith404(request.api.comBryzekApidocGeneratorV0ModelsGenerators.getGeneratorsByKey(key))
       services <- request.api.generatorServices.get(generatorKey = Some(key))
