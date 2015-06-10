@@ -25,10 +25,6 @@ object DocController extends Controller {
     Ok(views.html.doc.types(request.user))
   }
 
-  def clients = Anonymous { implicit request =>
-    Ok(views.html.doc.clients(request.user))
-  }
-
   def examples = Anonymous { implicit request =>
     Ok(views.html.doc.examples(request.user))
   }
