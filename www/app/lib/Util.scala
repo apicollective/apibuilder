@@ -32,15 +32,16 @@ object Util {
   val OrgDetailsText = "Org Details"
   val ServiceJsonText = "service.json"
 
-  val ApidocExample = ExampleService("gilt", "apidoc-api")
-  val ApidocExampleWithVersionNumber = ExampleService("gilt", "apidoc-api", Config.requiredString("git.version"))
-  val ApidocGeneratorExample = ExampleService("gilt", "apidoc-generator")
-  val ApidocSpecExample = ExampleService("gilt", "apidoc-spec")
+  val ApidocExample = ExampleService("mbryzek", "apidoc-api")
+  val ApidocExampleWithVersionNumber = ExampleService("mbryzek", "apidoc-api", Config.requiredString("git.version"))
+  val ApidocGeneratorExample = ExampleService("mbryzek", "apidoc-generator")
+  val ApidocSpecExample = ExampleService("mbryzek", "apidoc-spec")
   val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
 
-  val ApidocCliGitHubUrl = "https://github.com/mbryzek/apidoc-cli"
-  val GitHubUrl = "https://github.com/mbryzek/apidoc"
-  val GeneratorGitHubUrl = "https://github.com/mbryzek/apidoc-generator"
+  private val gitHub = "https://github.com/mbryzek"
+  val ApidocGitHubUrl = s"$gitHub/apidoc"
+  val ApidocCliGitHubUrl = s"$gitHub/apidoc-cli"
+  val GeneratorGitHubUrl = s"$gitHub/apidoc-generator"
 
   def fullUrl(stub: String): String = s"$Host$stub"
 
