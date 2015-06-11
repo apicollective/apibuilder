@@ -4,6 +4,10 @@
 
 <p>
 
-  Your request to join ${org.name} has been accepted!
+  @if(role == lib.Role.Admin) {
+    You are now an administrator of @org.name.
+  } else {
+    Your request to join @org.name has been accepted!
+  }
 
 </p>
