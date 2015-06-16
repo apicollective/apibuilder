@@ -34,8 +34,8 @@
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.21/service.json" },
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.9.21/service.json" }
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.27-dev/service.json" },
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.9.27-dev/service.json" }
     ],
 
     "enums": {

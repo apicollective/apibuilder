@@ -4,7 +4,7 @@
     "base_url": "http://www.apidoc.me",
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.21/service.json" }
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.27-dev/service.json" }
     ],
 
     "info": {
@@ -31,19 +31,19 @@
             ]
         },
 
-        "source_file" {
+        "file": {
             "description": "Represents a source file",
             "fields": [
-                { "name": "filename", "type": "string", "description": "The recommended name for the file, including the path to the file, where appropriate.", "example": "com/myorg/myapi/Foo.java" },
-                { "name": "source", "type": "string", "description": "The actual source code." }
+                { "name": "name", "type": "string", "description": "The recommended name for the file, including the path to the file, where appropriate.", "example": "com/myorg/myapplication/Foo.java" },
+                { "name": "contents", "type": "string", "description": "The actual source code." }
             ]
         },
 
         "invocation": {
           "description": "The result of invoking a generator.",
           "fields": [
-            { "name": "source", "type": "string", "description": "The actual source code.", "deprecation": { "description": "Use source_files instead" } },
-            { "name": "source_files", "type": "[source_file]", "description": "A collection of source files" }
+            { "name": "source", "type": "string", "description": "The actual source code.", "deprecation": { "description": "Use files instead" } },
+            { "name": "files", "type": "[file]", "description": "A collection of source files" }
           ]
         },
 
