@@ -26,7 +26,7 @@
             "fields": [
                 { "name": "key", "type": "string" },
                 { "name": "name", "type": "string" },
-                { "name": "language", "type": "string", "required": false },
+                { "name": "language", "type": "string", "required": false, "description": "A comma separate list of the programming language(s) that this generator produces", "example": "scala" },
                 { "name": "description", "type": "string", "required": false }
             ]
         },
