@@ -87,7 +87,8 @@ package com.bryzek.apidoc.api.v0.models {
    */
   case class Code(
     generator: com.bryzek.apidoc.generator.v0.models.Generator,
-    source: String
+    source: String,
+    files: Seq[com.bryzek.apidoc.generator.v0.models.File]
   )
 
   /**
@@ -714,14 +715,16 @@ package com.bryzek.apidoc.api.v0.models {
     implicit def jsonReadsApidocapiCode: play.api.libs.json.Reads[Code] = {
       (
         (__ \ "generator").read[com.bryzek.apidoc.generator.v0.models.Generator] and
-        (__ \ "source").read[String]
+        (__ \ "source").read[String] and
+        (__ \ "files").read[Seq[com.bryzek.apidoc.generator.v0.models.File]]
       )(Code.apply _)
     }
 
     implicit def jsonWritesApidocapiCode: play.api.libs.json.Writes[Code] = {
       (
         (__ \ "generator").write[com.bryzek.apidoc.generator.v0.models.Generator] and
-        (__ \ "source").write[String]
+        (__ \ "source").write[String] and
+        (__ \ "files").write[Seq[com.bryzek.apidoc.generator.v0.models.File]]
       )(unlift(Code.unapply _))
     }
 

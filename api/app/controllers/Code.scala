@@ -54,7 +54,11 @@ object Code extends Controller {
                   key = generator.key,
                   invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
                 ).map { invocation =>
-                  Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(generator, invocation.source)))
+                  Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
+                    generator = generator,
+                    files = invocation.files,
+                    source = invocation.source
+                  )))
                 }.recover {
                   case r: com.bryzek.apidoc.generator.v0.errors.ErrorsResponse => {
                     Conflict(Json.toJson(Validation.errors(r.errors.map(_.message))))
