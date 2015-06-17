@@ -15,6 +15,7 @@ package com.bryzek.apidoc.generator.v0.models {
    */
   case class File(
     name: String,
+    dir: String,
     contents: String
   )
 
@@ -93,6 +94,7 @@ package com.bryzek.apidoc.generator.v0.models {
     implicit def jsonReadsApidocgeneratorFile: play.api.libs.json.Reads[File] = {
       (
         (__ \ "name").read[String] and
+        (__ \ "dir").read[String] and
         (__ \ "contents").read[String]
       )(File.apply _)
     }
@@ -100,6 +102,7 @@ package com.bryzek.apidoc.generator.v0.models {
     implicit def jsonWritesApidocgeneratorFile: play.api.libs.json.Writes[File] = {
       (
         (__ \ "name").write[String] and
+        (__ \ "dir").write[String] and
         (__ \ "contents").write[String]
       )(unlift(File.unapply _))
     }

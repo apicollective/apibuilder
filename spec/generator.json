@@ -34,7 +34,8 @@
         "file": {
             "description": "Represents a source file",
             "fields": [
-                { "name": "name", "type": "string", "description": "The recommended name for the file, including the path to the file, where appropriate.", "example": "com/myorg/myapplication/Foo.java" },
+                { "name": "name", "type": "string", "description": "The recommended name for the file.", "example": "BryzekApidocApiClient.scala" },
+		{ "name": "dir", "type": "string", "description": "The recommended directory path for the file where appropriate.", "example": "com/bryzek/apidoc" },
                 { "name": "contents", "type": "string", "description": "The actual source code." }
             ]
         },
