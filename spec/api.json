@@ -293,7 +293,7 @@
             "fields": [
                 { "name": "generator", "type": "com.bryzek.apidoc.generator.v0.models.generator" },
                 { "name": "source", "type": "string", "description": "The actual source code.", "deprecation": { "description": "Use files instead" } },
-                { "name": "files", "type": "[com.bryzek.apidoc.generator.v0.models.file]", "description": "A collection of source files" }
+                { "name": "files", "type": "[com.bryzek.apidoc.generator.v0.models.file]", "description": "A collection of source files", "default": "[]" }
             ]
         },
 

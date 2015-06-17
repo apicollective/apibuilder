@@ -88,7 +88,7 @@ package com.bryzek.apidoc.api.v0.models {
   case class Code(
     generator: com.bryzek.apidoc.generator.v0.models.Generator,
     source: String,
-    files: Seq[com.bryzek.apidoc.generator.v0.models.File]
+    files: Seq[com.bryzek.apidoc.generator.v0.models.File] = Nil
   )
 
   /**
