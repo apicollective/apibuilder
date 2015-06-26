@@ -1,0 +1,143 @@
+{
+    "swagger": "2.0",
+    "info": {
+	"title": "Inventory API",
+	"description": "API to retrieve inventory information",
+	"version": "1.0.0"
+    },
+    "host": "api.company.com",
+    "schemes": [
+	"https"
+    ],
+    "basePath": "/v3",
+    "produces": [
+	"application/json"
+    ],
+    "paths": {
+	"/inventory/product/{product_code}": {
+	    "get": {
+		"summary": "Product Inventory",
+		"description": "This end point takes a master product code and returns back the inventory for all variations of the master product.",
+		"parameters": [
+		                        {             "responses":": "string"
+                }
+            },
+            "required": [
+                "body",
+                "this_url",
+                "help",
+                "server_received_time"
+            ]
+        },
+        "Variant": {
+            "properties": {
+                "upc_code": {
+                    "type": "string"
+                },
+                "on_hand": {
+                    "type": "integer"
+                },
+                "on_order": {
+                    "type": "integer"
+                },
+                "ignore_inventory": {
+                    "type": "boolean"
+                },
+                "ready_for_sale": {
+                    "type": "boolean"
+                },
+                "store_on_hand": {
+                    "type": "integer"
+                },
+                "find_in_store_on_hand": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "upc_code",
+                "on_hand",
+                "on_order",
+                "ignore_inventory",
+                "ready_for_sale",
+                "store_on_hand",
+                "find_in_store_on_hand"
+            ]
+        },
+        "Result": {
+            "properties": {
+                "variants": {
+                    "items": {
+                        "$ref": "#/definitions/Variant"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "variants"
+            ]
+        },
+        "Inventory": {
+            "properties": {
+                "help": {
+                    "type": "string"
+                },
+                "messages": {
+                    "$ref": "#/definitions/Messages"
+                }
+            },
+            "required": [
+                "help",
+                "messages"
+            ]
+        },
+        "Message": {
+            "properties": {
+                "text": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "text",
+                "code"
+            ]
+        },
+        "Messages": {
+            "properties": {
+                "product": {
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    },
+                    "type": "array"
+                }
+            }
+        },
+        "Error": {
+            "properties": {
+                "inventory": {
+                    "$ref": "#/definitions/Inventory"
+                }
+            }
+        },
+        "Response": {
+            "properties": {
+                "request": {
+                    "$ref": "#/definitions/Request"
+                },
+                "response": {
+                    "$ref": "#/definitions/Result"
+                },
+                "errors": {
+                    "$ref": "#/definitions/Error"
+                }
+            },
+            "required": [
+                "request",
+                "response",
+                "errors"
+            ]
+        }
+    }
+}
