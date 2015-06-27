@@ -10,6 +10,7 @@ import java.io.File
 import scala.collection.JavaConversions._
 import com.bryzek.apidoc.spec.v0.models._
 import scala.annotation.tailrec
+import com.wordnik.swagger.models.properties.{RefProperty, ArrayProperty}
 
 case class Parser(config: ServiceConfiguration) {
 
@@ -121,15 +122,25 @@ case class Parser(config: ServiceConfiguration) {
   private def resources(
     swagger: Swagger,
     resolver: Resolver
-  ): Seq[Resource] = {
-    swagger.getPaths.map {
-      case (url, p) => {
-        resolver.findModelByUrl(url) match {
-          case Some(model) => translators.Resource(resolver, model, url, p)
-          case None => sys.error(s"Could not find model at url[$url]")
-        }
+  ): Seq[Resource] =
+    (for {
+      (url, p) <- swagger.getPaths
+      operation <- p.getOperations
+      response <- operation.getResponses.toMap.get("200")
+    } yield {
+      val model = response.getSchema match {
+        case array: ArrayProperty =>
+          array.getItems
+        case ref: RefProperty =>
+          ref
       }
-    }.toSeq
-  }
+      model match {
+        case ref: RefProperty =>
+          resolver.findModelByOkResponseSchema(ref.getSimpleRef) match {
+            case Some(model) => translators.Resource(resolver, model, url, p)
+            case None => sys.error(s"Could not find model at url[$url]")
+          }
+      }
+    }) toSeq
 
 }
