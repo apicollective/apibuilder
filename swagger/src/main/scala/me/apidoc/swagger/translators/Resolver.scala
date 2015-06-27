@@ -35,6 +35,12 @@ case class Resolver(
     }
   }
 
+  def findModelByOkResponseSchema(
+    model: String
+  ): Option[apidoc.Model] = {
+    models.find (_.name == model)
+  }
+
   def schemaType(
     prop: Property
   ): String = {
