@@ -102,7 +102,9 @@ object Field {
       }
 
       case p: RefProperty => {
-        sys.error("TODO: Handle Ref Property")
+        base.copy(
+          `type` = p.getSimpleRef
+        )
       }
 
       case p: StringProperty => {
