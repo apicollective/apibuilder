@@ -94,8 +94,3 @@ Updating generated code
 =======================
 
     /web/apidoc-cli/bin/apidoc update
-
-Releasing code
-==============
-
-    /web/ionroller-tools/bin/release-and-deploy --release "apidoc-api apidoc-www"

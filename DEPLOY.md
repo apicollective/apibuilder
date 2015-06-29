@@ -12,10 +12,17 @@ Installing Docker on mac
 
   http://docs.docker.io/installation/mac/
 
-Deploying
-==============
+Building the Docker Image
+=========================
 
-  /web/ionroller-tools/bin/release-and-deploy --release "apidoc-api apidoc-www"
+  Step 1: Using a small set of scripts that will tag the repo, update
+  any markup to latest tag, and then create the docker image:
+  
+  /web/ionroller-tools/bin/release-and-deploy
+
+  You can also build the docker image directly:
+
+  docker build -t airinc/apidoc:0.9.28 .
 
 Releasing a schema change
 =========================
