@@ -22,9 +22,9 @@ class OriginalValidatorSpec
 
   describe("OriginalValidator") {
 
-    it("should validate valid swagger json") {
-      val filename = "refs.json"
-      val path = s"swagger/src/test/resources/$filename"
+    it("should validate valid swagger json with parameter of type array") {
+      val filename = "simple-w-array.json"
+      val path = s"core/src/test/resources/$filename"
       val result =
         OriginalValidator(
           config,
@@ -34,9 +34,7 @@ class OriginalValidatorSpec
           ),
           new MockServiceFetcher()
         ).validate
-
-    result.isRight should
-      be(true)
+    result.isRight should be(true)
     }
   }
 }
