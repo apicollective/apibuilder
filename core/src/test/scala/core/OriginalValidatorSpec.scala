@@ -36,5 +36,20 @@ class OriginalValidatorSpec
         ).validate
     result.isRight should be(true)
     }
+
+    it("should validate valid swagger json without parameter of type array") {
+      val filename = "simple-without-array.json"
+      val path = s"core/src/test/resources/$filename"
+      val result =
+        OriginalValidator(
+          config,
+          original = Original (
+            SwaggerJson,
+            readFile(path)
+          ),
+          new MockServiceFetcher()
+        ).validate
+      result.isRight should be(true)
+    }
   }
 }
