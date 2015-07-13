@@ -4,7 +4,7 @@
     "base_url": "http://www.apidoc.me",
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.27-dev/service.json" }
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.29-dev/service.json" }
     ],
 
     "info": {
