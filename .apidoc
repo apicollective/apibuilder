@@ -8,17 +8,17 @@ code:
     apidoc-spec:
       version: latest
       generators:
-        play_2_3_client: generated/app/ApidocSpec.scala
+        play_2_3_client: generated/app
     apidoc-generator:
       version: latest
       generators:
-        play_2_3_client: generated/app/ApidocGenerator.scala
+        play_2_3_client: generated/app
     apidoc-internal:
       version: latest
       generators:
-        play_2_x_json: generated/app/ApidocInternal.scala
+        play_2_x_json: generated/app
     apidoc-api:
       version: latest
       generators:
-        play_2_3_client: generated/app/ApidocApi.scala
+        play_2_3_client: generated/app
         play_2_x_routes: api/conf/routes
