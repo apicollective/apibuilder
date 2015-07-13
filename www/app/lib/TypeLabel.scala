@@ -18,8 +18,14 @@ case class TypeLabel(
   ).parse(typeName) match {
     case None => {
       TextDatatype(typeName) match {
-        case TextDatatype.List(t) => "[" + resolveImportedType(t).getOrElse(typeName) + "]"
-        case TextDatatype.Map(t) => "map[" + resolveImportedType(t).getOrElse(typeName) + "]"
+        case TextDatatype.List(t) => resolveImportedType(t) match {
+          case None => typeName
+          case Some(impType) => s"[$impType]"
+        }
+        case TextDatatype.Map(t) => resolveImportedType(t) match {
+          case None => typeName
+          case Some(impType) => s"map[$impType]"
+        }
         case TextDatatype.Singleton(t) => resolveImportedType(t).getOrElse(typeName)
       }
     }
