@@ -8,7 +8,7 @@
     <tbody>
       @files.map { file =>
         <tr>
-          <td><a href="@{tpl.requestPath}/@file.name">@file.name</a></td>
+          <td><a href="@{tpl.requestPath}/@file.name">@file.name (@{lib.Bytes.label(file.contents.getBytes.length)})</a></td>
         </tr>
       }
     </tbody>
