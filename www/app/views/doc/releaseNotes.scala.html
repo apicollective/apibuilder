@@ -2,6 +2,28 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.9.30 - Jul 15 2015</h3>
+
+  <ul>
+
+    <li> Change in the API when invoking a code generator. Response
+    now includes a list of files (as opposed to source code). Each
+    file contains a recommended file name and the contents of this
+    file. This change was made in anticipation of a java code
+    generator which requires multiple
+    files. See <a href='@lib.Util.ApidocGitHubUrl/pull/349'>PR 349</a>
+    and <a href='@lib.Util.ApidocGitHubUrl/pull/351'>PR 351</a>. Many
+    thanks to <a href="https://github.com/jkenny">jkenny</a> for
+    this change.
+    </li>
+
+    <li> Fixed bug in swagger input related to arrays. See <a href='@lib.Util.ApidocGitHubUrl/pull/361'>PR
+    361</a>. Many thanks
+    to <a href="https://github.com/dspeele">dspeele</a> for this fix.
+    </li>
+
+  </ul>
+      
 <h3>0.9.29 - Jun 29 2015</h3>
 
   <ul>
