@@ -2,7 +2,7 @@ name := "play_2_3"
 
 version := "0.0.1"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
   ws
