@@ -3,7 +3,7 @@ package db
 import com.bryzek.apidoc.api.v0.models.User
 import lib.TokenGenerator
 import anorm._
-import AnormHelper._
+import anorm.JodaParameterMetaData._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID

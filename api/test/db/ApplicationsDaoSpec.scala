@@ -9,7 +9,7 @@ import play.api.libs.json.Json
 
 class ApplicationsDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   private lazy val baseUrl = "http://localhost"
 

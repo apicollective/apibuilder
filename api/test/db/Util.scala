@@ -8,7 +8,7 @@ import lib.Role
 import java.util.UUID
 
 object Util {
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@gilttest.com"

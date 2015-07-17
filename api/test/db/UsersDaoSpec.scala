@@ -7,7 +7,7 @@ import lib.Role
 
 class UsersDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   def createUserForm(
     email: String = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",

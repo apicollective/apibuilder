@@ -6,7 +6,7 @@ import java.util.UUID
 
 class UserPasswordsDaoSpec extends FlatSpec {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   private[this] val user = Util.upsertUser("michael@mailinator.com")
 

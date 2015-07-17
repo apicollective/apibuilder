@@ -7,7 +7,7 @@ import java.util.UUID
 
 class ServicesDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   it("validate") {
     val form = Util.createGeneratorServiceForm()

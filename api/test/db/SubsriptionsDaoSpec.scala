@@ -7,7 +7,7 @@ import java.util.UUID
 
 class SubsriptionDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   lazy val org = Util.createOrganization()
 

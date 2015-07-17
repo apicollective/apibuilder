@@ -10,7 +10,7 @@ import play.api.Play.current
 
 class ItemsDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   private[this] def upsertItem(
     org: Organization = Util.createOrganization(),

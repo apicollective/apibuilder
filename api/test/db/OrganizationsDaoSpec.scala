@@ -7,7 +7,7 @@ import java.util.UUID
 
 class OrganizationsDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   it("create") {
     Util.gilt.name should be("Gilt Test Org")

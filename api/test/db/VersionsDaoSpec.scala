@@ -11,7 +11,7 @@ import play.api.libs.json.{Json, JsObject}
 
 class VersionsDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   private[this] val Original = com.bryzek.apidoc.api.v0.models.Original(
     `type` = OriginalType.ApiJson,

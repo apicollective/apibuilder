@@ -6,7 +6,7 @@ import java.util.UUID
 
 class EmailVerificationConfirmationsDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   it("upsert") {
     val user = Util.createRandomUser()

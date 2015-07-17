@@ -6,7 +6,7 @@ import java.util.UUID
 
 class GeneratorsDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   describe("upsert") {
 

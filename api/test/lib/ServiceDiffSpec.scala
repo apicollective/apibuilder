@@ -6,7 +6,7 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 
 class ServiceDiffSpec extends FunSpec with ShouldMatchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   private lazy val service = TestHelper.readService("../spec/service.json")
 

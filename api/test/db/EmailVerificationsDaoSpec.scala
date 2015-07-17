@@ -8,7 +8,7 @@ import java.util.UUID
 
 class EmailVerificationsDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   it("create") {
     val user = Util.createRandomUser()

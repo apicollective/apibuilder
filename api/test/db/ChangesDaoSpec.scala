@@ -6,7 +6,7 @@ import java.util.UUID
 
 class ChangesDaoSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   private[this] def getApplication(version: Version): Application = {
     ApplicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {

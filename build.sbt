@@ -1,4 +1,5 @@
 import play.PlayImport.PlayKeys._
+import play.sbt.PlayImport._
 import scoverage.ScoverageSbtPlugin.ScoverageKeys._
 
 name := "apidoc"
@@ -70,14 +71,16 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
+    resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
     libraryDependencies ++= Seq(
       ws,
       jdbc,
-      "com.typesafe.play" %% "anorm" % "2.4.0",
-      "org.postgresql" % "postgresql"    % "9.3-1101-jdbc4",
-      "org.mindrot"    % "jbcrypt"       % "0.3m",
-      "com.sendgrid"   % "sendgrid-java" % "2.1.0",
-      "org.scalatestplus" %% "play" % "1.2.0" % "test"
+      "com.typesafe.play" %% "anorm"         % "2.4.0",
+      "org.postgresql"    %  "postgresql"    % "9.3-1101-jdbc4",
+      "org.mindrot"       %  "jbcrypt"       % "0.3m",
+      "com.sendgrid"      %  "sendgrid-java" % "2.1.0",
+      specs2              %  Test,
+      "org.scalatestplus" %% "play" % "1.4.0-M3" % "test"
     )
   )
 
@@ -102,7 +105,7 @@ lazy val spec = project
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalatestplus" %% "play" % "1.2.0" % "test"
+      "org.scalatestplus" %% "play" % "1.4.0-M3" % "test"
     )
   )
 

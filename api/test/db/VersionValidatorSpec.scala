@@ -5,7 +5,7 @@ import java.util.UUID
 
 class VersionValidatorSpec extends FunSpec with Matchers {
 
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   it("validates user is a member of the organization to create an application") {
     val org = Util.createOrganization()
