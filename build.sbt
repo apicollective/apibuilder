@@ -73,7 +73,7 @@ lazy val api = project
     libraryDependencies ++= Seq(
       ws,
       jdbc,
-      anorm,
+      "com.typesafe.play" %% "anorm" % "2.4.0",
       "org.postgresql" % "postgresql"    % "9.3-1101-jdbc4",
       "org.mindrot"    % "jbcrypt"       % "0.3m",
       "com.sendgrid"   % "sendgrid-java" % "2.1.0",
