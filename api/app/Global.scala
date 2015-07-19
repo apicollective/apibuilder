@@ -19,8 +19,15 @@ object Global extends WithFilters(LoggingFilter) {
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
 
-    Akka.system.scheduler.scheduleOnce(5.seconds) {
-      ensureServices()
+    app.mode match {
+      case Mode.Test => {
+        // No-op. Skip call to ensure services while testing
+      }
+      case Mode.Prod | Mode.Dev => {
+        Akka.system.scheduler.scheduleOnce(5.seconds) {
+          ensureServices()
+        }
+      }
     }
   }
 
