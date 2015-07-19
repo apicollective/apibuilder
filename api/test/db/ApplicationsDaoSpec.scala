@@ -7,9 +7,7 @@ import org.junit.Assert._
 import java.util.UUID
 import play.api.libs.json.Json
 
-class ApplicationsDaoSpec extends FunSpec with Matchers {
-
-  // new play.core.StaticApplication(new java.io.File("."))
+class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   private lazy val baseUrl = "http://localhost"
 

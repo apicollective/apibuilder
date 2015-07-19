@@ -5,9 +5,7 @@ import lib.Role
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
-class SubsriptionDaoSpec extends FunSpec with Matchers {
-
-  // new play.core.StaticApplication(new java.io.File("."))
+class SubsriptionDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   lazy val org = Util.createOrganization()
 

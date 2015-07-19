@@ -4,9 +4,7 @@ import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
 import com.bryzek.apidoc.spec.v0.models._
 import org.scalatest.{FunSpec, ShouldMatchers}
 
-class ServiceDiffSpec extends FunSpec with ShouldMatchers {
-
-  // new play.core.StaticApplication(new java.io.File("."))
+class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplication {
 
   private lazy val service = TestHelper.readService("../spec/service.json")
 

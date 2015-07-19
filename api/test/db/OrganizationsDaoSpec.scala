@@ -5,9 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
 
-class OrganizationsDaoSpec extends FunSpec with Matchers {
-
-  // new play.core.StaticApplication(new java.io.File("."))
+class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   it("create") {
     Util.gilt.name should be("Gilt Test Org")

@@ -4,9 +4,7 @@ import db.Authorization
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
-class GeneratorsDaoSpec extends FunSpec with Matchers {
-
-  // new play.core.StaticApplication(new java.io.File("."))
+class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   describe("upsert") {
 

@@ -5,9 +5,7 @@ import com.bryzek.apidoc.api.v0.models.{GeneratorServiceForm}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
-class ServicesDaoSpec extends FunSpec with Matchers {
-
-  // new play.core.StaticApplication(new java.io.File("."))
+class ServicesDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   it("validate") {
     val form = Util.createGeneratorServiceForm()

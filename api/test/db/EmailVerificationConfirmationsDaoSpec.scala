@@ -4,9 +4,7 @@ import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
 
-class EmailVerificationConfirmationsDaoSpec extends FunSpec with Matchers {
-
-  // new play.core.StaticApplication(new java.io.File("."))
+class EmailVerificationConfirmationsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   it("upsert") {
     val user = Util.createRandomUser()
