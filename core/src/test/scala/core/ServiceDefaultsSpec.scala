@@ -70,40 +70,6 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("user.is_active Value[1] is not a valid boolean. Must be one of: true, false")
   }
 
-  it("validates duplicate models in the resources section") {
-    val json = """
-    {
-      "name": "Api Doc",
-      "apidoc": { "version": "0.9.6" },
-      "models": {
-        "user": {
-          "fields": [
-            { "name": "guid", "type": "uuid" }
-          ]
-        }
-      },
-      "resources": {
-        "user": {
-          "operations": [
-            {
-              "method": "DELETE"
-            }
-          ]
-        },
-        "user": {
-          "operations": [
-            {
-              "method": "GET"
-            }
-          ]
-        }
-      }
-    }
-    """
-    val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("Resource[user] cannot appear multiple times")
-  }
-
   it("fields with defaults must be marked required") {
     val json = """
     {

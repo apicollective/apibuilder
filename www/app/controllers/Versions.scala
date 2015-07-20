@@ -5,8 +5,6 @@ import lib.{UrlKey, Util, VersionedName, VersionTag}
 import com.bryzek.apidoc.api.v0.models.{Application, OriginalForm, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
 import com.bryzek.apidoc.spec.v0.models.Service
 import com.bryzek.apidoc.spec.v0.models.json._
-import play.api._
-import play.api.mvc._
 import play.api.libs.json._
 import play.api.data._
 import play.api.data.Forms._
@@ -14,7 +12,12 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import java.io.File
 
-object Versions extends Controller {
+import javax.inject.Inject
+import play.api._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
+
+class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   private[this] val DefaultVersion = "0.0.1-dev"
   private[this] val LatestVersion = "latest"
@@ -192,8 +195,8 @@ object Versions extends Controller {
 
       case None => Future {
         val tpl = request.mainTemplate(Some(Util.AddApplicationText))
-        val filledForm = uploadForm.fill(
-          UploadData(
+        val filledForm = Versions.uploadForm.fill(
+          Versions.UploadData(
             version = DefaultVersion,
             visibility = Visibility.Organization.toString,
             originalType = None
@@ -216,8 +219,8 @@ object Versions extends Controller {
                 application = Some(application),
                 version = versionsResponse.headOption.map(_.version)
               )
-              val filledForm = uploadForm.fill(
-                UploadData(
+              val filledForm = Versions.uploadForm.fill(
+                Versions.UploadData(
                   version = versionsResponse.headOption.map(v => VersionTag(v.version).nextMicro().getOrElse(v.version)).getOrElse(DefaultVersion),
                   visibility = application.visibility.toString,
                   originalType = None
@@ -243,7 +246,7 @@ object Versions extends Controller {
       case None => request.mainTemplate(Some(Util.AddApplicationText))
       case Some(key) => request.mainTemplate(Some("Upload New Version"))
     }
-    val boundForm = uploadForm.bindFromRequest
+    val boundForm = Versions.uploadForm.bindFromRequest
     boundForm.fold (
 
       errors => Future {
@@ -327,13 +330,17 @@ object Versions extends Controller {
     }
   }
 
+}
+
+object Versions {
+
   case class UploadData(
     version: String,
     visibility: String,
     originalType: Option[String]
   )
 
-  private[this] val uploadForm = Form(
+  private[controllers] val uploadForm = Form(
     mapping(
       "version" -> nonEmptyText,
       "visibility" -> nonEmptyText,

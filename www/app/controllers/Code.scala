@@ -1,11 +1,11 @@
 package controllers
 
-import java.util.UUID
-
 import scala.concurrent.ExecutionContext.Implicits.global
-import play.api.mvc._
+import javax.inject.Inject
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
 
-object Code extends Controller {
+class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   def index(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(

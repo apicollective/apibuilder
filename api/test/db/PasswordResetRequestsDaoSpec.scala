@@ -4,9 +4,7 @@ import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
 
-class PasswordResetRequestsDaoSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class PasswordResetRequestsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   it("create") {
     val user = Util.createRandomUser()

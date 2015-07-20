@@ -1,3 +1,5 @@
+upgrade postgresql jar to "9.4-1201-jdbc41"
+
 Consider supporting (from swagger):
   - parameter locations: header, cookie
   - add headers to response object

@@ -4,7 +4,7 @@ import com.bryzek.apidoc.api.v0.models.EmailVerificationConfirmationForm
 import play.api._
 import play.api.mvc._
 
-object EmailVerifications extends Controller {
+class EmailVerifications extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

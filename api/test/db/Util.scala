@@ -8,7 +8,7 @@ import lib.Role
 import java.util.UUID
 
 object Util {
-  new play.core.StaticApplication(new java.io.File("."))
+  // new play.core.StaticApplication(new java.io.File("."))
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@gilttest.com"
@@ -39,7 +39,7 @@ object Util {
     visibility: Visibility = Visibility.Organization
   ): Organization = {
     val form = createOrganizationForm(
-      name = name.getOrElse(UUID.randomUUID.toString),
+      name = name.getOrElse("z-test-org-" + UUID.randomUUID.toString),
       key = key,
       namespace = namespace.getOrElse("test." + UUID.randomUUID.toString),
       visibility = visibility
@@ -48,7 +48,7 @@ object Util {
   }
 
   def createOrganizationForm(
-    name: String = UUID.randomUUID.toString,
+    name: String = "z-test-org-" + UUID.randomUUID.toString,
     key: Option[String] = None,
     namespace: String = "test." + UUID.randomUUID.toString,
     visibility: Visibility = Visibility.Organization,
@@ -69,7 +69,7 @@ object Util {
   }
 
   def createApplicationForm(
-    name: String = "Test " + UUID.randomUUID.toString,
+    name: String = "z-test-app-" + UUID.randomUUID.toString,
     key: Option[String] = None,
     description: Option[String] = None,
     visibility: Visibility = Visibility.Organization

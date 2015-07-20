@@ -2225,7 +2225,7 @@ package com.bryzek.apidoc.api.v0 {
       }
     }
 
-    def _requestHolder(path: String): play.api.libs.ws.WSRequestHolder = {
+    def _requestHolder(path: String): play.api.libs.ws.WSRequest = {
       import play.api.Play.current
 
       val holder = play.api.libs.ws.WS.url(apiUrl + path).withHeaders(
@@ -2243,7 +2243,7 @@ package com.bryzek.apidoc.api.v0 {
       }
     }
 
-    def _logRequest(method: String, req: play.api.libs.ws.WSRequestHolder)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequestHolder = {
+    def _logRequest(method: String, req: play.api.libs.ws.WSRequest)(implicit ec: scala.concurrent.ExecutionContext): play.api.libs.ws.WSRequest = {
       val queryComponents = for {
         (name, values) <- req.queryString
         value <- values

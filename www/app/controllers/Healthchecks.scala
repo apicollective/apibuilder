@@ -1,10 +1,11 @@
 package controllers
 
 import models.MainTemplate
-import play.api._
-import play.api.mvc._
+import javax.inject.Inject
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
 
-object Healthchecks extends Controller {
+class Healthchecks @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

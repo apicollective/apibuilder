@@ -1,16 +1,20 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{TokenForm}
+import com.bryzek.apidoc.api.v0.models.TokenForm
 import lib.{Pagination, PaginatedCollection}
 import models.MainTemplate
-import play.api.data.Forms._
 import play.api.data._
-import play.api.mvc._
+import play.api.data.Forms._
 import java.util.UUID
 
 import scala.concurrent.Future
 
-object TokensController extends Controller {
+import javax.inject.Inject
+import play.api._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
+
+class TokensController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -64,13 +68,13 @@ object TokensController extends Controller {
   }
 
   def create() = Authenticated { implicit request =>
-    Ok(views.html.tokens.create(request.mainTemplate(Some("Create token")), tokenForm))
+    Ok(views.html.tokens.create(request.mainTemplate(Some("Create token")), TokensController.tokenForm))
   }
 
   def postCreate = Authenticated.async { implicit request =>
     val tpl = request.mainTemplate(Some("Create token"))
 
-    val form = tokenForm.bindFromRequest
+    val form = TokensController.tokenForm.bindFromRequest
     form.fold (
 
       errors => Future {
@@ -102,12 +106,15 @@ object TokensController extends Controller {
       Redirect(routes.TokensController.index()).flashing("success" -> "Token deleted")
     }
   }
+}
+
+object TokensController {
 
   case class TokenData(
     description: Option[String]
   )
 
-  private[this] val tokenForm = Form(
+  private[controllers] val tokenForm = Form(
     mapping(
       "description" -> optional(nonEmptyText)
     )(TokenData.apply)(TokenData.unapply)

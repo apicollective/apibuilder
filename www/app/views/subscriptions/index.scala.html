@@ -1,6 +1,6 @@
 @(tpl: models.MainTemplate,
   userPublications: Seq[controllers.Subscriptions.UserPublication]
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl.copy(title = Some("Subscriptions"))) {
 

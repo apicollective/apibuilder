@@ -1,6 +1,6 @@
 @(form: Form[controllers.Generators.GeneratorServiceCreateFormData],
   cancelUrl: play.api.mvc.Call
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 <fieldset>
     @helper.inputText(

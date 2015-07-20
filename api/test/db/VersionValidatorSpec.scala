@@ -3,9 +3,7 @@ package db
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
-class VersionValidatorSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class VersionValidatorSpec extends FunSpec with Matchers with util.TestApplication {
 
   it("validates user is a member of the organization to create an application") {
     val org = Util.createOrganization()

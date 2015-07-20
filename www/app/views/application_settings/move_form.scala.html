@@ -1,7 +1,7 @@
 @(tpl: models.MainTemplate,
   form: Form[controllers.ApplicationSettings.MoveOrgData],
   errors: Seq[String] = Seq.empty
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl, errorMessages = errors) {
   <div class="container">

@@ -3,7 +3,7 @@
   form: Form[controllers.Versions.UploadData],
   errors: Seq[String] = Seq.empty,
   isFirstVersion: Option[Boolean] = None
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
   <div class="container">

@@ -4,6 +4,7 @@ import com.bryzek.apidoc.api.v0.models.{Application, Change, ChangeVersion, Refe
 import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
 import com.bryzek.apidoc.internal.v0.models.json._
 import anorm._
+import anorm.JodaParameterMetaData._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._

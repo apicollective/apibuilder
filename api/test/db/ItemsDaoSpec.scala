@@ -4,13 +4,8 @@ import com.bryzek.apidoc.api.v0.models.{ApplicationSummary, Item, Organization, 
 import org.scalatest.{FunSpec, Matchers}
 import org.postgresql.util.PSQLException
 import java.util.UUID
-import anorm._
-import play.api.db._
-import play.api.Play.current
 
-class ItemsDaoSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class ItemsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   private[this] def upsertItem(
     org: Organization = Util.createOrganization(),

@@ -2,18 +2,18 @@ package controllers
 
 import lib.Util
 import com.bryzek.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm}
-import java.util.UUID
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 
-import play.api._
-import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 
-object Subscriptions extends Controller {
+import javax.inject.Inject
+import play.api._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+object Subscriptions {
 
   case class UserPublication(publication: Publication, isSubscribed: Boolean) {
     val label = publication match {
@@ -24,6 +24,12 @@ object Subscriptions extends Controller {
       case Publication.UNDEFINED(key) => key
     }
   }
+
+}
+
+class Subscriptions @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def offerPublication(isAdmin: Boolean, publication: Publication): Boolean = {
     publication match {
@@ -46,7 +52,7 @@ object Subscriptions extends Controller {
       )
     } yield {
       val userPublications = Publication.all.filter { p => offerPublication(request.isAdmin, p) }.map { p =>
-        UserPublication(
+        Subscriptions.UserPublication(
           publication = p,
           isSubscribed = !subscriptions.find(_.publication == p).isEmpty
         )

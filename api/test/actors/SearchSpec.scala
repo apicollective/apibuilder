@@ -5,9 +5,7 @@ import com.bryzek.apidoc.api.v0.models.ApplicationSummary
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
-class SearchSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class SearchSpec extends FunSpec with Matchers with util.TestApplication {
 
   describe("indexApplication") {
 

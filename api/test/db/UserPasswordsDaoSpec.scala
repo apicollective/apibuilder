@@ -4,9 +4,7 @@ import org.scalatest.FlatSpec
 import org.junit.Assert._
 import java.util.UUID
 
-class UserPasswordsDaoSpec extends FlatSpec {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class UserPasswordsDaoSpec extends FlatSpec with util.TestApplication {
 
   private[this] val user = Util.upsertUser("michael@mailinator.com")
 

@@ -1,7 +1,7 @@
 @(
   tpl: models.MainTemplate,
   generators: lib.PaginatedCollection[com.bryzek.apidoc.generator.v0.models.Generator]
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @import com.bryzek.apidoc.api.v0.models.Visibility
 

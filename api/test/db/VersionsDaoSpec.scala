@@ -9,9 +9,7 @@ import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 import play.api.libs.json.{Json, JsObject}
 
-class VersionsDaoSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   private[this] val Original = com.bryzek.apidoc.api.v0.models.Original(
     `type` = OriginalType.ApiJson,

@@ -1,18 +1,21 @@
 package controllers
 
 import lib.{DateHelper, MemberDownload, Pagination, PaginatedCollection, Review, Role}
-import com.bryzek.apidoc.api.v0.models.{ Organization, User }
+import com.bryzek.apidoc.api.v0.models.{Organization, User}
 import models._
-import play.api._
-import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import org.joda.time.DateTime
 import java.util.UUID
 
-object Members extends Controller {
+import javax.inject.Inject
+import play.api._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
+
+class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -40,7 +43,7 @@ object Members extends Controller {
 
   def add(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireMember
-    val filledForm = addMemberForm.fill(AddMemberData(role = Role.Member.key, email = ""))
+    val filledForm = Members.addMemberForm.fill(Members.AddMemberData(role = Role.Member.key, email = ""))
 
     Ok(views.html.members.add(request.mainTemplate(Some("Add member")),
                               filledForm))
@@ -50,7 +53,7 @@ object Members extends Controller {
     request.requireMember
     val tpl = request.mainTemplate(Some("Add member"))
 
-    addMemberForm.bindFromRequest.fold (
+    Members.addMemberForm.bindFromRequest.fold (
 
       errors => {
         Ok(views.html.members.add(tpl, errors))
@@ -60,7 +63,7 @@ object Members extends Controller {
         Await.result(request.api.Users.get(email = Some(valid.email)), 1500.millis).headOption match {
 
           case None => {
-            val filledForm = addMemberForm.fill(valid)
+            val filledForm = Members.addMemberForm.fill(valid)
             Ok(views.html.members.add(tpl, filledForm, Some("No user found")))
           }
 
@@ -161,8 +164,12 @@ object Members extends Controller {
     )
   }
 
+}
+
+object Members {
+
   case class AddMemberData(role: String, email: String)
-  private[this] val addMemberForm = Form(
+  private[controllers] val addMemberForm = Form(
     mapping(
       "role" -> nonEmptyText,
       "email" -> nonEmptyText

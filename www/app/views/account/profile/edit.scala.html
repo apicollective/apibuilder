@@ -2,7 +2,7 @@
   user: com.bryzek.apidoc.api.v0.models.User,
   form: Form[controllers.AccountProfileController.ProfileData],
   errors: Seq[String] = Nil
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl.copy(title = Some("Edit Profile")), errorMessages = errors) {
 

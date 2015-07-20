@@ -1,7 +1,7 @@
 @(metadata: models.MainTemplate,
   errorMessages: Seq[String] = Nil,
   jsFiles: Seq[String] = Seq.empty
-)(content: Html)(implicit flash: Flash)
+)(content: Html)(implicit flash: Flash, messages: Messages)
 
 <!DOCTYPE html>
 <html lang="en">

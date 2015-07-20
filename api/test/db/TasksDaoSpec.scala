@@ -8,9 +8,7 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 
-class TasksDaoSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   private[this] def setDeletedAt(task: Task, days: Int) {
     val query = s"""

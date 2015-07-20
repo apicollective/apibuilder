@@ -4,9 +4,7 @@ import com.bryzek.apidoc.api.v0.models.{Application, Change, Diff, DiffBreaking,
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 
-class ChangesDaoSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   private[this] def getApplication(version: Version): Application = {
     ApplicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {

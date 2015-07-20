@@ -1,15 +1,14 @@
 package controllers
 
 import com.bryzek.apidoc.api.v0.models.{UserForm, UserUpdateForm}
-import models.MainTemplate
-import play.api.data.Forms._
+import javax.inject.Inject
 import play.api.data._
-import play.api.mvc._
-import java.util.UUID
-
+import play.api.data.Forms._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
 import scala.concurrent.Future
 
-object AccountProfileController extends Controller {
+class AccountProfileController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -23,8 +22,8 @@ object AccountProfileController extends Controller {
   }
 
   def edit() = Authenticated { implicit request =>
-    val form = profileForm.fill(
-      ProfileData(
+    val form = AccountProfileController.profileForm.fill(
+      AccountProfileController.ProfileData(
         email = request.user.email,
         nickname = request.user.nickname,
         name = request.user.name
@@ -38,7 +37,7 @@ object AccountProfileController extends Controller {
   def postEdit = Authenticated.async { implicit request =>
     val tpl = request.mainTemplate(Some("Edit Profile"))
 
-    val form = profileForm.bindFromRequest
+    val form = AccountProfileController.profileForm.bindFromRequest
     form.fold (
       errors => Future {
         Ok(views.html.account.profile.edit(tpl, request.user, form))
@@ -64,13 +63,17 @@ object AccountProfileController extends Controller {
     )
   }
 
+}
+
+object AccountProfileController {
+
   case class ProfileData(
     email: String,
     nickname: String,
     name: Option[String]
   )
 
-  private[this] val profileForm = Form(
+  private[controllers] val profileForm = Form(
     mapping(
       "email" -> nonEmptyText,
       "nickname" -> nonEmptyText,

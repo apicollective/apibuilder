@@ -1,7 +1,8 @@
 package db
 
 import com.bryzek.apidoc.api.v0.models.{Audit, ReferenceGuid}
-import db.AnormHelper._
+import anorm._
+import anorm.JodaParameterMetaData._
 import org.joda.time.DateTime
 import java.util.UUID
 

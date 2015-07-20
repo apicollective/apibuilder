@@ -2,7 +2,7 @@
   q: Option[String],
   org: Option[String],
   items: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Item]
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
 

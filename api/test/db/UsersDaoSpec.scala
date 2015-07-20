@@ -5,9 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 import lib.Role
 
-class UsersDaoSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   def createUserForm(
     email: String = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",

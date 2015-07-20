@@ -2,7 +2,7 @@ package controllers
 
 import play.api.mvc._
 
-object AccountController extends Controller {
+class AccountController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

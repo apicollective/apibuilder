@@ -4,9 +4,7 @@ import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
 
-class OrganizationDomainsDaoSpec extends FunSpec with Matchers {
-
-  new play.core.StaticApplication(new java.io.File("."))
+class OrganizationDomainsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   it("create") {
     val domainName = UUID.randomUUID.toString + ".org"

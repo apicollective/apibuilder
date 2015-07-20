@@ -1,6 +1,6 @@
 package builder
 
-import play.api.libs.json.{Json, JsArray, JsBoolean, JsNumber, JsObject, JsString, JsValue, JsUndefined}
+import play.api.libs.json.{Json, JsArray, JsBoolean, JsLookupResult, JsNumber, JsObject, JsString, JsValue}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -29,69 +29,69 @@ object JsonUtil {
 
     unrecognized ++
     strings.flatMap { field =>
-      (json \ field) match {
-        case o: JsString => {
+      (json \ field).toOption match {
+        case Some(o: JsString) => {
           parseString(o.value) match {
             case None => Some(withPrefix(prefix, s"$field must be a non empty string"))
             case Some(_) => None
           }
         }
-        case u: JsUndefined => Some(withPrefix(prefix, s"Missing $field"))
-        case _ => Some(withPrefix(prefix, s"$field must be a string"))
+        case Some(_) => Some(withPrefix(prefix, s"$field must be a string"))
+        case None => Some(withPrefix(prefix, s"Missing $field"))
       }
     } ++
     optionalStrings.flatMap { field =>
-      (json \ field) match {
-        case o: JsString => None
-        case u: JsUndefined => None
-        case _ => Some(withPrefix(prefix, s"$field, if present, must be a string"))
+      (json \ field).toOption match {
+        case Some(o: JsString) => None
+        case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be a string"))
+        case None => None
       }
     } ++
     optionalBooleans.flatMap { field =>
-      (json \ field) match {
-        case o: JsBoolean => None
-        case o: JsString => {
+      (json \ field).toOption match {
+        case Some(o: JsBoolean) => None
+        case Some(o: JsString) => {
           parseBoolean(o.value) match {
             case None => Some(withPrefix(prefix, s"$field, if present, must be a boolean or the string 'true' or 'false'"))
             case Some(_) => None
           }
         }
-        case u: JsUndefined => None
-        case _ => Some(withPrefix(prefix, s"$field, if present, must be a boolean"))
+        case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be a boolean"))
+        case None => None
       }
     } ++
     optionalNumbers.flatMap { field =>
-      (json \ field) match {
-        case o: JsNumber => None
-        case o: JsString => {
+      (json \ field).toOption match {
+        case Some(o: JsNumber) => None
+        case Some(o: JsString) => {
           parseLong(o.value) match {
             case None => Some(withPrefix(prefix, s"$field, if present, must be a number"))
             case Some(_) => None
           }
         }
-        case u: JsUndefined => None
-        case _ => Some(withPrefix(prefix, s"$field, if present, must be a number"))
+        case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be a number"))
+        case None => None
       }
     } ++
     arraysOfObjects.flatMap { field =>
-      (json \ field) match {
-        case o: JsArray => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
-        case u: JsUndefined => Some(withPrefix(prefix, s"Missing $field"))
-        case _ => Some(withPrefix(prefix, s"$field must be an array"))
+      (json \ field).toOption match {
+        case Some(o: JsArray) => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
+        case Some(_) => Some(withPrefix(prefix, s"$field must be an array"))
+        case None => Some(withPrefix(prefix, s"Missing $field"))
       }
     } ++
     optionalArraysOfObjects.flatMap { field =>
-      (json \ field) match {
-        case o: JsArray => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
-        case u: JsUndefined => None
-        case _ => Some(withPrefix(prefix, s"$field, if present, must be an array"))
+      (json \ field).toOption match {
+        case Some(o: JsArray) => validateArrayOfObjects(withPrefix(prefix, s"elements of $field"), o.value)
+        case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be an array"))
+        case None => None
       }
     } ++
     optionalObjects.flatMap { field =>
-      (json \ field) match {
-        case o: JsObject => None
-        case u: JsUndefined => None
-        case _ => Some(withPrefix(prefix, s"$field, if present, must be an object"))
+      (json \ field).toOption match {
+        case Some(o: JsObject) => None
+        case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be an object"))
+        case None => None
       }
     }
   }
@@ -127,14 +127,21 @@ object JsonUtil {
 
   def asOptString(value: JsValue): Option[String] = {
     value match {
-      case (_: JsUndefined) => None
-      case (v: JsString) => parseString(v.value)
-      case (v: JsValue) => parseString(v.toString)
+      case v: JsString => parseString(v.value)
+      case v: JsValue => parseString(v.toString)
     }
+  }
+
+  def asOptString(value: JsLookupResult): Option[String] = {
+    value.toOption.flatMap { asOptString(_) }
   }
 
   def asOptBoolean(value: JsValue): Option[Boolean] = {
     asOptString(value).flatMap { parseBoolean(_) }
+  }
+
+  def asOptBoolean(value: JsLookupResult): Option[Boolean] = {
+    value.toOption.flatMap { asOptBoolean(_) }
   }
 
   private def parseBoolean(value: String): Option[Boolean] = {
@@ -151,6 +158,10 @@ object JsonUtil {
     asOptString(value).flatMap { parseLong(_) }
   }
 
+  def asOptLong(value: JsLookupResult): Option[Long] = {
+    value.toOption.flatMap { asOptLong(_) }
+  }
+
   private def parseLong(value: String): Option[Long] = {
     Try(value.toLong) match {
       case Success(v) => Some(v)
@@ -159,9 +170,9 @@ object JsonUtil {
   }
 
   def hasKey(json: JsValue, field: String): Boolean = {
-    (json \ field) match {
-      case (_: JsUndefined) => false
-      case _ => true
+    (json \ field).toOption match {
+      case None => false
+      case Some(_) => true
     }
   }
 
