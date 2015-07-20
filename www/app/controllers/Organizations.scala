@@ -11,7 +11,7 @@ import play.api.data.Forms._
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 
-object Organizations extends Controller {
+class Organizations extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -115,8 +115,8 @@ object Organizations extends Controller {
   }
 
   def create() = Authenticated { implicit request =>
-    val filledForm = orgForm.fill(
-      OrgData(
+    val filledForm = Organizations.orgForm.fill(
+      Organizations.OrgData(
         name = "",
         namespace = "",
         key = None,
@@ -130,7 +130,7 @@ object Organizations extends Controller {
   def createPost = Authenticated.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Organization"))
 
-    val form = orgForm.bindFromRequest
+    val form = Organizations.orgForm.bindFromRequest
     form.fold (
 
       errors => Future {
@@ -164,8 +164,8 @@ object Organizations extends Controller {
           Redirect(routes.ApplicationController.index()).flashing("warning" -> "Org not found")
         }
         case Some(org) => {
-          val filledForm = orgForm.fill(
-            OrgData(
+          val filledForm = Organizations.orgForm.fill(
+            Organizations.OrgData(
               name = org.name,
               namespace = org.namespace,
               key = Some(org.key),
@@ -187,7 +187,7 @@ object Organizations extends Controller {
         case Some(org) => {
           val tpl = request.mainTemplate(Some("Edit Organization"))
 
-          val form = orgForm.bindFromRequest
+          val form = Organizations.orgForm.bindFromRequest
           form.fold (
 
             errors => Future {
@@ -227,13 +227,18 @@ object Organizations extends Controller {
     }
   }
 
+}
+
+object Organizations {
+
   case class OrgData(
     name: String,
     namespace: String,
     key: Option[String],
     visibility: String
   )
-  private[this] val orgForm = Form(
+
+  private[controllers] val orgForm = Form(
     mapping(
       "name" -> nonEmptyText,
       "namespace" -> nonEmptyText,

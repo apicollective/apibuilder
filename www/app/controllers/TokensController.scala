@@ -10,7 +10,7 @@ import java.util.UUID
 
 import scala.concurrent.Future
 
-object TokensController extends Controller {
+class TokensController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -64,13 +64,13 @@ object TokensController extends Controller {
   }
 
   def create() = Authenticated { implicit request =>
-    Ok(views.html.tokens.create(request.mainTemplate(Some("Create token")), tokenForm))
+    Ok(views.html.tokens.create(request.mainTemplate(Some("Create token")), TokensController.tokenForm))
   }
 
   def postCreate = Authenticated.async { implicit request =>
     val tpl = request.mainTemplate(Some("Create token"))
 
-    val form = tokenForm.bindFromRequest
+    val form = TokensController.tokenForm.bindFromRequest
     form.fold (
 
       errors => Future {
@@ -102,12 +102,15 @@ object TokensController extends Controller {
       Redirect(routes.TokensController.index()).flashing("success" -> "Token deleted")
     }
   }
+}
+
+object TokensController {
 
   case class TokenData(
     description: Option[String]
   )
 
-  private[this] val tokenForm = Form(
+  private[controllers] val tokenForm = Form(
     mapping(
       "description" -> optional(nonEmptyText)
     )(TokenData.apply)(TokenData.unapply)

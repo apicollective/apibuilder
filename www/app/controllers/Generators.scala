@@ -10,7 +10,7 @@ import play.api.mvc._
 
 import scala.concurrent.Future
 
-object Generators extends Controller {
+class Generators extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -51,8 +51,8 @@ object Generators extends Controller {
   }
 
   def create() = Authenticated { implicit request =>
-    val filledForm = generatorServiceCreateFormData.fill(
-      GeneratorServiceCreateFormData(
+    val filledForm = Generators.generatorServiceCreateFormData.fill(
+      Generators.GeneratorServiceCreateFormData(
         uri = ""
       )
     )
@@ -63,7 +63,7 @@ object Generators extends Controller {
   def createPost = Authenticated.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Generator"))
 
-    val form = generatorServiceCreateFormData.bindFromRequest
+    val form = Generators.generatorServiceCreateFormData.bindFromRequest
     form.fold (
 
       errors => Future {
@@ -86,12 +86,15 @@ object Generators extends Controller {
 
     )
   }
+}
+
+object Generators {
 
   case class GeneratorServiceCreateFormData(
     uri: String
   )
 
-  private[this] val generatorServiceCreateFormData = Form(
+  private[controllers] val generatorServiceCreateFormData = Form(
     mapping(
       "uri" -> nonEmptyText
     )(GeneratorServiceCreateFormData.apply)(GeneratorServiceCreateFormData.unapply)

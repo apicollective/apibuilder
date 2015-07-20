@@ -11,9 +11,7 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 
-object Subscriptions extends Controller {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+object Subscriptions {
 
   case class UserPublication(publication: Publication, isSubscribed: Boolean) {
     val label = publication match {
@@ -24,6 +22,13 @@ object Subscriptions extends Controller {
       case Publication.UNDEFINED(key) => key
     }
   }
+
+}
+
+
+class Subscriptions extends Controller {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def offerPublication(isAdmin: Boolean, publication: Publication): Boolean = {
     publication match {
@@ -46,7 +51,7 @@ object Subscriptions extends Controller {
       )
     } yield {
       val userPublications = Publication.all.filter { p => offerPublication(request.isAdmin, p) }.map { p =>
-        UserPublication(
+        Subscriptions.UserPublication(
           publication = p,
           isSubscribed = !subscriptions.find(_.publication == p).isEmpty
         )

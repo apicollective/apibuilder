@@ -5,7 +5,7 @@ import java.util.UUID
 import play.api._
 import play.api.mvc._
 
-object MembershipRequestReviews extends Controller {
+class MembershipRequestReviews extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

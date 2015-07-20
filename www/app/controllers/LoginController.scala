@@ -8,7 +8,7 @@ import play.api.data._
 import play.api.data.Forms._
 import scala.concurrent.Future
 
-object LoginController extends Controller {
+class LoginController extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -18,18 +18,18 @@ object LoginController extends Controller {
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    val lForm = loginForm.fill(LoginData(email = "", password = "", returnUrl = returnUrl))
-    val rForm = registerForm.fill(RegisterData(name = None, email = "", password = "", passwordVerify = "", returnUrl = returnUrl))
-    Ok(views.html.login.index(tpl, Tab.Login, lForm, rForm))
+    val lForm = LoginController.loginForm.fill(LoginController.LoginData(email = "", password = "", returnUrl = returnUrl))
+    val rForm = LoginController.registerForm.fill(LoginController.RegisterData(name = None, email = "", password = "", passwordVerify = "", returnUrl = returnUrl))
+    Ok(views.html.login.index(tpl, LoginController.Tab.Login, lForm, rForm))
   }
 
   def indexPost = Action.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    val form = loginForm.bindFromRequest
+    val form = LoginController.loginForm.bindFromRequest
     form.fold (
 
       formWithErrors => Future {
-        Ok(views.html.login.index(tpl, Tab.Login, formWithErrors, registerForm))
+        Ok(views.html.login.index(tpl, LoginController.Tab.Login, formWithErrors, LoginController.registerForm))
       },
 
       validForm => {
@@ -38,7 +38,7 @@ object LoginController extends Controller {
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
-            Ok(views.html.login.index(tpl, Tab.Login, form, registerForm, Some(r.errors.map(_.message).mkString(", "))))
+            Ok(views.html.login.index(tpl, LoginController.Tab.Login, form, LoginController.registerForm, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
       }
@@ -49,11 +49,11 @@ object LoginController extends Controller {
   def registerPost = Action.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
 
-    val form = registerForm.bindFromRequest
+    val form = LoginController.registerForm.bindFromRequest
     form.fold (
 
       formWithErrors => Future {
-        Ok(views.html.login.index(tpl, Tab.Register, loginForm, formWithErrors))
+        Ok(views.html.login.index(tpl, LoginController.Tab.Register, LoginController.loginForm, formWithErrors))
       },
 
       validForm => {
@@ -62,7 +62,7 @@ object LoginController extends Controller {
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
-            Ok(views.html.login.index(tpl, Tab.Register, loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
+            Ok(views.html.login.index(tpl, LoginController.Tab.Register, LoginController.loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
       }
@@ -72,12 +72,12 @@ object LoginController extends Controller {
 
   def forgotPassword() = Action { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    Ok(views.html.login.forgotPassword(tpl, forgotPasswordForm))
+    Ok(views.html.login.forgotPassword(tpl, LoginController.forgotPasswordForm))
   }
 
   def postForgotPassword = Action.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    val form = forgotPasswordForm.bindFromRequest
+    val form = LoginController.forgotPasswordForm.bindFromRequest
     form.fold (
 
       formWithErrors => Future {
@@ -98,12 +98,12 @@ object LoginController extends Controller {
 
   def resetPassword(token: String) = Action { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    Ok(views.html.login.resetPassword(tpl, token, resetPasswordForm))
+    Ok(views.html.login.resetPassword(tpl, token, LoginController.resetPasswordForm))
   }
 
   def postResetPassword(token: String) = Action.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    val form = resetPasswordForm.bindFromRequest
+    val form = LoginController.resetPasswordForm.bindFromRequest
     form.fold (
 
       formWithErrors => Future {
@@ -127,6 +127,9 @@ object LoginController extends Controller {
 
     )
   }
+}
+
+object LoginController {
 
   case class LoginData(email: String, password: String, returnUrl: Option[String])
   val loginForm = Form(

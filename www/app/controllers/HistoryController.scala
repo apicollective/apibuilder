@@ -6,7 +6,7 @@ import play.api.mvc._
 import scala.concurrent.Future
 import com.bryzek.apidoc.api.v0.errors.UnitResponse
 
-object HistoryController extends Controller {
+class HistoryController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

@@ -3,7 +3,7 @@ package controllers
 import play.api._
 import play.api.mvc._
 
-object DocController extends Controller {
+class DocController extends Controller {
 
   def redirect = Action { implicit request =>
     Redirect(routes.DocController.index)

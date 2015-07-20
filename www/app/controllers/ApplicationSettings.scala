@@ -11,7 +11,7 @@ import play.api.data.Forms._
 import play.api.libs.json._
 import scala.concurrent.Future
 
-object ApplicationSettings extends Controller {
+class ApplicationSettings extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -55,14 +55,14 @@ object ApplicationSettings extends Controller {
     for {
       tpl <- mainTemplate(request.api, request.mainTemplate(None), applicationKey, versionName)
     } yield {
-      val filledForm = settingsForm.fill(Settings(visibility = tpl.application.get.visibility.toString))
+      val filledForm = ApplicationSettings.settingsForm.fill(ApplicationSettings.Settings(visibility = tpl.application.get.visibility.toString))
       Ok(views.html.application_settings.form(tpl, filledForm))
     }
   }
 
   def postEdit(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
     mainTemplate(request.api, request.mainTemplate(None), applicationKey, versionName).flatMap { tpl =>
-      val boundForm = settingsForm.bindFromRequest
+      val boundForm = ApplicationSettings.settingsForm.bindFromRequest
       boundForm.fold (
         errors => Future {
           Ok(views.html.application_settings.form(tpl, errors))
@@ -103,13 +103,13 @@ object ApplicationSettings extends Controller {
     for {
       tpl <- mainTemplate(request.api, request.mainTemplate(None), applicationKey)
     } yield {
-      Ok(views.html.application_settings.move_form(tpl, moveOrgForm))
+      Ok(views.html.application_settings.move_form(tpl, ApplicationSettings.moveOrgForm))
     }
   }
 
   def postMove(orgKey: String, applicationKey: String) = AuthenticatedOrg.async { implicit request =>
     mainTemplate(request.api, request.mainTemplate(None), applicationKey).flatMap { tpl =>
-      val boundForm = moveOrgForm.bindFromRequest
+      val boundForm = ApplicationSettings.moveOrgForm.bindFromRequest
       boundForm.fold (
         errors => Future {
           Ok(views.html.application_settings.move_form(tpl, errors))
@@ -133,15 +133,19 @@ object ApplicationSettings extends Controller {
     }
   }
 
+}
+
+object ApplicationSettings {
+
   case class Settings(visibility: String)
-  private[this] val settingsForm = Form(
+  private[controllers] val settingsForm = Form(
     mapping(
       "visibility" -> text
     )(Settings.apply)(Settings.unapply)
   )
 
   case class MoveOrgData(orgKey: String)
-  private[this] val moveOrgForm = Form(
+  private[controllers] val moveOrgForm = Form(
     mapping(
       "org_key" -> text
     )(MoveOrgData.apply)(MoveOrgData.unapply)

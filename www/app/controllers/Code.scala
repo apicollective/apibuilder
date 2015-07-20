@@ -5,7 +5,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.mvc._
 
-object Code extends Controller {
+class Code extends Controller {
 
   def index(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(

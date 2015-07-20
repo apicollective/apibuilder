@@ -8,7 +8,7 @@ import play.api.data._
 import play.api.data.Forms._
 import scala.concurrent.Future
 
-object Domains extends Controller {
+class Domains extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -21,13 +21,13 @@ object Domains extends Controller {
   def create(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireAdmin
     val tpl = request.mainTemplate(title = Some("Add Domain"))
-    Ok(views.html.domains.form(tpl, domainForm))
+    Ok(views.html.domains.form(tpl, Domains.domainForm))
   }
 
   def postCreate(orgKey: String) = AuthenticatedOrg.async { implicit request =>
     request.requireAdmin
     val tpl = request.mainTemplate(title = Some("Add Domain"))
-    val boundForm = domainForm.bindFromRequest
+    val boundForm = Domains.domainForm.bindFromRequest
     boundForm.fold (
 
       errors => Future {
@@ -60,9 +60,13 @@ object Domains extends Controller {
       Redirect(routes.Domains.index(request.org.key)).flashing("success" -> s"Domain removed")
     }
   }
+
+}
+
+object Domains {
  
   case class DomainData(name: String)
-  private[this] val domainForm = Form(
+  private[controllers] val domainForm = Form(
     mapping(
       "name" -> nonEmptyText
     )(DomainData.apply)(DomainData.unapply)

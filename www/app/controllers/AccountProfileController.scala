@@ -9,7 +9,7 @@ import java.util.UUID
 
 import scala.concurrent.Future
 
-object AccountProfileController extends Controller {
+class AccountProfileController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -23,8 +23,8 @@ object AccountProfileController extends Controller {
   }
 
   def edit() = Authenticated { implicit request =>
-    val form = profileForm.fill(
-      ProfileData(
+    val form = AccountProfileController.profileForm.fill(
+      AccountProfileController.ProfileData(
         email = request.user.email,
         nickname = request.user.nickname,
         name = request.user.name
@@ -38,7 +38,7 @@ object AccountProfileController extends Controller {
   def postEdit = Authenticated.async { implicit request =>
     val tpl = request.mainTemplate(Some("Edit Profile"))
 
-    val form = profileForm.bindFromRequest
+    val form = AccountProfileController.profileForm.bindFromRequest
     form.fold (
       errors => Future {
         Ok(views.html.account.profile.edit(tpl, request.user, form))
@@ -64,13 +64,17 @@ object AccountProfileController extends Controller {
     )
   }
 
+}
+
+object AccountProfileController {
+
   case class ProfileData(
     email: String,
     nickname: String,
     name: Option[String]
   )
 
-  private[this] val profileForm = Form(
+  private[controllers] val profileForm = Form(
     mapping(
       "email" -> nonEmptyText,
       "nickname" -> nonEmptyText,

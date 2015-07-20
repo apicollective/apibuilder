@@ -92,6 +92,7 @@ lazy val www = project
   .settings(commonSettings: _*)
   .settings(
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
+    routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       "com.github.tototoshi" %% "scala-csv" % "1.2.1",
       "org.pegdown" % "pegdown" % "1.5.0"

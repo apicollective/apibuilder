@@ -7,7 +7,7 @@ import play.api.Logger
 import java.util.UUID
 import scala.concurrent.Future
 
-object SearchController extends Controller {
+class SearchController extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
