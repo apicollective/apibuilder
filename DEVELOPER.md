@@ -56,7 +56,12 @@ Developing
 You'll need to get the api schema into your dev postgresql database; to do that:
 
     $ psql
-    psql> CREATE DATABASE api;
+    psql> CREATE DATABASE apidoc;
+
+Create a web user with permissions to modify the new database.
+
+    psql> CREATE ROLE web WITH LOGIN;
+    psql> GRANT ALL ON DATABASE apidoc TO web;
 
 Then you'll need to create the database schema using [schema evolution manager](https://github.com/mbryzek/schema-evolution-manager#installation)
 
@@ -79,7 +84,7 @@ One way to do this is to run a screen session, and in one screen do:
 
 Goto http://localhost:9000 in your browser
 
-If you want to run the standard code generators:
+If you want to run the standard code generators service locally you can clone it from [apidoc-generator](https://github.com/mbryzek/apidoc-generator)
 
     $ sbt
     sbt> project generator
