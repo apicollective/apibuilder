@@ -1,6 +1,8 @@
 [warn] /web/apidoc/api/app/db/generators/ServicesDao.scala:118: method apply in trait WithResult is deprecated: Use [[fold]], [[foldWhile]] or [[withResult]] instead, which manages resources and memory
 [warn]       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
 
+Add support for java (multi files) to client-tests/download-and-compile.rb
+
 Consider supporting (from swagger):
   - parameter locations: header, cookie
   - add headers to response object
