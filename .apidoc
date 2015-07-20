@@ -8,11 +8,11 @@ code:
     apidoc-spec:
       version: latest
       generators:
-        play_2_3_client: generated/app
+        play_2_4_client: generated/app
     apidoc-generator:
       version: latest
       generators:
-        play_2_3_client: generated/app
+        play_2_4_client: generated/app
     apidoc-internal:
       version: latest
       generators:
@@ -20,5 +20,5 @@ code:
     apidoc-api:
       version: latest
       generators:
-        play_2_3_client: generated/app
+        play_2_4_client: generated/app
         play_2_x_routes: api/conf/routes
