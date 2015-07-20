@@ -132,7 +132,7 @@ def cli(command, opts={})
 
   builder << "#{CLI_PATH} #{command}"
   cmd = builder.join(" && ")
-  puts cmd
+  # puts cmd
   `#{cmd}`.strip
 end
 
