@@ -1,14 +1,13 @@
 package controllers
 
 import lib.{Pagination, PaginatedCollection}
+import javax.inject.Inject
 import play.api._
-import play.api.mvc._
-import play.api.Logger
-import java.util.UUID
-import scala.concurrent.Future
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
 
-class SearchController extends Controller {
-
+class SearchController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+  
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def index(q: Option[String], org: Option[String], page: Int = 0) = Anonymous.async { implicit request =>

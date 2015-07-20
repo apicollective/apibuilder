@@ -1,7 +1,7 @@
 @(tpl: models.MainTemplate,
   form: Form[controllers.Generators.GeneratorServiceCreateFormData],
   errorMessages: Seq[String] = Nil
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl.copy(title = Some("Add Generator")), errorMessages = errorMessages) {
 

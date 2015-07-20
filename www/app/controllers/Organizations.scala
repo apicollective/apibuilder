@@ -4,14 +4,17 @@ import lib.Role
 import lib.{Pagination, PaginatedCollection, Role}
 import models.{MainTemplate, SettingSection, SettingsMenu}
 import com.bryzek.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
-import play.api._
-import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
-class Organizations extends Controller {
+import javax.inject.Inject
+import play.api._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
+
+class Organizations @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

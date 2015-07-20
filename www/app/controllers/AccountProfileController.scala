@@ -1,15 +1,14 @@
 package controllers
 
 import com.bryzek.apidoc.api.v0.models.{UserForm, UserUpdateForm}
-import models.MainTemplate
-import play.api.data.Forms._
+import javax.inject.Inject
 import play.api.data._
-import play.api.mvc._
-import java.util.UUID
-
+import play.api.data.Forms._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
 import scala.concurrent.Future
 
-class AccountProfileController extends Controller {
+class AccountProfileController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

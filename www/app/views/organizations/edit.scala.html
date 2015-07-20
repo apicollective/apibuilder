@@ -2,7 +2,7 @@
   org: com.bryzek.apidoc.api.v0.models.Organization,
   form: Form[controllers.Organizations.OrgData],
   errorMessages: Seq[String] = Nil
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl.copy(title = Some("Edit Organization")), errorMessages = errorMessages) {
 

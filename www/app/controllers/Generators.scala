@@ -1,16 +1,19 @@
 package controllers
 
 import com.bryzek.apidoc.api.v0.models.{GeneratorServiceForm, User}
-import com.bryzek.apidoc.generator.v0.models.{Generator}
-import lib.{Pagination, PaginatedCollection, Util}
+import com.bryzek.apidoc.generator.v0.models.Generator
+import lib.{Pagination, PaginatedCollection}
 import models.MainTemplate
 import play.api.data.Forms._
 import play.api.data._
-import play.api.mvc._
 
 import scala.concurrent.Future
 
-class Generators extends Controller {
+import javax.inject.Inject
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
+
+class Generators @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

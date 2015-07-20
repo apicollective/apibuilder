@@ -5,8 +5,6 @@ import lib.{UrlKey, Util, VersionedName, VersionTag}
 import com.bryzek.apidoc.api.v0.models.{Application, OriginalForm, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
 import com.bryzek.apidoc.spec.v0.models.Service
 import com.bryzek.apidoc.spec.v0.models.json._
-import play.api._
-import play.api.mvc._
 import play.api.libs.json._
 import play.api.data._
 import play.api.data.Forms._
@@ -14,7 +12,12 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import java.io.File
 
-class Versions extends Controller {
+import javax.inject.Inject
+import play.api._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
+
+class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   private[this] val DefaultVersion = "0.0.1-dev"
   private[this] val LatestVersion = "latest"

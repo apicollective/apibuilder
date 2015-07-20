@@ -1,12 +1,11 @@
 package controllers
 
-import lib.{ Pagination, PaginatedCollection }
-import java.util.UUID
+import lib.{Pagination, PaginatedCollection}
+import javax.inject.Inject
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
 
-import play.api._
-import play.api.mvc._
-
-class ApplicationController extends Controller {
+class ApplicationController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

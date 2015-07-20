@@ -1,16 +1,20 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{TokenForm}
+import com.bryzek.apidoc.api.v0.models.TokenForm
 import lib.{Pagination, PaginatedCollection}
 import models.MainTemplate
-import play.api.data.Forms._
 import play.api.data._
-import play.api.mvc._
+import play.api.data.Forms._
 import java.util.UUID
 
 import scala.concurrent.Future
 
-class TokensController extends Controller {
+import javax.inject.Inject
+import play.api._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
+
+class TokensController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

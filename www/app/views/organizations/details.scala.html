@@ -1,7 +1,7 @@
 @(
   tpl: models.MainTemplate,
   org: com.bryzek.apidoc.api.v0.models.Organization
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl.copy(title = Some("Org Details"))) {
 

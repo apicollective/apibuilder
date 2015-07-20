@@ -1,7 +1,7 @@
 @(tpl: models.MainTemplate,
   members: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Membership],
   isAdmin: Boolean
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
 

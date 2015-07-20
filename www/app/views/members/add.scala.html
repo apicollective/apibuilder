@@ -1,7 +1,7 @@
 @(tpl: models.MainTemplate,
   addForm: Form[controllers.Members.AddMemberData],
   error: Option[String] = None
- )(implicit flash: Flash)
+ )(implicit flash: Flash, messages: Messages)
 
 @import helper._
 

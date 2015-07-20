@@ -1,7 +1,7 @@
 @(tpl: models.MainTemplate,
   form: Form[controllers.TokensController.TokenData],
   errorMessages: Seq[String] = Nil
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl.copy(title = Some("Create Token")), errorMessages = errorMessages) {
 

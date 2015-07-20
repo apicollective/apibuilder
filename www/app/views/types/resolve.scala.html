@@ -1,7 +1,7 @@
 @(tpl: models.MainTemplate,
   typeName: String,
   errorMessages: Seq[String] = Nil
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl, errorMessages = errorMessages) {
 

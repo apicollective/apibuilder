@@ -1,12 +1,15 @@
 package controllers
 
 import lib.{Pagination, PaginatedCollection}
-import play.api._
-import play.api.mvc._
 import scala.concurrent.Future
 import com.bryzek.apidoc.api.v0.errors.UnitResponse
 
-class HistoryController extends Controller {
+import javax.inject.Inject
+import play.api._
+import play.api.i18n.{MessagesApi, I18nSupport}
+import play.api.mvc.{Action, Controller}
+
+class HistoryController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 

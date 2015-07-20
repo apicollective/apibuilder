@@ -1,6 +1,6 @@
 @(tpl: models.MainTemplate,
   applications: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Application],
-  haveRequests: Boolean)(implicit flash: Flash)
+  haveRequests: Boolean)(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
 

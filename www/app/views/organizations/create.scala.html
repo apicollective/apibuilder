@@ -1,7 +1,7 @@
 @(tpl: models.MainTemplate,
   form: Form[controllers.Organizations.OrgData],
   errorMessages: Seq[String] = Nil
-)(implicit flash: Flash)
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl.copy(title = Some("Create Organization")), errorMessages = errorMessages) {
 
