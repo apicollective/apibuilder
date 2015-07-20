@@ -105,8 +105,9 @@ class Target
 end
 
 targets = [
-           Target.new('play_2_4', ScalaTester.new("app/models"), ['play_2_4_client', 'play_2_x_json', 'scala_models']),
-           Target.new('ning_1_9_scala_2_11', ScalaTester.new("src/main/scala"), ['ning_1_9_client', 'scala_models']),
+#           Target.new('play_2_4', ScalaTester.new("app/models"), ['play_2_4_client', 'play_2_x_json', 'scala_models']),
+  Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client']),
+  Target.new('ning_1_9_scala_2_11', ScalaTester.new("src/main/scala"), ['ning_1_9_client', 'scala_models']),
            Target.new('ruby', RubyTester.new, ['ruby_client']),
            Target.new('play_2_3', ScalaTester.new("app/models"), ['play_2_3_client']),
            Target.new('play_2_2', ScalaTester.new("app/models"), ['play_2_2_client']),
@@ -131,24 +132,24 @@ def cli(command, opts={})
 
   builder << "#{CLI_PATH} #{command}"
   cmd = builder.join(" && ")
-  # puts cmd
+  puts cmd
   `#{cmd}`.strip
 end
 
-def get_code(org, application, generator)
+def each_target(org, application, generator)
   version = "latest"
 
-  begin
-    code = cli("code #{org} #{application} #{version} #{generator}")
-  rescue Com::Gilt::Apidoc::Api::V0::HttpClient::ServerError => e
-    if e.code == 404
-      puts " - warning: application[#{application}] either has no versions or was otherwise not found"
-    else
-      raise "Failed to fetch code for org[#{org}] application[#{application}] version[#{version}] generator[#{generator}]"
-    end
+  get_files(org, application, generator, version).each do |file|
+    code = cli("code #{org} #{application} #{version} #{generator} #{file}")
+    yield file, code
   end
+end
 
-  code
+def get_files(org, application, generator, version)
+  output = cli("code #{org} #{application} #{version} #{generator}")
+  output.split("\n").select { |l| l.strip.match(/^\-/) }.map do |l|
+    l.strip.sub(/^\-\s*/, '')
+  end
 end
 
 CACHE = {}
@@ -188,8 +189,9 @@ targets.each do |target|
         next if !applications.empty? && !applications.include?(app)
 
         puts "  %s/%s" % [org, app]
-        if code = get_code(org, app, generator)
-          filename = target.tester.write(target.platform, org, app, generator, code)
+        each_target(org, app, generator) do |filename, code|
+          # filename = target.tester.write(target.platform, org, app, generator, code)
+          filename = target.tester.write(target.platform, org, app, filename, code)
         end
       end
     end
