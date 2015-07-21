@@ -4,6 +4,11 @@
 
 @main(tpl) {
 
+  <div class="pull-right">
+    <span class="glyphicon"></span> <a href="@{tpl.requestPath}.zip">Download (.zip)</a>
+  </div>
+
+
   <table class="table table-hover table-condensed">
     <tbody>
       @files.map { file =>

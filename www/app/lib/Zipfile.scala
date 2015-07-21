@@ -1,4 +1,4 @@
-package util
+package lib
 
 import java.io.FileOutputStream
 import java.util.zip.{ZipEntry, ZipOutputStream}

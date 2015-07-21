@@ -54,12 +54,10 @@ object Code extends Controller {
                   key = generator.key,
                   invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
                 ).map { invocation =>
-                  val zipFile = _root_.util.Zipfile.create(s"${orgKey}_${applicationKey}_${version.version}", invocation.files)
-                  println("ZIP: " + zipFile)
                   Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
                     generator = generator,
                     files = invocation.files,
-                    source = invocation.source
+                      source = invocation.source
                   )))
                 }.recover {
                   case r: com.bryzek.apidoc.generator.v0.errors.ErrorsResponse => {

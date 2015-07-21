@@ -13,10 +13,17 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
     ).map {
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
       case Some(code) => {
-        Ok(views.html.code.index(
-          request.mainTemplate().copy(title = Some(code.generator.name + " - Files")),
-          files = code.files
-        ))
+
+        // TODO: Better content negotiation here
+        if (request.path.endsWith(".zip")) {
+          val zipFile = lib.Zipfile.create(s"${orgKey}_${applicationKey}_${version}", code.files)
+          Ok.sendFile(zipFile)
+        } else {
+          Ok(views.html.code.index(
+            request.mainTemplate().copy(title = Some(code.generator.name + " - Files")),
+            files = code.files
+          ))
+        }
       }
     }.recover {
       case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
