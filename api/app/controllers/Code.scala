@@ -23,7 +23,7 @@ object Code extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  val apidocVersion = Config.requiredString("git.version")
+  private[this] val apidocVersion = Config.requiredString("git.version")
 
   def getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(
     orgKey: String,
@@ -54,6 +54,8 @@ object Code extends Controller {
                   key = generator.key,
                   invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
                 ).map { invocation =>
+                  val zipFile = _root_.util.Zipfile.create(s"${orgKey}_${applicationKey}_${version.version}", invocation.files)
+                  println("ZIP: " + zipFile)
                   Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
                     generator = generator,
                     files = invocation.files,
