@@ -41,7 +41,7 @@ object Util {
   private val gitHub = "https://github.com/mbryzek"
   val ApidocGitHubUrl = s"$gitHub/apidoc"
   val ApidocCliGitHubUrl = s"$gitHub/apidoc-cli"
-  val GeneratorGitHubUrl = s"$gitHub/apidoc-generator"
+  val ApidocGeneratorGitHubUrl = s"$gitHub/apidoc-generator"
 
   def fullUrl(stub: String): String = s"$Host$stub"
 

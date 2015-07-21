@@ -2,6 +2,19 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.9.32 - Jul 21 2015</h3>
+
+  <ul>
+
+    <li> Introduction of a play 2.4.x code generator. Only minor changes from 2.3.x.</li>
+    <li> apidoc itself is now running play 2.4.2 </li>
+    <li> Introduction of a java model code
+    generator. See <a href='@lib.Util.ApidocGeneratorGitHubUrl/pull/29'>PR
+    29</a>. Many thanks
+    to <a href="https://github.com/jkenny">jkenny</a> for this change.
+
+  </ul>
+
 <h3>0.9.30 - Jul 15 2015</h3>
 
   <ul>
@@ -174,8 +187,8 @@
 
     </ul>
 
-    For more information, see <a href='@lib.Util.GeneratorGitHubUrl/pull/6'>PR 6</a> and
-    <a href='@lib.Util.GeneratorGitHubUrl/issues/5'>Issue 5</a>.
+    For more information, see <a href='@lib.Util.ApidocGeneratorGitHubUrl/pull/6'>PR 6</a> and
+    <a href='@lib.Util.ApidocGeneratorGitHubUrl/issues/5'>Issue 5</a>.
     </li>
 
     <li> Experimental support for Swagger Json (2.0 only). This
@@ -413,7 +426,7 @@ are support for union types and imports.</p>
 
     <li>Code generators have been moved out of the apidoc code
     repository and into a separate repository (<a
-    href="@lib.Util.GeneratorGitHubUrl">@lib.Util.GeneratorGitHubUrl</a>). Combined
+    href="@lib.Util.ApidocGeneratorGitHubUrl">@lib.Util.ApidocGeneratorGitHubUrl</a>). Combined
     with the introduction of the service schema, we now have a much
     simpler interface to create code generators. Code generators are
     functions that accept an instance of a service
