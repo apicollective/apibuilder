@@ -10,11 +10,11 @@ object Zipfile {
 
   def create(dirName: String, files: Seq[File]): java.io.File = {
     val path = java.io.File.createTempFile(dirName, ".zip")
-    create(path, files, prefix = dirName + "/")
+    createForFile(path, files, prefix = dirName + "/")
     path
   }
 
-  def create(
+  private def createForFile(
     zip: java.io.File,
     files: Seq[File],
     prefix: String = ""
