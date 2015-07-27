@@ -23,7 +23,7 @@ object Code extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  val apidocVersion = Config.requiredString("git.version")
+  private[this] val apidocVersion = Config.requiredString("git.version")
 
   def getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(
     orgKey: String,
@@ -57,7 +57,7 @@ object Code extends Controller {
                   Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
                     generator = generator,
                     files = invocation.files,
-                    source = invocation.source
+                      source = invocation.source
                   )))
                 }.recover {
                   case r: com.bryzek.apidoc.generator.v0.errors.ErrorsResponse => {

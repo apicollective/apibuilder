@@ -1,8 +1,16 @@
 @(tpl: models.MainTemplate,
+  orgKey: String,
+  applicationKey: String,
+  version: String,
+  generatorKey: String,
   files: Seq[com.bryzek.apidoc.generator.v0.models.File]
 )(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
+
+  <div class="pull-right">
+    <span class="glyphicon"></span> <a href="@routes.Code.zipFile(orgKey = orgKey, applicationKey = applicationKey, version = version, generatorKey)">Download (.zip)</a>
+  </div>
 
   <table class="table table-hover table-condensed">
     <tbody>
