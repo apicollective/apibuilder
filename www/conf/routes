@@ -113,6 +113,6 @@ GET     /:orgKey/:applicationKey/:version/original                controllers.Ve
 GET     /:orgKey/:applicationKey/:version/service.json            controllers.Versions.serviceJson(orgKey: String, applicationKey: String, version: String)
 POST    /:orgKey/:applicationKey/:version/watch                   controllers.Versions.postWatch(orgKey: String, applicationKey: String, version: String)
 POST    /:orgKey/:applicationKey/:version/postDelete              controllers.Versions.postDelete(orgKey: String, applicationKey: String, version: String)
-GET     /:orgKey/:applicationKey/:version/:generatorKey.zip       controllers.Code.index(orgKey: String, applicationKey: String, version: String, generatorKey: String)
+GET     /:orgKey/:applicationKey/:version/:generatorKey.zip       controllers.Code.zipFile(orgKey: String, applicationKey: String, version: String, generatorKey: String)
 GET     /:orgKey/:applicationKey/:version/:generatorKey           controllers.Code.index(orgKey: String, applicationKey: String, version: String, generatorKey: String)
 GET     /:orgKey/:applicationKey/:version/:generatorKey/:fileName controllers.Code.file(orgKey: String, applicationKey: String, version: String, generatorKey: String, fileName: String)
