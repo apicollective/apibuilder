@@ -15,6 +15,10 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
       case Some(code) => {
         Ok(views.html.code.index(
           request.mainTemplate().copy(title = Some(code.generator.name + " - Files")),
+          orgKey = orgKey,
+          applicationKey = applicationKey,
+          version = version,
+          generatorKey = generatorKey,
           files = code.files
         ))
       }
