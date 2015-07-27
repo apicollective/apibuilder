@@ -21,7 +21,8 @@ object Zipfile {
   ) {
     val zipOutputStream = new ZipOutputStream(new FileOutputStream(zip))
     files.foreach { f =>
-      zipOutputStream.putNextEntry(new ZipEntry(s"$prefix${f.name}"))
+      val path = prefix + f.dir.fold("")(_ + "/")
+      zipOutputStream.putNextEntry(new ZipEntry(s"$path${f.name}"))
       zipOutputStream.write(f.contents.getBytes(UTF8))
       zipOutputStream.closeEntry
     }
