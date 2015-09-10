@@ -34,8 +34,8 @@ object Email {
   // string.
   private[this] val sendgrid = {
     localDeliveryDir match {
-      case None => new SendGrid(Config.requiredString("sendgrid.apiUser"), Config.requiredString("sendgrid.apiKey"))
-      case Some(_) => new SendGrid(Config.requiredString("sendgrid.apiUser"), "development")
+      case None => new SendGrid(Config.requiredString("sendgrid.apiKey"))
+      case Some(_) => new SendGrid(Config.optionalString("sendgrid.apiKey").getOrElse("development"))
     }
   }
 
