@@ -36,8 +36,6 @@ object Applications extends Controller {
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
-        request.requireAdmin(org)
-
         request.body.validate[ApplicationForm] match {
           case e: JsError => {
             Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -63,8 +61,6 @@ object Applications extends Controller {
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
-        request.requireAdmin(org)
-
         request.body.validate[ApplicationForm] match {
           case e: JsError => {
             Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -105,7 +101,6 @@ object Applications extends Controller {
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
-        request.requireAdmin(org)
         ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
           case None => NotFound
           case Some(app) => {
