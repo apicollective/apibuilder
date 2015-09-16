@@ -4,18 +4,18 @@ import java.util.UUID
 
 import com.bryzek.apidoc.api.v0.models.json._
 
-import com.bryzek.apidoc.spec.v0.models.Service
 import com.bryzek.apidoc.spec.v0.models.json._
+import com.bryzek.apidoc.spec.v0.models.Service
 
 import com.bryzek.apidoc.generator.v0.Client
 import com.bryzek.apidoc.generator.v0.models.InvocationForm
 
-import db.{Authorization, VersionsDao}
 import db.generators.{GeneratorsDao, ServicesDao}
+import db.{Authorization, VersionsDao}
 import lib.{Config, AppConfig, Validation}
 
-import play.api.mvc._
 import play.api.libs.json._
+import play.api.mvc._
 
 import scala.concurrent.Future
 
@@ -62,6 +62,9 @@ object Code extends Controller {
                 }.recover {
                   case r: com.bryzek.apidoc.generator.v0.errors.ErrorsResponse => {
                     Conflict(Json.toJson(Validation.errors(r.errors.map(_.message))))
+                  }
+                  case r: com.bryzek.apidoc.generator.v0.errors.FailedRequest => {
+                    Conflict(Json.toJson(Validation.errors(Seq(s"Generator failed with ${r.getMessage}"))))
                   }
                 }
               }
