@@ -4,6 +4,7 @@ import db.generators.ServicesDao
 import lib.Validation
 import com.bryzek.apidoc.api.v0.models.{User, GeneratorServiceForm}
 import com.bryzek.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.generator.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -32,7 +33,7 @@ trait GeneratorServices {
     Ok(Json.toJson(services))
   }
 
-  def getByGuid(guid: _root_.java.util.UUID) = AnonymousRequest { request =>
+  def getByGuid(guid: UUID) = AnonymousRequest { request =>
     ServicesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(service) => Ok(Json.toJson(service))

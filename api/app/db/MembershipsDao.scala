@@ -1,7 +1,9 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Audit, Membership, Organization, ReferenceGuid, User}
+import com.bryzek.apidoc.api.v0.models.{Membership, Organization, User}
 import com.bryzek.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.common.v0.models.{Audit, ReferenceGuid}
+import com.bryzek.apidoc.common.v0.models.json._
 import lib.Role
 import anorm._
 import play.api.db._

@@ -2,6 +2,7 @@ package db
 
 import com.bryzek.apidoc.api.v0.models.{MembershipRequest, Organization, User}
 import com.bryzek.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.common.v0.models.json._
 import lib.Role
 import anorm._
 import play.api.db._

@@ -1,7 +1,8 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Application, Change, ChangeVersion, Reference, ReferenceGuid, User, UserSummary, Version}
+import com.bryzek.apidoc.api.v0.models.{Application, Change, ChangeVersion, User, UserSummary, Version}
 import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
+import com.bryzek.apidoc.common.v0.models.{Reference, ReferenceGuid}
 import com.bryzek.apidoc.internal.v0.models.json._
 import anorm._
 import anorm.JodaParameterMetaData._

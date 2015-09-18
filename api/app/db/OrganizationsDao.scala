@@ -2,6 +2,8 @@ package db
 
 import com.bryzek.apidoc.api.v0.models._
 import com.bryzek.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.common.v0.models.{Audit, ReferenceGuid}
+import com.bryzek.apidoc.common.v0.models.json._
 import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
 import play.api.db._

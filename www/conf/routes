@@ -42,10 +42,7 @@ GET     /generators/                                              controllers.Ge
 GET     /generators/show/:key                                     controllers.Generators.show(key: String)
 GET     /generators/create                                        controllers.Generators.create()
 POST    /generators/createPost                                    controllers.Generators.createPost()
-
-#POST    /generators/:key/remove                                   controllers.Generators.postRemove(key: String)
-#POST    /generators/postCreate                                    controllers.Generators.postCreate()
-#POST    /generators/postUpdate                                    controllers.Generators.postUpdate(key: String)
+POST    /generators/delete/:key                                   controllers.Generators.deletePost(key: String)
 
 GET     /tokens                                                   controllers.TokensController.redirect()
 GET     /tokens/                                                  controllers.TokensController.index(page: Int ?= 0)

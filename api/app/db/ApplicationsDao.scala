@@ -1,6 +1,7 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, Reference, User, Version, Visibility}
+import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, User, Version, Visibility}
+import com.bryzek.apidoc.common.v0.models.Reference
 import com.bryzek.apidoc.internal.v0.models.TaskDataIndexApplication
 import lib.{UrlKey, Validation}
 import anorm._

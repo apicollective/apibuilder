@@ -25,6 +25,7 @@
           <th>Name</th>
           <th>Language</th>
           <th>Description</th>
+          <th></th>
         </tr>
 
         @generators.items.map { generator =>
@@ -33,6 +34,10 @@
             <td>@generator.name</td>
             <td>@generator.language.getOrElse("")</td>
             <td>@Html(lib.Markdown(generator.description.map(lib.Text.truncate(_))))</td>
+            <td>@if(tpl.canDeleteGenerator(generator)) {
+                  <a href="@routes.Generators.deletePost(generator.key)" class="delete" data-confirm="Are you sure?">Delete</a>
+	        }
+            </td>
           </tr>
         }
       </tbody>
