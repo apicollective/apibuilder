@@ -10,7 +10,7 @@ class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication 
 
     it("is a no-op if no data has changed") {
       val service = Util.createGeneratorService()
-      val form = Util.createGeneratorForm()
+      val form = Util.createGeneratorForm(service)
       GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) should be(Nil)
 
       GeneratorsDao.upsert(db.Util.createdBy, form)
