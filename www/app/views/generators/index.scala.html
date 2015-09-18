@@ -1,6 +1,6 @@
 @(
   tpl: models.MainTemplate,
-  generators: lib.PaginatedCollection[com.bryzek.apidoc.generator.v0.models.Generator]
+  generatorWithServices: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.GeneratorWithService]
 )(implicit flash: Flash, messages: Messages)
 
 @import com.bryzek.apidoc.api.v0.models.Visibility
@@ -13,7 +13,7 @@
     </div>
   }
 
-  @if(generators.isEmpty) {
+  @if(generatorWithServices.isEmpty) {
     <em>No generators</em>
 
   } else {
@@ -28,14 +28,14 @@
           <th></th>
         </tr>
 
-        @generators.items.map { generator =>
+        @generatorWithServices.items.map { gws =>
           <tr>
-            <td><a href="@routes.Generators.show(generator.key)">@generator.key</a></td>
-            <td>@generator.name</td>
-            <td>@generator.language.getOrElse("")</td>
-            <td>@Html(lib.Markdown(generator.description.map(lib.Text.truncate(_))))</td>
-            <td>@if(tpl.canDeleteGenerator(generator)) {
-                  <a href="@routes.Generators.deletePost(generator.key)" class="delete" data-confirm="Are you sure?">Delete</a>
+            <td><a href="@routes.Generators.show(gws.generator.key)">@gws.generator.key</a></td>
+            <td>@gws.generator.name</td>
+            <td>@gws.generator.language.getOrElse("")</td>
+            <td>@Html(lib.Markdown(gws.generator.description.map(lib.Text.truncate(_))))</td>
+            <td>@if(tpl.canDeleteGenerator(gws)) {
+                  <a href="@routes.Generators.deletePost(gws.generator.key)" class="delete" data-confirm="Are you sure?">Delete</a>
 	        }
             </td>
           </tr>
@@ -43,13 +43,13 @@
       </tbody>
     </table>
 
-    @if(generators.hasPrevious || generators.hasNext) {
+    @if(generatorWithServices.hasPrevious || generatorWithServices.hasNext) {
       <ul class="pager">
-        @if(generators.hasPrevious) {
-          <li><a href="@routes.Generators.index(generators.page - 1)">Previous</a></li>
+        @if(generatorWithServices.hasPrevious) {
+          <li><a href="@routes.Generators.index(generatorWithServices.page - 1)">Previous</a></li>
         }
-        @if(generators.hasNext) {
-          <li><a href="@routes.Generators.index(generators.page + 1)">Next</a></li>
+        @if(generatorWithServices.hasNext) {
+          <li><a href="@routes.Generators.index(generatorWithServices.page + 1)">Next</a></li>
         }
       </ul>
     }

@@ -95,8 +95,8 @@
             <b>Clients</b>
             <ul class="nav nav-sidebar">
                 @metadata.service.map { service =>
-                  @metadata.generators.map { generator =>
-                    <li><a href="@routes.Code.index(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, generator.key)">@generator.name</a>
+                  @metadata.generators.map { gws =>
+                    <li><a href="@routes.Code.index(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, gws.generator.key)">@gws.generator.name</a>
                   }
                 }
             </ul>

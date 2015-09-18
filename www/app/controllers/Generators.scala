@@ -30,7 +30,7 @@ class Generators @Inject() (val messagesApi: MessagesApi) extends Controller wit
     } yield {
       Ok(views.html.generators.index(
         request.mainTemplate().copy(title = Some("Generators")),
-        generators = PaginatedCollection(page, generators)
+        generatorWithServices = PaginatedCollection(page, generators)
       ))
     }
   }
@@ -90,7 +90,7 @@ class Generators @Inject() (val messagesApi: MessagesApi) extends Controller wit
     )
   }
 
-  def deletePost(key: String) = Anonymous.async { implicit request =>
+  def deletePost(generatorKey: String) = Anonymous.async { implicit request =>
     sys.error("TODO")
 /*
     for {
