@@ -88,26 +88,6 @@ class Generators @Inject() (val messagesApi: MessagesApi) extends Controller wit
     )
   }
 
-  def deletePost(generatorKey: String) = Anonymous.async { implicit request =>
-    sys.error("TODO")
-/*
-    for {
-      generator <- lib.ApiClient.callWith404(request.api.comBryzekApidocGeneratorV0ModelsGenerators.getGeneratorsByKey(key))
-      result <- lib.ApiClient.callWith404(request.api.generatorServices.delete(generator.guid)
-    } yield {
-      generator match {
-        case None => {
-          Redirect(routes.Generators.index()).flashing("warning" -> s"Generator not found")
-        }
-        case Some(g) => {
-          deleteByGuid
-          Redirect(routes.Generators.index()).flashing("warning" -> s"TODO: Delete not yet implemented")
-        }
-      }
-    }
- */
-  }
-
 }
 
 object Generators {

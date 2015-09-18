@@ -921,7 +921,13 @@
             {
               "method": "DELETE",
               "path": "/:guid",
-              "description": "Deletes a generator service."
+	      "description": "Deletes a generator service.",
+	      "responses": {
+                "204": { "type": "unit", "description": "Service successfully deleted" },
+                "404": { "type": "unit", "description": "Service not found" },
+                "403": { "type": "unit", "description": "Request is not authorized" }
+              }
+
             }
 	  ]
           

@@ -1,6 +1,6 @@
 package models
 
-import com.bryzek.apidoc.api.v0.models.{Application, GeneratorWithService, Organization, User, Version}
+import com.bryzek.apidoc.api.v0.models.{Application, GeneratorService, GeneratorWithService, Organization, User, Version}
 import com.bryzek.apidoc.spec.v0.models.{Resource, Service}
 import play.api.Play.current
 
@@ -51,10 +51,10 @@ case class MainTemplate(
   /**
     * We allow only the author of a generator to delete it
     */
-  def canDeleteGenerator(gws: GeneratorWithService): Boolean = {
+  def canDeleteGeneratorService(service: GeneratorService): Boolean = {
     user match {
       case None => false
-      case Some(u) => u.guid == gws.service.audit.createdBy.guid
+      case Some(u) => u.guid == service.audit.createdBy.guid
     }
   }
 

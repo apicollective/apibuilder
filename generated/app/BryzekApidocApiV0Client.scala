@@ -1586,7 +1586,9 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/generator_services/${guid}").map {
           case r if r.status == 204 => ()
-          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r if r.status == 403 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 403, 404")
         }
       }
     }

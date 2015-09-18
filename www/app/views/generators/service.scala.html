@@ -1,0 +1,15 @@
+@(
+  tpl: models.MainTemplate,
+  service: com.bryzek.apidoc.api.v0.models.GeneratorService
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl) {
+
+  <ul>
+    <li> URI: @service.uri</li>
+    @if(tpl.canDeleteGeneratorService(service)) {
+      <li> <a href="@routes.GeneratorServices.deletePost(service.guid)" class="delete" data-confirm="Are you sure? This will also remove all generators asscoated with this service">Delete</a> </li>
+    }
+  </ul>
+
+}

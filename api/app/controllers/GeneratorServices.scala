@@ -71,11 +71,21 @@ trait GeneratorServices {
 
   def deleteByGuid(
     guid: UUID
-  ) = Authenticated(parse.json) { request =>
-    ServicesDao.findByGuid(request.authorization, guid).map { service =>
-      ServicesDao.softDelete(request.user, service)
+  ) = Authenticated { request =>
+    println("HEY!")
+    // TODO Authenticate
+    ServicesDao.findByGuid(request.authorization, guid) match {
+      case None => NotFound
+      case Some(service) => {
+        // TODO: Generalize permission check
+        if (service.audit.createdBy.guid == request.user.guid) {
+          ServicesDao.softDelete(request.user, service)
+          NoContent
+        } else {
+          Forbidden
+        }
+      }
     }
-    NoContent
   }
 
 }
