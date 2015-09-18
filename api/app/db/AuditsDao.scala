@@ -32,6 +32,13 @@ object AuditsDao {
     ).mkString(", ")
   }
 
+  def queryCreationWithAlias(tableName: String, prefix: String) = {
+    Seq(
+      s"${tableName}.created_at as ${prefix}_created_at",
+      s"${tableName}.created_by_guid as ${prefix}_created_by_guid"
+    ).mkString(", ")
+  }
+
   private[db] def fromRow(
     row: anorm.Row,
     prefix: Option[String] = None

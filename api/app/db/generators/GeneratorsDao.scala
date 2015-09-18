@@ -21,7 +21,7 @@ object GeneratorsDao {
            generators.language,
            services.guid as service_guid,
            services.uri as service_uri,
-           ${AuditsDao.queryWithAlias("services", "service")}
+           ${AuditsDao.queryCreationWithAlias("services", "service")}
       from generators.generators
       join generators.services on services.guid = generators.service_guid and services.deleted_at is null
      where true
@@ -37,7 +37,7 @@ object GeneratorsDao {
   private[this] val SoftDeleteByKeyQuery = """
     update generators.generators
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
-     where service_guid = {service_guid}
+     where service_guid = {service_guid}::uuid
        and key = {key}
   """
 
@@ -133,7 +133,7 @@ object GeneratorsDao {
     service = GeneratorService(
       guid = row[UUID]("service_guid"),
       uri = row[String]("service_uri"),
-      audit = AuditsDao.fromRow(row, Some("service"))
+      audit = AuditsDao.fromRowCreation(row, Some("service"))
     ),
     generator = Generator(
       key = row[String]("key"),

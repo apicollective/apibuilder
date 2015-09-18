@@ -247,7 +247,7 @@
                 { "name": "application", "type": "com.bryzek.apidoc.common.v0.models.reference" },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
 		{ "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
-		{ "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" },
+		{ "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service", "description": "spec/spec.json description of this API" },
                 { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
             ]
         },
