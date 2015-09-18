@@ -3,8 +3,6 @@
 # apidoc:0.9.39 http://www.apidoc.me/bryzek/apidoc-api/0.9.40-dev/play_2_x_routes
 
 GET        /changes                                            controllers.Changes.get(org_key: _root_.scala.Option[String], application_key: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
-GET        /generators                                         controllers.ComBryzekApidocGeneratorV0ModelsGenerators.getGenerators(guid: _root_.scala.Option[_root_.java.util.UUID], service_uri: _root_.scala.Option[String], key: _root_.scala.Option[String], limit: Long ?= 100, offset: Long ?= 0)
-GET        /generators/:key                                    controllers.ComBryzekApidocGeneratorV0ModelsGenerators.getGeneratorsByKey(key: String)
 GET        /_internal_/healthcheck                             controllers.ComBryzekApidocGeneratorV0ModelsHealthchecks.getInternalAndHealthcheck()
 GET        /_internal_/migrate                                 controllers.ComBryzekApidocGeneratorV0ModelsHealthchecks.getInternalAndMigrate()
 POST       /domains/:orgKey                                    controllers.Domains.postByOrgKey(orgKey: String)
@@ -14,6 +12,8 @@ GET        /generator_services                                 controllers.Gener
 GET        /generator_services/:guid                           controllers.GeneratorServices.getByGuid(guid: _root_.java.util.UUID)
 POST       /generator_services                                 controllers.GeneratorServices.post()
 DELETE     /generator_services/:guid                           controllers.GeneratorServices.deleteByGuid(guid: _root_.java.util.UUID)
+GET        /generators                                         controllers.GeneratorWithServices.getGenerators(guid: _root_.scala.Option[_root_.java.util.UUID], service_guid: _root_.scala.Option[_root_.java.util.UUID], service_uri: _root_.scala.Option[String], key: _root_.scala.Option[String], limit: Long ?= 100, offset: Long ?= 0)
+GET        /generators/:key                                    controllers.GeneratorWithServices.getGeneratorsByKey(key: String)
 GET        /items                                              controllers.Items.get(q: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /items/:guid                                        controllers.Items.getByGuid(guid: _root_.java.util.UUID)
 GET        /memberships                                        controllers.Memberships.get(org_guid: _root_.scala.Option[_root_.java.util.UUID], org_key: _root_.scala.Option[String], user_guid: _root_.scala.Option[_root_.java.util.UUID], role: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)

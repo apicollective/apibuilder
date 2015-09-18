@@ -6,13 +6,14 @@ import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-object ComBryzekApidocGeneratorV0ModelsGenerators extends Controller with ComBryzekApidocGeneratorV0ModelsGenerators
+object GeneratorWithServices extends Controller with GeneratorWithServices
 
-trait ComBryzekApidocGeneratorV0ModelsGenerators {
+trait GeneratorWithServices {
   this: Controller =>
 
   def getGenerators(
-    guid: Option[_root_.java.util.UUID],
+    guid: Option[UUID],
+    serviceGuid: Option[UUID],
     serviceUri: Option[String],
     key: Option[String],
     limit: Long = 25,
@@ -21,6 +22,7 @@ trait ComBryzekApidocGeneratorV0ModelsGenerators {
     val generators = GeneratorsDao.findAll(
       request.authorization,
       guid = guid,
+      serviceGuid = serviceGuid,
       serviceUri = serviceUri,
       key = key,
       limit = limit,

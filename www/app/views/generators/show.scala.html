@@ -1,7 +1,6 @@
 @(
   tpl: models.MainTemplate,
-  generator: com.bryzek.apidoc.generator.v0.models.Generator,
-  service: Option[com.bryzek.apidoc.api.v0.models.GeneratorService]
+  gws: com.bryzek.apidoc.api.v0.models.GeneratorWithService
 )(implicit flash: Flash, messages: Messages)
 
 @import com.bryzek.apidoc.api.v0.models.Visibility
@@ -9,12 +8,12 @@
 @main(tpl) {
 
   <ul>
-    <li> Service: @service.map(_.uri).getOrElse("N/A")</li>
-    <li> Key: @generator.key</li>
-    <li> Name: @generator.name</li>
-    <li> Language: @generator.language.getOrElse("not specified")</li>
+    <li> Service: @gws.service.uri)</li>
+    <li> Key: @gws.generator.key</li>
+    <li> Name: @gws.generator.name</li>
+    <li> Language: @gws.generator.language.getOrElse("not specified")</li>
     <li> Description:
-         <blockquote>@Html(lib.Markdown(generator.description))</blockquote>
+         <blockquote>@Html(lib.Markdown(gws.generator.description))</blockquote>
     </li>
   </ul>
 
