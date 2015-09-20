@@ -1,6 +1,7 @@
 package actors
 
-import com.bryzek.apidoc.api.v0.models.{Application, ApplicationSummary, Organization, Reference}
+import com.bryzek.apidoc.api.v0.models.{Application, ApplicationSummary, Organization}
+import com.bryzek.apidoc.common.v0.models.Reference
 import db.{ApplicationsDao, Authorization, ItemsDao, OrganizationsDao}
 import java.util.UUID
 

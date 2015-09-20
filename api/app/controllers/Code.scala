@@ -47,17 +47,17 @@ object Code extends Controller {
               case None => {
                 Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
               }
-              case Some(generator) => {
-                val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${generator.key}"
+              case Some(gws) => {
+                val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
 
                 new Client(service.uri).invocations.postByKey(
-                  key = generator.key,
+                  key = gws.generator.key,
                   invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
                 ).map { invocation =>
                   Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
-                    generator = generator,
+                    generator = gws,
                     files = invocation.files,
-                      source = invocation.source
+                    source = invocation.source
                   )))
                 }.recover {
                   case r: com.bryzek.apidoc.generator.v0.errors.ErrorsResponse => {

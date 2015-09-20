@@ -42,10 +42,8 @@ GET     /generators/                                              controllers.Ge
 GET     /generators/show/:key                                     controllers.Generators.show(key: String)
 GET     /generators/create                                        controllers.Generators.create()
 POST    /generators/createPost                                    controllers.Generators.createPost()
-
-#POST    /generators/:key/remove                                   controllers.Generators.postRemove(key: String)
-#POST    /generators/postCreate                                    controllers.Generators.postCreate()
-#POST    /generators/postUpdate                                    controllers.Generators.postUpdate(key: String)
+GET     /generators/servies/:guid/show                            controllers.GeneratorServices.show(guid: java.util.UUID)
+POST    /generator/services/:guid/delete                          controllers.GeneratorServices.deletePost(guid: java.util.UUID)
 
 GET     /tokens                                                   controllers.TokensController.redirect()
 GET     /tokens/                                                  controllers.TokensController.index(page: Int ?= 0)

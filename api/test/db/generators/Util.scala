@@ -1,7 +1,7 @@
 package db.generators
 
 import db.Authorization
-import com.bryzek.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
+import com.bryzek.apidoc.api.v0.models.{GeneratorForm, GeneratorService, GeneratorServiceForm, GeneratorWithService}
 import com.bryzek.apidoc.generator.v0.models.Generator
 import java.util.UUID
 
@@ -23,27 +23,33 @@ object Util {
 
   def createGenerator(
     service: GeneratorService = createGeneratorService()
-  ): Generator = {
-    val gen = createGeneratorForm()
+  ): GeneratorWithService = {
+    val form = createGeneratorForm(service = service)
 
-    GeneratorsDao.upsert(db.Util.createdBy, service, gen)
+    GeneratorsDao.upsert(db.Util.createdBy, form)
     GeneratorsDao.findAll(
       Authorization.All,
       serviceGuid = Some(service.guid),
-      key = Some(gen.key),
+      key = Some(form.generator.key),
       limit = 1
     ).headOption.getOrElse {
       sys.error("Failed to create generator")
     }
   }
 
-  def createGeneratorForm(): Generator = {
+  def createGeneratorForm(
+    service: GeneratorService = createGeneratorService()
+  ): GeneratorForm = {
     val value = UUID.randomUUID.toString.toLowerCase
-    Generator(
-      key = "test_" + value,
-      name = "Test " + value,
-      description = None,
-      language = None
+    GeneratorForm(
+      serviceGuid = service.guid,
+      generator = Generator(
+        key = "test_" + value,
+        name = "Test " + value,
+        description = None,
+        language = None
+      )
     )
   }
+
 }

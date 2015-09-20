@@ -1,7 +1,7 @@
 package db.generators
 
-import db.{Authorization, SoftDelete}
-import com.bryzek.apidoc.api.v0.models.{Error, User, GeneratorService}
+import db.{AuditsDao, Authorization, SoftDelete}
+import com.bryzek.apidoc.api.v0.models.{GeneratorForm, Error, GeneratorService, GeneratorWithService, User}
 import com.bryzek.apidoc.generator.v0.models.Generator
 import core.Util
 import lib.Validation
@@ -20,7 +20,8 @@ object GeneratorsDao {
            generators.description,
            generators.language,
            services.guid as service_guid,
-           services.uri as service_uri
+           services.uri as service_uri,
+           ${AuditsDao.queryCreationWithAlias("services", "service")}
       from generators.generators
       join generators.services on services.guid = generators.service_guid and services.deleted_at is null
      where true
@@ -36,42 +37,43 @@ object GeneratorsDao {
   private[this] val SoftDeleteByKeyQuery = """
     update generators.generators
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
-     where key = {key}
+     where service_guid = {service_guid}::uuid
+       and key = {key}
   """
 
-  def upsert(user: User, service: GeneratorService, gen: Generator) {
+  def upsert(user: User, form: GeneratorForm) {
     findAll(
       Authorization.User(user.guid),
-      serviceGuid = Some(service.guid),
-      key = Some(gen.key.trim),
+      serviceGuid = Some(form.serviceGuid),
+      key = Some(form.generator.key.trim),
       limit = 1
     ).headOption match {
       case None => {
         DB.withConnection { implicit c =>
-          create(c, user, service, gen)
+          create(c, user, form)
         }
       }
       case Some(existing) => {
-        if (existing != gen) {
+        if (existing.generator != form.generator) {
           DB.withConnection { implicit c =>
-            softDelete(c, user, gen)
-            create(c, user, service, gen)
+            softDelete(c, user, form.serviceGuid, form.generator.key)
+            create(c, user, form)
           }
         }
       }
     }
   }
 
-  private def create(implicit c: java.sql.Connection, user: User, service: GeneratorService, gen: Generator): UUID = {
+  private def create(implicit c: java.sql.Connection, user: User, form: GeneratorForm): UUID = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
       'guid -> guid,
-      'service_guid -> service.guid,
-      'key -> gen.key.trim,
-      'name -> gen.name.trim,
-      'description -> gen.description.map(_.trim),
-      'language -> gen.language.map(_.trim),
+      'service_guid -> form.serviceGuid,
+      'key -> form.generator.key.trim,
+      'name -> form.generator.name.trim,
+      'description -> form.generator.description.map(_.trim),
+      'language -> form.generator.language.map(_.trim),
       'created_by_guid -> user.guid,
       'updated_by_guid -> user.guid
     ).execute()
@@ -79,14 +81,18 @@ object GeneratorsDao {
     guid
   }
 
-  def softDelete(deletedBy: User, generator: Generator) {
+  def softDelete(deletedBy: User, gws: GeneratorWithService) {
     DB.withConnection { implicit c =>
-      softDelete(c, deletedBy, generator)
+      softDelete(c, deletedBy, gws.service.guid, gws.generator.key)
     }
   }
 
-  private[this] def softDelete(implicit c: java.sql.Connection, deletedBy: User, generator: Generator) {
-    SQL(SoftDeleteByKeyQuery).on('deleted_by_guid -> deletedBy.guid, 'key -> generator.key).execute()
+  private[this] def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String) {
+    SQL(SoftDeleteByKeyQuery).on(
+      'deleted_by_guid -> deletedBy.guid,
+      'service_guid -> serviceGuid,
+      'key -> generatorKey.trim
+    ).execute()
   }
 
   def findAll(
@@ -98,7 +104,7 @@ object GeneratorsDao {
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[Generator] = {
+  ): Seq[GeneratorWithService] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       authorization.generatorServicesFilter().map { v => s"and $v" },
@@ -123,11 +129,18 @@ object GeneratorsDao {
 
   private[db] def fromRow(
     row: anorm.Row
-  ) = Generator(
-    key = row[String]("key"),
-    name = row[String]("name"),
-    description = row[Option[String]]("description"),
-    language = row[Option[String]]("language")
+  ) = GeneratorWithService(
+    service = GeneratorService(
+      guid = row[UUID]("service_guid"),
+      uri = row[String]("service_uri"),
+      audit = AuditsDao.fromRowCreation(row, Some("service"))
+    ),
+    generator = Generator(
+      key = row[String]("key"),
+      name = row[String]("name"),
+      description = row[Option[String]]("description"),
+      language = row[Option[String]]("language")
+    )
   )
 
 }

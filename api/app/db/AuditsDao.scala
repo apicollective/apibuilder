@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Audit, ReferenceGuid}
+import com.bryzek.apidoc.common.v0.models.{Audit, ReferenceGuid}
 import anorm._
 import anorm.JodaParameterMetaData._
 import org.joda.time.DateTime
@@ -29,6 +29,13 @@ object AuditsDao {
       s"${tableName}.created_by_guid as ${prefix}_created_by_guid",
       s"${tableName}.updated_at as ${prefix}_updated_at",
       s"${tableName}.updated_by_guid as ${prefix}_updated_by_guid"
+    ).mkString(", ")
+  }
+
+  def queryCreationWithAlias(tableName: String, prefix: String) = {
+    Seq(
+      s"${tableName}.created_at as ${prefix}_created_at",
+      s"${tableName}.created_by_guid as ${prefix}_created_by_guid"
     ).mkString(", ")
   }
 

@@ -3,8 +3,22 @@
     "description": "Documentation for an apidoc code generator API",
     "base_url": "http://www.apidoc.me",
 
+    "info": {
+	"contact": {
+	    "name": "Michael Bryzek",
+	    "email": "mbryzek@alum.mit.edu",
+	    "url": "http://twitter.com/mbryzek"
+	},
+	"license": {
+	    "name": "MIT",
+	    "url": "http://opensource.org/licenses/MIT"
+	}
+    },
+
+
     "imports": [
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.30/service.json" }
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-common/0.9.40-dev/service.json" },
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.40-dev/service.json" }
     ],
 
     "info": {
@@ -20,7 +34,6 @@
     },
 
     "models": {
-
         "generator": {
             "description": "The generator metadata.",
             "fields": [

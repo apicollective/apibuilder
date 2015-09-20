@@ -74,7 +74,8 @@ def upload(profile, host, version, application, path)
   cli("upload bryzek #{application} #{File.join(dir, path)} --version #{version}", :profile => profile)
 end
 
-upload(profile, host, version, "apidoc-spec", "../spec/service.json")
+upload(profile, host, version, "apidoc-spec", "../spec/spec.json")
+upload(profile, host, version, "apidoc-common", "../spec/common.json")
 upload(profile, host, version, "apidoc-generator", "../spec/generator.json")
 upload(profile, host, version, "apidoc-internal", "../spec/internal.json")
 upload(profile, host, version, "apidoc-api", "../spec/api.json")

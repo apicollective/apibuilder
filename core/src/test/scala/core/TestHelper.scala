@@ -42,31 +42,32 @@ object TestHelper {
     version = "0.0.1-dev"
   )
 
-  private lazy val specService: Service = {
-    val config = ServiceConfiguration(
-      orgKey = "bryzek",
-      orgNamespace = "com.bryzek",
-      version = "0.0.41"
-    )
+  private val bryzekConfig = ServiceConfiguration(
+    orgKey = "bryzek",
+    orgNamespace = "com.bryzek",
+    version = "0.0.41"
+  )
 
-    val contents = readFile("spec/service.json")
-    val validator = OriginalValidator(config, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+  private lazy val specService: Service = {
+    val contents = readFile("spec/spec.json")
+    val validator = OriginalValidator(bryzekConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+    TestServiceValidator(validator).service
+  }
+
+  private lazy val commonService: Service = {
+    val contents = readFile("spec/common.json")
+    val validator = OriginalValidator(bryzekConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
     TestServiceValidator(validator).service
   }
 
   private lazy val generatorService: Service = {
-    val config = ServiceConfiguration(
-      orgKey = "bryzek",
-      orgNamespace = "com.bryzek",
-      version = "0.0.41"
-    )
-
     val fetcher = MockServiceFetcher()
     val version = com.bryzek.apidoc.spec.v0.Constants.Version
     fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
+    fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
 
     val contents = readFile("spec/generator.json")
-    val validator = OriginalValidator(config, Original(OriginalType.ApiJson, contents), fetcher)
+    val validator = OriginalValidator(bryzekConfig, Original(OriginalType.ApiJson, contents), fetcher)
     TestServiceValidator(validator).service
   }
 
@@ -114,6 +115,7 @@ object TestHelper {
     if (filename == "spec/api.json") {
       val version = com.bryzek.apidoc.spec.v0.Constants.Version
       fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
+      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
       fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-generator/$version/service.json", generatorService)
     }
     parseFile(filename, fetcher)

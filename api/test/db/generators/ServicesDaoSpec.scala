@@ -54,10 +54,12 @@ class ServicesDaoSpec extends FunSpec with Matchers with util.TestApplication {
     it("generatorKey") {
       val form = Util.createGeneratorServiceForm()
       val service = ServicesDao.create(db.Util.createdBy, form)
-      val generator = Util.createGenerator(service)
+      val gws = Util.createGenerator(service)
 
-      ServicesDao.findAll(Authorization.All, generatorKey = Some(generator.key)).map(_.guid) should be(Seq(service.guid))
-      ServicesDao.findAll(Authorization.All, generatorKey = Some(generator.key + "2")) should be(Nil)
+      ServicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key)).map(_.guid) should be(Seq(service.guid))
+      ServicesDao.findAll(Authorization.All, guid = Some(service.guid), generatorKey = Some(gws.generator.key)).map(_.guid) should be(Seq(service.guid))
+      ServicesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID), generatorKey = Some(gws.generator.key)).map(_.guid) should be(Nil)
+      ServicesDao.findAll(Authorization.All, generatorKey = Some(gws.generator.key + "2")) should be(Nil)
     }
 
   }

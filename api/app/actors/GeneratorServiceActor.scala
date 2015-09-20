@@ -1,7 +1,7 @@
 package actors
 
 import lib.Pager
-import com.bryzek.apidoc.api.v0.models.GeneratorService
+import com.bryzek.apidoc.api.v0.models.{GeneratorForm, GeneratorService}
 import com.bryzek.apidoc.generator.v0.Client
 import com.bryzek.apidoc.generator.v0.models.Generator
 import com.bryzek.apidoc.internal.v0.models.TaskDataSyncService
@@ -30,7 +30,6 @@ object GeneratorServiceActor {
     val client = new Client(service.uri)
 
     Pager.eachPage[Generator] { offset =>
-      println(s"syncService(${service.uri}) - offset[$offset]")
       val results = Await.result(
         client.generators.get(limit = 100, offset = offset),
         5000.millis
@@ -38,7 +37,13 @@ object GeneratorServiceActor {
       assert(offset < 25, s"Likely infinite loop fetching generators for service at URI[${service.uri}]")
       results
     } { gen =>
-      GeneratorsDao.upsert(UsersDao.AdminUser, service, gen)
+      GeneratorsDao.upsert(
+        UsersDao.AdminUser,
+        GeneratorForm(
+          serviceGuid = service.guid,
+          generator = gen
+        )
+      )
     }
   }
 

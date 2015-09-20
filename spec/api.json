@@ -34,8 +34,9 @@
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.30/service.json" },
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.9.30/service.json" }
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.40-dev/service.json" },
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-common/0.9.40-dev/service.json" },
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.9.40-dev/service.json" }
     ],
 
     "enums": {
@@ -70,21 +71,6 @@
 
     "models": {
 
-	"healthcheck": {
-	    "fields": [
-                { "name": "status", "type": "string", "example": "healthy" }
-	    ]
-	},
-
-	"audit": {
-	    "fields": [
-		{ "name": "created_at", "type": "date-time-iso8601" },
-		{ "name": "created_by", "type": "reference_guid" },
-		{ "name": "updated_at", "type": "date-time-iso8601" },
-		{ "name": "updated_by", "type": "reference_guid" }
-	    ]
-	},
-
 	"validation": {
 	    "description": "Used only to validate json files - used as a resource where http status code defines success",
 	    "fields": [
@@ -100,7 +86,7 @@
                 { "name": "email", "type": "string" },
                 { "name": "nickname", "type": "string", "description": "Public unique identifier for this user." },
                 { "name": "name", "type": "string", "required": false },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
             ]
         },
 
@@ -136,7 +122,7 @@
                 { "name": "user", "type": "user", "description": "The user to which this token belongs." },
                 { "name": "masked_token", "type": "string", "description": "The masked from of the token." },
                 { "name": "description", "type": "string", "description": "optional description to help the user manage the token.", "required": false },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
             ]
         },
 
@@ -163,7 +149,7 @@
                 { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.bryzek" },
                 { "name": "visibility", "type": "visibility" },
                 { "name": "domains", "type": "[domain]", "default": "[]" },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
             ]
         },
 
@@ -191,7 +177,7 @@
                 { "name": "user", "type": "user" },
                 { "name": "organization", "type": "organization" },
                 { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
             ]
         },
 
@@ -202,7 +188,7 @@
                 { "name": "user", "type": "user" },
                 { "name": "organization", "type": "organization" },
                 { "name": "role", "type": "string", "description": "The requested role for membership to this organization. Typically member or admin.", "example": "member" },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
             ]
         },
 
@@ -210,12 +196,12 @@
             "description": "An application has a name and multiple versions of its API.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this application." },
-                { "name": "organization", "type": "reference" },
+                { "name": "organization", "type": "com.bryzek.apidoc.common.v0.models.reference" },
                 { "name": "name", "type": "string", "description": "The unique name for this application." },
                 { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the application name." },
                 { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this application" },
                 { "name": "description", "type": "string", "required": false },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
             ]
         },
 
@@ -232,7 +218,7 @@
 	    "description": "Summary of an application sufficient for display and links",
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
-                { "name": "organization", "type": "reference" },
+                { "name": "organization", "type": "com.bryzek.apidoc.common.v0.models.reference" },
                 { "name": "key", "type": "string" }
 	    ]
 	},
@@ -257,12 +243,12 @@
             "description": "Represents a unique version of the application.",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this version." },
-                { "name": "organization", "type": "reference" },
-                { "name": "application", "type": "reference" },
+                { "name": "organization", "type": "com.bryzek.apidoc.common.v0.models.reference" },
+                { "name": "application", "type": "com.bryzek.apidoc.common.v0.models.reference" },
                 { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
 		{ "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
-		{ "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service", "description": "spec/service.json description of this API" },
-                { "name": "audit", "type": "audit" }
+		{ "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service", "description": "spec/spec.json description of this API" },
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
             ]
         },
 
@@ -273,25 +259,11 @@
             ]
         },
 
-        "reference": {
-            "description": "Represents a reference to another model.",
-            "fields": [
-                { "name": "guid", "type": "uuid" },
-                { "name": "key", "type": "string" }
-	    ]
-	},
-
-        "reference_guid": {
-            "fields": [
-                { "name": "guid", "type": "uuid" }
-	    ]
-	},
-
         "code": {
             "description": "Generated source code.",
             "plural": "code",
             "fields": [
-                { "name": "generator", "type": "com.bryzek.apidoc.generator.v0.models.generator" },
+                { "name": "generator", "type": "generator_with_service" },
                 { "name": "source", "type": "string", "description": "The actual source code.", "deprecation": { "description": "Use files instead" } },
                 { "name": "files", "type": "[com.bryzek.apidoc.generator.v0.models.file]", "description": "A collection of source files", "default": "[]" }
             ]
@@ -304,7 +276,7 @@
 		{ "name": "organization", "type": "organization" },
 		{ "name": "user", "type": "user" },
 		{ "name": "publication", "type": "publication" },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
 	    ]
 	},
 
@@ -323,7 +295,7 @@
 		{ "name": "user", "type": "user" },
 		{ "name": "organization", "type": "organization" },
 		{ "name": "application", "type": "application" },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
 	    ]
 	},
 
@@ -399,14 +371,14 @@
 	    "description": "Represents a single change from one version of a service to another",
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
-                { "name": "organization", "type": "reference" },
-                { "name": "application", "type": "reference" },
+                { "name": "organization", "type": "com.bryzek.apidoc.common.v0.models.reference" },
+                { "name": "application", "type": "com.bryzek.apidoc.common.v0.models.reference" },
                 { "name": "from_version", "type": "change_version" },
                 { "name": "to_version", "type": "change_version" },
                 { "name": "diff", "type": "diff" },
                 { "name": "changed_at", "type": "date-time-iso8601", "description": "Records the timestamp of when the actual change occurred (vs. when we created the changed record)" },
 		{ "name": "changed_by", "type": "user_summary", "description": "Records who made the actual change" },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
 	    ]
 	},
 
@@ -423,13 +395,28 @@
 	    "fields": [
                 { "name": "guid", "type": "uuid" },
                 { "name": "uri", "type": "string" },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
 	    ]
 	},
 
 	"generator_service_form": {
 	    "fields": [
                 { "name": "uri", "type": "string" }
+	    ]
+	},
+
+	"generator_with_service": {
+	    "description": "Wraps a service and a generator providing easier access for applications.",
+	    "fields": [
+                { "name": "service", "type": "generator_service" },
+                { "name": "generator", "type": "com.bryzek.apidoc.generator.v0.models.generator" }
+	    ]
+	},
+
+	"generator_form": {
+	    "fields": [
+                { "name": "service_guid", "type": "uuid" },
+                { "name": "generator", "type": "com.bryzek.apidoc.generator.v0.models.generator" }
 	    ]
 	},
 
@@ -443,14 +430,14 @@
 
     "resources": {
 
-	"healthcheck": {
+	"com.bryzek.apidoc.generator.v0.models.healthcheck": {
 	    "path": "/_internal_",
             "operations": [
                 {
                     "method": "GET",
 		    "path": "/healthcheck",
                     "responses": {
-                        "200": { "type": "healthcheck" }
+                        "200": { "type": "com.bryzek.apidoc.generator.v0.models.healthcheck" }
                     }
                 },
 
@@ -934,28 +921,35 @@
             {
               "method": "DELETE",
               "path": "/:guid",
-              "description": "Deletes a generator service."
+	      "description": "Deletes a generator service.",
+	      "responses": {
+                "204": { "type": "unit", "description": "Service successfully deleted" },
+                "404": { "type": "unit", "description": "Service not found" },
+                "403": { "type": "unit", "description": "Request is not authorized" }
+              }
+
             }
 	  ]
           
         },
 
-        "com.bryzek.apidoc.generator.v0.models.generator": {
+        "generator_with_service": {
           "path": "/generators",
 
           "operations": [
             {
               "method": "GET",
-              "description": "List all generators visible by this user",
+              "description": "List all available generators",
               "parameters": [
                   { "name": "guid", "type": "uuid", "required": false, "description": "Filter to generator with this guid" },
+                  { "name": "service_guid", "type": "uuid", "required": false, "description": "Filter to generator from this service" },
                   { "name": "service_uri", "type": "string", "required": false, "description": "Filter to generator from this service URI" },
                   { "name": "key", "type": "string", "required": false, "description": "Filter to generator with this key" },
                   { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                   { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
               ],
               "responses": {
-                "200": { "type": "[com.bryzek.apidoc.generator.v0.models.generator]" }
+                "200": { "type": "[generator_with_service]" }
               }
             },
 
@@ -963,7 +957,7 @@
               "method": "GET",
               "path": "/:key",
               "responses": {
-                  "200": { "type": "com.bryzek.apidoc.generator.v0.models.generator" },
+                  "200": { "type": "generator_with_service" },
                   "404": { "type": "unit" }
               }
             }

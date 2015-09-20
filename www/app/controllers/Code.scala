@@ -14,7 +14,7 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
       case Some(code) => {
         Ok(views.html.code.index(
-          request.mainTemplate().copy(title = Some(code.generator.name + " - Files")),
+          request.mainTemplate().copy(title = Some(code.generator.generator.name + " - Files")),
           orgKey = orgKey,
           applicationKey = applicationKey,
           version = version,

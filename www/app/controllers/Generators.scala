@@ -23,30 +23,28 @@ class Generators @Inject() (val messagesApi: MessagesApi) extends Controller wit
 
   def index(page: Int = 0) = Anonymous.async { implicit request =>
     for {
-      generators <- request.api.comBryzekApidocGeneratorV0ModelsGenerators.getGenerators(
+      generators <- request.api.generatorWithServices.getGenerators(
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
       )
     } yield {
       Ok(views.html.generators.index(
         request.mainTemplate().copy(title = Some("Generators")),
-        generators = PaginatedCollection(page, generators)
+        generatorWithServices = PaginatedCollection(page, generators)
       ))
     }
   }
 
   def show(key: String) = Anonymous.async { implicit request =>
     for {
-      generator <- lib.ApiClient.callWith404(request.api.comBryzekApidocGeneratorV0ModelsGenerators.getGeneratorsByKey(key))
-      services <- request.api.generatorServices.get(generatorKey = Some(key))
+      generator <- lib.ApiClient.callWith404(request.api.generatorWithServices.getGeneratorsByKey(key))
     } yield {
       generator match {
         case None => Redirect(routes.Generators.index()).flashing("warning" -> s"Generator not found")
-        case Some(g) => {
+        case Some(gws) => {
           Ok(views.html.generators.show(
-            request.mainTemplate().copy(title = Some(g.name)),
-            g,
-            services.headOption
+            request.mainTemplate().copy(title = Some(gws.generator.name)),
+            gws
           ))
         }
       }
@@ -89,6 +87,7 @@ class Generators @Inject() (val messagesApi: MessagesApi) extends Controller wit
 
     )
   }
+
 }
 
 object Generators {

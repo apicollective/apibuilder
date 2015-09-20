@@ -4,6 +4,7 @@ import db.generators.ServicesDao
 import lib.Validation
 import com.bryzek.apidoc.api.v0.models.{User, GeneratorServiceForm}
 import com.bryzek.apidoc.api.v0.models.json._
+import com.bryzek.apidoc.generator.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -32,7 +33,7 @@ trait GeneratorServices {
     Ok(Json.toJson(services))
   }
 
-  def getByGuid(guid: _root_.java.util.UUID) = AnonymousRequest { request =>
+  def getByGuid(guid: UUID) = AnonymousRequest { request =>
     ServicesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(service) => Ok(Json.toJson(service))
@@ -50,7 +51,8 @@ trait GeneratorServices {
           case Nil => {
             val service = ServicesDao.create(request.user, form)
 
-            // Now to the initial update
+            // Now try to do the initial update; if it fails we delete the generator service.
+            // TODO: Refactor so we can validate w/out creating first.
             Try(actors.GeneratorServiceActor.sync(service)) match {
               case Success(_) => Ok(Json.toJson(service))
               case Failure(ex) => {
@@ -70,11 +72,21 @@ trait GeneratorServices {
 
   def deleteByGuid(
     guid: UUID
-  ) = Authenticated(parse.json) { request =>
-    ServicesDao.findByGuid(request.authorization, guid).map { service =>
-      ServicesDao.softDelete(request.user, service)
+  ) = Authenticated { request =>
+    println(s"deleteByGuid($guid)")
+    // TODO Authenticate
+    ServicesDao.findByGuid(request.authorization, guid) match {
+      case None => NotFound
+      case Some(service) => {
+        // TODO: Generalize permission check
+        if (service.audit.createdBy.guid == request.user.guid) {
+          ServicesDao.softDelete(request.user, service)
+          NoContent
+        } else {
+          Forbidden
+        }
+      }
     }
-    NoContent
   }
 
 }

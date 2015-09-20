@@ -9,6 +9,10 @@ code:
       version: latest
       generators:
         play_2_4_client: generated/app
+    apidoc-common:
+      version: latest
+      generators:
+        play_2_x_json: generated/app
     apidoc-generator:
       version: latest
       generators:

@@ -35,7 +35,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
       versionOption <- lib.ApiClient.callWith404(
         request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
       )
-      generators <- request.api.comBryzekApidocGeneratorV0ModelsGenerators.getGenerators()
+      generators <- request.api.generatorWithServices.getGenerators()
       watches <- isWatching(request.api, request.user, orgKey, applicationKey)
     } yield {
       applicationResponse.headOption match {
