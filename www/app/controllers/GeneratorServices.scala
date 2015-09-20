@@ -1,5 +1,6 @@
 package controllers
 
+import lib.{Pagination, PaginatedCollection}
 import java.util.UUID
 import javax.inject.Inject
 import play.api.i18n.{MessagesApi, I18nSupport}
@@ -9,16 +10,24 @@ class GeneratorServices @Inject() (val messagesApi: MessagesApi) extends Control
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  def show(guid: UUID) = Anonymous.async { implicit request =>
+  def show(guid: UUID, page: Int = 0) = Anonymous.async { implicit request =>
     for {
-      generator <- lib.ApiClient.callWith404(request.api.generatorServices.getByGuid(guid))
+      service <- lib.ApiClient.callWith404(request.api.generatorServices.getByGuid(guid))
+      generators <- request.api.generatorWithServices.getGenerators(
+        serviceGuid = Some(guid),
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
+      )
     } yield {
-      generator match {
-        case None => Redirect(routes.Generators.index()).flashing("warning" -> s"Generator service not found")
+      service match {
+        case None => {
+          Redirect(routes.Generators.index()).flashing("warning" -> s"Generator service not found")
+        }
         case Some(service) => {
           Ok(views.html.generators.service(
             request.mainTemplate().copy(title = Some(service.uri)),
-            service
+            service,
+            generatorWithServices = PaginatedCollection(page, generators)
           ))
         }
       }

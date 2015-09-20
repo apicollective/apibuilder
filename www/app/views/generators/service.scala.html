@@ -1,6 +1,7 @@
 @(
   tpl: models.MainTemplate,
-  service: com.bryzek.apidoc.api.v0.models.GeneratorService
+  service: com.bryzek.apidoc.api.v0.models.GeneratorService,
+  generatorWithServices: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.GeneratorWithService]
 )(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
@@ -12,4 +13,18 @@
     }
   </ul>
 
+  @generators.generators(generatorWithServices, displayService = false)
+
+  @if(generatorWithServices.hasPrevious || generatorWithServices.hasNext) {
+    <ul class="pager">
+      @if(generatorWithServices.hasPrevious) {
+        <li><a href="@routes.GeneratorServices.show(service.guid, page = generatorWithServices.page - 1)">Previous</a></li>
+      }
+      @if(generatorWithServices.hasNext) {
+        <li><a href="@routes.GeneratorServices.show(service.guid, page = generatorWithServices.page + 1)">Next</a></li>
+      }
+    </ul>
+  }
+
+  
 }
