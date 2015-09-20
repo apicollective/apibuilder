@@ -51,7 +51,8 @@ trait GeneratorServices {
           case Nil => {
             val service = ServicesDao.create(request.user, form)
 
-            // Now to the initial update
+            // Now try to do the initial update; if it fails we delete the generator service.
+            // TODO: Refactor so we can validate w/out creating first.
             Try(actors.GeneratorServiceActor.sync(service)) match {
               case Success(_) => Ok(Json.toJson(service))
               case Failure(ex) => {
@@ -72,7 +73,7 @@ trait GeneratorServices {
   def deleteByGuid(
     guid: UUID
   ) = Authenticated { request =>
-    println("HEY!")
+    println(s"deleteByGuid($guid)")
     // TODO Authenticate
     ServicesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
