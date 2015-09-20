@@ -3,8 +3,6 @@
   generatorWithServices: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.GeneratorWithService]
 )(implicit flash: Flash, messages: Messages)
 
-@import com.bryzek.apidoc.api.v0.models.Visibility
-
 @main(tpl) {
 
   @tpl.user.map { user =>
@@ -13,44 +11,17 @@
     </div>
   }
 
-  @if(generatorWithServices.isEmpty) {
-    <em>No generators</em>
+  @generators.generators(generatorWithServices)
 
-  } else {
-
-    <table class="table table-hover table-condensed">
-      <tbody>
-        <tr>
-          <th>Service</th>
-          <th>Key</th>
-          <th>Name</th>
-          <th>Language</th>
-          <th>Description</th>
-        </tr>
-
-        @generatorWithServices.items.map { gws =>
-        <tr>
-            <td><a href="@routes.GeneratorServices.show(gws.service.guid)">@lib.Text.truncate(gws.service.uri)</a></td>
-            <td><a href="@routes.Generators.show(gws.generator.key)">@gws.generator.key</a></td>
-            <td>@gws.generator.name</td>
-            <td>@gws.generator.language.getOrElse("")</td>
-            <td>@Html(lib.Markdown(gws.generator.description.map(lib.Text.truncate(_))))</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-
-    @if(generatorWithServices.hasPrevious || generatorWithServices.hasNext) {
-      <ul class="pager">
-        @if(generatorWithServices.hasPrevious) {
-          <li><a href="@routes.Generators.index(generatorWithServices.page - 1)">Previous</a></li>
-        }
-        @if(generatorWithServices.hasNext) {
-          <li><a href="@routes.Generators.index(generatorWithServices.page + 1)">Next</a></li>
-        }
-      </ul>
-    }
-
+  @if(generatorWithServices.hasPrevious || generatorWithServices.hasNext) {
+    <ul class="pager">
+      @if(generatorWithServices.hasPrevious) {
+        <li><a href="@routes.Generators.index(generatorWithServices.page - 1)">Previous</a></li>
+      }
+      @if(generatorWithServices.hasNext) {
+        <li><a href="@routes.Generators.index(generatorWithServices.page + 1)">Next</a></li>
+      }
+    </ul>
   }
 
 }
