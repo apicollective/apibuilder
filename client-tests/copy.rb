@@ -40,7 +40,7 @@ end
 def upsert_org(client, org)
   if client.organizations.get(:key => org.key).empty?
     puts "Creating #{org.key}"
-    client.organizations.post(Com::Gilt::Apidoc::Api::V0::Models::OrganizationForm.new(:name => org.name,
+    client.organizations.post(Com::Bryzek::Apidoc::Api::V0::Models::OrganizationForm.new(:name => org.name,
                                                                                        :key => org.key,
                                                                                        :namespace => org.namespace,
                                                                                        :visibility => org.visibility,
@@ -53,11 +53,11 @@ def upsert_app(client, org, app)
     puts "Creating #{org.key}:#{app.key}"
     begin
       client.applications.post_by_org_key(org.key,
-                                          Com::Gilt::Apidoc::Api::V0::Models::ApplicationForm.new(:name => app.name,
+                                          Com::Bryzek::Apidoc::Api::V0::Models::ApplicationForm.new(:name => app.name,
                                                                                                   :key => app.key,
                                                                                                   :description => app.description,
                                                                                                   :visibility => app.visibility))
-    rescue Com::Gilt::Apidoc::Api::V0::HttpClient::ServerError => e
+    rescue Com::Bryzek::Apidoc::Api::V0::HttpClient::ServerError => e
       if e.code == 409
         puts "  " + e.message
       else
@@ -70,12 +70,12 @@ end
 def copy_version(client, org, app, version)
   puts "Creating #{org.key}:#{app.key}:#{version.version}"
 
-  of = Com::Gilt::Apidoc::Api::V0::Models::OriginalForm.new(:type => version.original.type, :data => version.original.data)
+  of = Com::Bryzek::Apidoc::Api::V0::Models::OriginalForm.new(:type => version.original.type, :data => version.original.data)
   begin
     if client.versions.put_by_org_key_and_application_key_and_version(org.key, app.key, version.version,
-                                                                      Com::Gilt::Apidoc::Api::V0::Models::VersionForm.new(:original_form => of))
+                                                                      Com::Bryzek::Apidoc::Api::V0::Models::VersionForm.new(:original_form => of))
     end
-  rescue Com::Gilt::Apidoc::Api::V0::HttpClient::ServerError => e
+  rescue Com::Bryzek::Apidoc::Api::V0::HttpClient::ServerError => e
     if e.code == 409
       puts "  " + e.message
     else
