@@ -40,13 +40,13 @@ case class TypeLabel(
 
   private[this] def resolveImportedType(typeName: String): Option[String] = {
     service.imports.flatMap { imp =>
-      imp.enums.find { name => s"${imp.namespace}.models.$name" == typeName } match {
+      imp.enums.find { name => s"${imp.namespace}.enums.$name" == typeName } match {
         case Some(shortName) => Some(importLink(imp, Kind.Enum, shortName, typeName))
         case None => {
           imp.models.find { name => s"${imp.namespace}.models.$name" == typeName } match {
             case Some(shortName) => Some(importLink(imp, Kind.Model, shortName, typeName))
             case None => {
-              imp.unions.find { name => s"${imp.namespace}.models.$name" == typeName } match {
+              imp.unions.find { name => s"${imp.namespace}.unions.$name" == typeName } match {
                 case Some(shortName) => Some(importLink(imp, Kind.Union, shortName, typeName))
                 case None => None
               }
