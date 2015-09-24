@@ -14,7 +14,7 @@ args = ApidocCli::Args.parse(ARGV)
 
 PROFILE = args[:profile]
 
-orgs = [] # ['gilt']
+orgs = [] # ['bryzek']
 applications = []  # ['apidoc', 'apidoc-spec', 'apidoc-generator']
 
 if !args.has_key?(:force) && (!orgs.empty? || !applications.empty?)
