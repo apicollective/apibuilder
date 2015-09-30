@@ -135,7 +135,6 @@ object SubscriptionsDao {
     guid: Option[UUID] = None,
     organization: Option[Organization] = None,
     organizationKey: Option[String] = None,
-    organizationGuid: Option[UUID] = None,
     userGuid: Option[UUID] = None,
     publication: Option[Publication] = None,
     isDeleted: Option[Boolean] = Some(false),

@@ -101,11 +101,6 @@ object MembershipsDao {
   def softDelete(user: User, membership: Membership) {
     SubscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
     SoftDelete.delete("memberships", user, membership.guid)
-    global.Actors.mainActor ! actors.MainActor.Messages.MembershipDeleted(
-      membership.guid,
-      membership.organization.guid,
-      membership.user.guid
-    )
   }
 
   def isUserAdmin(

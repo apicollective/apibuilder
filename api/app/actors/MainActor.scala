@@ -17,7 +17,6 @@ object MainActor {
     case class MembershipRequestAccepted(organizationGuid: UUID, userGuid: UUID, role: Role)
     case class MembershipRequestDeclined(organizationGuid: UUID, userGuid: UUID, role: Role)
     case class MembershipCreated(guid: UUID)
-    case class MembershipDeleted(guid: UUID, organizationGuid: UUID, userGuid: UUID)
 
     case class PasswordResetRequestCreated(guid: UUID)
     case class ApplicationCreated(guid: UUID)
@@ -35,7 +34,6 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
   private[this] val emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
   private[this] val generatorServiceActor = Akka.system.actorOf(Props[GeneratorServiceActor], name = s"$name:generatorServiceActor")
-  private[this] val subscriptionActor = Akka.system.actorOf(Props[SubscriptionActor], name = s"$name:subscriptionActor")
   private[this] val taskActor = Akka.system.actorOf(Props[TaskActor], name = s"$name:taskActor")
   private[this] val userActor = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor")
 
@@ -67,12 +65,6 @@ class MainActor(name: String) extends Actor with ActorLogging {
     case MainActor.Messages.MembershipCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.MembershipCreated($guid)", {
         emailActor ! EmailActor.Messages.MembershipCreated(guid)
-      }
-    )
-
-    case MainActor.Messages.MembershipDeleted(guid, organizationGuid, userGuid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.MembershipDeleted($guid, $organizationGuid, $userGuid)", {
-        subscriptionActor ! SubscriptionActor.Messages.MembershipDeleted(organizationGuid, userGuid)
       }
     )
 
