@@ -36,7 +36,6 @@ object Emails {
     body: String
   ) {
     eachSubscription(context, org, publication, { subscription =>
-      Logger.info(s"Emails: delivering email for subscription[$subscription]")
       Email.sendHtml(
         to = Person(subscription.user),
         subject = subject,
@@ -61,8 +60,13 @@ object Emails {
       )
     } { subscription =>
       qualifies(context, organization, subscription.user) match {
-        case false => // No-op
-        case true => f(subscription)
+        case false => {
+          Logger.info(s"Emails: publication[$publication] subscription[$subscription] - does not qualify for context[$context]")
+        }
+        case true => {
+          Logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
+          f(subscription)
+        }
       }
     }
   }
