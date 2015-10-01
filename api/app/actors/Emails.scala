@@ -59,9 +59,9 @@ object Emails {
         offset = offset
       )
     } { subscription =>
-      qualifies(context, organization, subscription.user) match {
+      isAuthorized(context, organization, subscription.user) match {
         case false => {
-          Logger.info(s"Emails: publication[$publication] subscription[$subscription] - does not qualify for context[$context]")
+          Logger.info(s"Emails: publication[$publication] subscription[$subscription] - not authorized for context[$context]. Skipping email")
         }
         case true => {
           Logger.info(s"Emails: delivering email for publication[$publication] subscription[$subscription]")
@@ -71,7 +71,7 @@ object Emails {
     }
   }
 
-  private[this] def qualifies(
+  private[this] def isAuthorized(
     context: Context,
     organization: Organization,
     user: User
