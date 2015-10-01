@@ -86,7 +86,8 @@ object Emails {
               case Some(_) => true
             }
           }
-          case Visibility.UNDEFINED(_) => {
+          case Visibility.UNDEFINED(name) => {
+            Logger.warn(s"Undefined visibility[$name] -- default behaviour assumes NOT AUTHORIZED")
             false
           }
         }
