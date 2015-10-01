@@ -1,7 +1,7 @@
 package actors
 
-import com.bryzek.apidoc.api.v0.models.{Organization, Publication, Subscription}
-import db.{Authorization, SubscriptionsDao}
+import com.bryzek.apidoc.api.v0.models.{Application, Organization, Publication, Subscription, User, Visibility}
+import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import lib.{Config, Email, Pager, Person}
 import akka.actor._
 import play.api.Logger
@@ -9,15 +9,33 @@ import play.api.Play.current
 
 object Emails {
 
+  /**
+    * Context is used to enforce permissions - only delivering email
+    * when the user in fact has access to the specified resource. For
+    * example, if the email is being sent regarding an update to an
+    * application context, we will ensure that the user can actually
+    * view that application prior to sending the update. This allows
+    * users to be subscribed to updates for public applications while
+    * never receiving communciation for non public applications (as an
+    * example).
+    */
+  sealed trait Context
+  object Context {
+    case class Application(application: com.bryzek.apidoc.api.v0.models.Application) extends Context
+    case object OrganizationAdmin extends Context
+    case object OrganizationMember extends Context
+  }
+
   private lazy val sendErrorsTo = Config.requiredString("apidoc.sendErrorsTo").split("\\s+")
 
   def deliver(
+    context: Context,
     org: Organization,
     publication: Publication,
     subject: String,
     body: String
   ) {
-    eachSubscription(org, publication, { subscription =>
+    eachSubscription(context, org, publication, { subscription =>
       Logger.info(s"Emails: delivering email for subscription[$subscription]")
       Email.sendHtml(
         to = Person(subscription.user),
@@ -27,7 +45,8 @@ object Emails {
     })
   }
 
-  def eachSubscription(
+  private[this] def eachSubscription(
+    context: Context,
     organization: Organization,
     publication: Publication,
     f: Subscription => Unit
@@ -41,7 +60,39 @@ object Emails {
         offset = offset
       )
     } { subscription =>
-      f(subscription)
+      qualifies(context, organization, subscription.user) match {
+        case false => // No-op
+        case true => f(subscription)
+      }
+    }
+  }
+
+  private[this] def qualifies(
+    context: Context,
+    organization: Organization,
+    user: User
+  ): Boolean = {
+    context match {
+      case Emails.Context.Application(app) => {
+        app.visibility match {
+          case Visibility.Public => true
+          case Visibility.User | Visibility.Organization => {
+            ApplicationsDao.findByGuid(Authorization.User(user.guid), app.guid) match {
+              case None => false
+              case Some(_) => true
+            }
+          }
+          case Visibility.UNDEFINED(_) => {
+            false
+          }
+        }
+      }
+      case Emails.Context.OrganizationAdmin => {
+        MembershipsDao.isUserAdmin(user, organization)
+      }
+      case Emails.Context.OrganizationMember => {
+        MembershipsDao.isUserMember(user, organization)
+      }
     }
   }
 

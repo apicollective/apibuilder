@@ -30,6 +30,7 @@ class EmailActor extends Actor {
       s"EmailActor.Messages.MembershipRequestCreated($guid)", {
         MembershipRequestsDao.findByGuid(Authorization.All, guid).map { request =>
           Emails.deliver(
+            context = Emails.Context.OrganizationAdmin,
             org = request.organization,
             publication = Publication.MembershipRequestsCreate,
             subject = s"${request.organization.name}: Membership Request from ${request.user.email}",
@@ -71,6 +72,7 @@ class EmailActor extends Actor {
       s"EmailActor.Messages.MembershipCreated($guid)", {
         MembershipsDao.findByGuid(Authorization.All, guid).map { membership =>
           Emails.deliver(
+            context = Emails.Context.OrganizationAdmin,
             org = membership.organization,
             publication = Publication.MembershipsCreate,
             subject = s"${membership.organization.name}: ${membership.user.email} has joined as ${membership.role}",
@@ -85,6 +87,7 @@ class EmailActor extends Actor {
         ApplicationsDao.findByGuid(Authorization.All, guid).map { application =>
           OrganizationsDao.findAll(Authorization.All, application = Some(application)).map { org =>
             Emails.deliver(
+              context = Emails.Context.OrganizationMember,
               org = org,
               publication = Publication.ApplicationsCreate,
               subject = s"${org.name}: New Application Created - ${application.name}",
@@ -115,6 +118,7 @@ class EmailActor extends Actor {
           ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
             OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
               Emails.deliver(
+                context = Emails.Context.Application(application),
                 org = org,
                 publication = Publication.VersionsCreate,
                 subject = s"${org.name}/${application.name}: Initial Version Uploaded (${version.version}) ",

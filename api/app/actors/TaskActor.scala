@@ -131,6 +131,7 @@ class TaskActor extends Actor {
     ApplicationsDao.findAll(Authorization.All, version = Some(newVersion), limit = 1).headOption.map { application =>
       OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
         Emails.deliver(
+          context = Emails.Context.Application(application),
           org = org,
           publication = Publication.VersionsCreate,
           subject = s"${org.name}/${application.name}: New Version Uploaded (${newVersion.version}) ",
