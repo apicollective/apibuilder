@@ -71,7 +71,7 @@ object Emails {
     }
   }
 
-  private[this] def isAuthorized(
+  private[actors] def isAuthorized(
     context: Context,
     organization: Organization,
     user: User
