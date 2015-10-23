@@ -93,7 +93,7 @@ case class ServiceSpecValidator(
       Text.validateName(model.name) match {
         case Nil => None
         case errors => {
-          Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" ")}")
+          Some(s"Model[${model.name}] name is invalid: ${errors.mkString(" and ")}")
         }
       }
     }
@@ -112,7 +112,7 @@ case class ServiceSpecValidator(
       Text.validateName(enum.name) match {
         case Nil => None
         case errors => {
-          Some(s"Enum[${enum.name}] name is invalid: ${errors.mkString(" ")}")
+          Some(s"Enum[${enum.name}] name is invalid: ${errors.mkString(" and ")}")
         }
       }
     }
@@ -143,7 +143,7 @@ case class ServiceSpecValidator(
       Text.validateName(union.name) match {
         case Nil => None
         case errors => {
-          Some(s"Union[${union.name}] name is invalid: ${errors.mkString(" ")}")
+          Some(s"Union[${union.name}] name is invalid: ${errors.mkString(" and ")}")
         }
       }
     }
@@ -218,18 +218,18 @@ case class ServiceSpecValidator(
   }
 
   private def validateFields(): Seq[String] = {
-    service.models.flatMap { model =>
+    val nameErrors = service.models.flatMap { model =>
       model.fields.flatMap { field =>
         Text.validateName(field.name) match {
           case Nil => None
           case errors => {
-            Some(s"Model[${model.name}] field name[${field.name}] is invalid: ${errors.mkString(" ")}")
+            Some(s"Model[${model.name}] field name[${field.name}] is invalid: ${errors.mkString(" and ")}")
           }
         }
       }
     }
 
-    service.models.flatMap { model =>
+    val typeErrors = service.models.flatMap { model =>
       model.fields.flatMap { field =>
         typeResolver.parse(field.`type`) match {
           case None => Some(s"${model.name}.${field.name} has invalid type[${field.`type`}]")
@@ -237,6 +237,8 @@ case class ServiceSpecValidator(
         }
       }
     }
+
+    nameErrors ++ typeErrors
   }
 
   /**

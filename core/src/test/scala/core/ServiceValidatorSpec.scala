@@ -55,6 +55,24 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     validator.errors.mkString should be("Model[user] must have at least one field")
   }
 
+  it("model has a field with an invalid name") {
+    val json = """
+    {
+      "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "_!@#", "type": "string" }
+          ]
+        }
+      }
+    }
+    """
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString should be("Model[user] field name[_!@#] is invalid: Name can only contain a-z, A-Z, 0-9 and _ characters and Name must start with a letter")
+  }
+
   it("reference that points to a non-existent model") {
     val json = """
     {
