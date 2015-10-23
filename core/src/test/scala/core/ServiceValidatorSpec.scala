@@ -73,6 +73,25 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     validator.errors.mkString should be("Model[user] field name[_!@#] is invalid: Name can only contain a-z, A-Z, 0-9 and _ characters and Name must start with a letter")
   }
 
+  it("model with duplicate field names") {
+    val json = """
+    {
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "key", "type": "string" },
+            { "name": "KEY", "type": "string", "required": false }
+          ]
+        }
+      }
+    }
+    """
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString("") should be("Model[user] field[key] appears more than once")
+  }
+
+
   it("reference that points to a non-existent model") {
     val json = """
     {

@@ -229,6 +229,10 @@ case class ServiceSpecValidator(
       }
     }
 
+    val duplicateFieldErrors = service.models.flatMap { model =>
+      dupsError(s"Model[${model.name}] field", model.fields.filter(!_.name.isEmpty).map(_.name.trim.toLowerCase))
+    }
+
     val typeErrors = service.models.flatMap { model =>
       model.fields.flatMap { field =>
         typeResolver.parse(field.`type`) match {
@@ -238,7 +242,7 @@ case class ServiceSpecValidator(
       }
     }
 
-    nameErrors ++ typeErrors
+    nameErrors ++ duplicateFieldErrors ++ typeErrors
   }
 
   /**
