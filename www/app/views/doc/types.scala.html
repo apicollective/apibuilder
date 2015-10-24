@@ -19,9 +19,11 @@
       <h3>@md.primitive.toString</h3>
       <ul>
         <li> @Html(lib.Markdown.toHtml(md.description))</li>
-        <li> Examples:
-             @Html(md.examples.mkString("<ul><li>", "</li><li>", "</li></ul>"))
-        </li>
+	@if(!md.examples.isEmpty) {
+          <li> Examples:
+               @Html(md.examples.mkString("<ul><li>", "</li><li>", "</li></ul>"))
+          </li>
+	}
       </ul>
     }
   </p>
