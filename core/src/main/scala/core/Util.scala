@@ -10,7 +10,12 @@ object Util {
   def namedParametersInPath(path: String): Seq[String] = {
     path.split("/").flatMap { name =>
       if (name.startsWith(":")) {
-        Some(name.slice(1, name.length))
+        val idx = if (name.indexOf(".") >= 0) {
+          name.indexOf(".")
+        } else {
+          name.length
+        }
+        Some(name.slice(1, idx))
       } else {
         None
       }
