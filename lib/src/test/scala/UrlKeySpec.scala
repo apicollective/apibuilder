@@ -61,7 +61,7 @@ class UrlKeySpec extends FunSpec with Matchers {
     }
 
     it("reserved") {
-      UrlKey.validate("api.json") should be(Seq("Prefix api.json is a reserved word and cannot be used for the key"))
+      UrlKey.validate("api.json") should be(Seq("api.json is a reserved word and cannot be used for the key"))
     }
 
   }

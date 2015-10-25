@@ -42,7 +42,7 @@ class ApplicationsSpec extends BaseSpec {
   "POST /:orgKey validates key is not reserved" in new WithServer {
     intercept[ErrorsResponse] {
       createApplication(org, createApplicationForm(name = "members", key = Some("members")))
-    }.errors.map(_.message) must be(Seq(s"Prefix members is a reserved word and cannot be used for the key"))
+    }.errors.map(_.message) must be(Seq(s"members is a reserved word and cannot be used for the key"))
   }
 
   "DELETE /:org/:key" in new WithServer {

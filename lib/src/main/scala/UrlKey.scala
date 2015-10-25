@@ -54,26 +54,20 @@ object UrlKey {
     } else if (key != generated) {
       Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: $generated")
     } else {
-      ExactMatchKeys.find(_ == generated) match {
+      ReservedKeys.find(_ == generated) match {
         case Some(value) => Seq(s"$key is a reserved word and cannot be used for the key")
-        case None => {
-          ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
-            case Some(prefix) => Seq(s"Prefix $key is a reserved word and cannot be used for the key")
-            case None => Seq.empty
-          }
-        }
+        case None => Nil
       }
     }
   }
 
-  private val ExactMatchKeys = Seq("api")
-
   val ReservedKeys = Seq(
-    "_internal_", "api.json", "account", "admin", "accept", "asset", "bucket",
-    "change", "code", "confirm", "config", "doc", "documentation", "domain", "email", "generator",
-    "history", "internal", "login", "logout", "member", "members", "metadatum", "metadata",
-    "org", "password", "private", "reject", "service.json", "session", "setting", "scms",
-    "search", "source", "subaccount", "subscription", "team", "types", "user", "util", "version", "watch"
+    "_internal_", "api", "api.json", "account", "admin", "accept", "asset", "bucket",
+    "change", "code", "confirm", "config", "doc", "docs", "documentation", "domains",
+    "generators", "history", "internal", "login", "logout", "members", "metadatum", "metadata",
+    "org", "orgs", "organizations", "password", "private", "reject", "service.json", "sessions",
+    "settings", "scms", "search", "source", "subaccounts", "subscriptions", "teams", "types", "users",
+    "util", "version", "version", "watch", "watches"
   ).map(UrlKey.format(_))
 
 }
