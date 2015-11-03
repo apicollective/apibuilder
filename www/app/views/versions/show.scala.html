@@ -13,6 +13,8 @@
         <a class="delete" data-confirm="Are you sure you want to delete version @{service.version}?" href="@routes.Versions.postDelete(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Delete this version</a> |
       }
 
+      <a href="@routes.HistoryController.index(org = Some(service.organization.key), app = Some(service.application.key))">History</a> |
+
       @if(isWatching) {
         <a class="postForm" href="@routes.Versions.postWatch(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version)">Watching</a>
       } else {
