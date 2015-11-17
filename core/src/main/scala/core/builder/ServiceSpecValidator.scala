@@ -1,6 +1,6 @@
 package builder
 
-import core.{Importer, TypeValidator, TypesProvider}
+import core.{TypeValidator, TypesProvider}
 import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type, VersionTag}
 import scala.util.{Failure, Success, Try}
