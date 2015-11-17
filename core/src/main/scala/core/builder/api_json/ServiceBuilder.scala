@@ -147,7 +147,6 @@ case class ServiceBuilder(
             case None => {
               resolution.union match {
                 case None => {
-                  println(s"COULD NOT FIND ANY INTERNAL REP FOR NAME[${internal.datatype.label}]")
                   Resource(
                     `type` = internal.datatype.label,
                     plural = Text.pluralize(internal.datatype.name),
@@ -194,7 +193,6 @@ case class ServiceBuilder(
                 union.flatMap(commonField(_, models, name)) match {
                   case Some(field) => field.`type`
                   case None => {
-                    println(s"Path param[$name] inferred as String")
                     Primitives.String.toString
                   }
                 }
