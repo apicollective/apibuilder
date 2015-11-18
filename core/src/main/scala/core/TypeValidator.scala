@@ -40,19 +40,14 @@ case class TypesProviderField(
 trait TypesProvider {
 
   def enums: Iterable[TypesProviderEnum]
-
   def models: Iterable[TypesProviderModel]
   def unions: Iterable[TypesProviderUnion]
 
-  def modelNames: Iterable[String] = models.map(_.name)
-  def unionNames: Iterable[String] = unions.map(_.name)
 }
 
 object TypesProvider {
 
   case class FromService(service: Service) extends TypesProvider {
-
-    // TODO: Figure out imports
 
     private[this] def qualifiedName(prefix: String, name: String): String = {
       s"${service.namespace}.$prefix.$name"

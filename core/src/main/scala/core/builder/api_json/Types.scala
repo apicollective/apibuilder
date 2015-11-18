@@ -90,8 +90,8 @@ private[api_json] case class TypeResolver(
 
   private val resolver = DatatypeResolver(
     enumNames = provider.enums.map(_.name),
-    modelNames = provider.modelNames,
-    unionNames = provider.unionNames
+    modelNames = provider.models.map(_.name),
+    unionNames = provider.unions.map(_.name)
   )
 
   private lazy val validator = TypeValidator(
