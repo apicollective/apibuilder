@@ -107,23 +107,50 @@ class ImportServiceSpec extends FunSpec with Matchers {
             { "name": "age_group", "type": "test.apidoc.import-shared.enums.age_group" }
           ]
         }
+      },
+
+      "resources": {
+        "test.apidoc.import-shared.models.user": {
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/get/:id"
+            }
+          ]
+        }
       }
     }
   """
 
+    lazy val validator = OriginalValidator(
+      config = TestHelper.serviceConfig,
+      original = Original(OriginalType.ApiJson, json2),
+      fetcher = FileServiceFetcher()
+    )
+
     it("parses service definition with imports") {
-      val validator = OriginalValidator(
-        config = TestHelper.serviceConfig,
-        original = Original(OriginalType.ApiJson, json2),
-        fetcher = FileServiceFetcher()
-      )
       validator.validate match {
         case Left(errors) => {
           fail(errors.mkString(""))
         }
         case Right(_) => {
+          // Success
         }
       }
     }
+
+    it("infers datatype for an imported field") {
+      validator.validate match {
+        case Left(errors) => sys.error(errors.mkString(","))
+        case Right(service) => {
+          val op = service.resources.head.operations.head
+          val id = op.parameters.find(_.name == "id").getOrElse {
+            fail("Could not find parameter named[id]")
+          }
+          id.`type` should be("long")
+        }
+      }
+    }
+
   }
 }
