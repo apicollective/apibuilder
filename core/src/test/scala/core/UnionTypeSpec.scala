@@ -33,6 +33,12 @@ class UnionTypeSpec extends FunSpec with Matchers {
           ]
         },
 
+        "other_random_user": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        },
+
         "order": {
           "fields": [
             { "name": "id", "type": "uuid" },
@@ -40,6 +46,17 @@ class UnionTypeSpec extends FunSpec with Matchers {
           ]
         }
 
+      },
+
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:id"
+            }
+          ]
+        }
       }
     }
   """
@@ -88,6 +105,20 @@ class UnionTypeSpec extends FunSpec with Matchers {
   it("validates unit type") {
     val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("unit", "uuid", "registered"))
     validator.errors.mkString("") should be("Union types cannot contain unit. To make a particular field optional, use the required property.")
+  }
+
+  it("infers proper parameter type if field is common across all types") {
+    val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("guest", "registered", "registered"))
+    validator.service.resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
+      sys.error("Could not find guid parameter")
+    }.`type` should be("uuid")
+  }
+
+  it("infers string parameter type if type varies") {
+    val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("other_random_user", "registered", "registered"))
+    validator.service.resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
+      sys.error("Could not find guid parameter")
+    }.`type` should be("string")
   }
 
 }
