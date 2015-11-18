@@ -187,11 +187,8 @@ case class ServiceBuilder(
             val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {
               case Some(field) => field.`type`
               case None => {
-                union.flatMap(commonField(_, resolver, name)) match {
-                  case Some(field) => field.`type`
-                  case None => {
-                    Primitives.String.toString
-                  }
+                union.flatMap(commonField(resolver, _, name)).getOrElse {
+                  Primitives.String.toString
                 }
               }
             }
@@ -225,18 +222,36 @@ case class ServiceBuilder(
       * If all types agree on the datatype for the field with the specified Name,
       * returns the field. Otherwise, returns None
       */
-    private def commonField(union: TypesProviderUnion, resolver: TypesProvider, fieldName: String): Option[TypesProviderField] = {
-      val unionModels = union.types.flatMap(u =>
-        resolver.models.find(_.name == u.`type`)
-      )
-      unionModels.flatMap(_.fields.find(_.name == fieldName)) match {
-        case Nil => None
-        case fields => {
-          fields.map(_.`type`).distinct.toList match {
-            case single :: Nil => fields.headOption
-            case _ => None
+    private def commonField(resolver: TypesProvider, union: TypesProviderUnion, fieldName: String): Option[String] = {
+      println(s"commonField(${union.name}) -- looking for fieldName[$fieldName]")
+
+      val fieldTypes: Seq[String] = union.types.map { u =>
+        resolver.models.find(_.name == u.`type`) match {
+          case None => {
+            println(s"Could not find a model named[${u.`type`}]")
+            Primitives.String.toString
+          }
+          case Some(m) => {
+            println(s"Found a model named[${u.`type`}] --> ${m.name}")
+            m.fields.find(_.name == fieldName) match {
+              case None => {
+                println(s"Could not find a field named[${fieldName}]")
+                Primitives.String.toString
+              }
+              case Some(f) => {
+                println(s"Found field[${f.name}] with type[${f.`type`}]")
+                f.`type`
+            }
+            }
           }
         }
+      }
+
+      println(s" fieldTypes: " + fieldTypes.distinct.mkString(", "))
+
+      fieldTypes.distinct.toList match {
+        case single :: Nil => Some(single)
+        case _ => None
       }
     }
 
