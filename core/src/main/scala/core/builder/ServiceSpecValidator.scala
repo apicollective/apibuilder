@@ -425,14 +425,19 @@ case class ServiceSpecValidator(
         op.parameters.filter(_.location == ParameterLocation.Path).flatMap { p =>
           val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}")
 
-          typeResolver.parse(p.`type`).flatMap { dt =>
-            dt match {
-              case Datatype.List(_) => Some(errorTemplate.format("list"))
-              case Datatype.Map(_) => Some(errorTemplate.format("map"))
-              case Datatype.Singleton(t) => {
-                isTypeValidInPath(t) match {
-                  case true => None
-                  case false => Some(errorTemplate.format(t.name))
+          typeResolver.parse(p.`type`) match {
+            case None => {
+              Some(errorTemplate.format(p.`type`))
+            }
+            case Some(dt) => {
+              dt match {
+                case Datatype.List(_) => Some(errorTemplate.format("list"))
+                case Datatype.Map(_) => Some(errorTemplate.format("map"))
+                case Datatype.Singleton(t) => {
+                  isTypeValidInPath(t) match {
+                    case true => None
+                    case false => Some(errorTemplate.format(t.name))
+                  }
                 }
               }
             }
