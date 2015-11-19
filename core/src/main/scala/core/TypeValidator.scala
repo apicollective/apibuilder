@@ -1,6 +1,6 @@
 package core
 
-import com.bryzek.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.{Model, Service}
 import builder.JsonUtil
 import lib.{Datatype, PrimitiveMetadata, Primitives, Type, Kind}
 import java.util.UUID
@@ -10,37 +10,107 @@ import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException 
 import com.fasterxml.jackson.databind.JsonMappingException
 import scala.util.{Failure, Success, Try}
 
+trait TypesProviderWithName {
+
+  def namespace: String
+  def packageName: String
+  def name: String
+  def plural: String
+
+  def fullName: String = {
+    name.startsWith(namespace) match {
+      case true => name
+      case false => Seq(namespace, packageName, name).mkString(".")
+    }
+  }
+
+}
+
 case class TypesProviderEnum(
+  namespace: String,
   name: String,
+  plural: String,
   values: Seq[String]
+) extends TypesProviderWithName {
+
+  override def packageName = "enums"
+
+}
+
+case class TypesProviderUnion(
+  namespace: String,
+  name: String,
+  plural: String,
+  types: Seq[TypesProviderUnionType]
+) extends TypesProviderWithName {
+
+  override def packageName = "unions"
+
+}
+
+case class TypesProviderUnionType(
+  `type`: String
+)
+
+case class TypesProviderModel(
+  namespace: String,
+  name: String,
+  plural: String,
+  fields: Seq[TypesProviderField]
+) extends TypesProviderWithName {
+
+  override def packageName = "models"
+
+}
+
+case class TypesProviderField(
+  name: String,
+  `type`: String
 )
 
 trait TypesProvider {
+
   def enums: Iterable[TypesProviderEnum]
-  def modelNames: Iterable[String]
-  def unionNames: Iterable[String]
+  def models: Iterable[TypesProviderModel]
+  def unions: Iterable[TypesProviderUnion]
+
 }
 
 object TypesProvider {
 
   case class FromService(service: Service) extends TypesProvider {
 
-    // TODO: Figure out imports
-
-    private def qualifiedName(prefix: String, name: String): String = {
-      s"${service.namespace}.$prefix.$name"
-    }
-
     override def enums: Iterable[TypesProviderEnum] = service.enums.map { enum =>
       TypesProviderEnum(
-        name = qualifiedName("enums", enum.name),
+        namespace = service.namespace,
+        name = enum.name,
+        plural = enum.plural,
         values = enum.values.map(_.name)
       )
     }
 
-    override def unionNames: Iterable[String] = service.unions.map(n => qualifiedName("unions", n.name))
+    override def unions: Iterable[TypesProviderUnion] = service.unions.map { union =>
+      TypesProviderUnion(
+        namespace = service.namespace,
+        name = union.name,
+        plural = union.plural,
+        types = union.types.map(_.`type`).map(TypesProviderUnionType(_))
+      )
+    }
 
-    override def modelNames: Iterable[String] = service.models.map(n => qualifiedName("models", n.name))
+    override def models: Iterable[TypesProviderModel] = service.models.map { model =>
+      TypesProviderModel(
+        namespace = service.namespace,
+        name = model.name,
+        plural = model.plural,
+        fields = model.fields.map { f =>
+          TypesProviderField(
+            name = f.name,
+            `type` = f.`type`
+          )
+        }
+      )
+    }
 
   }
 

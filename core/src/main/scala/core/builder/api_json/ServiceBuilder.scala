@@ -1,6 +1,6 @@
 package builder.api_json
 
-import core.{Importer, ServiceFetcher, VersionMigration}
+import core.{Importer, ServiceFetcher, VersionMigration, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion}
 import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kind, UrlKey}
 import com.bryzek.apidoc.spec.v0.models._
 import play.api.libs.json._
@@ -38,7 +38,7 @@ case class ServiceBuilder(
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val resources = internal.resources.map { ResourceBuilder(models, enums, unions, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
+    val resources = internal.resources.map { ResourceBuilder(resolver.provider, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
 
     val info = internal.info match {
       case None => Info(
@@ -72,44 +72,84 @@ case class ServiceBuilder(
 
   object ResourceBuilder {
 
+    private[api_json] case class Resolution(
+      enum: Option[TypesProviderEnum] = None,
+      model: Option[TypesProviderModel] = None,
+      union: Option[TypesProviderUnion] = None
+    ) {
+      private[this] val all = Seq(enum, model, union).flatten
+      assert(all.size <= 1, s"Cannot have more than 1 resolved item: $all")
+
+      def isEmpty: Boolean = all.isEmpty
+    }
+
+    // @scala.annotation.tailrec
+    def resolve(
+      resolver: TypesProvider,
+      name: String
+    ): Resolution = {
+      resolver.enums.find(o => o.name == name || o.fullName == name) match {
+        case Some(enum) => {
+          Resolution(enum = Some(enum))
+        }
+        case None => {
+          resolver.models.find(o => o.name == name || o.fullName == name) match {
+            case Some(model) => {
+              Resolution(model = Some(model))
+            }
+            case None => {
+              resolver.unions.find(o => o.name == name || o.fullName == name) match {
+                case Some(union) => {
+                  Resolution(union = Some(union))
+                }
+                case None => {
+                  Resolution()
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     def apply(
-      models: Seq[Model],
-      enums: Seq[Enum],
-      unions: Seq[Union],
+      resolver: TypesProvider,
       internal: InternalResourceForm
     ): Resource = {
-      enums.find(_.name == internal.datatype.name) match {
+      val resolution = resolve(resolver, internal.datatype.name)
+
+      resolution.enum match {
         case Some(enum) => {
           Resource(
             `type` = internal.datatype.label,
             plural = enum.plural,
             description = internal.description,
             deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-            operations = internal.operations.map(op => OperationBuilder(op, models = models))
+            operations = internal.operations.map(op => OperationBuilder(op, resolver))
           )
         }
 
         case None => {
-          models.find(_.name == internal.datatype.name) match {
+          resolution.model match {
             case Some(model) => {
               Resource(
                 `type` = internal.datatype.label,
                 plural = model.plural,
                 description = internal.description,
                 deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                operations = internal.operations.map(op => OperationBuilder(op, model = Some(model)))
+                operations = internal.operations.map(op => OperationBuilder(op, resolver, model = Some(model)))
               )
             }
 
             case None => {
-              unions.find(_.name == internal.datatype.name) match {
+              resolution.union match {
                 case None => {
                   Resource(
                     `type` = internal.datatype.label,
                     plural = Text.pluralize(internal.datatype.name),
                     description = internal.description,
                     deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                    operations = internal.operations.map(op => OperationBuilder(op, models = models))
+                    operations = internal.operations.map(op => OperationBuilder(op, resolver))
                   )
                 }
                 case Some(union) => {
@@ -118,7 +158,7 @@ case class ServiceBuilder(
                     plural = union.plural,
                     description = internal.description,
                     deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                    operations = internal.operations.map(op => OperationBuilder(op, union = Some(union), models = models))
+                    operations = internal.operations.map(op => OperationBuilder(op, resolver, union = Some(union)))
                   )
                 }
               }
@@ -134,9 +174,9 @@ case class ServiceBuilder(
 
     def apply(
       internal: InternalOperationForm,
-      model: Option[Model] = None,
-      union: Option[Union] = None,
-      models: Seq[Model] = Nil
+      resolver: TypesProvider,
+      model: Option[TypesProviderModel] = None,
+      union: Option[TypesProviderUnion] = None
     ): Operation = {
       val method = internal.method.getOrElse("")
       val defaultLocation = if (!internal.body.isEmpty || !Methods.isJsonDocumentMethod(method)) { ParameterLocation.Query } else { ParameterLocation.Form }
@@ -147,13 +187,11 @@ case class ServiceBuilder(
             val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {
               case Some(field) => field.`type`
               case None => {
-                union.flatMap(commonField(_, models, name)) match {
-                  case Some(field) => field.`type`
-                  case None => Primitives.String.toString
+                union.flatMap(commonField(resolver, _, name)).getOrElse {
+                  Primitives.String.toString
                 }
               }
             }
-
             ParameterBuilder.fromPath(name, datatypeLabel)
           }
           case Some(declared) => {
@@ -184,16 +222,29 @@ case class ServiceBuilder(
       * If all types agree on the datatype for the field with the specified Name,
       * returns the field. Otherwise, returns None
       */
-    private def commonField(union: Union, models: Seq[Model], fieldName: String): Option[Field] = {
-      val unionModels = union.types.flatMap(u => models.find(_.name == u.`type`))
-      unionModels.flatMap(_.fields.find(_.name == fieldName)) match {
-        case Nil => None
-        case fields => {
-          fields.map(_.`type`).distinct.toList match {
-            case single :: Nil => fields.headOption
-            case _ => None
+    private def commonField(resolver: TypesProvider, union: TypesProviderUnion, fieldName: String): Option[String] = {
+      val fieldTypes: Seq[String] = union.types.map { u =>
+
+        resolver.models.find { m => m.name == u.`type` || m.fullName == u.`type` } match {
+          case None => {
+            Primitives.String.toString
+          }
+          case Some(m) => {
+            m.fields.find(_.name == fieldName) match {
+              case None => {
+                Primitives.String.toString
+              }
+              case Some(f) => {
+                f.`type`
+              }
+            }
           }
         }
+      }
+
+      fieldTypes.distinct.toList match {
+        case single :: Nil => Some(single)
+        case _ => None
       }
     }
 

@@ -1,6 +1,6 @@
 package builder.api_json
 
-import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum}
+import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum, TypesProviderField, TypesProviderModel, TypesProviderUnion}
 import com.bryzek.apidoc.spec.v0.models.{Import, Service}
 import lib.{Datatype, DatatypeResolver, Type}
 
@@ -8,14 +8,35 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
 
   override def enums = internal.enums.map { enum =>
     TypesProviderEnum(
+      namespace = internal.namespace.getOrElse(""),
       name = enum.name,
+      plural = enum.plural,
       values = enum.values.flatMap(_.name)
     )
   }
 
-  override def unionNames = internal.unions.map(_.name)
+  override def unions = internal.unions.map { u =>
+    TypesProviderUnion(
+      namespace = internal.namespace.getOrElse(""),
+      name = u.name,
+      plural = u.plural,
+      types = u.types.flatMap(_.datatype).map(_.name).map { core.TypesProviderUnionType(_) }
+    )
+  }
 
-  override def modelNames = internal.models.map(_.name)
+  override def models = internal.models.map { m =>
+    TypesProviderModel(
+      namespace = internal.namespace.getOrElse(""),
+      name = m.name,
+      plural = m.plural,
+      fields = m.fields.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty) map { f =>
+        TypesProviderField(
+          name = f.name.get,
+          `type` = f.datatype.get.label
+        )
+      }
+    )
+  }
 
 }
 
@@ -31,9 +52,9 @@ private[api_json] case class RecursiveTypesProvider(
 
   override def enums = providers.map(_.enums).flatten
 
-  override def unionNames = providers.map(_.unionNames).flatten
+  override def unions = providers.map(_.unions).flatten
 
-  override def modelNames = providers.map(_.modelNames).flatten
+  override def models = providers.map(_.models).flatten
 
   private lazy val providers = Seq(InternalServiceFormTypesProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
 
@@ -72,8 +93,8 @@ private[api_json] case class TypeResolver(
 
   private val resolver = DatatypeResolver(
     enumNames = provider.enums.map(_.name),
-    modelNames = provider.modelNames,
-    unionNames = provider.unionNames
+    modelNames = provider.models.map(_.name),
+    unionNames = provider.unions.map(_.name)
   )
 
   private lazy val validator = TypeValidator(
