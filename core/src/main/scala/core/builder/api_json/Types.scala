@@ -32,7 +32,7 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
       fields = m.fields.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty) map { f =>
         TypesProviderField(
           name = f.name.get,
-          `type` = f.datatype.get.name
+          `type` = f.datatype.get.label
         )
       }
     )
