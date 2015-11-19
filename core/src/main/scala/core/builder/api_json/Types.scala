@@ -8,6 +8,7 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
 
   override def enums = internal.enums.map { enum =>
     TypesProviderEnum(
+      namespace = internal.namespace.getOrElse(""),
       name = enum.name,
       plural = enum.plural,
       values = enum.values.flatMap(_.name)
@@ -16,6 +17,7 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
 
   override def unions = internal.unions.map { u =>
     TypesProviderUnion(
+      namespace = internal.namespace.getOrElse(""),
       name = u.name,
       plural = u.plural,
       types = u.types.flatMap(_.datatype).map(_.name).map { core.TypesProviderUnionType(_) }
@@ -24,6 +26,7 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
 
   override def models = internal.models.map { m =>
     TypesProviderModel(
+      namespace = internal.namespace.getOrElse(""),
       name = m.name,
       plural = m.plural,
       fields = m.fields.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty) map { f =>

@@ -9,7 +9,7 @@ class TypeValidatorSpec extends FunSpec with Matchers {
   val validator = TypeValidator(
     defaultNamespace = None,
     enums = Seq(
-      TypesProviderEnum("age_group", "age_groups", Seq("youth", "adult"))
+      TypesProviderEnum("me.apidoc.test", "age_group", "age_groups", Seq("youth", "adult"))
     )
   )
 

@@ -88,17 +88,17 @@ case class ServiceBuilder(
       resolver: TypesProvider,
       name: String
     ): Resolution = {
-      resolver.enums.find(_.name == name) match {
+      resolver.enums.find(o => o.name == name || o.fullName == name) match {
         case Some(enum) => {
           Resolution(enum = Some(enum))
         }
         case None => {
-          resolver.models.find(_.name == name) match {
+          resolver.models.find(o => o.name == name || o.fullName == name) match {
             case Some(model) => {
               Resolution(model = Some(model))
             }
             case None => {
-              resolver.unions.find(_.name == name) match {
+              resolver.unions.find(o => o.name == name || o.fullName == name) match {
                 case Some(union) => {
                   Resolution(union = Some(union))
                 }
@@ -225,9 +225,7 @@ case class ServiceBuilder(
     private def commonField(resolver: TypesProvider, union: TypesProviderUnion, fieldName: String): Option[String] = {
       val fieldTypes: Seq[String] = union.types.map { u =>
 
-        resolver.models.find { m =>
-          m.name == u.`type` || m.name == s"test.apidoc.import-shared.models.${u.`type`}"
-        } match {
+        resolver.models.find { m => m.name == u.`type` || m.fullName == u.`type` } match {
           case None => {
             Primitives.String.toString
           }

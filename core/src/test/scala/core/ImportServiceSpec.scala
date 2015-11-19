@@ -214,7 +214,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
         fail("Could not find parameter named[id]")
       }.`type` should be("long")
     }
-/*
+
     it("defaults datatype to string when type varies across union types") {
       val resource = validService.resources.find(_.`type` == "test.apidoc.import-shared.unions.user_or_random").getOrElse {
         sys.error("Could not find resource")
@@ -223,6 +223,6 @@ class ImportServiceSpec extends FunSpec with Matchers {
         fail("Could not find parameter named[id]")
       }.`type` should be("string")
     }
- */
+
   }
 }
