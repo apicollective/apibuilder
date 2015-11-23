@@ -4,6 +4,7 @@ object VersionTag {
 
   val Dash = """\-"""
   val Dot = """\."""
+  val Separator = "|99999|"
 
   def isDigit(x: String) = {
     x.matches("^\\d+$")
@@ -19,7 +20,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
 
   val sortKey: String = {
     trimmedVersion.split(VersionTag.Dash).map { s =>
-      val pieces = s.split(VersionTag.Dot)
+      val pieces = splitOnDot(s)
       if (pieces.forall(s => VersionTag.isDigit(s))) {
         "5:%s".format(pieces.map( _.toInt + Padding ).mkString(":"))
       } else {
@@ -30,7 +31,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
 
   val major: Option[Int] = {
     trimmedVersion.split(VersionTag.Dash).headOption.flatMap { s =>
-      s.split(VersionTag.Dot).headOption.flatMap { value =>
+      splitOnDot(s).headOption.flatMap { value =>
         VersionTag.isDigit(value) match {
           case true => Some(value.toInt)
           case false => value match {
@@ -39,6 +40,14 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
           }
         }
       }
+    }
+  }
+
+  val qualifier: Option[String] = {
+    trimmedVersion.split(VersionTag.Dash).toList match {
+      case Nil => None
+      case one :: Nil => None
+      case multiple => multiple.lastOption
     }
   }
 
@@ -53,7 +62,7 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
   def nextMicro(): Option[String] = {
     trimmedVersion.split(VersionTag.Dash).size match {
       case 1 => {
-        val pieces = version.split(VersionTag.Dot)
+        val pieces = splitOnDot(version)
         if (pieces.forall(s => VersionTag.isDigit(s))) {
           Some((Seq(pieces.last.toInt + 1) ++ pieces.reverse.drop(1)).reverse.mkString("."))
         } else {
@@ -64,6 +73,19 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
     }
   }
 
+  /**
+   * Splits on dot and as long as the numbers are numeric, ensures
+   * that the returned array has at least 3 elements. So
+   * splitOnDot("1") would return Seq("1", "0", "0").
+   */
+  private[this] def splitOnDot(value: String): Seq[String] = {
+    var pieces = value.split(VersionTag.Dot)
+    if (pieces.forall(s => VersionTag.isDigit(s))) {
+      while (pieces.length < 3) {
+        pieces = pieces ++ Seq("0")
+      }
+    }
+    pieces
+  }
+
 }
-
-
