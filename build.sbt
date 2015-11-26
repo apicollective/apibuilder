@@ -95,7 +95,7 @@ lazy val www = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       "com.github.tototoshi" %% "scala-csv" % "1.2.1",
-      "org.pegdown" % "pegdown" % "1.5.0"
+      "org.pegdown" % "pegdown" % "1.6.0"
     )
   )
 
