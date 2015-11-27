@@ -25,7 +25,7 @@ lazy val avro = project
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
-      "com.typesafe.play" %% "play-json" % "2.4.2",
+      "com.typesafe.play" %% "play-json" % "2.4.4",
       "org.scalatest"     %% "scalatest" % "2.2.0" % "test"
     )
   )
