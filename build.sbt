@@ -37,7 +37,7 @@ lazy val swagger = project
   .settings(
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.4",
-      "com.typesafe.play" %% "play-json" % "2.4.2",
+      "com.typesafe.play" %% "play-json" % "2.4.4",
       "org.scalatest"     %% "scalatest" % "2.2.0" % "test"
     )
   )
@@ -50,7 +50,7 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.4.2"
+      "com.typesafe.play" %% "play-json" % "2.4.4"
     )
   )
 
