@@ -26,7 +26,7 @@ lazy val avro = project
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
       "com.typesafe.play" %% "play-json" % "2.4.4",
-      "org.scalatest"     %% "scalatest" % "2.2.0" % "test"
+      "org.scalatest"     %% "scalatest" % "2.2.5" % "test"
     )
   )
 
@@ -38,7 +38,7 @@ lazy val swagger = project
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.4",
       "com.typesafe.play" %% "play-json" % "2.4.4",
-      "org.scalatest"     %% "scalatest" % "2.2.0" % "test"
+      "org.scalatest"     %% "scalatest" % "2.2.5" % "test"
     )
   )
 
@@ -75,12 +75,12 @@ lazy val api = project
     libraryDependencies ++= Seq(
       ws,
       jdbc,
-      "com.typesafe.play" %% "anorm"         % "2.4.0",
+      "com.typesafe.play" %% "anorm"         % "2.5.0",
       "org.postgresql"    %  "postgresql"    % "9.4-1206-jdbc42",
       "org.mindrot"       %  "jbcrypt"       % "0.3m",
       "com.sendgrid"      %  "sendgrid-java" % "2.2.2",
       specs2              %  Test,
-      "org.scalatestplus" %% "play" % "1.4.0-M3" % "test"
+      "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
     )
   )
 
@@ -94,7 +94,7 @@ lazy val www = project
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "com.github.tototoshi" %% "scala-csv" % "1.2.1",
+      "com.github.tototoshi" %% "scala-csv" % "1.2.2",
       "org.pegdown" % "pegdown" % "1.6.0"
     )
   )
@@ -106,7 +106,7 @@ lazy val spec = project
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalatestplus" %% "play" % "1.4.0-M3" % "test"
+      "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
     )
   )
 
@@ -116,7 +116,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.bryzek.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.1",
-    "org.scalatest" %% "scalatest" % "2.2.0" % "test"
+    "org.scalatest" %% "scalatest" % "2.2.5" % "test"
   ),
   scalacOptions += "-feature",
   coverageHighlighting := true
