@@ -279,9 +279,9 @@
 	    "description": "Allows for custom extension of apidoc. Custom attributes are made available to custom generators to allow extension for specific functionality",
 	    "fields": [
 		{ "name": "name", "type": "string" },
-		{ "name": "descrpition", "type": "string" },
+		{ "name": "descrpition", "type": "string", "required": false },
 		{ "name": "value", "type": "string" },
-		{ "name": "deprecation", "type": "deprecation" }
+		{ "name": "deprecation", "type": "deprecation", "required": false }
 	    ]
 	}
 
