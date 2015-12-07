@@ -411,7 +411,8 @@ case class ServiceBuilder(
         plural = im.plural,
         description = im.description,
         deprecation = im.deprecation.map(DeprecationBuilder(_)),
-        fields = im.fields.map { FieldBuilder(_) }
+        fields = im.fields.map { FieldBuilder(_) },
+        attributes = im.attributes.map { AttributeBuilder(_) }
       )
     }
 
@@ -488,9 +489,23 @@ case class ServiceBuilder(
           case false => internal.required
         },
         default = internal.default,
+        attributes = internal.attributes.map { AttributeBuilder(_) },
         minimum = internal.minimum,
         maximum = internal.maximum,
         example = internal.example
+      )
+    }
+
+  }
+
+  object AttributeBuilder {
+    def apply(
+      internal: InternalAttributeForm
+    ): Attribute = {
+      Attribute(
+        name = internal.name.get,
+        value = internal.value.get,
+        description = internal.description
       )
     }
 

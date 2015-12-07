@@ -166,6 +166,7 @@ case class InternalModelForm(
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   fields: Seq[InternalFieldForm],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
 )
 
@@ -245,8 +246,16 @@ case class InternalFieldForm(
   required: Boolean = true,
   default: Option[String] = None,
   example: Option[String] = None,
+  attributes: Seq[InternalAttributeForm],
   minimum: Option[Long] = None,
   maximum: Option[Long] = None,
+  warnings: Seq[String] = Seq.empty
+)
+
+case class InternalAttributeForm(
+  name: Option[String] = None,
+  value: Option[JsObject] = None,
+  description: Option[String] = None,
   warnings: Seq[String] = Seq.empty
 )
 
@@ -420,10 +429,12 @@ object InternalModelForm {
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
       fields = fields,
+      attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("description", "plural"),
         arraysOfObjects = Seq("fields"),
+        optionalArraysOfObjects = Seq("attributes"),
         optionalObjects = Seq("deprecation"),
         prefix = Some(s"Model[$name]")
       )
@@ -646,6 +657,7 @@ object InternalFieldForm {
       deprecation = InternalDeprecationForm.fromJsValue(json),
       required = datatype.map(_.required).getOrElse(true),
       default = JsonUtil.asOptString(json \ "default"),
+      attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),
       example = JsonUtil.asOptString(json \ "example"),
@@ -656,9 +668,37 @@ object InternalFieldForm {
         optionalObjects = Seq("deprecation"),
         optionalBooleans = Seq("required"),
         optionalNumbers = Seq("minimum", "maximum"),
+        optionalArraysOfObjects = Seq("attributes"),
         optionalAnys = Seq("default")
       )
     )
+  }
+
+}
+
+object InternalAttributeForm {
+
+  def apply(json: JsObject): InternalAttributeForm = {
+
+    InternalAttributeForm (
+      name = JsonUtil.asOptString(json \ "name"),
+      value = (json \ "value").asOpt[JsObject],
+      description = JsonUtil.asOptString(json \ "description"),
+      warnings = JsonUtil.validate(
+        json,
+        strings = Seq("name"),
+        objects = Seq("value"),
+        optionalStrings = Seq("description")
+      )
+
+    )
+  }
+
+  def attributesFromJson(a: Option[JsArray]): Seq[InternalAttributeForm] = a match {
+    case None => Seq.empty
+    case Some(a: JsArray) => {
+      a.value.flatMap { _.asOpt[JsObject].map(InternalAttributeForm(_)) }
+    }
   }
 
 }
