@@ -255,6 +255,7 @@ case class InternalAttributeForm(
   name: Option[String] = None,
   value: Option[JsObject] = None,
   description: Option[String] = None,
+  deprecation: Option[InternalDeprecationForm],
   warnings: Seq[String] = Seq.empty
 )
 
@@ -679,6 +680,7 @@ object InternalAttributeForm {
       name = JsonUtil.asOptString(json \ "name"),
       value = (json \ "value").asOpt[JsObject],
       description = JsonUtil.asOptString(json \ "description"),
+      deprecation = InternalDeprecationForm.fromJsValue(json),
       warnings = JsonUtil.validate(
         json,
         strings = Seq("name"),

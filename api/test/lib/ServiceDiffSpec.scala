@@ -728,7 +728,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       ).differences should be(
         (
           Seq(
-            DiffNonBreaking("""model user attribute 'attribute1' description changed from Description 1 to Description updated""")
+            DiffNonBreaking("model user attribute 'attribute1' description changed from Description 1 to Description updated")
           )
         )
       )
@@ -739,7 +739,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       ).differences should be(
         (
           Seq(
-            DiffNonBreaking("""model user attribute 'attribute1' description removed: Description 1""")
+            DiffNonBreaking("model user attribute 'attribute1' description removed: Description 1")
           )
         )
       )
@@ -750,8 +750,17 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       ).differences should be(
         (
           Seq(
-            DiffNonBreaking("""model user attribute 'attribute1' description added: Description 1""")
+            DiffNonBreaking("model user attribute 'attribute1' description added: Description 1")
           )
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))),
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1.copy(deprecation = Some(Deprecation()))))))
+      ).differences should be(
+        Seq(
+          DiffNonBreaking("model user attribute 'attribute1' deprecated")
         )
       )
     }

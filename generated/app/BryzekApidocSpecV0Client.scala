@@ -27,7 +27,8 @@ package com.bryzek.apidoc.spec.v0.models {
   case class Attribute(
     name: String,
     value: _root_.play.api.libs.json.JsObject,
-    description: _root_.scala.Option[String] = None
+    description: _root_.scala.Option[String] = None,
+    deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None
   )
 
   case class Body(
@@ -412,7 +413,8 @@ package com.bryzek.apidoc.spec.v0.models {
       (
         (__ \ "name").read[String] and
         (__ \ "value").read[_root_.play.api.libs.json.JsObject] and
-        (__ \ "description").readNullable[String]
+        (__ \ "description").readNullable[String] and
+        (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation]
       )(Attribute.apply _)
     }
 
@@ -420,7 +422,8 @@ package com.bryzek.apidoc.spec.v0.models {
       (
         (__ \ "name").write[String] and
         (__ \ "value").write[_root_.play.api.libs.json.JsObject] and
-        (__ \ "description").writeNullable[String]
+        (__ \ "description").writeNullable[String] and
+        (__ \ "deprecation").writeNullable[com.bryzek.apidoc.spec.v0.models.Deprecation]
       )(unlift(Attribute.unapply _))
     }
 

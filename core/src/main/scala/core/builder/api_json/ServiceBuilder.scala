@@ -483,7 +483,8 @@ case class ServiceBuilder(
       Attribute(
         name = internal.name.get,
         value = internal.value.get,
-        description = internal.description
+        description = internal.description,
+        deprecation = internal.deprecation.map(DeprecationBuilder(_))
       )
     }
 
