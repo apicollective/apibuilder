@@ -1,5 +1,8 @@
 package lib
 
+import play.api.libs.json.JsObject
+import play.api.libs.json.Json
+
 import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
 import com.bryzek.apidoc.spec.v0.models._
 import org.scalatest.{FunSpec, ShouldMatchers}
@@ -577,7 +580,8 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       required = false,
       minimum = None,
       maximum = None,
-      example = None
+      example = None,
+      attributes = Seq.empty
     )
 
     val model = Model(
@@ -585,7 +589,8 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       plural = "users",
       description = None,
       deprecation = None,
-      fields = Seq(field)
+      fields = Seq(field),
+      attributes = Seq.empty
     )
 
     val base = service.copy(models = Nil)
@@ -663,7 +668,94 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
           DiffNonBreaking("model user required field added: name, defaults to test")
         )
       )
+
+      val attribute1 = Attribute("attribute1", Json.parse(""" {"name": "value1"}""").as[JsObject], Some("Description 1"))
+      val attribute1ValueUpdated = Attribute("attribute1", Json.parse(""" {"name": "value updated"}""").as[JsObject], Some("Description 1"))
+      val attribute1DescriptionUpdated = Attribute("attribute1", Json.parse(""" {"name": "value1"}""").as[JsObject], Some("Description updated"))
+      val attribute1DescriptionRemoved = Attribute("attribute1", Json.parse(""" {"name": "value1"}""").as[JsObject], None)
+
+      val attribute2 = Attribute("attribute2", Json.parse(""" {"name": "value2"}""").as[JsObject], Some("Description 2"))
+
+      val fieldWithAttribute = field.copy(attributes = Seq(attribute1))
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(fieldWithAttribute))))
+      ).differences should be(
+        Seq(
+          DiffNonBreaking("model user field id attribute added: attribute1")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(attributes = Seq(attribute1))))).differences should be(
+        Seq(
+          DiffNonBreaking("model user attribute added: attribute1")
+        )
+      )
+
+      ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(attributes = Seq(attribute1, attribute2))))).differences should be(
+        Seq(
+          DiffNonBreaking("model user attribute added: attribute1"),
+          DiffNonBreaking("model user attribute added: attribute2")
+        )
+      )
+
+      ServiceDiff(base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))), serviceWithModel).differences should be(
+        Seq(
+          DiffNonBreaking("model user attribute removed: attribute1")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))),
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute2))))
+      ).differences should be(
+        Seq(
+          DiffNonBreaking("model user attribute removed: attribute1"),
+          DiffNonBreaking("model user attribute added: attribute2")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))),
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1ValueUpdated))))
+      ).differences should be(
+        Seq(
+          DiffNonBreaking("""model user attribute 'attribute1' value changed from {"name":"value1"} to {"name":"value updated"}""")
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))),
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1DescriptionUpdated))))
+      ).differences should be(
+        (
+          Seq(
+            DiffNonBreaking("""model user attribute 'attribute1' description changed from Description 1 to Description updated""")
+          )
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))),
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1DescriptionRemoved))))
+      ).differences should be(
+        (
+          Seq(
+            DiffNonBreaking("""model user attribute 'attribute1' description removed: Description 1""")
+          )
+        )
+      )
+
+      ServiceDiff(
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1DescriptionRemoved)))),
+        base.copy(models = Seq(model.copy(attributes = Seq(attribute1))))
+      ).differences should be(
+        (
+          Seq(
+            DiffNonBreaking("""model user attribute 'attribute1' description added: Description 1""")
+          )
+        )
+      )
     }
+
 
     it("change fields") {
       ServiceDiff(serviceWithModel, base.copy(models = Seq(model.copy(fields = Seq(field.copy(`type` = "uuid")))))).differences should be(
