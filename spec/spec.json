@@ -282,7 +282,8 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "value", "type": "object" },
-		{ "name": "description", "type": "string", "required": false }
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "deprecation", "type": "deprecation", "required": false }
 	    ]
 	}
 

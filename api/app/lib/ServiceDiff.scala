@@ -587,9 +587,8 @@ case class ServiceDiff(
         val bAttr = bMap(name)
 
         diffStringNonBreaking(s"$prefix attribute '$name' value", Json.stringify(aAttr.value), Json.stringify(bAttr.value)) ++
-        diffOptionalStringNonBreaking(s"$prefix attribute '$name' description", aAttr.description, bAttr.description)
-        // TODO
-        // diffDeprecation(s"$prefix attribute '$name' ", aAttr.deprecation, bAttr.deprecation)
+        diffOptionalStringNonBreaking(s"$prefix attribute '$name' description", aAttr.description, bAttr.description) ++
+        diffDeprecation(s"$prefix attribute '$name'", aAttr.deprecation, bAttr.deprecation)
       }
 
       changedDiffs ++ removedDiffs ++ addedDiffs
