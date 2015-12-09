@@ -1,3 +1,9 @@
+When syncing generators - do not assume the generators list will
+paginate. If the second fetch is same as first - just stop rather than
+inserting duplicate records.
+
+API changes - generate history of field reordering
+
 [warn] /web/apidoc/api/app/db/generators/ServicesDao.scala:118: method apply in trait WithResult is deprecated: Use [[fold]], [[foldWhile]] or [[withResult]] instead, which manages resources and memory
 [warn]       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
 
