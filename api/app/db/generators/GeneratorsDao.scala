@@ -9,6 +9,7 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 object GeneratorsDao {
 
@@ -38,30 +39,52 @@ object GeneratorsDao {
     update generators.generators
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
      where service_guid = {service_guid}::uuid
-       and key = {key}
+       and lower(key) = lower(trim({key}))
   """
 
-  def upsert(user: User, form: GeneratorForm) {
-    findAll(
-      Authorization.User(user.guid),
-      serviceGuid = Some(form.serviceGuid),
-      key = Some(form.generator.key.trim),
-      limit = 1
-    ).headOption match {
+  def upsert(user: User, form: GeneratorForm): Either[Seq[String], GeneratorWithService] = {
+    findByKey(form.generator.key) match {
       case None => {
-        DB.withConnection { implicit c =>
-          create(c, user, form)
+        val gen = DB.withConnection { implicit c =>
+          Try(create(c, user, form)) match {
+            case Success(guid) => {
+              findByGuid(guid).getOrElse {
+                sys.error("Failed to create generator")
+              }
+            }
+            case Failure(ex) => {
+              findByKey(form.generator.key).getOrElse {
+                sys.error(s"Error upserting generator[${form.generator.key}]: $ex")
+              }
+            }
+          }
         }
+        Right(gen)
       }
       case Some(existing) => {
-        if (existing.generator != form.generator) {
-          DB.withConnection { implicit c =>
-            softDelete(c, user, form.serviceGuid, form.generator.key)
-            create(c, user, form)
-          }
+        if (existing.service.guid == form.serviceGuid) {
+          Right(existing)
+        } else {
+          Left(Seq(s"Another service already has a generator with the key[${form.generator.key}]"))
         }
       }
     }
+  }
+
+  def findByKey(key: String): Option[GeneratorWithService] = {
+    findAll(
+      Authorization.All,
+      key = Some(key),
+      limit = 1
+    ).headOption
+  }
+
+  def findByGuid(guid: UUID): Option[GeneratorWithService] = {
+    findAll(
+      Authorization.All,
+      guid = Some(guid),
+      limit = 1
+    ).headOption
   }
 
   private def create(implicit c: java.sql.Connection, user: User, form: GeneratorForm): UUID = {
@@ -90,8 +113,7 @@ object GeneratorsDao {
   private[this] def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String) {
     SQL(SoftDeleteByKeyQuery).on(
       'deleted_by_guid -> deletedBy.guid,
-      'service_guid -> serviceGuid,
-      'key -> generatorKey.trim
+      'key -> generatorKey
     ).execute()
   }
 
@@ -111,7 +133,7 @@ object GeneratorsDao {
       guid.map { v => "and generators.guid = {guid}::uuid" },
       serviceGuid.map { v => "and generators.service_guid = {service_guid}::uuid" },
       serviceUri.map { v => "and lower(services.uri) = lower(trim({uri}))" },
-      key.map { v => "and generators.key = {key}" },
+      key.map { v => "and lower(trim(generators.key)) = lower(trim({key}))" },
       isDeleted.map(db.Filters.isDeleted("generators", _))
     ).flatten.mkString("\n   ") + s" order by lower(generators.name), lower(generators.key), generators.created_at desc limit ${limit} offset ${offset}"
 

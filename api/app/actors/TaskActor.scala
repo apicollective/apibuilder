@@ -22,6 +22,8 @@ object TaskActor {
 
 class TaskActor extends Actor {
 
+  import scala.concurrent.ExecutionContext.Implicits.global
+
   private[this] val NumberDaysBeforePurge = 90
 
   def receive = {
@@ -58,7 +60,7 @@ class TaskActor extends Actor {
           nOrFewerAttempts = Some(2),
           nOrMoreMinutesOld = Some(1)
         ).foreach { task =>
-          global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(task.guid)
+          _root_.global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(task.guid)
         }
       }
     )
