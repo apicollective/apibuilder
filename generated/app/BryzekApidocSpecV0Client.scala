@@ -52,8 +52,7 @@ package com.bryzek.apidoc.spec.v0.models {
    * the description for details
    */
   case class Deprecation(
-    description: _root_.scala.Option[String] = None,
-    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
+    description: _root_.scala.Option[String] = None
   )
 
   case class Enum(
@@ -462,17 +461,13 @@ package com.bryzek.apidoc.spec.v0.models {
     }
 
     implicit def jsonReadsApidocspecDeprecation: play.api.libs.json.Reads[Deprecation] = {
-      (
-        (__ \ "description").readNullable[String] and
-        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
-      )(Deprecation.apply _)
+      (__ \ "description").readNullable[String].map { x => new Deprecation(description = x) }
     }
 
-    implicit def jsonWritesApidocspecDeprecation: play.api.libs.json.Writes[Deprecation] = {
-      (
-        (__ \ "description").writeNullable[String] and
-        (__ \ "attributes").write[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
-      )(unlift(Deprecation.unapply _))
+    implicit def jsonWritesApidocspecDeprecation: play.api.libs.json.Writes[Deprecation] = new play.api.libs.json.Writes[Deprecation] {
+      def writes(x: Deprecation) = play.api.libs.json.Json.obj(
+        "description" -> play.api.libs.json.Json.toJson(x.description)
+      )
     }
 
     implicit def jsonReadsApidocspecEnum: play.api.libs.json.Reads[Enum] = {
