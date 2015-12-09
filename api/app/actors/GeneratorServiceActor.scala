@@ -20,30 +20,46 @@ object GeneratorServiceActor {
     case object Sync
   }
 
-  def sync(serviceGuid: UUID) {
+  def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext) {
     ServicesDao.findByGuid(Authorization.All, serviceGuid).map { sync(_) }
   }
 
-  def sync(service: GeneratorService) {
-    import scala.concurrent.ExecutionContext.Implicits.global
-
+  def sync(
+    service: GeneratorService
+  ) (
+    implicit ec: scala.concurrent.ExecutionContext
+  ) {
     val client = new Client(service.uri)
 
-    Pager.eachPage[Generator] { offset =>
-      val results = Await.result(
-        client.generators.get(limit = 100, offset = offset),
+    var iteration = 0
+    val limit = 100
+    var num = limit
+    var offset = 0
+
+    while (num >= limit) {
+      val generators = Await.result(
+        client.generators.get(limit = limit, offset = offset),
         5000.millis
       )
-      assert(offset < 25, s"Likely infinite loop fetching generators for service at URI[${service.uri}]")
-      results
-    } { gen =>
-      GeneratorsDao.upsert(
-        UsersDao.AdminUser,
-        GeneratorForm(
-          serviceGuid = service.guid,
-          generator = gen
-        )
-      )
+      num = generators.size
+      offset += limit
+      iteration += 1
+      if (iteration > 25) {
+        sys.error(s"Likely infinite loop fetching generators for service at URI[${service.uri}]")
+      }
+
+      generators.foreach { gen =>
+        GeneratorsDao.upsert(
+          UsersDao.AdminUser,
+          GeneratorForm(
+            serviceGuid = service.guid,
+            generator = gen
+          )
+        ) match {
+          case Left(errors) => Logger.error("Error fetching generators for service[${service.guid}] uri[${service.uri}]: " + errors.mkString(", "))
+          case Right(_) => {}
+        }
+      }
     }
   }
 
