@@ -272,8 +272,7 @@
 	"deprecation": {
 	    "description": "Indicates that this particular element is considered deprecated in the API. See the description for details",
 	    "fields": [
-		{ "name": "description", "type": "string", "required": false },
-		{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
 
