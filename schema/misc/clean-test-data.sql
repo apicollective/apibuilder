@@ -56,3 +56,13 @@ update watches
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
    and application_guid in (select guid from applications where deleted_at is not null);
+
+update generators.services
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and uri like 'http://test.generator.%';
+
+update generators.generators
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and service_guid in (select guid from generators.services where deleted_at is not null);
