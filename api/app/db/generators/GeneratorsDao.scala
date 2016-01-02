@@ -38,8 +38,9 @@ object GeneratorsDao {
   private[this] val SoftDeleteByKeyQuery = """
     update generators.generators
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
-     where service_guid = {service_guid}::uuid
-       and lower(key) = lower(trim({key}))
+     where key = lower(trim({key}))
+       and service_guid = {service_guid}::uuid
+       and deleted_at is null
   """
 
   def upsert(user: User, form: GeneratorForm): Either[Seq[String], GeneratorWithService] = {
@@ -63,12 +64,31 @@ object GeneratorsDao {
       }
       case Some(existing) => {
         if (existing.service.guid == form.serviceGuid) {
-          Right(existing)
+          if (isDifferent(existing.generator, form)) {
+            // Update to catch any updates to properties
+            val generatorGuid = DB.withConnection { implicit c =>
+              softDelete(c, user, existing.service.guid, existing.generator.key)
+              create(c, user, form)
+            }
+            Right(
+              findByGuid(generatorGuid).getOrElse {
+                sys.error("Failed to create generator")
+              }
+            )
+          } else {
+            Right(existing)
+          }
         } else {
           Left(Seq(s"Another service already has a generator with the key[${form.generator.key}]"))
         }
       }
     }
+  }
+
+  private[this] def isDifferent(generator: Generator, form: GeneratorForm): Boolean = {
+    generator.name != form.generator.name ||
+    generator.language != form.generator.language ||
+    generator.description != form.generator.description
   }
 
   def findByKey(key: String): Option[GeneratorWithService] = {
@@ -113,6 +133,7 @@ object GeneratorsDao {
   private[this] def softDelete(implicit c: java.sql.Connection, deletedBy: User, serviceGuid: UUID, generatorKey: String) {
     SQL(SoftDeleteByKeyQuery).on(
       'deleted_by_guid -> deletedBy.guid,
+      'service_guid -> serviceGuid,
       'key -> generatorKey
     ).execute()
   }

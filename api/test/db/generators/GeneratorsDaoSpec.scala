@@ -45,7 +45,8 @@ class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication 
       val second = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
-      second should not be(gws)
+      second.generator.name should be(form.generator.name + "2")
+      second.generator.key should be(gws.generator.key)
     }
 
   }
