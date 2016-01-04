@@ -59,9 +59,9 @@ def cli(command, opts={})
     raise "Invalid keys: #{opts.keys.inspect}"
   end
 
-  builder = {
-    "PROFILE" => profile.to_s.strip
-  }.select { |k, v| v != "" }.map { |k,v| "export #{k}=#{v}" }
+  env = {}
+  env["PROFILE"] = profile.to_s.strip if profile.to_s.strip != "default"
+  builder = env.select { |k, v| v != "" }.map { |k,v| "export #{k}=#{v}" }
 
   builder << "#{CLI_PATH} #{command}"
   cmd = builder.join(" && ")
