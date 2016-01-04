@@ -5,7 +5,7 @@ import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 
-object ComBryzekApidocGeneratorV0ModelsHealthchecks extends Controller {
+object Healthchecks extends Controller {
 
   private[this] val Result = Json.toJson(Map("status" -> "healthy"))
 
