@@ -1,7 +1,8 @@
 package builder
 
 import core.{TypeValidator, TypesProvider}
-import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, UnionType}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type, VersionTag}
 import scala.util.{Failure, Success, Try}
 
@@ -170,50 +171,26 @@ case class ServiceSpecValidator(
       }
     }
 
-    val unionTypeCannotContainItselfErrors = service.unions.flatMap { union =>
+    val unionTypeErrors = service.unions.flatMap { union =>
       union.types.find(_.`type` == union.name) match {
-        case None => Nil
         case Some(_) => {
           Seq(s"Union[${union.name}] cannot contain itself as one of its types")
         }
-      }
-    }
-
-    val discriminatorErrors = service.unions.flatMap { union =>
-      union.discriminator match {
-        case None => Nil
-        case Some(discriminator) => {
-          println(s"union[${union.name}]")
-          // Validate that none of the types have a field named discriminator
-          val typesWithField: Seq[com.bryzek.apidoc.spec.v0.models.UnionType] = union.types.flatMap { unionType =>
-            println(s"unionType[${unionType.`type`}]")
-            typeResolver.parse(unionType.`type`).flatMap { datatype =>
-              datatype.`type` match {
-                case Type(Kind.Primitive, _) | Type(Kind.Enum, _) => None
-                case Type(Kind.Model, name) => {
-                  println(s"model[$name]")
-                  service.models.find(_.name == name).flatMap { model =>
-                    model.fields.find(_.name == discriminator).map { f =>
-                      unionType
-                    }
-                  }
-                }
-                case Type(Kind.Union, name) => {
-                  println(s"union[$name]")
-                  // TODO
-                  None
-                }
-              }
-            }
-          }
-
-          typesWithField.toList match {
-            case Nil => None
-            case types => {
-              Some(
+        case None => {
+          service.unions.flatMap { union =>
+            union.discriminator match {
+              case None => Nil
+              case Some(discriminator) => {
+                unionTypesWithNamedField(union, discriminator) match {
+                  case Nil => Nil
+                  case types => {
+                    Seq(
                 s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
                   types.map(_.`type`).mkString(", ")
-              )
+                    )
+                  }
+                }
+              }
             }
           }
         }
@@ -222,7 +199,45 @@ case class ServiceSpecValidator(
 
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
-    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeCannotContainItselfErrors ++ discriminatorErrors ++ duplicates
+    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeErrors ++ duplicates
+  }
+
+  /**
+    * Given a union, returns the list of types that contain the
+    * specified field.
+    */
+  private def unionTypesWithNamedField(union: Union, fieldName: String): Seq[UnionType] = {
+    union.types.flatMap { unionType =>
+      typeResolver.parse(unionType.`type`) match {
+        case None => {
+          Nil
+        }
+        case Some(datatype) => {
+          datatype.`type` match {
+            case Type(Kind.Primitive, _) | Type(Kind.Enum, _) => {
+              Nil
+            }
+            case Type(Kind.Model, name) => {
+              service.models.find(_.name == name) match {
+                case None => Nil
+                case Some(model) => {
+                  model.fields.find(_.name == fieldName) match {
+                    case None => Nil
+                    case Some(_) => Seq(unionType)
+                  }
+                }
+              }
+            }
+            case Type(Kind.Union, name) => {
+              service.unions.find(_.name == name) match {
+                case None => Nil
+                case Some(u) => unionTypesWithNamedField(u, fieldName)
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   private def validateHeaders(): Seq[String] = {
