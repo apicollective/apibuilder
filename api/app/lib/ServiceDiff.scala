@@ -178,6 +178,7 @@ case class ServiceDiff(
     assert(a.name == b.name, "Union name's must be the same")
     val prefix = s"union ${a.name}"
 
+    Helpers.diffOptionalString("discriminator", a.discriminator, b.discriminator)
     Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
