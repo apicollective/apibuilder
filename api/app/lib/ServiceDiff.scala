@@ -178,7 +178,7 @@ case class ServiceDiff(
     assert(a.name == b.name, "Union name's must be the same")
     val prefix = s"union ${a.name}"
 
-    Helpers.diffOptionalString("discriminator", a.discriminator, b.discriminator)
+    Helpers.diffOptionalStringBreaking(s"$prefix discriminator", a.discriminator, b.discriminator) ++
     Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
@@ -529,6 +529,14 @@ case class ServiceDiff(
           }
         }
       }
+    }
+
+    def diffOptionalStringBreaking(
+      label: String,
+      a: Option[String],
+      b: Option[String]
+    ): Seq[Diff] = {
+      diffOptionalString(label, a, b).map { DiffBreaking(_) }
     }
 
     def diffOptionalStringNonBreaking(
