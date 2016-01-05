@@ -170,9 +170,59 @@ case class ServiceSpecValidator(
       }
     }
 
+    val unionTypeCannotContainItselfErrors = service.unions.flatMap { union =>
+      union.types.find(_.`type` == union.name) match {
+        case None => Nil
+        case Some(_) => {
+          Seq(s"Union[${union.name}] cannot contain itself as one of its types")
+        }
+      }
+    }
+
+    val discriminatorErrors = service.unions.flatMap { union =>
+      union.discriminator match {
+        case None => Nil
+        case Some(discriminator) => {
+          println(s"union[${union.name}]")
+          // Validate that none of the types have a field named discriminator
+          val typesWithField: Seq[com.bryzek.apidoc.spec.v0.models.UnionType] = union.types.flatMap { unionType =>
+            println(s"unionType[${unionType.`type`}]")
+            typeResolver.parse(unionType.`type`).flatMap { datatype =>
+              datatype.`type` match {
+                case Type(Kind.Primitive, _) | Type(Kind.Enum, _) => None
+                case Type(Kind.Model, name) => {
+                  println(s"model[$name]")
+                  service.models.find(_.name == name).flatMap { model =>
+                    model.fields.find(_.name == discriminator).map { f =>
+                      unionType
+                    }
+                  }
+                }
+                case Type(Kind.Union, name) => {
+                  println(s"union[$name]")
+                  // TODO
+                  None
+                }
+              }
+            }
+          }
+
+          typesWithField.toList match {
+            case Nil => None
+            case types => {
+              Some(
+                s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
+                  types.map(_.`type`).mkString(", ")
+              )
+            }
+          }
+        }
+      }
+    }
+
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
-    nameErrors ++ typeErrors ++ invalidTypes ++ duplicates
+    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeCannotContainItselfErrors ++ discriminatorErrors ++ duplicates
   }
 
   private def validateHeaders(): Seq[String] = {

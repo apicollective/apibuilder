@@ -94,6 +94,11 @@ class UnionTypeSpec extends FunSpec with Matchers {
       validator.errors.mkString("") should be("Union[user] type[] type must be a non empty string")
     }
 
+    it("rejects circular type") {
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "user", "guest", "registered"))
+      validator.errors.mkString("") should be("Union[user] cannot contain itself as one of its types")
+    }
+
     it("rejects invalid types") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "guest", "another_user", "registered"))
       validator.errors.mkString("") should be("Union[user] type[another_user] not found")
@@ -128,15 +133,15 @@ class UnionTypeSpec extends FunSpec with Matchers {
   describe("with discriminator") {
 
     it("union types unique discriminator") {
-      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(""""discriminator": "type",""", "user", "registered", "registered"))
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(""""discriminator": "type",""", "guest", "registered", "registered"))
       validator.errors.mkString("") should be("")
       val union = validator.service.unions.head
       union.discriminator should be(Some("type"))
     }
 
     it("validates union types discriminator that is not a defined field") {
-      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(""""discriminator": "id",""", "user", "registered", "registered"))
-      validator.errors.mkString("") should be("Union type discriminator must NOT be a field defined on any of the types in this union. Field[id] is defined on registered, guest")
+      val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(""""discriminator": "id",""", "guest", "registered", "registered"))
+      validator.errors.mkString("") should be("Union[user] discriminator[id] must be unique. Field exists on: guest, registered")
     }
 
   }
