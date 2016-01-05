@@ -8,7 +8,6 @@ class UnionTypeSpec extends FunSpec with Matchers {
     val baseJson = """
     {
       "name": "Union Types Test",
-      "apidoc": { "version": "0.9.6" },
 
       "unions": {
         "user": { %s
@@ -65,7 +64,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
     it("union types support descriptions") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "string", "uuid", "registered"))
-      validator.errors.mkString("") should be("")
+      validator.errors should be(Nil)
       val union = validator.service.unions.head
       union.types.find(_.`type` == "string").get.description should be(Some("foobar"))
       union.types.find(_.`type` == "uuid").get.description should be(None)
@@ -73,45 +72,45 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
     it("union types can have primitives") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "string", "uuid", "registered"))
-      validator.errors.mkString("") should be("")
+      validator.errors should be(Nil)
       validator.service.unions.head.types.map(_.`type`) should be(Seq("string", "uuid"))
     }
 
     it("union types can have models") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "guest", "registered", "registered"))
-      validator.errors.mkString("") should be("")
+      validator.errors should be(Nil)
       validator.service.unions.head.types.map(_.`type`) should be(Seq("guest", "registered"))
     }
 
     it("union types can have lists") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "[guest]", "map[registered]", "registered"))
-      validator.errors.mkString("") should be("")
+      validator.errors should be(Nil)
       validator.service.unions.head.types.map(_.`type`) should be(Seq("[guest]", "map[registered]"))
     }
 
     it("rejects blank types") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "guest", "", "registered"))
-      validator.errors.mkString("") should be("Union[user] type[] type must be a non empty string")
+      validator.errors should be(Seq("Union[user] type[] type must be a non empty string"))
     }
 
     it("rejects circular type") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "user", "guest", "registered"))
-      validator.errors.mkString("") should be("Union[user] cannot contain itself as one of its types")
+      validator.errors should be(Seq("Union[user] cannot contain itself as one of its types"))
     }
 
     it("rejects invalid types") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "guest", "another_user", "registered"))
-      validator.errors.mkString("") should be("Union[user] type[another_user] not found")
+      validator.errors should be(Seq("Union[user] type[another_user] not found"))
     }
 
     it("validates that union names do not overlap with model names") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "string", "uuid", "user"))
-      validator.errors.mkString("") should be("Name[user] cannot be used as the name of both a model and a union type")
+      validator.errors should be(Seq("Name[user] cannot be used as the name of both a model and a union type"))
     }
 
     it("validates unit type") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format("", "unit", "uuid", "registered"))
-      validator.errors.mkString("") should be("Union types cannot contain unit. To make a particular field optional, use the required property.")
+      validator.errors should be(Seq("Union types cannot contain unit. To make a particular field optional, use the required property."))
     }
 
     it("infers proper parameter type if field is common across all types") {
@@ -134,14 +133,68 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
     it("union types unique discriminator") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(""""discriminator": "type",""", "guest", "registered", "registered"))
-      validator.errors.mkString("") should be("")
+      validator.errors should be(Nil)
       val union = validator.service.unions.head
       union.discriminator should be(Some("type"))
     }
 
     it("validates union types discriminator that is not a defined field") {
       val validator = TestHelper.serviceValidatorFromApiJson(baseJson.format(""""discriminator": "id",""", "guest", "registered", "registered"))
-      validator.errors.mkString("") should be("Union[user] discriminator[id] must be unique. Field exists on: guest, registered")
+      validator.errors should be(Seq("Union[user] discriminator[id] must be unique. Field exists on: guest, registered"))
+    }
+
+  }
+
+  describe("with nested union type") {
+    val nestedUnionTypeJson = """
+    {
+      "name": "Union Types Test",
+
+      "unions": {
+        "user": {
+          "discriminator": "%s",
+          "types": [
+            { "type": "registered" },
+            { "type": "guest" }
+          ]
+        },
+
+        "guest": {
+          "types": [
+            { "type": "uuid" },
+            { "type": "anonymous" }
+          ]
+        }
+      },
+
+      "models": {
+
+        "registered": {
+          "fields": [
+            { "name": "id", "type": "uuid" }
+          ]
+        },
+
+        "anonymous": {
+          "fields": [
+            { "name": "id", "type": "uuid" },
+            { "name": "foo", "type": "string" }
+          ]
+        }
+      }
+    }
+  """
+
+    it("valid discriminator") {
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("type"))
+      validator.errors should be(Nil)
+    }
+
+    it("invalid discriminator") {
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("foo"))
+      validator.errors should be(Seq(
+        "Union[user] discriminator[foo] must be unique. Field exists on: guest.anonymous"
+      ))
     }
 
   }

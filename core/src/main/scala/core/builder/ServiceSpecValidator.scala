@@ -177,18 +177,16 @@ case class ServiceSpecValidator(
           Seq(s"Union[${union.name}] cannot contain itself as one of its types")
         }
         case None => {
-          service.unions.flatMap { union =>
-            union.discriminator match {
-              case None => Nil
-              case Some(discriminator) => {
-                unionTypesWithNamedField(union, discriminator) match {
-                  case Nil => Nil
-                  case types => {
-                    Seq(
-                s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
-                  types.map(_.`type`).mkString(", ")
-                    )
-                  }
+          union.discriminator match {
+            case None => Nil
+            case Some(discriminator) => {
+              unionTypesWithNamedField(union, discriminator) match {
+                case Nil => Nil
+                case types => {
+                  Seq(
+                    s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
+                      types.mkString(", ")
+                  )
                 }
               }
             }
@@ -206,7 +204,7 @@ case class ServiceSpecValidator(
     * Given a union, returns the list of types that contain the
     * specified field.
     */
-  private def unionTypesWithNamedField(union: Union, fieldName: String): Seq[UnionType] = {
+  private def unionTypesWithNamedField(union: Union, fieldName: String): Seq[String] = {
     union.types.flatMap { unionType =>
       typeResolver.parse(unionType.`type`) match {
         case None => {
@@ -223,7 +221,7 @@ case class ServiceSpecValidator(
                 case Some(model) => {
                   model.fields.find(_.name == fieldName) match {
                     case None => Nil
-                    case Some(_) => Seq(unionType)
+                    case Some(_) => Seq(unionType.`type`)
                   }
                 }
               }
@@ -231,7 +229,11 @@ case class ServiceSpecValidator(
             case Type(Kind.Union, name) => {
               service.unions.find(_.name == name) match {
                 case None => Nil
-                case Some(u) => unionTypesWithNamedField(u, fieldName)
+                case Some(u) => {
+                  unionTypesWithNamedField(u, fieldName).map { t =>
+                    s"${u.name}.$t"
+                  }
+                }
               }
             }
           }
