@@ -845,6 +845,9 @@
                     "method": "GET",
                     "description": "Retrieve a specific version of an application.",
 		    "path": "/:applicationKey/:version",
+                    "parameters": [
+                        { "name": "version", "type": "string", "description": "The version of tthis application to download, or the keyword latest to get the latest version", "example": "latest" }
+		    ],
                     "responses": {
                         "200": { "type": "version" },
                         "404": { "type": "unit" }
