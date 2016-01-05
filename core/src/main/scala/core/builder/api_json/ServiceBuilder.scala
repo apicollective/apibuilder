@@ -299,6 +299,7 @@ case class ServiceBuilder(
       Union(
         name = internal.name,
         plural = internal.plural,
+        discriminator = internal.discriminator,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         types = internal.types.map { it =>
