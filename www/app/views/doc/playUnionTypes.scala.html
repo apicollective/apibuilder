@@ -28,9 +28,45 @@
   </p>
 
   <p>
-    Over the wire, union types in the play 2_x clients are represented
-    as a Json Object with one element. The key is the name of the type
-    and the value is the Json serialization of the actual object.
+    Over the wire, union types in the play 2_x clients are
+    represented in one of two ways based on the presence of the discriminator field.
+  </p>
+
+  <p><b>With a discriminator</b></p>
+
+  <p>
+    Union type is serialized as a Json Object with the discriminator
+    field injected. For example, assume the discriminator field is set
+    to "type":
+  </p>
+
+  <p>
+    Example serializations:
+
+    <pre>
+    "user": {
+      "type": "registered_user",
+      "guid":"f30dc64e-1793-4d59-aa47-71f000e06851",
+      "email":"registered@@test.apidoc.me"
+    }
+    </pre>
+
+    <pre>
+    "user": {
+      "type": "guest_user",
+      "guid":"f30dc64e-1793-4d59-aa47-71f000e06851",
+      "email":"guest@@test.apidoc.me"
+    }
+    </pre>
+
+  </p>
+
+  <p><b>With no discriminator</b></p>
+
+  <p>
+    Union type is serialized as a Json Object with one element. The
+    key is the name of the type and the value is the Json
+    serialization of the actual object.
   </p>
 
   <p>
@@ -55,7 +91,7 @@
     </pre>
 
   </p>
-
+  
   <p>
 
     We also maintain an example application that has a simple union
