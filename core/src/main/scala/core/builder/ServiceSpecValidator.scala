@@ -10,6 +10,8 @@ case class ServiceSpecValidator(
   service: Service
 ) {
 
+  private val ReservedDiscriminatorValue = "value"
+
   private val typeResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name) ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
@@ -180,19 +182,23 @@ case class ServiceSpecValidator(
           union.discriminator match {
             case None => Nil
             case Some(discriminator) => {
-              Text.validateName(discriminator) match {
-                case Nil => {
-                  unionTypesWithNamedField(union, discriminator) match {
-                    case Nil => Nil
-                    case types => {
-                      Seq(
-                        s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
-                          types.mkString(", ")
-                      )
+              if (discriminator == ReservedDiscriminatorValue) {
+                Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved for the wrapper objects for primitive values and cannot be used as a discriminator")
+              } else {
+                Text.validateName(discriminator) match {
+                  case Nil => {
+                    unionTypesWithNamedField(union, discriminator) match {
+                      case Nil => Nil
+                      case types => {
+                        Seq(
+                          s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
+                            types.mkString(", ")
+                        )
+                      }
                     }
                   }
+                  case errors => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errors.mkString(", "))
                 }
-                case errors => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errors.mkString(", "))
               }
             }
           }

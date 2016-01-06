@@ -204,6 +204,13 @@ class UnionTypeSpec extends FunSpec with Matchers {
       ))
     }
 
+    it("'value' is reserved for primitive wrappers") {
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("value"))
+      validator.errors should be(Seq(
+        "Union[user] discriminator[value]: The keyword[value] is reserved for the wrapper objects for primitive values and cannot be used as a discriminator"
+      ))
+    }
+
   }
 
 }
