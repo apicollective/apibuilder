@@ -197,6 +197,13 @@ class UnionTypeSpec extends FunSpec with Matchers {
       ))
     }
 
+    it("non text discriminator") {
+      val validator = TestHelper.serviceValidatorFromApiJson(nestedUnionTypeJson.format("!@KL#"))
+      validator.errors should be(Seq(
+        "Union[user] discriminator[!@KL#]: Name can only contain a-z, A-Z, 0-9 and _ characters, Name must start with a letter"
+      ))
+    }
+
   }
 
 }

@@ -180,14 +180,19 @@ case class ServiceSpecValidator(
           union.discriminator match {
             case None => Nil
             case Some(discriminator) => {
-              unionTypesWithNamedField(union, discriminator) match {
-                case Nil => Nil
-                case types => {
-                  Seq(
-                    s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
-                      types.mkString(", ")
-                  )
+              Text.validateName(discriminator) match {
+                case Nil => {
+                  unionTypesWithNamedField(union, discriminator) match {
+                    case Nil => Nil
+                    case types => {
+                      Seq(
+                        s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
+                          types.mkString(", ")
+                      )
+                    }
+                  }
                 }
+                case errors => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errors.mkString(", "))
               }
             }
           }
