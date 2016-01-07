@@ -224,18 +224,22 @@ case class ServiceBuilder(
       */
     private def commonField(resolver: TypesProvider, union: TypesProviderUnion, fieldName: String): Option[String] = {
       val fieldTypes: Seq[String] = union.types.map { u =>
-
-        resolver.models.find { m => m.name == u.`type` || m.fullName == u.`type` } match {
+        Primitives(u.`type`) match {
+          case Some(p) => p.toString
           case None => {
-            Primitives.String.toString
-          }
-          case Some(m) => {
-            m.fields.find(_.name == fieldName) match {
+            resolver.models.find { m => m.name == u.`type` || m.fullName == u.`type` } match {
               case None => {
                 Primitives.String.toString
               }
-              case Some(f) => {
-                f.`type`
+              case Some(m) => {
+                m.fields.find(_.name == fieldName) match {
+                  case None => {
+                    Primitives.String.toString
+                  }
+                  case Some(f) => {
+                    f.`type`
+                  }
+                }
               }
             }
           }
@@ -299,6 +303,7 @@ case class ServiceBuilder(
       Union(
         name = internal.name,
         plural = internal.plural,
+        discriminator = internal.discriminator,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         types = internal.types.map { it =>

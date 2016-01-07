@@ -188,6 +188,7 @@ case class InternalEnumValueForm(
 case class InternalUnionForm(
   name: String,
   plural: String,
+  discriminator: Option[String],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   types: Seq[InternalUnionTypeForm],
@@ -366,12 +367,13 @@ object InternalUnionForm {
     InternalUnionForm(
       name = name,
       plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
+      discriminator = JsonUtil.asOptString(value \ "discriminator"),
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
       types = types,
       warnings = JsonUtil.validate(
         value,
-        optionalStrings = Seq("description", "plural"),
+        optionalStrings = Seq("discriminator", "description", "plural"),
         arraysOfObjects = Seq("types"),
         optionalObjects = Seq("deprecation"),
         prefix = Some(s"Union[$name]")

@@ -18,6 +18,7 @@
     "unions": {
 	"diff": {
 	    "description": "Represents a single diff in an application",
+	    "discriminator": "type",
 	    "types": [
 		{ "type": "diff_breaking" },
 		{ "type": "diff_non_breaking" }
@@ -26,6 +27,7 @@
 
 	"item_detail": {
 	    "description": "Identifies the specific type of item that was indexed by search",
+	    "discriminator": "type",
 	    "types": [
 		{ "type": "application_summary", "description": "Represents that the item indexed was an application" }
 	    ]
@@ -34,9 +36,9 @@
     },
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.51/service.json" },
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-common/0.9.51/service.json" },
-	{ "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.9.51/service.json" }
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.9.52/service.json" },
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-common/0.9.52/service.json" },
+	{ "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.9.52/service.json" }
     ],
 
     "enums": {

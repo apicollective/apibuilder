@@ -118,7 +118,10 @@
         <a name="union-@lib.UrlKey.generate(union.name)"></a>
         <div class="version_union">
           <h3>@union.name</h3>
-          @union.deprecation.map(deprecation(_))
+          <ul>
+	    <li>Type discriminator: @union.discriminator.getOrElse("N/A")</li>
+            @union.deprecation.map { deprecation => <li> + deprecation(deprecation) </li> }
+	  </ul>
 
           @Html(lib.Markdown(union.description))
 

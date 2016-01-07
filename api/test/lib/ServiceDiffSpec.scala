@@ -489,6 +489,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     val union = Union(
       name = "user",
       plural = "users",
+      discriminator = None,
       description = None,
       deprecation = None,
       types = Seq(unionType)
@@ -539,6 +540,12 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Nil)))).differences should be(
         Seq(
           DiffBreaking("union user type removed: registered")
+        )
+      )
+
+      ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(discriminator = Some("type_identifier"))))).differences should be(
+        Seq(
+          DiffBreaking("union user discriminator added: type_identifier")
         )
       )
 

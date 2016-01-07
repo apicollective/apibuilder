@@ -1,13 +1,16 @@
 package builder
 
 import core.{TypeValidator, TypesProvider}
-import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, UnionType}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type, VersionTag}
 import scala.util.{Failure, Success, Try}
 
 case class ServiceSpecValidator(
   service: Service
 ) {
+
+  private val ReservedDiscriminatorValue = "value"
 
   private val typeResolver = DatatypeResolver(
     enumNames = service.enums.map(_.name) ++ service.imports.flatMap { service =>
@@ -170,9 +173,84 @@ case class ServiceSpecValidator(
       }
     }
 
+    val unionTypeErrors = service.unions.flatMap { union =>
+      union.types.find(_.`type` == union.name) match {
+        case Some(_) => {
+          Seq(s"Union[${union.name}] cannot contain itself as one of its types")
+        }
+        case None => {
+          union.discriminator match {
+            case None => Nil
+            case Some(discriminator) => {
+              if (discriminator == ReservedDiscriminatorValue) {
+                Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved for the wrapper objects for primitive values and cannot be used as a discriminator")
+              } else {
+                Text.validateName(discriminator) match {
+                  case Nil => {
+                    unionTypesWithNamedField(union, discriminator) match {
+                      case Nil => Nil
+                      case types => {
+                        Seq(
+                          s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
+                            types.mkString(", ")
+                        )
+                      }
+                    }
+                  }
+                  case errors => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errors.mkString(", "))
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
-    nameErrors ++ typeErrors ++ invalidTypes ++ duplicates
+    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeErrors ++ duplicates
+  }
+
+  /**
+    * Given a union, returns the list of types that contain the
+    * specified field.
+    */
+  private def unionTypesWithNamedField(union: Union, fieldName: String): Seq[String] = {
+    union.types.flatMap { unionType =>
+      typeResolver.parse(unionType.`type`) match {
+        case None => {
+          Nil
+        }
+        case Some(datatype) => {
+          datatype.`type` match {
+            case Type(Kind.Primitive, _) | Type(Kind.Enum, _) => {
+              Nil
+            }
+            case Type(Kind.Model, name) => {
+              service.models.find(_.name == name) match {
+                case None => Nil
+                case Some(model) => {
+                  model.fields.find(_.name == fieldName) match {
+                    case None => Nil
+                    case Some(_) => Seq(unionType.`type`)
+                  }
+                }
+              }
+            }
+            case Type(Kind.Union, name) => {
+              service.unions.find(_.name == name) match {
+                case None => Nil
+                case Some(u) => {
+                  unionTypesWithNamedField(u, fieldName).map { t =>
+                    s"${u.name}.$t"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   private def validateHeaders(): Seq[String] = {

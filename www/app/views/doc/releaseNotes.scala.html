@@ -2,6 +2,63 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.9.52 - Jan 5 2016</h3>
+
+  <p>
+    There have been numerous point releases over the past few months
+    fixing small bugs. 0.9.52 introduces a major new feature - union
+    type discriminators - which we highlight here.
+  </p>
+
+  <ul>
+
+    <li>
+      <p>
+	Introduction of optional discriminator field for Union
+	type. This is a major feature addition to the union type that
+	flattens out the JSON serialization and will be especially helpful
+	for working with union types from javascript or JSON directly.
+      </p>
+
+      <p>
+	When specifying a union type, you can now specify an optional
+	name for a type discriminator field which can then be used in
+	serialization / deserialization to identify the type of
+	object. When specified, the union type will serialize into a
+	flat JSON object with the discriminator field injected.
+      </p>
+
+      <p>
+	Note this change is 100% backwards compatiable as the
+	discriminator field is optional. If you add a discriminator
+	field to an existing union types - note that you will break the
+	wire format.
+      </p>
+
+      <p>
+	See <a href="@routes.DocController.apiJson#union">api.json
+	union type docs</a> and
+	<a href="@routes.DocController.playUnionTypes">Play Union Types</a> for more information and examples.
+      </p>
+
+    </li>
+
+    <li> Add support to infer a parameter type when an operation is
+    defined for a resource of type union</li>
+
+    <li> Fix bug that prevented inferrence of parameter types for
+    imported models</li>
+
+    <li> Make history link more prominent</li>
+
+    <li> Ignore dot in named variables in path params
+      (e.g. "/get/:id.csv")</li>
+
+    <li> Validate that models do not have multiple fields w/ the same
+    name</li>
+
+  </ul>
+
 <h3>0.9.32 - Jul 21 2015</h3>
 
   <ul>

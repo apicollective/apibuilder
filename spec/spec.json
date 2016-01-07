@@ -114,6 +114,7 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "plural", "type": "string" },
+		{ "name": "discriminator", "type": "string", "required": false, "description": "If a type discriminator is provided, serialization of these union types will always contain a field named with the value of the discriminator that will contain the name of the type. This provides a simpler (for many use cases) JSON serialization/deserialization mechanism. When specified, apidoc itself will verify that none of the types in the union type itself contain a field with the same name as the discriminator", "example": "discriminator or type" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" }
