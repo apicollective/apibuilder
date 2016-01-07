@@ -213,4 +213,48 @@ class UnionTypeSpec extends FunSpec with Matchers {
 
   }
 
+  it("infers proper parameter type if field is common across all types including primitive") {
+    val json = """
+    {
+      "name": "Union Types Test",
+
+      "unions": {
+        "user": {
+          "types": [
+            { "type": "registered" },
+            { "type": "uuid" }
+          ]
+        }
+      },
+
+      "models": {
+
+        "registered": {
+          "fields": [
+            { "name": "id", "type": "uuid" }
+          ]
+        }
+
+      },
+
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:id"
+            }
+          ]
+        }
+      }
+    }
+  """
+
+
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.service.resources.head.operations.head.parameters.find(_.name == "id").getOrElse {
+      sys.error("Could not find guid parameter")
+    }.`type` should be("uuid")
+  }
+
 }
