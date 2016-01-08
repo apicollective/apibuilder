@@ -6,11 +6,6 @@ class UrlKeySpec extends FunSpec with Matchers {
 
   describe("generate") {
 
-    it("does not generate reserved keys") {
-      val key = UrlKey.generate("members")
-      UrlKey.validate(key) should be(Nil)
-    }
-
     it("allows apidoc keys") {
       Seq("apidoc-spec", "apidoc-generator", "apidoc-api").foreach { key =>
         UrlKey.generate(key) should be(key)
@@ -58,10 +53,6 @@ class UrlKeySpec extends FunSpec with Matchers {
     it("doesn't match generated") {
       UrlKey.validate("VALID") should be(Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: valid"))
       UrlKey.validate("bad nickname") should be(Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: bad-nickname"))
-    }
-
-    it("reserved") {
-      UrlKey.validate("api.json") should be(Seq("api.json is a reserved word and cannot be used for the key"))
     }
 
   }
