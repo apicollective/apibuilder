@@ -72,16 +72,7 @@ object OrganizationsDao {
 
     val keyErrors = form.key match {
       case None => {
-        nameErrors match {
-          case Nil => {
-            val generated = UrlKey.generate(form.name)
-            UrlKey.ReservedKeys.find(prefix => generated.startsWith(prefix)) match {
-              case None => Seq.empty
-              case Some(prefix) => Seq(s"Prefix ${prefix} is a reserved word and cannot be used for the key of an organization")
-            }
-          }
-          case errors => Seq.empty
-        }
+        Nil
       }
 
       case Some(key) => {
