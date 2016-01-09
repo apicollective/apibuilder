@@ -257,4 +257,61 @@ class UnionTypeSpec extends FunSpec with Matchers {
     }.`type` should be("uuid")
   }
 
+  it("does not allow a type from an imported service") {
+    // This doesn't work because there is no way the imported class
+    // can extend the union trait that is defined in this service.
+
+    val common = """
+    {
+      "name": "common",
+      "namespace": "test.common",
+      "models": {
+        "reference": {
+          "fields": [
+            { "name": "id", "type": "string" }
+          ]
+        }
+      }
+    }
+    """
+
+    val uri = "http://localhost/test/common/0.0.1/service.json"
+    val user = s"""
+    {
+      "name": "user",
+      "imports": [ { "uri": "$uri" } ],
+
+      "unions": {
+        "expandable_user": {
+          "types": [
+            { "type": "test.common.models.reference" },
+            { "type": "user" }
+          ]
+        }
+      },
+
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "id", "type": "string" }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = TestHelper.serviceValidatorFromApiJson(common)
+    validator.errors should be(Nil)
+    validator.service.namespace should be("test.common")
+    validator.service.models.map(_.name) should be(Seq("reference"))
+
+    val fetcher = MockServiceFetcher()
+    fetcher.add(uri, validator.service)
+
+    TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher).errors should be(
+      Seq("Union[expandable user] type[test.common] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
+    )
+
+  }
+
 }
