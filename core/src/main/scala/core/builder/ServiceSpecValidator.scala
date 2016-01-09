@@ -12,20 +12,26 @@ case class ServiceSpecValidator(
 
   private val ReservedDiscriminatorValue = "value"
 
+  private val localTypeResolver = DatatypeResolver(
+    enumNames = service.enums.map(_.name),
+    modelNames = service.models.map(_.name),
+    unionNames = service.unions.map(_.name)
+  )
+  
   private val typeResolver = DatatypeResolver(
-    enumNames = service.enums.map(_.name) ++ service.imports.flatMap { service =>
+    enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
         s"${service.namespace}.enums.${enum}"
       }
     },
 
-    modelNames = service.models.map(_.name) ++ service.imports.flatMap { service =>
+    modelNames = localTypeResolver.modelNames ++ service.imports.flatMap { service =>
       service.models.map { model =>
         s"${service.namespace}.models.${model}"
       }
     },
 
-    unionNames = service.unions.map(_.name) ++ service.imports.flatMap { service =>
+    unionNames = localTypeResolver.unionNames ++ service.imports.flatMap { service =>
       service.unions.map { union =>
         s"${service.namespace}.unions.${union}"
       }
@@ -158,21 +164,34 @@ case class ServiceSpecValidator(
     val invalidTypes = service.unions.filter(!_.name.isEmpty).flatMap { union =>
       union.types.flatMap { t =>
         typeResolver.parse(t.`type`) match {
-          case None => Seq(s"Union[${union.name}] type[${t.`type`}] not found")
-          case Some(t: Datatype) => {
-            t.`type` match {
-              case Type(Kind.Primitive, "unit") => {
-                Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
+          case None => {
+            Seq(s"Union[${union.name}] type[${t.`type`}] not found")
+          }
+          case Some(_) => {
+            // Validate that the type is NOT imported as there is
+            // no way we could retroactively modify the imported
+            // type to extend the union type that is only being
+            // defined in this service.
+            localTypeResolver.parse(t.`type`) match {
+              case None => {
+                Seq(s"Union[${union.name}] type[${t.`type`}] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
               }
-              case _ => {
-                Seq.empty
+              case Some(t: Datatype) => {
+                t.`type` match {
+                  case Type(Kind.Primitive, "unit") => {
+                    Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
+                  }
+                  case _ => {
+                    Nil
+                  }
+                }
               }
             }
           }
         }
       }
     }
-
+    
     val unionTypeErrors = service.unions.flatMap { union =>
       union.types.find(_.`type` == union.name) match {
         case Some(_) => {

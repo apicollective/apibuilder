@@ -82,13 +82,14 @@ object TestHelper {
 
   def serviceValidatorFromApiJson(
     contents: String,
-    migration: VersionMigration = VersionMigration(internal = false)
+    migration: VersionMigration = VersionMigration(internal = false),
+    fetcher: MockServiceFetcher = new MockServiceFetcher()
   ): ServiceValidatorForSpecs = {
     TestServiceValidator(
       OriginalValidator(
         serviceConfig,
         Original(OriginalType.ApiJson, contents),
-        new MockServiceFetcher(),
+        fetcher,
         migration
       )
     )
