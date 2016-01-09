@@ -309,7 +309,7 @@ class UnionTypeSpec extends FunSpec with Matchers {
     fetcher.add(uri, validator.service)
 
     TestHelper.serviceValidatorFromApiJson(user, fetcher = fetcher).errors should be(
-      Seq("Union[expandable user] type[test.common] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
+      Seq("Union[expandable_user] type[test.common.models.reference] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
     )
 
   }

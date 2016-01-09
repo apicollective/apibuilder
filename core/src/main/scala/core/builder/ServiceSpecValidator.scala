@@ -167,36 +167,23 @@ case class ServiceSpecValidator(
           case None => {
             Seq(s"Union[${union.name}] type[${t.`type`}] not found")
           }
-          case Some(t: Datatype) => {
+          case Some(_) => {
             // Validate that the type is NOT imported as there is
             // no way we could retroactively modify the imported
             // type to extend the union type that is only being
             // defined in this service.
-            t.`type` match {
-              case Type(Kind.Primitive, "unit") => {
-                Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
+            localTypeResolver.parse(t.`type`) match {
+              case None => {
+                Seq(s"Union[${union.name}] type[${t.`type`}] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
               }
-              case Type(Kind.Primitive, _) => {
-                Nil
-              }
-              case Type(Kind.Model, name) => {
-                service.models.find(_.name == name) match {
-                  case None => {
-                    Seq("TODO")
+              case Some(t: Datatype) => {
+                t.`type` match {
+                  case Type(Kind.Primitive, "unit") => {
+                    Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
                   }
-                  case Some(_) => {
+                  case _ => {
                     Nil
                   }
-                }
-              }
-              case Type(Kind.Union, name) => {
-                service.unions.find(_.name == name) match {
-                  case None => {
-                    Seq("TODO")
-                  }
-                    case Some(_) => {
-                      Nil
-                    }
                 }
               }
             }
@@ -204,7 +191,7 @@ case class ServiceSpecValidator(
         }
       }
     }
-
+    
     val unionTypeErrors = service.unions.flatMap { union =>
       union.types.find(_.`type` == union.name) match {
         case Some(_) => {
