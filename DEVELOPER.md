@@ -39,10 +39,11 @@ In development:
 
 Updating apidoc.me
 ==================
-/web/apidoc-cli/bin/apidoc upload bryzek apidoc-spec ./spec/spec.json  --version 0.9.40-dev
-/web/apidoc-cli/bin/apidoc upload bryzek apidoc-common ./spec/common.json  --version 0.9.40-dev
-/web/apidoc-cli/bin/apidoc upload bryzek apidoc-generator ./spec/generator.json  --version 0.9.40-dev
-/web/apidoc-cli/bin/apidoc upload bryzek apidoc-api ./spec/api.json  --version 0.9.40-dev
+PROFILE=localhost /web/apidoc-cli/bin/apidoc upload bryzek apidoc-spec ./spec/spec.json --version `sem-info tag next`
+PROFILE=localhost /web/apidoc-cli/bin/apidoc upload bryzek apidoc-common ./spec/common.json --version `sem-info tag next`
+PROFILE=localhost /web/apidoc-cli/bin/apidoc upload bryzek apidoc-generator ./spec/generator.json --version `sem-info tag next`
+PROFILE=localhost /web/apidoc-cli/bin/apidoc upload bryzek apidoc-api ./spec/api.json --version `sem-info tag next`
+PROFILE=localhost /web/apidoc-cli/bin/apidoc upload bryzek apidoc-internal ./spec/internal.json --version `sem-info tag next`
 
 SBT
 ==========
