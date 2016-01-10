@@ -49,7 +49,7 @@ end
 
 def calculate_next_tag
   assert_installed("sem-info", "https://github.com/mbryzek/schema-evolution-manager")
-  `sem-info tag next micro`.strip + "-dev"
+  `sem-info tag next micro`.strip
 end
 
 # Resolves dependencies of the specifications, returning the specs in
@@ -134,7 +134,7 @@ class Spec
     if profile
       cmds << "PROFILE=%s" % profile
     end
-    cmds << "apidoc upload flow %s %s --version %s" % [@application, @path, tag]
+    cmds << "apidoc upload %s %s %s --version %s" % [ORGANIZATION, @application, @path, tag]
     cmds.join(" ")
   end
   
