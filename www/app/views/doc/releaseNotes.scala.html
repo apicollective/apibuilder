@@ -2,14 +2,16 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
-<h3><!-- NEXT_TAG --> - Jan 10 2016</h3>
+<h3>0.11.0 - Jan 10 2016</h3>
 
   <p>
     With the expanded use of union types, we overhauled the JSON
     writers in the default play clients. This is a significant rewrite
     of the JSON serialization libraries - with full backwards
-    compatibility of the wire format. Upgrading your clients thus
-    should be transparent.
+    compatibility of the wire format. Upgrading your clients should be
+    transparent.
+
+    See <a href='@lib.Util.ApidocGitHubUrl/issues/384'>Issue 384</a>
   </p>
 
 <h3>0.10.0 - Jan 7 2016</h3>
