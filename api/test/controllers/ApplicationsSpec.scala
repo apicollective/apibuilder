@@ -39,12 +39,6 @@ class ApplicationsSpec extends BaseSpec {
     }.errors.map(_.message) must be(Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-key"))
   }
 
-  "POST /:orgKey validates key is not reserved" in new WithServer {
-    intercept[ErrorsResponse] {
-      createApplication(org, createApplicationForm(name = "members", key = Some("members")))
-    }.errors.map(_.message) must be(Seq(s"members is a reserved word and cannot be used for the key"))
-  }
-
   "DELETE /:org/:key" in new WithServer {
     val application = createApplication(org)
     await(client.applications.deleteByOrgKeyAndApplicationKey(org.key, application.key)) must be(())
