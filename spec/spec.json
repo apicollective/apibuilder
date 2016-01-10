@@ -98,7 +98,8 @@
 		{ "name": "plural", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false },
-		{ "name": "values", "type": "[enum_value]" }
+		{ "name": "values", "type": "[enum_value]" },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -106,7 +107,8 @@
 	    "fields": [
 		{ "name": "name", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "deprecation", "type": "deprecation", "required": false }
+		{ "name": "deprecation", "type": "deprecation", "required": false },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -117,7 +119,8 @@
 		{ "name": "discriminator", "type": "string", "required": false, "description": "If a type discriminator is provided, serialization of these union types will always contain a field named with the value of the discriminator that will contain the name of the type. This provides a simpler (for many use cases) JSON serialization/deserialization mechanism. When specified, apidoc itself will verify that none of the types in the union type itself contain a field with the same name as the discriminator", "example": "discriminator or type" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false },
-		{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" }
+		{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -126,7 +129,8 @@
 	    "fields": [
 		{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "deprecation", "type": "deprecation", "required": false }
+		{ "name": "deprecation", "type": "deprecation", "required": false },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -136,7 +140,8 @@
 		{ "name": "plural", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false },
-		{ "name": "fields", "type": "[field]" }
+		{ "name": "fields", "type": "[field]" },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -150,7 +155,8 @@
 		{ "name": "required", "type": "boolean" },
 		{ "name": "minimum", "type": "long", "required": false },
 		{ "name": "maximum", "type": "long", "required": false },
-		{ "name": "example", "type": "string", "required": false }
+		{ "name": "example", "type": "string", "required": false },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -172,7 +178,8 @@
 		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "body", "type": "body", "required": false },
 		{ "name": "parameters", "type": "[parameter]", "default": "[]" },
-		{ "name": "responses", "type": "[response]", "default": "[]" }
+		{ "name": "responses", "type": "[response]", "default": "[]" },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -180,7 +187,8 @@
 	    "fields": [
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "deprecation", "type": "deprecation", "required": false }
+		{ "name": "deprecation", "type": "deprecation", "required": false },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -195,7 +203,8 @@
 		{ "name": "default", "type": "string", "required": false },
 		{ "name": "minimum", "type": "long", "required": false },
 		{ "name": "maximum", "type": "long", "required": false },
-		{ "name": "example", "type": "string", "required": false }
+		{ "name": "example", "type": "string", "required": false },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -204,7 +213,8 @@
 		{ "name": "code", "type": "response_code" },
 		{ "name": "type", "type": "string" },
 		{ "name": "description", "type": "string", "required": false },
-		{ "name": "deprecation", "type": "deprecation", "required": false }
+		{ "name": "deprecation", "type": "deprecation", "required": false },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -240,7 +250,8 @@
 		{ "name": "description", "type": "string", "required": false },
 		{ "name": "deprecation", "type": "deprecation", "required": false },
 		{ "name": "required", "type": "boolean" },
-		{ "name": "default", "type": "string", "required": false }
+		{ "name": "default", "type": "string", "required": false },
+		{ "name": "custom_attributes", "type": "[custom_attribute]" }
 	    ]
 	},
 
@@ -262,6 +273,16 @@
 	    "description": "Indicates that this particular element is considered deprecated in the API. See the description for details",
 	    "fields": [
 		{ "name": "description", "type": "string", "required": false }
+	    ]
+	},
+
+	"custom_attribute": {
+	    "description": "Allows for custom extension of apidoc. Custom attributes are made available to custom generators to allow extension for specific functionality",
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "descrpition", "type": "string", "required": false },
+		{ "name": "value", "type": "string" },
+		{ "name": "deprecation", "type": "deprecation", "required": false }
 	    ]
 	}
 
