@@ -358,6 +358,45 @@ case class ServiceSpecValidator(
           }
         }
       }
+    } match {
+      case Nil => {
+        service.models.flatMap { model =>
+          model.fields.
+            filter { f => !f.minimum.isEmpty || !f.maximum.isEmpty }.
+            filter { f => !f.default.isEmpty && isNumeric(f.default.get) }.
+            flatMap { field =>
+              field.default match {
+                case None => Nil
+                case Some(default) => {
+                  Seq(
+                    field.minimum.flatMap { min =>
+                      default.toLong < min match {
+                        case false => None
+                        case true => Some(s"${model.name}.${field.name} default[$default] must be >= specified minimum[$min]")
+                      }
+                    },
+                    field.maximum.flatMap { max =>
+                      default.toLong > max match {
+                        case false => None
+                        case true => Some(s"${model.name}.${field.name} default[$default] must be <= specified maximum[$max]")
+                      }
+                    }
+                  ).flatten
+                }
+              }
+            }
+        }
+      }
+      case errors => {
+        errors
+      }
+    }
+  }
+
+  private def isNumeric(value: String): Boolean = {
+    Try(value.toLong) match {
+      case Success(_) => true
+      case Failure(_) => true
     }
   }
 

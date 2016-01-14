@@ -90,14 +90,15 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
   }
 
   def buildMinMaxErrors(
-    default: Long,
+    default: Number,
     min: Option[Long] = None,
     max: Option[Long] = None
   ) = {
     val props = Seq(
-      min.map { v => s""""minimum" = "$v"""" },
-      max.map { v => s""""maximum" = "$v"""" }
-    ).flatten.mkString(", ")
+      Some(s""""default": "$default""""),
+      min.map { v => s""""minimum": "$v"""" },
+      max.map { v => s""""maximum": "$v"""" }
+    ).flatten.mkString(", ", ", ", "")
 
     val json = s"""
     {
@@ -105,7 +106,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       "models": {
         "user": {
           "fields": [
-            { "name": "age", "type": "boolean", "default": "$default"$props }
+            { "name": "age", "type": "long"$props }
           ]
         }
       }
@@ -115,8 +116,24 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
 
   }
 
-  it("validates that numeric default is in between min, max") {
+  it("numeric default is in between min, max") {
     buildMinMaxErrors(1) should be(Nil)
+
+    buildMinMaxErrors(1, min = Some(0)) should be(Nil)
+    buildMinMaxErrors(1, min = Some(1)) should be(Nil)
+
+    buildMinMaxErrors(1, max = Some(1)) should be(Nil)
+    buildMinMaxErrors(1, max = Some(2)) should be(Nil)
+  }
+  
+  it("numeric default ourside of min, max") {
+    buildMinMaxErrors(1, min = Some(2)) should be(
+      Seq("user.age default[1] must be >= specified minimum[2]")
+    )
+
+    buildMinMaxErrors(1000, max = Some(100)) should be(
+      Seq("user.age default[1000] must be <= specified maximum[100]")
+    )
   }
   
 }
