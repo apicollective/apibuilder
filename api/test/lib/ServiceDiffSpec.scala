@@ -6,7 +6,7 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 
 class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplication {
 
-  private lazy val service = TestHelper.readService("../spec/spec.json")
+  private lazy val service = TestHelper.readService("../spec/apidoc-spec.json")
 
   it("no changes") {
     ServiceDiff(service, service).differences should be(Nil)
