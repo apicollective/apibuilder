@@ -80,7 +80,7 @@ lazy val api = project
       "org.mindrot"       %  "jbcrypt"       % "0.3m",
       "com.sendgrid"      %  "sendgrid-java" % "2.2.2",
       specs2              %  Test,
-      "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
+      "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
   )
 
@@ -106,7 +106,7 @@ lazy val spec = project
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
+      "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
   )
 
