@@ -2,8 +2,8 @@
   application: com.bryzek.apidoc.api.v0.models.Application,
   version: com.bryzek.apidoc.api.v0.models.Version,
   oldVersion: Option[com.bryzek.apidoc.api.v0.models.Version],
-  breakingDiffs: Seq[com.bryzek.apidoc.api.v0.models.DiffBreaking],
-  nonBreakingDiffs: Seq[com.bryzek.apidoc.api.v0.models.DiffNonBreaking]
+  breakingDiffs: Seq[String],
+  nonBreakingDiffs: Seq[String]
 )
 
 <p>
@@ -25,14 +25,14 @@
 @if(breakingDiffs.isEmpty) {
   <em>None</em>
 } else {
-  @Html(breakingDiffs.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+  @Html(breakingDiffs.mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
 
 <p><b>Other changes</b></p>
 @if(nonBreakingDiffs.isEmpty) {
   <em>None</em>
 } else {
-  @Html(nonBreakingDiffs.map(_.description).mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
+  @Html(nonBreakingDiffs.mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
 
 

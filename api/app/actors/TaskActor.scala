@@ -128,26 +128,26 @@ class TaskActor extends Actor {
   private[this] def versionUpdated(
     oldVersion: Version,
     newVersion: Version,
-    diff: Seq[Diff]
+    diffs: Seq[Diff]
   ) {
-    val breakingDiffs = diff.filter { d =>
-      d match {
-        case DiffBreaking(desc) => true
-        case DiffNonBreaking(desc) => false
-        case DiffUndefinedType(desc) => true
-      }
-    }.map(_.asInstanceOf[DiffBreaking])
-
-    val nonBreakingDiffs = diff.filter { d =>
-      d match {
-        case DiffBreaking(desc) => false
-        case DiffNonBreaking(desc) => true
-        case DiffUndefinedType(desc) => false
-      }
-    }.map(_.asInstanceOf[DiffNonBreaking])
-
     // Only send email if something has actually changed
-    if (!breakingDiffs.isEmpty || !nonBreakingDiffs.isEmpty) {
+    if (!diffs.isEmpty) {
+      val breakingDiffs = diffs.flatMap { d =>
+        d match {
+          case d: DiffBreaking => Some(d.description)
+          case d: DiffNonBreaking => None
+          case d: DiffUndefinedType => Some(d.description)
+        }
+      }
+
+      val nonBreakingDiffs = diffs.flatMap { d =>
+        d match {
+          case d: DiffBreaking => None
+          case d: DiffNonBreaking => Some(d.description)
+          case d: DiffUndefinedType => None
+        }
+      }
+
       ApplicationsDao.findAll(Authorization.All, version = Some(newVersion), limit = 1).headOption.map { application =>
         OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
           Emails.deliver(
