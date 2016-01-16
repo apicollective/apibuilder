@@ -17,7 +17,6 @@ object EmailActor {
     case class MembershipRequestDeclined(organizationGuid: UUID, userGuid: UUID, role: Role)
     case class PasswordResetRequestCreated(guid: UUID)
     case class ApplicationCreated(guid: UUID)
-    case class VersionCreated(guid: UUID)
   }
 
 }
@@ -107,31 +106,6 @@ class EmailActor extends Actor {
               subject = s"Reset your password",
               body = views.html.emails.passwordResetRequestCreated(request.token).toString
             )
-          }
-        }
-      }
-    )
-
-    case EmailActor.Messages.VersionCreated(guid) => Util.withVerboseErrorHandler(
-      s"EmailActor.Messages.VersionCreated($guid)", {
-        VersionsDao.findByGuid(Authorization.All, guid).map { version =>
-          ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
-            OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
-              Emails.deliver(
-                context = Emails.Context.Application(application),
-                org = org,
-                publication = Publication.VersionsCreate,
-                subject = s"${org.name}/${application.name}: Initial Version Uploaded (${version.version}) ",
-                body = views.html.emails.versionCreated(
-                  org,
-                  application,
-                  version,
-                  oldVersion = None,
-                  breakingDiffs = Nil,
-                  nonBreakingDiffs = Nil
-                ).toString
-              )
-            }
           }
         }
       }

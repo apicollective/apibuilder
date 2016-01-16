@@ -73,11 +73,23 @@ object VersionsDao {
   """
 
   def create(user: User, application: Application, version: String, original: Original, service: Service): Version = {
-    val guid = DB.withTransaction { implicit c =>
-      doCreate(c, user, application, version, original, service)
+    val latestVersion: Option[Version] = findAll(
+      Authorization.User(user.guid),
+      applicationGuid = Some(application.guid),
+      limit = 1
+    ).headOption
+
+    val (guid, taskGuid) = DB.withTransaction { implicit c =>
+      val versionGuid = doCreate(c, user, application, version, original, service)
+      val taskGuid = latestVersion.map { v =>
+        createDiffTask(user, v.guid, versionGuid)
+      }
+      (versionGuid, taskGuid)
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.VersionCreated(guid)
+    taskGuid.map { guid =>
+      global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(guid)
+    }
 
     findAll(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {
       sys.error("Failed to create version")
@@ -121,11 +133,19 @@ object VersionsDao {
     }
   }
 
+  private[this] def createDiffTask(
+    user: User, oldVersionGuid: UUID, newVersionGuid: UUID
+  ) (
+    implicit c: java.sql.Connection
+  ): UUID = {
+    TasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid))
+  }
+
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
     val (versionGuid, taskGuid) = DB.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
-      val taskGuid = TasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = version.guid, newVersionGuid = versionGuid))
+      val taskGuid = createDiffTask(user, version.guid, versionGuid)
       (versionGuid, taskGuid)
     }
 

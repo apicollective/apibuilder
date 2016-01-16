@@ -1,25 +1,9 @@
 @(org: com.bryzek.apidoc.api.v0.models.Organization,
   application: com.bryzek.apidoc.api.v0.models.Application,
   version: com.bryzek.apidoc.api.v0.models.Version,
-  oldVersion: Option[com.bryzek.apidoc.api.v0.models.Version],
   breakingDiffs: Seq[String],
   nonBreakingDiffs: Seq[String]
 )
-
-<p>
-  Version @version.version has been uploaded for the application @org.key/@application.key
-  @{oldVersion match {
-    case None => "."
-    case Some(old) => s" replacing version ${old.version}."
-  }}
-
-</p>
-
-@application.description.map { desc =>
-  <p>
-    @desc
-  </p>
-}
 
 <p><b>Breaking changes</b></p>
 @if(breakingDiffs.isEmpty) {
@@ -34,7 +18,6 @@
 } else {
   @Html(nonBreakingDiffs.mkString("<ul><li>\n", "</li>\n<li>", "</li></ul>"))
 }
-
 
 <p>
   <a href="@lib.AppConfig.apidocWwwHost/@org.key/@application.key/@version.version">View version</a>

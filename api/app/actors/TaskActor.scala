@@ -106,7 +106,7 @@ class TaskActor extends Actor {
 
   private[this] def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID) {
     VersionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
-      VersionsDao.findByGuid(Authorization.All, newVersionGuid, isDeleted = None).map { newVersion =>
+      VersionsDao.findByGuid(Authorization.All, newVersionGuid).map { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
           case Nil => {
             // No-op
@@ -118,7 +118,7 @@ class TaskActor extends Actor {
               toVersion = newVersion,
               differences = diffs
             )
-            versionUpdated(oldVersion, newVersion, diffs)
+            versionUpdated(newVersion, diffs)
           }
         }
       }
@@ -126,8 +126,7 @@ class TaskActor extends Actor {
   }
 
   private[this] def versionUpdated(
-    oldVersion: Version,
-    newVersion: Version,
+    version: Version,
     diffs: Seq[Diff]
   ) {
     // Only send email if something has actually changed
@@ -148,18 +147,17 @@ class TaskActor extends Actor {
         }
       }
 
-      ApplicationsDao.findAll(Authorization.All, version = Some(newVersion), limit = 1).headOption.map { application =>
+      ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
         OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
           Emails.deliver(
             context = Emails.Context.Application(application),
             org = org,
             publication = Publication.VersionsCreate,
-            subject = s"${org.name}/${application.name}: New Version Uploaded (${newVersion.version}) ",
+            subject = s"${org.name}/${application.name}:${version.version} Uploaded",
             body = views.html.emails.versionCreated(
               org,
               application,
-              newVersion,
-              oldVersion = Some(oldVersion),
+              version,
               breakingDiffs = breakingDiffs,
               nonBreakingDiffs = nonBreakingDiffs
             ).toString
