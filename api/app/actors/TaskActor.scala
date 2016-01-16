@@ -130,34 +130,41 @@ class TaskActor extends Actor {
     newVersion: Version,
     diff: Seq[Diff]
   ) {
-    ApplicationsDao.findAll(Authorization.All, version = Some(newVersion), limit = 1).headOption.map { application =>
-      OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
-        Emails.deliver(
-          context = Emails.Context.Application(application),
-          org = org,
-          publication = Publication.VersionsCreate,
-          subject = s"${org.name}/${application.name}: New Version Uploaded (${newVersion.version}) ",
-          body = views.html.emails.versionCreated(
-            org,
-            application,
-            newVersion,
-            oldVersion = Some(oldVersion),
-            breakingDiffs = diff.filter { d =>
-              d match {
-                case DiffBreaking(desc) => true
-                case DiffNonBreaking(desc) => false
-                case DiffUndefinedType(desc) => false
-              }
-            }.map(_.asInstanceOf[DiffBreaking]),
-            nonDiffBreakings = diff.filter { d =>
-              d match {
-                case DiffBreaking(desc) => false
-                case DiffNonBreaking(desc) => true
-                case DiffUndefinedType(desc) => false
-              }
-            }.map(_.asInstanceOf[DiffNonBreaking])
-          ).toString
-        )
+    val breakingDiffs = diff.filter { d =>
+      d match {
+        case DiffBreaking(desc) => true
+        case DiffNonBreaking(desc) => false
+        case DiffUndefinedType(desc) => true
+      }
+    }.map(_.asInstanceOf[DiffBreaking])
+
+    val nonBreakingDiffs = diff.filter { d =>
+      d match {
+        case DiffBreaking(desc) => false
+        case DiffNonBreaking(desc) => true
+        case DiffUndefinedType(desc) => false
+      }
+    }.map(_.asInstanceOf[DiffNonBreaking])
+
+    // Only send email if something has actually changed
+    if (!breakingDiffs.isEmpty || !nonBreakingDiffs.isEmpty) {
+      ApplicationsDao.findAll(Authorization.All, version = Some(newVersion), limit = 1).headOption.map { application =>
+        OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
+          Emails.deliver(
+            context = Emails.Context.Application(application),
+            org = org,
+            publication = Publication.VersionsCreate,
+            subject = s"${org.name}/${application.name}: New Version Uploaded (${newVersion.version}) ",
+            body = views.html.emails.versionCreated(
+              org,
+              application,
+              newVersion,
+              oldVersion = Some(oldVersion),
+              breakingDiffs = breakingDiffs,
+              nonBreakingDiffs = nonBreakingDiffs
+            ).toString
+          )
+        }
       }
     }
   }

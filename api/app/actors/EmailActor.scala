@@ -128,7 +128,7 @@ class EmailActor extends Actor {
                   version,
                   oldVersion = None,
                   breakingDiffs = Nil,
-                  nonDiffBreakings = Nil
+                  nonBreakingDiffs = Nil
                 ).toString
               )
             }
