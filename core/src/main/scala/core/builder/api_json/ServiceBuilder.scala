@@ -120,45 +120,49 @@ case class ServiceBuilder(
 
       resolution.enum match {
         case Some(enum) => {
+          val resourcePath = internal.path.getOrElse("/" + enum.plural)
           Resource(
             `type` = internal.datatype.label,
             plural = enum.plural,
             description = internal.description,
             deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-            operations = internal.operations.map(op => OperationBuilder(op, resolver))
+            operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver))
           )
         }
 
         case None => {
           resolution.model match {
             case Some(model) => {
+              val resourcePath = internal.path.getOrElse("/" + model.plural)
               Resource(
                 `type` = internal.datatype.label,
                 plural = model.plural,
                 description = internal.description,
                 deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                operations = internal.operations.map(op => OperationBuilder(op, resolver, model = Some(model)))
+                operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver, model = Some(model)))
               )
             }
 
             case None => {
               resolution.union match {
-                case None => {
-                  Resource(
-                    `type` = internal.datatype.label,
-                    plural = Text.pluralize(internal.datatype.name),
-                    description = internal.description,
-                    deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                    operations = internal.operations.map(op => OperationBuilder(op, resolver))
-                  )
-                }
                 case Some(union) => {
+                  val resourcePath = internal.path.getOrElse("/" + union.plural)
                   Resource(
                     `type` = internal.datatype.label,
                     plural = union.plural,
                     description = internal.description,
                     deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                    operations = internal.operations.map(op => OperationBuilder(op, resolver, union = Some(union)))
+                    operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver, union = Some(union)))
+                  )
+                }
+                case None => {
+                  val resourcePath = internal.path.getOrElse("")
+                  Resource(
+                    `type` = internal.datatype.label,
+                    plural = Text.pluralize(internal.datatype.name),
+                    description = internal.description,
+                    deprecation = internal.deprecation.map(DeprecationBuilder(_)),
+                    operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver))
                   )
                 }
               }
@@ -174,6 +178,7 @@ case class ServiceBuilder(
 
     def apply(
       internal: InternalOperationForm,
+      resourcePath: String,
       resolver: TypesProvider,
       model: Option[TypesProviderModel] = None,
       union: Option[TypesProviderUnion] = None
@@ -207,9 +212,17 @@ case class ServiceBuilder(
         ParameterBuilder(p, defaultLocation)
       }
 
+      val fullPath = Seq(
+        resourcePath,
+        internal.path.getOrElse("")
+      ).filter(!_.isEmpty).mkString("") match {
+        case "" => "/"
+        case p => p
+      }
+
       Operation(
         method = Method(method),
-        path = internal.path,
+        path = fullPath,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         body = internal.body.map { BodyBuilder(_) },
