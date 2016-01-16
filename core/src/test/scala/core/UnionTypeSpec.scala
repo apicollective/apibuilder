@@ -2,7 +2,6 @@ package core
 
 import org.scalatest.{FunSpec, Matchers}
 
-// Placeholder for when we do union types
 class UnionTypeSpec extends FunSpec with Matchers {
 
     val baseJson = """
