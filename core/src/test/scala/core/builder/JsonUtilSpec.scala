@@ -40,4 +40,23 @@ class JsonUtilSpec extends FunSpec with Matchers {
     JsonUtil.hasKey(Json.obj("a" -> 1), "b") should be(false)
   }
 
+  it("parseBoolean") {
+    JsonUtil.parseBoolean("true") should be(Some(true))
+    JsonUtil.parseBoolean("false") should be(Some(false))
+
+    Seq("", "foo", "[]", "{}").foreach { value =>
+      JsonUtil.parseBoolean(value) should be(None)
+    }
+  }
+
+  it("isNumeric") {
+    Seq("1", "-1", "5").foreach { value =>
+      JsonUtil.isNumeric(value) should be(true)
+    }
+      
+    Seq("", "foo", "[]", "{}").foreach { value =>
+      JsonUtil.isNumeric(value) should be(false)
+    }
+  }
+
 }

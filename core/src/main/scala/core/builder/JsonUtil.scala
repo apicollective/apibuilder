@@ -144,7 +144,7 @@ object JsonUtil {
     value.toOption.flatMap { asOptBoolean(_) }
   }
 
-  private def parseBoolean(value: String): Option[Boolean] = {
+  def parseBoolean(value: String): Option[Boolean] = {
     if (value == "true") {
       Some(true)
     } else if (value == "false") {
@@ -154,6 +154,13 @@ object JsonUtil {
     }
   }
 
+  def isNumeric(value: String): Boolean = {
+    Try(value.toLong) match {
+      case Success(_) => true
+      case Failure(_) => false
+    }
+  }
+  
   def asOptLong(value: JsValue): Option[Long] = {
     asOptString(value).flatMap { parseLong(_) }
   }

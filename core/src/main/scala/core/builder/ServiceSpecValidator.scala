@@ -363,7 +363,7 @@ case class ServiceSpecValidator(
         service.models.flatMap { model =>
           model.fields.
             filter { f => !f.minimum.isEmpty || !f.maximum.isEmpty }.
-            filter { f => !f.default.isEmpty && isNumeric(f.default.get) }.
+            filter { f => !f.default.isEmpty && JsonUtil.isNumeric(f.default.get) }.
             flatMap { field =>
               field.default match {
                 case None => Nil
@@ -390,13 +390,6 @@ case class ServiceSpecValidator(
       case errors => {
         errors
       }
-    }
-  }
-
-  private def isNumeric(value: String): Boolean = {
-    Try(value.toLong) match {
-      case Success(_) => true
-      case Failure(_) => true
     }
   }
 
