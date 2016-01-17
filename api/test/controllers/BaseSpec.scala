@@ -101,7 +101,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     version: String = "0.0.1"
   ): Version = {
     await(
-      client.versions.putApplicationKeyByVersion(
+      client.versions.putByApplicationKeyAndVersion(
         orgKey = application.organization.key,
         applicationKey = application.key,
         version = version,

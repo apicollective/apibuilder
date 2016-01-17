@@ -317,7 +317,7 @@ package com.bryzek.apidoc.generator.v0 {
     }
 
     object Invocations extends Invocations {
-      override def post(
+      override def postByKey(
         key: String,
         invocationForm: com.bryzek.apidoc.generator.v0.models.InvocationForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.generator.v0.models.Invocation] = {
@@ -444,7 +444,7 @@ package com.bryzek.apidoc.generator.v0 {
     /**
      * Invoke a generator
      */
-    def post(
+    def postByKey(
       key: String,
       invocationForm: com.bryzek.apidoc.generator.v0.models.InvocationForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.generator.v0.models.Invocation]

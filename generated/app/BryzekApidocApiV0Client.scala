@@ -2461,7 +2461,7 @@ package com.bryzek.apidoc.api.v0 {
     }
 
     object Versions extends Versions {
-      override def getApplicationKey(
+      override def getByApplicationKey(
         orgKey: String,
         applicationKey: String,
         limit: Long = 25,
@@ -2478,7 +2478,7 @@ package com.bryzek.apidoc.api.v0 {
         }
       }
 
-      override def getApplicationKeyByVersion(
+      override def getByApplicationKeyAndVersion(
         orgKey: String,
         applicationKey: String,
         version: String
@@ -2490,7 +2490,7 @@ package com.bryzek.apidoc.api.v0 {
         }
       }
 
-      override def postVersion(
+      override def postByVersion(
         orgKey: String,
         version: String,
         versionForm: com.bryzek.apidoc.api.v0.models.VersionForm
@@ -2504,7 +2504,7 @@ package com.bryzek.apidoc.api.v0 {
         }
       }
 
-      override def putApplicationKeyByVersion(
+      override def putByApplicationKeyAndVersion(
         orgKey: String,
         applicationKey: String,
         version: String,
@@ -2519,7 +2519,7 @@ package com.bryzek.apidoc.api.v0 {
         }
       }
 
-      override def deleteApplicationKeyByVersion(
+      override def deleteByApplicationKeyAndVersion(
         orgKey: String,
         applicationKey: String,
         version: String
@@ -3091,7 +3091,7 @@ package com.bryzek.apidoc.api.v0 {
     /**
      * Search all versions of this application. Results are always paginated.
      */
-    def getApplicationKey(
+    def getByApplicationKey(
       orgKey: String,
       applicationKey: String,
       limit: Long = 25,
@@ -3101,7 +3101,7 @@ package com.bryzek.apidoc.api.v0 {
     /**
      * Retrieve a specific version of an application.
      */
-    def getApplicationKeyByVersion(
+    def getByApplicationKeyAndVersion(
       orgKey: String,
       applicationKey: String,
       version: String
@@ -3110,7 +3110,7 @@ package com.bryzek.apidoc.api.v0 {
     /**
      * Create a new version for an application
      */
-    def postVersion(
+    def postByVersion(
       orgKey: String,
       version: String,
       versionForm: com.bryzek.apidoc.api.v0.models.VersionForm
@@ -3119,7 +3119,7 @@ package com.bryzek.apidoc.api.v0 {
     /**
      * Upsert a version of an application
      */
-    def putApplicationKeyByVersion(
+    def putByApplicationKeyAndVersion(
       orgKey: String,
       applicationKey: String,
       version: String,
@@ -3129,7 +3129,7 @@ package com.bryzek.apidoc.api.v0 {
     /**
      * Deletes a specific version.
      */
-    def deleteApplicationKeyByVersion(
+    def deleteByApplicationKeyAndVersion(
       orgKey: String,
       applicationKey: String,
       version: String

@@ -42,7 +42,7 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
     for {
       applicationResponse <- api.Applications.get(orgKey = base.org.get.key, key = Some(applicationKey))
       versionOption <- lib.ApiClient.callWith404(
-        api.Versions.getApplicationKeyByVersion(base.org.get.key, applicationKey, versionName)
+        api.Versions.getByApplicationKeyAndVersion(base.org.get.key, applicationKey, versionName)
       )
     } yield {
       applicationResponse.headOption match {
