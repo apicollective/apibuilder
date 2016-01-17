@@ -124,6 +124,7 @@ case class ServiceBuilder(
           Resource(
             `type` = internal.datatype.label,
             plural = enum.plural,
+            path = Some(resourcePath),
             description = internal.description,
             deprecation = internal.deprecation.map(DeprecationBuilder(_)),
             operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver))
@@ -137,6 +138,7 @@ case class ServiceBuilder(
               Resource(
                 `type` = internal.datatype.label,
                 plural = model.plural,
+                path = Some(resourcePath),
                 description = internal.description,
                 deprecation = internal.deprecation.map(DeprecationBuilder(_)),
                 operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver, model = Some(model)))
@@ -150,6 +152,7 @@ case class ServiceBuilder(
                   Resource(
                     `type` = internal.datatype.label,
                     plural = union.plural,
+                    path = Some(resourcePath),
                     description = internal.description,
                     deprecation = internal.deprecation.map(DeprecationBuilder(_)),
                     operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver, union = Some(union)))
@@ -160,6 +163,7 @@ case class ServiceBuilder(
                   Resource(
                     `type` = internal.datatype.label,
                     plural = Text.pluralize(internal.datatype.name),
+                    path = Some(resourcePath),                    
                     description = internal.description,
                     deprecation = internal.deprecation.map(DeprecationBuilder(_)),
                     operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver))

@@ -25,7 +25,7 @@ object Code extends Controller {
 
   private[this] val apidocVersion = Config.requiredString("git.version")
 
-  def getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(
+  def get(
     orgKey: String,
     applicationKey: String,
     versionName: String,
@@ -50,7 +50,7 @@ object Code extends Controller {
               case Some(gws) => {
                 val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
 
-                new Client(service.uri).invocations.postByKey(
+                new Client(service.uri).invocations.post(
                   key = gws.generator.key,
                   invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
                 ).map { invocation =>

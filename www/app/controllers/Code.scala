@@ -9,7 +9,7 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
 
   def index(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(
-      request.api.Code.getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(orgKey, applicationKey, version, generatorKey)
+      request.api.Code.get(orgKey, applicationKey, version, generatorKey)
     ).map {
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
       case Some(code) => {
@@ -31,7 +31,7 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
 
   def zipFile(orgKey: String, applicationKey: String, version: String, generatorKey: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(
-      request.api.Code.getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(orgKey, applicationKey, version, generatorKey)
+      request.api.Code.get(orgKey, applicationKey, version, generatorKey)
     ).map {
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
       case Some(code) => {
@@ -47,7 +47,7 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
 
   def file(orgKey: String, applicationKey: String, version: String, generatorKey: String, fileName: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(
-      request.api.Code.getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(orgKey, applicationKey, version, generatorKey)
+      request.api.Code.get(orgKey, applicationKey, version, generatorKey)
     ).map {
       case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
       case Some(code) => {

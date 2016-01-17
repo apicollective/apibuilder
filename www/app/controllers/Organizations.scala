@@ -20,7 +20,7 @@ class Organizations @Inject() (val messagesApi: MessagesApi) extends Controller 
 
   def show(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
     for {
-      applications <- request.api.Applications.getByOrgKey(
+      applications <- request.api.Applications.get(
         orgKey = orgKey,
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit

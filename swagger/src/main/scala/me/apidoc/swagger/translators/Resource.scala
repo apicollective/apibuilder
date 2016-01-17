@@ -18,6 +18,7 @@ object Resource {
     apidoc.Resource(
       `type` = model.name,
       plural = model.plural,
+      path = None,
       description = None,
       deprecation = None,
       operations = Seq(

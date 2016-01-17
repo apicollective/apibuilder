@@ -13,7 +13,7 @@ class GeneratorServices @Inject() (val messagesApi: MessagesApi) extends Control
   def show(guid: UUID, page: Int = 0) = Anonymous.async { implicit request =>
     for {
       service <- lib.ApiClient.callWith404(request.api.generatorServices.getByGuid(guid))
-      generators <- request.api.generatorWithServices.getGenerators(
+      generators <- request.api.generatorWithServices.get(
         serviceGuid = Some(guid),
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit

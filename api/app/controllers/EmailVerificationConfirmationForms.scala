@@ -10,7 +10,7 @@ import java.util.UUID
 
 object EmailVerificationConfirmationForms extends Controller {
 
-  def postEmailVerificationConfirmations() = AnonymousRequest(parse.json) { request =>
+  def post() = AnonymousRequest(parse.json) { request =>
     request.body.validate[EmailVerificationConfirmationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))

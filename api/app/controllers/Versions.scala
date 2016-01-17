@@ -14,7 +14,7 @@ object Versions extends Controller {
 
   private[this] val DefaultVisibility = Visibility.Organization
 
-  def getByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
+  def getApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
     val versions = ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
       VersionsDao.findAll(
         request.authorization,
@@ -26,14 +26,14 @@ object Versions extends Controller {
     Ok(Json.toJson(versions))
   }
 
-  def getByOrgKeyAndApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = AnonymousRequest { request =>
+  def getApplicationKeyByVersion(orgKey: String, applicationKey: String, version: String) = AnonymousRequest { request =>
     VersionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
       case None => NotFound
       case Some(v: Version) => Ok(Json.toJson(v))
     }
   }
 
-  def postByOrgKeyAndVersion(
+  def postVersion(
     orgKey: String,
     versionName: String
   ) = Authenticated { request =>
@@ -83,7 +83,7 @@ object Versions extends Controller {
     }
   }
 
-  def putByOrgKeyAndApplicationKeyAndVersion(
+  def putApplicationKeyByVersion(
     orgKey: String,
     applicationKey: String,
     versionName: String
@@ -133,7 +133,7 @@ object Versions extends Controller {
     }
   }
 
-  def deleteByOrgKeyAndApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
+  def deleteApplicationKeyByVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
     val auth = Authorization.User(request.user.guid)
     OrganizationsDao.findByKey(auth, orgKey) map { org =>
       request.requireAdmin(org)

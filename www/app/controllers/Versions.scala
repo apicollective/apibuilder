@@ -30,12 +30,12 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
   def show(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     for {
-      applicationResponse <- request.api.applications.getByOrgKey(orgKey = orgKey, key = Some(applicationKey))
-      versionsResponse <- request.api.versions.getByOrgKeyAndApplicationKey(orgKey, applicationKey)
+      applicationResponse <- request.api.applications.get(orgKey = orgKey, key = Some(applicationKey))
+      versionsResponse <- request.api.versions.getApplicationKey(orgKey, applicationKey)
       versionOption <- lib.ApiClient.callWith404(
-        request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
+        request.api.versions.getApplicationKeyByVersion(orgKey, applicationKey, versionName)
       )
-      generators <- request.api.generatorWithServices.getGenerators()
+      generators <- request.api.generatorWithServices.get()
       watches <- isWatching(request.api, request.user, orgKey, applicationKey)
     } yield {
       applicationResponse.headOption match {
@@ -76,7 +76,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
   def original(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(
-      request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
+      request.api.versions.getApplicationKeyByVersion(orgKey, applicationKey, versionName)
     ).map {
       case None => {
         if (LatestVersion == versionName) {
@@ -112,7 +112,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
   def serviceJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(
-      request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
+      request.api.versions.getApplicationKeyByVersion(orgKey, applicationKey, versionName)
     ).map {
       case None => {
         if (LatestVersion == versionName) {
@@ -131,7 +131,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
   def postDelete(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     for {
       result <- lib.ApiClient.callWith404(
-        request.api.versions.deleteByOrgKeyAndApplicationKeyAndVersion(orgKey, applicationKey, versionName)
+        request.api.versions.deleteApplicationKeyByVersion(orgKey, applicationKey, versionName)
       )
     } yield {
       result match {
@@ -144,7 +144,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
   def postWatch(orgKey: String, applicationKey: String, versionName: String) = AuthenticatedOrg.async { implicit request =>
     lib.ApiClient.callWith404(
-      request.api.versions.getByOrgKeyAndApplicationKeyAndVersion(request.org.key, applicationKey, versionName)
+      request.api.versions.getApplicationKeyByVersion(request.org.key, applicationKey, versionName)
     ).flatMap {
       case None => {
         if (LatestVersion == versionName) {
@@ -207,8 +207,8 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
       case Some(key) => {
         for {
-          applicationResponse <- request.api.Applications.getByOrgKey(orgKey = orgKey, key = Some(key))
-          versionsResponse <- request.api.versions.getByOrgKeyAndApplicationKey(orgKey, key, limit = 1)
+          applicationResponse <- request.api.Applications.get(orgKey = orgKey, key = Some(key))
+          versionsResponse <- request.api.versions.getApplicationKey(orgKey, key, limit = 1)
         } yield {
           applicationResponse.headOption match {
             case None => {
@@ -273,7 +273,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
 
             applicationKey match {
               case None => {
-                request.api.versions.postByOrgKeyAndVersion(
+                request.api.versions.postVersion(
                   orgKey = request.org.key,
                   version = valid.version,
                   versionForm = versionForm
@@ -287,7 +287,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
               }
 
               case Some(key) => {
-                request.api.versions.putByOrgKeyAndApplicationKeyAndVersion(
+                request.api.versions.putApplicationKeyByVersion(
                   orgKey = request.org.key,
                   applicationKey = key,
                   version = valid.version,

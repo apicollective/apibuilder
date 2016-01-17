@@ -10,7 +10,7 @@ import java.util.UUID
 
 object Applications extends Controller {
 
-  def getByOrgKey(
+  def get(
     orgKey: String,
     name: Option[String],
     guid: Option[UUID],
@@ -32,7 +32,7 @@ object Applications extends Controller {
     Ok(Json.toJson(applications))
   }
 
-  def postByOrgKey(orgKey: String) = Authenticated(parse.json) { request =>
+  def post(orgKey: String) = Authenticated(parse.json) { request =>
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
@@ -57,7 +57,7 @@ object Applications extends Controller {
     }
   }
 
-  def putByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
+  def putByApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
@@ -87,7 +87,7 @@ object Applications extends Controller {
     }
   }
 
-  def deleteByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String) = Authenticated { request =>
+  def deleteByApplicationKey(orgKey: String, applicationKey: String) = Authenticated { request =>
     OrganizationsDao.findByKey(request.authorization, orgKey) map { org =>
       request.requireMember(org)
       ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
@@ -97,7 +97,7 @@ object Applications extends Controller {
     NoContent
   }
 
-  def postMoveByOrgKeyAndApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
+  def postMoveByApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
     OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {

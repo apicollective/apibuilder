@@ -9,12 +9,12 @@ object Healthchecks extends Controller {
 
   private[this] val Result = Json.toJson(Map("status" -> "healthy"))
 
-  def getInternalAndHealthcheck() = Action { request =>
+  def getHealthcheck() = Action { request =>
     OrganizationsDao.findAll(Authorization.PublicOnly, limit = 1).headOption
     Ok(Result)
   }
 
-  def getInternalAndMigrate() = Action { request =>
+  def getMigrate() = Action { request =>
     val result = VersionsDao.migrate()
     Ok(Json.toJson(result))
   }
