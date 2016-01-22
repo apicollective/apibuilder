@@ -2,6 +2,26 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.11.6 - Jan 21 2016</h3>
+
+  <ul>
+
+    <li> Generate for play and ning clients now create a package named
+    'interfaces' which defines the Client interface as a trait. This
+    makes it possible to mock the entire client interface.</li>
+
+    <li> With this release, we have introduced a new code generator
+    named 'play_2_4_mock_client' which generated a mock client that
+    can be used as the basis for unit and integration testing. This
+    mock client makes it easy to override just the methods you need to
+    test a particular scenario.</li>
+
+    <li> Fix bug that for some organizations introduced an error when searching. See <a href='@lib.Util.ApidocGitHubUrl/issues/397'>Issue
+    397</a></li>
+
+  </ul>
+
+
 <h3>0.11.5 - Jan 20 2016</h3>
 
   <ul>
