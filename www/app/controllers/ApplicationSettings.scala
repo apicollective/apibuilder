@@ -40,9 +40,9 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
     versionName: String = "latest"
   ): Future[Either[String, MainTemplate]] = {
     for {
-      applicationResponse <- api.Applications.getByOrgKey(orgKey = base.org.get.key, key = Some(applicationKey))
+      applicationResponse <- api.Applications.get(orgKey = base.org.get.key, key = Some(applicationKey))
       versionOption <- lib.ApiClient.callWith404(
-        api.Versions.getByOrgKeyAndApplicationKeyAndVersion(base.org.get.key, applicationKey, versionName)
+        api.Versions.getByApplicationKeyAndVersion(base.org.get.key, applicationKey, versionName)
       )
     } yield {
       applicationResponse.headOption match {
@@ -99,7 +99,7 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
 
             valid => {
               val application = tpl.application.get
-              request.api.Applications.putByOrgKeyAndApplicationKey(
+              request.api.Applications.putByApplicationKey(
                 orgKey = request.org.key,
                 applicationKey = application.key,
                 applicationForm = ApplicationForm(
@@ -123,7 +123,7 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
 
   def postDelete(orgKey: String, applicationKey: String) = AuthenticatedOrg.async { implicit request =>
     for {
-      result <- request.api.Applications.deleteByOrgKeyAndApplicationKey(request.org.key, applicationKey)
+      result <- request.api.Applications.deleteByApplicationKey(request.org.key, applicationKey)
     } yield {
       Redirect(routes.Organizations.show(request.org.key)).flashing("success" -> s"Application $applicationKey deleted")
     }
@@ -154,7 +154,7 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
 
             valid => {
               val application = tpl.application.get
-              request.api.applications.postMoveByOrgKeyAndApplicationKey(
+              request.api.applications.postMoveByApplicationKey(
                 orgKey = request.org.key,
                 applicationKey = application.key,
                 moveForm = MoveForm(orgKey = valid.orgKey)

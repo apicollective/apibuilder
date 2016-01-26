@@ -11,7 +11,7 @@ object GeneratorWithServices extends Controller with GeneratorWithServices
 trait GeneratorWithServices {
   this: Controller =>
 
-  def getGenerators(
+  def get(
     guid: Option[UUID],
     serviceGuid: Option[UUID],
     serviceUri: Option[String],
@@ -31,7 +31,7 @@ trait GeneratorWithServices {
     Ok(Json.toJson(generators))
   }
 
-  def getGeneratorsByKey(key: String) = AnonymousRequest { request =>
+  def getByKey(key: String) = AnonymousRequest { request =>
     GeneratorsDao.findAll(
       request.authorization,
       key = Some(key),

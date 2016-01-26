@@ -1,84 +1,176 @@
 #!/usr/bin/env ruby
 
-# ./upload
-# ./upload 0.8.18
-# ./upload 0.8.18 localhost http://localhost:9000
+# Uploads all of the specs in this repo to apidoc.
+#
+# Usage:
+#
+#  Upload latest development versions based on git tag. This works by
+#  finding the next version (using sem-info tag next),
+#
+#    upload
+#
+#  Upload specific specifications
+#
+#    upload --spec organization --spec user
+#
+#  Upload a specific tag
+#
+#    upload --tag 0.0.2-dev
+#
+#  Upload using a specific apidoc profile
+#
+#    upload --profile localhost
+#
 
-CLI_PATH = "/web/apidoc-cli/bin/apidoc"
-PRODUCTION_HOST = "http://www.apidoc.me"
+require 'pathname'
+require 'json'
 
-version = ARGV.shift.to_s.strip
-profile = ARGV.shift.to_s.strip
-host = ARGV.shift.to_s.strip
+ORGANIZATION = "bryzek"
 
-number_defaults = 0
-if version == ""
-  version = `git describe`.strip
-  number_defaults += 1
+args = {}
+ARGV.each_slice(2) { |pair|
+  key = pair[0].to_s.sub(/^\-\-/, '').to_sym
+  value = pair[1].to_s.strip
+  if args[key]
+    args[key] << value
+  elsif key == :spec
+    args[key] = [value]
+  else
+    args[key] = value
+  end
+}
+
+def assert_installed(cmd, url)
+  if !system("which %s > /dev/null" % cmd)
+    puts "** ERROR: Please install %s: %s" % [cmd, url]
+    exit(1)
+  end
 end
 
-if profile == ""
-  profile = "localhost"
-  number_defaults += 1
+def calculate_next_tag
+  assert_installed("sem-info", "https://github.com/mbryzek/schema-evolution-manager")
+  `sem-info tag next micro`.strip
 end
 
-if host == ""
-  host = (profile == "localhost") ? "http://localhost:9000" : PRODUCTION_HOST
-  number_defaults += 1
+# Resolves dependencies of the specifications, returning the specs in
+# an order in which their internal dependencies will resolve.
+#
+# @param remaining List of Spec instances
+def resolve_dependencies(remaining, ordered=[])
+  if remaining.empty?
+    ordered
+  elsif next_spec = remaining.find { |spec| resolved?(ordered, spec) }
+    resolve_dependencies(remaining - [next_spec], ordered + [next_spec])
+  else
+    puts "** ERROR: Could not resolve dependencies. Remaining specifications are:"
+    remaining.each do |spec|
+      puts " - %s/%s" % [spec.organization, spec.application]
+    end
+    exit(1)
+  end
 end
 
-puts ""
-puts " Profile: #{profile}"
-puts "    Host: #{host}"
-puts " Version: #{version}"
-puts ""
+# @param specs is a list of specifications that have already been fully
+# resolved
+# @param spec is a specification that we want to see if we can now
+# process (e.g. all of its dependencies are in specs)
 
-if number_defaults > 0
-  answer = nil
-  while answer.nil?
-    print "Continue? (y/n): "
-    response = $stdin.gets.strip.downcase
-    if response.match(/^y/)
-      answer = true
-    elsif response.match(/^n/)
-      puts "exiting"
-      exit(0)
+def resolved?(specs, spec)
+  spec.dependencies.all? { |dep|
+    specs.find { |s|
+      s.organization == dep.organization && s.application == dep.application
+    }
+  }
+end
+
+assert_installed("apidoc", "https://github.com/mbryzek/apidoc-cli")
+
+tag = args[:tag] || calculate_next_tag
+spec_dir = Pathname.new(File.join(File.dirname(__FILE__), '/../spec')).cleanpath
+
+class Dependency
+  
+  attr_reader :organization, :application
+  def initialize(organization, application)
+    @organization = organization
+    @application = application
+  end
+
+  def Dependency.from_uri(uri)
+    if md = uri.match(/^https?:\/\/www.apidoc.me\/([^\/]+)\/([^\/]+)/)
+      Dependency.new(md[1], md[2])
+    else
+      sys.error("Could not parse import uri[%s]" % uri)
     end
   end
+
 end
 
-def print_error(msg)
-  puts ""
-  puts msg
-  puts ""
-end
+class Spec
 
-def cli(command, opts={})
-  profile = opts.delete(:profile)
-  if !opts.empty?
-    raise "Invalid keys: #{opts.keys.inspect}"
+  attr_reader :organization, :application, :dependencies
+
+  def initialize(organization, application, path)
+    @organization = organization
+    @application = application
+    @path = path
+    @dependencies = parse_dependencies
   end
 
-  builder = {
-    "PROFILE" => profile.to_s.strip
-  }.select { |k, v| v != "" }.map { |k,v| "export #{k}=#{v}" }
+  def parse_dependencies
+    contents = IO.read(@path)
+    json = begin
+             JSON.parse(contents)
+           rescue JSON::ParserError
+             puts "** WARNING: File is not valid json: %s" % @path
+             {}
+           end
 
-  builder << "#{CLI_PATH} #{command}"
-  cmd = builder.join(" && ")
-  puts cmd
-  puts `#{cmd}`.strip
+    (json['imports'] || []).map { |imp| Dependency.from_uri(imp['uri']) }
+  end
+  
+  def command(tag, profile=nil)
+    cmds = []
+    if profile
+      cmds << "PROFILE=%s" % profile
+    end
+    cmds << "apidoc upload %s %s %s --version %s" % [ORGANIZATION, @application, @path, tag]
+    cmds.join(" ")
+  end
+  
 end
 
-def upload(profile, host, version, application, path)
-  dir = File.dirname(__FILE__)
-  cli("upload bryzek #{application} #{File.join(dir, path)} --version #{version}", :profile => profile)
+specs = Dir.glob("#{spec_dir}/*.json").map do |path|
+  name = File.basename(path).sub(/\.json$/, '')
+  Spec.new(ORGANIZATION, name, path)
 end
 
-upload(profile, host, version, "apidoc-spec", "../spec/spec.json")
-upload(profile, host, version, "apidoc-common", "../spec/common.json")
-upload(profile, host, version, "apidoc-generator", "../spec/generator.json")
-upload(profile, host, version, "apidoc-internal", "../spec/internal.json")
-upload(profile, host, version, "apidoc-api", "../spec/api.json")
+ordered = resolve_dependencies(specs.sort_by { |s| [s.organization, s.application] })
 
+filtered = args[:spec].nil? ? ordered : ordered.select { |spec| args[:spec].include?(spec.application) }
 
+if args[:spec] && filtered.size != args[:spec].size
+  missing = args[:spec].select { |n| !filtered.map(&:application).include?(n) }
+
+  if missing.size == 1
+    puts "** ERROR: Did not find spec: %s" % missing.join(", ")
+  else
+    puts "** ERROR: Did not find specs: %s" % missing.join(", ")
+  end
+  puts "  Available specs: "
+  puts "    " + specs.map(&:application).join("\n    ")
+  puts ""
+  exit(1)
+end
+
+filtered.each do |spec|
+  command = spec.command(tag, args[:profile])
+  puts command
+  if !system(command)
+    puts ""
+    puts "** ERROR: Exiting as last command failed"
+    exit(1)
+  end
+  puts ""
+end
 

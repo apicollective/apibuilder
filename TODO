@@ -1,7 +1,30 @@
+Bindables with multiple services
+
+  When one service (service A) extends models from another (service
+  B), it is fair to say that service A routes might require
+  PathBindables for the models in service B. The logical approach is
+  to include the Bindables from both services (routesImport +=
+  "serviceA.v0.Bindables._", routesImport +=
+  "serviceB.v0.Bindables._"). An issue arises around conflicting
+  implicits (namely implicit PathBindables for DateTime and
+  LocalDate). From my observations the compiler cannot decide which
+  should be in context, and excludes both yielding no implicit
+  PathBindable for those types.
+
+  A solution could be for the service that extends another service to
+  include the respective binders for those models. Following from the
+  example above, service A's generated Bindables would then include
+  the Bindables from service B (but not the shared binders). Then the
+  developer would only add the routesImport for service A.
+
+When syncing generators - do not assume the generators list will
+paginate. If the second fetch is same as first - just stop rather than
+inserting duplicate records.
+
+API changes - generate history of field reordering
+
 [warn] /web/apidoc/api/app/db/generators/ServicesDao.scala:118: method apply in trait WithResult is deprecated: Use [[fold]], [[foldWhile]] or [[withResult]] instead, which manages resources and memory
 [warn]       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
-
-Add support for java (multi files) to client-tests/download-and-compile.rb
 
 Consider supporting (from swagger):
   - parameter locations: header, cookie
@@ -34,4 +57,3 @@ user to confirm the change. Considerations:
 Automate end to tests of generated clients. Currently client libraries
 are tested offline and manually. Need to think through how testing
 will work across mulitple platforms.
-

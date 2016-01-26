@@ -25,7 +25,7 @@ object Code extends Controller {
 
   private[this] val apidocVersion = Config.requiredString("git.version")
 
-  def getByOrgKeyAndApplicationKeyAndVersionAndGeneratorKey(
+  def get(
     orgKey: String,
     applicationKey: String,
     versionName: String,

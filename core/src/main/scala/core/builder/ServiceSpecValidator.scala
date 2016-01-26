@@ -1,7 +1,8 @@
 package builder
 
 import core.{TypeValidator, TypesProvider}
-import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode, ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, UnionType}
 import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type, VersionTag}
 import scala.util.{Failure, Success, Try}
 
@@ -9,20 +10,28 @@ case class ServiceSpecValidator(
   service: Service
 ) {
 
+  private val ReservedDiscriminatorValue = "value"
+
+  private val localTypeResolver = DatatypeResolver(
+    enumNames = service.enums.map(_.name),
+    modelNames = service.models.map(_.name),
+    unionNames = service.unions.map(_.name)
+  )
+  
   private val typeResolver = DatatypeResolver(
-    enumNames = service.enums.map(_.name) ++ service.imports.flatMap { service =>
+    enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
         s"${service.namespace}.enums.${enum}"
       }
     },
 
-    modelNames = service.models.map(_.name) ++ service.imports.flatMap { service =>
+    modelNames = localTypeResolver.modelNames ++ service.imports.flatMap { service =>
       service.models.map { model =>
         s"${service.namespace}.models.${model}"
       }
     },
 
-    unionNames = service.unions.map(_.name) ++ service.imports.flatMap { service =>
+    unionNames = localTypeResolver.unionNames ++ service.imports.flatMap { service =>
       service.unions.map { union =>
         s"${service.namespace}.unions.${union}"
       }
@@ -155,14 +164,60 @@ case class ServiceSpecValidator(
     val invalidTypes = service.unions.filter(!_.name.isEmpty).flatMap { union =>
       union.types.flatMap { t =>
         typeResolver.parse(t.`type`) match {
-          case None => Seq(s"Union[${union.name}] type[${t.`type`}] not found")
-          case Some(t: Datatype) => {
-            t.`type` match {
-              case Type(Kind.Primitive, "unit") => {
-                Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
+          case None => {
+            Seq(s"Union[${union.name}] type[${t.`type`}] not found")
+          }
+          case Some(_) => {
+            // Validate that the type is NOT imported as there is
+            // no way we could retroactively modify the imported
+            // type to extend the union type that is only being
+            // defined in this service.
+            localTypeResolver.parse(t.`type`) match {
+              case None => {
+                Seq(s"Union[${union.name}] type[${t.`type`}] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
               }
-              case _ => {
-                Seq.empty
+              case Some(t: Datatype) => {
+                t.`type` match {
+                  case Type(Kind.Primitive, "unit") => {
+                    Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
+                  }
+                  case _ => {
+                    Nil
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    val unionTypeErrors = service.unions.flatMap { union =>
+      union.types.find(_.`type` == union.name) match {
+        case Some(_) => {
+          Seq(s"Union[${union.name}] cannot contain itself as one of its types")
+        }
+        case None => {
+          union.discriminator match {
+            case None => Nil
+            case Some(discriminator) => {
+              if (discriminator == ReservedDiscriminatorValue) {
+                Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved for the wrapper objects for primitive values and cannot be used as a discriminator")
+              } else {
+                Text.validateName(discriminator) match {
+                  case Nil => {
+                    unionTypesWithNamedField(union, discriminator) match {
+                      case Nil => Nil
+                      case types => {
+                        Seq(
+                          s"Union[${union.name}] discriminator[$discriminator] must be unique. Field exists on: " +
+                            types.mkString(", ")
+                        )
+                      }
+                    }
+                  }
+                  case errors => Seq(s"Union[${union.name}] discriminator[$discriminator]: " + errors.mkString(", "))
+                }
               }
             }
           }
@@ -172,7 +227,49 @@ case class ServiceSpecValidator(
 
     val duplicates = dupsError("Union", service.unions.map(_.name))
 
-    nameErrors ++ typeErrors ++ invalidTypes ++ duplicates
+    nameErrors ++ typeErrors ++ invalidTypes ++ unionTypeErrors ++ duplicates
+  }
+
+  /**
+    * Given a union, returns the list of types that contain the
+    * specified field.
+    */
+  private def unionTypesWithNamedField(union: Union, fieldName: String): Seq[String] = {
+    union.types.flatMap { unionType =>
+      typeResolver.parse(unionType.`type`) match {
+        case None => {
+          Nil
+        }
+        case Some(datatype) => {
+          datatype.`type` match {
+            case Type(Kind.Primitive, _) | Type(Kind.Enum, _) => {
+              Nil
+            }
+            case Type(Kind.Model, name) => {
+              service.models.find(_.name == name) match {
+                case None => Nil
+                case Some(model) => {
+                  model.fields.find(_.name == fieldName) match {
+                    case None => Nil
+                    case Some(_) => Seq(unionType.`type`)
+                  }
+                }
+              }
+            }
+            case Type(Kind.Union, name) => {
+              service.unions.find(_.name == name) match {
+                case None => Nil
+                case Some(u) => {
+                  unionTypesWithNamedField(u, fieldName).map { t =>
+                    s"${u.name}.$t"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   private def validateHeaders(): Seq[String] = {
@@ -260,6 +357,38 @@ case class ServiceSpecValidator(
             case true => validateDefault(s"${model.name}.${field.name}", field.`type`, default)
           }
         }
+      }
+    } match {
+      case Nil => {
+        service.models.flatMap { model =>
+          model.fields.
+            filter { f => !f.minimum.isEmpty || !f.maximum.isEmpty }.
+            filter { f => !f.default.isEmpty && JsonUtil.isNumeric(f.default.get) }.
+            flatMap { field =>
+              field.default match {
+                case None => Nil
+                case Some(default) => {
+                  Seq(
+                    field.minimum.flatMap { min =>
+                      default.toLong < min match {
+                        case false => None
+                        case true => Some(s"${model.name}.${field.name} default[$default] must be >= specified minimum[$min]")
+                      }
+                    },
+                    field.maximum.flatMap { max =>
+                      default.toLong > max match {
+                        case false => None
+                        case true => Some(s"${model.name}.${field.name} default[$default] must be <= specified maximum[$max]")
+                      }
+                    }
+                  ).flatten
+                }
+              }
+            }
+        }
+      }
+      case errors => {
+        errors
       }
     }
   }

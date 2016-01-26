@@ -6,7 +6,7 @@ import org.scalatest.{FunSpec, ShouldMatchers}
 class OriginalUtilSpec extends FunSpec with ShouldMatchers {
 
   it("original") {
-    val data = TestHelper.readFile("../spec/api.json")
+    val data = TestHelper.readFile("../spec/apidoc-api.json")
     OriginalUtil.toOriginal(OriginalForm(data = data)) should be(
       Original(
         OriginalType.ApiJson,
@@ -18,8 +18,8 @@ class OriginalUtilSpec extends FunSpec with ShouldMatchers {
   describe("guessType") {
 
     it("apiJson") {
-      OriginalUtil.guessType(TestHelper.readFile("../spec/api.json")) should be(Some(OriginalType.ApiJson))
-      OriginalUtil.guessType(TestHelper.readFile("../spec/spec.json")) should be(Some(OriginalType.ApiJson))
+      OriginalUtil.guessType(TestHelper.readFile("../spec/apidoc-api.json")) should be(Some(OriginalType.ApiJson))
+      OriginalUtil.guessType(TestHelper.readFile("../spec/apidoc-spec.json")) should be(Some(OriginalType.ApiJson))
     }
 
     it("swaggerJson") {

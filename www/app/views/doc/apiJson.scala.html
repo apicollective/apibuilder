@@ -348,10 +348,11 @@
     <pre>
     {
       "name": {
-        "plural": <em>string (optional)</em>,
-        "description": <em>string (optional)</em>,
-        "types": <em>JSON Array of <a href="#unionType">UnionType</a></em>,
-        "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
+      "plural": <em>string (optional)</em>,
+      "discriminator": <em>string (optional)</em>,
+      "description": <em>string (optional)</em>,
+      "types": <em>JSON Array of <a href="#unionType">UnionType</a></em>,
+      "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
     </pre>
@@ -360,6 +361,7 @@
     <ul>
       <li><em>name</em> specifies the name of the union type. Names must be alphanumeric and start with a letter. Valid characters are a-z, A-Z, 0-9 and _ characters. The name must be unique in the set of names assigned to enums, models, or other union types.</li>
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
+      <li><em>discriminator</em> specifies an optional, but recommended, name for a type discriminator field which can then be used in serialization / deserialization to identify the type of object. For example, if not specified, a code generator may serialize the union type into a JSON structure of { "type" => object }. If a discriminator is provided, the same code generator can flatten the JSON representation to, for example: { "discriminator" => "xxx", "field1" => "yyy" }. If provided, the name of the discriminator field must be unique across all of the fields across all of the types of this union. See <a href="@routes.DocController.playUnionTypes">Play Union Types</a> for more information and examples.</li>
       @description("union")
       <li><em>types</em> Specifies the individual types that are part of this union type. See <a href="#unionType">UnionType</a>.</li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>

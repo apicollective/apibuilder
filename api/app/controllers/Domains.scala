@@ -9,7 +9,7 @@ import play.api.libs.json._
 
 object Domains extends Controller {
 
-  def postByOrgKey(orgKey: String) = Authenticated(parse.json) { request =>
+  def post(orgKey: String) = Authenticated(parse.json) { request =>
     request.body.validate[Domain] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -35,7 +35,7 @@ object Domains extends Controller {
     }
   }
 
-  def deleteByOrgKeyAndName(orgKey: String, name: String) = Authenticated { request =>
+  def deleteByName(orgKey: String, name: String) = Authenticated { request =>
     OrganizationsDao.findByUserAndKey(request.user, orgKey).map { org =>
       request.requireAdmin(org)
       org.domains.find(_.name == name).map { domain =>

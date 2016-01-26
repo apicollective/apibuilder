@@ -28,9 +28,45 @@
   </p>
 
   <p>
-    Over the wire, union types in the play 2_x clients are represented
-    as a Json Object with one element. The key is the name of the type
-    and the value is the Json serialization of the actual object.
+    Over the wire, union types in the play 2_x clients are
+    represented in one of two ways based on the presence of the discriminator field.
+  </p>
+
+  <p><b>With a discriminator</b></p>
+
+  <p>
+    Union type is serialized as a Json Object with the discriminator
+    field injected. For example, assume the discriminator field is set
+    to "type":
+  </p>
+
+  <p>
+    Example serializations:
+
+    <pre>
+    {
+      "type": "registered_user",
+      "guid":"f30dc64e-1793-4d59-aa47-71f000e06851",
+      "email":"registered@@test.apidoc.me"
+    }
+    </pre>
+
+    <pre>
+    {
+      "type": "guest_user",
+      "guid":"f30dc64e-1793-4d59-aa47-71f000e06851",
+      "email":"guest@@test.apidoc.me"
+    }
+    </pre>
+
+  </p>
+
+  <p><b>With no discriminator</b></p>
+
+  <p>
+    Union type is serialized as a Json Object with one element. The
+    key is the name of the type and the value is the Json
+    serialization of the actual object.
   </p>
 
   <p>
@@ -40,7 +76,7 @@
     {
       "registered_user": {
         "guid":"f30dc64e-1793-4d59-aa47-71f000e06851",
-        "email":"registered@@gilttest.com"
+        "email":"registered@@test.apidoc.me"
       }
     }
     </pre>
@@ -49,26 +85,22 @@
     {
       "guest_user": {
         "guid":"f30dc64e-1793-4d59-aa47-71f000e06851",
-        "email":"guest@@gilttest.com"
+        "email":"guest@@test.apidoc.me"
       }
     }
     </pre>
 
   </p>
-
+  
   <p>
 
-    We also maintain an example application that has a simple union
-    type and a controller in play to serialize / deserialize data. For
-    more information - we recommending viewing this project and in
-    particular:
+    We also maintain example applications that demonstrate the use of
+    the union types with and without discriminators. For more
+    information:
 
     <ul>
-      <li> <a href="@lib.Util.ApidocGeneratorGitHubUrl/tree/master/example-union-types">apidoc-generator example union types repo</a> </li>
-      <li> <a href="@lib.Util.ApidocGeneratorGitHubUrl/tree/master/example-union-types/build.sbt">build.sbt file</a> </li>
-      <li> <a href="@lib.Util.ApidocGeneratorGitHubUrl/tree/master/example-union-types/api/api.json">api.json file</a> </li>
-      <li> <a href="@lib.Util.ApidocGeneratorGitHubUrl/tree/master/example-union-types/api/app/controllers/Users.scala">Example controller</a> </li>
-      <li> <a href="@lib.Util.ApidocGeneratorGitHubUrl/tree/master/example-union-types/generated/app/ApidocExampleUnionTypesClient.scala">Generated Play Client</a> </li>
+      <li> <a href="@lib.Util.ApidocGeneratorGitHubUrl/tree/master/example-union-types-discriminator">example w/ discriminator</a> </li>
+      <li> <a href="@lib.Util.ApidocGeneratorGitHubUrl/tree/master/example-union-types">example w/out discriminator</a> </li>
     </ul>
 
   </p>

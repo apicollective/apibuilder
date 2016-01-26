@@ -11,12 +11,12 @@ object Util {
   // new play.core.StaticApplication(new java.io.File("."))
 
   def createRandomUser(): User = {
-    val email = "random-user-" + UUID.randomUUID.toString + "@gilttest.com"
+    val email = "random-user-" + UUID.randomUUID.toString + "@test.apidoc.me"
     UsersDao.create(UserForm(email = email, password = "test1"))
   }
 
   def upsertUser(
-    email: String = "random-user-" + UUID.randomUUID.toString + "@gilttest.com",
+    email: String = "random-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
     name: String = "Admin",
     password: String = "test1"
   ): User = {

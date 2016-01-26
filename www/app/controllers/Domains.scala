@@ -36,7 +36,7 @@ class Domains @Inject() (val messagesApi: MessagesApi) extends Controller with I
       },
 
       valid => {
-        request.api.Domains.postByOrgKey(
+        request.api.Domains.post(
           orgKey = request.org.key,
           domain = Domain(valid.name)
         ).map { d =>
@@ -56,7 +56,7 @@ class Domains @Inject() (val messagesApi: MessagesApi) extends Controller with I
     request.requireAdmin
 
     for {
-      response <- request.api.Domains.deleteByOrgKeyAndName(orgKey, domain)
+      response <- request.api.Domains.deleteByName(orgKey, domain)
     } yield {
       Redirect(routes.Domains.index(request.org.key)).flashing("success" -> s"Domain removed")
     }

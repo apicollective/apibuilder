@@ -80,7 +80,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     org: Organization,
     form: ApplicationForm = createApplicationForm()
   ): Application = {
-    await(client.applications.postByOrgKey(org.key, form))
+    await(client.applications.post(org.key, form))
   }
 
   def createApplicationForm(
@@ -101,7 +101,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     version: String = "0.0.1"
   ): Version = {
     await(
-      client.versions.putByOrgKeyAndApplicationKeyAndVersion(
+      client.versions.putByApplicationKeyAndVersion(
         orgKey = application.organization.key,
         applicationKey = application.key,
         version = version,

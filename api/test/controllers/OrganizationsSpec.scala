@@ -34,12 +34,6 @@ class OrganizationsSpec extends BaseSpec {
     }.errors.map(_.message) must be(Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-key"))
   }
 
-  "POST /organizations does not generate a reserved key from name" in new WithServer {
-    db.OrganizationsDao.findAll(db.Authorization.All, name = Some("members")).headOption.getOrElse {
-      createOrganization(createOrganizationForm(name = "members"))
-    }.key must be("key-members")
-  }
-
   "DELETE /organizations/:key" in new WithServer {
     val org = createOrganization()
     await(client.organizations.deleteByKey(org.key)) must be(())

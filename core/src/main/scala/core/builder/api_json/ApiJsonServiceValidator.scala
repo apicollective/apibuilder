@@ -229,10 +229,13 @@ case class ApiJsonServiceValidator(
   ): String = {
     Seq(
       s"Resource[${resource.datatype.label}]",
-      op.method.getOrElse("").trim,
-      op.path.trim,
-      message.trim
-    ).filter(_ != "").mkString(" ")
+      op.method.getOrElse(""),
+      Seq(
+        resource.path,
+        op.path
+      ).flatten.mkString(""),
+      message
+    ).map(_.trim).filter(!_.isEmpty).mkString(" ")
   }
 
 }

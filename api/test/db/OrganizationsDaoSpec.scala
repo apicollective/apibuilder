@@ -56,7 +56,7 @@ class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplicati
   }
 
   it("user that creates org should be an admin") {
-    val user = Util.upsertUser(UUID.randomUUID.toString + "@gilttest.com")
+    val user = Util.upsertUser(UUID.randomUUID.toString + "@test.apidoc.me")
     val name = UUID.randomUUID.toString
     val org = OrganizationsDao.createWithAdministrator(user, Util.createOrganizationForm(name = name))
     org.name should be(name)

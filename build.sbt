@@ -25,8 +25,8 @@ lazy val avro = project
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
-      "com.typesafe.play" %% "play-json" % "2.4.4",
-      "org.scalatest"     %% "scalatest" % "2.2.5" % "test"
+      "com.typesafe.play" %% "play-json" % "2.4.6",
+      "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
   )
 
@@ -36,21 +36,21 @@ lazy val swagger = project
   .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(
-      "io.swagger" % "swagger-parser" % "1.0.4",
-      "com.typesafe.play" %% "play-json" % "2.4.4",
-      "org.scalatest"     %% "scalatest" % "2.2.5" % "test"
+      "io.swagger" % "swagger-parser" % "1.0.5",
+      "com.typesafe.play" %% "play-json" % "2.4.6",
+      "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
   )
 
 lazy val core = project
   .in(file("core"))
   .dependsOn(generated, lib, avro, swagger)
-  .aggregate(generated, lib, avro, swagger)
+  .aggregate(generated, lib)
   .settings(commonSettings: _*)
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.4.4"
+      "com.typesafe.play" %% "play-json" % "2.4.6"
     )
   )
 
@@ -76,11 +76,11 @@ lazy val api = project
       ws,
       jdbc,
       "com.typesafe.play" %% "anorm"         % "2.5.0",
-      "org.postgresql"    %  "postgresql"    % "9.4-1206-jdbc42",
+      "org.postgresql"    %  "postgresql"    % "9.4.1207",
       "org.mindrot"       %  "jbcrypt"       % "0.3m",
       "com.sendgrid"      %  "sendgrid-java" % "2.2.2",
       specs2              %  Test,
-      "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
+      "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
   )
 
@@ -106,7 +106,7 @@ lazy val spec = project
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
+      "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
   )
 
@@ -116,7 +116,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.bryzek.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.1",
-    "org.scalatest" %% "scalatest" % "2.2.5" % "test"
+    "org.scalatest" %% "scalatest" % "2.2.6" % "test"
   ),
   scalacOptions += "-feature",
   coverageHighlighting := true

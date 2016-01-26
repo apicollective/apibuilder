@@ -15,6 +15,8 @@ object GeneratorServices extends Controller with GeneratorServices
 trait GeneratorServices {
   this: Controller =>
 
+  import scala.concurrent.ExecutionContext.Implicits.global
+
   def get(
     guid: Option[UUID],
     uri: Option[String],
@@ -73,10 +75,10 @@ trait GeneratorServices {
   def deleteByGuid(
     guid: UUID
   ) = Authenticated { request =>
-    println(s"deleteByGuid($guid)")
-    // TODO Authenticate
     ServicesDao.findByGuid(request.authorization, guid) match {
-      case None => NotFound
+      case None => {
+        NotFound
+      }
       case Some(service) => {
         // TODO: Generalize permission check
         if (service.audit.createdBy.guid == request.user.guid) {

@@ -189,6 +189,7 @@ case class InternalEnumValueForm(
 case class InternalUnionForm(
   name: String,
   plural: String,
+  discriminator: Option[String],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   types: Seq[InternalUnionTypeForm],
@@ -216,14 +217,14 @@ case class InternalResourceForm(
   datatype: InternalDatatype,
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
-  path: String,
+  path: Option[String],
   operations: Seq[InternalOperationForm],
   warnings: Seq[String] = Seq.empty
 )
 
 case class InternalOperationForm(
   method: Option[String],
-  path: String,
+  path: Option[String],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   namedPathParameters: Seq[String],
@@ -376,12 +377,13 @@ object InternalUnionForm {
     InternalUnionForm(
       name = name,
       plural = JsonUtil.asOptString(value \ "plural").getOrElse( Text.pluralize(name) ),
+      discriminator = JsonUtil.asOptString(value \ "discriminator"),
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
       types = types,
       warnings = JsonUtil.validate(
         value,
-        optionalStrings = Seq("description", "plural"),
+        optionalStrings = Seq("discriminator", "description", "plural"),
         arraysOfObjects = Seq("types"),
         optionalObjects = Seq("deprecation"),
         prefix = Some(s"Union[$name]")
@@ -496,22 +498,24 @@ object InternalResourceForm {
     unions: Seq[InternalUnionForm],
     value: JsObject
   ): InternalResourceForm = {
-    val path: String = (value \ "path").asOpt[JsString] match {
-      case Some(v) => v.value
+    val path: Option[String] = (value \ "path").asOpt[JsString] match {
+      case Some(v) => {
+        Some(v.value)
+      }
       case None => {
         enums.find(e => e.name == typeName) match {
-          case Some(enum) => "/" + enum.plural
+          case Some(enum) => Some("/" + enum.plural)
           case None => {
             models.find(m => m.name == typeName) match {
-              case Some(model) => "/" + model.plural
+              case Some(model) => Some("/" + model.plural)
               case None => {
                 unions.find(u => u.name == typeName) match {
-                  case Some(union) => "/" + union.plural
-                  case None => ""
+                  case Some(union) => Some("/" + union.plural)
+                  case None => None
                 }
               }
             }
-        }
+          }
         }
       }
     }
@@ -544,11 +548,12 @@ object InternalOperationForm {
 
   private val NoContentResponse = InternalResponseForm(code = "204", datatype = Some(InternalDatatype("unit")))
 
-  def apply(resourcePath: String, json: JsObject): InternalOperationForm = {
-    val internalPath = resourcePath + JsonUtil.asOptString(json \ "path").getOrElse("")
-    val path = if (internalPath == "") { "/" } else { internalPath }
+  def apply(resourcePath: Option[String], json: JsObject): InternalOperationForm = {
+    val operationPath = JsonUtil.asOptString(json \ "path")
 
-    val namedPathParameters = Util.namedParametersInPath(path)
+    val knownPath = Seq(resourcePath, operationPath).flatten.mkString("/")
+
+    val namedPathParameters = Util.namedParametersInPath(knownPath)
     val parameters = (json \ "parameters").asOpt[JsArray] match {
       case None => Seq.empty
       case Some(a: JsArray) => {
@@ -598,7 +603,7 @@ object InternalOperationForm {
 
     InternalOperationForm(
       method = JsonUtil.asOptString(json \ "method").map(_.toUpperCase),
-      path = path,
+      path = operationPath,
       body = body,
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),

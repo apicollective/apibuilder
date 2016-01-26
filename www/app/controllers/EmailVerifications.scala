@@ -9,7 +9,7 @@ class EmailVerifications extends Controller {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
   def get(token: String) = Anonymous.async { implicit request =>
-    request.api.emailVerificationConfirmationForms.postEmailVerificationConfirmations(
+    request.api.emailVerificationConfirmationForms.post(
       EmailVerificationConfirmationForm(token = token)
     ).map { _ =>
       Redirect(routes.ApplicationController.index()).flashing("success" -> "Email confirmed")

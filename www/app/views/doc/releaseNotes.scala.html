@@ -2,6 +2,108 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.11.6 - Jan 21 2016</h3>
+
+  <ul>
+
+    <li> Generate for play and ning clients now create a package named
+    'interfaces' which defines the Client interface as a trait. This
+    makes it possible to mock the entire client interface.</li>
+
+    <li> With this release, we have introduced a new code generator
+    named 'play_2_4_mock_client' which generated a mock client that
+    can be used as the basis for unit and integration testing. This
+    mock client makes it easy to override just the methods you need to
+    test a particular scenario.</li>
+
+    <li> Fix bug that for some organizations introduced an error when searching. See <a href='@lib.Util.ApidocGitHubUrl/issues/397'>Issue
+    397</a></li>
+
+  </ul>
+
+
+<h3>0.11.5 - Jan 20 2016</h3>
+
+  <ul>
+
+    <li> Fix bug introduced that was serializing null values. See <a href='@lib.Util.ApidocGitHubUrl/issues/396'>Issue
+    396</a></li>
+
+  </ul>
+
+ <h3>0.11.2 - Jan 15 2016</h3>
+
+  <ul>
+
+    <li> Fixed bug to generate correct path for resources for imported
+    models</li>
+
+    <li> For numeric defaults, if a min and/or max is specified, we
+    validate that the default is not outside min or max.</li>
+
+    <li> Email notifications on version changes are now only sent if
+    there is an actual diff. Also fixed bug that prevented notifcation
+    when version number was incremented.</li>
+
+  </ul>
+
+<h3>0.10.0 - Jan 7 2016</h3>
+
+  <p>
+    There have been numerous point releases over the past few months
+    fixing small bugs. 0.10.0 introduces a major new feature - union
+    type discriminators - which we highlight here.
+  </p>
+
+  <ul>
+
+    <li>
+      <p>
+	Introduction of optional discriminator field for Union
+	type. This is a major feature addition to the union type that
+	flattens out the JSON serialization and will be especially helpful
+	for working with union types from javascript or JSON directly.
+      </p>
+
+      <p>
+	When specifying a union type, you can now specify an optional
+	name for a type discriminator field which can then be used in
+	serialization / deserialization to identify the type of
+	object. When specified, the union type will serialize into a
+	flat JSON object with the discriminator field injected.
+      </p>
+
+      <p>
+	Note this change is 100% backwards compatiable as the
+	discriminator field is optional. If you add a discriminator
+	field to an existing union types - you will break the
+	wire format.
+      </p>
+
+      <p>
+	See <a href="@routes.DocController.apiJson#union">api.json
+	union type docs</a> and
+	<a href="@routes.DocController.playUnionTypes">Play Union Types</a> for more information and examples.
+      </p>
+
+    </li>
+
+    <li> Add support to infer a parameter type when an operation is
+    defined for a resource of type union</li>
+
+    <li> Fix bug that prevented inferrence of parameter types for
+    imported models</li>
+
+    <li> Make history link more prominent</li>
+
+    <li> Ignore dot in named variables in path params
+      (e.g. "/get/:id.csv")</li>
+
+    <li> Validate that models do not have multiple fields w/ the same
+    name</li>
+
+  </ul>
+
 <h3>0.9.32 - Jul 21 2015</h3>
 
   <ul>

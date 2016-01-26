@@ -22,6 +22,8 @@ object TaskActor {
 
 class TaskActor extends Actor {
 
+  import scala.concurrent.ExecutionContext.Implicits.global
+
   private[this] val NumberDaysBeforePurge = 90
 
   def receive = {
@@ -58,7 +60,7 @@ class TaskActor extends Actor {
           nOrFewerAttempts = Some(2),
           nOrMoreMinutesOld = Some(1)
         ).foreach { task =>
-          global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(task.guid)
+          _root_.global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(task.guid)
         }
       }
     )
@@ -104,7 +106,7 @@ class TaskActor extends Actor {
 
   private[this] def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID) {
     VersionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
-      VersionsDao.findByGuid(Authorization.All, newVersionGuid, isDeleted = None).map { newVersion =>
+      VersionsDao.findByGuid(Authorization.All, newVersionGuid).map { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
           case Nil => {
             // No-op
@@ -116,7 +118,7 @@ class TaskActor extends Actor {
               toVersion = newVersion,
               differences = diffs
             )
-            versionUpdated(oldVersion, newVersion, diffs)
+            versionUpdated(newVersion, diffs)
           }
         }
       }
@@ -124,38 +126,43 @@ class TaskActor extends Actor {
   }
 
   private[this] def versionUpdated(
-    oldVersion: Version,
-    newVersion: Version,
-    diff: Seq[Diff]
+    version: Version,
+    diffs: Seq[Diff]
   ) {
-    ApplicationsDao.findAll(Authorization.All, version = Some(newVersion), limit = 1).headOption.map { application =>
-      OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
-        Emails.deliver(
-          context = Emails.Context.Application(application),
-          org = org,
-          publication = Publication.VersionsCreate,
-          subject = s"${org.name}/${application.name}: New Version Uploaded (${newVersion.version}) ",
-          body = views.html.emails.versionCreated(
-            org,
-            application,
-            newVersion,
-            oldVersion = Some(oldVersion),
-            breakingDiffs = diff.filter { d =>
-              d match {
-                case DiffBreaking(desc) => true
-                case DiffNonBreaking(desc) => false
-                case DiffUndefinedType(desc) => false
-              }
-            }.map(_.asInstanceOf[DiffBreaking]),
-            nonDiffBreakings = diff.filter { d =>
-              d match {
-                case DiffBreaking(desc) => false
-                case DiffNonBreaking(desc) => true
-                case DiffUndefinedType(desc) => false
-              }
-            }.map(_.asInstanceOf[DiffNonBreaking])
-          ).toString
-        )
+    // Only send email if something has actually changed
+    if (!diffs.isEmpty) {
+      val breakingDiffs = diffs.flatMap { d =>
+        d match {
+          case d: DiffBreaking => Some(d.description)
+          case d: DiffNonBreaking => None
+          case d: DiffUndefinedType => Some(d.description)
+        }
+      }
+
+      val nonBreakingDiffs = diffs.flatMap { d =>
+        d match {
+          case d: DiffBreaking => None
+          case d: DiffNonBreaking => Some(d.description)
+          case d: DiffUndefinedType => None
+        }
+      }
+
+      ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
+        OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
+          Emails.deliver(
+            context = Emails.Context.Application(application),
+            org = org,
+            publication = Publication.VersionsCreate,
+            subject = s"${org.name}/${application.name}:${version.version} Uploaded",
+            body = views.html.emails.versionCreated(
+              org,
+              application,
+              version,
+              breakingDiffs = breakingDiffs,
+              nonBreakingDiffs = nonBreakingDiffs
+            ).toString
+          )
+        }
       }
     }
   }
