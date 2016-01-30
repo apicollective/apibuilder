@@ -1,12 +1,9 @@
-FROM giltarchitecture/ubuntu-jvm:0.6
+FROM flowcommerce/play:0.0.7
 
 MAINTAINER mbryzek@alum.mit.edu
 
-ADD . /usr/share/apidoc
+ADD . /opt/play
 
-WORKDIR /usr/share/apidoc
+WORKDIR /opt/play
 
 RUN sbt -Dsbt.ivy.home=.ivy2 clean stage
-
-RUN ln -s /usr/share/apidoc/api/target/universal/stage /usr/share/apidoc-api
-RUN ln -s /usr/share/apidoc/www/target/universal/stage /usr/share/apidoc-www
