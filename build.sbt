@@ -15,7 +15,7 @@ lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings: _*)
 
-val avroVersion = "1.7.7"
+val avroVersion = "1.8.0"
 
 lazy val avro = project
   .in(file("avro"))
@@ -23,8 +23,8 @@ lazy val avro = project
   .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.avro"   % "avro"              % avroVersion,
-      "org.apache.avro"   % "avro-compiler"     % avroVersion,
+      "org.apache.avro"   % "avro"              % 1.8.0,
+      "org.apache.avro"   % "avro-compiler"     % 1.8.0,
       "com.typesafe.play" %% "play-json" % "2.4.6",
       "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
