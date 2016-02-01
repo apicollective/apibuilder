@@ -6,4 +6,4 @@ ADD . /opt/play
 
 WORKDIR /opt/play
 
-RUN sbt -Dsbt.ivy.home=.ivy2 clean stage
+RUN sbt clean stage

@@ -57,6 +57,7 @@ lazy val core = project
 lazy val generated = project
   .in(file("generated"))
   .enablePlugins(PlayScala)
+  .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
       ws
@@ -119,6 +120,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatest" %% "scalatest" % "2.2.6" % "test"
   ),
   scalacOptions += "-feature",
+  sources in (Compile,doc) := Seq.empty,
+  publishArtifact in (Compile, packageDoc) := false,
   coverageHighlighting := true
 ) ++ publishSettings
 
