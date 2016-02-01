@@ -1,4 +1,4 @@
-FROM flowcommerce/play:0.0.7
+FROM flowcommerce/play:0.0.8
 
 MAINTAINER mbryzek@alum.mit.edu
 
