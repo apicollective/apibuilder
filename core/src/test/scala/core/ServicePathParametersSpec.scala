@@ -4,7 +4,7 @@ import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
 class ServicePathParametersSpec extends FunSpec with Matchers {
-
+/*
   describe("with a service") {
     val baseJson = """
     {
@@ -157,6 +157,40 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
       param.name should be("age")
       param.`type` should be("string")
     }
+
+  }
+*/
+  it("validates that path parameters are actually specified") {
+    val baseJson = """
+    {
+      "name": "Api Doc",
+
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        }
+      },
+
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "parameters": [
+                { "name": "id", "type": "long", "location": "path" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val json = baseJson.format("age")
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString("") should be("Resource[user] GET /users path parameter[id] is missing from the path[/users]")
 
   }
 
