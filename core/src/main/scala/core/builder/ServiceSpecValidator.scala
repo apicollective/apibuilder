@@ -530,7 +530,14 @@ case class ServiceSpecValidator(
                 case ParameterLocation.Path => {
                   // Path parameters are required
                   p.required match {
-                    case true => None
+                    case true => {
+                      // Verify that path parameter is actually in the path
+                      val index = op.path.indexOf(s"${p.name}")
+                      (index < 0) match {
+                        case true => Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
+                        case false => None
+                      }
+                    }
                     case false => {
                       Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
                     }
