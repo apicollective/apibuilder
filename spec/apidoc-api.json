@@ -711,7 +711,59 @@
         {
           "method": "DELETE",
           "path": "/:guid",
-          "description": "Deletes an attribute. Only the user who created an attribute can deleted it.",
+          "description": "Deletes an attribute. Only the user who created an attribute can delete it.",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        }
+      ]
+    },
+    
+    "attribute_value": {
+      "operations": [
+        {
+          "method": "GET",
+          "description": "Search all attribute values. Results are always paginated.",
+          "parameters": [
+            { "name": "guid", "type": "uuid", "description": "Find the attribute with this guid.", "required": false },
+            { "name": "attribute_guid", "type": "uuid", "description": "Find the values for the attribute with this guid.", "required": false },
+            { "name": "attribute_name", "type": "uuid", "description": "Find the values for the attribute with this name.", "required": false },
+            { "name": "org_guid", "type": "uuid", "description": "Find the values for the organization with this guid.", "required": false },
+            { "name": "org_key", "type": "uuid", "description": "Find the values for the organization with this name.", "required": false },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+          ],
+          "responses": {
+            "200": { "type": "[attribute_value]" }
+          }
+        },
+
+        {
+          "method": "GET",
+          "path": "/:guid",
+          "description": "Returns the attribute value with this guid.",
+          "responses": {
+            "200": { "type": "attribute_value" },
+            "404": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "POST",
+          "description": "Create a new attribute value.",
+          "body": { "type": "attribute_value_form" },
+          "responses": {
+            "201": { "type": "attribute_value" },
+            "409": { "type": "[error]" }
+          }
+        },
+
+        {
+          "method": "DELETE",
+          "path": "/:guid",
+          "description": "Deletes an attribute value. Only the user who created an attribute value can delete it.",
           "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
@@ -1109,12 +1161,12 @@
       "operations": [
         {
           "method": "GET",
-          "description": "Search watches. Always paginated.",
+          "description": "Search attributes. Always paginated.",
           "parameters": [
             { "name": "guid", "type": "uuid", "description": "Find the watch with this guid.", "required": false },
-            { "name": "user_guid", "type": "uuid", "description": "Find watches for this user.", "required": false },
-            { "name": "organization_key", "type": "string", "description": "Find watches for this organization.", "required": false },
-            { "name": "application_key", "type": "string", "description": "Find watches for this application.", "required": false },
+            { "name": "user_guid", "type": "uuid", "description": "Find attributes for this user.", "required": false },
+            { "name": "organization_key", "type": "string", "description": "Find attributes for this organization.", "required": false },
+            { "name": "application_key", "type": "string", "description": "Find attributes for this application.", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
