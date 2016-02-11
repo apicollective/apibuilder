@@ -1934,8 +1934,6 @@ package com.bryzek.apidoc.api.v0 {
 
     def attributes: Attributes = Attributes
 
-    def attributeValues: AttributeValues = AttributeValues
-
     def changes: Changes = Changes
 
     def code: Code = Code
@@ -2097,66 +2095,6 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/attributes/${guid}").map {
-          case r if r.status == 204 => ()
-          case r if r.status == 401 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
-          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
-        }
-      }
-    }
-
-    object AttributeValues extends AttributeValues {
-      override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        attributeGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        attributeName: _root_.scala.Option[_root_.java.util.UUID] = None,
-        orgGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        orgKey: _root_.scala.Option[_root_.java.util.UUID] = None,
-        limit: Long = 25,
-        offset: Long = 0
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]] = {
-        val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          attributeGuid.map("attribute_guid" -> _.toString),
-          attributeName.map("attribute_name" -> _.toString),
-          orgGuid.map("org_guid" -> _.toString),
-          orgKey.map("org_key" -> _.toString),
-          Some("limit" -> limit.toString),
-          Some("offset" -> offset.toString)
-        ).flatten
-
-        _executeRequest("GET", s"/attribute_values", queryParameters = queryParameters).map {
-          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]])
-          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
-        }
-      }
-
-      override def getByGuid(
-        guid: _root_.java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue] = {
-        _executeRequest("GET", s"/attribute_values/${guid}").map {
-          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
-          case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
-          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
-        }
-      }
-
-      override def post(
-        attributeValueForm: com.bryzek.apidoc.api.v0.models.AttributeValueForm
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue] = {
-        val payload = play.api.libs.json.Json.toJson(attributeValueForm)
-
-        _executeRequest("POST", s"/attribute_values", body = Some(payload)).map {
-          case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
-          case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
-        }
-      }
-
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/attribute_values/${guid}").map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
@@ -2550,6 +2488,60 @@ package com.bryzek.apidoc.api.v0 {
         _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+        }
+      }
+
+      override def getAttributesByKey(
+        key: String,
+        name: _root_.scala.Option[_root_.java.util.UUID] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]] = {
+        val queryParameters = Seq(
+          name.map("name" -> _.toString),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]])
+          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+
+      override def getByKeyAndName(
+        key: String,
+        name: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue] = {
+        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
+          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
+          case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+        }
+      }
+
+      override def postByKey(
+        key: String,
+        attributeValueForm: com.bryzek.apidoc.api.v0.models.AttributeValueForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue] = {
+        val payload = play.api.libs.json.Json.toJson(attributeValueForm)
+
+        _executeRequest("POST", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
+          case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
+        }
+      }
+
+      override def deleteByKeyAndName(
+        key: String,
+        name: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
+          case r if r.status == 204 => ()
+          case r if r.status == 401 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -3008,7 +3000,6 @@ package com.bryzek.apidoc.api.v0 {
     trait Client {
       def applications: com.bryzek.apidoc.api.v0.Applications
       def attributes: com.bryzek.apidoc.api.v0.Attributes
-      def attributeValues: com.bryzek.apidoc.api.v0.AttributeValues
       def changes: com.bryzek.apidoc.api.v0.Changes
       def code: com.bryzek.apidoc.api.v0.Code
       def domains: com.bryzek.apidoc.api.v0.Domains
@@ -3108,43 +3099,6 @@ package com.bryzek.apidoc.api.v0 {
 
     /**
      * Deletes an attribute. Only the user who created an attribute can delete it.
-     */
-    def deleteByGuid(
-      guid: _root_.java.util.UUID
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
-  }
-
-  trait AttributeValues {
-    /**
-     * Search all attribute values. Results are always paginated.
-     */
-    def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      attributeGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      attributeName: _root_.scala.Option[_root_.java.util.UUID] = None,
-      orgGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      orgKey: _root_.scala.Option[_root_.java.util.UUID] = None,
-      limit: Long = 25,
-      offset: Long = 0
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]]
-
-    /**
-     * Returns the attribute value with this guid.
-     */
-    def getByGuid(
-      guid: _root_.java.util.UUID
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue]
-
-    /**
-     * Create a new attribute value.
-     */
-    def post(
-      attributeValueForm: com.bryzek.apidoc.api.v0.models.AttributeValueForm
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue]
-
-    /**
-     * Deletes an attribute value. Only the user who created an attribute value can
-     * delete it.
      */
     def deleteByGuid(
       guid: _root_.java.util.UUID
@@ -3365,6 +3319,42 @@ package com.bryzek.apidoc.api.v0 {
      */
     def deleteByKey(
       key: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+
+    /**
+     * Returns all attribute values for this organization. Results are always
+     * paginated.
+     */
+    def getAttributesByKey(
+      key: String,
+      name: _root_.scala.Option[_root_.java.util.UUID] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]]
+
+    /**
+     * Returns the attribute value with this name.
+     */
+    def getByKeyAndName(
+      key: String,
+      name: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue]
+
+    /**
+     * Create a new attribute value.
+     */
+    def postByKey(
+      key: String,
+      attributeValueForm: com.bryzek.apidoc.api.v0.models.AttributeValueForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue]
+
+    /**
+     * Deletes the attribute value with the specified name. Only the user who created
+     * an attribute value can delete it.
+     */
+    def deleteByKeyAndName(
+      key: String,
+      name: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
