@@ -35,44 +35,45 @@ class AttributesSpec extends BaseSpec {
     }.errors.map(_.message) must be(Seq(s"Name must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid name would be: a-bad-key"))
   }
 
-  /*
-  "DELETE /attributes/:key" in new WithServer {
+  "DELETE /attributes/:guid" in new WithServer {
     val attr = createAttribute()
-    await(client.attributes.deleteByKey(attr.key)) must be(())
-    await(client.attributes.get(key = Some(attr.key))) must be(Seq.empty)
+    await(client.attributes.deleteByGuid(attr.guid)) must be(())
+    await(client.attributes.get(guid = Some(attr.guid))) must be(Seq.empty)
   }
 
-  "GET /attributes" in new WithServer {
+  "DELETE /attributes/:guid returns 401 if different user attempts to delete" in new WithServer {
+    val attr = createAttribute()
+
+    val otherClient = newClient(createUser())
+    intercept[UnitResponse] {
+      await(otherClient.attributes.deleteByGuid(attr.guid))
+    }.status must be(401)
+  }
+
+  "GET /attributes by guid" in new WithServer {
     val attr1 = createAttribute()
     val attr2 = createAttribute()
 
-    await(client.attributes.get(key = Some(UUID.randomUUID.toString))) must be(Seq.empty)
-    await(client.attributes.get(key = Some(attr1.key))).head.guid must be(attr1.guid)
-    await(client.attributes.get(key = Some(attr2.key))).head.guid must be(attr2.guid)
+    await(client.attributes.get(guid = Some(UUID.randomUUID))) must be(Seq.empty)
+    await(client.attributes.get(guid = Some(attr1.guid))).head.guid must be(attr1.guid)
+    await(client.attributes.get(guid = Some(attr2.guid))).head.guid must be(attr2.guid)
   }
 
-  "GET /attributes/:key" in new WithServer {
+  "GET /attributes by name" in new WithServer {
+    val attr1 = createAttribute()
+    val attr2 = createAttribute()
+
+    await(client.attributes.get(name = Some(UUID.randomUUID.toString))) must be(Seq.empty)
+    await(client.attributes.get(name = Some(attr1.name))).head.guid must be(attr1.guid)
+    await(client.attributes.get(name = Some(attr2.name))).head.guid must be(attr2.guid)
+  }
+
+  "GET /attributes/:guid" in new WithServer {
     val attr = createAttribute()
-    await(client.attributes.getByKey(attr.key)).guid must be(attr.guid)
+    await(client.attributes.getByGuid(attr.guid)).guid must be(attr.guid)
     intercept[UnitResponse] {
-      await(client.attributes.getByKey(UUID.randomUUID.toString))
+      await(client.attributes.getByGuid(UUID.randomUUID))
     }.status must be(404)
   }
-
-  "GET /attributes for an anonymous user shows only public attrs" in new WithServer {
-    val privateAttr = createAttribute(createAttributeForm().copy(visibility = Visibility.Attribute))
-    val publicAttr = createAttribute(createAttributeForm().copy(visibility = Visibility.Public))
-    val anonymous = createUser()
-
-    val client = newClient(anonymous)
-    intercept[UnitResponse] {
-      await(client.attributes.getByKey(privateAttr.key))
-    }.status must be(404)
-    await(client.attributes.getByKey(publicAttr.key)).key must be(publicAttr.key)
-
-    await(client.attributes.get(key = Some(privateAttr.key))) must be(Seq.empty)
-    await(client.attributes.get(key = Some(publicAttr.key))).map(_.key) must be(Seq(publicAttr.key))
-  }
-   */
 
 }
