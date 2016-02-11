@@ -62,9 +62,19 @@
         },
 
         "invocation_form": {
+          "description": "The invocation form is the payload send to the code generators when requesting generation of client code.",
           "fields": [
             { "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service" },
-            { "name": "user_agent", "type": "string", "required": "false" }
+            { "name": "user_agent", "type": "string", "required": "false" },
+            { "name": "attributes": "type": "[attribute]", "required": "false" }
+          ]
+        },
+
+        "attribute": {
+          "description": "An attribute represents a key/value pair that is optionally used to provide additional instructions / data to the code generator. An example could be an attribute to specify the root import path for a go client..",
+          "fields": [
+            { "name": "name", "type": "string" },
+            { "name": "value", "type": "string" }
           ]
         },
 
