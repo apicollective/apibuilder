@@ -2085,9 +2085,9 @@ package com.bryzek.apidoc.api.v0 {
         val payload = play.api.libs.json.Json.toJson(attributeForm)
 
         _executeRequest("POST", s"/attributes", body = Some(payload)).map {
-          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Attribute", r, _.validate[com.bryzek.apidoc.api.v0.models.Attribute])
+          case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Attribute", r, _.validate[com.bryzek.apidoc.api.v0.models.Attribute])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
+          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
         }
       }
 
