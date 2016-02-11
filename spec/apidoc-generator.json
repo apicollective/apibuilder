@@ -66,7 +66,7 @@
       "fields": [
         { "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service" },
         { "name": "user_agent", "type": "string", "required": "false" },
-        { "name": "attributes": "type": "[attribute]", "required": "false" }
+        { "name": "attributes", "type": "[attribute]", "required": false }
       ]
     },
 

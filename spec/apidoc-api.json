@@ -81,6 +81,48 @@
       ]
     },
 
+    "attribute": {
+      "description": "Attributes are globally unique key which allow users to specify additional content to pass in to the code generators.",
+      "fields": [
+        { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this attribute." },
+        { "name": "name", "type": "string", "description": "The name of the attribute. Globally unique and an 'identifier' (lower case, url safe, etc.)" },
+        { "name": "description", "type": "string", "description": "Optional description - a good description here will indicate which code generators it applies to and what effect it will have on those code generators.", "required": false },
+        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+      ]
+    },
+
+    "attribute_form": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string", "required": false }
+      ]
+    },
+
+    "attribute_summary": {
+      "fields": [
+        { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this attribute." },
+        { "name": "name", "type": "string", "description": "The name of the attribute. Globally unique and an 'identifier' (lower case, url safe, etc.)" }
+      ]
+    },
+
+    "attribute_value": {
+      "description": "Attribute values can be set at different levels. Initially we support setting organization wide attributes, but in the future plan to support setting attribute values with each version of the application.",
+      "fields": [
+        { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this attribute value." },
+        { "name": "attribute", "type": "attribute_summary" },
+        { "name": "value", "type": "string" },
+        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+      ]
+    },
+
+    "attribute_value_form": {
+      "fields": [
+        { "name": "attribute_guid", "type": "uuid" },
+        { "name": "value", "type": "string" }
+      ]
+    },
+
+    
     "user": {
       "description": "A user is a top level person interacting with the api doc server.",
       "fields": [
@@ -536,7 +578,7 @@
 	  "parameters": [
 	    { "name": "user_guid", "type": "uuid" },
 	    { "name": "guid", "type": "uuid", "required": false },
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 	  ],
           "responses": {
@@ -583,7 +625,7 @@
             { "name": "key", "type": "string", "description": "Find organizations with this key. Case in-sensitive. Exact match", "required": false },
             { "name": "name", "type": "string", "description": "Find organizations with this name. Case in-sensitive. Exact match", "required": false },
             { "name": "namespace", "type": "string", "description": "Find organizations with this namespace. Case in-sensitive. Exact match", "required": false },
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
@@ -630,6 +672,55 @@
       ]
     },
 
+    "attribute": {
+      "operations": [
+        {
+          "method": "GET",
+          "description": "Search all attributes. Results are always paginated.",
+          "parameters": [
+            { "name": "guid", "type": "uuid", "description": "Find the watch with this guid.", "required": false },
+            { "name": "name", "type": "string", "description": "Find attributes with this name. Case in-sensitive. Exact match", "required": false },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+          ],
+          "responses": {
+            "200": { "type": "[attribute]" }
+          }
+        },
+
+        {
+          "method": "GET",
+          "path": "/:name",
+          "description": "Returns the attribute with this name.",
+          "responses": {
+            "200": { "type": "attribute" },
+            "404": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "POST",
+          "description": "Create a new attribute.",
+          "body": { "type": "attribute_form" },
+          "responses": {
+            "200": { "type": "attribute" },
+            "409": { "type": "[error]" }
+          }
+        },
+
+        {
+          "method": "DELETE",
+          "path": "/:key",
+          "description": "Deletes an attribute. Only the user who created an attribute can deleted it.",
+          "responses": {
+            "204": { "type": "unit" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        }
+      ]
+    },
+    
     "domain": {
       "path": "/domains/:orgKey",
       "operations": [
@@ -661,7 +752,7 @@
             { "name": "org_key", "type": "string", "required": false },
             { "name": "user_guid", "type": "uuid", "required": false },
             { "name": "role", "type": "string", "required": false },
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
@@ -695,7 +786,7 @@
             { "name": "org_key", "type": "string", "required": false },
             { "name": "user_guid", "type": "uuid", "required": false },
             { "name": "role", "type": "string", "required": false },
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
@@ -897,7 +988,7 @@
             { "name": "guid", "type": "uuid", "required": false },
             { "name": "uri", "type": "string", "required": false },
             { "name": "generator_key", "type": "string", "required": false },
-            { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
@@ -950,7 +1041,7 @@
             { "name": "service_guid", "type": "uuid", "required": false, "description": "Filter to generator from this service" },
             { "name": "service_uri", "type": "string", "required": false, "description": "Filter to generator from this service URI" },
             { "name": "key", "type": "string", "required": false, "description": "Filter to generator with this key" },
-            { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
@@ -979,7 +1070,7 @@
             { "name": "organization_key", "type": "string", "description": "Find subscriptions for this organization.", "required": false },
             { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
             { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
@@ -1024,7 +1115,7 @@
             { "name": "user_guid", "type": "uuid", "description": "Find watches for this user.", "required": false },
             { "name": "organization_key", "type": "string", "description": "Find watches for this organization.", "required": false },
             { "name": "application_key", "type": "string", "description": "Find watches for this application.", "required": false },
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
@@ -1125,7 +1216,7 @@
 	  "parameters": [
             { "name": "org_key", "type": "string", "description": "Filter changes to those made for the organization with this key.", "required": false },
             { "name": "application_key", "type": "string", "description": "Filter changes to those made for the application with this key.", "required": false },
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 	  ],
           "responses": {
@@ -1143,7 +1234,7 @@
 	  "method": "GET",
 	  "parameters": [
 	    { "name": "q", "type": "string", "required": false, "description": "The search query. At the moment, we do case insensitive exact match search." },
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 	  ],
           "responses": {
