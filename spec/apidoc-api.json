@@ -122,7 +122,6 @@
       ]
     },
 
-    
     "user": {
       "description": "A user is a top level person interacting with the api doc server.",
       "fields": [
