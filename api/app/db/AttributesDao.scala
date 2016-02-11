@@ -42,7 +42,7 @@ object AttributesDao {
     val nameErrors = if (form.name.trim.isEmpty) {
       Seq(s"Attribute name is required")
     } else {
-      UrlKey.validate(form.name.trim) match {
+      UrlKey.validate(form.name.trim, "Name") match {
         case Nil => {
           AttributesDao.findByName(form.name) match {
             case None => Seq.empty

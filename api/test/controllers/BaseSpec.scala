@@ -50,6 +50,20 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     namespace = namespace
   )
 
+  def createAttribute(
+    form: AttributeForm = createAttributeForm()
+  ): Attribute = {
+    await(client.attributes.post(form))
+  }
+
+  def createAttributeForm(
+    name: String = "z-test-attribute-" + UUID.randomUUID.toString,
+    description: Option[String] = None
+  ) = AttributeForm(
+    name = name,
+    description = description
+  )
+  
   def createUser(): User = {
     val form = createUserForm()
     await(client.users.post(form))
