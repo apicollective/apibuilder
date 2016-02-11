@@ -690,8 +690,8 @@
 
         {
           "method": "GET",
-          "path": "/:name",
-          "description": "Returns the attribute with this name.",
+          "path": "/:guid",
+          "description": "Returns the attribute with this guid.",
           "responses": {
             "200": { "type": "attribute" },
             "404": { "type": "unit" }
@@ -703,14 +703,14 @@
           "description": "Create a new attribute.",
           "body": { "type": "attribute_form" },
           "responses": {
-            "200": { "type": "attribute" },
+            "201": { "type": "attribute" },
             "409": { "type": "[error]" }
           }
         },
 
         {
           "method": "DELETE",
-          "path": "/:key",
+          "path": "/:guid",
           "description": "Deletes an attribute. Only the user who created an attribute can deleted it.",
           "responses": {
             "204": { "type": "unit" },
