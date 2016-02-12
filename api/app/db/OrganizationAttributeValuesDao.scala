@@ -87,9 +87,14 @@ object OrganizationAttributeValuesDao {
     findAll(organizationGuid = Some(organizationGuid), attributeGuid = Some(attributeGuid), limit = 1).headOption
   }
 
+  def findByOrganizationGuidAndAttributeName(organizationGuid: UUID, name: String): Option[AttributeValue] = {
+    findAll(organizationGuid = Some(organizationGuid), attributeName = Some(name), limit = 1).headOption
+  }
+  
   def findAll(
     guid: Option[UUID] = None,
     organizationGuid: Option[UUID] = None,
+    attributeName: Option[String] = None,
     attributeGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -99,6 +104,7 @@ object OrganizationAttributeValuesDao {
       Some(BaseQuery.trim),
       guid.map { v => "and organization_attribute_values.guid = {guid}::uuid" },
       organizationGuid.map { v => "and organization_attribute_values.organization_guid = {organization_guid}::uuid" },
+      attributeName.map { v => "and organization_attribute_values.attribute_guid = (select guid from attributes where deleted_at is null and name = lower(trim({attribute_name})))" },
       attributeGuid.map { v => "and organization_attribute_values.attribute_guid = {attribute_guid}::uuid" },
       isDeleted.map(Filters.isDeleted("attribute_values", _)),
       Some(s"order by lower(attribute_values.name) limit ${limit} offset ${offset}")
@@ -107,6 +113,7 @@ object OrganizationAttributeValuesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       organizationGuid.map('organization_guid -> _.toString),
+      attributeName.map('attribute_name -> _),
       attributeGuid.map('attribute_guid -> _.toString)
     ).flatten
 

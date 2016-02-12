@@ -674,7 +674,7 @@
           "path": "/:key/attributes",
           "description": "Returns all attribute values for this organization. Results are always paginated.",
           "parameters": [
-            { "name": "name", "type": "uuid", "description": "Find the values for the attribute with this name.", "required": false },
+            { "name": "name", "type": "string", "description": "Find the values for the attribute with this name.", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
@@ -685,7 +685,7 @@
 
         {
           "method": "GET",
-          "path": "/:key/:name",
+          "path": "/:key/attributes/:name",
           "description": "Returns the attribute value with this name.",
           "responses": {
             "200": { "type": "attribute_value" },
@@ -695,7 +695,7 @@
 
         {
           "method": "POST",
-          "path": "/:key",
+          "path": "/:key/attributes",
           "description": "Create a new attribute value.",
           "body": { "type": "attribute_value_form" },
           "responses": {
@@ -706,7 +706,7 @@
 
         {
           "method": "DELETE",
-          "path": "/:key/:name",
+          "path": "/:key/attributes/:name",
           "description": "Deletes the attribute value with the specified name. Only the user who created an attribute value can delete it.",
           "responses": {
             "204": { "type": "unit" },
