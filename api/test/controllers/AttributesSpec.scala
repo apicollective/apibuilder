@@ -31,8 +31,8 @@ class AttributesSpec extends BaseSpec {
     }.errors.map(_.message) must be(Seq(s"Name must be at least 4 characters"))
 
     intercept[ErrorsResponse] {
-      createAttribute(createAttributeForm(name = "a bad key"))
-    }.errors.map(_.message) must be(Seq(s"Name must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid name would be: a-bad-key"))
+      createAttribute(createAttributeForm(name = "a bad name"))
+    }.errors.map(_.message) must be(Seq(s"Name must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid name would be: a-bad-name"))
   }
 
   "DELETE /attributes/:guid" in new WithServer {
