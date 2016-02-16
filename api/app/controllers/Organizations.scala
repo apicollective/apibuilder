@@ -134,7 +134,7 @@ object Organizations extends Controller {
           OrganizationAttributeValuesDao.validate(org, form) match {
             case Nil => {
               val attr = OrganizationAttributeValuesDao.create(request.user, org, form)
-              Ok(Json.toJson(attr))
+              Created(Json.toJson(attr))
             }
             case errors => {
               Conflict(Json.toJson(errors))

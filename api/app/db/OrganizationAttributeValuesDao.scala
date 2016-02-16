@@ -12,10 +12,9 @@ import java.util.UUID
 object OrganizationAttributeValuesDao {
 
   private[db] val BaseQuery = s"""
-    select attribute_values.guid,
-           attribute_values.name,
-           attribute_values.description,
-           ${AuditsDao.query("attribute_values")},
+    select organization_attribute_values.guid,
+           organization_attribute_values.value,
+           ${AuditsDao.query("organization_attribute_values")},
            attributes.guid as attribute_guid,
            attributes.name as attribute_name
       from organization_attribute_values
@@ -25,9 +24,9 @@ object OrganizationAttributeValuesDao {
 
   private[this] val InsertQuery = """
     insert into organization_attribute_values
-    (guid, organization_guid, attribute_guid, created_by_guid, updated_by_guid)
+    (guid, organization_guid, attribute_guid, value, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {attribute_guid}::uuid, {user_guid}::uuid, {user_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {attribute_guid}::uuid, {value}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
   def validate(
@@ -106,8 +105,8 @@ object OrganizationAttributeValuesDao {
       organizationGuid.map { v => "and organization_attribute_values.organization_guid = {organization_guid}::uuid" },
       attributeName.map { v => "and organization_attribute_values.attribute_guid = (select guid from attributes where deleted_at is null and name = lower(trim({attribute_name})))" },
       attributeGuid.map { v => "and organization_attribute_values.attribute_guid = {attribute_guid}::uuid" },
-      isDeleted.map(Filters.isDeleted("attribute_values", _)),
-      Some(s"order by lower(attribute_values.name) limit ${limit} offset ${offset}")
+      isDeleted.map(Filters.isDeleted("organization_attribute_values", _)),
+      Some(s"order by lower(organization_attribute_values.value), organization_attribute_values.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
