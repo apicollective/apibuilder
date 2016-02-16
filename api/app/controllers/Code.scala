@@ -8,10 +8,10 @@ import com.bryzek.apidoc.spec.v0.models.json._
 import com.bryzek.apidoc.spec.v0.models.Service
 
 import com.bryzek.apidoc.generator.v0.Client
-import com.bryzek.apidoc.generator.v0.models.InvocationForm
+import com.bryzek.apidoc.generator.v0.models.{Attribute, InvocationForm}
 
 import db.generators.{GeneratorsDao, ServicesDao}
-import db.{Authorization, VersionsDao}
+import db.{Authorization, OrganizationAttributeValuesDao, VersionsDao}
 import lib.{Config, AppConfig, Validation}
 
 import play.api.libs.json._
@@ -50,9 +50,22 @@ object Code extends Controller {
               case Some(gws) => {
                 val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
 
+                // TODO: Paginate; Filter to ony those attributes that
+                // this code generator has declared
+                val attributes = OrganizationAttributeValuesDao.findAll(
+                  organizationGuid = Some(version.organization.guid),
+                  limit = 100
+                ).map { av => Attribute(av.attribute.name, av.value) }
+
+                println("ATTRIBUTES: " + attributes.mkString(", "))
+
                 new Client(service.uri).invocations.postByKey(
                   key = gws.generator.key,
-                  invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
+                  invocationForm = InvocationForm(
+                    service = version.service,
+                    userAgent = Some(userAgent),
+                    attributes = Some(attributes)
+                  )
                 ).map { invocation =>
                   Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
                     generator = gws,
