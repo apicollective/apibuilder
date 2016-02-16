@@ -175,11 +175,13 @@ package com.bryzek.apidoc.api.v0.models {
   case class GeneratorService(
     guid: _root_.java.util.UUID,
     uri: String,
+    attributes: Seq[String] = Nil,
     audit: com.bryzek.apidoc.common.v0.models.Audit
   )
 
   case class GeneratorServiceForm(
-    uri: String
+    uri: String,
+    attributes: _root_.scala.Option[Seq[String]] = None
   )
 
   /**
@@ -1095,6 +1097,7 @@ package com.bryzek.apidoc.api.v0.models {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "uri").read[String] and
+        (__ \ "attributes").read[Seq[String]] and
         (__ \ "audit").read[com.bryzek.apidoc.common.v0.models.Audit]
       )(GeneratorService.apply _)
     }
@@ -1103,6 +1106,7 @@ package com.bryzek.apidoc.api.v0.models {
       play.api.libs.json.Json.obj(
         "guid" -> play.api.libs.json.JsString(obj.guid.toString),
         "uri" -> play.api.libs.json.JsString(obj.uri),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes),
         "audit" -> com.bryzek.apidoc.common.v0.models.json.jsObjectAudit(obj.audit)
       )
     }
@@ -1116,13 +1120,19 @@ package com.bryzek.apidoc.api.v0.models {
     }
 
     implicit def jsonReadsApidocapiGeneratorServiceForm: play.api.libs.json.Reads[GeneratorServiceForm] = {
-      (__ \ "uri").read[String].map { x => new GeneratorServiceForm(uri = x) }
+      (
+        (__ \ "uri").read[String] and
+        (__ \ "attributes").readNullable[Seq[String]]
+      )(GeneratorServiceForm.apply _)
     }
 
     def jsObjectGeneratorServiceForm(obj: com.bryzek.apidoc.api.v0.models.GeneratorServiceForm) = {
       play.api.libs.json.Json.obj(
         "uri" -> play.api.libs.json.JsString(obj.uri)
-      )
+      ) ++ (obj.attributes match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("attributes" -> play.api.libs.json.Json.toJson(x))
+      })
     }
 
     implicit def jsonWritesApidocapiGeneratorServiceForm: play.api.libs.json.Writes[GeneratorServiceForm] = {

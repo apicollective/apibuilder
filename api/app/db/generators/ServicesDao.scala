@@ -15,6 +15,7 @@ object ServicesDao {
   private[this] val BaseQuery = s"""
     select services.guid,
            services.uri,
+           services.attributes,
            ${AuditsDao.queryCreation("services")}
       from generators.services
      where true
@@ -22,9 +23,9 @@ object ServicesDao {
 
   private[this] val InsertQuery = """
     insert into generators.services
-    (guid, uri, created_by_guid)
+    (guid, uri, attributes, created_by_guid)
     values
-    ({guid}::uuid, {uri}, {created_by_guid}::uuid)
+    ({guid}::uuid, {uri}, {attributes}, {created_by_guid}::uuid)
   """
 
   def validate(
@@ -58,6 +59,7 @@ object ServicesDao {
       SQL(InsertQuery).on(
         'guid -> guid,
         'uri -> form.uri.trim,
+        'attributes -> optionIfEmpty(form.attributes.map(_.trim).getOrElse(Nil).mkString(", ")),
         'created_by_guid -> user.guid
       ).execute()
     }
@@ -66,6 +68,13 @@ object ServicesDao {
 
     findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create service")
+    }
+  }
+
+  private[this] def optionIfEmpty(value: String): Option[String] = {
+    value.trim match {
+      case "" => None
+      case v => Some(v)
     }
   }
 
@@ -127,6 +136,7 @@ object ServicesDao {
     GeneratorService(
       guid = row[UUID](s"${p}guid"),
       uri = row[String](s"${p}uri"),
+      attributes = row[Option[String]](s"${p}attributes").getOrElse("").split("\\s+"),
       audit = AuditsDao.fromRowCreation(row)
     )
   }

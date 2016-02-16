@@ -438,13 +438,15 @@
       "fields": [
         { "name": "guid", "type": "uuid" },
         { "name": "uri", "type": "string" },
+        { "name": "attributes", "type": "[string]", "default": "[]", "description": "List of attribute names that this generator can use. See http://apidoc.me/doc/attributes for more information" },
         { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
       ]
     },
 
     "generator_service_form": {
       "fields": [
-        { "name": "uri", "type": "string" }
+        { "name": "uri", "type": "string" },
+        { "name": "attributes", "type": "[string]", "required": false, "description": "Optional list of attribute names that this generator can use. See http://apidoc.me/doc/attributes for more information" }
       ]
     },
 
