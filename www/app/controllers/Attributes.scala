@@ -89,7 +89,10 @@ class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller wit
   }
 
   def deletePost(guid: UUID) = Anonymous.async { implicit request =>
-    sys.error("TODO")
+    lib.ApiClient.callWith404(request.api.attributes.deleteByGuid(guid)).map {
+      case None => Redirect(routes.Attributes.index()).flashing("warning" -> s"Attribute not found")
+      case Some(_) => Redirect(routes.Attributes.index()).flashing("warning" -> s"Attribute deleted")
+    }
   }
 }
 
