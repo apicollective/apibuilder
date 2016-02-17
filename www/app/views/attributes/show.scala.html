@@ -7,7 +7,7 @@
 
   @if(tpl.canEditAttribute(attr)) {
     <div class="pull-right">
-      <span class="glyphicon glyphicon-plus"></span> <a class="delete" data-confirm="Are you sure?" href="@routes.Attributes.deletePost(attr.guid)">Delete</a>
+      <span class="glyphicon glyphicon-plus"></span> <a class="delete" data-confirm="Are you sure?" href="@routes.Attributes.deletePost(attr.name)">Delete</a>
     </div>
   }
 

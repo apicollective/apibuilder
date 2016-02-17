@@ -49,8 +49,8 @@ GET     /attributes                                               controllers.At
 GET     /attributes/                                              controllers.Attributes.index(page: Int ?= 0)
 GET     /attributes/create                                        controllers.Attributes.create()
 POST    /attributes/createPost                                    controllers.Attributes.createPost()
-GET     /attributes/:guid                                         controllers.Attributes.show(guid: java.util.UUID)
-POST    /attributes/:guid/delete                                  controllers.Attributes.deletePost(guid: java.util.UUID)
+GET     /attributes/:name                                         controllers.Attributes.show(name: String)
+POST    /attributes/:name/delete                                  controllers.Attributes.deletePost(name: String)
 
 GET     /tokens                                                   controllers.TokensController.redirect()
 GET     /tokens/                                                  controllers.TokensController.index(page: Int ?= 0)

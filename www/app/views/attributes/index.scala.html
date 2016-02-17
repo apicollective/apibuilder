@@ -15,7 +15,7 @@
     <tbody>
       @attributes.items.map { attribute =>
        <tr>
-         <td><a href="@routes.Attributes.show(attribute.guid)">@attribute.name</a></td>
+         <td><a href="@routes.Attributes.show(attribute.name)">@attribute.name</a></td>
        </tr>
      }
     </tbody>

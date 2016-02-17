@@ -33,9 +33,9 @@ class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller wit
     }
   }
 
-  def show(guid: UUID) = Anonymous.async { implicit request =>
+  def show(name: String) = Anonymous.async { implicit request =>
     for {
-      attribute <- lib.ApiClient.callWith404(request.api.attributes.getByGuid(guid))
+      attribute <- lib.ApiClient.callWith404(request.api.attributes.getByName(name))
     } yield {
       attribute match {
         case None => Redirect(routes.Attributes.index()).flashing("warning" -> s"Attribute not found")
@@ -88,10 +88,10 @@ class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller wit
     )
   }
 
-  def deletePost(guid: UUID) = Anonymous.async { implicit request =>
-    lib.ApiClient.callWith404(request.api.attributes.deleteByGuid(guid)).map {
+  def deletePost(name: String) = Anonymous.async { implicit request =>
+    lib.ApiClient.callWith404(request.api.attributes.deleteByName(name)).map {
       case None => Redirect(routes.Attributes.index()).flashing("warning" -> s"Attribute not found")
-      case Some(_) => Redirect(routes.Attributes.index()).flashing("warning" -> s"Attribute deleted")
+      case Some(_) => Redirect(routes.Attributes.index()).flashing("success" -> s"Attribute deleted")
     }
   }
 }

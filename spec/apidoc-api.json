@@ -735,8 +735,8 @@
 
         {
           "method": "GET",
-          "path": "/:guid",
-          "description": "Returns the attribute with this guid.",
+          "path": "/:name",
+          "description": "Returns the attribute with this name.",
           "responses": {
             "200": { "type": "attribute" },
             "404": { "type": "unit" }
@@ -755,8 +755,8 @@
 
         {
           "method": "DELETE",
-          "path": "/:guid",
-          "description": "Deletes an attribute. Only the user who created an attribute can delete it.",
+          "path": "/:name",
+          "description": "Deletes the attribute with this name. Only the user who created an attribute can delete it.",
           "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },

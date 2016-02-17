@@ -28,8 +28,8 @@ trait Attributes {
     Ok(Json.toJson(attributes))
   }
 
-  def getByGuid(guid: UUID) = Authenticated { request =>
-    AttributesDao.findByGuid(guid) match {
+  def getByName(name: String) = Authenticated { request =>
+    AttributesDao.findByName(name) match {
       case None => NotFound
       case Some(attribute) => Ok(Json.toJson(attribute))
     }
@@ -55,8 +55,8 @@ trait Attributes {
     }
   }
 
-  def deleteByGuid(guid: UUID) = Authenticated { request =>
-    AttributesDao.findByGuid(guid) match {
+  def deleteByName(name: String) = Authenticated { request =>
+    AttributesDao.findByName(name) match {
       case None => {
         NotFound
       }

@@ -2069,10 +2069,10 @@ package com.bryzek.apidoc.api.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getByName(
+        name: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Attribute] = {
-        _executeRequest("GET", s"/attributes/${guid}").map {
+        _executeRequest("GET", s"/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Attribute", r, _.validate[com.bryzek.apidoc.api.v0.models.Attribute])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2091,10 +2091,10 @@ package com.bryzek.apidoc.api.v0 {
         }
       }
 
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID
+      override def deleteByName(
+        name: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/attributes/${guid}").map {
+        _executeRequest("DELETE", s"/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
@@ -3084,10 +3084,10 @@ package com.bryzek.apidoc.api.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.apidoc.api.v0.models.Attribute]]
 
     /**
-     * Returns the attribute with this guid.
+     * Returns the attribute with this name.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getByName(
+      name: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Attribute]
 
     /**
@@ -3098,10 +3098,11 @@ package com.bryzek.apidoc.api.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Attribute]
 
     /**
-     * Deletes an attribute. Only the user who created an attribute can delete it.
+     * Deletes the attribute with this name. Only the user who created an attribute can
+     * delete it.
      */
-    def deleteByGuid(
-      guid: _root_.java.util.UUID
+    def deleteByName(
+      name: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 

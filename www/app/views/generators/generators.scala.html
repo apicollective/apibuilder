@@ -29,7 +29,9 @@
           <td><a href="@routes.Generators.show(gws.generator.key)">@gws.generator.key</a></td>
           <td>@gws.generator.name</td>
           <td>@gws.generator.language.getOrElse("")</td>
-          <td>@gws.generator.attributes</td>
+          <td>@gws.generator.attributes.map { attr =>
+            <a href="@routes.Attributes.show(attr)">@attr</a>
+          }</td>
           <td>@Html(lib.Markdown(gws.generator.description.map(lib.Text.truncate(_))))</td>
         </tr>
       }
