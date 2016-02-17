@@ -34,6 +34,10 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
     }
   }
 
+  def createRandomName(suffix: String): String = {
+    s"z-test-$suffix-" + UUID.randomUUID.toString,
+  }
+  
   def createOrganization(
     form: OrganizationForm = createOrganizationForm()
   ): Organization = {
@@ -41,7 +45,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   }
 
   def createOrganizationForm(
-    name: String = "z-test-org-" + UUID.randomUUID.toString,
+    name: String = createRandomName("org"),
     key: Option[String] = None,
     namespace: String = "test." + UUID.randomUUID.toString
   ) = OrganizationForm(
@@ -57,7 +61,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   }
 
   def createAttributeForm(
-    name: String = "z-test-attribute-" + UUID.randomUUID.toString,
+    name: String = createRandomName("attribute"),
     description: Option[String] = None
   ) = AttributeForm(
     name = name,

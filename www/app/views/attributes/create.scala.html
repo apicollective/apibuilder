@@ -1,0 +1,19 @@
+@(tpl: models.MainTemplate,
+  form: Form[controllers.Attributes.AttributeFormData],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl.copy(title = Some("Add Attribute")), errorMessages = errorMessages) {
+
+  <div class="container">
+
+    @helper.form(action = routes.Attributes.createPost) {
+
+      @attributeForm(form, routes.Attributes.index())
+
+    }
+
+  </div>
+
+}
+

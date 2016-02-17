@@ -1,0 +1,21 @@
+@(form: Form[controllers.Attributes.AttributeFormData],
+  cancelUrl: play.api.mvc.Call
+)(implicit flash: Flash, messages: Messages)
+
+<fieldset>
+    @helper.inputText(
+        form("name"),
+        '_label -> "Attribute Name",
+        '_help -> "URL friendly, globally unique attribute name.",
+        '_error -> form.error("name")
+    )
+
+    @helper.inputText(
+        form("description"),
+        '_label -> "Description",
+        '_error -> form.error("description")
+    )
+</fieldset>
+
+<button class="btn btn-large btn-primary" type="submit">Submit</button>
+<a href="@cancelUrl" class="btn">Cancel</a>

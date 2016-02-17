@@ -13,14 +13,14 @@ class AttributesSpec extends BaseSpec {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "POST /attributes" in new WithServer {
-    val name = UUID.randomUUID.toString
+    val name = createRandomName("attribute")
     val attr = createAttribute(createAttributeForm(name = name, description = Some("foo")))
     attr.name must be(name)
     attr.description must be(Some("foo"))
   }
 
   "POST /attributes trims whitespace in name" in new WithServer {
-    val name = UUID.randomUUID.toString
+    val name = createRandomName("attribute")
     val attr = createAttribute(createAttributeForm(name = " " + name + " "))
     attr.name must be(name)
   }

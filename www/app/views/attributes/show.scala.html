@@ -1,0 +1,17 @@
+@(
+  tpl: models.MainTemplate,
+  attr: com.bryzek.apidoc.api.v0.models.Attribute
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl) {
+
+  <ul>
+    <li> Name: @attr.name</li>
+    <li> Description:
+         <blockquote>@Html(lib.Markdown(attr.description))</blockquote>
+    </li>
+  </ul>
+
+}
+
+    
