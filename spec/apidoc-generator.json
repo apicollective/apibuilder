@@ -41,7 +41,7 @@
         { "name": "name", "type": "string" },
         { "name": "language", "type": "string", "required": false, "description": "A comma separate list of the programming language(s) that this generator produces", "example": "scala" },
         { "name": "description", "type": "string", "required": false },
-        { "name": "attributes", "type": "[string]", "required": "false", "description": "The list of attributes that this code generator can use. You can find the full list of available attributes and their descriptions at http://apidoc.me/doc/attributes" }
+        { "name": "attributes", "type": "[string]", "default": "[]", "description": "The list of attributes that this code generator can use. You can find the full list of available attributes and their descriptions at http://apidoc.me/doc/attributes" }
       ]
     },
 

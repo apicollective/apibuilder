@@ -37,7 +37,7 @@ package com.bryzek.apidoc.generator.v0.models {
     name: String,
     language: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
-    attributes: _root_.scala.Option[Seq[String]] = None
+    attributes: Seq[String] = Nil
   )
 
   case class Healthcheck(
@@ -170,14 +170,15 @@ package com.bryzek.apidoc.generator.v0.models {
         (__ \ "name").read[String] and
         (__ \ "language").readNullable[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "attributes").readNullable[Seq[String]]
+        (__ \ "attributes").read[Seq[String]]
       )(Generator.apply _)
     }
 
     def jsObjectGenerator(obj: com.bryzek.apidoc.generator.v0.models.Generator) = {
       play.api.libs.json.Json.obj(
         "key" -> play.api.libs.json.JsString(obj.key),
-        "name" -> play.api.libs.json.JsString(obj.name)
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.language match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("language" -> play.api.libs.json.JsString(x))
@@ -185,10 +186,6 @@ package com.bryzek.apidoc.generator.v0.models {
       (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.attributes match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("attributes" -> play.api.libs.json.Json.toJson(x))
       })
     }
 
