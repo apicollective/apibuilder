@@ -39,6 +39,11 @@ update application_moves
  where deleted_at is null
    and application_guid in (select guid from applications where deleted_at is not null);
 
+update attributes
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and name like 'z-test%';
+
 update changes
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
