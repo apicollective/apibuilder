@@ -1,4 +1,4 @@
-FROM flowcommerce/play:0.0.8
+FROM flowdocker/play:0.0.12
 
 MAINTAINER mbryzek@alum.mit.edu
 
