@@ -20,6 +20,7 @@ object GeneratorsDao {
            generators.name,
            generators.description,
            generators.language,
+           generators.attributes,
            services.guid as service_guid,
            services.uri as service_uri,
            ${AuditsDao.queryCreationWithAlias("services", "service")}
@@ -30,9 +31,9 @@ object GeneratorsDao {
 
   private[this] val InsertQuery = """
     insert into generators.generators
-    (guid, service_guid, key, name, description, language, created_by_guid)
+    (guid, service_guid, key, name, description, language, attributes, created_by_guid)
     values
-    ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {created_by_guid}::uuid)
+    ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {attributes}, {created_by_guid}::uuid)
   """
 
   private[this] val SoftDeleteByKeyQuery = """
@@ -88,6 +89,7 @@ object GeneratorsDao {
   private[this] def isDifferent(generator: Generator, form: GeneratorForm): Boolean = {
     generator.name != form.generator.name ||
     generator.language != form.generator.language ||
+    generator.attributes != form.generator.attributes ||
     generator.description != form.generator.description
   }
 
@@ -117,11 +119,19 @@ object GeneratorsDao {
       'name -> form.generator.name.trim,
       'description -> form.generator.description.map(_.trim),
       'language -> form.generator.language.map(_.trim),
+      'attributes -> optionIfEmpty(form.generator.attributes.map(_.trim).mkString(", ")),
       'created_by_guid -> user.guid,
       'updated_by_guid -> user.guid
     ).execute()
 
     guid
+  }
+
+  private[this] def optionIfEmpty(value: String): Option[String] = {
+    value.trim match {
+      case "" => None
+      case v => Some(v)
+    }
   }
 
   def softDelete(deletedBy: User, gws: GeneratorWithService) {
@@ -182,7 +192,11 @@ object GeneratorsDao {
       key = row[String]("key"),
       name = row[String]("name"),
       description = row[Option[String]]("description"),
-      language = row[Option[String]]("language")
+      language = row[Option[String]]("language"),
+      attributes = row[Option[String]]("attributes") match {
+        case None => Nil
+        case Some(value) => value.split("\\s+")
+      }
     )
   )
 

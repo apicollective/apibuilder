@@ -47,12 +47,12 @@ object UrlKey {
     )
   }
 
-  def validate(key: String): Seq[String] = {
+  def validate(key: String, label: String = "Key"): Seq[String] = {
     val generated = UrlKey.format(key)
     if (key.length < MinKeyLength) {
-      Seq(s"Key must be at least $MinKeyLength characters")
+      Seq(s"$label must be at least $MinKeyLength characters")
     } else if (key != generated) {
-      Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: $generated")
+      Seq(s"$label must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid ${label.toLowerCase} would be: $generated")
     } else {
       Nil
     }

@@ -8,11 +8,11 @@ import com.bryzek.apidoc.spec.v0.models.json._
 import com.bryzek.apidoc.spec.v0.models.Service
 
 import com.bryzek.apidoc.generator.v0.Client
-import com.bryzek.apidoc.generator.v0.models.InvocationForm
+import com.bryzek.apidoc.generator.v0.models.{Attribute, InvocationForm}
 
 import db.generators.{GeneratorsDao, ServicesDao}
-import db.{Authorization, VersionsDao}
-import lib.{Config, AppConfig, Validation}
+import db.{Authorization, OrganizationAttributeValuesDao, VersionsDao}
+import lib.{Config, AppConfig, Pager, Validation}
 
 import play.api.libs.json._
 import play.api.mvc._
@@ -50,9 +50,15 @@ object Code extends Controller {
               case Some(gws) => {
                 val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
 
+                val attributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
+
                 new Client(service.uri).invocations.postByKey(
                   key = gws.generator.key,
-                  invocationForm = InvocationForm(service = version.service, userAgent = Some(userAgent))
+                  invocationForm = InvocationForm(
+                    service = version.service,
+                    userAgent = Some(userAgent),
+                    attributes = attributes
+                  )
                 ).map { invocation =>
                   Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
                     generator = gws,
@@ -71,6 +77,31 @@ object Code extends Controller {
             }
           }
         }
+      }
+    }
+  }
+
+  /**
+    * Fetch all attribute values specified for this organization,
+    * filtered by those matching names.
+    */
+  private[this] def getAllAttributes(organizationGuid: UUID, names: Seq[String]): Seq[Attribute] = {
+    names match {
+      case Nil => Nil
+      case _ => {
+        var all = scala.collection.mutable.ListBuffer[Attribute]()
+
+        Pager.eachPage { offset =>
+          OrganizationAttributeValuesDao.findAll(
+            organizationGuid = Some(organizationGuid),
+            attributeNames = Some(names),
+            offset = offset
+          )
+        } { av =>
+          all += Attribute(av.attribute.name, av.value)
+        }
+
+        all
       }
     }
   }

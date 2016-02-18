@@ -1,0 +1,17 @@
+@(
+  tpl: models.MainTemplate,
+  attr: com.bryzek.apidoc.api.v0.models.Attribute
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl) {
+
+  @if(tpl.canEditAttribute(attr)) {
+    <div class="pull-right">
+      <span class="glyphicon glyphicon-plus"></span> <a class="delete" data-confirm="Are you sure?" href="@routes.AttributesController.deletePost(attr.name)">Delete</a>
+    </div>
+  }
+
+  @Html(lib.Markdown.toHtml(attr.description.getOrElse("")))
+}
+
+    

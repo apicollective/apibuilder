@@ -69,6 +69,13 @@ object ServicesDao {
     }
   }
 
+  private[this] def optionIfEmpty(value: String): Option[String] = {
+    value.trim match {
+      case "" => None
+      case v => Some(v)
+    }
+  }
+
   /**
     * Also will soft delete all generators for this service
     */

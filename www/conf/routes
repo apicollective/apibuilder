@@ -26,6 +26,7 @@ GET     /doc                                                      controllers.Do
 GET     /doc/                                                     controllers.DocController.index
 GET     /doc/start                                                controllers.DocController.start
 GET     /doc/apiJson                                              controllers.DocController.apiJson
+GET     /doc/attributes                                           controllers.DocController.attributes
 GET     /doc/types                                                controllers.DocController.types
 GET     /doc/examples                                             controllers.DocController.examples
 GET     /doc/generators                                           controllers.DocController.generators
@@ -44,6 +45,13 @@ GET     /generators/create                                        controllers.Ge
 POST    /generators/createPost                                    controllers.Generators.createPost()
 GET     /generators/servies/:guid/show                            controllers.GeneratorServices.show(guid: java.util.UUID, page: Int ?= 0)
 POST    /generator/services/:guid/delete                          controllers.GeneratorServices.deletePost(guid: java.util.UUID)
+
+GET     /attributes                                               controllers.ApplicationController.redirect()
+GET     /attributes/                                              controllers.AttributesController.index(page: Int ?= 0)
+GET     /attributes/create                                        controllers.AttributesController.create()
+POST    /attributes/createPost                                    controllers.AttributesController.createPost()
+GET     /attributes/:name                                         controllers.AttributesController.show(name: String)
+POST    /attributes/:name/delete                                  controllers.AttributesController.deletePost(name: String)
 
 GET     /tokens                                                   controllers.TokensController.redirect()
 GET     /tokens/                                                  controllers.TokensController.index(page: Int ?= 0)
@@ -73,6 +81,11 @@ GET     /:orgKey/domains                                          controllers.Do
 POST    /:orgKey/domains/:domain/remove                           controllers.Domains.postRemove(orgKey: String, domain: String)
 GET     /:orgKey/domains/create                                   controllers.Domains.create(orgKey: String)
 POST    /:orgKey/domains/postCreate                               controllers.Domains.postCreate(orgKey: String)
+
+GET     /:orgKey/attributes                                       controllers.ApplicationController.redirectOrg(orgKey: String)
+GET     /:orgKey/attributes/                                      controllers.OrganizationAttributesController.index(orgKey: String)
+GET     /:orgKey/attributes/:name/edit                            controllers.OrganizationAttributesController.edit(orgKey: String, name: String)
+POST    /:orgKey/attributes/:name/editPost                        controllers.OrganizationAttributesController.editPost(orgKey: String, name: String)
 
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/downloadCsv                              controllers.Members.downloadCsv(orgKey: String)

@@ -1,0 +1,28 @@
+@(user: Option[com.bryzek.apidoc.api.v0.models.User])
+
+@doc.main(routes.DocController.playRoutesFile.url, user, Some("Attributes")) {
+  <p>
+    apidoc supports the notion of 'attributes' that can be used to
+    enhance code generation: 
+  
+    <ul>
+  
+      <li> Attributes are globally unique and have URL friendly names.</li>
+  
+      <li> Attributes have an optional description.</li>
+  
+      <li> Attribute values can be set at the organization level, cascading to all of the applications that belong to that organization.</li>
+  
+      <li> A code generator can return a list of the attribute names on
+      which it depends. apidoc will then send any matching attribute
+      values when invoking the code generator.</li>
+  
+    </ul>
+  
+  </p>
+  
+  <p>
+    <b>More Information:</b>
+    <a href="@routes.AttributesController.index()">View available attributes or to create a new one at </a>
+  </p>
+}

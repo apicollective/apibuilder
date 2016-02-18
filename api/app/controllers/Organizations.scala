@@ -1,9 +1,9 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{Organization, OrganizationForm}
+import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeValueForm, Organization, OrganizationForm, User}
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
-import db.{Authorization, OrganizationsDao}
+import db.{AttributesDao, Authorization, OrganizationsDao, OrganizationAttributeValuesDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -89,6 +89,112 @@ object Organizations extends Controller {
       OrganizationsDao.softDelete(request.user, organization)
     }
     NoContent
+  }
+
+  def getAttributesByKey(
+    key: String,
+    attributeName: Option[String],
+    limit: Long = 25,
+    offset: Long = 0
+  ) = Authenticated { request =>
+    withOrganization(request.user, key) { org =>
+      Ok(
+        Json.toJson(
+          OrganizationAttributeValuesDao.findAll(
+            organizationGuid = Some(org.guid),
+            attributeNames = attributeName.map(n => Seq(n)),
+            limit = limit,
+            offset = offset
+          )
+        )
+      )
+    }
+  }
+
+  def getAttributesByKeyAndName(
+    key: String,
+    name: String
+  ) = Authenticated { request =>
+    withOrganization(request.user, key) { org =>
+      OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
+        case None => NotFound
+        case Some(attr) => Ok(Json.toJson(attr))
+      }
+    }
+  }
+
+  def putAttributesByKeyAndName(key: String, name: String) = Authenticated(parse.json) { request =>
+    withOrganization(request.user, key) { org =>
+      withAttribute(name) { attr =>
+        request.body.validate[AttributeValueForm] match {
+          case e: JsError => {
+            Conflict(Json.toJson(Validation.invalidJson(e)))
+          }
+          case s: JsSuccess[AttributeValueForm] => {
+            val form = s.get
+            val existing = OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name)
+            OrganizationAttributeValuesDao.validate(org, AttributeSummary(attr.guid, attr.name), form, existing) match {
+              case Nil => {
+                val value = OrganizationAttributeValuesDao.upsert(request.user, org, attr, form)
+                existing match {
+                  case None => Created(Json.toJson(value))
+                  case Some(_) => Ok(Json.toJson(value))
+                }
+              }
+              case errors => {
+                Conflict(Json.toJson(errors))
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  def deleteAttributesByKeyAndName(
+    key: String,
+    name: String
+  ) = Authenticated { request =>
+    withOrganization(request.user, key) { org =>
+      OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
+        case None => NotFound
+        case Some(attr) => {
+          OrganizationAttributeValuesDao.softDelete(request.user, attr)
+          NoContent
+        }
+      }
+    }
+  }
+
+  private[this] def withOrganization(
+    user: User,
+    key: String
+  ) (
+    f: Organization => Result
+  ) = {
+    OrganizationsDao.findByKey(Authorization.User(user.guid), key) match {
+      case None => {
+        NotFound
+      }
+      case Some(org) => {
+        f(org)
+      }
+    }
+  }
+
+  private[this] def withAttribute(
+    name: String
+  ) (
+    f: Attribute => Result
+  ) = {
+    AttributesDao.findByName(name) match {
+      case None => {
+        NotFound
+      }
+      case Some(attr) => {
+        f(attr)
+      }
+    }
   }
 
 }
