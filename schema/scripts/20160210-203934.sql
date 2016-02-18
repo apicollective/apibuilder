@@ -1,4 +1,4 @@
-drop table if exists values;
+drop table if exists organization_attribute_values;
 drop table if exists attributes;
 
 create table attributes (
