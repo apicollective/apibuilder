@@ -1,9 +1,9 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{AttributeValueForm, Organization, OrganizationForm, User}
+import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeValueForm, Organization, OrganizationForm, User}
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
-import db.{Authorization, OrganizationsDao, OrganizationAttributeValuesDao}
+import db.{AttributesDao, Authorization, OrganizationsDao, OrganizationAttributeValuesDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
@@ -123,21 +123,27 @@ object Organizations extends Controller {
     }
   }
 
-  def postAttributesByKey(key: String) = Authenticated(parse.json) { request =>
+  def putAttributesByKeyAndName(key: String, name: String) = Authenticated(parse.json) { request =>
     withOrganization(request.user, key) { org =>
-      request.body.validate[AttributeValueForm] match {
-        case e: JsError => {
-          Conflict(Json.toJson(Validation.invalidJson(e)))
-        }
-        case s: JsSuccess[AttributeValueForm] => {
-          val form = s.get
-          OrganizationAttributeValuesDao.validate(org, form) match {
-            case Nil => {
-              val attr = OrganizationAttributeValuesDao.create(request.user, org, form)
-              Created(Json.toJson(attr))
-            }
-            case errors => {
-              Conflict(Json.toJson(errors))
+      withAttribute(name) { attr =>
+        request.body.validate[AttributeValueForm] match {
+          case e: JsError => {
+            Conflict(Json.toJson(Validation.invalidJson(e)))
+          }
+          case s: JsSuccess[AttributeValueForm] => {
+            val form = s.get
+            val existing = OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name)
+            OrganizationAttributeValuesDao.validate(org, AttributeSummary(attr.guid, attr.name), form, existing) match {
+              case Nil => {
+                val value = OrganizationAttributeValuesDao.upsert(request.user, org, attr, form)
+                existing match {
+                  case None => Created(Json.toJson(value))
+                  case Some(_) => Ok(Json.toJson(value))
+                }
+              }
+              case errors => {
+                Conflict(Json.toJson(errors))
+              }
             }
           }
         }
@@ -172,6 +178,21 @@ object Organizations extends Controller {
       }
       case Some(org) => {
         f(org)
+      }
+    }
+  }
+
+  private[this] def withAttribute(
+    name: String
+  ) (
+    f: Attribute => Result
+  ) = {
+    AttributesDao.findByName(name) match {
+      case None => {
+        NotFound
+      }
+      case Some(attr) => {
+        f(attr)
       }
     }
   }

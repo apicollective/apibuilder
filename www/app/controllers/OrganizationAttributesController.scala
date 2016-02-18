@@ -56,7 +56,7 @@ class OrganizationAttributesController @Inject() (val messagesApi: MessagesApi) 
     } yield {
       val filledForm = OrganizationAttributesController.formData.fill(
         OrganizationAttributesController.FormData(
-          value = values.headOption.map(_.value).getOrElse("")
+          value = values.headOption.map(_.value)
         )
       )
 
@@ -76,43 +76,47 @@ class OrganizationAttributesController @Inject() (val messagesApi: MessagesApi) 
         },
 
         valid => {
-          request.api.organizations.postAttributesByKey(
-            orgKey,
-            AttributeValueForm(
-              attributeGuid = attr.guid,
-              value = valid.value
-            )
-          ).map { value =>
-            Redirect(routes.OrganizationAttributesController.index(orgKey)).flashing("success" -> s"Updated value for $name")
-          }.recover {
-            case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
-              Ok(views.html.organization_attributes.edit(request.mainTemplate(), attr, form, r.errors.map(_.message)))
+          valid.value.map(_.trim).getOrElse("") match {
+            case "" => {
+              // Delete existing attribute value if set
+              request.api.organizations.deleteAttributesByKeyAndName(orgKey, name).map { value =>
+                Redirect(routes.OrganizationAttributesController.index(orgKey)).flashing("success" -> s"Deleted value for $name")
+              }.recover {
+                case com.bryzek.apidoc.api.v0.errors.UnitResponse(404) => {
+                  Redirect(routes.OrganizationAttributesController.index(orgKey)).flashing("success" -> s"Deleted value for $name")
+                }
+              }
+            }
+            case v => {
+              request.api.organizations.putAttributesByKeyAndName(
+                orgKey,
+                attr.name,
+                AttributeValueForm(value = v)
+              ).map { value =>
+                Redirect(routes.OrganizationAttributesController.index(orgKey)).flashing("success" -> s"Updated value for $name")
+              }.recover {
+                case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+                  Ok(views.html.organization_attributes.edit(request.mainTemplate(), attr, form, r.errors.map(_.message)))
+                }
+              }
             }
           }
         }
       )
     }
   }
-
-  /*
-  def deletePost(name: String) = AuthenticatedOrg.async { implicit request =>
-    lib.ApiClient.callWith404(request.api.attributes.deleteByName(name)).map {
-      case None => Redirect(routes.OrganizationAttributesController.index()).flashing("warning" -> s"Attribute not found")
-      case Some(_) => Redirect(routes.OrganizationAttributesController.index()).flashing("success" -> s"Attribute deleted")
-    }
-  }
-   */
+  
 }
 
 object OrganizationAttributesController {
 
   case class FormData(
-    value: String
+    value: Option[String]
   )
 
   private[controllers] val formData = Form(
     mapping(
-      "value" -> nonEmptyText
+      "value" -> optional(text)
     )(FormData.apply)(FormData.unapply)
   )
 

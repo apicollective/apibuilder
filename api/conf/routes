@@ -34,7 +34,7 @@ PUT        /organizations/:key                                 controllers.Organ
 DELETE     /organizations/:key                                 controllers.Organizations.deleteByKey(key: String)
 GET        /organizations/:key/attributes                      controllers.Organizations.getAttributesByKey(key: String, name: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /organizations/:key/attributes/:name                controllers.Organizations.getAttributesByKeyAndName(key: String, name: String)
-POST       /organizations/:key/attributes                      controllers.Organizations.postAttributesByKey(key: String)
+PUT        /organizations/:key/attributes/:name                controllers.Organizations.putAttributesByKeyAndName(key: String, name: String)
 DELETE     /organizations/:key/attributes/:name                controllers.Organizations.deleteAttributesByKeyAndName(key: String, name: String)
 POST       /password_resets                                    controllers.PasswordResets.post()
 POST       /password_reset_requests                            controllers.PasswordResetRequests.post()

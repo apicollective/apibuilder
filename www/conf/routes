@@ -84,8 +84,8 @@ POST    /:orgKey/domains/postCreate                               controllers.Do
 
 GET     /:orgKey/attributes                                       controllers.ApplicationController.redirectOrg(orgKey: String)
 GET     /:orgKey/attributes/                                      controllers.OrganizationAttributesController.index(orgKey: String)
-GET     /:orgKey/attributes/edit                                  controllers.OrganizationAttributesController.edit(orgKey: String, name: String)
-POST    /:orgKey/attributes/editPost                              controllers.OrganizationAttributesController.editPost(orgKey: String, name: String)
+GET     /:orgKey/attributes/:name/edit                            controllers.OrganizationAttributesController.edit(orgKey: String, name: String)
+POST    /:orgKey/attributes/:name/editPost                        controllers.OrganizationAttributesController.editPost(orgKey: String, name: String)
 
 GET     /:orgKey/members                                          controllers.Members.show(orgKey: String, page: Int ?= 0)
 GET     /:orgKey/members/downloadCsv                              controllers.Members.downloadCsv(orgKey: String)

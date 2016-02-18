@@ -14,56 +14,45 @@ class OrganizationAttributesSpec extends BaseSpec {
 
   lazy val org = createOrganization()
 
-  "POST /organizations/:key/attributes" in new WithServer {
+  "PUT /organizations/:key/attributes" in new WithServer {
     val attribute = createAttribute()
-    val form = AttributeValueForm(
-      attributeGuid = attribute.guid,
-      value = "test"
-    )
+    val form = AttributeValueForm(value = "test")
 
     val value = await(
-      client.organizations.postAttributesByKey(org.key, form)
+      client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form)
     )
     value.attribute.guid must be(attribute.guid)
     value.attribute.name must be(attribute.name)
     value.value must be("test")
   }
 
-  "POST /organizations/:key/attributes validates value" in new WithServer {
+  "PUT /organizations/:key/attributes validates value" in new WithServer {
     val attribute = createAttribute()
-    val form = AttributeValueForm(
-      attributeGuid = attribute.guid,
-      value = "   "
-    )
+    val form = AttributeValueForm(value = "   ")
 
     intercept[ErrorsResponse] {
-      await(client.organizations.postAttributesByKey(org.key, form))
+      await(client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form))
     }.errors.map(_.message) must be(Seq(s"Value is required"))
   }
 
-  "POST /organizations/:key/attributes validates attribute" in new WithServer {
-    val form = AttributeValueForm(
-      attributeGuid = UUID.randomUUID,
-      value = "test"
-    )
+  "PUT /organizations/:key/attributes validates attribute" in new WithServer {
+    val form = AttributeValueForm(value = "rest")
 
     intercept[ErrorsResponse] {
-      await(client.organizations.postAttributesByKey(org.key, form))
+      await(client.organizations.putAttributesByKeyAndName(org.key, UUID.randomUUID.toString(), form))
     }.errors.map(_.message) must be(Seq("Attribute not found"))
   }
 
-  "POST /organizations/:key/attributes validates duplicate" in new WithServer {
+  "PUT /organizations/:key/attributes updates existing value" in new WithServer {
     val attribute = createAttribute()
-    val form = AttributeValueForm(
-      attributeGuid = attribute.guid,
-      value = "test"
-    )
 
-    await(client.organizations.postAttributesByKey(org.key, form))
+    val form = AttributeValueForm(value = "test")
+    val original = await(client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form))
+    original.value must be("test")
 
-    intercept[ErrorsResponse] {
-      await(client.organizations.postAttributesByKey(org.key, form))
-    }.errors.map(_.message) must be(Seq("Value for this attribute already exists"))
+    val form2 = AttributeValueForm(value = "test2")
+    val updated = await(client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form2))
+    updated.value must be("test2")
   }
   
   "GET /organizations/:key/attributes" in new WithServer {
@@ -71,8 +60,8 @@ class OrganizationAttributesSpec extends BaseSpec {
     val attribute1 = createAttribute()
     val attribute2 = createAttribute()
 
-    await(client.organizations.postAttributesByKey(org.key, AttributeValueForm(attribute1.guid, "a")))
-    await(client.organizations.postAttributesByKey(org.key, AttributeValueForm(attribute2.guid, "b")))
+    await(client.organizations.putAttributesByKeyAndName(org.key, attribute1.name, AttributeValueForm("a")))
+    await(client.organizations.putAttributesByKeyAndName(org.key, attribute2.name, AttributeValueForm("b")))
 
     await(client.organizations.getAttributesByKey(org.key)).map(_.value) must be(Seq("a", "b"))
   }
@@ -82,8 +71,8 @@ class OrganizationAttributesSpec extends BaseSpec {
     val attribute1 = createAttribute()
     val attribute2 = createAttribute()
 
-    await(client.organizations.postAttributesByKey(org.key, AttributeValueForm(attribute1.guid, "a")))
-    await(client.organizations.postAttributesByKey(org.key, AttributeValueForm(attribute2.guid, "b")))
+    await(client.organizations.putAttributesByKeyAndName(org.key, attribute1.name, AttributeValueForm("a")))
+    await(client.organizations.putAttributesByKeyAndName(org.key, attribute2.name, AttributeValueForm("b")))
 
     await(client.organizations.getAttributesByKey(org.key, name = Some(attribute1.name))).map(_.value) must be(Seq("a"))
     await(client.organizations.getAttributesByKey(org.key, name = Some(attribute2.name))).map(_.value) must be(Seq("b"))
@@ -95,8 +84,8 @@ class OrganizationAttributesSpec extends BaseSpec {
     val attribute1 = createAttribute()
     val attribute2 = createAttribute()
 
-    await(client.organizations.postAttributesByKey(org.key, AttributeValueForm(attribute1.guid, "a")))
-    await(client.organizations.postAttributesByKey(org.key, AttributeValueForm(attribute2.guid, "b")))
+    await(client.organizations.putAttributesByKeyAndName(org.key, attribute1.name, AttributeValueForm("a")))
+    await(client.organizations.putAttributesByKeyAndName(org.key, attribute2.name, AttributeValueForm("b")))
 
     await(client.organizations.getAttributesByKeyAndName(org.key, attribute1.name)).value must be("a")
     await(client.organizations.getAttributesByKeyAndName(org.key, attribute2.name)).value must be("b")

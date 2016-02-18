@@ -35,7 +35,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   }
 
   def createRandomName(suffix: String): String = {
-    s"z-test-$suffix-" + UUID.randomUUID.toString,
+    s"z-test-$suffix-" + UUID.randomUUID.toString
   }
   
   def createOrganization(

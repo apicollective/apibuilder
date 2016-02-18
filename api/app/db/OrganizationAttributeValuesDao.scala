@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{AttributeSummary, AttributeValue, AttributeValueForm, Organization, User}
+import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeValue, AttributeValueForm, Organization, User}
 import com.bryzek.apidoc.common.v0.models.Audit
 import lib.Validation
 import anorm._
@@ -29,12 +29,21 @@ object OrganizationAttributeValuesDao {
     ({guid}::uuid, {organization_guid}::uuid, {attribute_guid}::uuid, {value}, {user_guid}::uuid, {user_guid}::uuid)
   """
 
+  private[this] val UpdateQuery = """
+    update organization_attribute_values
+       set value = {value},
+           updated_by_guid = {user_guid}::uuid
+     where guid = {guid}::uuid
+  """
+
   def validate(
     organization: Organization,
-    form: AttributeValueForm
+    attribute: AttributeSummary,
+    form: AttributeValueForm,
+    existing: Option[AttributeValue]
   ): Seq[com.bryzek.apidoc.api.v0.models.Error] = {
 
-    val attributeErrors = AttributesDao.findByGuid(form.attributeGuid) match {
+    val attributeErrors = AttributesDao.findByName(attribute.name) match {
       case None => Seq("Attribute not found")
       case Some(_) => Nil
     }
@@ -42,10 +51,13 @@ object OrganizationAttributeValuesDao {
     val valueErrors = if (form.value.trim.isEmpty) {
       Seq(s"Value is required")
     } else {
-      OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeGuid(organization.guid, form.attributeGuid) match {
+      OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
         case None => Seq.empty
-        case Some(_) => {
-          Seq("Value for this attribute already exists")
+        case Some(found) => {
+          Some(found.guid) == existing.map(_.guid) match {
+            case true => Nil
+            case false => Seq("Value for this attribute already exists")
+          }
         }
       }
     }
@@ -53,8 +65,15 @@ object OrganizationAttributeValuesDao {
     Validation.errors(attributeErrors ++ valueErrors)
   }
 
-  def create(user: User, organization: Organization, form: AttributeValueForm): AttributeValue = {
-    val errors = validate(organization, form)
+  def upsert(user: User, organization: Organization, attribute: Attribute, form: AttributeValueForm): AttributeValue = {
+    findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
+      case None => create(user, organization, attribute, form)
+      case Some(existing) => update(user, organization, existing, form)
+    }
+  }
+
+  def create(user: User, organization: Organization, attribute: Attribute, form: AttributeValueForm): AttributeValue = {
+    val errors = validate(organization, AttributeSummary(attribute.guid, attribute.name), form, None)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
     val guid = UUID.randomUUID()
@@ -63,7 +82,7 @@ object OrganizationAttributeValuesDao {
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> organization.guid,
-        'attribute_guid -> form.attributeGuid,
+        'attribute_guid -> attribute.guid,
         'value -> form.value.trim,
         'user_guid -> user.guid
       ).execute()
@@ -74,16 +93,29 @@ object OrganizationAttributeValuesDao {
     }
   }
 
+  def update(user: User, organization: Organization, existing: AttributeValue, form: AttributeValueForm): AttributeValue = {
+    val errors = validate(organization, existing.attribute, form, Some(existing))
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+
+    DB.withConnection { implicit c =>
+      SQL(UpdateQuery).on(
+        'guid -> existing.guid,
+        'value -> form.value.trim,
+        'user_guid -> user.guid
+      ).execute()
+    }
+
+    findByGuid(existing.guid).getOrElse {
+      sys.error("Failed to update attribute_value")
+    }
+  }
+
   def softDelete(deletedBy: User, org: AttributeValue) {
     SoftDelete.delete("organization_attribute_values", deletedBy, org.guid)
   }
 
   def findByGuid(guid: UUID): Option[AttributeValue] = {
     findAll(guid = Some(guid), limit = 1).headOption
-  }
-
-  def findByOrganizationGuidAndAttributeGuid(organizationGuid: UUID, attributeGuid: UUID): Option[AttributeValue] = {
-    findAll(organizationGuid = Some(organizationGuid), attributeGuid = Some(attributeGuid), limit = 1).headOption
   }
 
   def findByOrganizationGuidAndAttributeName(organizationGuid: UUID, name: String): Option[AttributeValue] = {

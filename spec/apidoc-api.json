@@ -117,7 +117,6 @@
 
     "attribute_value_form": {
       "fields": [
-        { "name": "name", "type": "string", "description": "The name of the attribute" },
         { "name": "value", "type": "string" }
       ]
     },
@@ -694,11 +693,12 @@
         },
 
         {
-          "method": "POST",
-          "path": "/:key/attributes",
-          "description": "Create a new attribute value.",
+          "method": "PUT",
+          "path": "/:key/attributes/:name",
+          "description": "Create or update a new attribute value.",
           "body": { "type": "attribute_value_form" },
           "responses": {
+            "200": { "type": "attribute_value" },
             "201": { "type": "attribute_value" },
             "409": { "type": "[error]" }
           }
