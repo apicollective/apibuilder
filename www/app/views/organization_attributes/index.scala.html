@@ -17,7 +17,7 @@
      }
      @otherAttributes.map { attr =>
        <tr>
-         <td><a href="@routes.OrganizationAttributesController.edit(tpl.org.get.key, attr.name)">set</a></td>
+         <td><a href="@routes.OrganizationAttributesController.edit(tpl.org.get.key, attr.name)">Edit</a></td>
          <td><a href="@routes.AttributesController.show(attr.name)">@attr.name</a></td>
          <td>-</td>
        </tr>

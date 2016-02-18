@@ -5,7 +5,7 @@
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
 
-@main(tpl, errorMessages) {
+@main(tpl.copy(title = Some(s"Edit ${attribute.name}")), errorMessages) {
 
   <div class="container">
 
@@ -15,17 +15,19 @@
     <fieldset>
       @helper.inputText(
       form("value"),
-      '_label -> attribute.name,
-      '_help -> attribute.description.getOrElse(""),
+      '_label -> "Value",
       '_error -> form.error("value")
       )
-
     </fieldset>
 
     <button class="btn btn-large btn-primary" type="submit">Submit</button>
     <a href="routes.OrganizationAttributesController.index(tpl.org.get.key)" class="btn">Cancel</a>
 
     }
+
+    <p>
+    @Html(lib.Markdown.toHtml(attribute.description.getOrElse("")))
+    </p>
 
   </div>
 

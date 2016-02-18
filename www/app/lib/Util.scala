@@ -30,6 +30,7 @@ object Util {
 
   val AddApplicationText = "Add Application"
   val OrgDetailsText = "Org Details"
+  val OrgAttributesText = "Org Attributes"
   val ServiceJsonText = "service.json"
 
   val ApidocExample = ExampleService("bryzek", "apidoc-api")

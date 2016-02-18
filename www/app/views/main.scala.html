@@ -29,7 +29,7 @@
 
               @if(metadata.isOrgMember) {
                 @metadata.settings.map { settings =>
-                  <li><a@if(settings.section == Some(models.SettingSection.Attributes)) { class="active" } href="@routes.OrganizationAttributesController.index(org.key)">Org Attributes</a></li>
+                  <li><a@if(settings.section == Some(models.SettingSection.Attributes)) { class="active" } href="@routes.OrganizationAttributesController.index(org.key)">@lib.Util.OrgAttributesText</a></li>
                   <li><a@if(settings.section == Some(models.SettingSection.Domains)) { class="active" } href="@routes.Domains.index(orgKey = org.key)">Org Domains</a></li>
                   <li><a@if(settings.section == Some(models.SettingSection.Members)) { class="active" } href="@routes.Members.show(orgKey = org.key)">Org Members</a></li>
                 }
