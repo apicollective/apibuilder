@@ -15,8 +15,8 @@ trait GeneratorWithServices {
     guid: Option[UUID],
     serviceGuid: Option[UUID],
     serviceUri: Option[String],
-    key: Option[String],
     attributeName: Option[String],
+    key: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
@@ -25,8 +25,8 @@ trait GeneratorWithServices {
       guid = guid,
       serviceGuid = serviceGuid,
       serviceUri = serviceUri,
-      key = key,
       attributeName = attributeName,
+      key = key,
       limit = limit,
       offset = offset
     )
