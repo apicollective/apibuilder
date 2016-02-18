@@ -44,6 +44,11 @@ update attributes
  where deleted_at is null
    and name like 'z-test%';
 
+update organization_attribute_values
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and value like 'z-test%';
+
 update changes
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null

@@ -18,7 +18,7 @@ object OrganizationAttributeValuesDao {
            attributes.guid as attribute_guid,
            attributes.name as attribute_name
       from organization_attribute_values
-      join attributes on attributes.guid = organization_attribute_values.attribute_guid
+      join attributes on attributes.deleted_at is null and attributes.guid = organization_attribute_values.attribute_guid
      where true
   """
 

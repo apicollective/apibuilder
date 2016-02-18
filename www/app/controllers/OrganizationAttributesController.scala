@@ -38,7 +38,7 @@ class OrganizationAttributesController @Inject() (val messagesApi: MessagesApi) 
           ),
           values = attributeValues,
           otherAttributes = attributes.filter { attr =>
-            attributeValues.find(_.attribute.guid == attr.guid).isEmpty
+            attributeValues.find(_.attribute.name == attr.name).isEmpty
           }
         )
       )
