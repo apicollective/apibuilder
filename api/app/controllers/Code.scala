@@ -12,7 +12,7 @@ import com.bryzek.apidoc.generator.v0.models.{Attribute, InvocationForm}
 
 import db.generators.{GeneratorsDao, ServicesDao}
 import db.{Authorization, OrganizationAttributeValuesDao, VersionsDao}
-import lib.{Config, AppConfig, Validation}
+import lib.{Config, AppConfig, Pager, Validation}
 
 import play.api.libs.json._
 import play.api.mvc._
@@ -50,13 +50,7 @@ object Code extends Controller {
               case Some(gws) => {
                 val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
 
-                // TODO: Paginate; Filter to ony those attributes that
-                // this code generator has declared
-                val attributes = OrganizationAttributeValuesDao.findAll(
-                  organizationGuid = Some(version.organization.guid),
-                  limit = 100
-                ).map { av => Attribute(av.attribute.name, av.value) }
-
+                val attributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
                 println("ATTRIBUTES: " + attributes.mkString(", "))
 
                 new Client(service.uri).invocations.postByKey(
@@ -84,6 +78,31 @@ object Code extends Controller {
             }
           }
         }
+      }
+    }
+  }
+
+  /**
+    * Fetch all attribute values specified for this organization,
+    * filtered by those matching names.
+    */
+  private[this] def getAllAttributes(organizationGuid: UUID, names: Seq[String]): Seq[Attribute] = {
+    names match {
+      case Nil => Nil
+      case _ => {
+        var all = scala.collection.mutable.ListBuffer[Attribute]()
+
+        Pager.eachPage { offset =>
+          OrganizationAttributeValuesDao.findAll(
+            organizationGuid = Some(organizationGuid),
+            attributeNames = Some(names),
+            offset = offset
+          )
+        } { av =>
+          all += Attribute(av.attribute.name, av.value)
+        }
+
+        all
       }
     }
   }

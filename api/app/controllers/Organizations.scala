@@ -102,7 +102,7 @@ object Organizations extends Controller {
         Json.toJson(
           OrganizationAttributeValuesDao.findAll(
             organizationGuid = Some(org.guid),
-            attributeName = attributeName,
+            attributeNames = attributeName.map(n => Seq(n)),
             limit = limit,
             offset = offset
           )

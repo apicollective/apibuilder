@@ -119,24 +119,40 @@ object OrganizationAttributeValuesDao {
   }
 
   def findByOrganizationGuidAndAttributeName(organizationGuid: UUID, name: String): Option[AttributeValue] = {
-    findAll(organizationGuid = Some(organizationGuid), attributeName = Some(name), limit = 1).headOption
+    findAll(organizationGuid = Some(organizationGuid), attributeNames = Some(Seq(name)), limit = 1).headOption
   }
   
   def findAll(
     guid: Option[UUID] = None,
     organizationGuid: Option[UUID] = None,
-    attributeName: Option[String] = None,
+    attributeNames: Option[Seq[String]] = None,
     attributeGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[AttributeValue] = {
+    var nameBinds = scala.collection.mutable.ListBuffer[NamedParameter]()
+
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and organization_attribute_values.guid = {guid}::uuid" },
       organizationGuid.map { v => "and organization_attribute_values.organization_guid = {organization_guid}::uuid" },
-      attributeName.map { v => "and organization_attribute_values.attribute_guid = (select guid from attributes where deleted_at is null and name = lower(trim({attribute_name})))" },
       attributeGuid.map { v => "and organization_attribute_values.attribute_guid = {attribute_guid}::uuid" },
+      attributeNames.map { names =>
+        names match {
+          case Nil => {
+            "and false"
+          }
+          case _ => {
+            val clause = names.zipWithIndex.map { case (name, i) =>
+              val key = s"name_$i"
+              nameBinds += NamedParameter(key, name)
+              s"{$key}"
+            }.mkString(", ")
+            s"and organization_attribute_values.attribute_guid = (select guid from attributes where deleted_at is null and name in ($clause))"
+          }
+        }
+      },
       isDeleted.map(Filters.isDeleted("organization_attribute_values", _)),
       Some(s"order by lower(organization_attribute_values.value), organization_attribute_values.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -144,9 +160,8 @@ object OrganizationAttributeValuesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       organizationGuid.map('organization_guid -> _.toString),
-      attributeName.map('attribute_name -> _),
       attributeGuid.map('attribute_guid -> _.toString)
-    ).flatten
+    ).flatten ++ nameBinds
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
