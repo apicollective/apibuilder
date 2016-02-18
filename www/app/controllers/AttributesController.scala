@@ -11,13 +11,9 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.mvc.{Action, Controller}
 
-class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
+class AttributesController @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
-
-  def redirect = Action { implicit request =>
-    Redirect(routes.Attributes.index())
-  }
 
   def index(page: Int = 0) = Anonymous.async { implicit request =>
     for {
@@ -38,7 +34,7 @@ class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller wit
       attribute <- lib.ApiClient.callWith404(request.api.attributes.getByName(name))
     } yield {
       attribute match {
-        case None => Redirect(routes.Attributes.index()).flashing("warning" -> s"Attribute not found")
+        case None => Redirect(routes.AttributesController.index()).flashing("warning" -> s"Attribute not found")
         case Some(attr) => {
           Ok(views.html.attributes.show(
             request.mainTemplate().copy(title = Some(attr.name)),
@@ -50,8 +46,8 @@ class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller wit
   }
 
   def create() = Authenticated { implicit request =>
-    val filledForm = Attributes.attributesFormData.fill(
-      Attributes.AttributeFormData(
+    val filledForm = AttributesController.attributesFormData.fill(
+      AttributesController.AttributeFormData(
         name = "",
         description = None
       )
@@ -63,7 +59,7 @@ class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller wit
   def createPost = Authenticated.async { implicit request =>
     val tpl = request.mainTemplate(Some("Add Attribute"))
 
-    val form = Attributes.attributesFormData.bindFromRequest
+    val form = AttributesController.attributesFormData.bindFromRequest
     form.fold (
 
       errors => Future {
@@ -77,7 +73,7 @@ class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller wit
             description = valid.description
           )
         ).map { attribute =>
-          Redirect(routes.Attributes.index()).flashing("success" -> "Attribute created")
+          Redirect(routes.AttributesController.index()).flashing("success" -> "Attribute created")
         }.recover {
           case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.attributes.create(request.mainTemplate(), form, r.errors.map(_.message)))
@@ -88,15 +84,15 @@ class Attributes @Inject() (val messagesApi: MessagesApi) extends Controller wit
     )
   }
 
-  def deletePost(name: String) = Anonymous.async { implicit request =>
+  def deletePost(name: String) = Authenticated.async { implicit request =>
     lib.ApiClient.callWith404(request.api.attributes.deleteByName(name)).map {
-      case None => Redirect(routes.Attributes.index()).flashing("warning" -> s"Attribute not found")
-      case Some(_) => Redirect(routes.Attributes.index()).flashing("success" -> s"Attribute deleted")
+      case None => Redirect(routes.AttributesController.index()).flashing("warning" -> s"Attribute not found")
+      case Some(_) => Redirect(routes.AttributesController.index()).flashing("success" -> s"Attribute deleted")
     }
   }
 }
 
-object Attributes {
+object AttributesController {
 
   case class AttributeFormData(
     name: String,

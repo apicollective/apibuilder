@@ -30,7 +30,7 @@
           <td>@gws.generator.name</td>
           <td>@gws.generator.language.getOrElse("")</td>
           <td>@gws.generator.attributes.map { attr =>
-            <a href="@routes.Attributes.show(attr)">@attr</a>
+            <a href="@routes.AttributesController.show(attr)">@attr</a>
           }</td>
           <td>@Html(lib.Markdown(gws.generator.description.map(lib.Text.truncate(_))))</td>
         </tr>

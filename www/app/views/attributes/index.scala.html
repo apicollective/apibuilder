@@ -7,7 +7,7 @@
 
   @tpl.user.map { user =>
     <div class="pull-right">
-      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Attributes.create()">Add attribute</a>
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.AttributesController.create()">Add attribute</a>
     </div>
   }
 
@@ -15,7 +15,7 @@
     <tbody>
       @attributes.items.map { attribute =>
        <tr>
-         <td><a href="@routes.Attributes.show(attribute.name)">@attribute.name</a></td>
+         <td><a href="@routes.AttributesController.show(attribute.name)">@attribute.name</a></td>
        </tr>
      }
     </tbody>
@@ -24,10 +24,10 @@
   @if(attributes.hasPrevious || attributes.hasNext) {
     <ul class="pager">
       @if(attributes.hasPrevious) {
-        <li><a href="@routes.Attributes.index(attributes.page - 1)">Previous</a></li>
+        <li><a href="@routes.AttributesController.index(attributes.page - 1)">Previous</a></li>
       }
       @if(attributes.hasNext) {
-        <li><a href="@routes.Attributes.index(attributes.page + 1)">Next</a></li>
+        <li><a href="@routes.AttributesController.index(attributes.page + 1)">Next</a></li>
       }
     </ul>
   }

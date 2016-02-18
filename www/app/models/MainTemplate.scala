@@ -77,12 +77,14 @@ object MainTemplate {
 
 }
 
+// TODO: Remove this class and use Option[SettingSection] directly
 case class SettingsMenu(
   section: Option[SettingSection] = None
 )
 
 case class SettingSection(name: String)
 object SettingSection {
+  val Attributes = SettingSection("attributes")
   val Details = SettingSection("details")
   val Domains = SettingSection("domains")
   val Members = SettingSection("members")

@@ -1,0 +1,27 @@
+@(
+  tpl: models.MainTemplate,
+  values: Seq[com.bryzek.apidoc.api.v0.models.AttributeValue],
+  otherAttributes: Seq[com.bryzek.apidoc.api.v0.models.Attribute]
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl) {
+
+  <table class="table table-hover table-condensed">`
+    <tbody>
+     @values.map { value =>
+       <tr>
+         <td><a href="@routes.OrganizationAttributesController.edit(tpl.org.get.key, value.attribute.name)">edit</a></td>
+         <td><a href="@routes.AttributesController.show(value.attribute.name)">@value.attribute.name</a></td>
+         <td>@value.value</td>
+       </tr>
+     }
+     @otherAttributes.map { attr =>
+       <tr>
+         <td><a href="@routes.OrganizationAttributesController.edit(tpl.org.get.key, attr.name)">set</a></td>
+         <td><a href="@routes.AttributesController.show(attr.name)">@attr.name</a></td>
+         <td>-</td>
+       </tr>
+     }
+    </tbody>
+  </table>
+}

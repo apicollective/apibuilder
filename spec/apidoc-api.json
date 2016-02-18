@@ -117,7 +117,7 @@
 
     "attribute_value_form": {
       "fields": [
-        { "name": "attribute_guid", "type": "uuid" },
+        { "name": "name", "type": "string", "description": "The name of the attribute" },
         { "name": "value", "type": "string" }
       ]
     },

@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  form: Form[controllers.Attributes.AttributeFormData],
+  form: Form[controllers.AttributesController.AttributeFormData],
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
 
@@ -7,9 +7,9 @@
 
   <div class="container">
 
-    @helper.form(action = routes.Attributes.createPost) {
+    @helper.form(action = routes.AttributesController.createPost) {
 
-      @attributeForm(form, routes.Attributes.index())
+      @attributeForm(form, routes.AttributesController.index())
 
     }
 
