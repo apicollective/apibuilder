@@ -49,7 +49,7 @@ class AttributesController @Inject() (val messagesApi: MessagesApi) extends Cont
     val filledForm = AttributesController.attributesFormData.fill(
       AttributesController.AttributeFormData(
         name = "",
-        description = None
+        description = ""
       )
     )
 
@@ -70,7 +70,7 @@ class AttributesController @Inject() (val messagesApi: MessagesApi) extends Cont
         request.api.attributes.post(
           AttributeForm(
             name = valid.name,
-            description = valid.description
+            description = Some(valid.description.trim)
           )
         ).map { attribute =>
           Redirect(routes.AttributesController.index()).flashing("success" -> "Attribute created")
@@ -96,13 +96,13 @@ object AttributesController {
 
   case class AttributeFormData(
     name: String,
-    description: Option[String]
+    description: String
   )
 
   private[controllers] val attributesFormData = Form(
     mapping(
       "name" -> nonEmptyText,
-      "description" -> optional(text)
+      "description" -> nonEmptyText
     )(AttributeFormData.apply)(AttributeFormData.unapply)
   )
 

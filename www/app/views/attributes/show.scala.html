@@ -11,13 +11,7 @@
     </div>
   }
 
-  <ul>
-    <li> Name: @attr.name</li>
-    <li> Description:
-         <blockquote>@Html(lib.Markdown(attr.description))</blockquote>
-    </li>
-  </ul>
-
+  @Html(lib.Markdown.toHtml(attr.description.getOrElse("")))
 }
 
     

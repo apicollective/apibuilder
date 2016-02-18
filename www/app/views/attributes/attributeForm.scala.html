@@ -10,8 +10,10 @@
         '_error -> form.error("name")
     )
 
-    @helper.inputText(
+    @helper.textarea(
         form("description"),
+        'cols -> 50,
+        'rows -> 5,
         '_label -> "Description",
         '_error -> form.error("description")
     )

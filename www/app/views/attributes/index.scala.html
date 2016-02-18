@@ -16,6 +16,7 @@
       @attributes.items.map { attribute =>
        <tr>
          <td><a href="@routes.AttributesController.show(attribute.name)">@attribute.name</a></td>
+         <td>@lib.Text.truncate(attribute.description.getOrElse(""))</td>
        </tr>
      }
     </tbody>
