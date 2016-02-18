@@ -154,6 +154,7 @@ object GeneratorsDao {
     serviceGuid: Option[UUID] = None,
     serviceUri: Option[String] = None,
     key: Option[String] = None,
+    attributeName: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -165,6 +166,10 @@ object GeneratorsDao {
       serviceGuid.map { v => "and generators.service_guid = {service_guid}::uuid" },
       serviceUri.map { v => "and lower(services.uri) = lower(trim({uri}))" },
       key.map { v => "and lower(trim(generators.key)) = lower(trim({key}))" },
+      attributeName.map { v =>
+        // TODO: structure this filter
+        "and generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
+      },
       isDeleted.map(db.Filters.isDeleted("generators", _))
     ).flatten.mkString("\n   ") + s" order by lower(generators.name), lower(generators.key), generators.created_at desc limit ${limit} offset ${offset}"
 
@@ -172,7 +177,8 @@ object GeneratorsDao {
       guid.map('guid -> _.toString),
       serviceGuid.map('service_guid -> _.toString),
       serviceUri.map('service_uri -> _),
-      key.map('key -> _)
+      key.map('key -> _),
+      attributeName.map('attribute_name -> _)
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>

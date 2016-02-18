@@ -50,7 +50,7 @@ GET     /attributes                                               controllers.Ap
 GET     /attributes/                                              controllers.AttributesController.index(page: Int ?= 0)
 GET     /attributes/create                                        controllers.AttributesController.create()
 POST    /attributes/createPost                                    controllers.AttributesController.createPost()
-GET     /attributes/:name                                         controllers.AttributesController.show(name: String)
+GET     /attributes/:name                                         controllers.AttributesController.show(name: String, page: Int ?= 0)
 POST    /attributes/:name/delete                                  controllers.AttributesController.deletePost(name: String)
 
 GET     /tokens                                                   controllers.TokensController.redirect()

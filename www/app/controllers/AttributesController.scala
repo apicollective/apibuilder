@@ -29,16 +29,22 @@ class AttributesController @Inject() (val messagesApi: MessagesApi) extends Cont
     }
   }
 
-  def show(name: String) = Anonymous.async { implicit request =>
+  def show(name: String, page: Int) = Anonymous.async { implicit request =>
     for {
       attribute <- lib.ApiClient.callWith404(request.api.attributes.getByName(name))
+      generators <- request.api.generatorWithServices.get(
+        attributeName = Some(name),
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
+      )
     } yield {
       attribute match {
         case None => Redirect(routes.AttributesController.index()).flashing("warning" -> s"Attribute not found")
         case Some(attr) => {
           Ok(views.html.attributes.show(
             request.mainTemplate().copy(title = Some(attr.name)),
-            attr
+            attr,
+            generatorWithServices = PaginatedCollection(page, generators)
           ))
         }
       }

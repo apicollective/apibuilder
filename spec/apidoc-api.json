@@ -1086,6 +1086,7 @@
             { "name": "guid", "type": "uuid", "required": false, "description": "Filter to generator with this guid" },
             { "name": "service_guid", "type": "uuid", "required": false, "description": "Filter to generator from this service" },
             { "name": "service_uri", "type": "string", "required": false, "description": "Filter to generator from this service URI" },
+            { "name": "attribute_name", "type": "string", "required": false, "description": "Filter to generators that use this attribute" },
             { "name": "key", "type": "string", "required": false, "description": "Filter to generator with this key" },
             { "name": "limit", "type": "long", "default": 100, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
