@@ -51,14 +51,13 @@ object Code extends Controller {
                 val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
 
                 val attributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
-                println("ATTRIBUTES: " + attributes.mkString(", "))
 
                 new Client(service.uri).invocations.postByKey(
                   key = gws.generator.key,
                   invocationForm = InvocationForm(
                     service = version.service,
                     userAgent = Some(userAgent),
-                    attributes = Some(attributes)
+                    attributes = attributes
                   )
                 ).map { invocation =>
                   Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
