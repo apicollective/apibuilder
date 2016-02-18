@@ -2525,8 +2525,9 @@ package com.bryzek.apidoc.api.v0 {
         _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
           case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
+          case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 201, 409")
+          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 201, 404, 409")
         }
       }
 

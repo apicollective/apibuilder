@@ -58,18 +58,10 @@ class AttributesSpec extends BaseSpec {
     await(client.attributes.get(name = Some(attr2.name))).head.guid must be(attr2.guid)
   }
 
-  "GET /attributes by name" in new WithServer {
-    val attr1 = createAttribute()
-    val attr2 = createAttribute()
-
-    await(client.attributes.get(name = Some(createRandomName("attr")))) must be(Seq.empty)
-    await(client.attributes.get(name = Some(attr1.name))).head.guid must be(attr1.guid)
-    await(client.attributes.get(name = Some(attr2.name))).head.guid must be(attr2.guid)
-  }
-
   "GET /attributes/:name" in new WithServer {
     val attr = createAttribute()
     await(client.attributes.getByName(attr.name)).guid must be(attr.guid)
+
     intercept[UnitResponse] {
       await(client.attributes.getByName(createRandomName("attr")))
     }.status must be(404)

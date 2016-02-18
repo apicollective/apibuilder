@@ -3,7 +3,6 @@ package controllers
 import db.OrganizationsDao
 import com.bryzek.apidoc.api.v0.models.{AttributeValueForm, Visibility}
 import com.bryzek.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
-import java.util.UUID
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -38,9 +37,9 @@ class OrganizationAttributesSpec extends BaseSpec {
   "PUT /organizations/:key/attributes validates attribute" in new WithServer {
     val form = AttributeValueForm(value = "rest")
 
-    intercept[ErrorsResponse] {
-      await(client.organizations.putAttributesByKeyAndName(org.key, UUID.randomUUID.toString(), form))
-    }.errors.map(_.message) must be(Seq("Attribute not found"))
+    intercept[UnitResponse] {
+      await(client.organizations.putAttributesByKeyAndName(org.key, createRandomName("attr"), form))
+    }.status must be(404)
   }
 
   "PUT /organizations/:key/attributes updates existing value" in new WithServer {

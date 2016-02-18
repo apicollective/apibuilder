@@ -700,6 +700,7 @@
           "responses": {
             "200": { "type": "attribute_value" },
             "201": { "type": "attribute_value" },
+            "404": { "type": "unit" },
             "409": { "type": "[error]" }
           }
         },
