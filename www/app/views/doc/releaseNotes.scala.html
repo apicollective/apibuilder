@@ -2,6 +2,35 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.11.10 - Feb 18 2016</h3>
+
+  <ul>
+
+    <li> Go clients now available (alpha). This release announces the
+    availability of a go client code generator. This should be
+    considered alpha but is already being used in production. </li>
+
+    <li> Attributes now supported: We have added attributes to apidoc
+    - these are globally defined, with values currently set at the
+    organization level. Code generators can declare what attributes
+    they use - and any attribute values are now made available to the
+    code generators as part of the invocation
+    form. <a href="@routes.DocController.attributes()">Learn
+    more</a>.</li>
+
+    <li> Base Url Defaults: If your application has provided a
+    baseUrl, that base url is now available as a constant in the
+    generated clients. In the play, ning and ruby clients, we also
+    auto default the base Url when creating an instance of a new
+    Client. </li>
+    
+    <li> Added validation that if a path parameter is declared in a
+    resource operation, that the path specified contains that
+    parameter</li>
+    
+  </ul>
+
+
 <h3>0.11.6 - Jan 21 2016</h3>
 
   <ul>
