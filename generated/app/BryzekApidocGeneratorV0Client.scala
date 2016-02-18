@@ -58,8 +58,8 @@ package com.bryzek.apidoc.generator.v0.models {
    */
   case class InvocationForm(
     service: com.bryzek.apidoc.spec.v0.models.Service,
-    userAgent: _root_.scala.Option[String] = None,
-    attributes: _root_.scala.Option[Seq[com.bryzek.apidoc.generator.v0.models.Attribute]] = None
+    attributes: Seq[com.bryzek.apidoc.generator.v0.models.Attribute] = Nil,
+    userAgent: _root_.scala.Option[String] = None
   )
 
 }
@@ -240,21 +240,18 @@ package com.bryzek.apidoc.generator.v0.models {
     implicit def jsonReadsApidocgeneratorInvocationForm: play.api.libs.json.Reads[InvocationForm] = {
       (
         (__ \ "service").read[com.bryzek.apidoc.spec.v0.models.Service] and
-        (__ \ "user_agent").readNullable[String] and
-        (__ \ "attributes").readNullable[Seq[com.bryzek.apidoc.generator.v0.models.Attribute]]
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.generator.v0.models.Attribute]] and
+        (__ \ "user_agent").readNullable[String]
       )(InvocationForm.apply _)
     }
 
     def jsObjectInvocationForm(obj: com.bryzek.apidoc.generator.v0.models.InvocationForm) = {
       play.api.libs.json.Json.obj(
-        "service" -> com.bryzek.apidoc.spec.v0.models.json.jsObjectService(obj.service)
+        "service" -> com.bryzek.apidoc.spec.v0.models.json.jsObjectService(obj.service),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.userAgent match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("user_agent" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.attributes match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("attributes" -> play.api.libs.json.Json.toJson(x))
       })
     }
 

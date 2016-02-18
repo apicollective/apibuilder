@@ -66,8 +66,8 @@
       "description": "The invocation form is the payload send to the code generators when requesting generation of client code.",
       "fields": [
         { "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service" },
-        { "name": "user_agent", "type": "string", "required": false },
-        { "name": "attributes", "type": "[attribute]", "required": false }
+        { "name": "attributes", "type": "[attribute]", "default": "[]" },
+        { "name": "user_agent", "type": "string", "required": false }
       ]
     },
 
