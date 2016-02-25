@@ -5,6 +5,6 @@
 #  ./dev.rb
 #
 
-command = "sem-apply --host localhost --user web --name apidoc"
+command = "sem-apply --host localhost --user api --name apidoc"
 puts command
 system(command)
