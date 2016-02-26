@@ -17,8 +17,8 @@
 
 
   "imports": [
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-common/0.11.9/service.json" },
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.11.9/service.json" }
+    { "uri": "http://www.apidoc.me/bryzek/apidoc-common/0.11.12/service.json" },
+    { "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.11.12/service.json" }
   ],
 
   "info": {
