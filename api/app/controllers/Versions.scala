@@ -136,7 +136,7 @@ object Versions extends Controller {
   def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
     val auth = Authorization.User(request.user.guid)
     OrganizationsDao.findByKey(auth, orgKey) map { org =>
-      request.requireAdmin(org)
+      request.requireMember(org)
       VersionsDao.findVersion(auth, orgKey, applicationKey, version).map { version =>
         VersionsDao.softDelete(request.user, version)
       }
