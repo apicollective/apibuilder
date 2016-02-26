@@ -32,41 +32,37 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
   }
 
   def zipFile(orgKey: String, applicationKey: String, version: String, generatorKey: String, fileName: String) = AnonymousOrg.async { implicit request =>
-    generateFile(request.api, orgKey, applicationKey, version, generatorKey) { files =>
-      lib.Zipfile.create(fileName, files)
+    withFiles(request.api, orgKey, applicationKey, version, generatorKey) { files =>
+      val file = lib.Zipfile.create(fileName, files)
+      Ok.sendFile(file, inline = true)
     }
   }
 
   def tarballFile(orgKey: String, applicationKey: String, version: String, generatorKey: String, fileName: String) = AnonymousOrg.async { implicit request =>
-    generateFile(request.api, orgKey, applicationKey, version, generatorKey) { files =>
-      lib.TarballFile.create(fileName, files)
+    withFiles(request.api, orgKey, applicationKey, version, generatorKey) { files =>
+      val file = lib.TarballFile.create(fileName, files)
+      Ok.sendFile(file, inline = true)
     }
   }
 
   def file(orgKey: String, applicationKey: String, version: String, generatorKey: String, fileName: String) = AnonymousOrg.async { implicit request =>
-    lib.ApiClient.callWith404(
-      request.api.Code.get(orgKey, applicationKey, version, generatorKey)
-    ).map {
-      case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
-      case Some(code) => {
-        code.files.find(_.name == fileName) match {
-          case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> s"File $fileName not found")
-          case Some(file) => {
-            Ok(file.contents)
-          }
+    withFiles(request.api, orgKey, applicationKey, version, generatorKey) { files =>
+      files.find(_.name == fileName) match {
+        case None => {
+          Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> s"File $fileName not found")
         }
-      }
-    }.recover {
-      case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
-        Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> r.errors.map(_.message).mkString(", "))
+
+        case Some(file) => {
+          Ok(file.contents)
+        }
       }
     }
   }
 
-  private[this] def generateFile(
+  private[this] def withFiles(
     api: Client, orgKey: String, applicationKey: String, version: String, generatorKey: String
   ) (
-    f: Seq[File] => java.io.File
+    f: Seq[File] => Result
   ) = {
     lib.ApiClient.callWith404(
       api.Code.get(orgKey, applicationKey, version, generatorKey)
@@ -76,9 +72,9 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
       }
 
       case Some(code) => {
-        val result = f(code.files)
-        Ok.sendFile(result, inline = true)
+        f(code.files)
       }
+
     }.recover {
       case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
         Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> r.errors.map(_.message).mkString(", "))
