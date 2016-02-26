@@ -10,8 +10,8 @@
 
   <div class="pull-right">
     <span class="glyphicon"></span>
-      <a href="@routes.Code.zipFile(orgKey = orgKey, applicationKey = applicationKey, version = version, generatorKey)">Download (.zip)</a>
-      | <a href="@routes.Code.tarballFile(orgKey = orgKey, applicationKey = applicationKey, version = version, fileName = s"$applicationKey-$version", generatorKey = generatorKey)">Download (.tar.gz)</a>
+      <a href="@routes.Code.zipFile(orgKey = orgKey, applicationKey = applicationKey, version = version, generatorKey = generatorKey, fileName = s"$applicationKey-$version")">Download (.zip)</a>
+      | <a href="@routes.Code.tarballFile(orgKey = orgKey, applicationKey = applicationKey, version = version, generatorKey = generatorKey, fileName = s"$applicationKey-$version")">Download (.tar.gz)</a>
 
   </div>
 
