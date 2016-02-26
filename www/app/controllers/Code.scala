@@ -45,6 +45,22 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
     }
   }
 
+  def tarballFile(orgKey: String, applicationKey: String, version: String, generatorKey: String, fileName: String) = AnonymousOrg.async { implicit request =>
+    lib.ApiClient.callWith404(
+      request.api.Code.get(orgKey, applicationKey, version, generatorKey)
+    ).map {
+      case None => Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> "Version not found")
+      case Some(code) => {
+        val tarball = lib.TarballFile.create(fileName, code.files)
+        Ok.sendFile(tarball, inline = true)
+      }
+    }.recover {
+      case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+        Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> r.errors.map(_.message).mkString(", "))
+      }
+    }
+  }
+
   def file(orgKey: String, applicationKey: String, version: String, generatorKey: String, fileName: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(
       request.api.Code.get(orgKey, applicationKey, version, generatorKey)
