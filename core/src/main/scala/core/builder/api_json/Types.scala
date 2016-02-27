@@ -1,8 +1,7 @@
 package builder.api_json
 
 import core.{Importer, TypeValidator, TypesProvider, TypesProviderEnum, TypesProviderField, TypesProviderModel, TypesProviderUnion}
-import com.bryzek.apidoc.spec.v0.models.{Import, Service}
-import lib.{Datatype, DatatypeResolver, Type}
+import lib.{DatatypeResolver, Kind}
 
 private[api_json] case class InternalServiceFormTypesProvider(internal: InternalServiceForm) extends TypesProvider {
 
@@ -106,7 +105,7 @@ private[api_json] case class TypeResolver(
     resolver.toType(name)
   }
 
-  def parseWithError(internal: InternalDatatype): Datatype = {
+  def parseWithError(internal: InternalDatatype): Kind = {
     parse(internal).getOrElse {
       sys.error(s"Unrecognized datatype[${internal.label}]")
     }
@@ -115,23 +114,23 @@ private[api_json] case class TypeResolver(
   /**
     * Resolves the type name into instances of a first class Type.
     */
-  def parse(internal: InternalDatatype): Option[Datatype] = {
+  def parse(internal: InternalDatatype): Option[Kind] = {
     resolver.parse(internal.label)
   }
 
-  def assertValidDefault(pd: Datatype, value: String) {
-    validate(pd, value) match {
+  def assertValidDefault(kind: Kind, value: String) {
+    validate(kind, value) match {
       case None => {}
       case Some(msg) => sys.error(msg)
     }
   }
 
   def validate(
-    pd: Datatype,
+    kind: Kind,
     value: String,
     errorPrefix: Option[String] = None
   ): Option[String] = {
-    validator.validate(pd, value, errorPrefix)
+    validator.validate(kind, value, errorPrefix)
   }
 
 }

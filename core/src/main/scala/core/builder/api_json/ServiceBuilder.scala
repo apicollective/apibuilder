@@ -1,7 +1,7 @@
 package builder.api_json
 
 import core.{Importer, ServiceFetcher, VersionMigration, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion}
-import lib.{Datatype, Methods, Primitives, ServiceConfiguration, Text, Type, Kind, UrlKey}
+import lib.{Methods, Primitives, ServiceConfiguration, Text, Kind, UrlKey}
 import com.bryzek.apidoc.spec.v0.models._
 import play.api.libs.json._
 import scala.util.{Failure, Success, Try}
