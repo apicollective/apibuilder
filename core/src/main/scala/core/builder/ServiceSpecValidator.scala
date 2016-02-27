@@ -295,7 +295,7 @@ case class ServiceSpecValidator(
         case Some(kind) => {
           kind match {
             case Kind.Enum(_) | Kind.Primitive("string") => None
-            case Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) => {
+            case Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
               Some(s"Header[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
             }
           }
@@ -514,16 +514,16 @@ case class ServiceSpecValidator(
                 case ParameterLocation.Query => {
                   // Query parameters can only be primitives or enums
                   kind match {
+                    case Kind.Primitive(_) | Kind.Enum(_) => {
+                      None
+                    }
+
                     case Kind.List(Kind.Primitive(_) | Kind.Enum(_)) => {
                       None
                     }
 
-                    case Kind.List(Kind.Model(_) | Kind.Union(_)) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Lists of model or union types are not supported as query parameters."))
-                    }
-
-                    case Kind.Primitive(_) | Kind.Enum(_) => {
-                      None
+                    case Kind.List(_) => {
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Parameters that are lists must be lists of primitive types or enums."))
                     }
 
                     case Kind.Model(_) | Kind.Union(_) => {

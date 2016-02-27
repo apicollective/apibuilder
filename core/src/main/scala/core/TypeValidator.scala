@@ -216,6 +216,10 @@ case class TypeValidator(
         Some(withPrefix(errorPrefix, s"default[$value] is not valid for model[$name]. apidoc does not support default values for models"))
       }
 
+      case Kind.Union(name) => {
+        Some(withPrefix(errorPrefix, s"default[$value] is not valid for union[$name]. apidoc does not support default values for unions"))
+      }
+
       case Kind.Primitive(name) => {
         Primitives(name) match {
           case None => {
