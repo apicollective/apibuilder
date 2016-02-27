@@ -295,6 +295,7 @@ case class ServiceSpecValidator(
         case Some(kind) => {
           kind match {
             case Kind.Enum(_) | Kind.Primitive("string") => None
+            case Kind.List(Kind.Enum(_) | Kind.Primitive("string")) => None
             case Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
               Some(s"Header[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
             }

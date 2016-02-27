@@ -43,8 +43,10 @@ class KindSpec extends FunSpec with Matchers {
       unionNames = Seq.empty
     )
 
-    resolver.parse("map[age_group]").map(_.toString) should be(Some("map[enum[age_group]]"))
-    resolver.parse("user").map(_.toString) should be(Some("model[user]"))
+    resolver.parse("map[age_group]").map(_.toString) should be(Some("map[age_group]"))
+    resolver.parse("map[[age_group]]").map(_.toString) should be(Some("map[[age_group]]"))
+    resolver.parse("map[map[age_group]]").map(_.toString) should be(Some("map[map[age_group]]"))
+    resolver.parse("user").map(_.toString) should be(Some("user"))
 
     resolver.parse("group").map(_.toString) should be(None)
   }
