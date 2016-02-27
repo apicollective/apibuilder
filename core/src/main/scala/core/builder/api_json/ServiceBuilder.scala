@@ -340,7 +340,7 @@ case class ServiceBuilder(
     def apply(resolver: TypeResolver, ih: InternalHeaderForm): Header = {
       Header(
         name = ih.name.get,
-        `type` = resolver.parseWithError(ih.datatype.get).label,
+        `type` = resolver.parseWithError(ih.datatype.get).toString,
         required = ih.required,
         description = ih.description,
         deprecation = ih.deprecation.map(DeprecationBuilder(_)),

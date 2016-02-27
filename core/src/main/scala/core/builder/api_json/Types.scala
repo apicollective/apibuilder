@@ -101,8 +101,8 @@ private[api_json] case class TypeResolver(
     provider.enums
   )
 
-  def toType(name: String): Option[Type] = {
-    resolver.toType(name)
+  def toType(name: String): Option[Kind] = {
+    resolver.parse(name)
   }
 
   def parseWithError(internal: InternalDatatype): Kind = {

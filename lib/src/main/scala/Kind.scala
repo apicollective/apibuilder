@@ -4,10 +4,10 @@ sealed trait Kind
 
 object Kind {
 
-  case class Enum(name: String) extends Kind { override def toString = s"enum[$name]" }
-  case class Model(name: String) extends Kind { override def toString = s"model[$name]" }
+  case class Enum(name: String) extends Kind { override def toString = name }
+  case class Model(name: String) extends Kind { override def toString = name }
   case class Primitive(name: String) extends Kind { override def toString = name }
-  case class Union(name: String) extends Kind { override def toString = s"union[$name]" }
+  case class Union(name: String) extends Kind { override def toString = name }
 
   case class List(kind: Kind) extends Kind { override def toString = s"[$kind]" }
   case class Map(kind: Kind) extends Kind { override def toString = s"map[$kind]" }
