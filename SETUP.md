@@ -7,7 +7,7 @@ Log into EC2 instance in security group w/ access to the database
 
   git clone git://github.com/gilt/schema-evolution-manager.git
   cd schema-evolution-manager
-  git checkout 0.9.23
+  git checkout 0.9.24
   ruby ./configure.rb
   sudo ruby ./install.rb
 
