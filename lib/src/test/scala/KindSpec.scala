@@ -4,13 +4,13 @@ import org.scalatest.{FunSpec, Matchers}
 
 class KindSpec extends FunSpec with Matchers {
 
-  it("primitives") {
-    val resolver = DatatypeResolver(
-      enumNames = Seq.empty,
-      modelNames = Seq.empty,
-      unionNames = Seq.empty
-    )
+  private[this] val resolver = DatatypeResolver(
+    enumNames = Seq.empty,
+    modelNames = Seq.empty,
+    unionNames = Seq.empty
+  )
 
+  it("primitives") {
     resolver.parse("string").map(_.toString) should be(Some("string"))
     resolver.parse("long").map(_.toString) should be(Some("long"))
     resolver.parse("uuid").map(_.toString) should be(Some("uuid"))
@@ -34,6 +34,11 @@ class KindSpec extends FunSpec with Matchers {
     resolver.parse("map[date-time-iso8601]").map(_.toString) should be(Some("map[date-time-iso8601]"))
 
     resolver.parse("user") should be(None)
+  }
+
+  it("requires a concerete type") {
+    resolver.parse("[]") should be(None)
+    resolver.parse("map[[]]") should be(None)
   }
 
   it("with enums and models") {
