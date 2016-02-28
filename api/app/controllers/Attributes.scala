@@ -18,7 +18,7 @@ trait Attributes {
     name: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Authenticated { request =>
+  ) = Action { request =>
     val attributes = AttributesDao.findAll(
       guid = guid,
       name = name,
@@ -28,7 +28,7 @@ trait Attributes {
     Ok(Json.toJson(attributes))
   }
 
-  def getByName(name: String) = Authenticated { request =>
+  def getByName(name: String) = Action { request =>
     AttributesDao.findByName(name) match {
       case None => NotFound
       case Some(attribute) => Ok(Json.toJson(attribute))
