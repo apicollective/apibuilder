@@ -68,14 +68,25 @@ case class TypeLabel(
   private[this] def importedTypeLink(typeName: String): Option[String] = {
     service.imports.flatMap { imp =>
       imp.enums.find { name => s"${imp.namespace}.enums.$name" == typeName } match {
-        case Some(shortName) => Some(importLink(imp, "enum", shortName, typeName))
+        case Some(shortName) => {
+          Some(importLink(imp, "enum", shortName, typeName))
+        }
+
         case None => {
           imp.models.find { name => s"${imp.namespace}.models.$name" == typeName } match {
-            case Some(shortName) => Some(importLink(imp, "model", shortName, typeName))
+            case Some(shortName) => {
+              Some(importLink(imp, "model", shortName, typeName))
+            }
+
             case None => {
               imp.unions.find { name => s"${imp.namespace}.unions.$name" == typeName } match {
-                case Some(shortName) => Some(importLink(imp, "union", shortName, typeName))
-                case None => None
+                case Some(shortName) => {
+                  Some(importLink(imp, "union", shortName, typeName))
+                }
+
+                case None => {
+                  None
+                }
               }
             }
           }
@@ -85,7 +96,10 @@ case class TypeLabel(
   }
 
   private[this] def importLink(imp: Import, kind: String, shortName: String, fullName: String): String = {
-    Href(fullName, Href.prefix(imp.organization.key, imp.application.key, imp.version) + s"#$kind-${UrlKey.generate(shortName)}").label
+    Href(
+      s"$fullName:$version",
+      Href.prefix(imp.organization.key, imp.application.key, imp.version) + s"#$kind-${UrlKey.generate(shortName)}"
+    ).html
   }
 
 }
