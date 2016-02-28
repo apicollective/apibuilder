@@ -4,46 +4,55 @@ import org.scalatest.{FunSpec, Matchers}
 
 class TextDatatypeSpec extends FunSpec with Matchers {
 
+  def label(types: Seq[TextDatatype]): String = {
+    types.reverse match {
+      case Nil => ""
+      case TextDatatype.Singleton(name) :: rest => label(name, rest)
+      case _ => sys.error(s"Could not parse $types")
+    }
+  }
+
+  def label(result: String, types: Seq[TextDatatype]): String = {
+    types match {
+      case Nil => result
+      case one :: rest => {
+        one match {
+          case TextDatatype.List => label(s"[$result]", types.drop(1))
+          case TextDatatype.Map => label(s"map[$result]", types.drop(1))
+          case TextDatatype.Singleton(name) => sys.error("Invalid")
+        }
+      }
+    }
+  }
+
   it("primitives") {
-    TextDatatype("string").label should be("string")
-    TextDatatype("long").label should be("long")
-    TextDatatype("uuid").label should be("uuid")
-    TextDatatype("unit").label should be("unit")
-    TextDatatype("integer").label should be("integer")
-    TextDatatype("date-time-iso8601").label should be("date-time-iso8601")
-    TextDatatype("string | uuid").label should be("string | uuid")
-    TextDatatype("string | uuid | unit").label should be("string | uuid | unit")
+    label(TextDatatype.parse("string")) should be("string")
+    label(TextDatatype.parse("long")) should be("long")
+    label(TextDatatype.parse("uuid")) should be("uuid")
+    label(TextDatatype.parse("unit")) should be("unit")
+    label(TextDatatype.parse("integer")) should be("integer")
+    label(TextDatatype.parse("date-time-iso8601")) should be("date-time-iso8601")
 
-    TextDatatype("[string]").label should be("[string]")
-    TextDatatype("[long]").label should be("[long]")
-    TextDatatype("[uuid]").label should be("[uuid]")
-    TextDatatype("[unit]").label should be("[unit]")
-    TextDatatype("[integer]").label should be("[integer]")
-    TextDatatype("[date-time-iso8601]").label should be("[date-time-iso8601]")
-    TextDatatype("[string | uuid]").label should be("[string | uuid]")
-    TextDatatype("[string | uuid | unit]").label should be("[string | uuid | unit]")
+    label(TextDatatype.parse("[string]")) should be("[string]")
+    label(TextDatatype.parse("[long]")) should be("[long]")
+    label(TextDatatype.parse("[uuid]")) should be("[uuid]")
+    label(TextDatatype.parse("[unit]")) should be("[unit]")
+    label(TextDatatype.parse("[integer]")) should be("[integer]")
+    label(TextDatatype.parse("[date-time-iso8601]")) should be("[date-time-iso8601]")
 
-    TextDatatype("map").label should be("map[string]")
-    TextDatatype("map[string]").label should be("map[string]")
-    TextDatatype("map[long]").label should be("map[long]")
-    TextDatatype("map[uuid]").label should be("map[uuid]")
-    TextDatatype("map[unit]").label should be("map[unit]")
-    TextDatatype("map[integer]").label should be("map[integer]")
-    TextDatatype("map[date-time-iso8601]").label should be("map[date-time-iso8601]")
-    TextDatatype("map[string | uuid]").label should be("map[string | uuid]")
-    TextDatatype("map[string | uuid | unit]").label should be("map[string | uuid | unit]")
+    label(TextDatatype.parse("map")) should be("map[string]")
+    label(TextDatatype.parse("map[string]")) should be("map[string]")
+    label(TextDatatype.parse("map[long]")) should be("map[long]")
+    label(TextDatatype.parse("map[uuid]")) should be("map[uuid]")
+    label(TextDatatype.parse("map[unit]")) should be("map[unit]")
+    label(TextDatatype.parse("map[integer]")) should be("map[integer]")
+    label(TextDatatype.parse("map[date-time-iso8601]")) should be("map[date-time-iso8601]")
 
-    TextDatatype("option[string]").label should be("option[string]")
-    TextDatatype("option[long]").label should be("option[long]")
-    TextDatatype("option[uuid]").label should be("option[uuid]")
-    TextDatatype("option[unit]").label should be("option[unit]")
-    TextDatatype("option[integer]").label should be("option[integer]")
-    TextDatatype("option[date-time-iso8601]").label should be("option[date-time-iso8601]")
-    TextDatatype("option[string | uuid]").label should be("option[string | uuid]")
-    TextDatatype("option[string | uuid | unit]").label should be("option[string | uuid | unit]")
-
-    TextDatatype("user").label should be("user")
-    TextDatatype("string | user").label should be("string | user")
+    label(TextDatatype.parse("map[[string]]")) should be("map[[string]]")
+    label(TextDatatype.parse("map[map[string]]")) should be("map[map[string]]")
+    label(TextDatatype.parse("map[map[[user]]]")) should be("map[map[[user]]]")
+    
+    label(TextDatatype.parse("user")) should be("user")
   }
 
 }

@@ -3,7 +3,7 @@ package builder
 import core.{TypeValidator, TypesProvider}
 import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode}
 import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, UnionType}
-import lib.{Datatype, DatatypeResolver, Kind, Methods, Primitives, Text, Type, VersionTag}
+import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
 import scala.util.{Failure, Success, Try}
 
 case class ServiceSpecValidator(
@@ -176,9 +176,9 @@ case class ServiceSpecValidator(
               case None => {
                 Seq(s"Union[${union.name}] type[${t.`type`}] is invalid. Cannot use an imported type as part of a union as there is no way to declare that the imported type expands the union type defined here.")
               }
-              case Some(t: Datatype) => {
-                t.`type` match {
-                  case Type(Kind.Primitive, "unit") => {
+              case Some(kind: Kind) => {
+                kind match {
+                  case Kind.Primitive("unit") => {
                     Seq("Union types cannot contain unit. To make a particular field optional, use the required property.")
                   }
                   case _ => {
@@ -234,37 +234,51 @@ case class ServiceSpecValidator(
     * Given a union, returns the list of types that contain the
     * specified field.
     */
-  private def unionTypesWithNamedField(union: Union, fieldName: String): Seq[String] = {
+  private[this] def unionTypesWithNamedField(union: Union, fieldName: String): Seq[String] = {
     union.types.flatMap { unionType =>
       typeResolver.parse(unionType.`type`) match {
         case None => {
           Nil
         }
-        case Some(datatype) => {
-          datatype.`type` match {
-            case Type(Kind.Primitive, _) | Type(Kind.Enum, _) => {
-              Nil
+        case Some(kind) => {
+          unionTypesWithNamedField(kind, fieldName)
+        }
+      }
+    }
+  }
+
+  private[this] def unionTypesWithNamedField(kind: Kind, fieldName: String): Seq[String] = {  
+    kind match {
+      case Kind.Primitive(_) | Kind.Enum(_) => {
+        Nil
+      }
+
+      case Kind.List(inner) => {
+        unionTypesWithNamedField(inner, fieldName)
+      }
+
+      case Kind.Map(inner) => {
+        unionTypesWithNamedField(inner, fieldName)
+      }
+
+      case Kind.Model(name) => {
+        service.models.find(_.name == name) match {
+          case None => Nil
+          case Some(model) => {
+            model.fields.find(_.name == fieldName) match {
+              case None => Nil
+              case Some(_) => Seq(kind.toString)
             }
-            case Type(Kind.Model, name) => {
-              service.models.find(_.name == name) match {
-                case None => Nil
-                case Some(model) => {
-                  model.fields.find(_.name == fieldName) match {
-                    case None => Nil
-                    case Some(_) => Seq(unionType.`type`)
-                  }
-                }
-              }
-            }
-            case Type(Kind.Union, name) => {
-              service.unions.find(_.name == name) match {
-                case None => Nil
-                case Some(u) => {
-                  unionTypesWithNamedField(u, fieldName).map { t =>
-                    s"${u.name}.$t"
-                  }
-                }
-              }
+          }
+        }
+      }
+
+      case Kind.Union(name) => {
+        service.unions.find(_.name == name) match {
+          case None => Nil
+          case Some(u) => {
+            unionTypesWithNamedField(u, fieldName).map { t =>
+              s"${u.name}.$t"
             }
           }
         }
@@ -278,11 +292,11 @@ case class ServiceSpecValidator(
     val headersWithInvalidTypes = service.headers.flatMap { header =>
       typeResolver.parse(header.`type`) match {
         case None => Some(s"Header[${header.name}] type[${header.`type`}] is invalid")
-        case Some(dt) => {
-          dt.`type` match {
-            case Type(Kind.Primitive, "string") => None
-            case Type(Kind.Enum, _) => None
-            case Type(Kind.Model | Kind.Union | Kind.Primitive, _) => {
+        case Some(kind) => {
+          kind match {
+            case Kind.Enum(_) | Kind.Primitive("string") => None
+            case Kind.List(Kind.Enum(_) | Kind.Primitive("string")) => None
+            case Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
               Some(s"Header[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
             }
           }
@@ -399,20 +413,16 @@ case class ServiceSpecValidator(
         case None => {
           Some(s"Resource[${resource.`type`}] has an invalid type. Must resolve to a known enum, model or primitive")
         }
-        case Some(dt) => {
-          dt match {
-            case Datatype.List(_) | Datatype.Map(_) => {
+        case Some(kind) => {
+          kind match {
+            case Kind.List(_) | Kind.Map(_) => {
               Some(s"Resource[${resource.`type`}] has an invalid type: must be a singleton (not a list nor map)")
             }
-            case Datatype.Singleton(t) => {
-              t match {
-                case Type(Kind.Model | Kind.Enum | Kind.Union, name) => {
-                  None
-                }
-                case Type(Kind.Primitive, name) => {
-                  Some(s"Resource[${resource.`type`}] has an invalid type: Primitives cannot be mapped to resources")
-                }
-              }
+            case Kind.Model(_) | Kind.Enum(_) | Kind.Union(_) => {
+              None
+            }
+            case Kind.Primitive(name) => {
+              Some(s"Resource[${resource.`type`}] has an invalid type: Primitives cannot be mapped to resources")
             }
           }
         }
@@ -500,26 +510,28 @@ case class ServiceSpecValidator(
             case None => {
               Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type: ${p.`type`}"))
             }
-            case Some(dt) => {
+            case Some(kind) => {
               p.location match {
                 case ParameterLocation.Query => {
                   // Query parameters can only be primitives or enums
-                  dt match {
-                    case Datatype.List(Type(Kind.Primitive | Kind.Enum, name)) => {
+                  kind match {
+                    case Kind.Primitive(_) | Kind.Enum(_) => {
                       None
                     }
-                    case Datatype.List(Type(Kind.Model | Kind.Union, name)) => {
+
+                    case Kind.List(Kind.Primitive(_) | Kind.Enum(_)) => {
+                      None
+                    }
+
+                    case Kind.List(_) => {
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Parameters that are lists must be lists of primitive types or enums."))
+                    }
+
+                    case Kind.Model(_) | Kind.Union(_) => {
                       Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters."))
                     }
 
-                    case Datatype.Singleton(Type(Kind.Primitive | Kind.Enum, name)) => {
-                      None
-                    }
-                    case Datatype.Singleton(Type(Kind.Model | Kind.Union, name)) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters."))
-                    }
-
-                    case Datatype.Map(_) => {
+                    case Kind.Map(_) => {
                       Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as query parameters."))
                     }
 
@@ -565,16 +577,10 @@ case class ServiceSpecValidator(
             case None => {
               Some(errorTemplate.format(p.`type`))
             }
-            case Some(dt) => {
-              dt match {
-                case Datatype.List(_) => Some(errorTemplate.format("list"))
-                case Datatype.Map(_) => Some(errorTemplate.format("map"))
-                case Datatype.Singleton(t) => {
-                  isTypeValidInPath(t) match {
-                    case true => None
-                    case false => Some(errorTemplate.format(t.name))
-                  }
-                }
+            case Some(kind) => {
+              isValidInPath(kind) match {
+                case true => None
+                case false => Some(errorTemplate.format(kind.toString))
               }
             }
           }
@@ -583,18 +589,17 @@ case class ServiceSpecValidator(
     }
   }
 
-  private def isTypeValidInPath(t: Type): Boolean = {
-    t.typeKind match {
-      case Kind.Primitive => {
-        Primitives.validInPath(t.name)
+  private def isValidInPath(kind: Kind): Boolean = {
+    kind match {
+      case Kind.Primitive(name) => {
+        Primitives.validInPath(name)
       }
-      case Kind.Model | Kind.Union => {
-        // We do not support models in path parameters
-        false
-      }
-      case Kind.Enum => {
+      case Kind.Enum(_) => {
         // Serializes as a string
         true
+      }
+      case Kind.Model(_) | Kind.Union(_) | Kind.List(_) | Kind.Map(_) => {
+        false
       }
     }
   }
