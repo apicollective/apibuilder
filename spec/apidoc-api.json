@@ -750,6 +750,7 @@
           "body": { "type": "attribute_form" },
           "responses": {
             "201": { "type": "attribute" },
+            "401": { "type": "unit" },
             "409": { "type": "[error]" }
           }
         },
