@@ -126,7 +126,8 @@
       "fields": [
 	{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
 	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false }
+	{ "name": "deprecation", "type": "deprecation", "required": false },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
