@@ -90,6 +90,7 @@ private[api_json] case class InternalServiceForm(
               description = JsonUtil.asOptString(o \ "description"),
               deprecation = InternalDeprecationForm.fromJsValue(o),
               default = JsonUtil.asOptString(o \ "default"),
+              attributes = InternalAttributeForm.attributesFromJson((o \ "attributes").asOpt[JsArray]),
               warnings = JsonUtil.validate(
                 o,
                 strings = Seq("name", "type"),
@@ -123,6 +124,8 @@ private[api_json] case class InternalServiceForm(
       case _ => Seq.empty
     }
   }
+
+  lazy val attributes: Seq[InternalAttributeForm] = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray])
 
   lazy val typeResolver = TypeResolver(
     defaultNamespace = namespace,
@@ -176,6 +179,7 @@ case class InternalEnumForm(
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   values: Seq[InternalEnumValueForm],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
 )
 
@@ -183,6 +187,7 @@ case class InternalEnumValueForm(
   name: Option[String],
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
 )
 
@@ -193,6 +198,7 @@ case class InternalUnionForm(
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   types: Seq[InternalUnionTypeForm],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
 )
 
@@ -200,6 +206,7 @@ case class InternalUnionTypeForm(
   datatype: Option[InternalDatatype] = None,
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
 )
 
@@ -210,6 +217,7 @@ case class InternalHeaderForm(
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   default: Option[String],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
 )
 
@@ -219,6 +227,7 @@ case class InternalResourceForm(
   deprecation: Option[InternalDeprecationForm],
   path: Option[String],
   operations: Seq[InternalOperationForm],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String] = Seq.empty
 )
 
@@ -231,6 +240,7 @@ case class InternalOperationForm(
   parameters: Seq[InternalParameterForm],
   body: Option[InternalBodyForm],
   responses: Seq[InternalResponseForm],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String] = Seq.empty
 ) {
 
@@ -246,9 +256,9 @@ case class InternalFieldForm(
   required: Boolean = true,
   default: Option[String] = None,
   example: Option[String] = None,
-  attributes: Seq[InternalAttributeForm],
   minimum: Option[Long] = None,
   maximum: Option[Long] = None,
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String] = Seq.empty
 )
 
@@ -278,6 +288,7 @@ case class InternalBodyForm(
   datatype: Option[InternalDatatype] = None,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm],
+  attributes: Seq[InternalAttributeForm],
   warnings: Seq[String]
 )
 
@@ -361,6 +372,7 @@ object InternalUnionForm {
                datatype = typeName,
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
+               attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
                  strings = Seq("type"),
@@ -381,6 +393,7 @@ object InternalUnionForm {
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
       types = types,
+      attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("discriminator", "description", "plural"),
@@ -458,6 +471,7 @@ object InternalEnumForm {
                name = valueName,
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
+               attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
                  strings = Seq("name"),
@@ -477,6 +491,7 @@ object InternalEnumForm {
       description = description,
       deprecation = InternalDeprecationForm.fromJsValue(value),
       values = values,
+      attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("name", "description", "plural"),
@@ -533,6 +548,7 @@ object InternalResourceForm {
       deprecation = InternalDeprecationForm.fromJsValue(value),
       path = path,
       operations = operations,
+      attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         value,
         optionalStrings = Seq("path", "description"),
@@ -592,6 +608,7 @@ object InternalOperationForm {
         datatype = JsonUtil.asOptString(o \ "type").map(InternalDatatype(_)),
         description = JsonUtil.asOptString(o \ "description"),
         deprecation = InternalDeprecationForm.fromJsValue(o),
+        attributes = InternalAttributeForm.attributesFromJson((o \ "attributes").asOpt[JsArray]),
         warnings = JsonUtil.validate(
           o,
           strings = Seq("type"),
@@ -610,6 +627,7 @@ object InternalOperationForm {
       responses = responses,
       namedPathParameters = namedPathParameters,
       parameters = parameters,
+      attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         json,
         strings = Seq("method"),
@@ -658,10 +676,10 @@ object InternalFieldForm {
       deprecation = InternalDeprecationForm.fromJsValue(json),
       required = datatype.map(_.required).getOrElse(true),
       default = JsonUtil.asOptString(json \ "default"),
-      attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       minimum = JsonUtil.asOptLong(json \ "minimum"),
       maximum = JsonUtil.asOptLong(json \ "maximum"),
       example = JsonUtil.asOptString(json \ "example"),
+      attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       warnings = warnings ++ JsonUtil.validate(
         json,
         strings = Seq("name", "type"),
