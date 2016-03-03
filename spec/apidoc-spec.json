@@ -129,8 +129,8 @@
       "description": "Metadata about one of the types that is part of a union type",
       "fields": [
 	{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
-	{ "name": "description", "type": "string", "required": false },,
-	{ "name": "deprecation", "type": "deprecation", "required": false }
+	{ "name": "description", "type": "string", "required": false },
+	{ "name": "deprecation", "type": "deprecation", "required": false },
 	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },

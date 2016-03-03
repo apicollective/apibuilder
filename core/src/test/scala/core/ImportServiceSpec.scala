@@ -58,6 +58,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
       "application": { "key": "import-shared" },
       "namespace": "test.apidoc.import-shared",
       "version": "1.0.0",
+      "attributes": [],
 
       "imports": [],
       "headers": [],
@@ -68,9 +69,10 @@ class ImportServiceSpec extends FunSpec with Matchers {
           "name": "age_group",
           "plural": "age_groups",
           "values": [
-            { "name": "youth" },
-            { "name": "adult" }
-          ]
+            { "name": "youth", "attributes": [] },
+            { "name": "adult", "attributes": [] }
+          ],
+          "attributes": []
         }
       ],
 
@@ -79,18 +81,20 @@ class ImportServiceSpec extends FunSpec with Matchers {
           "name": "user_or_guest",
           "plural": "user_or_guests",
           "types": [
-            { "type": "user" },
-            { "type": "guest" }
-          ]
+            { "type": "user", "attributes": [] },
+            { "type": "guest", "attributes": [] }
+          ],
+          "attributes": []
         },
 
         {
           "name": "user_or_random",
           "plural": "user_or_randoms",
           "types": [
-            { "type": "user" },
-            { "type": "random_user" }
-          ]
+            { "type": "user", "attributes": [] },
+            { "type": "random_user", "attributes": [] }
+          ],
+          "attributes": []
         }
       ],
 
@@ -99,24 +103,27 @@ class ImportServiceSpec extends FunSpec with Matchers {
           "name": "user",
           "plural": "users",
           "fields": [
-            { "name": "id", "type": "long", "required": true }
-          ]
+            { "name": "id", "type": "long", "required": true, "attributes": [] }
+          ],
+          "attributes": []
         },
 
         {
           "name": "guest",
           "plural": "guests",
           "fields": [
-            { "name": "id", "type": "long", "required": true }
-          ]
+            { "name": "id", "type": "long", "required": true, "attributes": [] }
+          ],
+          "attributes": []
         },
 
         {
           "name": "random_user",
           "plural": "random_users",
           "fields": [
-            { "name": "id", "type": "uuid", "required": true }
-          ]
+            { "name": "id", "type": "uuid", "required": true, "attributes": [] }
+          ],
+          "attributes": []
         }
       ]
     }

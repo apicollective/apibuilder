@@ -28,6 +28,7 @@ class ImporterSpec extends FunSpec with Matchers {
       "application": { "key": "import-shared" },
       "namespace": "test.apidoc.import-shared",
       "version": "1.0.0",
+      "attributes": [],
 
       "imports": [],
       "headers": [],
@@ -41,8 +42,9 @@ class ImporterSpec extends FunSpec with Matchers {
           "name": "user",
           "plural": "users",
           "fields": [
-            { "name": "id", "type": "long", "required": true }
-          ]
+            { "name": "id", "type": "long", "required": true, "attributes": [] }
+          ],
+          "attributes": []
         }
       ]
     }
