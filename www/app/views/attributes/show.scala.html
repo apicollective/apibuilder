@@ -1,0 +1,35 @@
+@(
+  tpl: models.MainTemplate,
+  attr: com.bryzek.apidoc.api.v0.models.Attribute,
+  generatorWithServices: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.GeneratorWithService]
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl) {
+
+  @if(tpl.canEditAttribute(attr)) {
+    <div class="pull-right">
+      <span class="glyphicon glyphicon-plus"></span> <a class="delete" data-confirm="Are you sure?" href="@routes.AttributesController.deletePost(attr.name)">Delete</a>
+    </div>
+  }
+
+  @Html(lib.Markdown.toHtml(attr.description.getOrElse("")))
+
+  <p><b>Code Generators Using this Attribute</b></p>
+  @if(generatorWithServices.isEmpty) {
+    <em>None</em>
+  } else {
+    @generators.generators(generatorWithServices)
+
+    @if(generatorWithServices.hasPrevious || generatorWithServices.hasNext) {
+      <ul class="pager">
+        @if(generatorWithServices.hasPrevious) {
+          <li><a href="@routes.AttributesController.show(attr.name, generatorWithServices.page - 1)">Previous</a></li>
+        }
+        @if(generatorWithServices.hasNext) {
+          <li><a href="@routes.AttributesController.show(attr.name, generatorWithServices.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

@@ -14,10 +14,10 @@ object Zipfile {
     path
   }
 
-  private def createForFile(
+  private[this] def createForFile(
     zip: java.io.File,
     files: Seq[File],
-    prefix: String = ""
+    prefix: String
   ) {
     val zipOutputStream = new ZipOutputStream(new FileOutputStream(zip))
     files.foreach { f =>

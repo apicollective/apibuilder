@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Organization, Original, User, Version, VersionForm, Visibility}
+import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
 import com.bryzek.apidoc.api.v0.models.json._
 import com.bryzek.apidoc.spec.v0.models.Service
 import lib.ServiceConfiguration
@@ -61,8 +61,10 @@ object Versions extends Controller {
                   case Right(service) => {
                     validateVersion(request.user, org, service.application.key) match {
                       case Nil => {
-                        val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service)
-                        Ok(Json.toJson(version))
+                        upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service) match {
+                          case Left(errors) => Conflict(Json.toJson(errors))
+                          case Right(version) => Ok(Json.toJson(version))
+                        }
                       }
                       case errors => {
                         Conflict(Json.toJson(Validation.errors(errors)))
@@ -113,8 +115,10 @@ object Versions extends Controller {
                   case Right(service) => {
                     validateVersion(request.user, org, service.application.key, Some(applicationKey)) match {
                       case Nil => {
-                        val version = upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey))
-                        Ok(Json.toJson(version))
+                        upsertVersion(request.user, org, versionName, form, OriginalUtil.toOriginal(form.originalForm), service, Some(applicationKey)) match {
+                          case Left(errors) => Conflict(Json.toJson(errors))
+                          case Right(version) => Ok(Json.toJson(version))
+                        }
                       }
                       case errors => {
                         Conflict(Json.toJson(Validation.errors(errors)))
@@ -136,7 +140,7 @@ object Versions extends Controller {
   def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
     val auth = Authorization.User(request.user.guid)
     OrganizationsDao.findByKey(auth, orgKey) map { org =>
-      request.requireAdmin(org)
+      request.requireMember(org)
       VersionsDao.findVersion(auth, orgKey, applicationKey, version).map { version =>
         VersionsDao.softDelete(request.user, version)
       }
@@ -152,8 +156,8 @@ object Versions extends Controller {
     original: Original,
     service: Service,
     applicationKey: Option[String] = None
-  ): Version = {
-    val application = applicationKey.flatMap { key => ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) } match {
+  ): Either[Seq[Error], Version] = {
+    val appResult = applicationKey.flatMap { key => ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) } match {
       case None => {
         val appForm = ApplicationForm(
           key = applicationKey,
@@ -161,7 +165,10 @@ object Versions extends Controller {
           description = service.description,
           visibility = form.visibility.getOrElse(DefaultVisibility)
         )
-        ApplicationsDao.create(user, org, appForm)
+        ApplicationsDao.validate(org, appForm) match {
+          case Nil => Right(ApplicationsDao.create(user, org, appForm))
+          case errors => Left(errors)
+        }
       }
       case Some(app) => {
         form.visibility.map { v =>
@@ -169,13 +176,22 @@ object Versions extends Controller {
             ApplicationsDao.setVisibility(user, app, v)
           }
         }
-        app
+        Right(app)
       }
     }
 
-    VersionsDao.findByApplicationAndVersion(Authorization.User(user.guid), application, versionName) match {
-      case None => VersionsDao.create(user, application, versionName, original, service)
-      case Some(existing: Version) => VersionsDao.replace(user, existing, application, original, service)
+    appResult match {
+      case Left(errors) => {
+        Left(errors)
+      }
+
+      case Right(application) => {
+        val version = VersionsDao.findByApplicationAndVersion(Authorization.User(user.guid), application, versionName) match {
+          case None => VersionsDao.create(user, application, versionName, original, service)
+          case Some(existing: Version) => VersionsDao.replace(user, existing, application, original, service)
+        }
+        Right(version)
+      }
     }
   }
 

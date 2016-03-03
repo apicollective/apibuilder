@@ -9,6 +9,14 @@ class ApplicationController @Inject() (val messagesApi: MessagesApi) extends Con
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
+  def redirect() = Action { request =>
+    Redirect(request.path + "/")
+  }
+
+  def redirectOrg(org: String) = Action { request =>
+    Redirect(request.path + "/")
+  }
+
   def index(orgsPage: Int = 0, membershipRequestsPage: Int = 0, publicOrgsPage: Int = 0) = Anonymous.async { implicit request =>
     request.user match {
       case None => {

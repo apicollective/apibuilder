@@ -1,0 +1,36 @@
+@(
+  tpl: models.MainTemplate,
+  attributes: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Attribute]
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl) {
+
+  @tpl.user.map { user =>
+    <div class="pull-right">
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.AttributesController.create()">Add attribute</a>
+    </div>
+  }
+
+  <table class="table table-hover table-condensed">
+    <tbody>
+      @attributes.items.map { attribute =>
+       <tr>
+         <td><a href="@routes.AttributesController.show(attribute.name)">@attribute.name</a></td>
+         <td>@lib.Text.truncate(attribute.description.getOrElse(""))</td>
+       </tr>
+     }
+    </tbody>
+  </table>
+
+  @if(attributes.hasPrevious || attributes.hasNext) {
+    <ul class="pager">
+      @if(attributes.hasPrevious) {
+        <li><a href="@routes.AttributesController.index(attributes.page - 1)">Previous</a></li>
+      }
+      @if(attributes.hasNext) {
+        <li><a href="@routes.AttributesController.index(attributes.page + 1)">Next</a></li>
+      }
+    </ul>
+  }
+
+}

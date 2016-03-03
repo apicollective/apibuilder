@@ -3,15 +3,25 @@ scala:
   - 2.11.7
 jdk:
   - oraclejdk8
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
 addons:
     postgresql: "9.4"
+services:
+  - postgresql
 before_script:
   - createuser -U postgres -s -d -r web
   - createdb -h localhost -U web apidoc
   - git clone git://github.com/gilt/schema-evolution-manager.git
   - cd schema-evolution-manager
-  - git checkout 0.9.21
+  - git checkout 0.9.24
   - cd ../schema
   - ../schema-evolution-manager/bin/sem-apply --host localhost --user web --name apidoc
   - cd ..
-
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION clean compile test
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm

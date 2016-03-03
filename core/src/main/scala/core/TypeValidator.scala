@@ -2,7 +2,7 @@ package core
 
 import com.bryzek.apidoc.spec.v0.models.{Model, Service}
 import builder.JsonUtil
-import lib.{Datatype, PrimitiveMetadata, Primitives, Type, Kind}
+import lib.{PrimitiveMetadata, Primitives, Kind}
 import java.util.UUID
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
@@ -136,12 +136,12 @@ case class TypeValidator(
   }
 
   def validate(
-    pd: Datatype,
+    kind: Kind,
     value: String,
     errorPrefix: Option[String] = None
   ): Option[String] = {
-    pd match {
-      case Datatype.List(t) => {
+    kind match {
+      case Kind.List(t) => {
         parseJsonOrNone(value) match {
           case None => {
             Some(s"default[$value] is not valid json")
@@ -163,7 +163,7 @@ case class TypeValidator(
           }
         }
       }
-      case Datatype.Map(t) => {
+      case Kind.Map(t) => {
         parseJsonOrNone(value) match {
           case None => {
             Some(s"default[$value] is not valid json")
@@ -187,20 +187,8 @@ case class TypeValidator(
           }
         }
       }
-      case Datatype.Singleton(t) => {
-        validate(t, value, errorPrefix)
-      }
-    }
-  }
 
-  def validate(
-    t: Type,
-    value: String,
-    errorPrefix: Option[String]
-  ): Option[String] = {
-    t match {
-
-      case Type(Kind.Enum, name) => {
+      case Kind.Enum(name) => {
         val names = defaultNamespace match {
           case None => Seq(name)
           case Some(ns) => Seq(name, s"$ns.enums.$name")
@@ -224,11 +212,15 @@ case class TypeValidator(
         }
       }
       
-      case Type(Kind.Model, name) => {
+      case Kind.Model(name) => {
         Some(withPrefix(errorPrefix, s"default[$value] is not valid for model[$name]. apidoc does not support default values for models"))
       }
 
-      case Type(Kind.Primitive, name) => {
+      case Kind.Union(name) => {
+        Some(withPrefix(errorPrefix, s"default[$value] is not valid for union[$name]. apidoc does not support default values for unions"))
+      }
+
+      case Kind.Primitive(name) => {
         Primitives(name) match {
           case None => {
             Some(withPrefix(errorPrefix, s"there is no primitive datatype[$name]"))

@@ -21,6 +21,10 @@ class DocController extends Controller {
     Ok(views.html.doc.apiJson(request.user))
   }
 
+  def attributes = Anonymous { implicit request =>
+    Ok(views.html.doc.attributes(request.user))
+  }
+
   def types = Anonymous { implicit request =>
     Ok(views.html.doc.types(request.user))
   }

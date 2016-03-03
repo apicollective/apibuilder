@@ -1,36 +1,23 @@
 package lib
 
-sealed trait TextDatatype {
-  def typeName: String
-  def label: String
-}
+sealed trait TextDatatype
 
 object TextDatatype {
 
-  private val Divider = " | "
-
-  case class List(typeName: String) extends TextDatatype {
-    override def label = s"[$typeName]"
-  }
-
-  case class Map(typeName: String) extends TextDatatype {
-    override def label = s"map[$typeName]"
-  }
-
-  case class Singleton(typeName: String) extends TextDatatype {
-    override def label = typeName
-  }
+  case object List extends TextDatatype
+  case object Map extends TextDatatype
+  case class Singleton(name: String) extends TextDatatype
 
   private val ListRx = "^\\[(.*)\\]$".r
   private val MapRx = "^map\\[(.*)\\]$".r
   private val MapDefaultRx = "^map$".r
 
-  def apply(value: String): TextDatatype = {
+  def parse(value: String): Seq[TextDatatype] = {
     value match {
-      case ListRx(t) => TextDatatype.List(t)
-      case MapRx(t) => TextDatatype.Map(t)
-      case MapDefaultRx() => TextDatatype.Map(Primitives.String.toString)
-      case _ => TextDatatype.Singleton(value)
+      case ListRx(t) => Seq(TextDatatype.List) ++ parse(t)
+      case MapRx(t) => Seq(TextDatatype.Map) ++ parse(t)
+      case MapDefaultRx() => Seq(TextDatatype.Map, TextDatatype.Singleton(Primitives.String.toString))
+      case _ => Seq(TextDatatype.Singleton(value))
     }
   }
 

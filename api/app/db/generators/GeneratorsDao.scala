@@ -20,6 +20,7 @@ object GeneratorsDao {
            generators.name,
            generators.description,
            generators.language,
+           generators.attributes,
            services.guid as service_guid,
            services.uri as service_uri,
            ${AuditsDao.queryCreationWithAlias("services", "service")}
@@ -30,9 +31,9 @@ object GeneratorsDao {
 
   private[this] val InsertQuery = """
     insert into generators.generators
-    (guid, service_guid, key, name, description, language, created_by_guid)
+    (guid, service_guid, key, name, description, language, attributes, created_by_guid)
     values
-    ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {created_by_guid}::uuid)
+    ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {attributes}, {created_by_guid}::uuid)
   """
 
   private[this] val SoftDeleteByKeyQuery = """
@@ -88,6 +89,7 @@ object GeneratorsDao {
   private[this] def isDifferent(generator: Generator, form: GeneratorForm): Boolean = {
     generator.name != form.generator.name ||
     generator.language != form.generator.language ||
+    generator.attributes != form.generator.attributes ||
     generator.description != form.generator.description
   }
 
@@ -117,11 +119,19 @@ object GeneratorsDao {
       'name -> form.generator.name.trim,
       'description -> form.generator.description.map(_.trim),
       'language -> form.generator.language.map(_.trim),
+      'attributes -> optionIfEmpty(form.generator.attributes.map(_.trim).mkString(", ")),
       'created_by_guid -> user.guid,
       'updated_by_guid -> user.guid
     ).execute()
 
     guid
+  }
+
+  private[this] def optionIfEmpty(value: String): Option[String] = {
+    value.trim match {
+      case "" => None
+      case v => Some(v)
+    }
   }
 
   def softDelete(deletedBy: User, gws: GeneratorWithService) {
@@ -144,6 +154,7 @@ object GeneratorsDao {
     serviceGuid: Option[UUID] = None,
     serviceUri: Option[String] = None,
     key: Option[String] = None,
+    attributeName: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -155,6 +166,10 @@ object GeneratorsDao {
       serviceGuid.map { v => "and generators.service_guid = {service_guid}::uuid" },
       serviceUri.map { v => "and lower(services.uri) = lower(trim({uri}))" },
       key.map { v => "and lower(trim(generators.key)) = lower(trim({key}))" },
+      attributeName.map { v =>
+        // TODO: structure this filter
+        "and generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
+      },
       isDeleted.map(db.Filters.isDeleted("generators", _))
     ).flatten.mkString("\n   ") + s" order by lower(generators.name), lower(generators.key), generators.created_at desc limit ${limit} offset ${offset}"
 
@@ -162,7 +177,8 @@ object GeneratorsDao {
       guid.map('guid -> _.toString),
       serviceGuid.map('service_guid -> _.toString),
       serviceUri.map('service_uri -> _),
-      key.map('key -> _)
+      key.map('key -> _),
+      attributeName.map('attribute_name -> _)
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
@@ -182,7 +198,11 @@ object GeneratorsDao {
       key = row[String]("key"),
       name = row[String]("name"),
       description = row[Option[String]]("description"),
-      language = row[Option[String]]("language")
+      language = row[Option[String]]("language"),
+      attributes = row[Option[String]]("attributes") match {
+        case None => Nil
+        case Some(value) => value.split("\\s+")
+      }
     )
   )
 

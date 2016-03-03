@@ -2,6 +2,84 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.11.16 - Feb 28 2016</h3>
+
+<ul>
+
+    <li> Refactor type system to truly treat collections as
+        types. See <a href='@lib.Util.ApidocGitHubUrl/pull/415'>PR
+        415</a></li>
+
+    <li> Fix bug with error when visiting /attributes/ when not
+        logged. See <a href='@lib.Util.ApidocGitHubUrl/pull/416'>PR
+        416</a></li>
+
+</ul>
+
+
+<h3>0.11.14 - Feb 26 2016</h3>
+
+<ul>
+  <li> Official JavaScript clients now available (alpha). This
+    release announces the availability of the JavaScript client code generator.
+    Both ES5 and ES6 versions are available. This should be
+    considered alpha but is already being used in production.</li>
+
+  <li> Clients can now be downloaded as .tar.gz archives in addition to .zip</li>
+</ul>
+
+<h3>0.11.12 - Feb 24 2016</h3>
+
+  <ul>
+
+    <li> Ruby client: Fix bug with serialization of enum to query
+        parameter. See <a href='@lib.Util.ApidocGeneratorGitHubUrl/pull/73'>PR
+        73</a></li>
+
+    <li> Fix bug in play routes generation for routes w/ enum and
+        default. See <a href='@lib.Util.ApidocGeneratorGitHubUrl/pull/74'>PR
+        74</a></li>
+
+    <li> Fix validation error of 'boxed error' by actually validating
+        the application
+        key. See <a href='@lib.Util.ApidocGitHubUrl/pull/411'>PR
+        411</a></li>
+
+    <li> Let any org member delete an application /
+        version. See <a href='@lib.Util.ApidocGitHubUrl/pull/412'>PR
+        412</a></li>
+  
+  </ul>
+
+<h3>0.11.10 - Feb 18 2016</h3>
+
+  <ul>
+
+    <li> Go clients now available (alpha). This release announces the
+    availability of a go client code generator. This should be
+    considered alpha but is already being used in production. </li>
+
+    <li> Attributes now supported: We have added attributes to apidoc
+    - these are globally defined, with values currently set at the
+    organization level. Code generators can declare what attributes
+    they use - and any attribute values are now made available to the
+    code generators as part of the invocation
+    form. <a href="@routes.DocController.attributes()">Learn
+    more</a>.</li>
+
+    <li> Base Url Defaults: If your application has provided a
+    baseUrl, that base url is now available as a constant in the
+    generated clients. In the play, ning and ruby clients, we also
+    auto default the base Url when creating an instance of a new
+    Client. </li>
+    
+    <li> Added validation that if a path parameter is declared in a
+    resource operation, that the path specified contains that
+    parameter</li>
+    
+  </ul>
+
+
 <h3>0.11.6 - Jan 21 2016</h3>
 
   <ul>

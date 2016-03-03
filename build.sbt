@@ -15,7 +15,7 @@ lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings: _*)
 
-val avroVersion = "1.7.7"
+val avroVersion = "1.8.0"
 
 lazy val avro = project
   .in(file("avro"))
@@ -57,6 +57,7 @@ lazy val core = project
 lazy val generated = project
   .in(file("generated"))
   .enablePlugins(PlayScala)
+  .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
       ws
@@ -76,7 +77,7 @@ lazy val api = project
       ws,
       jdbc,
       "com.typesafe.play" %% "anorm"         % "2.5.0",
-      "org.postgresql"    %  "postgresql"    % "9.4.1207",
+      "org.postgresql"    %  "postgresql"    % "9.4.1208",
       "org.mindrot"       %  "jbcrypt"       % "0.3m",
       "com.sendgrid"      %  "sendgrid-java" % "2.2.2",
       specs2              %  Test,
@@ -94,7 +95,8 @@ lazy val www = project
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "com.github.tototoshi" %% "scala-csv" % "1.2.2",
+      "org.apache.commons" % "commons-compress" % "1.10",
+      "com.github.tototoshi" %% "scala-csv" % "1.3.0",
       "org.pegdown" % "pegdown" % "1.6.0"
     )
   )
@@ -119,6 +121,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatest" %% "scalatest" % "2.2.6" % "test"
   ),
   scalacOptions += "-feature",
+  sources in (Compile,doc) := Seq.empty,
+  publishArtifact in (Compile, packageDoc) := false,
   coverageHighlighting := true
 ) ++ publishSettings
 

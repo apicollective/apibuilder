@@ -1,0 +1,34 @@
+@(
+  tpl: models.MainTemplate,
+  attribute: com.bryzek.apidoc.api.v0.models.Attribute,
+  form: Form[controllers.OrganizationAttributesController.FormData],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl.copy(title = Some(s"Edit ${attribute.name}")), errorMessages) {
+
+  <div class="container">
+
+    @helper.form(action = routes.OrganizationAttributesController.editPost(tpl.org.get.key, attribute.name)) {
+
+
+    <fieldset>
+      @helper.inputText(
+      form("value"),
+      '_label -> "Value",
+      '_error -> form.error("value")
+      )
+    </fieldset>
+
+    <button class="btn btn-large btn-primary" type="submit">Submit</button>
+    <a href="routes.OrganizationAttributesController.index(tpl.org.get.key)" class="btn">Cancel</a>
+
+    }
+
+    <p>
+    @Html(lib.Markdown.toHtml(attribute.description.getOrElse("")))
+    </p>
+
+  </div>
+
+}

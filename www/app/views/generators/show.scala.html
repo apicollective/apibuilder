@@ -12,6 +12,15 @@
     <li> Key: @gws.generator.key</li>
     <li> Name: @gws.generator.name</li>
     <li> Language: @gws.generator.language.getOrElse("not specified")</li>
+    <li> Attributes:
+      @if(gws.generator.attributes.isEmpty) {
+        <em>None</em>
+      } else {
+        @gws.generator.attributes.map { attr =>
+          <a href="@routes.AttributesController.show(attr)">@attr</a>
+        }
+      }
+    </li>
     <li> Description:
          <blockquote>@Html(lib.Markdown(gws.generator.description))</blockquote>
     </li>

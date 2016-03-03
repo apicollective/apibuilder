@@ -1,6 +1,6 @@
 package models
 
-import com.bryzek.apidoc.api.v0.models.{Application, GeneratorService, GeneratorWithService, Organization, User, Version}
+import com.bryzek.apidoc.api.v0.models.{Attribute, Application, GeneratorService, GeneratorWithService, Organization, User, Version}
 import com.bryzek.apidoc.spec.v0.models.{Resource, Service}
 import play.api.Play.current
 
@@ -42,6 +42,11 @@ case class MainTemplate(
   // Placeholder so that we can eventually choose timezone by user
   def timeZone: UserTimeZone = UserTimeZone.Default
 
+  def canEditAttribute(attribute: Attribute): Boolean = {
+    Some(attribute.audit.createdBy.guid) == user.map(_.guid)
+
+  }
+
   def canEditApplication(applicationKey: String): Boolean = isOrgMember
 
   def canAdminApplication(applicationKey: String): Boolean = isOrgMember
@@ -72,12 +77,14 @@ object MainTemplate {
 
 }
 
+// TODO: Remove this class and use Option[SettingSection] directly
 case class SettingsMenu(
   section: Option[SettingSection] = None
 )
 
 case class SettingSection(name: String)
 object SettingSection {
+  val Attributes = SettingSection("attributes")
   val Details = SettingSection("details")
   val Domains = SettingSection("domains")
   val Members = SettingSection("members")
