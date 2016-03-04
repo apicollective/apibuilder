@@ -57,10 +57,10 @@ You'll need to get the api schema into your dev postgresql database; to do that:
     $ psql
     psql> CREATE DATABASE apidoc;
 
-Create a web user with permissions to modify the new database.
+Create a api user with permissions to modify the new database.
 
-    psql> CREATE ROLE web WITH LOGIN;
-    psql> GRANT ALL ON DATABASE apidoc TO web;
+    psql> CREATE ROLE api WITH LOGIN;
+    psql> GRANT ALL ON DATABASE apidoc TO api;
 
 Then you'll need to create the database schema using [schema evolution manager](https://github.com/mbryzek/schema-evolution-manager#installation)
 
