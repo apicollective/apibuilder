@@ -12,13 +12,13 @@ addons:
 services:
   - postgresql
 before_script:
-  - createuser -U postgres -s -d -r web
-  - createdb -h localhost -U web apidoc
+  - createuser -U postgres -s -d -r api
+  - createdb -h localhost -U api apidoc
   - git clone git://github.com/gilt/schema-evolution-manager.git
   - cd schema-evolution-manager
   - git checkout 0.9.24
   - cd ../schema
-  - ../schema-evolution-manager/bin/sem-apply --host localhost --user web --name apidoc
+  - ../schema-evolution-manager/bin/sem-apply --host localhost --user api --name apidoc
   - cd ..
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
