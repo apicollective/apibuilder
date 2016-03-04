@@ -34,7 +34,7 @@ sealed trait PasswordAlgorithm {
 
 case class BcryptPasswordAlgorithm(override val key: String) extends PasswordAlgorithm {
 
-  private[this] val LogRounds = 10
+  private[this] val LogRounds = 13
 
   override def hash(password: String): HashedPassword = {
     val salt = BCrypt.gensalt(LogRounds)
