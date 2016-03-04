@@ -277,15 +277,15 @@
       ]
     },
 
-	"attribute": {
-	    "description": "Represents an additional attribute that is attached to one of the objects in apidoc. The main use case is to capture additional metadata that doesn't necessarily define the API but aids in code generation. Examples would be hints for certain code generators about classes to extend, interfaces to implement, annotations to add, names to assign to certain methods, etc. The specific attributes will be applicable only in the context of the specific code generators usings them.",
+    "attribute": {
+      "description": "Represents an additional attribute that is attached to one of the objects in apidoc. The main use case is to capture additional metadata that doesn't necessarily define the API but aids in code generation. Examples would be hints for certain code generators about classes to extend, interfaces to implement, annotations to add, names to assign to certain methods, etc. The specific attributes will be applicable only in the context of the specific code generators usings them.",
 	    "fields": [
-		{ "name": "name", "type": "string" },
-		{ "name": "value", "type": "object" },
-		{ "name": "description", "type": "string", "required": false },
-		{ "name": "deprecation", "type": "deprecation", "required": false }
+	      { "name": "name", "type": "string" },
+	      { "name": "value", "type": "object" },
+	      { "name": "description", "type": "string", "required": false },
+	      { "name": "deprecation", "type": "deprecation", "required": false }
 	    ]
-	}
+    }
 
   }
 
