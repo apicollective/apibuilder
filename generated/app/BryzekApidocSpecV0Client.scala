@@ -34,7 +34,8 @@ package com.bryzek.apidoc.spec.v0.models {
   case class Body(
     `type`: String,
     description: _root_.scala.Option[String] = None,
-    deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None
+    deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   /**
@@ -59,13 +60,15 @@ package com.bryzek.apidoc.spec.v0.models {
     plural: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
-    values: Seq[com.bryzek.apidoc.spec.v0.models.EnumValue]
+    values: Seq[com.bryzek.apidoc.spec.v0.models.EnumValue],
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   case class EnumValue(
     name: String,
     description: _root_.scala.Option[String] = None,
-    deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None
+    deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   case class Field(
@@ -77,7 +80,8 @@ package com.bryzek.apidoc.spec.v0.models {
     required: Boolean,
     minimum: _root_.scala.Option[Long] = None,
     maximum: _root_.scala.Option[Long] = None,
-    example: _root_.scala.Option[String] = None
+    example: _root_.scala.Option[String] = None,
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   case class Header(
@@ -86,7 +90,8 @@ package com.bryzek.apidoc.spec.v0.models {
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
     required: Boolean,
-    default: _root_.scala.Option[String] = None
+    default: _root_.scala.Option[String] = None,
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   /**
@@ -125,7 +130,8 @@ package com.bryzek.apidoc.spec.v0.models {
     plural: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
-    fields: Seq[com.bryzek.apidoc.spec.v0.models.Field]
+    fields: Seq[com.bryzek.apidoc.spec.v0.models.Field],
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   case class Operation(
@@ -135,7 +141,8 @@ package com.bryzek.apidoc.spec.v0.models {
     deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
     body: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Body] = None,
     parameters: Seq[com.bryzek.apidoc.spec.v0.models.Parameter] = Nil,
-    responses: Seq[com.bryzek.apidoc.spec.v0.models.Response] = Nil
+    responses: Seq[com.bryzek.apidoc.spec.v0.models.Response] = Nil,
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   case class Organization(
@@ -161,7 +168,8 @@ package com.bryzek.apidoc.spec.v0.models {
     path: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
-    operations: Seq[com.bryzek.apidoc.spec.v0.models.Operation]
+    operations: Seq[com.bryzek.apidoc.spec.v0.models.Operation],
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   case class Response(
@@ -186,7 +194,8 @@ package com.bryzek.apidoc.spec.v0.models {
     enums: Seq[com.bryzek.apidoc.spec.v0.models.Enum] = Nil,
     unions: Seq[com.bryzek.apidoc.spec.v0.models.Union] = Nil,
     models: Seq[com.bryzek.apidoc.spec.v0.models.Model] = Nil,
-    resources: Seq[com.bryzek.apidoc.spec.v0.models.Resource] = Nil
+    resources: Seq[com.bryzek.apidoc.spec.v0.models.Resource] = Nil,
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   case class Union(
@@ -195,7 +204,8 @@ package com.bryzek.apidoc.spec.v0.models {
     discriminator: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
-    types: Seq[com.bryzek.apidoc.spec.v0.models.UnionType]
+    types: Seq[com.bryzek.apidoc.spec.v0.models.UnionType],
+    attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
   /**
@@ -502,7 +512,7 @@ package com.bryzek.apidoc.spec.v0.models {
     def jsObjectAttribute(obj: com.bryzek.apidoc.spec.v0.models.Attribute) = {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
-        "value" -> play.api.libs.json.Json.obj(obj.value)
+        "value" -> obj.value
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -525,13 +535,15 @@ package com.bryzek.apidoc.spec.v0.models {
       (
         (__ \ "type").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation]
+        (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Body.apply _)
     }
 
     def jsObjectBody(obj: com.bryzek.apidoc.spec.v0.models.Body) = {
       play.api.libs.json.Json.obj(
-        "type" -> play.api.libs.json.JsString(obj.`type`)
+        "type" -> play.api.libs.json.JsString(obj.`type`),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -606,7 +618,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
-        (__ \ "values").read[Seq[com.bryzek.apidoc.spec.v0.models.EnumValue]]
+        (__ \ "values").read[Seq[com.bryzek.apidoc.spec.v0.models.EnumValue]] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Enum.apply _)
     }
 
@@ -614,7 +627,8 @@ package com.bryzek.apidoc.spec.v0.models {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
         "plural" -> play.api.libs.json.JsString(obj.plural),
-        "values" -> play.api.libs.json.Json.toJson(obj.values)
+        "values" -> play.api.libs.json.Json.toJson(obj.values),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -637,13 +651,15 @@ package com.bryzek.apidoc.spec.v0.models {
       (
         (__ \ "name").read[String] and
         (__ \ "description").readNullable[String] and
-        (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation]
+        (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(EnumValue.apply _)
     }
 
     def jsObjectEnumValue(obj: com.bryzek.apidoc.spec.v0.models.EnumValue) = {
       play.api.libs.json.Json.obj(
-        "name" -> play.api.libs.json.JsString(obj.name)
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -672,7 +688,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "required").read[Boolean] and
         (__ \ "minimum").readNullable[Long] and
         (__ \ "maximum").readNullable[Long] and
-        (__ \ "example").readNullable[String]
+        (__ \ "example").readNullable[String] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Field.apply _)
     }
 
@@ -680,7 +697,8 @@ package com.bryzek.apidoc.spec.v0.models {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
         "type" -> play.api.libs.json.JsString(obj.`type`),
-        "required" -> play.api.libs.json.JsBoolean(obj.required)
+        "required" -> play.api.libs.json.JsBoolean(obj.required),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -722,7 +740,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
         (__ \ "required").read[Boolean] and
-        (__ \ "default").readNullable[String]
+        (__ \ "default").readNullable[String] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Header.apply _)
     }
 
@@ -730,7 +749,8 @@ package com.bryzek.apidoc.spec.v0.models {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
         "type" -> play.api.libs.json.JsString(obj.`type`),
-        "required" -> play.api.libs.json.JsBoolean(obj.required)
+        "required" -> play.api.libs.json.JsBoolean(obj.required),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -843,7 +863,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "plural").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
-        (__ \ "fields").read[Seq[com.bryzek.apidoc.spec.v0.models.Field]]
+        (__ \ "fields").read[Seq[com.bryzek.apidoc.spec.v0.models.Field]] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Model.apply _)
     }
 
@@ -851,7 +872,8 @@ package com.bryzek.apidoc.spec.v0.models {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
         "plural" -> play.api.libs.json.JsString(obj.plural),
-        "fields" -> play.api.libs.json.Json.toJson(obj.fields)
+        "fields" -> play.api.libs.json.Json.toJson(obj.fields),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -878,7 +900,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
         (__ \ "body").readNullable[com.bryzek.apidoc.spec.v0.models.Body] and
         (__ \ "parameters").read[Seq[com.bryzek.apidoc.spec.v0.models.Parameter]] and
-        (__ \ "responses").read[Seq[com.bryzek.apidoc.spec.v0.models.Response]]
+        (__ \ "responses").read[Seq[com.bryzek.apidoc.spec.v0.models.Response]] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Operation.apply _)
     }
 
@@ -887,7 +910,8 @@ package com.bryzek.apidoc.spec.v0.models {
         "method" -> play.api.libs.json.JsString(obj.method.toString),
         "path" -> play.api.libs.json.JsString(obj.path),
         "parameters" -> play.api.libs.json.Json.toJson(obj.parameters),
-        "responses" -> play.api.libs.json.Json.toJson(obj.responses)
+        "responses" -> play.api.libs.json.Json.toJson(obj.responses),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
@@ -990,7 +1014,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "path").readNullable[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
-        (__ \ "operations").read[Seq[com.bryzek.apidoc.spec.v0.models.Operation]]
+        (__ \ "operations").read[Seq[com.bryzek.apidoc.spec.v0.models.Operation]] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Resource.apply _)
     }
 
@@ -998,7 +1023,8 @@ package com.bryzek.apidoc.spec.v0.models {
       play.api.libs.json.Json.obj(
         "type" -> play.api.libs.json.JsString(obj.`type`),
         "plural" -> play.api.libs.json.JsString(obj.plural),
-        "operations" -> play.api.libs.json.Json.toJson(obj.operations)
+        "operations" -> play.api.libs.json.Json.toJson(obj.operations),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.path match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("path" -> play.api.libs.json.JsString(x))
@@ -1068,7 +1094,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "enums").read[Seq[com.bryzek.apidoc.spec.v0.models.Enum]] and
         (__ \ "unions").read[Seq[com.bryzek.apidoc.spec.v0.models.Union]] and
         (__ \ "models").read[Seq[com.bryzek.apidoc.spec.v0.models.Model]] and
-        (__ \ "resources").read[Seq[com.bryzek.apidoc.spec.v0.models.Resource]]
+        (__ \ "resources").read[Seq[com.bryzek.apidoc.spec.v0.models.Resource]] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Service.apply _)
     }
 
@@ -1086,7 +1113,8 @@ package com.bryzek.apidoc.spec.v0.models {
         "enums" -> play.api.libs.json.Json.toJson(obj.enums),
         "unions" -> play.api.libs.json.Json.toJson(obj.unions),
         "models" -> play.api.libs.json.Json.toJson(obj.models),
-        "resources" -> play.api.libs.json.Json.toJson(obj.resources)
+        "resources" -> play.api.libs.json.Json.toJson(obj.resources),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.baseUrl match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("base_url" -> play.api.libs.json.JsString(x))
@@ -1112,7 +1140,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "discriminator").readNullable[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
-        (__ \ "types").read[Seq[com.bryzek.apidoc.spec.v0.models.UnionType]]
+        (__ \ "types").read[Seq[com.bryzek.apidoc.spec.v0.models.UnionType]] and
+        (__ \ "attributes").read[Seq[com.bryzek.apidoc.spec.v0.models.Attribute]]
       )(Union.apply _)
     }
 
@@ -1120,7 +1149,8 @@ package com.bryzek.apidoc.spec.v0.models {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
         "plural" -> play.api.libs.json.JsString(obj.plural),
-        "types" -> play.api.libs.json.Json.toJson(obj.types)
+        "types" -> play.api.libs.json.Json.toJson(obj.types),
+        "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)
       ) ++ (obj.discriminator match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("discriminator" -> play.api.libs.json.JsString(x))
