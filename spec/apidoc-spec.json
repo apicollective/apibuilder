@@ -76,7 +76,8 @@
 	{ "name": "enums", "type": "[enum]", "default": "[]" },
 	{ "name": "unions", "type": "[union]", "default": "[]" },
 	{ "name": "models", "type": "[model]", "default": "[]" },
-	{ "name": "resources", "type": "[resource]", "default": "[]" }
+	{ "name": "resources", "type": "[resource]", "default": "[]" },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -98,7 +99,8 @@
 	{ "name": "plural", "type": "string" },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "values", "type": "[enum_value]" }
+	{ "name": "values", "type": "[enum_value]" },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -106,7 +108,8 @@
       "fields": [
 	{ "name": "name", "type": "string" },
 	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false }
+	{ "name": "deprecation", "type": "deprecation", "required": false },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -117,7 +120,8 @@
 	{ "name": "discriminator", "type": "string", "required": false, "description": "If a type discriminator is provided, serialization of these union types will always contain a field named with the value of the discriminator that will contain the name of the type. This provides a simpler (for many use cases) JSON serialization/deserialization mechanism. When specified, apidoc itself will verify that none of the types in the union type itself contain a field with the same name as the discriminator", "example": "discriminator or type" },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" }
+	{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -126,7 +130,8 @@
       "fields": [
 	{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
 	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false }
+	{ "name": "deprecation", "type": "deprecation", "required": false },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -136,7 +141,8 @@
 	{ "name": "plural", "type": "string" },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "fields", "type": "[field]" }
+	{ "name": "fields", "type": "[field]" },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -150,7 +156,8 @@
 	{ "name": "required", "type": "boolean" },
 	{ "name": "minimum", "type": "long", "required": false },
 	{ "name": "maximum", "type": "long", "required": false },
-	{ "name": "example", "type": "string", "required": false }
+	{ "name": "example", "type": "string", "required": false },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -161,7 +168,8 @@
 	{ "name": "path", "type": "string", "required": false, "description": "The path to this specific resource. This was added in 2016 to help us differentiate between the resource path and the operation path which can be helpful when, for example, generating method names for operations. This field is optional as some of our input formats (e.g. swagger) do not explicitly differenties resoure paths." },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "operations", "type": "[operation]" }
+	{ "name": "operations", "type": "[operation]" },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -173,7 +181,8 @@
 	{ "name": "deprecation", "type": "deprecation", "required": false },
 	{ "name": "body", "type": "body", "required": false },
 	{ "name": "parameters", "type": "[parameter]", "default": "[]" },
-	{ "name": "responses", "type": "[response]", "default": "[]" }
+	{ "name": "responses", "type": "[response]", "default": "[]" },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -181,7 +190,8 @@
       "fields": [
 	{ "name": "type", "type": "string" },
 	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false }
+	{ "name": "deprecation", "type": "deprecation", "required": false },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -241,7 +251,8 @@
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
 	{ "name": "required", "type": "boolean" },
-	{ "name": "default", "type": "string", "required": false }
+	{ "name": "default", "type": "string", "required": false },
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -264,7 +275,17 @@
       "fields": [
 	{ "name": "description", "type": "string", "required": false }
       ]
-    }
+    },
+
+	"attribute": {
+	    "description": "Represents an additional attribute that is attached to one of the objects in apidoc. The main use case is to capture additional metadata that doesn't necessarily define the API but aids in code generation. Examples would be hints for certain code generators about classes to extend, interfaces to implement, annotations to add, names to assign to certain methods, etc. The specific attributes will be applicable only in the context of the specific code generators usings them.",
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "value", "type": "object" },
+		{ "name": "description", "type": "string", "required": false },
+		{ "name": "deprecation", "type": "deprecation", "required": false }
+	    ]
+	}
 
   }
 

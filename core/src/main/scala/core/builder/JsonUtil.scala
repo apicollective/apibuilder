@@ -15,12 +15,13 @@ object JsonUtil {
     arraysOfObjects: Seq[String] = Nil,
     optionalArraysOfObjects: Seq[String] = Nil,
     optionalObjects: Seq[String] = Nil,
+    objects: Seq[String] = Nil,
     optionalBooleans: Seq[String] = Nil,
     optionalNumbers: Seq[String] = Nil,
     optionalAnys: Seq[String] = Nil,
     prefix: Option[String] = None
   ): Seq[String] = {
-    val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
+    val keys = strings ++ optionalStrings ++ arraysOfObjects ++ optionalArraysOfObjects ++ optionalObjects ++ objects ++ optionalBooleans ++ optionalNumbers ++ optionalAnys
 
     val unrecognized = json.asOpt[JsObject] match {
       case None => Seq.empty
@@ -92,6 +93,13 @@ object JsonUtil {
         case Some(o: JsObject) => None
         case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be an object"))
         case None => None
+      }
+    } ++
+    objects.flatMap { field =>
+      (json \ field).toOption match {
+        case Some(o: JsObject) => None
+        case Some(_) => Some(withPrefix(prefix, s"$field, must be an object"))
+        case None => Some(withPrefix(prefix, s"Missing $field"))
       }
     }
   }

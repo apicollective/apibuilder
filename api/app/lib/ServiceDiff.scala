@@ -1,5 +1,7 @@
 package lib
 
+import play.api.libs.json.Json
+
 import com.bryzek.apidoc.spec.v0.models._
 import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
 
@@ -23,6 +25,7 @@ case class ServiceDiff(
     diffVersion(),
     diffBaseUrl(),
     diffDescription(),
+    diffAttributes(),
     diffHeaders,
     diffImports(),
     diffEnums(),
@@ -78,6 +81,10 @@ case class ServiceDiff(
     Helpers.diffOptionalStringNonBreaking("description", a.description, b.description)
   }
 
+  private[this] def diffAttributes(): Seq[Diff] = {
+    Helpers.diffAttributes("attributes", a.attributes, b.attributes)
+  }
+
   private[this] def diffHeaders(): Seq[Diff] = {
     val added = b.headers.map(_.name).filter(h => a.headers.find(_.name == h).isEmpty)
 
@@ -102,7 +109,8 @@ case class ServiceDiff(
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     Helpers.diffRequired(prefix, a.required, b.required) ++
-    Helpers.diffDefault(prefix, a.default, b.default)
+    Helpers.diffDefault(prefix, a.default, b.default) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes)
   }
 
   private[this] def diffImports(): Seq[Diff] = {
@@ -142,6 +150,7 @@ case class ServiceDiff(
 
     Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     diffEnumValues(a.name, a.values, b.values)
   }
@@ -162,6 +171,7 @@ case class ServiceDiff(
     val prefix = s"enum $enumName value ${a.name}"
 
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
   }
 
@@ -181,6 +191,7 @@ case class ServiceDiff(
     Helpers.diffOptionalStringBreaking(s"$prefix discriminator", a.discriminator, b.discriminator) ++
     Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     diffUnionTypes(a.name, a.types, b.types)
   }
@@ -201,6 +212,7 @@ case class ServiceDiff(
     val prefix = s"union $unionName type ${a.`type`}"
 
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation)
   }
 
@@ -219,6 +231,7 @@ case class ServiceDiff(
 
     Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     diffFields(a.name, a.fields, b.fields)
   }
@@ -251,6 +264,7 @@ case class ServiceDiff(
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     Helpers.diffDefault(prefix, a.default, b.default) ++
     Helpers.diffRequired(prefix, a.required, b.required) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffMinimum(prefix, a.minimum, b.minimum) ++
     Helpers.diffMaximum(prefix, a.maximum, b.maximum) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix example", a.example, b.example)
@@ -271,6 +285,7 @@ case class ServiceDiff(
 
     Helpers.diffStringNonBreaking(s"$prefix plural", a.plural, b.plural) ++
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     diffOperations(a.`type`, a.operations, b.operations)
   }
@@ -299,6 +314,7 @@ case class ServiceDiff(
     val prefix = s"resource $resourceType operation " + operationKey(a)
 
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
+    Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
     diffBody(prefix, a.body, b.body) ++
     diffParameters(prefix, a.parameters, b.parameters) ++
@@ -313,6 +329,7 @@ case class ServiceDiff(
       case (Some(bodyA), Some(bodyB)) => {
         Helpers.diffStringBreaking(s"$prefix body type", bodyA.`type`, bodyB.`type`) ++
         Helpers.diffOptionalStringNonBreaking(s"$prefix body description", bodyA.description, bodyB.description) ++
+        Helpers.diffAttributes(prefix, bodyA.attributes, bodyB.attributes) ++
         Helpers.diffDeprecation(s"$prefix body", bodyA.deprecation, bodyB.deprecation)
       }
     }
@@ -561,6 +578,34 @@ case class ServiceDiff(
       }
     }
 
+    def diffAttributes(prefix: String, a: Seq[Attribute], b: Seq[Attribute]): Seq[Diff] = {
+      val aMap = Map(a map ( attr => attr.name -> attr ): _*)
+      val bMap = Map(b map ( attr => attr.name -> attr ): _*)
+
+      val aNames = aMap.keys.toSeq
+      val bNames = bMap.keys.toSeq
+
+      // Removed
+      val removedNames = aNames diff bNames
+      val removedDiffs = removedNames map (name => DiffNonBreaking(s"$prefix attribute removed: $name"))
+
+      // Added
+      val addedNames = bNames diff aNames
+      val addedDiffs = addedNames map (name => DiffNonBreaking(s"$prefix attribute added: $name"))
+
+      // Changed
+      val namesInBoth = aNames intersect bNames
+      val changedDiffs:Seq[Diff] = namesInBoth flatMap {name =>
+        val aAttr = aMap(name)
+        val bAttr = bMap(name)
+
+        diffStringNonBreaking(s"$prefix attribute '$name' value", Json.stringify(aAttr.value), Json.stringify(bAttr.value)) ++
+        diffOptionalStringNonBreaking(s"$prefix attribute '$name' description", aAttr.description, bAttr.description) ++
+        diffDeprecation(s"$prefix attribute '$name'", aAttr.deprecation, bAttr.deprecation)
+      }
+
+      changedDiffs ++ removedDiffs ++ addedDiffs
+    }
   }
 
 }

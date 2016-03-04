@@ -39,6 +39,7 @@ case class ServiceBuilder(
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val resources = internal.resources.map { ResourceBuilder(resolver.provider, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
+    val attributes = internal.attributes.map { AttributeBuilder(_) }
 
     val info = internal.info match {
       case None => Info(
@@ -66,7 +67,8 @@ case class ServiceBuilder(
       unions = unions,
       models = models,
       headers = headers,
-      resources = resources
+      resources = resources,
+      attributes = attributes
     )
   }
 
@@ -127,7 +129,8 @@ case class ServiceBuilder(
             path = Some(resourcePath),
             description = internal.description,
             deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-            operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver))
+            operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver)),
+            attributes = internal.attributes.map { AttributeBuilder(_) }
           )
         }
 
@@ -141,7 +144,8 @@ case class ServiceBuilder(
                 path = Some(resourcePath),
                 description = internal.description,
                 deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver, model = Some(model)))
+                operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver, model = Some(model))),
+                attributes = internal.attributes.map { AttributeBuilder(_) }
               )
             }
 
@@ -155,7 +159,8 @@ case class ServiceBuilder(
                     path = Some(resourcePath),
                     description = internal.description,
                     deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                    operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver, union = Some(union)))
+                    operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver, union = Some(union))),
+                    attributes = internal.attributes.map { AttributeBuilder(_) }
                   )
                 }
                 case None => {
@@ -166,7 +171,8 @@ case class ServiceBuilder(
                     path = Some(resourcePath),                    
                     description = internal.description,
                     deprecation = internal.deprecation.map(DeprecationBuilder(_)),
-                    operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver))
+                    operations = internal.operations.map(op => OperationBuilder(op, resourcePath, resolver)),
+                    attributes = internal.attributes.map { AttributeBuilder(_) }
                   )
                 }
               }
@@ -231,7 +237,8 @@ case class ServiceBuilder(
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         body = internal.body.map { BodyBuilder(_) },
         parameters = pathParameters ++ internalParams,
-        responses = internal.responses.map { ResponseBuilder(_) }
+        responses = internal.responses.map { ResponseBuilder(_) },
+        attributes = internal.attributes.map { AttributeBuilder(_) }
       )
     }
 
@@ -279,7 +286,8 @@ case class ServiceBuilder(
         case Some(datatype) => Body(
           `type` = datatype.label,
           description = ib.description,
-          deprecation = ib.deprecation.map(DeprecationBuilder(_))
+          deprecation = ib.deprecation.map(DeprecationBuilder(_)),
+          attributes = ib.attributes.map { AttributeBuilder(_) }
         )
       }
     }
@@ -308,7 +316,8 @@ case class ServiceBuilder(
             description = iv.description,
             deprecation = iv.deprecation.map(DeprecationBuilder(_))
           )
-        }
+        },
+        attributes = ie.attributes.map { AttributeBuilder(_) }
       )
     }
 
@@ -329,7 +338,8 @@ case class ServiceBuilder(
             description = it.description,
             deprecation = it.deprecation.map(DeprecationBuilder(_))
           )
-        }
+        },
+        attributes = internal.attributes.map { AttributeBuilder(_) }
       )
     }
 
@@ -344,7 +354,8 @@ case class ServiceBuilder(
         required = ih.required,
         description = ih.description,
         deprecation = ih.deprecation.map(DeprecationBuilder(_)),
-        default = ih.default
+        default = ih.default,
+        attributes = ih.attributes.map { AttributeBuilder(_) }
       )
     }
 
@@ -411,7 +422,8 @@ case class ServiceBuilder(
         plural = im.plural,
         description = im.description,
         deprecation = im.deprecation.map(DeprecationBuilder(_)),
-        fields = im.fields.map { FieldBuilder(_) }
+        fields = im.fields.map { FieldBuilder(_) },
+        attributes = im.attributes.map { AttributeBuilder(_) }
       )
     }
 
@@ -490,7 +502,22 @@ case class ServiceBuilder(
         default = internal.default,
         minimum = internal.minimum,
         maximum = internal.maximum,
-        example = internal.example
+        example = internal.example,
+        attributes = internal.attributes.map { AttributeBuilder(_) }
+      )
+    }
+
+  }
+
+  object AttributeBuilder {
+    def apply(
+      internal: InternalAttributeForm
+    ): Attribute = {
+      Attribute(
+        name = internal.name.get,
+        value = internal.value.get,
+        description = internal.description,
+        deprecation = internal.deprecation.map(DeprecationBuilder(_))
       )
     }
 
