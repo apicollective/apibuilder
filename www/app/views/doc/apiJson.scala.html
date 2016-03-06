@@ -18,7 +18,8 @@
       "enums": <em>JSON Object of <a href="#enum">Enum</a> (optional)</em>,
       "models": <em>JSON Object of <a href="#model">Model</a> (optional)</em>,
       "unions": <em>JSON Object of <a href="#union">Union</a> (optional)</em>,
-      "resources": <em>JSON Object of <a href="#resource">Resource</a> (optional)</em>
+      "resources": <em>JSON Object of <a href="#resource">Resource</a> (optional)</em>,
+      "attributes": <em>JSON Array of <a href="#resource">Attribute</a></em> (optional)
     }
     </pre>
 
@@ -35,6 +36,7 @@
       <li><em>enums</em> JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#enum">Enum</a></li>
       <li><em>models</em> JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
       <li><em>resources</em> JSON object defining all of the resources in this API. The key of each object is the name of a type that this resource represents. The type must be the name of a model or an enum. See <a href="#resource">Resource</a></li>
+      <li><em>attributes</em> JSON array defining additional meta data about this service. Attributes are used to add custom extensions to Apidoc and are typically used by generators to enable advanced code generation. See <a href="#attribute">Attribute</a></li>
     </ul>
 
   </p>
@@ -127,6 +129,7 @@
         "description": <em>string (optional)</em>,
         "plural": <em>string (optional)</em>,
         "fields": <em>JSON Array of <a href="#field">Field</a></em>,
+        "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
         "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
@@ -138,6 +141,7 @@
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
       @description("model")
       <li><em>fields</em> indicates that one or more fields is required. See <a href="#field">Field</a>.</li>
+      <li><em>attributes</em> JSON array defining additional meta data about this model for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
@@ -158,6 +162,7 @@
       "example": <em>string (optional)</em>,
       "minimum": <em>long (optional)</em>,
       "maximum": <em>long (optional)</em>,
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
@@ -172,6 +177,7 @@
       <li><em>example</em> optional - an example value for this field used only in the produced documentation</li>
       <li><em>minimum</em> @minimumInfo("field")</li>
       <li><em>maximum</em> @maximumInfo("field")</li>
+      <li><em>attributes</em> JSON array defining additional meta data about this field for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
 
@@ -189,6 +195,7 @@
         "path": <em>string (optional)</em>,
         "description": <em>string (optional)</em>,
         "operations": <em>JSON Array of <a href="#operation">Operation</a></em>,
+        "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
         "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
@@ -200,6 +207,7 @@
       <li><em>path</em> optional path where this resource is located. If not provided, defaults to the plural of the typeName, with some assumptions of formatting for web (e.g. lower case, dash separated). Path parameters can be specified by prefixing a path element with ':'. For example, a path of '/:guid' would imply that all operations for this path will require a parameter named 'guid' of type 'string'</li>
       @description("resource")
       <li><em>operations</em> one or more operations is required. See <a href="#operation">Operation</a>.</li>
+      <li><em>attributes</em> JSON array defining additional meta data about this resource for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
@@ -218,6 +226,7 @@
       "body": <em>JSON Object of <a href="#body">Body</a> (optional)</em>,
       "parameters": <em>JSON Array of <a href="#parameter">Parameter</a> (optional)</em>,
       "responses": <em>JSON Object of <a href="#response">Response</a> (optional)</em>,
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
@@ -230,6 +239,7 @@
       <li><em>body</em> optional specification for the type of the body of this request. For all operations that support bodies (e.g. POST, PUT, PATCH), allows you to specify the type of the body. See <a href="#body">Body</a>.</li>
       <li><em>parameters</em> optional JSON Array of the parameters to this method. By default, for @lib.Methods.MethodsNotAcceptingBodies.mkString(" and ") methods, parameters are assumed to be in the path or in the query. For other methods, parameters are assumed to be in the path or form body, unless you have explicitly specified a body in which case parameters can be provided in the path or the query. See <a href="#parameter">Parameter</a>.</li>
       <li><em>responses</em> optional JSON Object of HTTP Response Code to Response. If not provided, an HTTP NoContent response is assumed. Only responses for HTTP status codes that are interesting should be documented. See <a href="#response">Response</a>.</li>
+      <li><em>attributes</em> JSON array defining additional meta data about this operation for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
@@ -244,6 +254,7 @@
     {
       "type": <em>string</em>,
       "description": <em>string (optional)</em>,
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>,
     }
     </pre>
@@ -252,6 +263,7 @@
     <ul>
       <li><em>type</em> @typeInfo("body")</li>
       @description("body")
+      <li><em>attributes</em> JSON array defining additional meta data about this body for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
@@ -305,6 +317,7 @@
         "plural": <em>string (optional)</em>,
         "description": <em>string (optional)</em>,
         "values": <em>JSON Array of <a href="#enumValue">EnumValue</a></em>,
+        "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
         "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
@@ -316,6 +329,7 @@
       <li><em>plural</em> specifies the optional, plural form of the name. By default, we will pluralize the name using a basic set of english heuristics. The plural is used as a default in cases where it is more natural to specify web services. For example, the default path for a resource will be the plural.</li>
       <li><em>description</em> optional longer description for this enum.</li>
       <li><em>values</em> Json Array of EnumValue objects. Each element defines a valid value and an optional description. See <a href="#enumValue">EnumValue</a>.</li>
+      <li><em>attributes</em> JSON array defining additional meta data about this enum for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
@@ -330,6 +344,7 @@
     {
       "name": <em>string</em>,
       "description": <em>string (optional)</em>,
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
@@ -338,6 +353,7 @@
     <ul>
       <li><em>name</em> the name of the value. Names must start with a letter.</li>
       @description("enum value")
+      <li><em>attributes</em> JSON array defining additional meta data about this enum value for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
@@ -352,6 +368,7 @@
       "discriminator": <em>string (optional)</em>,
       "description": <em>string (optional)</em>,
       "types": <em>JSON Array of <a href="#unionType">UnionType</a></em>,
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
       }
     }
@@ -364,6 +381,7 @@
       <li><em>discriminator</em> specifies an optional, but recommended, name for a type discriminator field which can then be used in serialization / deserialization to identify the type of object. For example, if not specified, a code generator may serialize the union type into a JSON structure of { "type" => object }. If a discriminator is provided, the same code generator can flatten the JSON representation to, for example: { "discriminator" => "xxx", "field1" => "yyy" }. If provided, the name of the discriminator field must be unique across all of the fields across all of the types of this union. See <a href="@routes.DocController.playUnionTypes">Play Union Types</a> for more information and examples.</li>
       @description("union")
       <li><em>types</em> Specifies the individual types that are part of this union type. See <a href="#unionType">UnionType</a>.</li>
+      <li><em>attributes</em> JSON array defining additional meta data about this union for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
     </ul>
   </p>
@@ -378,6 +396,7 @@
     {
       "type": <em>string</em>,
       "description": <em>string (optional)</em>,
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
@@ -388,6 +407,7 @@
       type. Acceptable values include the name of either an enum, a model,
       or a (<a href="@routes.DocController.types">primitive type</a>).</li>
       @description("type")
+      <li><em>attributes</em> JSON array defining additional meta data about this union type for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
@@ -421,6 +441,7 @@
       "required": <em>boolean (optional, true by default)</em>,
       "default": <em>value (optional)</em>,
       "description": <em>string (optional)</em>,
+      "attributes": <em>JSON Array of <a href="#attribute">Attribute</a> (optional)</em>,
       "deprecation": <em>JSON Object of <a href="#deprecation">Deprecation</a> (optional)</em>
     }
     </pre>
@@ -432,6 +453,7 @@
       <li><em>required</em> boolean: true|false. By default, all headers are considered required. To make a parameter optional, set "required" to false.</li>
       <li><em>default</em> the default value for this header. If specified, generated clients will automatically include this header in all requests. Default values must be specified as strings.</li>
       @description("header")
+      <li><em>attributes</em> JSON array defining additional meta data about this header for use by generators. See <a href="#attribute">Attribute</a></li>
       <li><em>deprecation</em> JSON Object that indicates that this enum is deprecated.</li>
    </ul>
 
@@ -479,6 +501,37 @@
 
     </ul>
 
+  </p>
+
+  <a name="attribute"></a>
+  <h2>Attribute declaration</h2>
+
+  <p>
+    An attribute is represented as a JSON object in the following form:
+
+    <pre>
+    {
+      "name": <em>string</em>,
+      "value": <em>JSON Object</em>
+    }
+    </pre>
+
+    where
+    <ul>
+      <li><em>name</em> the name and identifier of the attribute.</li>
+      <li><em>value</em> a JSON object that is usually utilized by a downstream Generator.</li>
+    </ul>
+
+    Example attribute:
+
+    <pre>
+    {
+      "name": "my_regex_validation"
+      "value": {
+        "regex": "[a-z]"
+      }
+    }
+    </pre>
   </p>
 
   <a name="deprecation"></a>
