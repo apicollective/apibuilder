@@ -1,4 +1,4 @@
-FROM flowdocker/play:0.0.30
+FROM flowdocker/play:0.0.32
 
 MAINTAINER mbryzek@alum.mit.edu
 
