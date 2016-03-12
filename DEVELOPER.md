@@ -52,20 +52,11 @@ Memory settings for SBT:
 Developing
 ==========
 
-You'll need to get the api schema into your dev postgresql database; to do that:
+You'll need to run the postgresql database. Two options:
 
-    $ psql
-    psql> CREATE DATABASE apidoc;
+  1. docker run -d -p 5432:5432 mbryzek/apidoc-postgresql:latest
 
-Create a api user with permissions to modify the new database.
-
-    psql> CREATE ROLE api WITH LOGIN;
-    psql> GRANT ALL ON DATABASE apidoc TO api;
-
-Then you'll need to create the database schema using [schema evolution manager](https://github.com/mbryzek/schema-evolution-manager#installation)
-
-    $ cd /web/apidoc/schema
-    $ ./dev.rb
+  2. run locally - see the project https://github.com/mbryzek/apidoc-postgresql
 
 The application consists of a service on port 9001, and a web app on port 9000.
 
