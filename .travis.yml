@@ -10,7 +10,6 @@ cache:
 services:
   - docker
 before_script:
-  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - docker run -d -p 127.0.0.1:5432:5432 mbryzek/apidoc-postgresql:latest
 script: 
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
