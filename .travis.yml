@@ -10,7 +10,7 @@ cache:
 services:
   - docker
 before_script:
-  - docker run -d -p 127.0.0.1:5432:5432 mbryzek/apidoc-postgresql:latest
+  - docker run -d -p 127.0.0.1:7659:5432 mbryzek/apidoc-postgresql:latest
 script: 
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
   # Tricks to avoid unnecessary cache updates
