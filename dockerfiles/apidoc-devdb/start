@@ -1,0 +1,19 @@
+#!/bin/bash
+
+chown -R postgres:postgres /var/lib/pgsql/data
+su - postgres -c "/opt/bin/start-pg.sh"
+
+if [ -f "/opt/schema/dev.rb" ] ; then
+  cd /opt/schema			
+  ./dev.rb
+else
+  echo "error: /opt/schema volume required"
+  exit 1
+fi;
+
+psql -Uweb -d apidoc
+
+echo "stopping postgres..."
+
+su - postgres -c "/usr/libexec/postgresql-ctl stop"
+

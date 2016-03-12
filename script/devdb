@@ -1,0 +1,72 @@
+#!/bin/bash
+
+IMAGE=apidoc-devdb
+
+usage() {
+  echo usage: $0 COMMAND [optional path to preserve db on your fs] [optional listening port]
+  echo
+  echo COMMANDS:
+  echo build - build the docker image
+  echo run   - start interactive mode
+  echo start - run in background container
+  echo stop  - stop running container
+  echo
+  echo Defaults: Port 5432, db discarded
+  exit 0
+}
+
+load_args() {
+  shift
+  if [[ $1 =~ [^0-9] ]] ; then
+    DB_VOL_MNT="-v $1:/var/lib/pgsql/data"
+    shift
+  fi
+
+  if [ -n "$1" ] ;
+    then PORT=$1
+    else PORT=5432
+  fi
+
+  CONTAINER_NAME=apidoc-devdb-$PORT
+  OPWD="`pwd`"
+  cd "`dirname $0`/.."
+  REPO_DIR=`pwd`
+  cd "$OPWD"
+
+  BASE_PARAMS="-p $PORT:5432 -v $REPO_DIR/schema:/opt/schema $DB_VOL_MNT"
+}
+
+docker_c() {
+  # build the container if not found - REMOVE THIS if using dockerhub
+  docker images | grep $IMAGE || $0 build
+
+  echo "> docker $@"
+  docker $@
+}
+
+load_args $@
+
+case "$1" in
+  build)
+    docker build -t $IMAGE:latest $REPO_DIR/dockerfiles/apidoc-devdb
+    ;;
+  run)
+    docker_c run --rm -i -t $BASE_PARAMS $IMAGE
+    ;;
+  start)
+    docker_c run -d --restart='always' --name=\"$CONTAINER_NAME\" $BASE_PARAMS $IMAGE
+     ;;
+  stop|kill)
+    DPID=`docker ps -a -q --filter=name="$CONTAINER_NAME"`
+    if [ -z "$DPID" ] ; then
+      echo "error: no running container: $CONTAINER_NAME"
+      exit 1
+    fi
+    docker_c stop $DPID
+    docker_c rm $DPID
+    ;;
+  *)
+    usage
+    ;;
+esac
+

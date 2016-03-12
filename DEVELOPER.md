@@ -52,6 +52,16 @@ Memory settings for SBT:
 Developing
 ==========
 
+Database Docker:
+
+If you have a working docker install you can use a docker db wrapper that will set up everything for you and apply schema changes on startup.
+
+    $ script/dbdev run/start/stop
+
+Run the command bare for a list of options.  If not override it will start up a with a clean/empty db listening on port 5432.
+
+Database Manual:
+
 You'll need to get the api schema into your dev postgresql database; to do that:
 
     $ psql
