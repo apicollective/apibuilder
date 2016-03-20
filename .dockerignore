@@ -1,6 +1,15 @@
+client-tests/
 target/
 logs/
 generated/target/
+core/target/
+core/logs/
+avro/target/
+avro/logs/
+swagger/target/
+swagger/logs/
+lib/target/
+lib/logs/
 api/target/
 api/logs/
 www/target/
