@@ -1987,7 +1987,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Application]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Application]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2000,7 +2000,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Application] = {
         val payload = play.api.libs.json.Json.toJson(applicationForm)
 
-        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Application", r, _.validate[com.bryzek.apidoc.api.v0.models.Application])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2015,7 +2015,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Application] = {
         val payload = play.api.libs.json.Json.toJson(applicationForm)
 
-        _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Application", r, _.validate[com.bryzek.apidoc.api.v0.models.Application])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2027,7 +2027,7 @@ package com.bryzek.apidoc.api.v0 {
         applicationKey: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}").map {
+        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2041,7 +2041,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Application] = {
         val payload = play.api.libs.json.Json.toJson(moveForm)
 
-        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/move", body = Some(payload)).map {
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/move", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Application", r, _.validate[com.bryzek.apidoc.api.v0.models.Application])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2064,7 +2064,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/attributes", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/attributes", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Attribute]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Attribute]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2074,7 +2074,7 @@ package com.bryzek.apidoc.api.v0 {
         name: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Attribute] = {
-        _executeRequest("GET", s"/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
+        _executeRequest("GET", s"/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Attribute", r, _.validate[com.bryzek.apidoc.api.v0.models.Attribute])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2087,7 +2087,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Attribute] = {
         val payload = play.api.libs.json.Json.toJson(attributeForm)
 
-        _executeRequest("POST", s"/attributes", body = Some(payload)).map {
+        _executeRequest("POST", s"/attributes", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Attribute", r, _.validate[com.bryzek.apidoc.api.v0.models.Attribute])
           case r if r.status == 401 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
@@ -2099,7 +2099,7 @@ package com.bryzek.apidoc.api.v0 {
         name: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
+        _executeRequest("DELETE", s"/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
@@ -2123,7 +2123,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/changes", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/changes", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Change]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Change]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2138,7 +2138,7 @@ package com.bryzek.apidoc.api.v0 {
         generatorKey: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Code] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(generatorKey, "UTF-8")}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(generatorKey, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Code", r, _.validate[com.bryzek.apidoc.api.v0.models.Code])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
@@ -2155,7 +2155,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Domain] = {
         val payload = play.api.libs.json.Json.toJson(domain)
 
-        _executeRequest("POST", s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("POST", s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Domain", r, _.validate[com.bryzek.apidoc.api.v0.models.Domain])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2167,7 +2167,7 @@ package com.bryzek.apidoc.api.v0 {
         name: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
+        _executeRequest("DELETE", s"/domains/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2181,7 +2181,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         val payload = play.api.libs.json.Json.toJson(emailVerificationConfirmationForm)
 
-        _executeRequest("POST", s"/email_verification_confirmations", body = Some(payload)).map {
+        _executeRequest("POST", s"/email_verification_confirmations", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 409")
@@ -2206,7 +2206,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/generator_services", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/generator_services", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.GeneratorService]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.GeneratorService]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2216,7 +2216,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.GeneratorService] = {
-        _executeRequest("GET", s"/generator_services/${guid}").map {
+        _executeRequest("GET", s"/generator_services/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.GeneratorService", r, _.validate[com.bryzek.apidoc.api.v0.models.GeneratorService])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2229,7 +2229,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.GeneratorService] = {
         val payload = play.api.libs.json.Json.toJson(generatorServiceForm)
 
-        _executeRequest("POST", s"/generator_services", body = Some(payload)).map {
+        _executeRequest("POST", s"/generator_services", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.GeneratorService", r, _.validate[com.bryzek.apidoc.api.v0.models.GeneratorService])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2240,7 +2240,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/generator_services/${guid}").map {
+        _executeRequest("DELETE", s"/generator_services/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r if r.status == 403 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
@@ -2270,7 +2270,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/generators", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/generators", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.GeneratorWithService]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.GeneratorWithService]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2280,7 +2280,7 @@ package com.bryzek.apidoc.api.v0 {
         key: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.GeneratorWithService] = {
-        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.GeneratorWithService", r, _.validate[com.bryzek.apidoc.api.v0.models.GeneratorWithService])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2292,7 +2292,7 @@ package com.bryzek.apidoc.api.v0 {
       override def getHealthcheck(
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.generator.v0.models.Healthcheck] = {
-        _executeRequest("GET", s"/_internal_/healthcheck").map {
+        _executeRequest("GET", s"/_internal_/healthcheck", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.generator.v0.models.Healthcheck", r, _.validate[com.bryzek.apidoc.generator.v0.models.Healthcheck])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2301,7 +2301,7 @@ package com.bryzek.apidoc.api.v0 {
       override def getMigrate(
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Map[String, String]] = {
-        _executeRequest("GET", s"/_internal_/migrate").map {
+        _executeRequest("GET", s"/_internal_/migrate", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Map[String, String]", r, _.validate[Map[String, String]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2321,7 +2321,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/items", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/items", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Item]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Item]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2331,7 +2331,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Item] = {
-        _executeRequest("GET", s"/items/${guid}").map {
+        _executeRequest("GET", s"/items/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Item", r, _.validate[com.bryzek.apidoc.api.v0.models.Item])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2358,7 +2358,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/membership_requests", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/membership_requests", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.MembershipRequest]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.MembershipRequest]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2376,7 +2376,7 @@ package com.bryzek.apidoc.api.v0 {
           "role" -> play.api.libs.json.Json.toJson(role)
         )
 
-        _executeRequest("POST", s"/membership_requests", body = Some(payload)).map {
+        _executeRequest("POST", s"/membership_requests", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.MembershipRequest", r, _.validate[com.bryzek.apidoc.api.v0.models.MembershipRequest])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2387,7 +2387,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("POST", s"/membership_requests/${guid}/accept").map {
+        _executeRequest("POST", s"/membership_requests/${guid}/accept", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 409")
@@ -2398,7 +2398,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("POST", s"/membership_requests/${guid}/decline").map {
+        _executeRequest("POST", s"/membership_requests/${guid}/decline", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 409")
@@ -2425,7 +2425,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/memberships", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/memberships", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Membership]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Membership]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2435,7 +2435,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Membership] = {
-        _executeRequest("GET", s"/memberships/${guid}").map {
+        _executeRequest("GET", s"/memberships/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Membership", r, _.validate[com.bryzek.apidoc.api.v0.models.Membership])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2446,7 +2446,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/memberships/${guid}").map {
+        _executeRequest("DELETE", s"/memberships/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2474,7 +2474,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/organizations", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/organizations", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Organization]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Organization]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2484,7 +2484,7 @@ package com.bryzek.apidoc.api.v0 {
         key: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Organization] = {
-        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Organization", r, _.validate[com.bryzek.apidoc.api.v0.models.Organization])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2497,7 +2497,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Organization] = {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
-        _executeRequest("POST", s"/organizations", body = Some(payload)).map {
+        _executeRequest("POST", s"/organizations", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Organization", r, _.validate[com.bryzek.apidoc.api.v0.models.Organization])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2511,7 +2511,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Organization] = {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
-        _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Organization", r, _.validate[com.bryzek.apidoc.api.v0.models.Organization])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2522,7 +2522,7 @@ package com.bryzek.apidoc.api.v0 {
         key: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+        _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2541,7 +2541,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.AttributeValue]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2552,7 +2552,7 @@ package com.bryzek.apidoc.api.v0 {
         name: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue] = {
-        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
+        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2567,7 +2567,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.AttributeValue] = {
         val payload = play.api.libs.json.Json.toJson(attributeValueForm)
 
-        _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
           case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.AttributeValue", r, _.validate[com.bryzek.apidoc.api.v0.models.AttributeValue])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
@@ -2581,7 +2581,7 @@ package com.bryzek.apidoc.api.v0 {
         name: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}").map {
+        _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}/attributes/${play.utils.UriEncoding.encodePathSegment(name, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
@@ -2597,7 +2597,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         val payload = play.api.libs.json.Json.toJson(passwordResetRequest)
 
-        _executeRequest("POST", s"/password_reset_requests", body = Some(payload)).map {
+        _executeRequest("POST", s"/password_reset_requests", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 409")
@@ -2612,7 +2612,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.PasswordResetSuccess] = {
         val payload = play.api.libs.json.Json.toJson(passwordReset)
 
-        _executeRequest("POST", s"/password_resets", body = Some(payload)).map {
+        _executeRequest("POST", s"/password_resets", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.PasswordResetSuccess", r, _.validate[com.bryzek.apidoc.api.v0.models.PasswordResetSuccess])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2639,7 +2639,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Subscription]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Subscription]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2649,7 +2649,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Subscription] = {
-        _executeRequest("GET", s"/subscriptions/${guid}").map {
+        _executeRequest("GET", s"/subscriptions/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Subscription", r, _.validate[com.bryzek.apidoc.api.v0.models.Subscription])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2662,7 +2662,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Subscription] = {
         val payload = play.api.libs.json.Json.toJson(subscriptionForm)
 
-        _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
+        _executeRequest("POST", s"/subscriptions", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Subscription", r, _.validate[com.bryzek.apidoc.api.v0.models.Subscription])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
@@ -2673,7 +2673,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/subscriptions/${guid}").map {
+        _executeRequest("DELETE", s"/subscriptions/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2694,7 +2694,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/tokens/users/${userGuid}", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/tokens/users/${userGuid}", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Token]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Token]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2704,7 +2704,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.CleartextToken] = {
-        _executeRequest("GET", s"/tokens/${guid}/cleartext").map {
+        _executeRequest("GET", s"/tokens/${guid}/cleartext", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.CleartextToken", r, _.validate[com.bryzek.apidoc.api.v0.models.CleartextToken])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2717,7 +2717,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Token] = {
         val payload = play.api.libs.json.Json.toJson(tokenForm)
 
-        _executeRequest("POST", s"/tokens", body = Some(payload)).map {
+        _executeRequest("POST", s"/tokens", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Token", r, _.validate[com.bryzek.apidoc.api.v0.models.Token])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
@@ -2728,7 +2728,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/tokens/${guid}").map {
+        _executeRequest("DELETE", s"/tokens/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2748,7 +2748,7 @@ package com.bryzek.apidoc.api.v0 {
           token.map("token" -> _)
         ).flatten
 
-        _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/users", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.User]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.User]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2758,7 +2758,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.User] = {
-        _executeRequest("GET", s"/users/${guid}").map {
+        _executeRequest("GET", s"/users/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.User", r, _.validate[com.bryzek.apidoc.api.v0.models.User])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2775,7 +2775,7 @@ package com.bryzek.apidoc.api.v0 {
           "password" -> play.api.libs.json.Json.toJson(password)
         )
 
-        _executeRequest("POST", s"/users/authenticate", body = Some(payload)).map {
+        _executeRequest("POST", s"/users/authenticate", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.User", r, _.validate[com.bryzek.apidoc.api.v0.models.User])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2788,7 +2788,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.User] = {
         val payload = play.api.libs.json.Json.toJson(userForm)
 
-        _executeRequest("POST", s"/users", body = Some(payload)).map {
+        _executeRequest("POST", s"/users", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.User", r, _.validate[com.bryzek.apidoc.api.v0.models.User])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2802,7 +2802,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.User] = {
         val payload = play.api.libs.json.Json.toJson(userUpdateForm)
 
-        _executeRequest("PUT", s"/users/${guid}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/users/${guid}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.User", r, _.validate[com.bryzek.apidoc.api.v0.models.User])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2817,7 +2817,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Validation] = {
         val payload = play.api.libs.json.Json.toJson(value)
 
-        _executeRequest("POST", s"/validations", body = Some(payload)).map {
+        _executeRequest("POST", s"/validations", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Validation", r, _.validate[com.bryzek.apidoc.api.v0.models.Validation])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2837,7 +2837,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Version]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Version]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2849,7 +2849,7 @@ package com.bryzek.apidoc.api.v0 {
         version: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Version] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Version", r, _.validate[com.bryzek.apidoc.api.v0.models.Version])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2864,7 +2864,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Version] = {
         val payload = play.api.libs.json.Json.toJson(versionForm)
 
-        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("POST", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Version", r, _.validate[com.bryzek.apidoc.api.v0.models.Version])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2880,7 +2880,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Version] = {
         val payload = play.api.libs.json.Json.toJson(versionForm)
 
-        _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Version", r, _.validate[com.bryzek.apidoc.api.v0.models.Version])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -2893,7 +2893,7 @@ package com.bryzek.apidoc.api.v0 {
         version: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}").map {
+        _executeRequest("DELETE", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -2919,7 +2919,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/watches", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/watches", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.Watch]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.Watch]])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2929,7 +2929,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Watch] = {
-        _executeRequest("GET", s"/watches/${guid}").map {
+        _executeRequest("GET", s"/watches/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Watch", r, _.validate[com.bryzek.apidoc.api.v0.models.Watch])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -2948,7 +2948,7 @@ package com.bryzek.apidoc.api.v0 {
           Some("application_key" -> applicationKey)
         ).flatten
 
-        _executeRequest("GET", s"/watches/check", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/watches/check", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Boolean", r, _.validate[Boolean])
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -2960,7 +2960,7 @@ package com.bryzek.apidoc.api.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Watch] = {
         val payload = play.api.libs.json.Json.toJson(watchForm)
 
-        _executeRequest("POST", s"/watches", body = Some(payload)).map {
+        _executeRequest("POST", s"/watches", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 201 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Watch", r, _.validate[com.bryzek.apidoc.api.v0.models.Watch])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
@@ -2971,7 +2971,7 @@ package com.bryzek.apidoc.api.v0 {
         guid: _root_.java.util.UUID,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/watches/${guid}").map {
+        _executeRequest("DELETE", s"/watches/${guid}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -3009,33 +3009,34 @@ package com.bryzek.apidoc.api.v0 {
     def _executeRequest(
       method: String,
       path: String,
-      queryParameters: Seq[(String, String)] = Seq.empty,
+      queryParameters: Seq[(String, String)] = Nil,
+      requestHeaders: Seq[(String, String)] = Nil,
       body: Option[play.api.libs.json.JsValue] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       method.toUpperCase match {
         case "GET" => {
-          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()
+          _logRequest("GET", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).get()
         }
         case "POST" => {
-          _logRequest("POST", _requestHolder(path).withQueryString(queryParameters:_*).withHeaders("Content-Type" -> "application/json; charset=UTF-8")).post(body.getOrElse(play.api.libs.json.Json.obj()))
+          _logRequest("POST", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*).withHeaders("Content-Type" -> "application/json; charset=UTF-8")).post(body.getOrElse(play.api.libs.json.Json.obj()))
         }
         case "PUT" => {
-          _logRequest("PUT", _requestHolder(path).withQueryString(queryParameters:_*).withHeaders("Content-Type" -> "application/json; charset=UTF-8")).put(body.getOrElse(play.api.libs.json.Json.obj()))
+          _logRequest("PUT", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*).withHeaders("Content-Type" -> "application/json; charset=UTF-8")).put(body.getOrElse(play.api.libs.json.Json.obj()))
         }
         case "PATCH" => {
-          _logRequest("PATCH", _requestHolder(path).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))
+          _logRequest("PATCH", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))
         }
         case "DELETE" => {
-          _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
+          _logRequest("DELETE", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).delete()
         }
          case "HEAD" => {
-          _logRequest("HEAD", _requestHolder(path).withQueryString(queryParameters:_*)).head()
+          _logRequest("HEAD", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).head()
         }
          case "OPTIONS" => {
-          _logRequest("OPTIONS", _requestHolder(path).withQueryString(queryParameters:_*)).options()
+          _logRequest("OPTIONS", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).options()
         }
         case _ => {
-          _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))
+          _logRequest(method, _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*))
           sys.error("Unsupported method[%s]".format(method))
         }
       }

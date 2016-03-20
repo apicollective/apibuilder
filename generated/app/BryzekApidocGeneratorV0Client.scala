@@ -343,7 +343,7 @@ package com.bryzek.apidoc.generator.v0 {
           Some("offset" -> offset.toString)
         ).flatten
 
-        _executeRequest("GET", s"/generators", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/generators", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.generator.v0.Client.parseJson("Seq[com.bryzek.apidoc.generator.v0.models.Generator]", r, _.validate[Seq[com.bryzek.apidoc.generator.v0.models.Generator]])
           case r => throw new com.bryzek.apidoc.generator.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -353,7 +353,7 @@ package com.bryzek.apidoc.generator.v0 {
         key: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.generator.v0.models.Generator] = {
-        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}").map {
+        _executeRequest("GET", s"/generators/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.generator.v0.Client.parseJson("com.bryzek.apidoc.generator.v0.models.Generator", r, _.validate[com.bryzek.apidoc.generator.v0.models.Generator])
           case r if r.status == 404 => throw new com.bryzek.apidoc.generator.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.generator.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
@@ -365,7 +365,7 @@ package com.bryzek.apidoc.generator.v0 {
       override def get(
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.generator.v0.models.Healthcheck] = {
-        _executeRequest("GET", s"/_internal_/healthcheck").map {
+        _executeRequest("GET", s"/_internal_/healthcheck", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.generator.v0.Client.parseJson("com.bryzek.apidoc.generator.v0.models.Healthcheck", r, _.validate[com.bryzek.apidoc.generator.v0.models.Healthcheck])
           case r => throw new com.bryzek.apidoc.generator.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
@@ -380,7 +380,7 @@ package com.bryzek.apidoc.generator.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.generator.v0.models.Invocation] = {
         val payload = play.api.libs.json.Json.toJson(invocationForm)
 
-        _executeRequest("POST", s"/invocations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload)).map {
+        _executeRequest("POST", s"/invocations/${play.utils.UriEncoding.encodePathSegment(key, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.com.bryzek.apidoc.generator.v0.Client.parseJson("com.bryzek.apidoc.generator.v0.models.Invocation", r, _.validate[com.bryzek.apidoc.generator.v0.models.Invocation])
           case r if r.status == 409 => throw new com.bryzek.apidoc.generator.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.generator.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
@@ -419,33 +419,34 @@ package com.bryzek.apidoc.generator.v0 {
     def _executeRequest(
       method: String,
       path: String,
-      queryParameters: Seq[(String, String)] = Seq.empty,
+      queryParameters: Seq[(String, String)] = Nil,
+      requestHeaders: Seq[(String, String)] = Nil,
       body: Option[play.api.libs.json.JsValue] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[play.api.libs.ws.WSResponse] = {
       method.toUpperCase match {
         case "GET" => {
-          _logRequest("GET", _requestHolder(path).withQueryString(queryParameters:_*)).get()
+          _logRequest("GET", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).get()
         }
         case "POST" => {
-          _logRequest("POST", _requestHolder(path).withQueryString(queryParameters:_*).withHeaders("Content-Type" -> "application/json; charset=UTF-8")).post(body.getOrElse(play.api.libs.json.Json.obj()))
+          _logRequest("POST", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*).withHeaders("Content-Type" -> "application/json; charset=UTF-8")).post(body.getOrElse(play.api.libs.json.Json.obj()))
         }
         case "PUT" => {
-          _logRequest("PUT", _requestHolder(path).withQueryString(queryParameters:_*).withHeaders("Content-Type" -> "application/json; charset=UTF-8")).put(body.getOrElse(play.api.libs.json.Json.obj()))
+          _logRequest("PUT", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*).withHeaders("Content-Type" -> "application/json; charset=UTF-8")).put(body.getOrElse(play.api.libs.json.Json.obj()))
         }
         case "PATCH" => {
-          _logRequest("PATCH", _requestHolder(path).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))
+          _logRequest("PATCH", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).patch(body.getOrElse(play.api.libs.json.Json.obj()))
         }
         case "DELETE" => {
-          _logRequest("DELETE", _requestHolder(path).withQueryString(queryParameters:_*)).delete()
+          _logRequest("DELETE", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).delete()
         }
          case "HEAD" => {
-          _logRequest("HEAD", _requestHolder(path).withQueryString(queryParameters:_*)).head()
+          _logRequest("HEAD", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).head()
         }
          case "OPTIONS" => {
-          _logRequest("OPTIONS", _requestHolder(path).withQueryString(queryParameters:_*)).options()
+          _logRequest("OPTIONS", _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*)).options()
         }
         case _ => {
-          _logRequest(method, _requestHolder(path).withQueryString(queryParameters:_*))
+          _logRequest(method, _requestHolder(path).withHeaders(requestHeaders:_*).withQueryString(queryParameters:_*))
           sys.error("Unsupported method[%s]".format(method))
         }
       }
