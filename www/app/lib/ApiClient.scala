@@ -48,7 +48,7 @@ object ApiClient {
 
 case class ApiClient(user: Option[User]) {
 
-  private[this] val apiHost = Config.requiredString("apidoc.api.host")
+  private[this] val baseUrl = Config.requiredString("apidoc.api.host")
   private[this] val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
   private[this] val defaultHeaders = Seq(
     user.map { u =>
@@ -57,7 +57,7 @@ case class ApiClient(user: Option[User]) {
   ).flatten
 
   val client: Client = new com.bryzek.apidoc.api.v0.Client(
-    apiUrl = apiHost,
+    baseUrl = baseUrl,
     auth = Some(apiAuth),
     defaultHeaders = defaultHeaders
   )
