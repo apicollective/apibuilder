@@ -213,6 +213,39 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     TestHelper.serviceValidatorFromApiJson(json.format("unknown_model")).errors.mkString("") should be("Resource[user] GET /users/:guid response code[200] has an invalid type[unknown_model].")
   }
 
+  it("operations w/ a valid attributes validates correct") {
+    val json = """
+    {
+      "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "string" }
+          ]
+        }
+      },
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "attributes": [
+                {
+                  "name": "sample",
+                  "value": {}
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be("")
+  }
+
   it("includes path parameter in operations") {
     val json = """
     {
