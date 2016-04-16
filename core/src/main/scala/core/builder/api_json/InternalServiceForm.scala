@@ -97,6 +97,7 @@ private[api_json] case class InternalServiceForm(
                 optionalBooleans = Seq("required"),
                 optionalObjects = Seq("deprecation"),
                 optionalStrings = Seq("default", "description"),
+                optionalArraysOfObjects = Seq("attributes"),
                 prefix = Some(s"Header[${headerName.getOrElse("")}]".trim)
               )
             )
@@ -378,6 +379,7 @@ object InternalUnionForm {
                  strings = Seq("type"),
                  optionalStrings = Seq("description"),
                  optionalObjects = Seq("deprecation"),
+                 optionalArraysOfObjects = Seq("attributes"),
                  prefix = Some(s"Union[$name] type[${typeName.getOrElse("")}]")
                )
              )
@@ -399,6 +401,7 @@ object InternalUnionForm {
         optionalStrings = Seq("discriminator", "description", "plural"),
         arraysOfObjects = Seq("types"),
         optionalObjects = Seq("deprecation"),
+        optionalArraysOfObjects = Seq("attributes"),
         prefix = Some(s"Union[$name]")
       )
     )
@@ -477,6 +480,7 @@ object InternalEnumForm {
                  strings = Seq("name"),
                  optionalStrings = Seq("description"),
                  optionalObjects = Seq("deprecation"),
+                 optionalArraysOfObjects = Seq("attributes"),
                  prefix = Some(s"Enum[$name] value[${valueName.getOrElse("")}]")
                )
              )
@@ -497,6 +501,7 @@ object InternalEnumForm {
         optionalStrings = Seq("name", "description", "plural"),
         arraysOfObjects = Seq("values"),
         optionalObjects = Seq("deprecation"),
+        optionalArraysOfObjects = Seq("attributes"),
         prefix = Some(s"Enum[$name]")
       )
     )
@@ -553,7 +558,8 @@ object InternalResourceForm {
         value,
         optionalStrings = Seq("path", "description"),
         optionalObjects = Seq("deprecation"),
-        arraysOfObjects = Seq("operations")
+        arraysOfObjects = Seq("operations"),
+        optionalArraysOfObjects = Seq("attributes")
       )
     )
   }
@@ -613,7 +619,8 @@ object InternalOperationForm {
           o,
           strings = Seq("type"),
           optionalStrings = Seq("description"),
-          optionalObjects = Seq("deprecation")
+          optionalObjects = Seq("deprecation"),
+          optionalArraysOfObjects = Seq("attributes")
         )
       )
     }
@@ -632,7 +639,7 @@ object InternalOperationForm {
         json,
         strings = Seq("method"),
         optionalStrings = Seq("description", "path"),
-        optionalArraysOfObjects = Seq("parameters"),
+        optionalArraysOfObjects = Seq("parameters", "attributes"),
         optionalObjects = Seq("body", "responses", "deprecation")
       )
     )
