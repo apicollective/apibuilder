@@ -162,22 +162,15 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateUnionTypes(union: InternalUnionForm): Seq[String] = {
-    val attributeErrors = union.types.zipWithIndex.flatMap { case (typ, i) =>
-      typ.datatype match {
-        case None => Seq("Union[${union.name}] type[$i]: Missing type")
-        case Some(datatype) => validateAttributes(s"Union[${union.name}] type[$datatype]", typ.attributes)
-      }
+    val attributeErrors = union.types.filter(!_.datatype.isEmpty).flatMap { typ =>
+      validateAttributes(s"Union[${union.name}] type[${typ.datatype.get}]", typ.attributes)
     }
 
     union.types.flatMap(_.warnings) ++ attributeErrors
   }
 
   private def validateEnums(): Seq[String] = {
-    val warnings = internalService.get.enums.flatMap { enum =>
-      enum.values.filter(_.name.isEmpty).map { value =>
-        s"Enum[${enum.name}] - all values must have a name"
-      }
-    }
+    val warnings = internalService.get.enums.flatMap(_.warnings)
 
     val attributeErrors = internalService.get.enums.flatMap { enum =>
       validateAttributes(s"Enum[${enum.name}]", enum.attributes)
