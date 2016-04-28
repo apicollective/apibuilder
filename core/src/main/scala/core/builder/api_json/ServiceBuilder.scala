@@ -513,6 +513,8 @@ case class ServiceBuilder(
     def apply(
       internal: InternalAttributeForm
     ): Attribute = {
+
+      println("AttributeBuilder: " + internal)
       Attribute(
         name = internal.name.get,
         value = internal.value.get,

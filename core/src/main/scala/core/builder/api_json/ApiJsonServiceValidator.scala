@@ -71,12 +71,11 @@ case class ApiJsonServiceValidator(
             validateInfo ++
             validateKey ++
             validateImports ++
-            internalService.get.models.flatMap(_.warnings) ++
-            internalService.get.enums.flatMap(_.warnings) ++
-            internalService.get.enums.flatMap(_.values).flatMap(_.warnings) ++
-            internalService.get.unions.flatMap(_.warnings) ++
-            internalService.get.unions.flatMap(_.types).flatMap(_.warnings) ++
-            internalService.get.headers.flatMap(_.warnings) ++
+            validateAttributes("Service", internalService.get.attributes) ++
+            validateEnums ++
+            validateHeaders ++
+            validateModels ++
+            validateUnions ++
             validateFields ++
             validateResources ++
             validateOperations ++
@@ -148,12 +147,78 @@ case class ApiJsonServiceValidator(
     }
   }
 
+  private def validateUnions(): Seq[String] = {
+    val warnings = internalService.get.unions.flatMap(_.warnings)
+
+    val attributeErrors = internalService.get.unions.flatMap { union =>
+      validateAttributes(s"Union[${union.name}]", union.attributes)
+    }
+
+    val typeErrors = internalService.get.unions.flatMap { union =>
+      validateUnionTypes(union)
+    }
+
+    warnings ++ attributeErrors ++ typeErrors
+  }
+
+  private def validateUnionTypes(union: InternalUnionForm): Seq[String] = {
+    val attributeErrors = union.types.zipWithIndex.flatMap { case (typ, i) =>
+      typ.datatype match {
+        case None => Seq("Union[${union.name}] type[$i]: Missing type")
+        case Some(datatype) => validateAttributes(s"Union[${union.name}] type[$datatype]", typ.attributes)
+      }
+    }
+
+    union.types.flatMap(_.warnings) ++ attributeErrors
+  }
+
   private def validateEnums(): Seq[String] = {
-    internalService.get.enums.flatMap { enum =>
+    val warnings = internalService.get.enums.flatMap { enum =>
       enum.values.filter(_.name.isEmpty).map { value =>
         s"Enum[${enum.name}] - all values must have a name"
       }
     }
+
+    val attributeErrors = internalService.get.enums.flatMap { enum =>
+      validateAttributes(s"Enum[${enum.name}]", enum.attributes)
+    }
+
+    val valueErrors = internalService.get.enums.flatMap { enum =>
+      validateEnumValues(enum)
+    }
+
+    warnings ++ attributeErrors ++ valueErrors
+  }
+
+  private def validateEnumValues(enum: InternalEnumForm): Seq[String] = {
+    val attributeErrors = enum.values.zipWithIndex.flatMap { case (value, i) =>
+      value.name match {
+        case None => Seq("Enum[${enum.name}] value[$i]: Missing name")
+        case Some(name) => validateAttributes(s"Enum[${enum.name}] value[$name]", value.attributes)
+      }
+    }
+
+    enum.values.flatMap(_.warnings) ++ attributeErrors
+  }
+
+  private def validateModels(): Seq[String] = {
+    val warnings = internalService.get.models.flatMap(_.warnings)
+
+    val attributeErrors = internalService.get.models.flatMap { model =>
+      validateAttributes(s"Model[${model.name}]", model.attributes)
+    }
+
+    warnings ++ attributeErrors
+  }
+
+  private def validateHeaders(): Seq[String] = {
+    val warnings = internalService.get.headers.flatMap(_.warnings)
+
+    val attributeErrors = internalService.get.headers.filter(!_.name.isEmpty).flatMap { header =>
+      validateAttributes(s"Header[${header.name}]", header.attributes)
+    }
+
+    warnings ++ attributeErrors
   }
 
   private def validateFields(): Seq[String] = {
@@ -169,24 +234,51 @@ case class ApiJsonServiceValidator(
       }
     }
 
+    val attributeErrors = internalService.get.models.flatMap { model =>
+      model.fields.filter(!_.name.isEmpty).flatMap { f =>
+        validateAttributes(s"Model[${model.name}] field[${f.name.get}]", f.attributes)
+      }
+    }
+
     val warnings = internalService.get.models.flatMap { model =>
       model.fields.filter(f => !f.warnings.isEmpty && !f.name.isEmpty).map { f =>
         s"Model[${model.name}] field[${f.name.get}]: " + f.warnings.mkString(", ")
       }
     }
 
-    missingTypes ++ missingNames ++ warnings
+    missingTypes ++ missingNames ++ attributeErrors ++ warnings
   }
 
+  private def validateAttributes(prefix: String, attributes: Seq[InternalAttributeForm]): Seq[String] = {
+    attributes.zipWithIndex.flatMap { case (attr, i) =>
+      val fieldErrors = attr.name match {
+        case None => Seq(s"$prefix: Attribute $i must have a name")
+        case Some(name) => {
+          attr.value match {
+            case None => Seq(s"$prefix: Attribute $name must have a value")
+            case Some(_) => Nil
+          }
+        }
+      }
+
+      fieldErrors ++ attr.warnings.map { err => s"$prefix: $err" }
+    }
+  }
 
   private def validateResponses(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
+    val codeErrors = internalService.get.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
         op.responses.filter(r => !r.warnings.isEmpty).map { r =>
           opLabel(resource, op, s"${r.code}: " + r.warnings.mkString(", "))
         }
       }
     }
+
+    val attributeErrors = internalService.get.resources.flatMap { resource =>
+      validateAttributes(s"Resource[${resource.datatype.label}]", resource.attributes)
+    }
+
+    codeErrors ++ attributeErrors
   }
 
   private def validateParameterBodies(): Seq[String] = {
@@ -207,11 +299,25 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateOperations(): Seq[String] = {
-    internalService.get.resources.flatMap { resource =>
+    val warnings = internalService.get.resources.flatMap { resource =>
       resource.operations.filter(!_.warnings.isEmpty).map { op =>
         opLabel(resource, op, op.warnings.mkString(", "))
       }
     }
+
+    val attributeErrors = internalService.get.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        validateAttributes(opLabel(resource, op, ""), op.attributes)
+      }
+    }
+
+    val bodyAttributeErrors = internalService.get.resources.flatMap { resource =>
+      resource.operations.filter(!_.body.isEmpty).flatMap { op =>
+        validateAttributes(opLabel(resource, op, "body"), op.body.get.attributes)
+      }
+    }
+    
+    warnings ++ attributeErrors ++ bodyAttributeErrors
   }
 
   private def validateParameters(): Seq[String] = {
