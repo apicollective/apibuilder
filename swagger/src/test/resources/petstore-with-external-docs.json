@@ -194,6 +194,10 @@
           "type": "integer",
           "format": "int64"
         },
+        "guid": {
+          "type": "string",
+          "format": "uuid"
+        },
         "name": {
           "type": "string"
         },

@@ -83,6 +83,11 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       required = true
                     ),
                     Field(
+                      name = "guid",
+                      `type` = "uuid",
+                      required = false
+                    ),
+                    Field(
                       name = "name",
                       `type` = "string",
                       required = true
@@ -106,6 +111,11 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     Field(
                       name = "id",
                       `type` = "long",
+                      required = false
+                    ),
+                    Field(
+                      name = "guid",
+                      `type` = "uuid",
                       required = false
                     ),
                     Field(

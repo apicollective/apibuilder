@@ -11,12 +11,14 @@ object SchemaType {
     SchemaType("int32", "integer"),
     SchemaType("int64", "long"),
     SchemaType("float", "double"),
+    SchemaType("decimal", "decimal"),
     SchemaType("double", "double"),
     SchemaType("string", "string"),
     SchemaType("byte", "string"), // TODO: apidoc needs support for byte
     SchemaType("boolean", "boolean"),
     SchemaType("date", "date-iso8601"),
-    SchemaType("dateTime", "date-time-iso8601")
+    SchemaType("dateTime", "date-time-iso8601"),
+    SchemaType("uuid", "uuid")
   )
 
   def fromSwagger(
