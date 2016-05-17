@@ -28,7 +28,7 @@ object Util {
     name.trim
   }
 
-  private val PathParams = """\{(.+)\}""".r
+  private val PathParams = """\{(.+?)\}""".r
 
   /**
     * Replace swagger {...} syntax with leading :

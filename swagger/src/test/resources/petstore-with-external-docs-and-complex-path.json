@@ -31,7 +31,7 @@
     "application/json"
   ],
   "paths": {
-    "/store/pets/{product_code}": {
+    "/store/{store_id}/pets/{product_code}": {
       "get": {
         "description": "Returns all pets from the system matching product code that the user has access to",
         "operationId": "findPets",
@@ -46,6 +46,14 @@
           "text/html"
         ],
         "parameters": [
+          {
+            "name": "store_id",
+            "in": "path",
+            "description": "The id of the store housing the pet(s).",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
           {
             "name": "product_code",
             "in": "path",
