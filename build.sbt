@@ -15,7 +15,7 @@ lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings: _*)
 
-val avroVersion = "1.8.0"
+val avroVersion = "1.8.1"
 
 lazy val avro = project
   .in(file("avro"))
