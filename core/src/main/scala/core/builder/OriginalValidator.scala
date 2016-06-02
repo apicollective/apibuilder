@@ -2,7 +2,7 @@ package builder
 
 import me.apidoc.swagger.SwaggerServiceValidator
 import me.apidoc.avro.AvroIdlServiceValidator
-import api_json.ApiJsonServiceValidator
+import api_json.{ApiJsonServiceValidator, ServiceJsonServiceValidator}
 import lib.{ServiceConfiguration, ServiceValidator}
 import core.{ServiceFetcher, VersionMigration}
 import com.bryzek.apidoc.api.v0.models.{Original, OriginalType}
@@ -25,11 +25,14 @@ object OriginalValidator {
       case OriginalType.AvroIdl => {
         AvroIdlServiceValidator(config, original.data)
       }
+      case OriginalType.ServiceJson => {
+        ServiceJsonServiceValidator(original.data)
+      }
       case OriginalType.SwaggerJson => {
         SwaggerServiceValidator(config, original.data)
       }
-      case _ => {
-        sys.error("Invalid original type: " + original.`type`)
+      case OriginalType.UNDEFINED(other) => {
+        sys.error(s"Invalid original type[$other]")
       }
     }
     WithServiceSpecValidator(validator)
