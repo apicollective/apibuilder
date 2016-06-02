@@ -47,7 +47,7 @@ class UrlKeySpec extends FunSpec with Matchers {
   describe("validate") {
 
     it("short") {
-      UrlKey.validate("bad") should be(Seq("Key must be at least 4 characters"))
+      UrlKey.validate("ba") should be(Seq("Key must be at least 3 characters"))
     }
 
     it("doesn't match generated") {

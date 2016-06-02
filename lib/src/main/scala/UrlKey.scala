@@ -2,7 +2,7 @@ package lib
 
 object UrlKey {
 
-  private val MinKeyLength = 4
+  private val MinKeyLength = 3
 
   // Only want lower case letters and dashes
   private val Regexp1 = """([^0-9a-z\-\_\.])""".r
@@ -17,20 +17,15 @@ object UrlKey {
   private val RegexpTrailingSpaces = """\-+$""".r
 
   def generate(value: String): String = {
-    val key = format(value)
+    generate(format(value), 0)
+  }
+
+  @scala.annotation.tailrec
+  private[this] def generate(value: String, suffix: Int): String = {
+    val key = if (suffix <= 0) { value } else { s"$value-1" }
     validate(key) match {
       case Nil => key
-      case errors => {
-        // The provided value was insufficent. Iterate. Note that we
-        // key the prefix key- here to ensure that it itself is not
-        // formatted away. It is also long enough to satisy min length
-        // requirements for the key.
-        val key2 = format("key-" + value)
-        validate(key2) match {
-          case Nil => key2
-          case errors => sys.error(s"Could not generate a valid key from value[$value]")
-        }
-      }
+      case errors => generate(key, suffix + 1)
     }
   }
 
