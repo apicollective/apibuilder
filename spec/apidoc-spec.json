@@ -165,7 +165,7 @@
       "fields": [
 	{ "name": "type", "type": "string", "description": "The type of this resource will map to a defined model, enum, or union type" },
 	{ "name": "plural", "type": "string" },
-	{ "name": "path", "type": "string", "required": false, "description": "The path to this specific resource. This was added in 2016 to help us differentiate between the resource path and the operation path which can be helpful when, for example, generating method names for operations. This field is optional as some of our input formats (e.g. swagger) do not explicitly differenties resoure paths." },
+	{ "name": "path", "type": "string", "required": false, "description": "The path to this specific resource. This was added in 2016 to help us differentiate between the resource path and the operation path which can be helpful when, for example, generating method names for operations. This field is optional as some of our input formats (e.g. swagger) do not explicitly differentiate resoure paths." },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
 	{ "name": "operations", "type": "[operation]" },
