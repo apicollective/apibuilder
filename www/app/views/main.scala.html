@@ -45,6 +45,7 @@
                     <li><a href="@routes.Versions.original(service.organization.key, service.application.key, version)">original (@{original.`type` match {
                       case com.bryzek.apidoc.api.v0.models.OriginalType.AvroIdl => "Avro IDL"
                       case com.bryzek.apidoc.api.v0.models.OriginalType.ApiJson => "api.json"
+                      case com.bryzek.apidoc.api.v0.models.OriginalType.ServiceJson => "service.json"
                       case com.bryzek.apidoc.api.v0.models.OriginalType.SwaggerJson => "swagger.json"
                       case com.bryzek.apidoc.api.v0.models.OriginalType.UNDEFINED(name) => name
                     }})</a></li>
