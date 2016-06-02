@@ -36,9 +36,9 @@
   },
 
   "imports": [
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.11.23/service.json" },
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-common/0.11.23/service.json" },
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.11.23/service.json" }
+    { "uri": "http://www.apidoc.me/bryzek/apidoc-spec/0.11.26/service.json" },
+    { "uri": "http://www.apidoc.me/bryzek/apidoc-common/0.11.26/service.json" },
+    { "uri": "http://www.apidoc.me/bryzek/apidoc-generator/0.11.26/service.json" }
   ],
 
   "enums": {
@@ -64,8 +64,9 @@
     "original_type": {
       "values": [
 	{ "name": "api_json", "description": "The original is in the api.json format" },
-	{ "name": "swagger_json", "description": "The original in the swagger.json format" },
-	{ "name": "avro_idl", "description": "The original is in Avro Idl format" }
+	{ "name": "avro_idl", "description": "The original is in Avro Idl format" },
+	{ "name": "service_json", "description": "This is the canonical service spec for apidoc itself. See http://apidoc.me/bryzek/apidoc-spec/latest#model-service" },
+	{ "name": "swagger_json", "description": "The original in the swagger.json format" }
       ]
     }
 

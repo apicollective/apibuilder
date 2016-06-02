@@ -94,7 +94,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
           }
           case Some(original) => {
             original.`type` match {
-              case OriginalType.ApiJson | OriginalType.SwaggerJson => {
+              case OriginalType.ApiJson | OriginalType.SwaggerJson | OriginalType.ServiceJson => {
                 Ok(original.data).withHeaders("Content-Type" -> "application/json")
               }
               case OriginalType.AvroIdl => {

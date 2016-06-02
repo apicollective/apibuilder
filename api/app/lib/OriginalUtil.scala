@@ -1,7 +1,9 @@
 package lib
 
 import com.bryzek.apidoc.api.v0.models.{Original, OriginalForm, OriginalType}
-import play.api.libs.json.{Json, JsString, JsObject}
+import com.bryzek.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.json._
+import play.api.libs.json.{Json, JsString, JsObject, JsSuccess}
 import scala.util.{Failure, Success, Try}
 
 object OriginalUtil {
@@ -29,7 +31,12 @@ object OriginalUtil {
           case Some(o) => {
             (o \ "swagger").asOpt[JsString] match {
               case Some(v) => Some(OriginalType.SwaggerJson)
-              case None => Some(OriginalType.ApiJson)
+              case None => {
+                o.validate[Service] match {
+                  case JsSuccess(_, _) => Some(OriginalType.ServiceJson)
+                  case _ => Some(OriginalType.ApiJson)
+                }
+              }
             }
           }
         }
