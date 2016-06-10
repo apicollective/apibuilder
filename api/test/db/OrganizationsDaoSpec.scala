@@ -148,7 +148,7 @@ class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplicati
     }
 
     it("validates key") {
-      OrganizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message should be("Key must be at least 4 characters")
+      OrganizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a"))).head.message should be("Key must be at least 3 characters")
       OrganizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key))).head.message should be("Org with this key already exists")
       OrganizationsDao.validate(Util.createOrganizationForm(name = UUID.randomUUID.toString, key = Some(Util.gilt.key)), Some(Util.gilt)) should be(Seq.empty)
     }
