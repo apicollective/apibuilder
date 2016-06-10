@@ -32,7 +32,7 @@ class ApplicationsSpec extends BaseSpec {
   "POST /:orgKey validates key is valid" in new WithServer {
     intercept[ErrorsResponse] {
       createApplication(org, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a")))
-    }.errors.map(_.message) must be(Seq(s"Key must be at least 4 characters"))
+    }.errors.map(_.message) must be(Seq(s"Key must be at least 3 characters"))
 
     intercept[ErrorsResponse] {
       createApplication(org, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
