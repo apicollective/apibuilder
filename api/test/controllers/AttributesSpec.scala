@@ -27,7 +27,7 @@ class AttributesSpec extends BaseSpec {
   "POST /attributes validates name is valid" in new WithServer {
     intercept[ErrorsResponse] {
       createAttribute(createAttributeForm(name = "a"))
-    }.errors.map(_.message) must be(Seq(s"Name must be at least 4 characters"))
+    }.errors.map(_.message) must be(Seq(s"Name must be at least 3 characters"))
 
     intercept[ErrorsResponse] {
       createAttribute(createAttributeForm(name = "a bad name"))

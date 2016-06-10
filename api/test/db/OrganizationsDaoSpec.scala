@@ -141,7 +141,7 @@ class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplicati
 
     it("validates name") {
       OrganizationsDao.validate(Util.createOrganizationForm(name = "this is a long name")) should be(Seq.empty)
-      OrganizationsDao.validate(Util.createOrganizationForm(name = "a")).head.message should be("name must be at least 4 characters")
+      OrganizationsDao.validate(Util.createOrganizationForm(name = "a")).head.message should be("name must be at least 3 characters")
       OrganizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name)).head.message should be("Org with this name already exists")
 
       OrganizationsDao.validate(Util.createOrganizationForm(name = Util.gilt.name), Some(Util.gilt)) should be(Seq.empty)
@@ -156,7 +156,7 @@ class OrganizationsDaoSpec extends FunSpec with Matchers with util.TestApplicati
     it("raises error if you try to create an org with a short name") {
       intercept[java.lang.AssertionError] {
         OrganizationsDao.createWithAdministrator(Util.createdBy, Util.createOrganizationForm("a"))
-      }.getMessage should be("assertion failed: name must be at least 4 characters")
+      }.getMessage should be("assertion failed: name must be at least 3 characters")
     }
 
     it("isDomainValid") {
