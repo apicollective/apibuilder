@@ -16,7 +16,7 @@ object OrganizationsDao {
 
   private[this] val DefaultVisibility = Visibility.Organization
 
-  private[this] val MinNameLength = 4
+  private[this] val MinNameLength = 3
 
   private[db] val BaseQuery = s"""
     select organizations.guid,
