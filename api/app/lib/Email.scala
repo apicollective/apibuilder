@@ -9,6 +9,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import com.sendgrid._
 
+
 case class Person(email: String, name: Option[String] = None)
 
 object Person {
@@ -22,7 +23,7 @@ object Email {
 
   private[this] val subjectPrefix = Config.requiredString("mail.subjectPrefix")
 
-  private[this] val from = Person(
+  private[this] val fromPerson = Person(
     email = Config.requiredString("mail.defaultFromEmail"),
     name = Some(Config.requiredString("mail.defaultFromName"))
   )
@@ -46,13 +47,19 @@ object Email {
   ) {
     val prefixedSubject = subjectPrefix + " " + subject
 
-    val email = new SendGrid.Email()
-    email.addTo(to.email)
-    to.name.map { n => email.addToName(n) }
-    email.setFrom(from.email)
-    from.name.map { n => email.setFromName(n) }
-    email.setSubject(prefixedSubject)
-    email.setHtml(body)
+    val from = fromPerson.name match {
+      case Some(n) => new com.sendgrid.Email(fromPerson.email, n)
+      case None => new com.sendgrid.Email(fromPerson.email)
+    }
+
+    val recipient = to.name match {
+      case Some(n) => new com.sendgrid.Email(to.email, n)
+      case None => new com.sendgrid.Email(to.email)
+    }
+
+    val content = new Content("text/html", body)
+
+    val mail = new Mail(from, prefixedSubject, recipient, content)
 
     localDeliveryDir match {
       case Some(dir) => {
@@ -60,8 +67,12 @@ object Email {
       }
 
       case None => {
-        val response = sendgrid.send(email)
-        assert(response.getStatus, "Error sending email: " + response.getMessage())
+        val request = new Request()
+        request.method = Method.POST
+        request.endpoint = "mail/send"
+        request.body = mail.build()
+        val response = sendgrid.api(request)
+        assert(response.statusCode == 202, "Error sending email: " + response.body)
       }
     }
   }
