@@ -21,11 +21,13 @@ class TypeValidatorSpec extends FunSpec with Matchers {
     )
   }
 
+/*
   it("enum invalid name") {
     validator.validate(Kind.Enum("foo"), "youth") should be(
       Some("could not find enum named[foo]")
     )
   }
+*/
 
   it("models cannot have defaults") {
     validator.validate(Kind.Model("foo"), "bar") should be(
