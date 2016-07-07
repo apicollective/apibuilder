@@ -195,7 +195,12 @@ case class TypeValidator(
         }
 
         enums.find(e => names.contains(e.name)) match {
-          case None => Some(s"could not find enum named[$name]")
+          case None => {
+            // This occurs if the enum itself has been imported. At the moment,
+            // we can validate the default values for imported enums.
+            None
+          }
+
           case Some(enum) => {
             enum.values.find(_ == value) match {
               case None => {
