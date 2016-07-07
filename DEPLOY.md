@@ -4,7 +4,7 @@ Deploying apidoc
  - Runs in EC2 on docker images. Database is RDS Postgresql
  - yum install docker
  - service docker start
- - docker pull airinc/apidoc:0.9.26
+ - docker pull mbryzek/apidoc:0.11.31
  - docker run ...
 
 Installing Docker on mac
@@ -22,7 +22,7 @@ Building the Docker Image
 
   You can also build the docker image directly:
 
-  docker build -t airinc/apidoc:0.9.28 .
+  docker build -t mbryzek/apidoc:0.11.31 .
 
 Releasing a schema change
 =========================
