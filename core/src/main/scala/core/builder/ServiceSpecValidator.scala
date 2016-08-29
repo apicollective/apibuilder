@@ -433,7 +433,16 @@ case class ServiceSpecValidator(
       s"Resource[${resource.`type`}] must have at least one operation"
     }
 
-    datatypeErrors ++ missingOperations
+    val duplicateModels = service.resources.flatMap { resource =>
+      val numberResources = service.resources.filter { _.`type` == resource.`type` }.size
+      if (numberResources <= 1) {
+        None
+      } else {
+        Some(s"Resource[${resource.`type`}] cannot appear multiple times")
+      }
+    }.distinct
+
+    datatypeErrors ++ missingOperations ++ duplicateModels
   }
 
   private def validateParameterLocations(): Seq[String] = {
