@@ -186,7 +186,7 @@ case class ApiJsonServiceValidator(
   private def validateEnumValues(enum: InternalEnumForm): Seq[String] = {
     val attributeErrors = enum.values.zipWithIndex.flatMap { case (value, i) =>
       value.name match {
-        case None => Seq("Enum[${enum.name}] value[$i]: Missing name")
+        case None => Seq(s"Enum[${enum.name}] value[$i]: Missing name")
         case Some(name) => validateAttributes(s"Enum[${enum.name}] value[$name]", value.attributes)
       }
     }
