@@ -108,7 +108,7 @@ object UsersDao {
     DB.withConnection { implicit c =>
       SQL(UpdateQuery).on(
         'guid -> user.guid,
-        'email -> form.email.trim,
+        'email -> form.email.trim.toLowerCase,
         'name -> form.name.map(_.trim),
         'nickname -> form.nickname.trim.toLowerCase,
         'updated_by_guid -> updatingUser.guid
@@ -129,7 +129,7 @@ object UsersDao {
     DB.withTransaction { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
-        'email -> form.email.trim,
+        'email -> form.email.trim.toLowerCase,
         'name -> form.name.map(_.trim),
         'nickname -> form.nickname.getOrElse(generateNickname(form.email)),
         'created_by_guid -> Constants.DefaultUserGuid,

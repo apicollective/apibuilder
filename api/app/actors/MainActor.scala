@@ -31,10 +31,10 @@ object MainActor {
 class MainActor(name: String) extends Actor with ActorLogging {
   import scala.concurrent.duration._
 
-  private[this] val emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
-  private[this] val generatorServiceActor = Akka.system.actorOf(Props[GeneratorServiceActor], name = s"$name:generatorServiceActor")
-  private[this] val taskActor = Akka.system.actorOf(Props[TaskActor], name = s"$name:taskActor")
-  private[this] val userActor = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor")
+  private[this] def emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
+  private[this] def generatorServiceActor = Akka.system.actorOf(Props[GeneratorServiceActor], name = s"$name:generatorServiceActor")
+  private[this] def taskActor = Akka.system.actorOf(Props[TaskActor], name = s"$name:taskActor")
+  private[this] def userActor = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor")
 
   Akka.system.scheduler.schedule(5.seconds, 1.minute, taskActor, TaskActor.Messages.RestartDroppedTasks)
   Akka.system.scheduler.schedule(1.hour, 1.hour, taskActor, TaskActor.Messages.PurgeOldTasks)
