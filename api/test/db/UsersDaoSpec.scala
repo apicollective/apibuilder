@@ -86,6 +86,22 @@ class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
       UsersDao.validateNewUser(form).map(_.message) should be(Seq("Password must be at least 5 characters"))
     }
 
+    it("email in upper case with whitespace") {
+      val email = "TEST-user-" + UUID.randomUUID.toString + "@test.apidoc.me"
+      val form = UserForm(
+        email = " " + email,
+        password = "testing"
+      )
+
+      UsersDao.validateNewUser(form) should be(Seq.empty)
+
+      val user = UsersDao.create(form)
+      user.email should be(email)
+      UsersDao.validateNewUser(form.copy(email = email.toLowerCase)) should be(
+        Seq("User with this email address already exists")
+      )
+    }
+    
     it("nickname is url friendly") {
       UsersDao.validateNewUser(createUserForm(nickname = Some("bad nickname"))).map(_.message) should be(Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: bad-nickname"))
     }
