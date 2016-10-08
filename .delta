@@ -1,0 +1,9 @@
+builds:
+  - api:
+      dockerfile: api/Dockerfile
+      port.container: 9000
+      port.host: 7071
+  - www:
+      dockerfile: www/Dockerfile
+      port.container: 9000
+      port.host: 7070

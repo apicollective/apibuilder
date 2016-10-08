@@ -131,6 +131,18 @@ class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
       ChangesDao.findAll(Authorization.All, toVersionGuid = Some(change.toVersion.guid)).map(_.guid) should be(Seq(change.guid))
     }
 
+    it("fromVersion") {
+      val change = createChange()
+      ChangesDao.findAll(Authorization.All, fromVersion = Some(UUID.randomUUID.toString)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, guid = Some(change.guid), fromVersion = Some(change.fromVersion.version)).map(_.guid) should be(Seq(change.guid))
+    }
+
+    it("toVersion") {
+      val change = createChange()
+      ChangesDao.findAll(Authorization.All, toVersion = Some(UUID.randomUUID.toString)) should be(Nil)
+      ChangesDao.findAll(Authorization.All, guid = Some(change.guid), toVersion = Some(change.toVersion.version)).map(_.guid) should be(Seq(change.guid))
+    }
+
     it("description") {
       val desc = UUID.randomUUID.toString
       val change = createChange(description = desc)

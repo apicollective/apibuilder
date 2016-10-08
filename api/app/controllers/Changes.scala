@@ -13,6 +13,8 @@ trait Changes {
   def get(
     orgKey: Option[String],
     applicationKey: Option[String],
+    fromVersion: Option[String],
+    toVersion: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
@@ -20,6 +22,8 @@ trait Changes {
       request.authorization,
       organizationKey = orgKey,
       applicationKey = applicationKey,
+      fromVersion = fromVersion,
+      toVersion = toVersion,
       limit = limit,
       offset = offset
     )

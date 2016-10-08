@@ -122,6 +122,8 @@ object ChangesDao {
     applicationGuid: Option[UUID] = None,
     fromVersionGuid: Option[UUID] = None,
     toVersionGuid: Option[UUID] = None,
+    fromVersion: Option[String] = None,
+    toVersion: Option[String] = None,
     description: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0
@@ -136,6 +138,8 @@ object ChangesDao {
       applicationKey.map { v => "and applications.key = lower(trim({application_key}))" },
       fromVersionGuid.map { v => "and changes.from_version_guid = {from_version_guid}::uuid" },
       toVersionGuid.map { v => "and changes.to_version_guid = {to_version_guid}::uuid" },
+      fromVersion.map { v => "and from_version.version = {from_version}" },
+      toVersion.map { v => "and to_version.version = {to_version}" },
       description.map { v => "and lower(changes.description) = lower(trim({description}))" },
       Some(s"order by changes.changed_at desc, lower(organizations.key), lower(applications.key), changes.type, lower(changes.description) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -148,6 +152,8 @@ object ChangesDao {
       applicationKey.map('application_key -> _),
       fromVersionGuid.map('from_version_guid -> _.toString),
       toVersionGuid.map('to_version_guid -> _.toString),
+      fromVersion.map('from_version -> _.toString),
+      toVersion.map('to_version -> _.toString),
       description.map('description -> _)
     ).flatten ++ authorization.bindVariables
 
