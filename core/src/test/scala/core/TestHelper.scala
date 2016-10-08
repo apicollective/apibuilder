@@ -62,9 +62,11 @@ object TestHelper {
 
   private lazy val generatorService: Service = {
     val fetcher = MockServiceFetcher()
-    val version = com.bryzek.apidoc.spec.v0.Constants.Version
-    fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
-    fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
+
+    Seq(com.bryzek.apidoc.spec.v0.Constants.Version, "latest").foreach { version =>
+      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
+      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
+    }
 
     val contents = readFile("spec/apidoc-generator.json")
     val validator = OriginalValidator(bryzekConfig, Original(OriginalType.ApiJson, contents), fetcher)
@@ -114,10 +116,11 @@ object TestHelper {
   def parseFile(filename: String): ServiceValidatorForSpecs = {
     val fetcher = MockServiceFetcher()
     if (filename == "spec/apidoc-api.json") {
-      val version = com.bryzek.apidoc.spec.v0.Constants.Version
-      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
-      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
-      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-generator/$version/service.json", generatorService)
+      Seq(com.bryzek.apidoc.spec.v0.Constants.Version, "latest").foreach { version =>
+        fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
+        fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
+        fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-generator/$version/service.json", generatorService)
+      }
     }
     parseFile(filename, fetcher)
   }
