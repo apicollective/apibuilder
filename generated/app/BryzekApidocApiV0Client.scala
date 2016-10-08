@@ -2117,8 +2117,8 @@ package com.bryzek.apidoc.api.v0 {
       override def get(
         orgKey: _root_.scala.Option[String] = None,
         applicationKey: _root_.scala.Option[String] = None,
-        fromVersion: _root_.scala.Option[String] = None,
-        toVersion: _root_.scala.Option[String] = None,
+        from: _root_.scala.Option[String] = None,
+        to: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0,
         requestHeaders: Seq[(String, String)] = Nil
@@ -2126,8 +2126,8 @@ package com.bryzek.apidoc.api.v0 {
         val queryParameters = Seq(
           orgKey.map("org_key" -> _),
           applicationKey.map("application_key" -> _),
-          fromVersion.map("from_version" -> _),
-          toVersion.map("to_version" -> _),
+          from.map("from" -> _),
+          to.map("to" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten
@@ -3211,8 +3211,8 @@ package com.bryzek.apidoc.api.v0 {
     def get(
       orgKey: _root_.scala.Option[String] = None,
       applicationKey: _root_.scala.Option[String] = None,
-      fromVersion: _root_.scala.Option[String] = None,
-      toVersion: _root_.scala.Option[String] = None,
+      from: _root_.scala.Option[String] = None,
+      to: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0,
       requestHeaders: Seq[(String, String)] = Nil
