@@ -1,7 +1,9 @@
 @(tpl: models.MainTemplate,
   changes: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Change],
   orgKey: Option[String] = None,
-  appKey: Option[String] = None
+  appKey: Option[String] = None,
+  from: Option[String] = None,
+  to: Option[String] = None
 )(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
@@ -13,6 +15,17 @@
   } else {
     @if(!orgKey.isEmpty) {
       <a href="@routes.HistoryController.index()">All</a> / @orgKey.get
+    }
+  }
+
+  @if(!from.isEmpty && !to.isEmpty) {
+    Versions from @from to @to
+  } else {
+    if (!from.isEmpty) {
+      Versions from @from
+    }
+    if (!to.isEmpty) {
+      Versions to @to
     }
   }
 
@@ -45,10 +58,10 @@
     @if(changes.hasPrevious || changes.hasNext) {
       <ul class="pager">
         @if(changes.hasPrevious) {
-          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, changes.page - 1)">Previous</a></li>
+          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, from = from, to = to, changes.page - 1)">Previous</a></li>
         }
         @if(changes.hasNext) {
-          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, changes.page + 1)">Next</a></li>
+          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, from = from, to = to, changes.page + 1)">Next</a></li>
         }
       </ul>
     }

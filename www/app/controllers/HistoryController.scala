@@ -16,12 +16,16 @@ class HistoryController @Inject() (val messagesApi: MessagesApi) extends Control
   def index(
     orgKey: Option[String],
     appKey: Option[String],
+    from: Option[String],
+    to: Option[String],
     page: Int = 0
   ) = Anonymous.async { implicit request =>
     for {
       changes <- request.api.changes.get(
         orgKey = orgKey,
         applicationKey = appKey,
+        from = from,
+        to = to,
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
       )
@@ -30,7 +34,9 @@ class HistoryController @Inject() (val messagesApi: MessagesApi) extends Control
         request.mainTemplate().copy(title = Some("History")),
         changes = PaginatedCollection(page, changes),
         orgKey = orgKey,
-        appKey = appKey
+        appKey = appKey,
+        from = from,
+        to = to
       ))
     }
   }
