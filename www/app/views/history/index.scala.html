@@ -21,7 +21,7 @@
   @if(!from.isEmpty && !to.isEmpty) {
     Versions from @from to @to
   } else {
-    if (!from.isEmpty) {
+    @if (!from.isEmpty) {
       Versions from @from
     }
     if (!to.isEmpty) {
