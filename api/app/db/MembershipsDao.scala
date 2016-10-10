@@ -6,13 +6,20 @@ import com.bryzek.apidoc.common.v0.models.{Audit, ReferenceGuid}
 import com.bryzek.apidoc.common.v0.models.json._
 import lib.Role
 import anorm._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.DateTime
 
-object MembershipsDao {
+@Singleton
+class MembershipsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  organizationsDao: OrganizationsDao,
+  subscriptionsDao: SubscriptionsDao,
+  usersDao: UsersDao
+) {
 
   private[this] val InsertQuery = """
     insert into memberships
@@ -88,7 +95,7 @@ object MembershipsDao {
       'created_by_guid -> createdBy.guid
     ).execute()
 
-    global.Actors.mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
+    mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
 
     membership
   }
@@ -99,7 +106,7 @@ object MembershipsDao {
     * for this org.
     */
   def softDelete(user: User, membership: Membership) {
-    SubscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
+    subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
     SoftDelete.delete("memberships", user, membership.guid)
   }
 
@@ -177,8 +184,8 @@ object MembershipsDao {
       SQL(sql).on(bind: _*)().toList.map { row =>
         Membership(
           guid = row[UUID]("guid"),
-          organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
-          user = UsersDao.fromRow(row, Some("user")),
+          organization = organizationsDao.summaryFromRow(row, Some("organization")),
+          user = usersDao.fromRow(row, Some("user")),
           role = row[String]("role"),
           audit = AuditsDao.fromRowCreation(row)
         )

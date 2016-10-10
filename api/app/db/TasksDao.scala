@@ -4,6 +4,7 @@ import com.bryzek.apidoc.internal.v0.models.{Task, TaskData}
 import com.bryzek.apidoc.internal.v0.models.json._
 import com.bryzek.apidoc.api.v0.models.User
 import anorm._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -29,7 +30,10 @@ import java.util.UUID
   *   - periodically, the task system picks up tasks that have not
   *     been processed and executes them
   */
-object TasksDao {
+@Singleton
+class TasksDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef
+) {
 
   private[this] val BaseQuery = """
     select tasks.guid,
@@ -69,7 +73,7 @@ object TasksDao {
     val taskGuid = DB.withConnection { implicit c =>
       insert(c, createdBy, data)
     }
-    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+    mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
     taskGuid
   }
 

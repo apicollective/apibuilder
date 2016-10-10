@@ -3,13 +3,17 @@ package db
 import com.bryzek.apidoc.api.v0.models.{CleartextToken, Error, Token, TokenForm, User}
 import lib.{Constants, Role, TokenGenerator}
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 import lib.Validation
 
-object TokensDao {
+@Singleton
+class TokensDao @Inject() (
+  usersDao: UsersDao
+) {
 
   private[this] val BaseQuery = s"""
     select tokens.guid,
@@ -47,7 +51,7 @@ object TokensDao {
       Seq("You are not authorized to create a token for this user")
     }
 
-    val userErrors = UsersDao.findByGuid(form.userGuid) match {
+    val userErrors = usersDao.findByGuid(form.userGuid) match {
       case None => Seq("User not found")
       case Some(_) => Seq.empty
     }
@@ -135,7 +139,7 @@ object TokensDao {
     guid = row[UUID]("guid"),
     maskedToken = obfuscate(row[String]("token")),
     description = row[Option[String]]("description"),
-    user = UsersDao.fromRow(row, Some("user")),
+    user = usersDao.fromRow(row, Some("user")),
     audit = AuditsDao.fromRowCreation(row)
   )
 

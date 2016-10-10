@@ -1,6 +1,7 @@
 package controllers
 
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 import com.bryzek.apidoc.api.v0.models.json._
 
@@ -19,11 +20,17 @@ import play.api.mvc._
 
 import scala.concurrent.Future
 
-object Code extends Controller {
+@Singleton
+class Code @Inject() (
+  organizationAttributeValuesDao: OrganizationAttributeValuesDao,
+  generatorsDao: GeneratorsDao,
+  servicesDao: ServicesDao,
+  versionsDao: VersionsDao
+) extends Controller {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] val apidocVersion = Config.requiredString("git.version")
+  private[this] lazy val apidocVersion = Config.requiredString("git.version")
 
   def get(
     orgKey: String,
@@ -31,19 +38,19 @@ object Code extends Controller {
     versionName: String,
     generatorKey: String
   ) = AnonymousRequest.async { request =>
-    VersionsDao.findVersion(request.authorization, orgKey, applicationKey, versionName) match {
+    versionsDao.findVersion(request.authorization, orgKey, applicationKey, versionName) match {
       case None => {
         Future.successful(NotFound)
       }
 
       case Some(version) => {
-        ServicesDao.findAll(request.authorization, generatorKey = Some(generatorKey)).headOption match {
+        servicesDao.findAll(request.authorization, generatorKey = Some(generatorKey)).headOption match {
           case None => {
             Future.successful(Conflict(Json.toJson(Validation.error(s"Service with generator key[$generatorKey] not found"))))
           }
 
           case Some(service) => {
-            GeneratorsDao.findAll(request.authorization, key = Some(generatorKey)).headOption match {
+            generatorsDao.findAll(request.authorization, key = Some(generatorKey)).headOption match {
               case None => {
                 Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
               }
@@ -92,7 +99,7 @@ object Code extends Controller {
         var all = scala.collection.mutable.ListBuffer[Attribute]()
 
         Pager.eachPage { offset =>
-          OrganizationAttributeValuesDao.findAll(
+          organizationAttributeValuesDao.findAll(
             organizationGuid = Some(organizationGuid),
             attributeNames = Some(names),
             offset = offset

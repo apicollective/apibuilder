@@ -10,13 +10,21 @@ import com.bryzek.apidoc.spec.v0.models.Service
 import com.bryzek.apidoc.spec.v0.models.json._
 import lib.VersionTag
 import anorm._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Logger
 import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-object VersionsDao {
+@Singleton
+class VersionsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  applicationsDao: ApplicationsDao,
+  originalsDao: OriginalsDao,
+  tasksDao: TasksDao,
+  usersDao: UsersDao
+) {
 
   private[this] val LatestVersion = "latest"
 
@@ -88,7 +96,7 @@ object VersionsDao {
     }
 
     taskGuid.map { guid =>
-      global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(guid)
+      mainActor ! actors.MainActor.Messages.TaskCreated(guid)
     }
 
     findAll(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {
@@ -114,7 +122,7 @@ object VersionsDao {
       'created_by_guid -> user.guid
     ).execute()
 
-    OriginalsDao.create(c, user, guid, original)
+    originalsDao.create(c, user, guid, original)
     softDeleteService(c, user, guid)
     insertService(c, user, guid, service)
 
@@ -124,7 +132,7 @@ object VersionsDao {
   def softDelete(deletedBy: User, version: Version) {
     DB.withTransaction { implicit c =>
       softDeleteService(c, deletedBy, version.guid)
-      OriginalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
+      originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
 
       SQL(DeleteQuery).on(
         'guid -> version.guid,
@@ -138,7 +146,7 @@ object VersionsDao {
   ) (
     implicit c: java.sql.Connection
   ): UUID = {
-    TasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid))
+    tasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid))
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
@@ -149,7 +157,7 @@ object VersionsDao {
       (versionGuid, taskGuid)
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+    mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
 
     findAll(Authorization.All, guid = Some(versionGuid), limit = 1).headOption.getOrElse {
       sys.error(s"Failed to replace version[${version.guid}]")
@@ -157,17 +165,17 @@ object VersionsDao {
   }
 
   def findVersion(authorization: Authorization, orgKey: String, applicationKey: String, version: String): Option[Version] = {
-    ApplicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
+    applicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
       if (version == LatestVersion) {
-        VersionsDao.findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
+        findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
       } else {
-        VersionsDao.findByApplicationAndVersion(authorization, application, version)
+        findByApplicationAndVersion(authorization, application, version)
       }
     }
   }
 
   def findByApplicationAndVersion(authorization: Authorization, application: Application, version: String): Option[Version] = {
-    VersionsDao.findAll(
+    findAll(
       authorization,
       applicationGuid = Some(application.guid),
       version = Some(version),
@@ -279,7 +287,7 @@ object VersionsDao {
               bad += 1
             }
             case Right(service) => {
-              insertService(c, UsersDao.AdminUser, versionGuid, service)
+              insertService(c, usersDao.AdminUser, versionGuid, service)
               good += 1
             }
           }

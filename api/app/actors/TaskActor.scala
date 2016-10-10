@@ -1,11 +1,13 @@
 package actors
 
-import lib.{ServiceDiff, Text}
+import akka.actor.{Actor, ActorLogging, ActorSystem}
 import com.bryzek.apidoc.api.v0.models.{Application, Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
 import com.bryzek.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataSyncService, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao}
+import lib.{ServiceDiff, Text}
 import play.api.Logger
-import akka.actor.Actor
+import play.api.libs.concurrent.Akka
+import play.api.Play.current
 import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
@@ -20,100 +22,100 @@ object TaskActor {
 
 }
 
-class TaskActor extends Actor {
+@javax.inject.Singleton
+class TaskActor @javax.inject.Inject() (
+  system: ActorSystem,
+  applicationsDao: ApplicationsDao,
+  changesDao: ChangesDao,
+  emails: Emails,
+  organizationsDao: OrganizationsDao,
+  search: Search,
+  tasksDao: TasksDao,
+  usersDao: UsersDao,
+  versionsDao: VersionsDao
+) extends Actor with ActorLogging with ErrorHandler {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  implicit val ec = system.dispatchers.lookup("task-actor-context")
 
   private[this] val NumberDaysBeforePurge = 90
 
   def receive = {
 
-    case TaskActor.Messages.TaskCreated(guid) => Util.withVerboseErrorHandler(
-      s"TaskActor.Messages.TaskCreated($guid)", {
-        TasksDao.findByGuid(guid).map { task =>
-          TasksDao.incrementNumberAttempts(UsersDao.AdminUser, task)
+    case m @ TaskActor.Messages.TaskCreated(guid) => withVerboseErrorHandler(m) {
+      tasksDao.findByGuid(guid).map { task =>
+        tasksDao.incrementNumberAttempts(usersDao.AdminUser, task)
 
-          task.data match {
-            case TaskDataDiffVersion(oldVersionGuid, newVersionGuid) => {
-              processTask(task, Try(diffVersion(oldVersionGuid, newVersionGuid)))
-            }
+        task.data match {
+          case TaskDataDiffVersion(oldVersionGuid, newVersionGuid) => {
+            processTask(task, Try(diffVersion(oldVersionGuid, newVersionGuid)))
+          }
 
-            case TaskDataIndexApplication(applicationGuid) => {
-              processTask(task, Try(Search.indexApplication(applicationGuid)))
-            }
+          case TaskDataIndexApplication(applicationGuid) => {
+            processTask(task, Try(search.indexApplication(applicationGuid)))
+          }
 
-            case TaskDataSyncService(serviceGuid) => {
-              processTask(task, Try(GeneratorServiceActor.sync(serviceGuid)))
-            }
+          case TaskDataSyncService(serviceGuid) => {
+            processTask(task, Try(GeneratorServiceActor.sync(serviceGuid)))
+          }
 
-            case TaskDataUndefinedType(desc) => {
-              TasksDao.recordError(UsersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
-            }
+          case TaskDataUndefinedType(desc) => {
+            tasksDao.recordError(usersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
           }
         }
       }
-    )
-
-    case TaskActor.Messages.RestartDroppedTasks => Util.withVerboseErrorHandler(
-      "TaskActor.Messages.RestartDroppedTasks", {
-        TasksDao.findAll(
-          nOrFewerAttempts = Some(2),
-          nOrMoreMinutesOld = Some(1)
-        ).foreach { task =>
-          _root_.global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(task.guid)
-        }
-      }
-    )
-
-    case TaskActor.Messages.NotifyFailed => Util.withVerboseErrorHandler(
-      "TaskActor.Messages.NotifyFailed", {
-        val errors = TasksDao.findAll(
-          nOrMoreAttempts = Some(2)
-        ).map { task =>
-          val errorType = task.data match {
-            case TaskDataDiffVersion(a, b) => s"TaskDataDiffVersion($a, $b)"
-            case TaskDataIndexApplication(guid) => s"TaskDataIndexApplication($guid)"
-            case TaskDataSyncService(guid) => s"TaskDataSyncService($guid)"
-            case TaskDataUndefinedType(desc) => s"TaskDataUndefinedType($desc)"
-          }
-
-          val errorMsg = Text.truncate(task.lastError.getOrElse("No information on error"), 500)
-          s"$errorType task ${task.guid}: $errorMsg"
-        }
-        Emails.sendErrors(
-          subject = "One or more tasks failed",
-          errors = errors
-        )
-      }
-    )
-
-    case TaskActor.Messages.PurgeOldTasks => Util.withVerboseErrorHandler(
-      "TaskActor.Messages.PurgeOldTasks", {
-        TasksDao.findAll(
-          isDeleted = Some(true),
-          deletedAtLeastNDaysAgo = Some(NumberDaysBeforePurge)
-        ).foreach { task =>
-          TasksDao.purge(UsersDao.AdminUser, task)
-        }
-      }
-    )
-
-    case m: Any => {
-      Logger.error("Task actor got an unhandled message: " + m)
     }
 
+    case m @ TaskActor.Messages.RestartDroppedTasks => withVerboseErrorHandler(m) {
+      tasksDao.findAll(
+        nOrFewerAttempts = Some(2),
+        nOrMoreMinutesOld = Some(1)
+      ).foreach { task =>
+        self ! TaskActor.Messages.TaskCreated(task.guid)
+      }
+    }
+
+    case m @ TaskActor.Messages.NotifyFailed => withVerboseErrorHandler(m) {
+      val errors = tasksDao.findAll(
+        nOrMoreAttempts = Some(2)
+      ).map { task =>
+        val errorType = task.data match {
+          case TaskDataDiffVersion(a, b) => s"TaskDataDiffVersion($a, $b)"
+          case TaskDataIndexApplication(guid) => s"TaskDataIndexApplication($guid)"
+          case TaskDataSyncService(guid) => s"TaskDataSyncService($guid)"
+          case TaskDataUndefinedType(desc) => s"TaskDataUndefinedType($desc)"
+        }
+
+        val errorMsg = Text.truncate(task.lastError.getOrElse("No information on error"), 500)
+        s"$errorType task ${task.guid}: $errorMsg"
+      }
+      emails.sendErrors(
+        subject = "One or more tasks failed",
+        errors = errors
+      )
+    }
+
+    case m @ TaskActor.Messages.PurgeOldTasks => withVerboseErrorHandler(m) {
+      tasksDao.findAll(
+        isDeleted = Some(true),
+        deletedAtLeastNDaysAgo = Some(NumberDaysBeforePurge)
+      ).foreach { task =>
+        tasksDao.purge(usersDao.AdminUser, task)
+      }
+    }
+
+    case m: Any => logUnhandledMessage(m)
   }
 
   private[this] def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID) {
-    VersionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
-      VersionsDao.findByGuid(Authorization.All, newVersionGuid).map { newVersion =>
+    versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
+      versionsDao.findByGuid(Authorization.All, newVersionGuid).map { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
           case Nil => {
             // No-op
           }
           case diffs => {
-            ChangesDao.upsert(
-              createdBy = UsersDao.AdminUser,
+            changesDao.upsert(
+              createdBy = usersDao.AdminUser,
               fromVersion = oldVersion,
               toVersion = newVersion,
               differences = diffs
@@ -147,9 +149,9 @@ class TaskActor extends Actor {
         }
       }
 
-      ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
-        OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
-          Emails.deliver(
+      applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
+        organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
+          emails.deliver(
             context = Emails.Context.Application(application),
             org = org,
             publication = Publication.VersionsCreate,
@@ -170,10 +172,10 @@ class TaskActor extends Actor {
   def processTask[T](task: Task, attempt: Try[T]) {
     attempt match {
       case Success(_) => {
-        TasksDao.softDelete(UsersDao.AdminUser, task)
+        tasksDao.softDelete(usersDao.AdminUser, task)
       }
       case Failure(ex) => {
-        TasksDao.recordError(UsersDao.AdminUser, task, ex)
+        tasksDao.recordError(usersDao.AdminUser, task, ex)
       }
     }
   }

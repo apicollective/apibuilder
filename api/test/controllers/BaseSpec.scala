@@ -8,18 +8,18 @@ import play.api.test._
 import play.api.test.Helpers._
 import org.scalatestplus.play._
 
-abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
+abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   implicit override lazy val port = 9010
   implicit override lazy val app: FakeApplication = FakeApplication()
 
-  lazy val TestUser = UsersDao.create(createUserForm())
+  lazy val TestUser = usersDao.create(createUserForm())
 
   lazy val apiToken = {
-    val token = TokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
-    TokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
+    val token = tokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
+    tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
 
   lazy val apiAuth = com.bryzek.apidoc.api.v0.Authorization.Basic(apiToken)

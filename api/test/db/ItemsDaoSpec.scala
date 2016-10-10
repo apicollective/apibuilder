@@ -16,7 +16,7 @@ class ItemsDaoSpec extends FunSpec with Matchers with util.TestApplication {
     content: String = "test"
   ): Item = {
     val app = Util.createApplication(org = org)
-    ItemsDao.upsert(
+    itemsDao.upsert(
       guid = guid,
       detail = ApplicationSummary(
         guid = app.guid,
@@ -28,31 +28,31 @@ class ItemsDaoSpec extends FunSpec with Matchers with util.TestApplication {
       content = content
     )
 
-    ItemsDao.findAll(Authorization.All, guid = Some(guid)).headOption.getOrElse {
+    itemsDao.findAll(Authorization.All, guid = Some(guid)).headOption.getOrElse {
       sys.error("Failed to upsert item")
     }
   }
 
   it("upsert") {
     val item = upsertItem()
-    ItemsDao.findAll(Authorization.All, guid = Some(item.guid)).map(_.guid) should be(Seq(item.guid))
+    itemsDao.findAll(Authorization.All, guid = Some(item.guid)).map(_.guid) should be(Seq(item.guid))
   }
 
   it("upsert updates content") {
     val guid = UUID.randomUUID
     
     upsertItem(guid = guid, label = "foo")
-    ItemsDao.findAll(Authorization.All, guid = Some(guid)).map(_.label) should be(Seq("foo"))
+    itemsDao.findAll(Authorization.All, guid = Some(guid)).map(_.label) should be(Seq("foo"))
 
     upsertItem(guid = guid, label = "bar")
-    ItemsDao.findAll(Authorization.All, guid = Some(guid)).map(_.label) should be(Seq("bar"))
+    itemsDao.findAll(Authorization.All, guid = Some(guid)).map(_.label) should be(Seq("bar"))
   }
 
   it("delete") {
     val item = upsertItem()
-    ItemsDao.findAll(Authorization.All, guid = Some(item.guid)).map(_.guid) should be(Seq(item.guid))
-    ItemsDao.delete(item.guid)
-    ItemsDao.findAll(Authorization.All, guid = Some(item.guid)).map(_.guid) should be(Nil)
+    itemsDao.findAll(Authorization.All, guid = Some(item.guid)).map(_.guid) should be(Seq(item.guid))
+    itemsDao.delete(item.guid)
+    itemsDao.findAll(Authorization.All, guid = Some(item.guid)).map(_.guid) should be(Nil)
   }
 
   describe("findAll") {
@@ -63,18 +63,18 @@ class ItemsDaoSpec extends FunSpec with Matchers with util.TestApplication {
         val guid = UUID.randomUUID
     
         upsertItem(guid = guid, content = "foo")
-        ItemsDao.findAll(Authorization.All, guid = Some(guid), q = Some("foo")).map(_.guid) should be(Seq(guid))
+        itemsDao.findAll(Authorization.All, guid = Some(guid), q = Some("foo")).map(_.guid) should be(Seq(guid))
 
         upsertItem(guid = guid, content = "bar")
-        ItemsDao.findAll(Authorization.All, guid = Some(guid), q = Some("foo")).map(_.guid) should be(Nil)
-        ItemsDao.findAll(Authorization.All, guid = Some(guid), q = Some("bar")).map(_.guid) should be(Seq(guid))
+        itemsDao.findAll(Authorization.All, guid = Some(guid), q = Some("foo")).map(_.guid) should be(Nil)
+        itemsDao.findAll(Authorization.All, guid = Some(guid), q = Some("bar")).map(_.guid) should be(Seq(guid))
       }
 
       it("orgKey") {
         val org = Util.createOrganization()
         val item = upsertItem(org = org)
-        ItemsDao.findAll(Authorization.All, q = Some(s"org:${org.key}")).map(_.guid) should be(Seq(item.guid))
-        ItemsDao.findAll(Authorization.All, q = Some(s"org:${org.key}2")).map(_.guid) should be(Nil)
+        itemsDao.findAll(Authorization.All, q = Some(s"org:${org.key}")).map(_.guid) should be(Seq(item.guid))
+        itemsDao.findAll(Authorization.All, q = Some(s"org:${org.key}2")).map(_.guid) should be(Nil)
       }
     }
 
@@ -85,9 +85,9 @@ class ItemsDaoSpec extends FunSpec with Matchers with util.TestApplication {
       val item2 = upsertItem(label = "b", content = keyword)
       val item3 = upsertItem(label = "C", content = keyword)
 
-      ItemsDao.findAll(Authorization.All, q = Some(keyword), limit = 1, offset = 0).map(_.guid) should be(Seq(item1.guid))
-      ItemsDao.findAll(Authorization.All, q = Some(keyword), limit = 2, offset = 0).map(_.guid) should be(Seq(item1.guid, item2.guid))
-      ItemsDao.findAll(Authorization.All, q = Some(keyword), limit = 2, offset = 2).map(_.guid) should be(Seq(item3.guid))
+      itemsDao.findAll(Authorization.All, q = Some(keyword), limit = 1, offset = 0).map(_.guid) should be(Seq(item1.guid))
+      itemsDao.findAll(Authorization.All, q = Some(keyword), limit = 2, offset = 0).map(_.guid) should be(Seq(item1.guid, item2.guid))
+      itemsDao.findAll(Authorization.All, q = Some(keyword), limit = 2, offset = 2).map(_.guid) should be(Seq(item3.guid))
     }
 
   }

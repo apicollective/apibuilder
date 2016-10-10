@@ -2,13 +2,17 @@ package controllers
 
 import com.bryzek.apidoc.api.v0.models.EmailVerificationConfirmationForm
 import com.bryzek.apidoc.api.v0.models.json._
+import db.EmailVerificationsDao
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 import lib.Validation
-import db.{EmailVerificationsDao, EmailVerificationConfirmationsDao}
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
-object EmailVerificationConfirmationForms extends Controller {
+@Singleton
+class EmailVerificationConfirmationForms @Inject() (
+  emailVerificationsDao: EmailVerificationsDao
+) extends Controller {
 
   def post() = AnonymousRequest(parse.json) { request =>
     request.body.validate[EmailVerificationConfirmationForm] match {
@@ -17,13 +21,13 @@ object EmailVerificationConfirmationForms extends Controller {
       }
       case s: JsSuccess[EmailVerificationConfirmationForm] => {
         val token = s.get.token
-        EmailVerificationsDao.findByToken(token) match {
+        emailVerificationsDao.findByToken(token) match {
           case None => Conflict(Json.toJson("Token not found or has already expired"))
           case Some(verification) => {
-            if (EmailVerificationsDao.isExpired(verification)) {
+            if (emailVerificationsDao.isExpired(verification)) {
               Conflict(Json.toJson("Token is expired"))
             } else {
-              EmailVerificationsDao.confirm(request.user, verification)
+              emailVerificationsDao.confirm(request.user, verification)
               NoContent
             }
           }

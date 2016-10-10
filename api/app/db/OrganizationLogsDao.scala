@@ -2,16 +2,18 @@ package db
 
 import com.bryzek.apidoc.api.v0.models.{Organization, User}
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-case class OrganizationLogsDao(guid: String, organization_guid: UUID, message: String)
+case class OrganizationLog(guid: String, organization_guid: UUID, message: String)
 
 /**
  * Journal of changes to organizations
  */
-object OrganizationLogsDao {
+@Singleton
+class OrganizationLogsDao @Inject() () {
 
   private[this] val BaseQuery = """
     select guid::varchar, organization_guid, message
@@ -26,14 +28,14 @@ object OrganizationLogsDao {
     ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
   """
 
-  def create(createdBy: User, organization: Organization, message: String): OrganizationLogsDao = {
+  def create(createdBy: User, organization: Organization, message: String): OrganizationLog = {
     DB.withConnection { implicit c =>
       create(c, createdBy, organization, message)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, message: String): OrganizationLogsDao = {
-    val log = OrganizationLogsDao(
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, message: String): OrganizationLog = {
+    val log = OrganizationLog(
       guid = UUID.randomUUID.toString,
       organization_guid = organization.guid,
       message = message
@@ -54,7 +56,7 @@ object OrganizationLogsDao {
     organization: Option[Organization],
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[OrganizationLogsDao] = {
+  ): Seq[OrganizationLog] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       authorization.organizationFilter().map(v => "and " + v),
@@ -68,9 +70,11 @@ object OrganizationLogsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*)().toList.map { row =>
-        OrganizationLogsDao(guid = row[String]("guid"),
-                        organization_guid = row[UUID]("organization_guid"),
-                        message = row[String]("message"))
+        OrganizationLog(
+          guid = row[String]("guid"),
+          organization_guid = row[UUID]("organization_guid"),
+          message = row[String]("message")
+        )
       }.toSeq
     }
   }

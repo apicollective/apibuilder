@@ -4,14 +4,15 @@ import db.{Authorization, WatchesDao, FullWatchForm}
 import lib.Validation
 import com.bryzek.apidoc.api.v0.models.{User, Watch, WatchForm}
 import com.bryzek.apidoc.api.v0.models.json._
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-object Watches extends Controller with Watches
-
-trait Watches {
-  this: Controller =>
+@Singleton
+class Watches @Inject() (
+  watchesDao: WatchesDao
+) extends Controller {
 
   def get(
     guid: Option[UUID],
@@ -21,7 +22,7 @@ trait Watches {
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
-    val watches = WatchesDao.findAll(
+    val watches = watchesDao.findAll(
       request.authorization,
       guid = guid,
       userGuid = userGuid,
@@ -34,7 +35,7 @@ trait Watches {
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>
-    WatchesDao.findByUserAndGuid(request.user, guid) match {
+    watchesDao.findByUserAndGuid(request.user, guid) match {
       case None => NotFound
       case Some(watch) => Ok(Json.toJson(watch))
     }
@@ -45,7 +46,7 @@ trait Watches {
     organizationKey: String,
     applicationKey: String
   ) = Authenticated { request =>
-    WatchesDao.findAll(
+    watchesDao.findAll(
       request.authorization,
       userGuid = userGuid,
       organizationKey =  Some(organizationKey),
@@ -66,7 +67,7 @@ trait Watches {
         val form = FullWatchForm(request.user, s.get)
         form.validate match {
           case Nil => {
-            val watch = WatchesDao.upsert(request.user, form)
+            val watch = watchesDao.upsert(request.user, form)
             Created(Json.toJson(watch))
           }
           case errors => {
@@ -78,8 +79,8 @@ trait Watches {
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    WatchesDao.findByUserAndGuid(request.user, guid).map { watch =>
-      WatchesDao.softDelete(request.user, watch)
+    watchesDao.findByUserAndGuid(request.user, guid).map { watch =>
+      watchesDao.softDelete(request.user, watch)
     }
     NoContent
   }

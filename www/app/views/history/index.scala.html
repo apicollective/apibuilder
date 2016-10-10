@@ -39,9 +39,7 @@
          <tr>
            <td>@lib.DateHelper.shortDate(tpl.timeZone, change.changedAt)</td>
            <td>@change.changedBy.nickname</td>
-           <td>@change.organization.key/@change.application.key:
-             <a href="@routes.Versions.show(change.organization.key, change.application.key, change.fromVersion.version)">@change.fromVersion.version</a> -
-             <a href="@routes.Versions.show(change.organization.key, change.application.key, change.toVersion.version)">@change.toVersion.version</a>
+           <td>@change.organization.key/@change.application.key:<a href="@routes.Versions.show(change.organization.key, change.application.key, change.toVersion.version)">@change.toVersion.version</a>
            </td>
            <td>
              @{change.diff match {

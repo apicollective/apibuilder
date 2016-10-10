@@ -10,12 +10,16 @@ case class VersionValidator(
   existingApplicationKey: Option[String] = None
 ) {
 
+  // TODO: Inject directly
+  private[this] def applicationsDao = play.api.Play.current.injector.instanceOf[ApplicationsDao]
+  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
+
   val validate: Seq[String] = validateAuthorization() ++ validateKey()
 
-  private lazy val existing = existingApplicationKey.flatMap { ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, _) }
+  private lazy val existing = existingApplicationKey.flatMap { applicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, _) }
 
   private[this] def validateAuthorization(): Seq[String] = {
-    MembershipsDao.isUserMember(user, org) match {
+    membershipsDao.isUserMember(user, org) match {
       case true => Seq.empty
       case false => Seq("You must be a member of this organization to update applications")
     }
@@ -24,7 +28,7 @@ case class VersionValidator(
   private[this] def validateKey(): Seq[String] = {
     existing match {
       case None => {
-        ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, newApplicationKey) match {
+        applicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, newApplicationKey) match {
           case None => Seq.empty
           case Some(app) => Seq(s"An application with key[$newApplicationKey] already exists")
         }

@@ -9,6 +9,8 @@ import db.{Authorization, VersionsDao}
   */
 case class DatabaseServiceFetcher(authorization: Authorization) extends ServiceFetcher {
 
+  private[this] def versionsDao = play.api.Play.current.injector.instanceOf[VersionsDao]
+
   override def fetch(uri: String): Service = {
     ServiceUri.parse(uri) match {
 
@@ -17,7 +19,7 @@ case class DatabaseServiceFetcher(authorization: Authorization) extends ServiceF
       }
 
       case Some(serviceUri) => {
-        VersionsDao.findVersion(authorization, serviceUri.org, serviceUri.app, serviceUri.version).headOption.map(_.service).getOrElse {
+        versionsDao.findVersion(authorization, serviceUri.org, serviceUri.app, serviceUri.version).headOption.map(_.service).getOrElse {
           sys.error(s"Error while fetching service for URI[$uri] - could not find [${serviceUri.org}/${serviceUri.app}:${serviceUri.version}]")
         }
       }

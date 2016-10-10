@@ -3,6 +3,7 @@ package db
 import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, User, Version, Visibility}
 import com.bryzek.apidoc.common.v0.models.Reference
 import com.bryzek.apidoc.internal.v0.models.TaskDataIndexApplication
+import javax.inject.{Inject, Named, Singleton}
 import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._
@@ -10,7 +11,12 @@ import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-object ApplicationsDao {
+@Singleton
+class ApplicationsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  organizationsDao: OrganizationsDao,
+  tasksDao: TasksDao
+) {
 
   private[this] val BaseQuery = s"""
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
@@ -65,12 +71,12 @@ object ApplicationsDao {
     app: Application,
     form: MoveForm
   ): Seq[Error] = {
-    val orgErrors = OrganizationsDao.findByKey(authorization, form.orgKey) match {
+    val orgErrors = organizationsDao.findByKey(authorization, form.orgKey) match {
       case None => Seq(s"Organization[${form.orgKey}] not found")
       case Some(newOrg) => Nil
     }
 
-    val appErrors = ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, form.orgKey, app.key) match {
+    val appErrors = findByOrganizationKeyAndApplicationKey(Authorization.All, form.orgKey, app.key) match {
       case None => Nil
       case Some(existing) => {
         if (existing.guid == app.guid) {
@@ -134,7 +140,7 @@ object ApplicationsDao {
     app: Application,
     form: ApplicationForm
   ): Application = {
-    val org = OrganizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.organization.guid).getOrElse {
+    val org = organizationsDao.findByGuid(Authorization.User(updatedBy.guid), app.organization.guid).getOrElse {
       sys.error(s"User[${updatedBy.guid}] does not have access to org[${app.organization.guid}]")
     }
     val errors = validate(org, form, Some(app))
@@ -168,7 +174,7 @@ object ApplicationsDao {
       app
 
     } else {
-      OrganizationsDao.findByKey(Authorization.All, form.orgKey) match {
+      organizationsDao.findByKey(Authorization.All, form.orgKey) match {
         case None => sys.error(s"Could not find organization with key[${form.orgKey}]")
         case Some(newOrg) => {
           withTasks(updatedBy, app.guid, { implicit c =>
@@ -242,7 +248,7 @@ object ApplicationsDao {
       ).execute()
     })
 
-    global.Actors.mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
+    mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
     
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create application")
@@ -256,7 +262,7 @@ object ApplicationsDao {
   }
 
   def canUserUpdate(user: User, app: Application): Boolean = {
-    ApplicationsDao.findAll(Authorization.User(user.guid), key = Some(app.key)).headOption match {
+    findAll(Authorization.User(user.guid), key = Some(app.key)).headOption match {
       case None => false
       case Some(a) => true
     }
@@ -348,9 +354,9 @@ object ApplicationsDao {
   ) {
     val taskGuid = DB.withTransaction { implicit c =>
       f(c)
-      TasksDao.insert(c, user, TaskDataIndexApplication(guid))
+      tasksDao.insert(c, user, TaskDataIndexApplication(guid))
     }
-    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+    mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
   }
 
 }

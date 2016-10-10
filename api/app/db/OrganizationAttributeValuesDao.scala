@@ -4,12 +4,16 @@ import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeVa
 import com.bryzek.apidoc.common.v0.models.Audit
 import lib.Validation
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object OrganizationAttributeValuesDao {
+@Singleton
+class OrganizationAttributeValuesDao @Inject() (
+  attributesDao: AttributesDao
+) {
 
   private[db] val BaseQuery = s"""
     select organization_attribute_values.guid,
@@ -43,7 +47,7 @@ object OrganizationAttributeValuesDao {
     existing: Option[AttributeValue]
   ): Seq[com.bryzek.apidoc.api.v0.models.Error] = {
 
-    val attributeErrors = AttributesDao.findByName(attribute.name) match {
+    val attributeErrors = attributesDao.findByName(attribute.name) match {
       case None => Seq("Attribute not found")
       case Some(_) => Nil
     }
@@ -51,7 +55,7 @@ object OrganizationAttributeValuesDao {
     val valueErrors = if (form.value.trim.isEmpty) {
       Seq(s"Value is required")
     } else {
-      OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
+      findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
         case None => Seq.empty
         case Some(found) => {
           Some(found.guid) == existing.map(_.guid) match {

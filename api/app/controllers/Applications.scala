@@ -3,12 +3,17 @@ package controllers
 import com.bryzek.apidoc.api.v0.models.{ApplicationForm, MoveForm}
 import com.bryzek.apidoc.api.v0.models.json._
 import db.{Authorization, OrganizationsDao, ApplicationsDao}
+import javax.inject.{Inject, Singleton}
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-object Applications extends Controller {
+@Singleton
+class Applications @Inject() (
+  applicationsDao: ApplicationsDao,
+  organizationsDao: OrganizationsDao
+) extends Controller {
 
   def get(
     orgKey: String,
@@ -19,7 +24,7 @@ object Applications extends Controller {
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
-    val applications = ApplicationsDao.findAll(
+    val applications = applicationsDao.findAll(
       request.authorization,
       orgKey = Some(orgKey),
       name = name,
@@ -33,7 +38,7 @@ object Applications extends Controller {
   }
 
   def post(orgKey: String) = Authenticated(parse.json) { request =>
-    OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
+    organizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
         request.body.validate[ApplicationForm] match {
@@ -42,9 +47,9 @@ object Applications extends Controller {
           }
           case s: JsSuccess[ApplicationForm] => {
             val form = s.get
-            ApplicationsDao.validate(org, form) match {
+            applicationsDao.validate(org, form) match {
               case Nil => {
-                val app = ApplicationsDao.create(request.user, org, form)
+                val app = applicationsDao.create(request.user, org, form)
                 Ok(Json.toJson(app))
               }
               case errors => {
@@ -58,7 +63,7 @@ object Applications extends Controller {
   }
 
   def putByApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
-    OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
+    organizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
         request.body.validate[ApplicationForm] match {
@@ -67,12 +72,12 @@ object Applications extends Controller {
           }
           case s: JsSuccess[ApplicationForm] => {
             val form = s.get
-            ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
+            applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
               case None => Conflict(Json.toJson(Validation.error(s"application[$applicationKey] not found or inaccessible")))
               case Some(existing) => {
-                ApplicationsDao.validate(org, form, Some(existing)) match {
+                applicationsDao.validate(org, form, Some(existing)) match {
                   case Nil => {
-                    val app = ApplicationsDao.update(request.user, existing, form)
+                    val app = applicationsDao.update(request.user, existing, form)
                     Ok(Json.toJson(app))
                   }
                   case errors => {
@@ -88,20 +93,20 @@ object Applications extends Controller {
   }
 
   def deleteByApplicationKey(orgKey: String, applicationKey: String) = Authenticated { request =>
-    OrganizationsDao.findByKey(request.authorization, orgKey) map { org =>
+    organizationsDao.findByKey(request.authorization, orgKey) map { org =>
       request.requireMember(org)
-      ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
-        ApplicationsDao.softDelete(request.user, application)
+      applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
+        applicationsDao.softDelete(request.user, application)
       }
     }
     NoContent
   }
 
   def postMoveByApplicationKey(orgKey: String, applicationKey: String) = Authenticated(parse.json) { request =>
-    OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
+    organizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => NotFound
       case Some(org) => {
-        ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
+        applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, org.key, applicationKey) match {
           case None => NotFound
           case Some(app) => {
             request.body.validate[MoveForm] match {
@@ -110,9 +115,9 @@ object Applications extends Controller {
               }
               case s: JsSuccess[MoveForm] => {
                 val form = s.get
-                ApplicationsDao.validateMove(request.authorization, app, form) match {
+                applicationsDao.validateMove(request.authorization, app, form) match {
                   case Nil => {
-                    val updatedApp = ApplicationsDao.move(request.user, app, form)
+                    val updatedApp = applicationsDao.move(request.user, app, form)
                     Ok(Json.toJson(updatedApp))
                   }
                   case errors => {

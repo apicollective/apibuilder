@@ -5,12 +5,12 @@ import com.bryzek.apidoc.api.v0.models.{GeneratorForm, GeneratorService, Generat
 import com.bryzek.apidoc.generator.v0.models.Generator
 import java.util.UUID
 
-object Util {
+object Util extends util.Daos {
 
   def createGeneratorService(
     form: GeneratorServiceForm = createGeneratorServiceForm()
   ): GeneratorService = {
-    ServicesDao.create(db.Util.createdBy, form)
+    servicesDao.create(db.Util.createdBy, form)
   }
 
   def createGeneratorServiceForm(
@@ -26,8 +26,8 @@ object Util {
   ): GeneratorWithService = {
     val form = createGeneratorForm(service = service)
 
-    GeneratorsDao.upsert(db.Util.createdBy, form)
-    GeneratorsDao.findAll(
+    generatorsDao.upsert(db.Util.createdBy, form)
+    generatorsDao.findAll(
       Authorization.All,
       serviceGuid = Some(service.guid),
       key = Some(form.generator.key),

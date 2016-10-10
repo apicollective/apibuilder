@@ -2,7 +2,7 @@ package util
 
 import play.api.{ApplicationLoader, Environment, Mode, Play}
 
-trait TestApplication {
+trait TestApplication extends Daos {
 
   private[this] val env = Environment(new java.io.File("."), this.getClass.getClassLoader, Mode.Test)
   private[this] val context = ApplicationLoader.createContext(env)

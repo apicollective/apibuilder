@@ -6,6 +6,7 @@ import lib.Validation
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+import javax.inject.{Inject, Singleton}
 import java.util.UUID
 import org.postgresql.util.PSQLException
 import scala.util.{Try, Success, Failure}
@@ -15,14 +16,19 @@ case class FullWatchForm(
   form: WatchForm
 ) {
 
+  // TODO: Inject directly
+  private[this] def applicationsDao = play.api.Play.current.injector.instanceOf[ApplicationsDao]
+  private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
+  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
+
   private[this] val auth = Authorization.User(createdBy.guid)
 
-  val org: Option[Organization] = OrganizationsDao.findByKey(auth, form.organizationKey)
+  val org: Option[Organization] = organizationsDao.findByKey(auth, form.organizationKey)
   val application: Option[Application] = org.flatMap { o =>
-    ApplicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
+    applicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
   }
 
-  val user = UsersDao.findByGuid(form.userGuid)
+  val user = usersDao.findByGuid(form.userGuid)
 
   lazy val validate: Seq[Error] = {
     val applicationKeyErrors = application match {
@@ -40,7 +46,12 @@ case class FullWatchForm(
 
 }
 
-object WatchesDao {
+@Singleton
+class WatchesDao @Inject() (
+  applicationsDao: ApplicationsDao,
+  organizationsDao: OrganizationsDao,
+  usersDao: UsersDao
+) {
 
   private[this] val BaseQuery = s"""
     select watches.guid,
@@ -170,9 +181,9 @@ object WatchesDao {
   ): Watch = {
     Watch(
       guid = row[UUID]("guid"),
-      user = UsersDao.fromRow(row, Some("user")),
-      organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
-      application = ApplicationsDao.fromRow(row, Some("application")),
+      user = usersDao.fromRow(row, Some("user")),
+      organization = organizationsDao.summaryFromRow(row, Some("organization")),
+      application = applicationsDao.fromRow(row, Some("application")),
       audit = AuditsDao.fromRowCreation(row)
     )
   }

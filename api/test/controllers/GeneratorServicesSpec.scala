@@ -23,7 +23,7 @@ class GeneratorServicesSpec extends BaseSpec {
     // TODO: Switch to REST API. But first need to resolve dependency
     // on fetching the list of generators from the service.
     // await(client.generatorServices.post(form))
-    ServicesDao.create(TestUser, form)
+    servicesDao.create(TestUser, form)
   }
 
   def createGeneratorServiceForm(

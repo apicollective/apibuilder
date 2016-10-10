@@ -6,13 +6,20 @@ import com.bryzek.apidoc.common.v0.models.{Audit, ReferenceGuid}
 import com.bryzek.apidoc.common.v0.models.json._
 import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.DateTime
 
-object OrganizationsDao {
+@Singleton
+class OrganizationsDao @Inject() (
+  organizationDomainsDao: OrganizationDomainsDao,
+  organizationLogsDao: OrganizationLogsDao
+) {
+  // TODO: resolve cicrular dependency
+  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
 
   private[this] val DefaultVisibility = Visibility.Organization
 
@@ -58,7 +65,7 @@ object OrganizationsDao {
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")
     } else {
-      OrganizationsDao.findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
+      findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
         case None => Seq.empty
         case Some(org: Organization) => {
           if (existing.map(_.guid) == Some(org.guid)) {
@@ -78,7 +85,7 @@ object OrganizationsDao {
       case Some(key) => {
         UrlKey.validate(key) match {
           case Nil => {
-            OrganizationsDao.findByKey(Authorization.All, key) match {
+            findByKey(Authorization.All, key) match {
               case None => Seq.empty
               case Some(found) => {
                 if (existing.map(_.guid) == Some(found.guid)) {
@@ -94,7 +101,7 @@ object OrganizationsDao {
       }
     }
 
-    val namespaceErrors = OrganizationsDao.findAll(Authorization.All, namespace = Some(form.namespace.trim), limit = 1).headOption match {
+    val namespaceErrors = findAll(Authorization.All, namespace = Some(form.namespace.trim), limit = 1).headOption match {
       case None => {
         isDomainValid(form.namespace.trim) match {
           case true => Seq.empty
@@ -132,15 +139,15 @@ object OrganizationsDao {
   def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
     DB.withTransaction { implicit c =>
       val org = create(c, user, form)
-      MembershipsDao.create(c, user, org, user, Role.Admin)
-      OrganizationLogsDao.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
+      membershipsDao.create(c, user, org, user, Role.Admin)
+      organizationLogsDao.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
       org
     }
   }
 
   def findByEmailDomain(email: String): Option[Organization] = {
     Misc.emailDomain(email).flatMap { domain =>
-      OrganizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
+      organizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
         findByGuid(Authorization.All, domain.organization_guid)
       }
     }
@@ -198,7 +205,7 @@ object OrganizationsDao {
     ).execute()
 
     org.domains.foreach { domain =>
-      OrganizationDomainsDao.create(c, user, org, domain.name)
+      organizationDomainsDao.create(c, user, org, domain.name)
     }
 
     org

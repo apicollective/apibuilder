@@ -1,9 +1,9 @@
 package actors
 
-import lib.Role
+import akka.actor.{Actor, ActorLogging, ActorSystem}
 import db.{EmailVerificationsDao, MembershipRequestsDao, OrganizationsDao, UsersDao}
+import lib.Role
 import play.api.Logger
-import akka.actor.Actor
 import java.util.UUID
 
 object UserActor {
@@ -12,32 +12,24 @@ object UserActor {
     case class UserCreated(guid: UUID)
   }
 
-  def userCreated(guid: UUID) {
-    UsersDao.findByGuid(guid).map { user =>
-      OrganizationsDao.findByEmailDomain(user.email).foreach { org =>
-        MembershipRequestsDao.upsert(user, org, user, Role.Member)
-      }
-
-      EmailVerificationsDao.create(user, user, user.email)
-    }
-  }
-
 }
 
-class UserActor extends Actor {
+@javax.inject.Singleton
+class UserActor @javax.inject.Inject() (
+  system: ActorSystem,
+  usersDao: UsersDao
+) extends Actor with ActorLogging with ErrorHandler {
+
+  implicit val ec = system.dispatchers.lookup("user-actor-context")
 
   def receive = {
 
-    case UserActor.Messages.UserCreated(guid) => Util.withVerboseErrorHandler(
-      s"UserActor.Messages.UserCreated($guid)", {
-        UserActor.userCreated(guid)
-      }
-    )
-
-    case m: Any => {
-      Logger.error("Email actor got an unhandled message: " + m)
+    case m @ UserActor.Messages.UserCreated(guid) => withVerboseErrorHandler(m) {
+      usersDao.processUserCreated(guid)
     }
 
-  }
-}
+    case m: Any => logUnhandledMessage(m)
 
+  }
+
+}

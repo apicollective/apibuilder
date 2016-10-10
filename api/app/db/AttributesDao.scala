@@ -4,12 +4,14 @@ import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeForm, User}
 import com.bryzek.apidoc.common.v0.models.Audit
 import lib.{Validation, UrlKey}
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object AttributesDao {
+@Singleton
+class AttributesDao @Inject() () {
 
   private[db] val BaseQuery = s"""
     select attributes.guid,
@@ -44,7 +46,7 @@ object AttributesDao {
     } else {
       UrlKey.validate(form.name.trim, "Name") match {
         case Nil => {
-          AttributesDao.findByName(form.name) match {
+          findByName(form.name) match {
             case None => Seq.empty
             case Some(_) => {
               Seq("Attribute with this name already exists")

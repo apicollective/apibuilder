@@ -7,7 +7,7 @@ import java.util.UUID
 class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   private[this] def getApplication(version: Version): Application = {
-    ApplicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {
+    applicationsDao.findByGuid(Authorization.All, version.application.guid).getOrElse {
       sys.error("Could not find application for version: " + version)
     }
   }
@@ -20,9 +20,9 @@ class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
     val fromVersion = Util.createVersion(application = app, version = "1.0.0")
     val toVersion = Util.createVersion(application = app, version = "1.0.1")
     val diff = DiffBreaking(description)
-    ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
+    changesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
 
-    ChangesDao.findAll(
+    changesDao.findAll(
       Authorization.All,
       fromVersionGuid = Some(fromVersion.guid)
     ).head
@@ -34,8 +34,8 @@ class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
       val fromVersion = Util.createVersion(version = "1.0.0")
       val toVersion = Util.createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
-      ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Nil)
-      ChangesDao.findAll(
+      changesDao.upsert(Util.createdBy, fromVersion, toVersion, Nil)
+      changesDao.findAll(
         Authorization.All,
         fromVersionGuid = Some(fromVersion.guid)
       ) should be(Nil)
@@ -48,9 +48,9 @@ class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
       val breaking = DiffBreaking("Breaking difference - " + UUID.randomUUID.toString)
       val nonBreaking = DiffNonBreaking("Non breaking difference - " + UUID.randomUUID.toString)
 
-      ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(breaking, nonBreaking))
+      changesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(breaking, nonBreaking))
 
-      val actual = ChangesDao.findAll(
+      val actual = changesDao.findAll(
         Authorization.All,
         fromVersionGuid = Some(fromVersion.guid)
       ).map(_.diff)
@@ -65,10 +65,10 @@ class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
       val toVersion = Util.createVersion(version = "1.0.1", application = getApplication(fromVersion))
 
       val diff = DiffBreaking("Breaking difference - " + UUID.randomUUID.toString)
-      ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff, diff))
-      ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
+      changesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff, diff))
+      changesDao.upsert(Util.createdBy, fromVersion, toVersion, Seq(diff))
 
-      ChangesDao.findAll(
+      changesDao.findAll(
         Authorization.All,
         fromVersionGuid = Some(fromVersion.guid)
       ).map(_.diff) should be(Seq(diff))
@@ -81,7 +81,7 @@ class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
     val toVersion = Util.createVersion(version = "1.0.1")
 
     intercept[AssertionError] {
-      ChangesDao.upsert(Util.createdBy, fromVersion, toVersion, Nil)
+      changesDao.upsert(Util.createdBy, fromVersion, toVersion, Nil)
     }.getMessage should be("assertion failed: Versions must belong to same application")
   }
 
@@ -89,89 +89,89 @@ class ChangesDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
     it("guid") {
       val change = createChange()
-      ChangesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, guid = Some(UUID.randomUUID)) should be(Nil)
+      changesDao.findAll(Authorization.All, guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("organizationGuid") {
       val org = Util.createOrganization()
       val change = createChange(org = org)
-      ChangesDao.findAll(Authorization.All, organizationGuid = Some(UUID.randomUUID)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, organizationGuid = Some(org.guid)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, organizationGuid = Some(UUID.randomUUID)) should be(Nil)
+      changesDao.findAll(Authorization.All, organizationGuid = Some(org.guid)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("organizationKey") {
       val org = Util.createOrganization()
       val change = createChange(org = org)
-      ChangesDao.findAll(Authorization.All, organizationKey = Some(UUID.randomUUID.toString)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, organizationKey = Some(org.key)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, organizationKey = Some(UUID.randomUUID.toString)) should be(Nil)
+      changesDao.findAll(Authorization.All, organizationKey = Some(org.key)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("applicationGuid") {
       val change = createChange()
-      ChangesDao.findAll(Authorization.All, applicationGuid = Some(UUID.randomUUID)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, applicationGuid = Some(change.application.guid)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, applicationGuid = Some(UUID.randomUUID)) should be(Nil)
+      changesDao.findAll(Authorization.All, applicationGuid = Some(change.application.guid)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("applicationKey") {
       val change = createChange()
-      ChangesDao.findAll(Authorization.All, applicationKey = Some(UUID.randomUUID.toString)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, applicationKey = Some(change.application.key)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, applicationKey = Some(UUID.randomUUID.toString)) should be(Nil)
+      changesDao.findAll(Authorization.All, applicationKey = Some(change.application.key)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("fromVersionGuid") {
       val change = createChange()
-      ChangesDao.findAll(Authorization.All, fromVersionGuid = Some(UUID.randomUUID)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, fromVersionGuid = Some(change.fromVersion.guid)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, fromVersionGuid = Some(UUID.randomUUID)) should be(Nil)
+      changesDao.findAll(Authorization.All, fromVersionGuid = Some(change.fromVersion.guid)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("toVersionGuid") {
       val change = createChange()
-      ChangesDao.findAll(Authorization.All, toVersionGuid = Some(UUID.randomUUID)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, toVersionGuid = Some(change.toVersion.guid)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, toVersionGuid = Some(UUID.randomUUID)) should be(Nil)
+      changesDao.findAll(Authorization.All, toVersionGuid = Some(change.toVersion.guid)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("fromVersion") {
       val change = createChange()
-      ChangesDao.findAll(Authorization.All, fromVersion = Some(UUID.randomUUID.toString)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, guid = Some(change.guid), fromVersion = Some(change.fromVersion.version)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, fromVersion = Some(UUID.randomUUID.toString)) should be(Nil)
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), fromVersion = Some(change.fromVersion.version)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("toVersion") {
       val change = createChange()
-      ChangesDao.findAll(Authorization.All, toVersion = Some(UUID.randomUUID.toString)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, guid = Some(change.guid), toVersion = Some(change.toVersion.version)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, toVersion = Some(UUID.randomUUID.toString)) should be(Nil)
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), toVersion = Some(change.toVersion.version)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("description") {
       val desc = UUID.randomUUID.toString
       val change = createChange(description = desc)
-      ChangesDao.findAll(Authorization.All, description = Some(UUID.randomUUID.toString)) should be(Nil)
-      ChangesDao.findAll(Authorization.All, description = Some(desc)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, description = Some(UUID.randomUUID.toString)) should be(Nil)
+      changesDao.findAll(Authorization.All, description = Some(desc)).map(_.guid) should be(Seq(change.guid))
     }
 
     it("limit and offset") {
       val change = createChange()
-      ChangesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1).map(_.guid) should be(Seq(change.guid))
-      ChangesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1, offset = 1).map(_.guid) should be(Nil)
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.All, guid = Some(change.guid), limit = 1, offset = 1).map(_.guid) should be(Nil)
     }
 
     it("authorization") {
       val change = createChange()
 
       val user = Util.createRandomUser()
-      ChangesDao.findAll(Authorization.User(user.guid), guid = Some(change.guid)).map(_.guid) should be(Nil)
-      ChangesDao.findAll(Authorization.PublicOnly, guid = Some(change.guid)).map(_.guid) should be(Nil)
+      changesDao.findAll(Authorization.User(user.guid), guid = Some(change.guid)).map(_.guid) should be(Nil)
+      changesDao.findAll(Authorization.PublicOnly, guid = Some(change.guid)).map(_.guid) should be(Nil)
 
-      val app = ApplicationsDao.findByGuid(Authorization.All, change.application.guid).get
+      val app = applicationsDao.findByGuid(Authorization.All, change.application.guid).get
       Util.createMembership(
-        OrganizationsDao.findByGuid(
+        organizationsDao.findByGuid(
           Authorization.All,
           app.organization.guid
         ).get,
         user
       )
-      ChangesDao.findAll(Authorization.User(Util.createdBy.guid), guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
+      changesDao.findAll(Authorization.User(Util.createdBy.guid), guid = Some(change.guid)).map(_.guid) should be(Seq(change.guid))
     }
   }
 

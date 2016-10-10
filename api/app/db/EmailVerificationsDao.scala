@@ -4,6 +4,7 @@ import com.bryzek.apidoc.api.v0.models.User
 import lib.{Role, TokenGenerator}
 import anorm._
 import anorm.JodaParameterMetaData._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
@@ -17,7 +18,14 @@ case class EmailVerification(
   expiresAt: DateTime
 )
 
-object EmailVerificationsDao {
+@Singleton
+class EmailVerificationsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
+  membershipRequestsDao: MembershipRequestsDao,
+  organizationsDao: OrganizationsDao,
+  usersDao: UsersDao
+) {
 
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 168
@@ -58,7 +66,7 @@ object EmailVerificationsDao {
       ).execute()
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.EmailVerificationCreated(guid)
+    mainActor ! actors.MainActor.Messages.EmailVerificationCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create email verification")
@@ -71,21 +79,20 @@ object EmailVerificationsDao {
 
   def confirm(user: Option[User], verification: EmailVerification) = {
     assert(
-      !EmailVerificationsDao.isExpired(verification),
+      !isExpired(verification),
       "Token for verificationGuid[${verification.guid}] is expired"
     )
 
-    val verificationUser = UsersDao.findByGuid(verification.userGuid).getOrElse {
+    val verificationUser = usersDao.findByGuid(verification.userGuid).getOrElse {
       sys.error(s"User guid[${verification.userGuid}] does not exist for verification[${verification.guid}]")
     }
 
     val updatingUser = user.getOrElse(verificationUser)
 
-    EmailVerificationConfirmationsDao.upsert(updatingUser, verification)
-
-    OrganizationsDao.findByEmailDomain(verification.email).foreach { org =>
-      MembershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, verificationUser, Role.Member).map { request =>
-        MembershipRequestsDao.acceptViaEmailVerification(updatingUser, request, verification.email)
+    emailVerificationConfirmationsDao.upsert(updatingUser, verification)
+    organizationsDao.findByEmailDomain(verification.email).foreach { org =>
+      membershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, verificationUser, Role.Member).map { request =>
+        membershipRequestsDao.acceptViaEmailVerification(updatingUser, request, verification.email)
       }
     }
   }

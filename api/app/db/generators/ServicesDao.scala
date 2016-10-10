@@ -4,13 +4,18 @@ import com.bryzek.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
 import db.{AuditsDao, Authorization, SoftDelete}
 import com.bryzek.apidoc.api.v0.models.{Error, User}
 import core.Util
+import javax.inject.{Inject, Singleton}
 import lib.{Pager, Validation}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-object ServicesDao {
+@Singleton
+class ServicesDao @Inject() (
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
+  generatorsDao: GeneratorsDao
+) {
 
   private[this] val BaseQuery = s"""
     select services.guid,
@@ -32,7 +37,7 @@ object ServicesDao {
   ): Seq[Error] = {
     val uriErrors = Util.validateUri(form.uri.trim) match {
       case Nil => {
-        ServicesDao.findAll(
+        findAll(
           Authorization.All,
           uri = Some(form.uri.trim)
         ).headOption match {
@@ -62,7 +67,7 @@ object ServicesDao {
       ).execute()
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.GeneratorServiceCreated(guid)
+    mainActor ! actors.MainActor.Messages.GeneratorServiceCreated(guid)
 
     findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create service")
@@ -83,12 +88,12 @@ object ServicesDao {
     Pager.eachPage { offset =>
       // Note we do not include offset in the query as each iteration
       // deletes records which will then NOT show up in the next loop
-      GeneratorsDao.findAll(
+      generatorsDao.findAll(
         Authorization.All,
         serviceGuid = Some(service.guid)
       )
     } { gen =>
-      GeneratorsDao.softDelete(deletedBy, gen)
+      generatorsDao.softDelete(deletedBy, gen)
     }
     SoftDelete.delete("generators.services", deletedBy, service.guid)
   }

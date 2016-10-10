@@ -4,11 +4,17 @@ import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeVa
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
 import db.{AttributesDao, Authorization, OrganizationsDao, OrganizationAttributeValuesDao}
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-object Organizations extends Controller {
+@Singleton
+class Organizations @Inject() (
+  attributesDao: AttributesDao,
+  organizationsDao: OrganizationsDao,
+  organizationAttributeValuesDao: OrganizationAttributeValuesDao
+) extends Controller {
 
   def get(
     guid: Option[UUID],
@@ -21,7 +27,7 @@ object Organizations extends Controller {
   ) = AnonymousRequest { request =>
     Ok(
       Json.toJson(
-        OrganizationsDao.findAll(
+        organizationsDao.findAll(
           request.authorization,
           userGuid = userGuid,
           guid = guid,
@@ -36,7 +42,7 @@ object Organizations extends Controller {
   }
 
   def getByKey(key: String) = AnonymousRequest { request =>
-    OrganizationsDao.findByKey(request.authorization, key) match {
+    organizationsDao.findByKey(request.authorization, key) match {
       case None => NotFound
       case Some(org) => Ok(Json.toJson(org))
     }
@@ -49,9 +55,9 @@ object Organizations extends Controller {
       }
       case s: JsSuccess[OrganizationForm] => {
         val form = s.get
-        val errors = OrganizationsDao.validate(form)
+        val errors = organizationsDao.validate(form)
         if (errors.isEmpty) {
-          val org = OrganizationsDao.createWithAdministrator(request.user, form)
+          val org = organizationsDao.createWithAdministrator(request.user, form)
           Ok(Json.toJson(org))
         } else {
           Conflict(Json.toJson(errors))
@@ -66,13 +72,13 @@ object Organizations extends Controller {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[OrganizationForm] => { 
-        OrganizationsDao.findByKey(request.authorization, key) match {
+        organizationsDao.findByKey(request.authorization, key) match {
           case None => NotFound
           case Some(existing) => {
             val form = s.get
-            val errors = OrganizationsDao.validate(form, Some(existing))
+            val errors = organizationsDao.validate(form, Some(existing))
             if (errors.isEmpty) {
-              val org = OrganizationsDao.update(request.user, existing, form)
+              val org = organizationsDao.update(request.user, existing, form)
               Ok(Json.toJson(org))
             } else {
               Conflict(Json.toJson(errors))
@@ -84,9 +90,9 @@ object Organizations extends Controller {
   }
 
   def deleteByKey(key: String) = Authenticated { request =>
-    OrganizationsDao.findByUserAndKey(request.user, key).map { organization =>
+    organizationsDao.findByUserAndKey(request.user, key).map { organization =>
       request.requireAdmin(organization)
-      OrganizationsDao.softDelete(request.user, organization)
+      organizationsDao.softDelete(request.user, organization)
     }
     NoContent
   }
@@ -100,7 +106,7 @@ object Organizations extends Controller {
     withOrganization(request.user, key) { org =>
       Ok(
         Json.toJson(
-          OrganizationAttributeValuesDao.findAll(
+          organizationAttributeValuesDao.findAll(
             organizationGuid = Some(org.guid),
             attributeNames = attributeName.map(n => Seq(n)),
             limit = limit,
@@ -116,7 +122,7 @@ object Organizations extends Controller {
     name: String
   ) = Authenticated { request =>
     withOrganization(request.user, key) { org =>
-      OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
+      organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound
         case Some(attr) => Ok(Json.toJson(attr))
       }
@@ -132,10 +138,10 @@ object Organizations extends Controller {
           }
           case s: JsSuccess[AttributeValueForm] => {
             val form = s.get
-            val existing = OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name)
-            OrganizationAttributeValuesDao.validate(org, AttributeSummary(attr.guid, attr.name), form, existing) match {
+            val existing = organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name)
+            organizationAttributeValuesDao.validate(org, AttributeSummary(attr.guid, attr.name), form, existing) match {
               case Nil => {
-                val value = OrganizationAttributeValuesDao.upsert(request.user, org, attr, form)
+                val value = organizationAttributeValuesDao.upsert(request.user, org, attr, form)
                 existing match {
                   case None => Created(Json.toJson(value))
                   case Some(_) => Ok(Json.toJson(value))
@@ -156,10 +162,10 @@ object Organizations extends Controller {
     name: String
   ) = Authenticated { request =>
     withOrganization(request.user, key) { org =>
-      OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
+      organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(org.guid, name) match {
         case None => NotFound
         case Some(attr) => {
-          OrganizationAttributeValuesDao.softDelete(request.user, attr)
+          organizationAttributeValuesDao.softDelete(request.user, attr)
           NoContent
         }
       }
@@ -172,7 +178,7 @@ object Organizations extends Controller {
   ) (
     f: Organization => Result
   ) = {
-    OrganizationsDao.findByKey(Authorization.User(user.guid), key) match {
+    organizationsDao.findByKey(Authorization.User(user.guid), key) match {
       case None => {
         NotFound
       }
@@ -187,7 +193,7 @@ object Organizations extends Controller {
   ) (
     f: Attribute => Result
   ) = {
-    AttributesDao.findByName(name) match {
+    attributesDao.findByName(name) match {
       case None => {
         NotFound
       }

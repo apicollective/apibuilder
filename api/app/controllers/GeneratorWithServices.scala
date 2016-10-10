@@ -5,11 +5,12 @@ import com.bryzek.apidoc.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
-object GeneratorWithServices extends Controller with GeneratorWithServices
-
-trait GeneratorWithServices {
-  this: Controller =>
+@Singleton
+class GeneratorWithServices @Inject() (
+  generatorsDao: GeneratorsDao
+) extends Controller {
 
   def get(
     guid: Option[UUID],
@@ -20,7 +21,7 @@ trait GeneratorWithServices {
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
-    val generators = GeneratorsDao.findAll(
+    val generators = generatorsDao.findAll(
       request.authorization,
       guid = guid,
       serviceGuid = serviceGuid,
@@ -34,7 +35,7 @@ trait GeneratorWithServices {
   }
 
   def getByKey(key: String) = AnonymousRequest { request =>
-    GeneratorsDao.findAll(
+    generatorsDao.findAll(
       request.authorization,
       key = Some(key),
       limit = 1

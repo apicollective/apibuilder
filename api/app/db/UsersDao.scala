@@ -3,6 +3,7 @@ package db
 import com.bryzek.apidoc.api.v0.models.{Error, User, UserForm, UserUpdateForm}
 import lib.{Constants, Misc, Role, UrlKey, Validation}
 import anorm._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -14,8 +15,21 @@ object UsersDao {
 
   val AdminUserEmail = "admin@apidoc.me"
 
-  lazy val AdminUser = UsersDao.findByEmail(AdminUserEmail).getOrElse {
-    sys.error(s"Failed to find background user w/ email[$AdminUserEmail]")
+}
+
+@Singleton
+class UsersDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef
+) {
+
+  // TODO: Inject directly - here because of circular references
+  private[this] def emailVerificationsDao = play.api.Play.current.injector.instanceOf[EmailVerificationsDao]
+  private[this] def membershipRequestsDao = play.api.Play.current.injector.instanceOf[MembershipRequestsDao]
+  private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
+  private[this] def userPasswordsDao = play.api.Play.current.injector.instanceOf[UserPasswordsDao]
+
+  lazy val AdminUser = findByEmail(UsersDao.AdminUserEmail).getOrElse {
+    sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmail}]")
   }
 
   private[this] val BaseQuery = s"""
@@ -95,7 +109,7 @@ object UsersDao {
 
     val passwordErrors = password match {
       case None => Seq.empty
-      case Some(pwd) => UserPasswordsDao.validate(pwd)
+      case Some(pwd) => userPasswordsDao.validate(pwd)
     }
 
     Validation.errors(emailErrors ++ nicknameErrors) ++ passwordErrors
@@ -116,7 +130,7 @@ object UsersDao {
     }
 
     if (user.email.trim.toLowerCase != form.email.trim.toLowerCase) {
-      EmailVerificationsDao.upsert(updatingUser, user, form.email)
+      emailVerificationsDao.upsert(updatingUser, user, form.email)
     }
 
   }
@@ -136,16 +150,25 @@ object UsersDao {
         'updated_by_guid -> Constants.DefaultUserGuid
       ).execute()
 
-      UserPasswordsDao.doCreate(c, guid, guid, form.password)
+      userPasswordsDao.doCreate(c, guid, guid, form.password)
     }
 
     val user = findByGuid(guid).getOrElse {
       sys.error("Failed to create user")
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.UserCreated(guid)
+    mainActor ! actors.MainActor.Messages.UserCreated(guid)
 
     user
+  }
+
+  def processUserCreated(guid: UUID) {
+    findByGuid(guid).foreach { user =>
+      organizationsDao.findByEmailDomain(user.email).foreach { org =>
+        membershipRequestsDao.upsert(user, org, user, Role.Member)
+      }
+      emailVerificationsDao.create(user, user, user.email)
+    }
   }
 
   def findByToken(token: String): Option[User] = {
@@ -204,7 +227,7 @@ object UsersDao {
   }
 
   @tailrec
-  private[db] def generateNickname(input: String, iteration: Int = 1): String = {
+  private[db] final def generateNickname(input: String, iteration: Int = 1): String = {
     assert(iteration < 100, s"Possible infinite loop - input[$input] iteration[$iteration]")
 
     val prefix = input.trim.split("@").toList match {

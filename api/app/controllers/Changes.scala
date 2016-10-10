@@ -1,14 +1,15 @@
 package controllers
 
-import db.{Authorization, ChangesDao, OrganizationsDao}
 import com.bryzek.apidoc.api.v0.models.json._
+import db.ChangesDao
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 
-object Changes extends Controller with Changes
-
-trait Changes {
-  this: Controller =>
+@Singleton
+class Changes @Inject() (
+  changesDao: ChangesDao
+) extends Controller {
 
   def get(
     orgKey: Option[String],
@@ -18,7 +19,7 @@ trait Changes {
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
-    val changes = ChangesDao.findAll(
+    val changes = changesDao.findAll(
       request.authorization,
       organizationKey = orgKey,
       applicationKey = applicationKey,

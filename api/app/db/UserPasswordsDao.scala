@@ -3,6 +3,7 @@ package db
 import com.bryzek.apidoc.api.v0.models.{Error, User}
 import lib.{Constants, Validation}
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -83,7 +84,8 @@ object PasswordAlgorithm {
 
 case class UserPassword(guid: UUID, userGuid: UUID, algorithm: PasswordAlgorithm, hash: String)
 
-object UserPasswordsDao {
+@Singleton
+class UserPasswordsDao @Inject() () {
 
   private[this] val MinLength = 5
 
