@@ -27,6 +27,7 @@ class TaskActor @javax.inject.Inject() (
   system: ActorSystem,
   applicationsDao: ApplicationsDao,
   changesDao: ChangesDao,
+  emails: Emails,
   organizationsDao: OrganizationsDao,
   tasksDao: TasksDao,
   usersDao: UsersDao,
@@ -86,7 +87,7 @@ class TaskActor @javax.inject.Inject() (
         val errorMsg = Text.truncate(task.lastError.getOrElse("No information on error"), 500)
         s"$errorType task ${task.guid}: $errorMsg"
       }
-      Emails.sendErrors(
+      emails.sendErrors(
         subject = "One or more tasks failed",
         errors = errors
       )
@@ -149,7 +150,7 @@ class TaskActor @javax.inject.Inject() (
 
       applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
         organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
-          Emails.deliver(
+          emails.deliver(
             context = Emails.Context.Application(application),
             org = org,
             publication = Publication.VersionsCreate,

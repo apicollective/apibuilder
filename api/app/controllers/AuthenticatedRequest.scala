@@ -48,6 +48,8 @@ object AuthHeaders {
 
 private[controllers] object RequestHelper {
 
+  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
+
   val UserGuidHeader = "X-User-Guid"
   val AuthorizationHeader = "Authorization"
 
@@ -123,6 +125,8 @@ class AuthenticatedRequest[A](
   val user: User,
   request: Request[A]
 ) extends WrappedRequest[A](request) {
+
+  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
 
   val authorization = Authorization.User(user.guid)
 

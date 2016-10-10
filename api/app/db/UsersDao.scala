@@ -22,8 +22,8 @@ class UsersDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
 
-  lazy val AdminUser = findByEmail(usersDao.AdminUserEmail).getOrElse {
-    sys.error(s"Failed to find background user w/ email[$AdminUserEmail]")
+  lazy val AdminUser = findByEmail(UsersDao.AdminUserEmail).getOrElse {
+    sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmail}]")
   }
 
   private[this] val BaseQuery = s"""

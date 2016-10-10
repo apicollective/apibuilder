@@ -4,6 +4,7 @@ import com.bryzek.apidoc.api.v0.models.{Application, ApplicationSummary, Organiz
 import com.bryzek.apidoc.common.v0.models.Reference
 import db.{ApplicationsDao, Authorization, ItemsDao, OrganizationsDao}
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class Search @Inject() (

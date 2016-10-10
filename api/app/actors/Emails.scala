@@ -8,12 +8,7 @@ import lib.{Config, Email, Pager, Person}
 import play.api.Logger
 import play.api.Play.current
 
-@Singleton
-class Emails @Inject() (
-  applicationsDao: ApplicationsDao,
-  membershipsDao: MembershipsDao,
-  subscriptionsDao: SubscriptionsDao
-) {
+object Emails {
 
   /**
     * Context is used to enforce permissions - only delivering email
@@ -31,6 +26,15 @@ class Emails @Inject() (
     case object OrganizationAdmin extends Context
     case object OrganizationMember extends Context
   }
+
+}
+
+@Singleton
+class Emails @Inject() (
+  applicationsDao: ApplicationsDao,
+  membershipsDao: MembershipsDao,
+  subscriptionsDao: SubscriptionsDao
+) {
 
   private lazy val sendErrorsTo = Config.requiredString("apidoc.sendErrorsTo").split("\\s+")
 
