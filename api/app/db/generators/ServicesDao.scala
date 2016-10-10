@@ -13,6 +13,7 @@ import java.util.UUID
 
 @Singleton
 class ServicesDao @Inject() (
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
   generatorsDao: GeneratorsDao
 ) {
 
@@ -66,7 +67,7 @@ class ServicesDao @Inject() (
       ).execute()
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.GeneratorServiceCreated(guid)
+    mainActor ! actors.MainActor.Messages.GeneratorServiceCreated(guid)
 
     findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create service")

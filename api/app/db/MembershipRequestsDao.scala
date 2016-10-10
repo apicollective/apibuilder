@@ -15,7 +15,9 @@ import java.util.UUID
 @Singleton
 class MembershipRequestsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
-  membershipsDao: MembershipsDao
+  membershipsDao: MembershipsDao,
+  organizationLogsDao: OrganizationLogsDao,
+  usersDao: UsersDao
 ) {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]
@@ -104,7 +106,7 @@ class MembershipRequestsDao @Inject() (
 
     DB.withTransaction { implicit conn =>
       organizationLogsDao.create(createdBy, request.organization, message)
-      membershipRequestsDao.softDelete(createdBy, request)
+      softDelete(createdBy, request)
       membershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
 
@@ -124,7 +126,7 @@ class MembershipRequestsDao @Inject() (
     val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
       organizationLogsDao.create(createdBy, request.organization, message)
-      membershipRequestsDao.softDelete(createdBy, request)
+      softDelete(createdBy, request)
     }
 
     mainActor ! actors.MainActor.Messages.MembershipRequestDeclined(request.organization.guid, request.user.guid, r)

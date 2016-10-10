@@ -13,7 +13,9 @@ import java.util.UUID
 
 @Singleton
 class ApplicationsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  organizationsDao: OrganizationsDao,
+  tasksDao: TasksDao
 ) {
 
   private[this] val BaseQuery = s"""
@@ -74,7 +76,7 @@ class ApplicationsDao @Inject() (
       case Some(newOrg) => Nil
     }
 
-    val appErrors = applicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, form.orgKey, app.key) match {
+    val appErrors = findByOrganizationKeyAndApplicationKey(Authorization.All, form.orgKey, app.key) match {
       case None => Nil
       case Some(existing) => {
         if (existing.guid == app.guid) {
@@ -260,7 +262,7 @@ class ApplicationsDao @Inject() (
   }
 
   def canUserUpdate(user: User, app: Application): Boolean = {
-    applicationsDao.findAll(Authorization.User(user.guid), key = Some(app.key)).headOption match {
+    findAll(Authorization.User(user.guid), key = Some(app.key)).headOption match {
       case None => false
       case Some(a) => true
     }

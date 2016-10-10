@@ -11,7 +11,9 @@ import play.api.libs.json._
 import java.util.UUID
 
 @Singleton
-class OrganizationAttributeValuesDao @Inject() () {
+class OrganizationAttributeValuesDao @Inject() (
+  attributesDao: AttributesDao
+) {
 
   private[db] val BaseQuery = s"""
     select organization_attribute_values.guid,
@@ -53,7 +55,7 @@ class OrganizationAttributeValuesDao @Inject() () {
     val valueErrors = if (form.value.trim.isEmpty) {
       Seq(s"Value is required")
     } else {
-      organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
+      findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
         case None => Seq.empty
         case Some(found) => {
           Some(found.guid) == existing.map(_.guid) match {

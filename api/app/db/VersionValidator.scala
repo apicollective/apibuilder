@@ -10,6 +10,10 @@ case class VersionValidator(
   existingApplicationKey: Option[String] = None
 ) {
 
+  // TODO: Inject directly
+  private[this] def applicationsDao = play.api.Play.current.injector.instanceOf[ApplicationsDao]
+  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
+
   val validate: Seq[String] = validateAuthorization() ++ validateKey()
 
   private lazy val existing = existingApplicationKey.flatMap { applicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, _) }

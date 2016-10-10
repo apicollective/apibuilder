@@ -19,7 +19,9 @@ object UsersDao {
 
 @Singleton
 class UsersDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  emailVerificationsDao: EmailVerificationsDao,
+  userPasswordsDao: UserPasswordsDao
 ) {
 
   lazy val AdminUser = findByEmail(UsersDao.AdminUserEmail).getOrElse {
