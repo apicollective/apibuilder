@@ -29,11 +29,19 @@ class ItemsDao @Inject() () {
      where true
   """
 
-  private[this] val InsertQuery = """
+  private[this] val UpsertQuery = """
     insert into search.items
     (guid, organization_guid, application_guid, detail, label, description, content)
     values
     ({guid}::uuid, {organization_guid}::uuid, {application_guid}::uuid, {detail}::json, {label}, {description}, {content})
+    on conflict(guid)
+    do update
+          set organization_guid = {organization_guid}::uuid,
+              application_guid = {application_guid}::uuid,
+              detail = {detail}::json,
+              label = {label},
+              description = {description},
+              content = {content}
   """
 
   private[this] val DeleteQuery = """
@@ -62,7 +70,7 @@ class ItemsDao @Inject() () {
     DB.withTransaction { implicit c =>
       delete(c, guid)
 
-      SQL(InsertQuery).on(
+      SQL(UpsertQuery).on(
         'guid -> guid,
         'organization_guid -> organizationGuid,
         'application_guid -> applicationGuid,
