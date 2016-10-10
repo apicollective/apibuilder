@@ -13,7 +13,7 @@ import java.util.UUID
 class SubscriptionsDao @Inject() (
   organizationsDao: OrganizationsDao,
   subscriptionsDao: SubscriptionsDao,
-  usersDao: usersDao
+  usersDao: UsersDao
 ) {
 
   val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)

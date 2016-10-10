@@ -24,7 +24,13 @@ object TaskActor {
 
 @javax.inject.Singleton
 class TaskActor @javax.inject.Inject() (
-  system: ActorSystem
+  system: ActorSystem,
+  applicationsDao: ApplicationsDao,
+  changesDao: ChangesDao,
+  organizationsDao: organizationsDao,
+  tasksDao: TasksDao,
+  usersDao: UsersDao,
+  versionsDao: VersionsDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
   implicit val ec = system.dispatchers.lookup("task-actor-context")
@@ -34,8 +40,8 @@ class TaskActor @javax.inject.Inject() (
   def receive = {
 
     case m @ TaskActor.Messages.TaskCreated(guid) => withVerboseErrorHandler(m) {
-      TasksDao.findByGuid(guid).map { task =>
-        TasksDao.incrementNumberAttempts(UsersDao.AdminUser, task)
+      tasksDao.findByGuid(guid).map { task =>
+        tasksDao.incrementNumberAttempts(UsersDao.AdminUser, task)
 
         task.data match {
           case TaskDataDiffVersion(oldVersionGuid, newVersionGuid) => {
@@ -51,14 +57,14 @@ class TaskActor @javax.inject.Inject() (
           }
 
           case TaskDataUndefinedType(desc) => {
-            TasksDao.recordError(UsersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
+            tasksDao.recordError(UsersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
           }
         }
       }
     }
 
     case m @ TaskActor.Messages.RestartDroppedTasks => withVerboseErrorHandler(m) {
-      TasksDao.findAll(
+      tasksDao.findAll(
         nOrFewerAttempts = Some(2),
         nOrMoreMinutesOld = Some(1)
       ).foreach { task =>
@@ -67,7 +73,7 @@ class TaskActor @javax.inject.Inject() (
     }
 
     case m @ TaskActor.Messages.NotifyFailed => withVerboseErrorHandler(m) {
-      val errors = TasksDao.findAll(
+      val errors = tasksDao.findAll(
         nOrMoreAttempts = Some(2)
       ).map { task =>
         val errorType = task.data match {
@@ -87,11 +93,11 @@ class TaskActor @javax.inject.Inject() (
     }
 
     case m @ TaskActor.Messages.PurgeOldTasks => withVerboseErrorHandler(m) {
-      TasksDao.findAll(
+      tasksDao.findAll(
         isDeleted = Some(true),
         deletedAtLeastNDaysAgo = Some(NumberDaysBeforePurge)
       ).foreach { task =>
-        TasksDao.purge(UsersDao.AdminUser, task)
+        tasksDao.purge(UsersDao.AdminUser, task)
       }
     }
 
@@ -164,10 +170,10 @@ class TaskActor @javax.inject.Inject() (
   def processTask[T](task: Task, attempt: Try[T]) {
     attempt match {
       case Success(_) => {
-        TasksDao.softDelete(UsersDao.AdminUser, task)
+        tasksDao.softDelete(UsersDao.AdminUser, task)
       }
       case Failure(ex) => {
-        TasksDao.recordError(UsersDao.AdminUser, task, ex)
+        tasksDao.recordError(UsersDao.AdminUser, task, ex)
       }
     }
   }

@@ -44,7 +44,7 @@ object Global extends WithFilters(LoggingFilter) {
 
   private[this] def ensureServices() {
     Logger.info("Starting ensureServices()")
-    val versionsDao = play.api.Play.current.injector.instanceOf[VersionDao]
+    val versionsDao = play.api.Play.current.injector.instanceOf[VersionsDao]
     val result = versionsDao.migrate()
     Logger.info("ensureServices() completed: " + result)
   }

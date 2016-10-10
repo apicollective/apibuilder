@@ -19,7 +19,9 @@ case class PasswordReset(
 
 @Singleton
 class PasswordResetRequestsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  userPasswordsDao: UserPasswordsDao,
+  usersDao: UsersDao
 ) {
 
   private[this] val TokenLength = 80
@@ -70,13 +72,13 @@ class PasswordResetRequestsDao @Inject() (
       "Password reset[${pr.guid}] is expired"
     )
 
-    val prUser = UsersDao.findByGuid(pr.userGuid).getOrElse {
+    val prUser = usersDao.findByGuid(pr.userGuid).getOrElse {
       sys.error(s"User guid[${pr.userGuid}] does not exist for pr[${pr.guid}]")
     }
 
     val updatingUser = user.getOrElse(prUser)
 
-    UserPasswordsDao.create(updatingUser, prUser.guid, newPassword)
+    userPasswordsDao.create(updatingUser, prUser.guid, newPassword)
     softDelete(updatingUser, pr)
   }
 

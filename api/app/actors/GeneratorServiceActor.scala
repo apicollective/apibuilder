@@ -6,7 +6,7 @@ import com.bryzek.apidoc.api.v0.models.{GeneratorForm, GeneratorService}
 import com.bryzek.apidoc.generator.v0.Client
 import com.bryzek.apidoc.generator.v0.models.Generator
 import com.bryzek.apidoc.internal.v0.models.TaskDataSyncService
-import db.{Authorization, ServicesDao, TasksDao, UsersDao}
+import db.{Authorization, TasksDao, UsersDao}
 import db.generators.{GeneratorsDao, ServicesDao}
 import play.api.Logger
 import akka.actor.Actor
