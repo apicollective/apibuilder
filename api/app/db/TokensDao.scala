@@ -11,7 +11,9 @@ import java.util.UUID
 import lib.Validation
 
 @Singleton
-class TokensDao @Inject() () {
+class TokensDao @Inject() (
+  usersDao: UsersDao
+) {
 
   private[this] val BaseQuery = s"""
     select tokens.guid,

@@ -16,6 +16,7 @@ import java.util.UUID
 class MembershipRequestsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   membershipsDao: MembershipsDao,
+  organizationsDao: OrganizationsDao,
   organizationLogsDao: OrganizationLogsDao,
   usersDao: UsersDao
 ) {

@@ -9,6 +9,8 @@ import db.{Authorization, VersionsDao}
   */
 case class DatabaseServiceFetcher(authorization: Authorization) extends ServiceFetcher {
 
+  private[this] def versionsDao = play.api.Play.current.injector.instanceOf[VersionsDao]
+
   override def fetch(uri: String): Service = {
     ServiceUri.parse(uri) match {
 

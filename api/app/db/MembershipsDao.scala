@@ -15,7 +15,10 @@ import org.joda.time.DateTime
 
 @Singleton
 class MembershipsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  organizationsDao: OrganizationsDao,
+  subscriptionsDao: SubscriptionsDao,
+  usersDao: UsersDao
 ) {
 
   private[this] val InsertQuery = """
@@ -103,7 +106,7 @@ class MembershipsDao @Inject() (
     * for this org.
     */
   def softDelete(user: User, membership: Membership) {
-    subscriptionsDaodeleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
+    subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
     SoftDelete.delete("memberships", user, membership.guid)
   }
 

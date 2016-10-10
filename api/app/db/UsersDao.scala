@@ -19,10 +19,12 @@ object UsersDao {
 
 @Singleton
 class UsersDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef,
-  emailVerificationsDao: EmailVerificationsDao,
-  userPasswordsDao: UserPasswordsDao
+  @Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
+
+  // TODO: Inject directly - here because of circular references
+  private[this] def emailVerificationsDao = play.api.Play.current.injector.instanceOf[EmailVerificationsDao]
+  private[this] def userPasswordsDao = play.api.Play.current.injector.instanceOf[UserPasswordsDao]
 
   lazy val AdminUser = findByEmail(UsersDao.AdminUserEmail).getOrElse {
     sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmail}]")
@@ -214,7 +216,7 @@ class UsersDao @Inject() (
   }
 
   @tailrec
-  private[db] def generateNickname(input: String, iteration: Int = 1): String = {
+  private[db] final def generateNickname(input: String, iteration: Int = 1): String = {
     assert(iteration < 100, s"Possible infinite loop - input[$input] iteration[$iteration]")
 
     val prefix = input.trim.split("@").toList match {

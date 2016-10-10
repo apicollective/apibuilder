@@ -16,6 +16,11 @@ case class FullWatchForm(
   form: WatchForm
 ) {
 
+  // TODO: Inject directly
+  private[this] def applicationsDao = play.api.Play.current.injector.instanceOf[ApplicationsDao]
+  private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
+  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
+
   private[this] val auth = Authorization.User(createdBy.guid)
 
   val org: Option[Organization] = organizationsDao.findByKey(auth, form.organizationKey)
@@ -42,7 +47,11 @@ case class FullWatchForm(
 }
 
 @Singleton
-class WatchesDao @Inject() () {
+class WatchesDao @Inject() (
+  applicationsDao: ApplicationsDao,
+  organizationsDao: OrganizationsDao,
+  usersDao: UsersDao
+) {
 
   private[this] val BaseQuery = s"""
     select watches.guid,
