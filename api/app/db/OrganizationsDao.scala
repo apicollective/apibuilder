@@ -15,10 +15,11 @@ import org.joda.time.DateTime
 
 @Singleton
 class OrganizationsDao @Inject() (
-  membershipsDao: MembershipsDao,
   organizationDomainsDao: OrganizationDomainsDao,
   organizationLogsDao: OrganizationLogsDao
 ) {
+  // TODO: resolve cicrular dependency
+  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
 
   private[this] val DefaultVisibility = Visibility.Organization
 

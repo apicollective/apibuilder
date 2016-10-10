@@ -21,7 +21,6 @@ case class EmailVerification(
 @Singleton
 class EmailVerificationsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
-  emailVerificationsDao: EmailVerificationsDao,
   emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
   membershipRequestsDao: MembershipRequestsDao,
   organizationsDao: OrganizationsDao,
@@ -80,7 +79,7 @@ class EmailVerificationsDao @Inject() (
 
   def confirm(user: Option[User], verification: EmailVerification) = {
     assert(
-      !emailVerificationsDao.isExpired(verification),
+      !isExpired(verification),
       "Token for verificationGuid[${verification.guid}] is expired"
     )
 

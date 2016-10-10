@@ -14,11 +14,12 @@ object SubscriptionsDao {
 }
 
 @Singleton
-class SubscriptionsDao @Inject() (
-  organizationsDao: OrganizationsDao,
-  subscriptionsDao: SubscriptionsDao,
-  usersDao: UsersDao
-) {
+class SubscriptionsDao @Inject() () {
+
+  // TODO: resolve cicrular dependency
+  private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
+  private[this] def subscriptionsDao = play.api.Play.current.injector.instanceOf[SubscriptionsDao]
+  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
 
   private[this] val BaseQuery = s"""
     select subscriptions.guid,

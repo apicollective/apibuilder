@@ -30,7 +30,7 @@ class Code @Inject() (
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] val apidocVersion = Config.requiredString("git.version")
+  private[this] lazy val apidocVersion = Config.requiredString("git.version")
 
   def get(
     orgKey: String,
