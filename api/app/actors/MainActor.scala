@@ -28,6 +28,7 @@ object MainActor {
 
 @javax.inject.Singleton
 class MainActor @javax.inject.Inject() (
+  app: play.api.Application,
   system: ActorSystem,
   @javax.inject.Named("email-actor") emailActor: akka.actor.ActorRef,
   @javax.inject.Named("generator-service-actor") generatorServiceActor: akka.actor.ActorRef,
@@ -37,10 +38,10 @@ class MainActor @javax.inject.Inject() (
 
   implicit val ec = system.dispatchers.lookup("main-actor-context")
 
-  Akka.system.scheduler.schedule(5.seconds, 1.minute, taskActor, TaskActor.Messages.RestartDroppedTasks)
-  Akka.system.scheduler.schedule(1.hour, 1.hour, taskActor, TaskActor.Messages.PurgeOldTasks)
-  Akka.system.scheduler.schedule(12.hours, 1.day, taskActor, TaskActor.Messages.NotifyFailed)
-  Akka.system.scheduler.schedule(1.hour, 1.hour, generatorServiceActor, GeneratorServiceActor.Messages.Sync)
+  system.scheduler.schedule(5.seconds, 1.minute, taskActor, TaskActor.Messages.RestartDroppedTasks)
+  system.scheduler.schedule(1.hour, 1.hour, taskActor, TaskActor.Messages.PurgeOldTasks)
+  system.scheduler.schedule(12.hours, 1.day, taskActor, TaskActor.Messages.NotifyFailed)
+  system.scheduler.schedule(1.hour, 1.hour, generatorServiceActor, GeneratorServiceActor.Messages.Sync)
 
   def receive = akka.event.LoggingReceive {
 
