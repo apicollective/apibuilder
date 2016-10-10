@@ -12,6 +12,29 @@ object UserActor {
     case class UserCreated(guid: UUID)
   }
 
+}
+
+@javax.inject.Singleton
+class UserActor @javax.inject.Inject() (
+  system: ActorSystem,
+  emailVerificationsDao: EmailVerificationsDao,
+  membershipRequestsDao: MembershipRequestsDao,
+  organizationsDao: OrganizationsDao,
+  usersDao: UsersDao
+) extends Actor with ActorLogging with ErrorHandler {
+
+  implicit val ec = system.dispatchers.lookup("user-actor-context")
+
+  def receive = {
+
+    case m @ UserActor.Messages.UserCreated(guid) => withVerboseErrorHandler(m) {
+      userCreated(guid)
+    }
+
+    case m: Any => logUnhandledMessage(m)
+
+  }
+
   def userCreated(guid: UUID) {
     usersDao.findByGuid(guid).map { user =>
       organizationsDao.findByEmailDomain(user.email).foreach { org =>
@@ -22,22 +45,4 @@ object UserActor {
     }
   }
 
-}
-
-@javax.inject.Singleton
-class UserActor @javax.inject.Inject() (
-  system: ActorSystem
-) extends Actor with ActorLogging with ErrorHandler {
-
-  implicit val ec = system.dispatchers.lookup("user-actor-context")
-
-  def receive = {
-
-    case m @ UserActor.Messages.UserCreated(guid) => withVerboseErrorHandler(m) {
-      UserActor.userCreated(guid)
-    }
-
-    case m: Any => logUnhandledMessage(m)
-
-  }
 }

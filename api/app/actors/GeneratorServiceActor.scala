@@ -21,8 +21,10 @@ object GeneratorServiceActor {
     case object Sync
   }
 
+  // TODO: Refactor and inject directly
   private[this] def servicesDao = play.api.Play.current.injector.instanceOf[ServicesDao]
   private[this] def generatorsDao = play.api.Play.current.injector.instanceOf[GeneratorsDao]
+  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
 
   def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext) {
     servicesDao.findByGuid(Authorization.All, serviceGuid).map { sync(_) }
@@ -54,7 +56,7 @@ object GeneratorServiceActor {
 
       generators.foreach { gen =>
         generatorsDao.upsert(
-          UsersDao.AdminUser,
+          usersDao.AdminUser,
           GeneratorForm(
             serviceGuid = service.guid,
             generator = gen
@@ -100,7 +102,7 @@ class GeneratorServiceActor @javax.inject.Inject() (
   }
 
   def createSyncTask(serviceGuid: UUID) {
-    tasksDao.create(UsersDao.AdminUser, TaskDataSyncService(serviceGuid))
+    tasksDao.create(usersDao.AdminUser, TaskDataSyncService(serviceGuid))
   }
 
 }

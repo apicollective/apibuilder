@@ -1,6 +1,7 @@
 package controllers
 
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 import com.bryzek.apidoc.api.v0.models.json._
 

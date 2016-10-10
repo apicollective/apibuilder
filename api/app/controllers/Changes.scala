@@ -1,7 +1,8 @@
 package controllers
 
-import db.ChangesDao
 import com.bryzek.apidoc.api.v0.models.json._
+import db.ChangesDao
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 

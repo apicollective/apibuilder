@@ -2,11 +2,12 @@ package controllers
 
 import com.bryzek.apidoc.api.v0.models.EmailVerificationConfirmationForm
 import com.bryzek.apidoc.api.v0.models.json._
-import lib.Validation
 import db.EmailVerificationsDao
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @Singleton
 class EmailVerificationConfirmationForms @Inject() (

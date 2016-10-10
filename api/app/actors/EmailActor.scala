@@ -42,7 +42,7 @@ class EmailActor @javax.inject.Inject() (
     case m @ EmailActor.Messages.MembershipRequestCreated(guid) => withVerboseErrorHandler(m) {
       membershipRequestsDao.findByGuid(Authorization.All, guid).map { request =>
         emails.deliver(
-          context = emails.Context.OrganizationAdmin,
+          context = Emails.Context.OrganizationAdmin,
           org = request.organization,
           publication = Publication.MembershipRequestsCreate,
           subject = s"${request.organization.name}: Membership Request from ${request.user.email}",
@@ -78,7 +78,7 @@ class EmailActor @javax.inject.Inject() (
     case m @ EmailActor.Messages.MembershipCreated(guid) => withVerboseErrorHandler(m) {
       membershipsDao.findByGuid(Authorization.All, guid).map { membership =>
         emails.deliver(
-          context = emails.Context.OrganizationAdmin,
+          context = Emails.Context.OrganizationAdmin,
           org = membership.organization,
           publication = Publication.MembershipsCreate,
           subject = s"${membership.organization.name}: ${membership.user.email} has joined as ${membership.role}",
@@ -91,7 +91,7 @@ class EmailActor @javax.inject.Inject() (
       applicationsDao.findByGuid(Authorization.All, guid).map { application =>
         organizationsDao.findAll(Authorization.All, application = Some(application)).map { org =>
           emails.deliver(
-            context = emails.Context.OrganizationMember,
+            context = Emails.Context.OrganizationMember,
             org = org,
             publication = Publication.ApplicationsCreate,
             subject = s"${org.name}: New Application Created - ${application.name}",
