@@ -11,6 +11,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import lib.VersionTag
 import org.postgresql.util.PSQLException
 import scala.util.{Try, Success, Failure}
 import org.joda.time.DateTime
@@ -140,8 +141,8 @@ class ChangesDao @Inject() () {
       applicationKey.map { v => "and applications.key = lower(trim({application_key}))" },
       fromVersionGuid.map { v => "and changes.from_version_guid = {from_version_guid}::uuid" },
       toVersionGuid.map { v => "and changes.to_version_guid = {to_version_guid}::uuid" },
-      fromVersion.map { v => "and from_version.version = {from_version}" },
-      toVersion.map { v => "and to_version.version = {to_version}" },
+      fromVersion.map { v => "and from_version.version_sort_key >= {from_version_sort_key}" },
+      toVersion.map { v => "and to_version.version_sort_key <= {to_version_sort_key}" },
       description.map { v => "and lower(changes.description) = lower(trim({description}))" },
       Some(s"order by changes.changed_at desc, lower(organizations.key), lower(applications.key), changes.type, lower(changes.description) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -154,8 +155,8 @@ class ChangesDao @Inject() () {
       applicationKey.map('application_key -> _),
       fromVersionGuid.map('from_version_guid -> _.toString),
       toVersionGuid.map('to_version_guid -> _.toString),
-      fromVersion.map('from_version -> _.toString),
-      toVersion.map('to_version -> _.toString),
+      fromVersion.map(v => 'from_version_sort_key -> VersionTag(v).sortKey),
+      toVersion.map(v => 'to_version_sort_key -> VersionTag(v).sortKey),
       description.map('description -> _)
     ).flatten ++ authorization.bindVariables
 
