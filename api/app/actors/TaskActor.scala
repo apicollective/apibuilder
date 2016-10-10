@@ -14,7 +14,7 @@ import scala.util.{Failure, Success, Try}
 object TaskActor {
 
   object Messages {
-    case class TaskCreated(guid: UUID)
+    case class Created(guid: UUID)
     case object RestartDroppedTasks
     case object PurgeOldTasks
     case object NotifyFailed
@@ -37,11 +37,16 @@ class TaskActor @javax.inject.Inject() (
 
   implicit val ec = system.dispatchers.lookup("task-actor-context")
 
-  private[this] val NumberDaysBeforePurge = 90
+  private[this] val NumberDaysBeforePurge = 30
+  private[this] case class Process(guid: UUID)
 
   def receive = {
 
-    case m @ TaskActor.Messages.TaskCreated(guid) => withVerboseErrorHandler(m) {
+    case m @ TaskActor.Messages.Created(guid) => withVerboseErrorHandler(m) {
+      self ! Process(guid)
+    }
+
+    case m @ Process(guid) => withVerboseErrorHandler(m) {
       tasksDao.findByGuid(guid).map { task =>
         tasksDao.incrementNumberAttempts(usersDao.AdminUser, task)
 
@@ -70,7 +75,7 @@ class TaskActor @javax.inject.Inject() (
         nOrFewerAttempts = Some(2),
         nOrMoreMinutesOld = Some(1)
       ).foreach { task =>
-        self ! TaskActor.Messages.TaskCreated(task.guid)
+        self ! Process(task.guid)
       }
     }
 
