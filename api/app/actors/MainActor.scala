@@ -38,11 +38,6 @@ class MainActor @javax.inject.Inject() (
 
   implicit val ec = system.dispatchers.lookup("main-actor-context")
 
-  system.scheduler.schedule(5.seconds, 1.minute, taskActor, TaskActor.Messages.RestartDroppedTasks)
-  system.scheduler.schedule(1.hour, 1.hour, taskActor, TaskActor.Messages.PurgeOldTasks)
-  system.scheduler.schedule(12.hours, 1.day, taskActor, TaskActor.Messages.NotifyFailed)
-  system.scheduler.schedule(1.hour, 1.hour, generatorServiceActor, GeneratorServiceActor.Messages.Sync)
-
   def receive = akka.event.LoggingReceive {
 
     case m @ MainActor.Messages.MembershipRequestCreated(guid) => withVerboseErrorHandler(m) {

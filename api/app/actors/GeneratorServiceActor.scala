@@ -5,8 +5,7 @@ import lib.Pager
 import com.bryzek.apidoc.api.v0.models.{GeneratorForm, GeneratorService}
 import com.bryzek.apidoc.generator.v0.Client
 import com.bryzek.apidoc.generator.v0.models.Generator
-import com.bryzek.apidoc.internal.v0.models.TaskDataSyncService
-import db.{Authorization, TasksDao, UsersDao}
+import db.{Authorization, UsersDao}
 import db.generators.{GeneratorsDao, ServicesDao}
 import play.api.Logger
 import akka.actor.Actor
@@ -45,7 +44,7 @@ object GeneratorServiceActor {
     while (num >= limit) {
       val generators = Await.result(
         client.generators.get(limit = limit, offset = offset),
-        5000.millis
+        30.seconds
       )
       num = generators.size
       offset += limit
@@ -75,16 +74,17 @@ object GeneratorServiceActor {
 class GeneratorServiceActor @javax.inject.Inject() (
   system: ActorSystem,
   usersDao: UsersDao,
-  servicesDao: ServicesDao,
-  tasksDao: TasksDao
+  servicesDao: ServicesDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
   implicit val ec = system.dispatchers.lookup("generator-service-actor-context")
 
+  system.scheduler.schedule(1.hour, 1.hour, self, GeneratorServiceActor.Messages.Sync)
+
   def receive = {
 
     case m @ GeneratorServiceActor.Messages.GeneratorServiceCreated(guid) => withVerboseErrorHandler(m) {
-      createSyncTask(guid)
+      GeneratorServiceActor.sync(guid)
     }
 
     case m @ GeneratorServiceActor.Messages.Sync => withVerboseErrorHandler(m) {
@@ -94,15 +94,11 @@ class GeneratorServiceActor @javax.inject.Inject() (
           offset = offset
         )
       } { service =>
-        createSyncTask(service.guid)
+        GeneratorServiceActor.sync(service.guid)
       }
     }
 
     case m: Any => logUnhandledMessage(m)      
-  }
-
-  def createSyncTask(serviceGuid: UUID) {
-    tasksDao.create(usersDao.AdminUser, TaskDataSyncService(serviceGuid))
   }
 
 }

@@ -2,13 +2,14 @@ package actors
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
 import com.bryzek.apidoc.api.v0.models.{Application, Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
-import com.bryzek.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataSyncService, TaskDataUndefinedType}
+import com.bryzek.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao}
 import lib.{ServiceDiff, Text}
 import play.api.Logger
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import java.util.UUID
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 object TaskActor {
@@ -40,6 +41,10 @@ class TaskActor @javax.inject.Inject() (
   private[this] val NumberDaysBeforePurge = 30
   private[this] case class Process(guid: UUID)
 
+  system.scheduler.schedule(1.hour, 1.hour, self, TaskActor.Messages.RestartDroppedTasks)
+  system.scheduler.schedule(1.day, 1.day, self, TaskActor.Messages.NotifyFailed)
+  system.scheduler.schedule(1.day, 1.day, self, TaskActor.Messages.PurgeOldTasks)
+  
   def receive = {
 
     case m @ TaskActor.Messages.Created(guid) => withVerboseErrorHandler(m) {
@@ -57,10 +62,6 @@ class TaskActor @javax.inject.Inject() (
 
           case TaskDataIndexApplication(applicationGuid) => {
             processTask(task, Try(search.indexApplication(applicationGuid)))
-          }
-
-          case TaskDataSyncService(serviceGuid) => {
-            processTask(task, Try(GeneratorServiceActor.sync(serviceGuid)))
           }
 
           case TaskDataUndefinedType(desc) => {
@@ -86,7 +87,6 @@ class TaskActor @javax.inject.Inject() (
         val errorType = task.data match {
           case TaskDataDiffVersion(a, b) => s"TaskDataDiffVersion($a, $b)"
           case TaskDataIndexApplication(guid) => s"TaskDataIndexApplication($guid)"
-          case TaskDataSyncService(guid) => s"TaskDataSyncService($guid)"
           case TaskDataUndefinedType(desc) => s"TaskDataUndefinedType($desc)"
         }
 
