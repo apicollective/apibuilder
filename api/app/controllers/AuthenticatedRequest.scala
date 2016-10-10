@@ -54,12 +54,12 @@ private[controllers] object RequestHelper {
   def userAuth(authHeaders: AuthHeaders): UserAuth = {
     val tokenUser: Option[User] = BasicAuthorization.get(authHeaders.authorization) match {
       case Some(auth: BasicAuthorization.Token) => {
-        UsersDao.findByToken(auth.token)
+        usersDao.findByToken(auth.token)
       }
       case _ => None
     }
 
-    authHeaders.userGuid.flatMap(UsersDao.findByGuid(_)) match {
+    authHeaders.userGuid.flatMap(usersDao.findByGuid(_)) match {
       case None => {
         /**
           * Currently a hack. If the token user is NOT our system user
@@ -70,7 +70,7 @@ private[controllers] object RequestHelper {
         tokenUser match {
           case None => UserAuth(None, None)
           case Some(u) => {
-            if (u.email == UsersDao.AdminUserEmail) {
+            if (u.email == usersDao.AdminUserEmail) {
               UserAuth(Some(u), None)
             } else {
               UserAuth(Some(u), Some(u))
@@ -127,11 +127,11 @@ class AuthenticatedRequest[A](
   val authorization = Authorization.User(user.guid)
 
   def requireAdmin(org: Organization) {
-    require(MembershipsDao.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
+    require(membershipsDao.isUserAdmin(user, org), s"Action requires admin role. User[${user.guid}] is not an admin of Org[${org.key}]")
   }
 
   def requireMember(org: Organization) {
-    require(MembershipsDao.isUserMember(user, org), s"Action requires member role. User[${user.guid}] is not a member of Org[${org.key}]")
+    require(membershipsDao.isUserMember(user, org), s"Action requires member role. User[${user.guid}] is not a member of Org[${org.key}]")
   }
 
 }

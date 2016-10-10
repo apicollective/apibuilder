@@ -49,7 +49,7 @@ class TokensDao @Inject() () {
       Seq("You are not authorized to create a token for this user")
     }
 
-    val userErrors = UsersDao.findByGuid(form.userGuid) match {
+    val userErrors = usersDao.findByGuid(form.userGuid) match {
       case None => Seq("User not found")
       case Some(_) => Seq.empty
     }
@@ -137,7 +137,7 @@ class TokensDao @Inject() () {
     guid = row[UUID]("guid"),
     maskedToken = obfuscate(row[String]("token")),
     description = row[Option[String]]("description"),
-    user = UsersDao.fromRow(row, Some("user")),
+    user = usersDao.fromRow(row, Some("user")),
     audit = AuditsDao.fromRowCreation(row)
   )
 

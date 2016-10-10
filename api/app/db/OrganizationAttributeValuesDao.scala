@@ -45,7 +45,7 @@ class OrganizationAttributeValuesDao @Inject() () {
     existing: Option[AttributeValue]
   ): Seq[com.bryzek.apidoc.api.v0.models.Error] = {
 
-    val attributeErrors = AttributesDao.findByName(attribute.name) match {
+    val attributeErrors = attributesDao.findByName(attribute.name) match {
       case None => Seq("Attribute not found")
       case Some(_) => Nil
     }
@@ -53,7 +53,7 @@ class OrganizationAttributeValuesDao @Inject() () {
     val valueErrors = if (form.value.trim.isEmpty) {
       Seq(s"Value is required")
     } else {
-      OrganizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
+      organizationAttributeValuesDao.findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
         case None => Seq.empty
         case Some(found) => {
           Some(found.guid) == existing.map(_.guid) match {

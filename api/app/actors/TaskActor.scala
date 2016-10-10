@@ -27,7 +27,7 @@ class TaskActor @javax.inject.Inject() (
   system: ActorSystem,
   applicationsDao: ApplicationsDao,
   changesDao: ChangesDao,
-  organizationsDao: organizationsDao,
+  organizationsDao: OrganizationsDao,
   tasksDao: TasksDao,
   usersDao: UsersDao,
   versionsDao: VersionsDao
@@ -41,7 +41,7 @@ class TaskActor @javax.inject.Inject() (
 
     case m @ TaskActor.Messages.TaskCreated(guid) => withVerboseErrorHandler(m) {
       tasksDao.findByGuid(guid).map { task =>
-        tasksDao.incrementNumberAttempts(UsersDao.AdminUser, task)
+        tasksDao.incrementNumberAttempts(usersDao.AdminUser, task)
 
         task.data match {
           case TaskDataDiffVersion(oldVersionGuid, newVersionGuid) => {
@@ -57,7 +57,7 @@ class TaskActor @javax.inject.Inject() (
           }
 
           case TaskDataUndefinedType(desc) => {
-            tasksDao.recordError(UsersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
+            tasksDao.recordError(usersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
           }
         }
       }
@@ -97,7 +97,7 @@ class TaskActor @javax.inject.Inject() (
         isDeleted = Some(true),
         deletedAtLeastNDaysAgo = Some(NumberDaysBeforePurge)
       ).foreach { task =>
-        tasksDao.purge(UsersDao.AdminUser, task)
+        tasksDao.purge(usersDao.AdminUser, task)
       }
     }
 
@@ -105,15 +105,15 @@ class TaskActor @javax.inject.Inject() (
   }
 
   private[this] def diffVersion(oldVersionGuid: UUID, newVersionGuid: UUID) {
-    VersionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
-      VersionsDao.findByGuid(Authorization.All, newVersionGuid).map { newVersion =>
+    versionsDao.findByGuid(Authorization.All, oldVersionGuid, isDeleted = None).map { oldVersion =>
+      versionsDao.findByGuid(Authorization.All, newVersionGuid).map { newVersion =>
         ServiceDiff(oldVersion.service, newVersion.service).differences match {
           case Nil => {
             // No-op
           }
           case diffs => {
-            ChangesDao.upsert(
-              createdBy = UsersDao.AdminUser,
+            changesDao.upsert(
+              createdBy = usersDao.AdminUser,
               fromVersion = oldVersion,
               toVersion = newVersion,
               differences = diffs
@@ -147,8 +147,8 @@ class TaskActor @javax.inject.Inject() (
         }
       }
 
-      ApplicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
-        OrganizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
+      applicationsDao.findAll(Authorization.All, version = Some(version), limit = 1).headOption.map { application =>
+        organizationsDao.findAll(Authorization.All, application = Some(application), limit = 1).headOption.map { org =>
           Emails.deliver(
             context = Emails.Context.Application(application),
             org = org,
@@ -170,10 +170,10 @@ class TaskActor @javax.inject.Inject() (
   def processTask[T](task: Task, attempt: Try[T]) {
     attempt match {
       case Success(_) => {
-        tasksDao.softDelete(UsersDao.AdminUser, task)
+        tasksDao.softDelete(usersDao.AdminUser, task)
       }
       case Failure(ex) => {
-        tasksDao.recordError(UsersDao.AdminUser, task, ex)
+        tasksDao.recordError(usersDao.AdminUser, task, ex)
       }
     }
   }

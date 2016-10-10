@@ -23,15 +23,15 @@ class PasswordResetsSpec extends BaseSpec {
   "POST /password_resets" in new WithServer {
     val user = createUser()
     createPasswordRequest(user.email)
-    val pr = PasswordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
+    val pr = passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
 
     val pwd = "some password"
-    db.UserPasswordsDao.isValid(user.guid, pwd) must be(false)
+    db.userPasswordsDao.isValid(user.guid, pwd) must be(false)
 
     val result = resetPassword(pr.token, pwd)
     result.userGuid must be(user.guid)
 
-    db.UserPasswordsDao.isValid(user.guid, pwd) must be(true)
+    db.userPasswordsDao.isValid(user.guid, pwd) must be(true)
 
     // Make sure token cannot be reused
     intercept[ErrorsResponse] {
@@ -43,7 +43,7 @@ class PasswordResetsSpec extends BaseSpec {
   "POST /password_resets validates password" in new WithServer {
     val user = createUser()
     createPasswordRequest(user.email)
-    val pr = PasswordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
+    val pr = passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
 
     intercept[ErrorsResponse] {
       resetPassword(pr.token, "foo")

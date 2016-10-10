@@ -22,7 +22,7 @@ class UsersDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
 
-  lazy val AdminUser = findByEmail(UsersDao.AdminUserEmail).getOrElse {
+  lazy val AdminUser = findByEmail(usersDao.AdminUserEmail).getOrElse {
     sys.error(s"Failed to find background user w/ email[$AdminUserEmail]")
   }
 
@@ -103,7 +103,7 @@ class UsersDao @Inject() (
 
     val passwordErrors = password match {
       case None => Seq.empty
-      case Some(pwd) => UserPasswordsDao.validate(pwd)
+      case Some(pwd) => userPasswordsDao.validate(pwd)
     }
 
     Validation.errors(emailErrors ++ nicknameErrors) ++ passwordErrors
@@ -124,7 +124,7 @@ class UsersDao @Inject() (
     }
 
     if (user.email.trim.toLowerCase != form.email.trim.toLowerCase) {
-      EmailVerificationsDao.upsert(updatingUser, user, form.email)
+      emailVerificationsDao.upsert(updatingUser, user, form.email)
     }
 
   }
@@ -144,7 +144,7 @@ class UsersDao @Inject() (
         'updated_by_guid -> Constants.DefaultUserGuid
       ).execute()
 
-      UserPasswordsDao.doCreate(c, guid, guid, form.password)
+      userPasswordsDao.doCreate(c, guid, guid, form.password)
     }
 
     val user = findByGuid(guid).getOrElse {

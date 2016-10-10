@@ -4,14 +4,15 @@ import db.{Authorization, WatchesDao, FullWatchForm}
 import lib.Validation
 import com.bryzek.apidoc.api.v0.models.{User, Watch, WatchForm}
 import com.bryzek.apidoc.api.v0.models.json._
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-object Watches extends Controller with Watches
-
-trait Watches {
-  this: Controller =>
+@Singleton
+class Watches @Inject() (
+  watchesDao: WatchesDao
+) {
 
   def get(
     guid: Option[UUID],

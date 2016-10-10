@@ -17,7 +17,7 @@ case class DatabaseServiceFetcher(authorization: Authorization) extends ServiceF
       }
 
       case Some(serviceUri) => {
-        VersionsDao.findVersion(authorization, serviceUri.org, serviceUri.app, serviceUri.version).headOption.map(_.service).getOrElse {
+        versionsDao.findVersion(authorization, serviceUri.org, serviceUri.app, serviceUri.version).headOption.map(_.service).getOrElse {
           sys.error(s"Error while fetching service for URI[$uri] - could not find [${serviceUri.org}/${serviceUri.app}:${serviceUri.version}]")
         }
       }

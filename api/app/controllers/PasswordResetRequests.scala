@@ -4,10 +4,15 @@ import com.bryzek.apidoc.api.v0.models.PasswordResetRequest
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
 import db.{PasswordResetRequestsDao, UsersDao}
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 
-object PasswordResetRequests extends Controller {
+@Singleton
+class PasswordResetRequests @Inject() (
+  passwordResetRequestsDao: PasswordResetRequestsDao,
+  usersDao: UsersDao
+) {
 
   def post() = AnonymousRequest(parse.json) { request =>
     request.body.validate[PasswordResetRequest] match {
@@ -15,8 +20,8 @@ object PasswordResetRequests extends Controller {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[PasswordResetRequest] => {
-        UsersDao.findByEmail(s.get.email).map { user =>
-          PasswordResetRequestsDao.create(request.user, user)
+        usersDao.findByEmail(s.get.email).map { user =>
+          passwordResetRequestsDao.create(request.user, user)
         }
         NoContent
       }

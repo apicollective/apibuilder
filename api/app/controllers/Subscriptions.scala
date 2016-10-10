@@ -4,14 +4,15 @@ import db.{Authorization, SubscriptionsDao}
 import lib.Validation
 import com.bryzek.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm, User}
 import com.bryzek.apidoc.api.v0.models.json._
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-object Subscriptions extends Controller with Subscriptions
-
-trait Subscriptions {
-  this: Controller =>
+@Singleton
+class Subscriptions @Inject() (
+  subscriptionsDao: SubscriptionsDao
+) {
 
   def get(
     guid: Option[UUID],
@@ -21,7 +22,7 @@ trait Subscriptions {
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
-    val subscriptions = SubscriptionsDao.findAll(
+    val subscriptions = subscriptionsDaofindAll(
       request.authorization,
       guid = guid,
       organizationKey = organizationKey,
@@ -34,7 +35,7 @@ trait Subscriptions {
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>
-    SubscriptionsDao.findByUserAndGuid(request.user, guid) match {
+    subscriptionsDaofindByUserAndGuid(request.user, guid) match {
       case None => NotFound
       case Some(subscription) => Ok(Json.toJson(subscription))
     }
@@ -47,9 +48,9 @@ trait Subscriptions {
       }
       case s: JsSuccess[SubscriptionForm] => {
         val form = s.get
-        SubscriptionsDao.validate(request.user, form) match {
+        subscriptionsDaovalidate(request.user, form) match {
           case Nil => {
-            val subscription = SubscriptionsDao.create(request.user, form)
+            val subscription = subscriptionsDaocreate(request.user, form)
             Created(Json.toJson(subscription))
           }
           case errors => {
@@ -61,8 +62,8 @@ trait Subscriptions {
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    SubscriptionsDao.findByUserAndGuid(request.user, guid).map { subscription =>
-      SubscriptionsDao.softDelete(request.user, subscription)
+    subscriptionsDaofindByUserAndGuid(request.user, guid).map { subscription =>
+      subscriptionsDaosoftDelete(request.user, subscription)
     }
     NoContent
   }

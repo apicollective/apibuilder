@@ -118,7 +118,7 @@ class VersionsDao @Inject() (
       'created_by_guid -> user.guid
     ).execute()
 
-    OriginalsDao.create(c, user, guid, original)
+    originalsDao.create(c, user, guid, original)
     softDeleteService(c, user, guid)
     insertService(c, user, guid, service)
 
@@ -128,7 +128,7 @@ class VersionsDao @Inject() (
   def softDelete(deletedBy: User, version: Version) {
     DB.withTransaction { implicit c =>
       softDeleteService(c, deletedBy, version.guid)
-      OriginalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
+      originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
 
       SQL(DeleteQuery).on(
         'guid -> version.guid,
@@ -142,7 +142,7 @@ class VersionsDao @Inject() (
   ) (
     implicit c: java.sql.Connection
   ): UUID = {
-    TasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid))
+    tasksDao.insert(c, user, TaskDataDiffVersion(oldVersionGuid = oldVersionGuid, newVersionGuid = newVersionGuid))
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
@@ -161,17 +161,17 @@ class VersionsDao @Inject() (
   }
 
   def findVersion(authorization: Authorization, orgKey: String, applicationKey: String, version: String): Option[Version] = {
-    ApplicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
+    applicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
       if (version == LatestVersion) {
-        VersionsDao.findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
+        versionsDao.findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
       } else {
-        VersionsDao.findByApplicationAndVersion(authorization, application, version)
+        versionsDao.findByApplicationAndVersion(authorization, application, version)
       }
     }
   }
 
   def findByApplicationAndVersion(authorization: Authorization, application: Application, version: String): Option[Version] = {
-    VersionsDao.findAll(
+    versionsDao.findAll(
       authorization,
       applicationGuid = Some(application.guid),
       version = Some(version),
@@ -283,7 +283,7 @@ class VersionsDao @Inject() (
               bad += 1
             }
             case Right(service) => {
-              insertService(c, UsersDao.AdminUser, versionGuid, service)
+              insertService(c, usersDao.AdminUser, versionGuid, service)
               good += 1
             }
           }

@@ -4,11 +4,13 @@ import com.bryzek.apidoc.api.v0.models.{Original, OriginalType, Validation}
 import com.bryzek.apidoc.api.v0.models.json._
 import core.ServiceFetcher
 import lib.{DatabaseServiceFetcher, OriginalUtil, ServiceConfiguration}
+import javax.inject.{Inject, Singleton}
 import builder.OriginalValidator
 import play.api.mvc._
 import play.api.libs.json._
 
-object Validations extends Controller {
+@Singleton
+class Validations @Inject() () {
 
   private[this] val config = ServiceConfiguration(
     orgKey = "tmp",

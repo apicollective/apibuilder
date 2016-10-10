@@ -15,11 +15,11 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite {
   implicit override lazy val port = 9010
   implicit override lazy val app: FakeApplication = FakeApplication()
 
-  lazy val TestUser = UsersDao.create(createUserForm())
+  lazy val TestUser = usersDao.create(createUserForm())
 
   lazy val apiToken = {
-    val token = TokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
-    TokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
+    val token = tokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
+    tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
 
   lazy val apiAuth = com.bryzek.apidoc.api.v0.Authorization.Basic(apiToken)

@@ -7,16 +7,22 @@ import lib.ServiceConfiguration
 import builder.OriginalValidator
 import lib.{DatabaseServiceFetcher, OriginalUtil, Validation}
 import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
+import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
 
-object Versions extends Controller {
+@Singleton
+class Versions @Inject() (
+  applicationsDao: ApplicationsDao,
+  organizationsDao: OrganizationsDao,
+  versionsDao: VersionsDao
+) {
 
   private[this] val DefaultVisibility = Visibility.Organization
 
   def getByApplicationKey(orgKey: String, applicationKey: String, limit: Long = 25, offset: Long = 0) = AnonymousRequest { request =>
-    val versions = ApplicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
-      VersionsDao.findAll(
+    val versions = applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey).map { application =>
+      versionsDao.findAll(
         request.authorization,
         applicationGuid = Some(application.guid),
         limit = limit,
@@ -27,7 +33,7 @@ object Versions extends Controller {
   }
 
   def getByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = AnonymousRequest { request =>
-    VersionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
+    versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
       case None => NotFound
       case Some(v: Version) => Ok(Json.toJson(v))
     }
@@ -37,7 +43,7 @@ object Versions extends Controller {
     orgKey: String,
     versionName: String
   ) = Authenticated { request =>
-    OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
+    organizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
       }
@@ -90,7 +96,7 @@ object Versions extends Controller {
     applicationKey: String,
     versionName: String
   ) = Authenticated { request =>
-    OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
+    organizationsDao.findByUserAndKey(request.user, orgKey) match {
       case None => {
         Conflict(Json.toJson(Validation.error(s"Organization[$orgKey] does not exist or you are not authorized to access it")))
       }
@@ -139,10 +145,10 @@ object Versions extends Controller {
 
   def deleteByApplicationKeyAndVersion(orgKey: String, applicationKey: String, version: String) = Authenticated { request =>
     val auth = Authorization.User(request.user.guid)
-    OrganizationsDao.findByKey(auth, orgKey) map { org =>
+    organizationsDao.findByKey(auth, orgKey) map { org =>
       request.requireMember(org)
-      VersionsDao.findVersion(auth, orgKey, applicationKey, version).map { version =>
-        VersionsDao.softDelete(request.user, version)
+      versionsDao.findVersion(auth, orgKey, applicationKey, version).map { version =>
+        versionsDao.softDelete(request.user, version)
       }
     }
     NoContent
@@ -157,7 +163,7 @@ object Versions extends Controller {
     service: Service,
     applicationKey: Option[String] = None
   ): Either[Seq[Error], Version] = {
-    val appResult = applicationKey.flatMap { key => ApplicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) } match {
+    val appResult = applicationKey.flatMap { key => applicationsDao.findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) } match {
       case None => {
         val appForm = ApplicationForm(
           key = applicationKey,
@@ -165,15 +171,15 @@ object Versions extends Controller {
           description = service.description,
           visibility = form.visibility.getOrElse(DefaultVisibility)
         )
-        ApplicationsDao.validate(org, appForm) match {
-          case Nil => Right(ApplicationsDao.create(user, org, appForm))
+        applicationsDao.validate(org, appForm) match {
+          case Nil => Right(applicationsDao.create(user, org, appForm))
           case errors => Left(errors)
         }
       }
       case Some(app) => {
         form.visibility.map { v =>
           if (app.visibility != v) {
-            ApplicationsDao.setVisibility(user, app, v)
+            applicationsDao.setVisibility(user, app, v)
           }
         }
         Right(app)
@@ -186,9 +192,9 @@ object Versions extends Controller {
       }
 
       case Right(application) => {
-        val version = VersionsDao.findByApplicationAndVersion(Authorization.User(user.guid), application, versionName) match {
-          case None => VersionsDao.create(user, application, versionName, original, service)
-          case Some(existing: Version) => VersionsDao.replace(user, existing, application, original, service)
+        val version = versionsDao.findByApplicationAndVersion(Authorization.User(user.guid), application, versionName) match {
+          case None => versionsDao.create(user, application, versionName, original, service)
+          case Some(existing: Version) => versionsDao.replace(user, existing, application, original, service)
         }
         Right(version)
       }

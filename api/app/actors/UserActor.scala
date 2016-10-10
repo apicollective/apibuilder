@@ -13,12 +13,12 @@ object UserActor {
   }
 
   def userCreated(guid: UUID) {
-    UsersDao.findByGuid(guid).map { user =>
-      OrganizationsDao.findByEmailDomain(user.email).foreach { org =>
-        MembershipRequestsDao.upsert(user, org, user, Role.Member)
+    usersDao.findByGuid(guid).map { user =>
+      organizationsDao.findByEmailDomain(user.email).foreach { org =>
+        membershipRequestsDao.upsert(user, org, user, Role.Member)
       }
 
-      EmailVerificationsDao.create(user, user, user.email)
+      emailVerificationsDao.create(user, user, user.email)
     }
   }
 

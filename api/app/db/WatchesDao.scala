@@ -18,12 +18,12 @@ case class FullWatchForm(
 
   private[this] val auth = Authorization.User(createdBy.guid)
 
-  val org: Option[Organization] = OrganizationsDao.findByKey(auth, form.organizationKey)
+  val org: Option[Organization] = organizationsDao.findByKey(auth, form.organizationKey)
   val application: Option[Application] = org.flatMap { o =>
-    ApplicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
+    applicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
   }
 
-  val user = UsersDao.findByGuid(form.userGuid)
+  val user = usersDao.findByGuid(form.userGuid)
 
   lazy val validate: Seq[Error] = {
     val applicationKeyErrors = application match {
@@ -172,9 +172,9 @@ class WatchesDao @Inject() () {
   ): Watch = {
     Watch(
       guid = row[UUID]("guid"),
-      user = UsersDao.fromRow(row, Some("user")),
-      organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
-      application = ApplicationsDao.fromRow(row, Some("application")),
+      user = usersDao.fromRow(row, Some("user")),
+      organization = organizationsDao.summaryFromRow(row, Some("organization")),
+      application = applicationsDao.fromRow(row, Some("application")),
       audit = AuditsDao.fromRowCreation(row)
     )
   }

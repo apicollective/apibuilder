@@ -12,7 +12,7 @@ object Util {
 
   def createRandomUser(): User = {
     val email = "random-user-" + UUID.randomUUID.toString + "@test.apidoc.me"
-    UsersDao.create(UserForm(email = email, password = "test1"))
+    usersDao.create(UserForm(email = email, password = "test1"))
   }
 
   def upsertUser(
@@ -20,13 +20,13 @@ object Util {
     name: String = "Admin",
     password: String = "test1"
   ): User = {
-    UsersDao.findByEmail(email).getOrElse {
-      UsersDao.create(UserForm(email = email, name = Some(name), password = password))
+    usersDao.findByEmail(email).getOrElse {
+      usersDao.create(UserForm(email = email, name = Some(name), password = password))
     }
   }
 
   def upsertOrganization(name: String): Organization = {
-    OrganizationsDao.findAll(Authorization.All, name = Some(name)).headOption.getOrElse {
+    organizationsDao.findAll(Authorization.All, name = Some(name)).headOption.getOrElse {
       createOrganization(name = Some(name))
     }
   }
@@ -44,7 +44,7 @@ object Util {
       namespace = namespace.getOrElse("test." + UUID.randomUUID.toString),
       visibility = visibility
     )
-    OrganizationsDao.createWithAdministrator(createdBy, form)
+    organizationsDao.createWithAdministrator(createdBy, form)
   }
 
   def createOrganizationForm(
@@ -65,7 +65,7 @@ object Util {
     org: Organization = createOrganization(),
     form: ApplicationForm = createApplicationForm()
   ): Application = {
-    ApplicationsDao.create(Util.createdBy, org, form)
+    applicationsDao.create(Util.createdBy, org, form)
   }
 
   def createApplicationForm(
@@ -86,7 +86,7 @@ object Util {
     original: Original = createOriginal(),
     service: Option[spec.Service] = None
   ): Version = {
-    VersionsDao.create(
+    versionsDao.create(
       Util.createdBy,
       application,
       version,
@@ -112,10 +112,10 @@ object Util {
     user: User = Util.createRandomUser(),
     role: Role = Role.Admin
   ): com.bryzek.apidoc.api.v0.models.Membership = {
-    val request = MembershipRequestsDao.upsert(Util.createdBy, org, user, role)
-    MembershipRequestsDao.accept(Util.createdBy, request)
+    val request = membershipRequestsDao.upsert(Util.createdBy, org, user, role)
+    membershipRequestsDao.accept(Util.createdBy, request)
 
-    MembershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
+    membershipsDao.findByOrganizationAndUserAndRole(Authorization.All, org, user, role).getOrElse {
       sys.error("membership could not be created")
     }
   }
@@ -125,7 +125,7 @@ object Util {
     user: User = Util.createRandomUser(),
     publication: Publication = Publication.all.head
   ): Subscription = {
-    SubscriptionsDao.create(
+    subscriptionsDaocreate(
       Util.createdBy,
       SubscriptionForm(
         organizationKey = org.key,
@@ -152,7 +152,7 @@ object Util {
   )
 
 
-  lazy val createdBy = UsersDao.AdminUser
+  lazy val createdBy = usersDao.AdminUser
 
   lazy val gilt = upsertOrganization("Gilt Test Org")
 

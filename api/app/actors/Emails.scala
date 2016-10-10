@@ -1,13 +1,19 @@
 package actors
 
+import akka.actor._
 import com.bryzek.apidoc.api.v0.models.{Application, Organization, Publication, Subscription, User, Visibility}
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
+import javax.inject.{Inject, Singleton}
 import lib.{Config, Email, Pager, Person}
-import akka.actor._
 import play.api.Logger
 import play.api.Play.current
 
-object Emails {
+@Singleton
+class Emails @Inject() (
+  applicationsDao: ApplicationsDao,
+  membershipsDao: MembershipsDao,
+  subscriptionsDao: SubscriptionsDao
+) {
 
   /**
     * Context is used to enforce permissions - only delivering email
@@ -51,7 +57,7 @@ object Emails {
     f: Subscription => Unit
   ) {
     Pager.eachPage[Subscription] { offset =>
-      SubscriptionsDao.findAll(
+      subscriptionsDao.findAll(
         Authorization.All,
         organization = Some(organization),
         publication = Some(publication),
@@ -81,7 +87,7 @@ object Emails {
         app.visibility match {
           case Visibility.Public => true
           case Visibility.User | Visibility.Organization => {
-            ApplicationsDao.findByGuid(Authorization.User(user.guid), app.guid) match {
+            applicationsDao.findByGuid(Authorization.User(user.guid), app.guid) match {
               case None => false
               case Some(_) => true
             }
@@ -93,10 +99,10 @@ object Emails {
         }
       }
       case Emails.Context.OrganizationAdmin => {
-        MembershipsDao.isUserAdmin(user, organization)
+        membershipsDao.isUserAdmin(user, organization)
       }
       case Emails.Context.OrganizationMember => {
-        MembershipsDao.isUserMember(user, organization)
+        membershipsDao.isUserMember(user, organization)
       }
     }
   }

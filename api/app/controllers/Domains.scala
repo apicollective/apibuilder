@@ -7,7 +7,11 @@ import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._
 
-object Domains extends Controller {
+@Singleton
+class Domains @Inject() (
+  organizationsDao: OrganizationsDao,
+  organizationDomainsDao: OrganizationDomainsDao
+) extends Controller {
 
   def post(orgKey: String) = Authenticated(parse.json) { request =>
     request.body.validate[Domain] match {
@@ -16,13 +20,13 @@ object Domains extends Controller {
       }
       case s: JsSuccess[Domain] => {
         val form = s.get
-        OrganizationsDao.findByUserAndKey(request.user, orgKey) match {
+        organizationsDao.findByUserAndKey(request.user, orgKey) match {
           case None => NotFound
           case Some(org) => {
             request.requireAdmin(org)
-            OrganizationDomainsDao.findAll(domain = Some(form.name)).headOption match {
+            organizationDomainsDao.findAll(domain = Some(form.name)).headOption match {
               case None => {
-                val od = OrganizationDomainsDao.create(request.user, org, form.name)
+                val od = organizationDomainsDao.create(request.user, org, form.name)
                 Ok(Json.toJson(od.toDomain))
               }
               case Some(d) => {
@@ -36,11 +40,11 @@ object Domains extends Controller {
   }
 
   def deleteByName(orgKey: String, name: String) = Authenticated { request =>
-    OrganizationsDao.findByUserAndKey(request.user, orgKey).map { org =>
+    organizationsDao.findByUserAndKey(request.user, orgKey).map { org =>
       request.requireAdmin(org)
       org.domains.find(_.name == name).map { domain =>
-        OrganizationDomainsDao.findAll(organizationGuid = Some(org.guid), domain = Some(domain.name)).map { orgDomain =>
-          OrganizationDomainsDao.softDelete(request.user, orgDomain)
+        organizationDomainsDao.findAll(organizationGuid = Some(org.guid), domain = Some(domain.name)).map { orgDomain =>
+          organizationDomainsDao.softDelete(request.user, orgDomain)
         }
       }
     }

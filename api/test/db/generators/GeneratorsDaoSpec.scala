@@ -11,16 +11,16 @@ class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication 
     it("is a no-op if no data has changed") {
       val service = Util.createGeneratorService()
       val form = Util.createGeneratorForm(service)
-      GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) should be(Nil)
+      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) should be(Nil)
 
-      GeneratorsDao.upsert(db.Util.createdBy, form)
-      val gws = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
+      generatorsDao.upsert(db.Util.createdBy, form)
+      val gws = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       gws.generator.key should be(form.generator.key)
 
-      GeneratorsDao.upsert(db.Util.createdBy, form)
-      val second = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
+      generatorsDao.upsert(db.Util.createdBy, form)
+      val second = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       second should be(gws)
@@ -29,10 +29,10 @@ class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication 
     it("change record if no data has changed") {
       val service = Util.createGeneratorService()
       val form = Util.createGeneratorForm(service = service)
-      GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) should be(Nil)
+      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)) should be(Nil)
 
-      GeneratorsDao.upsert(db.Util.createdBy, form)
-      val gws = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
+      generatorsDao.upsert(db.Util.createdBy, form)
+      val gws = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       gws.generator.key should be(form.generator.key)
@@ -41,8 +41,8 @@ class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication 
         serviceGuid = service.guid,
         generator = form.generator.copy(name = form.generator.name + "2")
       )
-      GeneratorsDao.upsert(db.Util.createdBy, newForm)
-      val second = GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
+      generatorsDao.upsert(db.Util.createdBy, newForm)
+      val second = generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.getOrElse {
         sys.error("Failed to create generator record")
       }
       second.generator.name should be(form.generator.name + "2")
@@ -53,8 +53,8 @@ class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication 
 
   it("softDelete") {
     val gws = Util.createGenerator()
-    GeneratorsDao.softDelete(db.Util.createdBy, gws)
-    GeneratorsDao.findAll(Authorization.All, key = Some(gws.generator.key)) should be(Nil)
+    generatorsDao.softDelete(db.Util.createdBy, gws)
+    generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key)) should be(Nil)
   }
 
   describe("findAll") {
@@ -62,18 +62,18 @@ class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication 
     it("serviceGuid") {
       val service = Util.createGeneratorService()
       val gws = Util.createGenerator(service)
-      GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).map(_.generator.key) should be(Seq(gws.generator.key))
-      GeneratorsDao.findAll(Authorization.All, serviceGuid = Some(UUID.randomUUID)) should be(Nil)
+      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).map(_.generator.key) should be(Seq(gws.generator.key))
+      generatorsDao.findAll(Authorization.All, serviceGuid = Some(UUID.randomUUID)) should be(Nil)
     }
 
     it("isDeleted") {
       val gws = Util.createGenerator()
-      GeneratorsDao.findAll(Authorization.All, key = Some(gws.generator.key)).map(_.generator.key) should be(Seq(gws.generator.key))
+      generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key)).map(_.generator.key) should be(Seq(gws.generator.key))
 
-      GeneratorsDao.softDelete(db.Util.createdBy, gws)
-      GeneratorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = None).map(_.generator.key) should be(Seq(gws.generator.key))
-      GeneratorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = Some(true)).map(_.generator.key) should be(Seq(gws.generator.key))
-      GeneratorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = Some(false)) should be(Nil)
+      generatorsDao.softDelete(db.Util.createdBy, gws)
+      generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = None).map(_.generator.key) should be(Seq(gws.generator.key))
+      generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = Some(true)).map(_.generator.key) should be(Seq(gws.generator.key))
+      generatorsDao.findAll(Authorization.All, key = Some(gws.generator.key), isDeleted = Some(false)) should be(Nil)
     }
 
   }

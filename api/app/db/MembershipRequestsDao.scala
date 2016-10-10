@@ -102,9 +102,9 @@ class MembershipRequestsDao @Inject() (
     }
 
     DB.withTransaction { implicit conn =>
-      OrganizationLogsDao.create(createdBy, request.organization, message)
-      MembershipRequestsDao.softDelete(createdBy, request)
-      MembershipsDao.upsert(createdBy, request.organization, request.user, r)
+      organizationLogsDao.create(createdBy, request.organization, message)
+      membershipRequestsDao.softDelete(createdBy, request)
+      membershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
 
     mainActor ! actors.MainActor.Messages.MembershipRequestAccepted(request.organization.guid, request.user.guid, r)
@@ -122,8 +122,8 @@ class MembershipRequestsDao @Inject() (
 
     val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
     DB.withTransaction { implicit conn =>
-      OrganizationLogsDao.create(createdBy, request.organization, message)
-      MembershipRequestsDao.softDelete(createdBy, request)
+      organizationLogsDao.create(createdBy, request.organization, message)
+      membershipRequestsDao.softDelete(createdBy, request)
     }
 
     mainActor ! actors.MainActor.Messages.MembershipRequestDeclined(request.organization.guid, request.user.guid, r)
@@ -131,7 +131,7 @@ class MembershipRequestsDao @Inject() (
 
   private[this] def assertUserCanReview(user: User, request: MembershipRequest) {
     require(
-      MembershipsDao.isUserAdmin(user, request.organization),
+      membershipsDao.isUserAdmin(user, request.organization),
       s"User[${user.guid}] is not an administrator of org[${request.organization.guid}]"
     )
   }
@@ -195,8 +195,8 @@ class MembershipRequestsDao @Inject() (
       SQL(sql).on(bind: _*)().toList.map { row =>
         MembershipRequest(
           guid = row[UUID]("guid"),
-          organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
-          user = UsersDao.fromRow(row, Some("user")),
+          organization = organizationsDao.summaryFromRow(row, Some("organization")),
+          user = usersDao.fromRow(row, Some("user")),
           role = row[String]("role"),
           audit = AuditsDao.fromRowCreation(row)
         )

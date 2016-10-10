@@ -9,22 +9,22 @@ class OrganizationDomainsDaoSpec extends FunSpec with Matchers with util.TestApp
   it("create") {
     val domainName = UUID.randomUUID.toString + ".org"
     val org = Util.createOrganization()
-    val domain = OrganizationDomainsDao.create(Util.createdBy, org, domainName)
+    val domain = organizationDomainsDao.create(Util.createdBy, org, domainName)
     domain.domain should be(domainName)
 
-    OrganizationDomainsDao.findAll(guid = Some(domain.guid)).map(_.guid) should be(Seq(domain.guid))
+    organizationDomainsDao.findAll(guid = Some(domain.guid)).map(_.guid) should be(Seq(domain.guid))
 
-    OrganizationDomainsDao.softDelete(Util.createdBy, domain)
-    OrganizationDomainsDao.findAll(guid = Some(domain.guid)) should be(Seq.empty)
+    organizationDomainsDao.softDelete(Util.createdBy, domain)
+    organizationDomainsDao.findAll(guid = Some(domain.guid)) should be(Seq.empty)
   }
 
   it("findAll") {
     val domainName = UUID.randomUUID.toString + ".org"
     val org = Util.createOrganization()
-    val domain = OrganizationDomainsDao.create(Util.createdBy, org, domainName)
+    val domain = organizationDomainsDao.create(Util.createdBy, org, domainName)
 
-    OrganizationDomainsDao.findAll(organizationGuid = Some(org.guid)).map(_.guid) should be(Seq(domain.guid))
-    OrganizationDomainsDao.findAll(organizationGuid = Some(UUID.randomUUID)).map(_.guid) should be(Seq.empty)
+    organizationDomainsDao.findAll(organizationGuid = Some(org.guid)).map(_.guid) should be(Seq(domain.guid))
+    organizationDomainsDao.findAll(organizationGuid = Some(UUID.randomUUID)).map(_.guid) should be(Seq.empty)
   }
 
 }

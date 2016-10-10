@@ -204,7 +204,7 @@ class OrganizationsDao @Inject() (
     ).execute()
 
     org.domains.foreach { domain =>
-      OrganizationDomainsDao.create(c, user, org, domain.name)
+      organizationDomainsDao.create(c, user, org, domain.name)
     }
 
     org

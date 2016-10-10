@@ -22,7 +22,7 @@ object GeneratorServiceActor {
   }
 
   def sync(serviceGuid: UUID)(implicit ec: scala.concurrent.ExecutionContext) {
-    ServicesDao.findByGuid(Authorization.All, serviceGuid).map { sync(_) }
+    servicesDao.findByGuid(Authorization.All, serviceGuid).map { sync(_) }
   }
 
   def sync(
@@ -50,8 +50,8 @@ object GeneratorServiceActor {
       }
 
       generators.foreach { gen =>
-        GeneratorsDao.upsert(
-          UsersDao.AdminUser,
+        generatorsDao.upsert(
+          usersDao.AdminUser,
           GeneratorForm(
             serviceGuid = service.guid,
             generator = gen

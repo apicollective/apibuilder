@@ -10,10 +10,10 @@ import play.api.libs.json._
 import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
-object GeneratorServices extends Controller with GeneratorServices
-
-trait GeneratorServices {
-  this: Controller =>
+@Singleton
+class GeneratorServices @Inject() (
+  servicesDao: ServicesDao
+) extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -24,7 +24,7 @@ trait GeneratorServices {
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
-    val services = ServicesDao.findAll(
+    val services = servicesDao.findAll(
       request.authorization,
       guid = guid,
       uri = uri,
@@ -36,7 +36,7 @@ trait GeneratorServices {
   }
 
   def getByGuid(guid: UUID) = AnonymousRequest { request =>
-    ServicesDao.findByGuid(request.authorization, guid) match {
+    servicesDao.findByGuid(request.authorization, guid) match {
       case None => NotFound
       case Some(service) => Ok(Json.toJson(service))
     }
@@ -49,16 +49,16 @@ trait GeneratorServices {
       }
       case s: JsSuccess[GeneratorServiceForm] => {
         val form = s.get
-        ServicesDao.validate(form) match {
+        servicesDao.validate(form) match {
           case Nil => {
-            val service = ServicesDao.create(request.user, form)
+            val service = servicesDao.create(request.user, form)
 
             // Now try to do the initial update; if it fails we delete the generator service.
             // TODO: Refactor so we can validate w/out creating first.
             Try(actors.GeneratorServiceActor.sync(service)) match {
               case Success(_) => Ok(Json.toJson(service))
               case Failure(ex) => {
-                ServicesDao.softDelete(request.user, service)
+                servicesDao.softDelete(request.user, service)
                 Conflict(Json.toJson(Validation.error(s"Failed to fetch generators from service: ${ex.getMessage}")))
               }
             }
@@ -75,14 +75,14 @@ trait GeneratorServices {
   def deleteByGuid(
     guid: UUID
   ) = Authenticated { request =>
-    ServicesDao.findByGuid(request.authorization, guid) match {
+    servicesDao.findByGuid(request.authorization, guid) match {
       case None => {
         NotFound
       }
       case Some(service) => {
         // TODO: Generalize permission check
         if (service.audit.createdBy.guid == request.user.guid) {
-          ServicesDao.softDelete(request.user, service)
+          servicesDao.softDelete(request.user, service)
           NoContent
         } else {
           Forbidden

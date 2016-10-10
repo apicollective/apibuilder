@@ -28,7 +28,7 @@ class EmailsSpec extends FunSpec with Matchers with util.TestApplication {
     lazy val formerMember = {
       val user = db.Util.createRandomUser()
       val membership = db.Util.createMembership(org, user)
-      MembershipsDao.softDelete(user, membership)
+      membershipsDao.softDelete(user, membership)
       user
     }
 
