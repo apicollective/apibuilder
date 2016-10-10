@@ -1,5 +1,6 @@
 package actors
 
+import akka.actor.{Actor, ActorLogging, ActorSystem}
 import lib.Pager
 import com.bryzek.apidoc.api.v0.models.{GeneratorForm, GeneratorService}
 import com.bryzek.apidoc.generator.v0.Client
@@ -65,29 +66,31 @@ object GeneratorServiceActor {
 
 }
 
-class GeneratorServiceActor extends Actor {
+@javax.inject.Singleton
+class GeneratorServiceActor @javax.inject.Inject() (
+  system: ActorSystem
+) extends Actor with ActorLogging with ErrorHandler {
+
+  implicit val ec = system.dispatchers.lookup("generator-service-actor-context")
 
   def receive = {
 
-    case GeneratorServiceActor.Messages.GeneratorServiceCreated(guid) => Util.withVerboseErrorHandler(
-      s"GeneratorServiceActor.Messages.GeneratorServiceCreated($guid)", {
-        createSyncTask(guid)
-      }
-    )
+    case m @ GeneratorServiceActor.Messages.GeneratorServiceCreated(guid) => withVerboseErrorHandler(m) {
+      createSyncTask(guid)
+    }
 
-    case GeneratorServiceActor.Messages.Sync => Util.withVerboseErrorHandler(
-      s"GeneratorServiceActor.Messages.Sync", {
-        Pager.eachPage { offset =>
-          ServicesDao.findAll(
-            Authorization.All,
-            offset = offset
-          )
-        } { service =>
-          createSyncTask(service.guid)
-        }
+    case m @ GeneratorServiceActor.Messages.Sync => withVerboseErrorHandler(m) {
+      Pager.eachPage { offset =>
+        ServicesDao.findAll(
+          Authorization.All,
+          offset = offset
+        )
+      } { service =>
+        createSyncTask(service.guid)
       }
-    )
+    }
 
+    case m: Any => logUnhandledMessage(m)      
   }
 
   def createSyncTask(serviceGuid: UUID) {
