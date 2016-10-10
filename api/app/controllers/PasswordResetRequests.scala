@@ -12,7 +12,7 @@ import play.api.libs.json._
 class PasswordResetRequests @Inject() (
   passwordResetRequestsDao: PasswordResetRequestsDao,
   usersDao: UsersDao
-) {
+) extends Controller {
 
   def post() = AnonymousRequest(parse.json) { request =>
     request.body.validate[PasswordResetRequest] match {

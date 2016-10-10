@@ -10,7 +10,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class Items @Inject() (
   itemsDao: ItemsDao
-) {
+) extends Controller {
 
   def get(
     q: Option[String],

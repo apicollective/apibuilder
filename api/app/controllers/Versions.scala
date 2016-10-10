@@ -16,7 +16,7 @@ class Versions @Inject() (
   applicationsDao: ApplicationsDao,
   organizationsDao: OrganizationsDao,
   versionsDao: VersionsDao
-) {
+) extends Controller {
 
   private[this] val DefaultVisibility = Visibility.Organization
 

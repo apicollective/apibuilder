@@ -11,7 +11,7 @@ import play.api.libs.json.Json
 @Singleton
 class Memberships @Inject() (
   membershipsDao: MembershipsDao
-) {
+) extends Controller {
 
   def get(
     organizationGuid: Option[UUID],

@@ -13,7 +13,7 @@ import java.util.UUID
 class Users @Inject() (
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao
-) {
+) extends Controller {
 
   case class UserAuthenticationForm(email: String, password: String)
   object UserAuthenticationForm {

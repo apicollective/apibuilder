@@ -11,7 +11,7 @@ class Healthchecks @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   organizationsDao: OrganizationsDao,
   versionsDao: VersionsDao
-) {
+) extends Controller {
 
   private[this] val Result = Json.toJson(Map("status" -> "healthy"))
 

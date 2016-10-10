@@ -70,7 +70,7 @@ class SubscriptionsDao @Inject() (
     val alreadySubscribed = org match {
       case None => Seq.empty
       case Some(o) => {
-        subscriptionsDaofindAll(
+        subscriptionsDao.findAll(
           Authorization.All,
           organization = Some(o),
           userGuid = Some(form.userGuid),

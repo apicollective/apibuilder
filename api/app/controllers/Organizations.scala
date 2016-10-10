@@ -14,7 +14,7 @@ class Organizations @Inject() (
   attributesDao: AttributesDao,
   organizationsDao: OrganizationsDao,
   organizationAttributeValuesDao: OrganizationAttributeValuesDao
-) {
+) extends Controller {
 
   def get(
     guid: Option[UUID],

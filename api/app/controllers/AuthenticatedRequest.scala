@@ -24,7 +24,7 @@ private[controllers] case class UserAuth(
 case class AuthHeaders(
   authorization: Option[String],
   userGuid: Option[String]
-) {
+) extends Controller {
 
   def toSeq(): Seq[(String, String)] = {
     Seq(

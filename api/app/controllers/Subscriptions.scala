@@ -12,7 +12,7 @@ import java.util.UUID
 @Singleton
 class Subscriptions @Inject() (
   subscriptionsDao: SubscriptionsDao
-) {
+) extends Controller {
 
   def get(
     guid: Option[UUID],

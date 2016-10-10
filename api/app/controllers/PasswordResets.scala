@@ -13,7 +13,7 @@ class PasswordResets @Inject() (
   passwordResetRequestsDao: PasswordResetRequestsDao,
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao
-) {
+) extends Controller {
 
   def post() = AnonymousRequest(parse.json) { request =>
     request.body.validate[PasswordReset] match {

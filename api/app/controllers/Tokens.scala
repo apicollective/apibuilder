@@ -12,7 +12,7 @@ import java.util.UUID
 @Singleton
 class Tokens @Inject() (
   tokensDao: TokensDao
-) {
+) extends Controller {
 
   def getUsersByUserGuid(
     userGuid: java.util.UUID,

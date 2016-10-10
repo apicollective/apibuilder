@@ -14,7 +14,8 @@ import java.util.UUID
 
 @Singleton
 class MembershipRequestsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  membershipsDao: MembershipsDao
 ) {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]

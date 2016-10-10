@@ -12,7 +12,7 @@ import java.util.UUID
 @Singleton
 class Watches @Inject() (
   watchesDao: WatchesDao
-) {
+) extends Controller {
 
   def get(
     guid: Option[UUID],
@@ -22,7 +22,7 @@ class Watches @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
-    val watches = WatchesDao.findAll(
+    val watches = watchesDao.findAll(
       request.authorization,
       guid = guid,
       userGuid = userGuid,
@@ -35,7 +35,7 @@ class Watches @Inject() (
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>
-    WatchesDao.findByUserAndGuid(request.user, guid) match {
+    watchesDao.findByUserAndGuid(request.user, guid) match {
       case None => NotFound
       case Some(watch) => Ok(Json.toJson(watch))
     }
@@ -46,7 +46,7 @@ class Watches @Inject() (
     organizationKey: String,
     applicationKey: String
   ) = Authenticated { request =>
-    WatchesDao.findAll(
+    watchesDao.findAll(
       request.authorization,
       userGuid = userGuid,
       organizationKey =  Some(organizationKey),
@@ -67,7 +67,7 @@ class Watches @Inject() (
         val form = FullWatchForm(request.user, s.get)
         form.validate match {
           case Nil => {
-            val watch = WatchesDao.upsert(request.user, form)
+            val watch = watchesDao.upsert(request.user, form)
             Created(Json.toJson(watch))
           }
           case errors => {
@@ -79,8 +79,8 @@ class Watches @Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    WatchesDao.findByUserAndGuid(request.user, guid).map { watch =>
-      WatchesDao.softDelete(request.user, watch)
+    watchesDao.findByUserAndGuid(request.user, guid).map { watch =>
+      watchesDao.softDelete(request.user, watch)
     }
     NoContent
   }

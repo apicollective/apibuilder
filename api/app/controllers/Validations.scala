@@ -10,7 +10,7 @@ import play.api.mvc._
 import play.api.libs.json._
 
 @Singleton
-class Validations @Inject() () {
+class Validations @Inject() () extends Controller {
 
   private[this] val config = ServiceConfiguration(
     orgKey = "tmp",

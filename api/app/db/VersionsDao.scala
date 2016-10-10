@@ -19,7 +19,11 @@ import java.util.UUID
 
 @Singleton
 class VersionsDao @Inject() (
-  @Named("main-actor") mainActor: akka.actor.ActorRef
+  @Named("main-actor") mainActor: akka.actor.ActorRef,
+  applicationsDao: ApplicationsDao,
+  originalsDao: OriginalsDao,
+  tasksDao: TasksDao,
+  usersDao: UsersDao
 ) {
 
   private[this] val LatestVersion = "latest"
@@ -163,15 +167,15 @@ class VersionsDao @Inject() (
   def findVersion(authorization: Authorization, orgKey: String, applicationKey: String, version: String): Option[Version] = {
     applicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
       if (version == LatestVersion) {
-        versionsDao.findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
+        findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
       } else {
-        versionsDao.findByApplicationAndVersion(authorization, application, version)
+        findByApplicationAndVersion(authorization, application, version)
       }
     }
   }
 
   def findByApplicationAndVersion(authorization: Authorization, application: Application, version: String): Option[Version] = {
-    versionsDao.findAll(
+    findAll(
       authorization,
       applicationGuid = Some(application.guid),
       version = Some(version),
