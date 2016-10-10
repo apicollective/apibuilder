@@ -2,7 +2,7 @@ package db
 
 import org.scalatest.{FunSpec, Matchers}
 
-class TokensDaoSpec extends FunSpec with Matchers {
+class TokensDaoSpec extends FunSpec with Matchers with util.Daos {
 
   it("obfuscate") {
     tokensDao.obfuscate("") should be("XXX-XXXX-XXXX")

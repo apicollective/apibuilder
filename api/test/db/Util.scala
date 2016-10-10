@@ -7,7 +7,7 @@ import play.api.libs.json.{Json, JsObject}
 import lib.Role
 import java.util.UUID
 
-object Util {
+object Util extends util.Daos {
   // new play.core.StaticApplication(new java.io.File("."))
 
   def createRandomUser(): User = {
@@ -125,7 +125,7 @@ object Util {
     user: User = Util.createRandomUser(),
     publication: Publication = Publication.all.head
   ): Subscription = {
-    subscriptionsDaocreate(
+    subscriptionsDao.create(
       Util.createdBy,
       SubscriptionForm(
         organizationKey = org.key,
@@ -152,7 +152,9 @@ object Util {
   )
 
 
-  lazy val createdBy = usersDao.AdminUser
+  lazy val createdBy = {
+    play.api.Play.current.injector.instanceOf[db.UsersDao].AdminUser
+  }
 
   lazy val gilt = upsertOrganization("Gilt Test Org")
 

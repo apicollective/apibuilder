@@ -17,9 +17,6 @@ object UserActor {
 @javax.inject.Singleton
 class UserActor @javax.inject.Inject() (
   system: ActorSystem,
-  emailVerificationsDao: EmailVerificationsDao,
-  membershipRequestsDao: MembershipRequestsDao,
-  organizationsDao: OrganizationsDao,
   usersDao: UsersDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
@@ -28,21 +25,11 @@ class UserActor @javax.inject.Inject() (
   def receive = {
 
     case m @ UserActor.Messages.UserCreated(guid) => withVerboseErrorHandler(m) {
-      userCreated(guid)
+      usersDao.processUserCreated(guid)
     }
 
     case m: Any => logUnhandledMessage(m)
 
-  }
-
-  def userCreated(guid: UUID) {
-    usersDao.findByGuid(guid).map { user =>
-      organizationsDao.findByEmailDomain(user.email).foreach { org =>
-        membershipRequestsDao.upsert(user, org, user, Role.Member)
-      }
-
-      emailVerificationsDao.create(user, user, user.email)
-    }
   }
 
 }

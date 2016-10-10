@@ -26,12 +26,12 @@ class PasswordResetsSpec extends BaseSpec {
     val pr = passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
 
     val pwd = "some password"
-    db.userPasswordsDao.isValid(user.guid, pwd) must be(false)
+    userPasswordsDao.isValid(user.guid, pwd) must be(false)
 
     val result = resetPassword(pr.token, pwd)
     result.userGuid must be(user.guid)
 
-    db.userPasswordsDao.isValid(user.guid, pwd) must be(true)
+    userPasswordsDao.isValid(user.guid, pwd) must be(true)
 
     // Make sure token cannot be reused
     intercept[ErrorsResponse] {

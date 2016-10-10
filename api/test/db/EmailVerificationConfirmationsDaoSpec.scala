@@ -6,6 +6,8 @@ import java.util.UUID
 
 class EmailVerificationConfirmationsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
+  def emailVerificationConfirmationsDao = play.api.Play.current.injector.instanceOf[db.EmailVerificationConfirmationsDao]
+
   it("upsert") {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)

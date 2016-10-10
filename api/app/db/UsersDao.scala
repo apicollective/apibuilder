@@ -24,6 +24,8 @@ class UsersDao @Inject() (
 
   // TODO: Inject directly - here because of circular references
   private[this] def emailVerificationsDao = play.api.Play.current.injector.instanceOf[EmailVerificationsDao]
+  private[this] def membershipRequestsDao = play.api.Play.current.injector.instanceOf[MembershipRequestsDao]
+  private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
   private[this] def userPasswordsDao = play.api.Play.current.injector.instanceOf[UserPasswordsDao]
 
   lazy val AdminUser = findByEmail(UsersDao.AdminUserEmail).getOrElse {
@@ -158,6 +160,15 @@ class UsersDao @Inject() (
     mainActor ! actors.MainActor.Messages.UserCreated(guid)
 
     user
+  }
+
+  def processUserCreated(guid: UUID) {
+    findByGuid(guid).foreach { user =>
+      organizationsDao.findByEmailDomain(user.email).foreach { org =>
+        membershipRequestsDao.upsert(user, org, user, Role.Member)
+      }
+      emailVerificationsDao.create(user, user, user.email)
+    }
   }
 
   def findByToken(token: String): Option[User] = {

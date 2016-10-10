@@ -9,14 +9,16 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
+object SubscriptionsDao {
+  val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
+}
+
 @Singleton
 class SubscriptionsDao @Inject() (
   organizationsDao: OrganizationsDao,
   subscriptionsDao: SubscriptionsDao,
   usersDao: UsersDao
 ) {
-
-  val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
 
   private[this] val BaseQuery = s"""
     select subscriptions.guid,
@@ -116,7 +118,7 @@ class SubscriptionsDao @Inject() (
   }
 
   def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User) {
-    PublicationsRequiredAdmin.foreach { publication =>
+    SubscriptionsDao.PublicationsRequiredAdmin.foreach { publication =>
       subscriptionsDao.findAll(
         Authorization.All,
         organization = Some(organization),

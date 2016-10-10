@@ -8,6 +8,8 @@ import java.util.UUID
 
 class EmailVerificationsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
+  def emailVerificationConfirmationsDao = play.api.Play.current.injector.instanceOf[db.EmailVerificationConfirmationsDao]
+
   it("create") {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
@@ -108,8 +110,8 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers with util.TestAppl
         password = "testing"
       ))
 
-      actors.UserActor.userCreated(user.guid)
-      actors.UserActor.userCreated(nonMatchingUser.guid)
+      usersDao.processUserCreated(user.guid)
+      usersDao.processUserCreated(nonMatchingUser.guid)
 
       membershipsDao.isUserMember(user, org) should be(false)
       membershipsDao.isUserMember(nonMatchingUser, org) should be(false)
