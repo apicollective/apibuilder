@@ -39,7 +39,7 @@ class Emails @Inject() (
   private lazy val sendErrorsTo = Config.requiredString("apidoc.sendErrorsTo").split("\\s+")
 
   def deliver(
-    context: Context,
+    context: Emails.Context,
     org: Organization,
     publication: Publication,
     subject: String,
@@ -55,7 +55,7 @@ class Emails @Inject() (
   }
 
   private[this] def eachSubscription(
-    context: Context,
+    context: Emails.Context,
     organization: Organization,
     publication: Publication,
     f: Subscription => Unit
@@ -82,7 +82,7 @@ class Emails @Inject() (
   }
 
   private[actors] def isAuthorized(
-    context: Context,
+    context: Emails.Context,
     organization: Organization,
     user: User
   ): Boolean = {

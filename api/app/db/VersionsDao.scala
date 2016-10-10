@@ -283,7 +283,7 @@ class VersionsDao @Inject() (
               bad += 1
             }
             case Right(service) => {
-              insertService(c, usersDao.AdminUser, versionGuid, service)
+              insertService(c, UsersDao.AdminUser, versionGuid, service)
               good += 1
             }
           }

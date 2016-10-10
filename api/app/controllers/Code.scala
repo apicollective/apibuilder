@@ -22,6 +22,8 @@ import scala.concurrent.Future
 @Singleton
 class Code @Inject() (
   organizationAttributeValuesDao: OrganizationAttributeValuesDao,
+  generatorsDao: GeneratorsDao,
+  servicesDao: ServicesDao,
   versionsDao: VersionsDao
 ) extends Controller {
 

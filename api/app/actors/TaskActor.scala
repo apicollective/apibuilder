@@ -42,7 +42,7 @@ class TaskActor @javax.inject.Inject() (
 
     case m @ TaskActor.Messages.TaskCreated(guid) => withVerboseErrorHandler(m) {
       tasksDao.findByGuid(guid).map { task =>
-        tasksDao.incrementNumberAttempts(usersDao.AdminUser, task)
+        tasksDao.incrementNumberAttempts(UsersDao.AdminUser, task)
 
         task.data match {
           case TaskDataDiffVersion(oldVersionGuid, newVersionGuid) => {
@@ -58,7 +58,7 @@ class TaskActor @javax.inject.Inject() (
           }
 
           case TaskDataUndefinedType(desc) => {
-            tasksDao.recordError(usersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
+            tasksDao.recordError(UsersDao.AdminUser, task, "Task actor got an undefined data type: " + desc)
           }
         }
       }
@@ -98,7 +98,7 @@ class TaskActor @javax.inject.Inject() (
         isDeleted = Some(true),
         deletedAtLeastNDaysAgo = Some(NumberDaysBeforePurge)
       ).foreach { task =>
-        tasksDao.purge(usersDao.AdminUser, task)
+        tasksDao.purge(UsersDao.AdminUser, task)
       }
     }
 
@@ -114,7 +114,7 @@ class TaskActor @javax.inject.Inject() (
           }
           case diffs => {
             changesDao.upsert(
-              createdBy = usersDao.AdminUser,
+              createdBy = UsersDao.AdminUser,
               fromVersion = oldVersion,
               toVersion = newVersion,
               differences = diffs
@@ -171,10 +171,10 @@ class TaskActor @javax.inject.Inject() (
   def processTask[T](task: Task, attempt: Try[T]) {
     attempt match {
       case Success(_) => {
-        tasksDao.softDelete(usersDao.AdminUser, task)
+        tasksDao.softDelete(UsersDao.AdminUser, task)
       }
       case Failure(ex) => {
-        tasksDao.recordError(usersDao.AdminUser, task, ex)
+        tasksDao.recordError(UsersDao.AdminUser, task, ex)
       }
     }
   }

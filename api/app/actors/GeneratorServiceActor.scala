@@ -54,7 +54,7 @@ object GeneratorServiceActor {
 
       generators.foreach { gen =>
         generatorsDao.upsert(
-          usersDao.AdminUser,
+          UsersDao.AdminUser,
           GeneratorForm(
             serviceGuid = service.guid,
             generator = gen
@@ -100,7 +100,7 @@ class GeneratorServiceActor @javax.inject.Inject() (
   }
 
   def createSyncTask(serviceGuid: UUID) {
-    tasksDao.create(usersDao.AdminUser, TaskDataSyncService(serviceGuid))
+    tasksDao.create(UsersDao.AdminUser, TaskDataSyncService(serviceGuid))
   }
 
 }
