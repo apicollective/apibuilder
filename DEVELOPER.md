@@ -52,7 +52,7 @@ Memory settings for SBT:
 Developing
 ==========
 
-You'll need to run the postgresql database. Two options:
+You'll need to run the postgresql database (version 9.5 or greater). Two options:
 
   1. docker run -d -p 5432:5432 mbryzek/apidoc-postgresql:latest
 
