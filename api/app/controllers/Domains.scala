@@ -3,6 +3,7 @@ package controllers
 import com.bryzek.apidoc.api.v0.models.json._
 import com.bryzek.apidoc.api.v0.models.Domain
 import db.{OrganizationsDao, OrganizationDomainsDao}
+import javax.inject.{Inject, Singleton}
 import lib.Validation
 import play.api.mvc._
 import play.api.libs.json._

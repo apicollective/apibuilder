@@ -92,8 +92,8 @@ class EmailVerificationsDao @Inject() (
 
     emailVerificationConfirmationsDao.upsert(updatingUser, verification)
     organizationsDao.findByEmailDomain(verification.email).foreach { org =>
-      membershipRequestsDaom.findByOrganizationAndUserAndRole(Authorization.All, org, verificationUser, Role.Member).map { request =>
-        membershipRequestsDaom.acceptViaEmailVerification(updatingUser, request, verification.email)
+      membershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, verificationUser, Role.Member).map { request =>
+        membershipRequestsDao.acceptViaEmailVerification(updatingUser, request, verification.email)
       }
     }
   }

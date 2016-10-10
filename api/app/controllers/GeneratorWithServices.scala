@@ -5,6 +5,7 @@ import com.bryzek.apidoc.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class GeneratorWithServices @Inject() (

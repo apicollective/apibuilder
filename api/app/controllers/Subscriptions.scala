@@ -22,7 +22,7 @@ class Subscriptions @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ) = Authenticated { request =>
-    val subscriptions = subscriptionsDaofindAll(
+    val subscriptions = subscriptionsDao.findAll(
       request.authorization,
       guid = guid,
       organizationKey = organizationKey,
@@ -35,7 +35,7 @@ class Subscriptions @Inject() (
   }
 
   def getByGuid(guid: UUID) = Authenticated { request =>
-    subscriptionsDaofindByUserAndGuid(request.user, guid) match {
+    subscriptionsDao.findByUserAndGuid(request.user, guid) match {
       case None => NotFound
       case Some(subscription) => Ok(Json.toJson(subscription))
     }
@@ -48,9 +48,9 @@ class Subscriptions @Inject() (
       }
       case s: JsSuccess[SubscriptionForm] => {
         val form = s.get
-        subscriptionsDaovalidate(request.user, form) match {
+        subscriptionsDao.validate(request.user, form) match {
           case Nil => {
-            val subscription = subscriptionsDaocreate(request.user, form)
+            val subscription = subscriptionsDao.create(request.user, form)
             Created(Json.toJson(subscription))
           }
           case errors => {
@@ -62,8 +62,8 @@ class Subscriptions @Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    subscriptionsDaofindByUserAndGuid(request.user, guid).map { subscription =>
-      subscriptionsDaosoftDelete(request.user, subscription)
+    subscriptionsDao.findByUserAndGuid(request.user, guid).map { subscription =>
+      subscriptionsDao.softDelete(request.user, subscription)
     }
     NoContent
   }

@@ -7,6 +7,7 @@ import db.{Authorization, MembershipRequestsDao, OrganizationsDao, UsersDao}
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class MembershipRequests @Inject() (
