@@ -24,7 +24,14 @@ object EmailActor {
 
 @javax.inject.Singleton
 class EmailActor @javax.inject.Inject() (
-  system: ActorSystem
+  system: ActorSystem,
+  applicationsDao: db.ApplicationsDao,
+  emailVerificationsDao: db.EmailVerificationsDao,
+  membershipsDao: db.MembershipsDao,
+  membershipRequestsDao: db.MembershipRequestsDao,
+  organizationsDao: OrganizationsDao,
+  passwordResetRequestsDao: db.PasswordResetRequestsDao,
+  usersDao: UsersDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
   implicit val ec = system.dispatchers.lookup("email-actor-context")
@@ -32,7 +39,7 @@ class EmailActor @javax.inject.Inject() (
   def receive = {
 
     case m @ EmailActor.Messages.MembershipRequestCreated(guid) => withVerboseErrorHandler(m) {
-      MembershipRequestsDao.findByGuid(Authorization.All, guid).map { request =>
+      membershipRequestsDao.findByGuid(Authorization.All, guid).map { request =>
         Emails.deliver(
           context = Emails.Context.OrganizationAdmin,
           org = request.organization,
@@ -44,8 +51,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.MembershipRequestAccepted(organizationGuid, userGuid, role) => withVerboseErrorHandler(m) {
-      OrganizationsDao.findByGuid(Authorization.All, organizationGuid).map { org =>
-        UsersDao.findByGuid(userGuid).map { user =>
+      organizationsDao.findByGuid(Authorization.All, organizationGuid).map { org =>
+        usersDao.findByGuid(userGuid).map { user =>
           Email.sendHtml(
             to = Person(user),
             subject = s"Welcome to ${org.name}",
@@ -56,8 +63,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.MembershipRequestDeclined(organizationGuid, userGuid, role) => withVerboseErrorHandler(m) {
-      OrganizationsDao.findByGuid(Authorization.All, organizationGuid).map { org =>
-        UsersDao.findByGuid(userGuid).map { user =>
+      organizationsDao.findByGuid(Authorization.All, organizationGuid).map { org =>
+        usersDao.findByGuid(userGuid).map { user =>
           Email.sendHtml(
             to = Person(user),
             subject = s"Your Membership Request to join ${org.name} was declined",
@@ -68,7 +75,7 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.MembershipCreated(guid) => withVerboseErrorHandler(m) {
-      MembershipsDao.findByGuid(Authorization.All, guid).map { membership =>
+      membershipsDao.findByGuid(Authorization.All, guid).map { membership =>
         Emails.deliver(
           context = Emails.Context.OrganizationAdmin,
           org = membership.organization,
@@ -80,8 +87,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.ApplicationCreated(guid) => withVerboseErrorHandler(m) {
-      ApplicationsDao.findByGuid(Authorization.All, guid).map { application =>
-        OrganizationsDao.findAll(Authorization.All, application = Some(application)).map { org =>
+      applicationsDao.findByGuid(Authorization.All, guid).map { application =>
+        organizationsDao.findAll(Authorization.All, application = Some(application)).map { org =>
           Emails.deliver(
             context = Emails.Context.OrganizationMember,
             org = org,
@@ -94,8 +101,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.PasswordResetRequestCreated(guid) => withVerboseErrorHandler(m) {
-      PasswordResetRequestsDao.findByGuid(guid).map { request =>
-        UsersDao.findByGuid(request.userGuid).map { user =>
+      passwordResetRequestsDao.findByGuid(guid).map { request =>
+        usersDao.findByGuid(request.userGuid).map { user =>
           Email.sendHtml(
             to = Person(user),
             subject = s"Reset your password",
@@ -106,8 +113,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.EmailVerificationCreated(guid) => withVerboseErrorHandler(m) {
-      EmailVerificationsDao.findByGuid(guid).map { verification =>
-        UsersDao.findByGuid(verification.userGuid).map { user =>
+      emailVerificationsDao.findByGuid(guid).map { verification =>
+        usersDao.findByGuid(verification.userGuid).map { user =>
           Email.sendHtml(
             to = Person(email = verification.email, name = user.name),
             subject = s"Verify your email address",

@@ -4,12 +4,14 @@ import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeVa
 import com.bryzek.apidoc.common.v0.models.Audit
 import lib.Validation
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object OrganizationAttributeValuesDao {
+@Singleton
+class OrganizationAttributeValuesDao @Inject() () {
 
   private[db] val BaseQuery = s"""
     select organization_attribute_values.guid,

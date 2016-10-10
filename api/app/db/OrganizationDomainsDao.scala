@@ -3,6 +3,7 @@ package db
 import com.bryzek.apidoc.api.v0.models.{Domain, Organization, User}
 import lib.{Role, UrlKey}
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -16,7 +17,8 @@ case class OrganizationDomain(guid: String, organization_guid: UUID, domain: Str
 
 }
 
-object OrganizationDomainsDao {
+@Singleton
+class OrganizationDomainsDao @Inject() () {
 
   private[this] val BaseQuery = """
     select guid::varchar, organization_guid, domain

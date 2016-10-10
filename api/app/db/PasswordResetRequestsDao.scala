@@ -4,6 +4,7 @@ import com.bryzek.apidoc.api.v0.models.User
 import lib.TokenGenerator
 import anorm._
 import anorm.JodaParameterMetaData._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
@@ -16,7 +17,10 @@ case class PasswordReset(
   expiresAt: DateTime
 )
 
-object PasswordResetRequestsDao {
+@Singleton
+class PasswordResetRequestsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef
+) {
 
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 72
@@ -49,7 +53,7 @@ object PasswordResetRequestsDao {
       ).execute()
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.PasswordResetRequestCreated(guid)
+    mainActor ! actors.MainActor.Messages.PasswordResetRequestCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create password reset")

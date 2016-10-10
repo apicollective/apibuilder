@@ -10,13 +10,17 @@ import com.bryzek.apidoc.spec.v0.models.Service
 import com.bryzek.apidoc.spec.v0.models.json._
 import lib.VersionTag
 import anorm._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Logger
 import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-object VersionsDao {
+@Singleton
+class VersionsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef
+) {
 
   private[this] val LatestVersion = "latest"
 
@@ -88,7 +92,7 @@ object VersionsDao {
     }
 
     taskGuid.map { guid =>
-      global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(guid)
+      mainActor ! actors.MainActor.Messages.TaskCreated(guid)
     }
 
     findAll(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {
@@ -149,7 +153,7 @@ object VersionsDao {
       (versionGuid, taskGuid)
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+    mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
 
     findAll(Authorization.All, guid = Some(versionGuid), limit = 1).headOption.getOrElse {
       sys.error(s"Failed to replace version[${version.guid}]")

@@ -4,6 +4,7 @@ import com.bryzek.apidoc.api.v0.models.User
 import lib.TokenGenerator
 import anorm._
 import anorm.JodaParameterMetaData._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
@@ -15,7 +16,8 @@ private[db] case class EmailVerificationConfirmation(
   createdAt: DateTime
 )
 
-private[db] object EmailVerificationConfirmationsDao {
+@Singleton
+private[db] class EmailVerificationConfirmationsDao @Inject() () {
 
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 168

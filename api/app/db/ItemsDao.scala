@@ -5,12 +5,14 @@ import lib.query.{Query, QueryParser}
 import com.bryzek.apidoc.api.v0.models.{ApplicationSummary, Item, ItemDetail, ItemDetailUndefinedType, User}
 import com.bryzek.apidoc.api.v0.models.json._
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object ItemsDao {
+@Singleton
+class ItemsDao @Inject() () {
 
   // For authorization purposes, we assume the only thing we've
   // indexed is the application and thus join applications and

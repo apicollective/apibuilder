@@ -3,6 +3,7 @@ package db
 import com.bryzek.apidoc.api.v0.models.{Error, User, UserForm, UserUpdateForm}
 import lib.{Constants, Misc, Role, UrlKey, Validation}
 import anorm._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -14,7 +15,14 @@ object UsersDao {
 
   val AdminUserEmail = "admin@apidoc.me"
 
-  lazy val AdminUser = UsersDao.findByEmail(AdminUserEmail).getOrElse {
+}
+
+@Singleton
+class UsersDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef
+) {
+
+  lazy val AdminUser = findByEmail(UsersDao.AdminUserEmail).getOrElse {
     sys.error(s"Failed to find background user w/ email[$AdminUserEmail]")
   }
 
@@ -143,7 +151,7 @@ object UsersDao {
       sys.error("Failed to create user")
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.UserCreated(guid)
+    mainActor ! actors.MainActor.Messages.UserCreated(guid)
 
     user
   }

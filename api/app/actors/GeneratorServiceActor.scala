@@ -6,7 +6,7 @@ import com.bryzek.apidoc.api.v0.models.{GeneratorForm, GeneratorService}
 import com.bryzek.apidoc.generator.v0.Client
 import com.bryzek.apidoc.generator.v0.models.Generator
 import com.bryzek.apidoc.internal.v0.models.TaskDataSyncService
-import db.{Authorization, TasksDao, UsersDao}
+import db.{Authorization, ServicesDao, TasksDao, UsersDao}
 import db.generators.{GeneratorsDao, ServicesDao}
 import play.api.Logger
 import akka.actor.Actor
@@ -68,7 +68,10 @@ object GeneratorServiceActor {
 
 @javax.inject.Singleton
 class GeneratorServiceActor @javax.inject.Inject() (
-  system: ActorSystem
+  system: ActorSystem,
+  usersDao: UsersDao,
+  servicesDao: ServicesDao,
+  tasksDao: TasksDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
   implicit val ec = system.dispatchers.lookup("generator-service-actor-context")
@@ -81,7 +84,7 @@ class GeneratorServiceActor @javax.inject.Inject() (
 
     case m @ GeneratorServiceActor.Messages.Sync => withVerboseErrorHandler(m) {
       Pager.eachPage { offset =>
-        ServicesDao.findAll(
+        servicesDao.findAll(
           Authorization.All,
           offset = offset
         )
@@ -94,7 +97,7 @@ class GeneratorServiceActor @javax.inject.Inject() (
   }
 
   def createSyncTask(serviceGuid: UUID) {
-    TasksDao.create(UsersDao.AdminUser, TaskDataSyncService(serviceGuid))
+    tasksDao.create(usersDao.AdminUser, TaskDataSyncService(serviceGuid))
   }
 
 }

@@ -6,6 +6,7 @@ import com.bryzek.apidoc.common.v0.models.{Reference, ReferenceGuid}
 import com.bryzek.apidoc.internal.v0.models.json._
 import anorm._
 import anorm.JodaParameterMetaData._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -14,7 +15,8 @@ import org.postgresql.util.PSQLException
 import scala.util.{Try, Success, Failure}
 import org.joda.time.DateTime
 
-object ChangesDao {
+@Singleton
+class ChangesDao @Inject() () {
 
   private[this] val BaseQuery = s"""
     select changes.guid,

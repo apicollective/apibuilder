@@ -5,14 +5,17 @@ import com.bryzek.apidoc.api.v0.models.json._
 import com.bryzek.apidoc.common.v0.models.json._
 import lib.Role
 import anorm._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import java.sql.Timestamp
 import play.api.libs.json._
 import java.util.UUID
 
-
-object MembershipRequestsDao {
+@Singleton
+class MembershipRequestsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef
+) {
 
   implicit val membershipRequestWrites = Json.writes[MembershipRequest]
 
@@ -66,7 +69,7 @@ object MembershipRequestsDao {
       ).execute()
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestCreated(guid)
+    mainActor ! actors.MainActor.Messages.MembershipRequestCreated(guid)
 
     findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create membership_request")
@@ -104,7 +107,7 @@ object MembershipRequestsDao {
       MembershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestAccepted(request.organization.guid, request.user.guid, r)
+    mainActor ! actors.MainActor.Messages.MembershipRequestAccepted(request.organization.guid, request.user.guid, r)
   }
 
   /**
@@ -123,7 +126,7 @@ object MembershipRequestsDao {
       MembershipRequestsDao.softDelete(createdBy, request)
     }
 
-    global.Actors.mainActor ! actors.MainActor.Messages.MembershipRequestDeclined(request.organization.guid, request.user.guid, r)
+    mainActor ! actors.MainActor.Messages.MembershipRequestDeclined(request.organization.guid, request.user.guid, r)
   }
 
   private[this] def assertUserCanReview(user: User, request: MembershipRequest) {

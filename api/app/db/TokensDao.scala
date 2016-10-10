@@ -3,13 +3,15 @@ package db
 import com.bryzek.apidoc.api.v0.models.{CleartextToken, Error, Token, TokenForm, User}
 import lib.{Constants, Role, TokenGenerator}
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 import lib.Validation
 
-object TokensDao {
+@Singleton
+class TokensDao @Inject() () {
 
   private[this] val BaseQuery = s"""
     select tokens.guid,

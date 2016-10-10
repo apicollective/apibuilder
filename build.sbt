@@ -72,6 +72,7 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
+    routesGenerator := InjectedRoutesGenerator,
     resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
     libraryDependencies ++= Seq(
       ws,

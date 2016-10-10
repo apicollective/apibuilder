@@ -6,13 +6,17 @@ import com.bryzek.apidoc.common.v0.models.{Audit, ReferenceGuid}
 import com.bryzek.apidoc.common.v0.models.json._
 import lib.Role
 import anorm._
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.DateTime
 
-object MembershipsDao {
+@Singleton
+class MembershipsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef
+) {
 
   private[this] val InsertQuery = """
     insert into memberships
@@ -88,7 +92,7 @@ object MembershipsDao {
       'created_by_guid -> createdBy.guid
     ).execute()
 
-    global.Actors.mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
+    mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
 
     membership
   }

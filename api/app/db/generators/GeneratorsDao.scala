@@ -4,6 +4,7 @@ import db.{AuditsDao, Authorization, SoftDelete}
 import com.bryzek.apidoc.api.v0.models.{GeneratorForm, Error, GeneratorService, GeneratorWithService, User}
 import com.bryzek.apidoc.generator.v0.models.Generator
 import core.Util
+import javax.inject.{Inject, Singleton}
 import lib.Validation
 import anorm._
 import play.api.db._
@@ -11,7 +12,8 @@ import play.api.Play.current
 import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
-object GeneratorsDao {
+@Singleton
+class GeneratorsDao @Inject() () {
 
   private[this] val BaseQuery = s"""
     select generators.guid,

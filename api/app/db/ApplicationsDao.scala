@@ -3,6 +3,7 @@ package db
 import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, User, Version, Visibility}
 import com.bryzek.apidoc.common.v0.models.Reference
 import com.bryzek.apidoc.internal.v0.models.TaskDataIndexApplication
+import javax.inject.{Inject, Named, Singleton}
 import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._
@@ -10,7 +11,10 @@ import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
 
-object ApplicationsDao {
+@Singleton
+class ApplicationsDao @Inject() (
+  @Named("main-actor") mainActor: akka.actor.ActorRef
+) {
 
   private[this] val BaseQuery = s"""
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
@@ -242,7 +246,7 @@ object ApplicationsDao {
       ).execute()
     })
 
-    global.Actors.mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
+    mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
     
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create application")
@@ -350,7 +354,7 @@ object ApplicationsDao {
       f(c)
       TasksDao.insert(c, user, TaskDataIndexApplication(guid))
     }
-    global.Actors.mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+    mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
   }
 
 }

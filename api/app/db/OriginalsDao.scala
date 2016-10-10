@@ -2,11 +2,13 @@ package db
 
 import com.bryzek.apidoc.api.v0.models.{Original, User}
 import anorm._
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.libs.json.JsObject
 import java.util.UUID
 
-object OriginalsDao {
+@Singleton
+class OriginalsDao @Inject() () {
 
   private[this] val InsertQuery = """
     insert into originals

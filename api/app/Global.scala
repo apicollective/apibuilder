@@ -13,8 +13,6 @@ import play.api.Play.current
 object Global extends WithFilters(LoggingFilter) {
 
   override def onStart(app: Application): Unit = {
-    global.Actors.mainActor
-
     import play.api.libs.concurrent.Akka
     import scala.concurrent.duration._
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,15 +44,9 @@ object Global extends WithFilters(LoggingFilter) {
 
   private[this] def ensureServices() {
     Logger.info("Starting ensureServices()")
-    val result = VersionsDao.migrate()
+    val versionsDao = play.api.Play.current.injector.instanceOf[VersionDao]
+    val result = versionsDao.migrate()
     Logger.info("ensureServices() completed: " + result)
   }
 
-}
-
-package global {
-  import play.api.libs.concurrent.Akka
-  object Actors {
-    lazy val mainActor = Akka.system.actorOf(MainActor.props(), "main")
-  }
 }

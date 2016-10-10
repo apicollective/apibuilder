@@ -3,12 +3,18 @@ package db
 import com.bryzek.apidoc.api.v0.models.{Error, Organization, Publication, Subscription, SubscriptionForm, User}
 import anorm._
 import lib.Validation
+import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object SubscriptionsDao {
+@Singleton
+class SubscriptionsDao @Inject() (
+  organizationsDao: OrganizationsDao,
+  subscriptionsDao: SubscriptionsDao,
+  usersDao: usersDao
+) {
 
   val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
 
@@ -44,7 +50,7 @@ object SubscriptionsDao {
     user: User,
     form: SubscriptionForm
   ): Seq[Error] = {
-    val org = OrganizationsDao.findByKey(Authorization.User(user.guid), form.organizationKey)
+    val org = organizationsDao.findByKey(Authorization.User(user.guid), form.organizationKey)
 
     val organizationKeyErrors = org match {
         case None => Seq("Organization not found")
@@ -56,7 +62,7 @@ object SubscriptionsDao {
       case _ => Seq.empty
     }
 
-    val userErrors = UsersDao.findByGuid(form.userGuid) match {
+    val userErrors = usersDao.findByGuid(form.userGuid) match {
         case None => Seq("User not found")
         case Some(_) => Seq.empty
     }
@@ -84,7 +90,7 @@ object SubscriptionsDao {
     val errors = validate(createdBy, form)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    val org = OrganizationsDao.findByKey(Authorization.User(createdBy.guid), form.organizationKey).getOrElse {
+    val org = organizationsDao.findByKey(Authorization.User(createdBy.guid), form.organizationKey).getOrElse {
       sys.error("Failed to validate org for subscription")
     }
 
@@ -111,7 +117,7 @@ object SubscriptionsDao {
 
   def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User) {
     PublicationsRequiredAdmin.foreach { publication =>
-      SubscriptionsDao.findAll(
+      subscriptionsDao.findAll(
         Authorization.All,
         organization = Some(organization),
         userGuid = Some(user.guid),
@@ -171,8 +177,8 @@ object SubscriptionsDao {
   ): Subscription = {
     Subscription(
       guid = row[UUID]("guid"),
-      organization = OrganizationsDao.summaryFromRow(row, Some("organization")),
-      user = UsersDao.fromRow(row, Some("user")),
+      organization = organizationsDao.summaryFromRow(row, Some("organization")),
+      user = usersDao.fromRow(row, Some("user")),
       publication = Publication(row[String]("publication")),
       audit = AuditsDao.fromRowCreation(row)
     )

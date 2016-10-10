@@ -6,6 +6,7 @@ import lib.Validation
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+import javax.inject.{Inject, Singleton}
 import java.util.UUID
 import org.postgresql.util.PSQLException
 import scala.util.{Try, Success, Failure}
@@ -40,7 +41,8 @@ case class FullWatchForm(
 
 }
 
-object WatchesDao {
+@Singleton
+class WatchesDao @Inject() () {
 
   private[this] val BaseQuery = s"""
     select watches.guid,
