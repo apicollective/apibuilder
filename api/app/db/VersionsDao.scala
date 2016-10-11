@@ -5,7 +5,7 @@ import core.VersionMigration
 import builder.OriginalValidator
 import com.bryzek.apidoc.api.v0.models.{Application, Original, OriginalType, User, Version, VersionForm, Visibility}
 import com.bryzek.apidoc.common.v0.models.Reference
-import com.bryzek.apidoc.internal.v0.models.TaskDataDiffVersion
+import com.bryzek.apidoc.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
 import com.bryzek.apidoc.spec.v0.models.Service
 import com.bryzek.apidoc.spec.v0.models.json._
 import lib.VersionTag
@@ -155,7 +155,7 @@ class VersionsDao @Inject() (
       val versionGuid = doCreate(c, user, application, version.version, original, service)
       val diffTaskGuid = createDiffTask(user, version.guid, versionGuid)
       val indexTaskGuid = tasksDao.insert(c, user, TaskDataIndexApplication(application.guid))
-      (versionGuid, Seq(taskGuid, indexTaskGuid))
+      (versionGuid, Seq(diffTaskGuid, indexTaskGuid))
     }
 
     taskGuids.foreach { taskGuid =>
