@@ -44,7 +44,7 @@
            </td>
            <td>
              @{change.diff match {
-               case com.bryzek.apidoc.api.v0.models.DiffBreaking(desc) => Html(s"<span class='label label-warning'>Breaking: $desc</span>")
+               case com.bryzek.apidoc.api.v0.models.DiffBreaking(desc) => Html(s"<span class='label label-warning'>Breaking</span> $desc")
                case com.bryzek.apidoc.api.v0.models.DiffNonBreaking(desc) => desc
                case com.bryzek.apidoc.api.v0.models.DiffUndefinedType(desc) => desc
              }}
