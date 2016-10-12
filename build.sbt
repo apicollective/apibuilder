@@ -80,7 +80,7 @@ lazy val api = project
       "com.typesafe.play" %% "anorm"         % "2.5.0",
       "org.postgresql"    %  "postgresql"    % "9.4.1209",
       "org.mindrot"       %  "jbcrypt"       % "0.3m",
-      "com.sendgrid"      %  "sendgrid-java" % "3.0.9",
+      "com.sendgrid"      %  "sendgrid-java" % "3.1.0",
       specs2              %  Test,
       "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
