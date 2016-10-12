@@ -1268,6 +1268,7 @@
             { "name": "application_key", "type": "string", "description": "Filter changes to those made for the application with this key.", "required": false },
             { "name": "from", "type": "string", "description": "Filter changes to those made from this version.", "required": false, "example": "0.1.3" },
             { "name": "to", "type": "string", "description": "Filter changes to those made to this version.", "required": false, "example": "0.1.4" },
+            { "name": "type", "type": "string", "description": "The type of diff to return.", "required": false, "example": "breaking or non_breaking" },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
 	  ],

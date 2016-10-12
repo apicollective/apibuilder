@@ -127,6 +127,7 @@ class ChangesDao @Inject() () {
     toVersionGuid: Option[UUID] = None,
     fromVersion: Option[String] = None,
     toVersion: Option[String] = None,
+    `type`: Option[String] = None,
     description: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0
@@ -143,6 +144,7 @@ class ChangesDao @Inject() () {
       toVersionGuid.map { v => "and changes.to_version_guid = {to_version_guid}::uuid" },
       fromVersion.map { v => "and from_version.version_sort_key >= {from_version_sort_key}" },
       toVersion.map { v => "and to_version.version_sort_key <= {to_version_sort_key}" },
+      `type`.map { v => "and changes.type <= {type}" },
       description.map { v => "and lower(changes.description) = lower(trim({description}))" },
       Some(s"order by changes.changed_at desc, lower(organizations.key), lower(applications.key), changes.type, lower(changes.description) limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -157,6 +159,7 @@ class ChangesDao @Inject() () {
       toVersionGuid.map('to_version_guid -> _.toString),
       fromVersion.map(v => 'from_version_sort_key -> VersionTag(v).sortKey),
       toVersion.map(v => 'to_version_sort_key -> VersionTag(v).sortKey),
+      `type`.map('type -> _),
       description.map('description -> _)
     ).flatten ++ authorization.bindVariables
 

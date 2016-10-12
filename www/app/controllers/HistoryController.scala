@@ -18,6 +18,7 @@ class HistoryController @Inject() (val messagesApi: MessagesApi) extends Control
     appKey: Option[String],
     from: Option[String],
     to: Option[String],
+    `type`: Option[String],
     page: Int = 0
   ) = Anonymous.async { implicit request =>
     for {
@@ -26,6 +27,7 @@ class HistoryController @Inject() (val messagesApi: MessagesApi) extends Control
         applicationKey = appKey,
         from = from,
         to = to,
+        `type` = `type`,
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
       )
