@@ -3,7 +3,8 @@
   orgKey: Option[String] = None,
   appKey: Option[String] = None,
   from: Option[String] = None,
-  to: Option[String] = None
+  to: Option[String] = None,
+  typ: Option[String] = None
 )(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
@@ -43,10 +44,12 @@
            </td>
            <td>
              @{change.diff match {
-               case com.bryzek.apidoc.api.v0.models.DiffBreaking(desc) => s"Breaking: $desc"
+               case com.bryzek.apidoc.api.v0.models.DiffBreaking(desc) => Html(s"<span class='label label-warning'>Breaking: $desc</span>")
                case com.bryzek.apidoc.api.v0.models.DiffNonBreaking(desc) => desc
                case com.bryzek.apidoc.api.v0.models.DiffUndefinedType(desc) => desc
              }}
+           </td>
+           <td>
            </td>
          </tr>
        }
@@ -56,10 +59,10 @@
     @if(changes.hasPrevious || changes.hasNext) {
       <ul class="pager">
         @if(changes.hasPrevious) {
-          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, from = from, to = to, changes.page - 1)">Previous</a></li>
+          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, from = from, to = to, typ = typ, changes.page - 1)">Previous</a></li>
         }
         @if(changes.hasNext) {
-          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, from = from, to = to, changes.page + 1)">Next</a></li>
+          <li><a href="@routes.HistoryController.index(org = orgKey, app = appKey, from = from, to = to, typ = typ, changes.page + 1)">Next</a></li>
         }
       </ul>
     }

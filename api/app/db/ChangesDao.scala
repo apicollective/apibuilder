@@ -159,7 +159,7 @@ class ChangesDao @Inject() () {
       toVersionGuid.map('to_version_guid -> _.toString),
       fromVersion.map(v => 'from_version_sort_key -> VersionTag(v).sortKey),
       toVersion.map(v => 'to_version_sort_key -> VersionTag(v).sortKey),
-      `type`.map('type -> _)
+      `type`.map('type -> _),
       description.map('description -> _)
     ).flatten ++ authorization.bindVariables
 

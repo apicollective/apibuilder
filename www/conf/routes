@@ -69,7 +69,7 @@ GET     /org/edit                                                 controllers.Or
 POST    /org/editPost                                             controllers.Organizations.editPost(org_key: String)
 POST    /org/deletePost                                           controllers.Organizations.deletePost(org_key: String)
 
-GET     /history                                                  controllers.HistoryController.index(org: Option[String] ?= None, app: Option[String] ?= None, from: Option[String] ?= None, to: Option[String] ?= None, type: Option[String], page: Int ?= 0)
+GET     /history                                                  controllers.HistoryController.index(org: Option[String] ?= None, app: Option[String] ?= None, from: Option[String] ?= None, to: Option[String] ?= None, typ: Option[String] ?= None, page: Int ?= 0)
 GET     /search                                                   controllers.SearchController.index(q: Option[String] ?= None, org: Option[String] ?= None, page: Int ?= 0)
 
 # Start dynamic routing by org key
