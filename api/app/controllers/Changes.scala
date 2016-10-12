@@ -16,6 +16,7 @@ class Changes @Inject() (
     applicationKey: Option[String],
     from: Option[String],
     to: Option[String],
+    `type`: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = AnonymousRequest { request =>
@@ -25,6 +26,7 @@ class Changes @Inject() (
       applicationKey = applicationKey,
       fromVersion = from,
       toVersion = to,
+      `type` = `type`,
       limit = limit,
       offset = offset
     )
