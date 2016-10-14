@@ -1,7 +1,7 @@
 package me.apidoc.swagger.translators
 
 import lib.Primitives
-import me.apidoc.swagger.Util
+import me.apidoc.swagger.{SchemaType, Util}
 import com.bryzek.apidoc.spec.v0.{models => apidoc}
 import com.wordnik.swagger.{models => swagger}
 import com.wordnik.swagger.models.{parameters => swaggerparams}

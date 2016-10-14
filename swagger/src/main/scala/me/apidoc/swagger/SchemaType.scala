@@ -17,7 +17,7 @@ object SchemaType {
     SchemaType("byte", "string"), // TODO: apidoc needs support for byte
     SchemaType("boolean", "boolean"),
     SchemaType("date", "date-iso8601"),
-    SchemaType("dateTime", "date-time-iso8601"),
+    SchemaType("date-time", "date-time-iso8601"),
     SchemaType("uuid", "uuid")
   )
 
