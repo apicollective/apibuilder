@@ -25,7 +25,7 @@ lazy val avro = project
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
-      "com.typesafe.play" %% "play-json" % "2.4.6",
+      "com.typesafe.play" %% "play-json" % "2.5.9",
       "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
   )
@@ -37,7 +37,7 @@ lazy val swagger = project
   .settings(
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.5",
-      "com.typesafe.play" %% "play-json" % "2.4.6",
+      "com.typesafe.play" %% "play-json" % "2.5.9",
       "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
   )
@@ -50,7 +50,7 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.4.6"
+      "com.typesafe.play" %% "play-json" % "2.5.9"
     )
   )
 
