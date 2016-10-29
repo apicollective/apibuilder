@@ -286,6 +286,11 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       name = "message",
                       `type` = "string",
                       required = true
+                    ),
+                    Field(
+                      name = "timestamp",
+                      `type` = "date-time-iso8601",
+                      required = true
                     )
                   )
                 )

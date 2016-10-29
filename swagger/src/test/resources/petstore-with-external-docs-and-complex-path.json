@@ -238,7 +238,8 @@
     "errorModel": {
       "required": [
         "code",
-        "message"
+        "message",
+        "timestamp"
       ],
       "properties": {
         "code": {
@@ -247,6 +248,10 @@
         },
         "message": {
           "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     }
