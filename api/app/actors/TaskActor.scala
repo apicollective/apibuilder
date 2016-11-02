@@ -3,7 +3,7 @@ package actors
 import akka.actor.{Actor, ActorLogging, ActorSystem}
 import com.bryzek.apidoc.api.v0.models.{Application, Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType, Publication, Version}
 import com.bryzek.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
-import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao}
+import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao, WatchesDao}
 import lib.{ServiceDiff, Text}
 import play.api.Logger
 import play.api.libs.concurrent.Akka
@@ -33,7 +33,8 @@ class TaskActor @javax.inject.Inject() (
   search: Search,
   tasksDao: TasksDao,
   usersDao: UsersDao,
-  versionsDao: VersionsDao
+  versionsDao: VersionsDao,
+  watchesDao: WatchesDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
   implicit val ec = system.dispatchers.lookup("task-actor-context")
@@ -168,7 +169,14 @@ class TaskActor @javax.inject.Inject() (
               breakingDiffs = breakingDiffs,
               nonBreakingDiffs = nonBreakingDiffs
             ).toString
-          )
+          ) { subscription =>
+            watchesDao.findAll(
+              Authorization.All,
+              application = Some(application),
+              userGuid = Some(subscription.user.guid),
+              limit = 1
+            ).headOption.isDefined
+          }
         }
       }
     }
