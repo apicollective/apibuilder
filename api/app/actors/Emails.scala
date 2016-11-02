@@ -44,6 +44,8 @@ class Emails @Inject() (
     publication: Publication,
     subject: String,
     body: String
+  ) (
+    implicit filter: Subscription => Boolean = { _ => true }
   ) {
     eachSubscription(context, org, publication, { subscription =>
       Email.sendHtml(
