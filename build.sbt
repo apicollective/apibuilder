@@ -26,7 +26,7 @@ lazy val avro = project
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
       "com.typesafe.play" %% "play-json" % "2.4.6",
-      "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
+      "org.scalatest"     %% "scalatest" % "3.0.1" % "test"
     )
   )
 
@@ -38,7 +38,7 @@ lazy val swagger = project
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.5",
       "com.typesafe.play" %% "play-json" % "2.4.6",
-      "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
+      "org.scalatest"     %% "scalatest" % "3.0.1" % "test"
     )
   )
 
@@ -119,7 +119,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.bryzek.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.1",
-    "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
   ),
   scalacOptions += "-feature",
   sources in (Compile,doc) := Seq.empty,
