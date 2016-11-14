@@ -1,6 +1,6 @@
 import play.PlayImport.PlayKeys._
 import play.sbt.PlayImport._
-import scoverage.ScoverageSbtPlugin.ScoverageKeys._
+import scoverage.ScoverageKeys
 
 name := "apidoc"
 
