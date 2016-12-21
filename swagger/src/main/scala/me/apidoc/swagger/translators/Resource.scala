@@ -2,7 +2,7 @@ package me.apidoc.swagger.translators
 
 import me.apidoc.swagger.Util
 import com.bryzek.apidoc.spec.v0.{ models => apidoc }
-import com.wordnik.swagger.{ models => swagger }
+import io.swagger.{ models => swagger }
 
 object Resource {
 

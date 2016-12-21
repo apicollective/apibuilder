@@ -1,7 +1,7 @@
 package me.apidoc.swagger.translators
 
 import me.apidoc.swagger.Util
-import com.wordnik.swagger.{ models => swagger }
+import io.swagger.{ models => swagger }
 
 object ExternalDoc {
 

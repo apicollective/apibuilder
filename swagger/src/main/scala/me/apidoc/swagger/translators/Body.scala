@@ -1,8 +1,8 @@
 package me.apidoc.swagger.translators
 
 import com.bryzek.apidoc.spec.v0.{ models => apidoc }
-import com.wordnik.swagger.models.{ModelImpl, RefModel}
-import com.wordnik.swagger.models.{ parameters => swaggerParams }
+import io.swagger.models.{ModelImpl, RefModel}
+import io.swagger.models.{ parameters => swaggerParams }
 
 object Body {
 

@@ -1,34 +1,35 @@
 package me.apidoc.swagger
 
 case class SchemaType(
-  swagger: String,
+  swaggerType: String,
+  swaggerFormat: Option[String],
   apidoc: String
 )
 
 object SchemaType {
 
+  // Following the swagger specification here:
+  // http://swagger.io/specification/#dataTypeFormat
   val all = Seq(
-    SchemaType("int32", "integer"),
-    SchemaType("int64", "long"),
-    SchemaType("float", "double"),
-    SchemaType("decimal", "decimal"),
-    SchemaType("double", "double"),
-    SchemaType("string", "string"),
-    SchemaType("byte", "string"), // TODO: apidoc needs support for byte
-    SchemaType("boolean", "boolean"),
-    SchemaType("date", "date-iso8601"),
-    SchemaType("date-time", "date-time-iso8601"),
-    SchemaType("uuid", "uuid")
+    SchemaType("integer", None, "integer"),
+    SchemaType("integer", Some("int32"), "integer"),
+    SchemaType("integer", Some("int64"), "long"),
+    SchemaType("number", Some("float"), "double"),
+    SchemaType("number", Some("double"), "double"),
+    SchemaType("string", None, "string"),
+    SchemaType("string", Some("byte"), "string"), // TODO: apidoc needs support for byte
+    SchemaType("string", Some("binary"), "string"),
+    SchemaType("boolean", None, "boolean"),
+    SchemaType("string", Some("date"), "date-iso8601"),
+    SchemaType("string", Some("date-time"), "date-time-iso8601"),
+    SchemaType("string", Some("uuid"), "uuid")
   )
 
   def fromSwagger(
     swaggerType: String,
     format: Option[String]
   ): Option[String] = {
-    format match {
-      case None => all.find(_.swagger == swaggerType).map(_.apidoc)
-      case Some(format) => all.find(_.swagger == format).map(_.apidoc)
-    }
+    all.find(schemaType => schemaType.swaggerFormat == format && schemaType.swaggerType == swaggerType).map(_.apidoc)
   }
 
   def fromSwaggerWithError(
