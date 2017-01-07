@@ -25,8 +25,8 @@ lazy val avro = project
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
-      "com.typesafe.play" %% "play-json" % "2.4.6",
-      "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
+      "com.typesafe.play" %% "play-json" % "2.5.10",
+      "org.scalatest"     %% "scalatest" % "3.0.1" % "test"
     )
   )
 
@@ -36,9 +36,9 @@ lazy val swagger = project
   .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(
-      "io.swagger" % "swagger-parser" % "1.0.5",
-      "com.typesafe.play" %% "play-json" % "2.4.6",
-      "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
+      "io.swagger" % "swagger-parser" % "1.0.25",
+      "com.typesafe.play" %% "play-json" % "2.5.10",
+      "org.scalatest"     %% "scalatest" % "3.0.1" % "test"
     )
   )
 
@@ -50,7 +50,7 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.4.6"
+      "com.typesafe.play" %% "play-json" % "2.5.10"
     )
   )
 
@@ -77,7 +77,7 @@ lazy val api = project
     libraryDependencies ++= Seq(
       ws,
       jdbc,
-      "com.typesafe.play" %% "anorm"         % "2.5.0",
+      "com.typesafe.play" %% "anorm"         % "2.5.2",
       "org.postgresql"    %  "postgresql"    % "9.4.1212",
       "org.mindrot"       %  "jbcrypt"       % "0.3m",
       "com.sendgrid"      %  "sendgrid-java" % "3.1.0",
@@ -119,7 +119,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.bryzek.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.2",
-    "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
   ),
   scalacOptions += "-feature",
   sources in (Compile,doc) := Seq.empty,
