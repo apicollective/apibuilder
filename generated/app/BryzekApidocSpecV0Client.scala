@@ -94,6 +94,11 @@ package com.bryzek.apidoc.spec.v0.models {
     attributes: Seq[com.bryzek.apidoc.spec.v0.models.Attribute] = Nil
   )
 
+  case class HeaderRef(
+    name: String,
+    required: Boolean
+  )
+
   /**
    * An import is used to declare a dependency on another application. This allows
    * you to reference the models and or enums from that application in your own app.
@@ -139,6 +144,8 @@ package com.bryzek.apidoc.spec.v0.models {
     path: String,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None,
+    requestHeaders: Seq[com.bryzek.apidoc.spec.v0.models.HeaderRef] = Nil,
+    responseHeaders: Seq[com.bryzek.apidoc.spec.v0.models.HeaderRef] = Nil,
     body: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Body] = None,
     parameters: Seq[com.bryzek.apidoc.spec.v0.models.Parameter] = Nil,
     responses: Seq[com.bryzek.apidoc.spec.v0.models.Response] = Nil,
@@ -773,6 +780,28 @@ package com.bryzek.apidoc.spec.v0.models {
       }
     }
 
+    implicit def jsonReadsApidocspecHeaderRef: play.api.libs.json.Reads[HeaderRef] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "required").read[Boolean]
+      )(HeaderRef.apply _)
+    }
+
+    def jsObjectHeaderRef(obj: com.bryzek.apidoc.spec.v0.models.HeaderRef) = {
+      play.api.libs.json.Json.obj(
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "required" -> play.api.libs.json.JsBoolean(obj.required)
+      )
+    }
+
+    implicit def jsonWritesApidocspecHeaderRef: play.api.libs.json.Writes[HeaderRef] = {
+      new play.api.libs.json.Writes[com.bryzek.apidoc.spec.v0.models.HeaderRef] {
+        def writes(obj: com.bryzek.apidoc.spec.v0.models.HeaderRef) = {
+          jsObjectHeaderRef(obj)
+        }
+      }
+    }
+
     implicit def jsonReadsApidocspecImport: play.api.libs.json.Reads[Import] = {
       (
         (__ \ "uri").read[String] and
@@ -898,6 +927,8 @@ package com.bryzek.apidoc.spec.v0.models {
         (__ \ "path").read[String] and
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation] and
+        (__ \ "request_headers").read[Seq[com.bryzek.apidoc.spec.v0.models.HeaderRef]] and
+        (__ \ "response_headers").read[Seq[com.bryzek.apidoc.spec.v0.models.HeaderRef]] and
         (__ \ "body").readNullable[com.bryzek.apidoc.spec.v0.models.Body] and
         (__ \ "parameters").read[Seq[com.bryzek.apidoc.spec.v0.models.Parameter]] and
         (__ \ "responses").read[Seq[com.bryzek.apidoc.spec.v0.models.Response]] and
@@ -909,6 +940,8 @@ package com.bryzek.apidoc.spec.v0.models {
       play.api.libs.json.Json.obj(
         "method" -> play.api.libs.json.JsString(obj.method.toString),
         "path" -> play.api.libs.json.JsString(obj.path),
+        "request_headers" -> play.api.libs.json.Json.toJson(obj.requestHeaders),
+        "response_headers" -> play.api.libs.json.Json.toJson(obj.responseHeaders),
         "parameters" -> play.api.libs.json.Json.toJson(obj.parameters),
         "responses" -> play.api.libs.json.Json.toJson(obj.responses),
         "attributes" -> play.api.libs.json.Json.toJson(obj.attributes)

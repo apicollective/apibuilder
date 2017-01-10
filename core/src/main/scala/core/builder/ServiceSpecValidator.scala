@@ -2,9 +2,8 @@ package builder
 
 import core.{TypeValidator, TypesProvider}
 import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode}
-import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, UnionType}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, Header, HeaderRef}
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
-import scala.util.{Failure, Success, Try}
 
 case class ServiceSpecValidator(
   service: Service
@@ -59,6 +58,7 @@ case class ServiceSpecValidator(
     validateParameterBodies() ++
     validateParameterDefaults() ++
     validateParameters() ++
+    validateHeaderRefs() ++
     validateResponses() ++
     validatePathParameters()
   }
@@ -505,7 +505,7 @@ case class ServiceSpecValidator(
   private def validateParameters(): Seq[String] = {
     service.resources.flatMap { resource =>
       resource.operations.flatMap { op =>
-        op.parameters.flatMap { p =>
+        val types = op.parameters.flatMap { p =>
           typeResolver.parse(p.`type`) match {
             case None => {
               Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type: ${p.`type`}"))
@@ -563,6 +563,30 @@ case class ServiceSpecValidator(
             }
           }
         }
+
+        val duplicates = dupsError(opLabel(resource, op, "parameter"), op.parameters.map(_.name))
+
+        types ++ duplicates
+      }
+    }
+  }
+
+  private def validateHeaderRefs(): Seq[String] = {
+    val headers = service.headers.map(_.name).toSet
+
+    def validate(ref: HeaderRef, resource: Resource, op: Operation, place: String): Option[String] = {
+      headers.contains(ref.name) match {
+        case true => None
+        case false => Some(opLabel(resource, op, s"${place}_header references an invalid header[${ref.name}].")): Option[String]
+      }
+    }
+
+    service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        op.requestHeaders.flatMap(validate(_, resource, op, "request")) ++
+        op.responseHeaders.flatMap(validate(_, resource, op, "response")) ++
+        dupsError(opLabel(resource, op, "request header reference"), op.requestHeaders.map(_.name)) ++
+        dupsError(opLabel(resource, op, "response header reference"), op.responseHeaders.map(_.name))
       }
     }
   }

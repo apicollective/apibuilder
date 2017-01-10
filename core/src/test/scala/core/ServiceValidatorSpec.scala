@@ -178,6 +178,53 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
   }
 
+  it("accepts header references") {
+    val ref = """{"name": "%s", "required": false }"""
+    val json = """
+    {
+      "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
+      "headers": [
+        {
+          "name": "foo",
+          "type": "string"
+        }
+      ],
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "id", "type": "long" }
+          ]
+        }
+      },
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "DELETE",
+              "request_headers": [
+                %s
+              ],
+              "response_headers": [
+                %s
+              ]
+            }
+          ]
+        }
+      }
+    }
+    """
+    val goodRef = ref.format("foo")
+    TestHelper.serviceValidatorFromApiJson(json.format(goodRef, goodRef)).errors.mkString("") should be("")
+
+    val badRef = ref.format("bar")
+    TestHelper.serviceValidatorFromApiJson(json.format(badRef, goodRef)).errors.mkString("") should be("Resource[user] DELETE /users request_header references an invalid header[bar].")
+    TestHelper.serviceValidatorFromApiJson(json.format(goodRef, badRef)).errors.mkString("") should be("Resource[user] DELETE /users response_header references an invalid header[bar].")
+
+    TestHelper.serviceValidatorFromApiJson(json.format(s"$goodRef, $goodRef", goodRef)).errors.mkString("") should be("Resource[user] DELETE /users request header reference[foo] appears more than once")
+    TestHelper.serviceValidatorFromApiJson(json.format(goodRef, s"$goodRef, $goodRef")).errors.mkString("") should be("Resource[user] DELETE /users response header reference[foo] appears more than once")
+  }
+
   it("operations w/ a valid response validates correct") {
     val json = """
     {
