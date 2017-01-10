@@ -283,6 +283,7 @@ package com.bryzek.apidoc.spec.v0.models {
     case object Path extends ParameterLocation { override def toString = "Path" }
     case object Query extends ParameterLocation { override def toString = "Query" }
     case object Form extends ParameterLocation { override def toString = "Form" }
+    case object Header extends ParameterLocation { override def toString = "Header" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -300,7 +301,7 @@ package com.bryzek.apidoc.spec.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(Path, Query, Form)
+    val all = Seq(Path, Query, Form, Header)
 
     private[this]
     val byName = all.map(x => x.toString.toLowerCase -> x).toMap

@@ -450,8 +450,8 @@ case class ServiceSpecValidator(
       resource.operations.filter(!_.parameters.isEmpty).flatMap { op =>
         op.parameters.flatMap { param =>
           param.location match {
-            case ParameterLocation.Query | ParameterLocation.Form | ParameterLocation.Path => None
             case ParameterLocation.UNDEFINED(name) => Some(opLabel(resource, op, s"location[$name] is not recognized. Must be one of: ${ParameterLocation.all.map(_.toString.toLowerCase).mkString(", ")}"))
+            case _ => None
           }
         }
       }
@@ -512,8 +512,8 @@ case class ServiceSpecValidator(
             }
             case Some(kind) => {
               p.location match {
-                case ParameterLocation.Query => {
-                  // Query parameters can only be primitives or enums
+                case ParameterLocation.Query | ParameterLocation.Header => {
+                  // Query and Header parameters can only be primitives or enums
                   kind match {
                     case Kind.Primitive(_) | Kind.Enum(_) => {
                       None
@@ -528,7 +528,7 @@ case class ServiceSpecValidator(
                     }
 
                     case Kind.Model(_) | Kind.Union(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as query parameters."))
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Model and union types are not supported as ${p.location.toString.toLowerCase} parameters."))
                     }
 
                     case Kind.Map(_) => {
@@ -556,7 +556,7 @@ case class ServiceSpecValidator(
                   }
                 }
 
-                case ParameterLocation.Form | ParameterLocation.UNDEFINED(_) => {
+                case _ => {
                   None
                 }
               }

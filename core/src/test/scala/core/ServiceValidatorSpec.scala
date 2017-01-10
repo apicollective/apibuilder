@@ -178,6 +178,42 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
   }
 
+  it("accepts header params") {
+    val json = """
+    {
+      "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "string" }
+          ]
+        }
+      },
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "DELETE",
+              "path": "/:guid",
+              "parameters": [
+                { "name": "guid", "type": "%s", "location": "header" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+    """
+    val validator = TestHelper.serviceValidatorFromApiJson(json.format("string"))
+    validator.errors.mkString("") should be("")
+    val guid = validator.service.resources.head.operations.head.parameters.head
+    guid.`type` should be("string")
+    guid.location should be(ParameterLocation.Header)
+
+    TestHelper.serviceValidatorFromApiJson(json.format("user")).errors.mkString("") should be("Resource[user] DELETE /users/:guid Parameter[guid] has an invalid type[user]. Model and union types are not supported as header parameters.")
+  }
+
   it("operations w/ a valid response validates correct") {
     val json = """
     {

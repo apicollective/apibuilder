@@ -33,8 +33,9 @@
       "values": [
 	{ "name": "Path" },
 	{ "name": "Query" },
-	{ "name": "Form" }
-      ]
+	{ "name": "Form" },
+	{ "name": "Header" }
+     ]
     },
 
     "response_code_option": {
