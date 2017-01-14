@@ -1,6 +1,7 @@
 @(tpl: models.MainTemplate,
   applications: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Application],
-  haveRequests: Boolean)(implicit flash: Flash, messages: Messages)
+  haveMembershipRequests: Boolean
+)(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
 
@@ -14,7 +15,7 @@
     </div>
   }
 
-  @if(haveRequests) {
+  @if(haveMembershipRequests) {
     <p><em><a href="@routes.Organizations.membershipRequests(tpl.org.get.key)">Review pending membership requests</a></em></p>
   }
 
