@@ -46,10 +46,10 @@ case class ExampleJson(service: Service, selection: Selection) {
   }
 
   private[this] def makeUnion(union: Union): JsValue = {
-    val typ = union.types.headOption.getOrElse {
-      sys.error("Union type[${union.qualifiedName}] does not have any times")
+    union.types.headOption match {
+      case None => Json.obj()
+      case Some(typ) => mockValue(TextDatatype.parse(typ.`type`))
     }
-    mockValue(TextDatatype.parse(typ.`type`))
   }
 
   private[this] def mockValue(types: Seq[TextDatatype]): JsValue = {
@@ -73,7 +73,7 @@ case class ExampleJson(service: Service, selection: Selection) {
               case None => {
                 service.unions.find(_.name == typ) match {
                   case Some(u) => makeUnion(u)
-                  case None => sys.error("Could not generate mock data for type[$typ]")
+                  case None => sys.error(s"Unable to resolve type[$typ]")
                 }
               }
             }
@@ -86,6 +86,43 @@ case class ExampleJson(service: Service, selection: Selection) {
   }
 
   private[this] def mockValue(field: Field): JsValue = {
+    val types = TextDatatype.parse(field.`type`)
+    types.toList match {
+      case Nil => JsNull
+      case TextDatatype.Singleton(one) :: Nil => singleton(field)
+      case TextDatatype.Singleton(_) :: _ => sys.error("Singleton must be leaf")
+      case TextDatatype.List :: rest => {
+        field.default match {
+          case None => {
+            Json.toJson(Seq(mockValue(rest)))
+          }
+          case Some(default) => {
+            try {
+              Json.parse(default).as[JsArray]
+            } catch {
+              case _: Throwable => Json.toJson(Seq(mockValue(rest)))
+            }
+          }
+        }
+      }
+      case TextDatatype.Map :: rest => {
+        field.default match {
+          case None => {
+            Json.obj("foo" -> mockValue(rest))
+          }
+          case Some(default) => {
+            try {
+              Json.parse(default).as[JsObject]
+            } catch {
+              case _: Throwable => Json.obj("foo" -> mockValue(rest))
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private[this] def singleton(field: Field): JsValue = {
     Primitives(field.`type`) match {
       case None => {
         service.enums.find(_.name == field.`type`) match {
@@ -96,7 +133,7 @@ case class ExampleJson(service: Service, selection: Selection) {
               case None => {
                 service.unions.find(_.name == field.`type`) match {
                   case Some(u) => makeUnion(u)
-                  case None => sys.error("Could not generate mock data for type[$typ]")
+                  case None => sys.error(s"Unable to resolve type[${field.`type`}] for field[${field.name}]")
                 }
               }
             }

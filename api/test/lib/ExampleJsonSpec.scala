@@ -44,4 +44,10 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     param.maximum.isDefined should be(false)
   }
 
+  it("uses default when present") {
+    val js = exampleMinimal.sample("service")
+    val service = Json.parse(js.toString()).as[Service]
+    service.headers should be(Nil)
+  }
+
 }
