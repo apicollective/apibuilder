@@ -1022,8 +1022,23 @@
           "method": "DELETE",
           "description": "Deletes a specific version.",
           "path": "/:applicationKey/:version"
-        }
+        },
 
+        {
+          "method": "GET",
+          "description": "Generates an example JSON document of the type with the specified name.",
+	  "path": "/:applicationKey/:version/example/:type_name",
+          "parameters": [
+            { "name": "version", "type": "string", "description": "The version of tthis application to download, or the keyword latest to get the latest version", "example": "latest" },
+            { "name": "type_name", "type": "string", "description": "The name of the type (e.g. model name) for which you would like to generate a sample json document" },
+            { "name": "optional_fields", "type": "boolean", "description": "If true, we generate sample data for all optional fields. Otherwise the generated sample will contain only required fields, where applicable", "required": false }
+	  ],
+          "responses": {
+            "200": { "type": "string" },
+            "404": { "type": "unit" }
+          }
+        }
+        
       ]
     },
 

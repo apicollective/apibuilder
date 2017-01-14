@@ -21,10 +21,19 @@ object Selection {
   case object All extends Selection
 }
 
+case class UnknownType(typ: String) extends Throwable
+
 case class ExampleJson(service: Service, selection: Selection) {
 
-  def sample(typ: String): JsValue = {
-    mockValue(TextDatatype.parse(typ))
+  def sample(typ: String): Option[JsValue] = {
+    try {
+      Some(
+        mockValue(TextDatatype.parse(typ))
+      )
+    } catch {
+      case UnknownType(_) => None
+      case ex: Throwable => throw new RuntimeException(ex)
+    }
   }
 
   private[this] def makeEnum(enum: Enum): JsString = {
@@ -73,7 +82,7 @@ case class ExampleJson(service: Service, selection: Selection) {
               case None => {
                 service.unions.find(_.name == typ) match {
                   case Some(u) => makeUnion(u)
-                  case None => sys.error(s"Unable to resolve type[$typ]")
+                  case None => throw new UnknownType(typ)
                 }
               }
             }
@@ -133,7 +142,7 @@ case class ExampleJson(service: Service, selection: Selection) {
               case None => {
                 service.unions.find(_.name == field.`type`) match {
                   case Some(u) => makeUnion(u)
-                  case None => sys.error(s"Unable to resolve type[${field.`type`}] for field[${field.name}]")
+                  case None => throw new UnknownType(field.`type`)
                 }
               }
             }

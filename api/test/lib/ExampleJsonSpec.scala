@@ -12,7 +12,7 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   private[this] lazy val exampleMinimal = ExampleJson.requiredFieldsOnly(service)
 
   it("simple model") {
-    val js = exampleAll.sample("info")
+    val js = exampleAll.sample("info").get
     val info = Json.parse(js.toString()).as[Info]
     info.license should be(Some(License("MIT", Some("http://opensource.org/licenses/MIT"))))
     info.contact should be(Some(
@@ -25,7 +25,7 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   }
 
   it("simple model w/ enum") {
-    val js = exampleAll.sample("parameter")
+    val js = exampleAll.sample("parameter").get
     val param = Json.parse(js.toString()).as[Parameter]
     param.name.startsWith("lorem") should be(true)
     param.location should be(ParameterLocation.all.head)
@@ -35,7 +35,7 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   }
 
   it("simple model - minimal fields") {
-    val js = exampleMinimal.sample("parameter")
+    val js = exampleMinimal.sample("parameter").get
     val param = Json.parse(js.toString()).as[Parameter]
     param.name.startsWith("lorem") should be(true)
     param.location should be(ParameterLocation.all.head)
@@ -45,9 +45,13 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   }
 
   it("uses default when present") {
-    val js = exampleMinimal.sample("service")
+    val js = exampleMinimal.sample("service").get
     val service = Json.parse(js.toString()).as[Service]
     service.headers should be(Nil)
+  }
+
+  it("unknown type") {
+    exampleMinimal.sample("foo") should be(None)
   }
 
 }
