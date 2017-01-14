@@ -102,7 +102,7 @@
         <div class="version_model">
           <h3>@model.name</h3>
           Example Json:
-             <a href="@routes.Versions.example(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, typeName = model.name)">Minimal</a>
+             <a href="@routes.Versions.example(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, typeName = model.name)">Minimal</a> |
              <a href="@routes.Versions.example(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, typeName = model.name, optionalFields = Some(true))">Full</a>
 
              @model.deprecation.map(deprecation(_))
