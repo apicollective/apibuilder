@@ -2917,13 +2917,13 @@ package com.bryzek.apidoc.api.v0 {
         typeName: String,
         optionalFields: _root_.scala.Option[Boolean] = None,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.play.api.libs.json.JsObject] = {
         val queryParameters = Seq(
           optionalFields.map("optional_fields" -> _.toString)
         ).flatten
 
         _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(version, "UTF-8")}/example/${play.utils.UriEncoding.encodePathSegment(typeName, "UTF-8")}", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("String", r, _.validate[String])
+          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("_root_.play.api.libs.json.JsObject", r, _.validate[_root_.play.api.libs.json.JsObject])
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
@@ -3728,7 +3728,7 @@ package com.bryzek.apidoc.api.v0 {
       typeName: String,
       optionalFields: _root_.scala.Option[Boolean] = None,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[_root_.play.api.libs.json.JsObject]
   }
 
   trait Watches {

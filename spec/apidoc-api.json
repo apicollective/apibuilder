@@ -468,7 +468,7 @@
         { "name": "org_key", "type": "string", "description": "The key of the organization to which we are moving this item" }
       ]
     }
-
+    
   },
 
   "resources": {
@@ -1034,7 +1034,7 @@
             { "name": "optional_fields", "type": "boolean", "description": "If true, we generate sample data for all optional fields. Otherwise the generated sample will contain only required fields, where applicable", "required": false }
 	  ],
           "responses": {
-            "200": { "type": "string" },
+            "200": { "type": "object" },
             "404": { "type": "unit" }
           }
         }
