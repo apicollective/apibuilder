@@ -1,6 +1,7 @@
 @(tpl: models.MainTemplate,
   members: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Membership],
-  isAdmin: Boolean
+  isAdmin: Boolean,
+  haveMembershipRequests: Boolean
 )(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
@@ -10,6 +11,11 @@
       <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Members.add(tpl.org.get.key)">Add member</a>
       <span class="glyphicon glyphicon-plus"></span> <a href="@routes.Members.downloadCsv(tpl.org.get.key)">Download</a>
     </div>
+
+    @if(haveMembershipRequests) {
+      <p><em><a href="@routes.Organizations.membershipRequests(tpl.org.get.key)">Review pending membership requests</a></em></p>
+    }
+
   }
 
   @if(members.isEmpty) {

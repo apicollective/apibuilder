@@ -1,6 +1,7 @@
 @(
   tpl: models.MainTemplate,
-  org: com.bryzek.apidoc.api.v0.models.Organization
+  org: com.bryzek.apidoc.api.v0.models.Organization,
+  haveMembershipRequests: Boolean
 )(implicit flash: Flash, messages: Messages)
 
 @main(tpl.copy(title = Some("Org Details"))) {
@@ -14,6 +15,10 @@
       <a href="@routes.Organizations.deletePost(org.key)" class="delete" data-confirm="Are you sure?">Delete</a>
     }
   </div>
+
+  @if(haveMembershipRequests) {
+    <p><em><a href="@routes.Organizations.membershipRequests(tpl.org.get.key)">Review pending membership requests</a></em></p>
+  }
 
   <ul>
     <li>Name: @org.name</li>

@@ -1,49 +1,47 @@
 package controllers
 
-import lib.Role
-import lib.{Pagination, PaginatedCollection, Role}
-import models.{MainTemplate, SettingSection, SettingsMenu}
+import java.util.UUID
+
+import lib.{PaginatedCollection, Pagination, Role}
+import models.{SettingSection, SettingsMenu}
 import com.bryzek.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
 
+import scala.concurrent.Future
 import javax.inject.Inject
-import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
-import play.api.mvc.{Action, Controller}
+
+import com.bryzek.apidoc.api.v0.Client
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.mvc.Controller
 
 class Organizations @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = AnonymousOrg.async { implicit request =>
-    for {
-      applications <- request.api.Applications.get(
-        orgKey = orgKey,
-        limit = Pagination.DefaultLimit+1,
-        offset = page * Pagination.DefaultLimit
-      )
-    } yield {
-      val haveRequests = if (request.isAdmin) {
-        val pendingRequests = Await.result(request.api.MembershipRequests.get(orgGuid = Some(request.org.guid), limit = 1), 1500.millis)
-        !pendingRequests.isEmpty
-      } else {
-        false
+    request.api.Applications.get(
+      orgKey = orgKey,
+      limit = Pagination.DefaultLimit+1,
+      offset = page * Pagination.DefaultLimit
+    ).flatMap { applications =>
+      hasMembershipRequests(request.api, request.isAdmin, request.org.guid).map { haveMembershipRequests =>
+        Ok(
+          views.html.organizations.show(
+            request.mainTemplate().copy(title = Some(request.org.name)),
+            applications = PaginatedCollection(page, applications),
+            haveMembershipRequests = haveMembershipRequests
+          )
+        )
       }
-
-      Ok(views.html.organizations.show(
-        request.mainTemplate().copy(title = Some(request.org.name)),
-        applications = PaginatedCollection(page, applications),
-        haveRequests = haveRequests)
-      )
     }
   }
 
-  def details(orgKey: String) = AuthenticatedOrg { implicit request =>
-    val tpl = request.mainTemplate().copy(settings = Some(SettingsMenu(section = Some(SettingSection.Details))))
-    Ok(views.html.organizations.details(tpl, request.org))
+  def details(orgKey: String) = AuthenticatedOrg.async { implicit request =>
+    hasMembershipRequests(request.api, request.isAdmin, request.org.guid).map { haveMembershipRequests =>
+      val tpl = request.mainTemplate().copy(settings = Some(SettingsMenu(section = Some(SettingSection.Details))))
+      Ok(views.html.organizations.details(tpl, request.org, haveMembershipRequests = haveMembershipRequests))
+    }
   }
 
   def membershipRequests(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
@@ -224,9 +222,17 @@ class Organizations @Inject() (val messagesApi: MessagesApi) extends Controller 
 
   def deletePost(orgKey: String) = Authenticated.async { implicit request =>
     for {
-      result <- request.api.Organizations.deleteByKey(orgKey)
+      _ <- request.api.Organizations.deleteByKey(orgKey)
     } yield {
       Redirect(routes.ApplicationController.index()).flashing("success" -> "Org deleted")
+    }
+  }
+
+  private[this] def hasMembershipRequests(api: Client, isAdmin: Boolean, orgGuid: UUID): Future[Boolean] = {
+    if (isAdmin) {
+      api.MembershipRequests.get(orgGuid = Some(orgGuid), limit = 1).map(!_.isEmpty)
+    } else {
+      Future.successful(false)
     }
   }
 

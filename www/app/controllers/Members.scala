@@ -5,19 +5,18 @@ import com.bryzek.apidoc.api.v0.models.{Organization, User}
 import models._
 import play.api.data._
 import play.api.data.Forms._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import org.joda.time.DateTime
 import java.util.UUID
 
 import javax.inject.Inject
-import play.api._
 import play.api.i18n.{MessagesApi, I18nSupport}
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.Controller
 
 class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
-  implicit val context = scala.concurrent.ExecutionContext.Implicits.global
+  private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
     request.requireMember
@@ -26,6 +25,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
       members <- request.api.Memberships.get(orgKey = Some(orgKey),
                                              limit = Pagination.DefaultLimit+1,
                                              offset = page * Pagination.DefaultLimit)
+      requests <- request.api.MembershipRequests.get(orgKey = Some(orgKey), limit = 1)
     } yield {
       orgs.headOption match {
 
@@ -35,7 +35,10 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
           val tpl = request.mainTemplate(Some("Members")).copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
           Ok(views.html.members.show(tpl, 
                                      members = PaginatedCollection(page, members),
-                                     isAdmin = request.isAdmin))
+                                     isAdmin = request.isAdmin,
+                                     haveMembershipRequests = requests.nonEmpty
+                                     )
+          )
         }
       }
     }
