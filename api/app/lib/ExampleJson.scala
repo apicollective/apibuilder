@@ -10,9 +10,18 @@ import play.api.libs.json._
 case object ExampleJson {
   val TrueStrings = Seq("t", "true", "y", "yes", "on", "1", "trueclass")
   val FalseStrings = Seq("f", "false", "n", "no", "off", "0", "falseclass")
+
+  def allFields(service: Service): ExampleJson = ExampleJson(service, Selection.All)
+  def requiredFieldsOnly(service: Service): ExampleJson = ExampleJson(service, Selection.RequiredFieldsOnly)
 }
 
-case class ExampleJson(service: Service) {
+trait Selection
+object Selection {
+  case object RequiredFieldsOnly extends Selection
+  case object All extends Selection
+}
+
+case class ExampleJson(service: Service, selection: Selection) {
 
   def sample(typ: String): JsValue = {
     mockValue(TextDatatype.parse(typ))
@@ -27,9 +36,11 @@ case class ExampleJson(service: Service) {
   private[this] def makeModel(model: Model): JsValue = {
     Json.toJson(
       Map(
-        model.fields.map { field =>
-          (field.name, mockValue(field))
-        }: _*
+        model.fields.
+          filter { f => selection == Selection.All || f.required }.
+          map { field =>
+            (field.name, mockValue(field))
+          }: _*
       )
     )
   }
@@ -38,7 +49,7 @@ case class ExampleJson(service: Service) {
     val typ = union.types.headOption.getOrElse {
       sys.error("Union type[${union.qualifiedName}] does not have any times")
     }
-    sample(typ.`type`)
+    mockValue(TextDatatype.parse(typ.`type`))
   }
 
   private[this] def mockValue(types: Seq[TextDatatype]): JsValue = {
@@ -114,7 +125,7 @@ case class ExampleJson(service: Service) {
       }
       case Primitives.DateTimeIso8601 => JsString(ISODateTimeFormat.dateTime.print(DateTime.now))
       case Primitives.Decimal => Json.toJson(BigDecimal("1"))
-      case Primitives.String => JsString(UUID.randomUUID.toString.replaceAll("-", " "))
+      case Primitives.String => JsString(randomString)
       case Primitives.Object => Json.obj("foo" -> "bar")
       case Primitives.Unit => JsNull
       case Primitives.Uuid => JsString(UUID.randomUUID.toString)
@@ -200,4 +211,9 @@ case class ExampleJson(service: Service) {
       case _: Throwable => default
     }
   }
+
+  private[this] def randomString(): String = {
+    "lorem ipsum " + TokenGenerator.generate(6)
+  }
+
 }
