@@ -173,12 +173,21 @@
       ]
     },
 
+    "header_ref": {
+      "fields": [
+	{ "name": "name", "type": "string", "description": "A reference by name to a header in the service's headers section" },
+	{ "name": "required", "type": "boolean" }
+      ]
+    },
+
     "operation": {
       "fields": [
 	{ "name": "method", "type": "method" },
 	{ "name": "path", "type": "string", "description": "The full path to this operation, relative to the service's base url." },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
+	{ "name": "request_headers", "type": "[header_ref]", "default": "[]" },
+	{ "name": "response_headers", "type": "[header_ref]", "default": "[]" },
 	{ "name": "body", "type": "body", "required": false },
 	{ "name": "parameters", "type": "[parameter]", "default": "[]" },
 	{ "name": "responses", "type": "[response]", "default": "[]" },

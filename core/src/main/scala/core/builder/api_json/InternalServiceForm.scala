@@ -239,6 +239,8 @@ case class InternalOperationForm(
   deprecation: Option[InternalDeprecationForm],
   namedPathParameters: Seq[String],
   parameters: Seq[InternalParameterForm],
+  request_headers: Seq[InternalHeaderRefForm],
+  response_headers: Seq[InternalHeaderRefForm],
   body: Option[InternalBodyForm],
   responses: Seq[InternalResponseForm],
   attributes: Seq[InternalAttributeForm],
@@ -283,6 +285,11 @@ case class InternalParameterForm(
   minimum: Option[Long] = None,
   maximum: Option[Long] = None,
   warnings: Seq[String] = Seq.empty
+)
+
+case class InternalHeaderRefForm(
+  name: Option[String] = None,
+  required: Boolean
 )
 
 case class InternalBodyForm(
@@ -583,6 +590,24 @@ object InternalOperationForm {
       }
     }
 
+    val requestHeaders: Seq[InternalHeaderRefForm] = {
+      (json \ "request_headers").asOpt[JsArray] match {
+        case None => Seq.empty
+        case Some(values) => {
+          values.value.flatMap { _.asOpt[JsObject].map { InternalHeaderRefForm(_) } }
+        }
+      }
+    }
+
+    val responseHeaders: Seq[InternalHeaderRefForm] = {
+      (json \ "response_headers").asOpt[JsArray] match {
+        case None => Seq.empty
+        case Some(values) => {
+          values.value.flatMap { _.asOpt[JsObject].map { InternalHeaderRefForm(_) } }
+        }
+      }
+    }
+
     val responses: Seq[InternalResponseForm] = {
       (json \ "responses").asOpt[JsObject] match {
         case None => {
@@ -634,12 +659,14 @@ object InternalOperationForm {
       responses = responses,
       namedPathParameters = namedPathParameters,
       parameters = parameters,
+      request_headers = requestHeaders,
+      response_headers = responseHeaders,
       attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         json,
         strings = Seq("method"),
         optionalStrings = Seq("description", "path"),
-        optionalArraysOfObjects = Seq("parameters", "attributes"),
+        optionalArraysOfObjects = Seq("parameters", "attributes", "request_headers", "response_headers"),
         optionalObjects = Seq("body", "responses", "deprecation")
       )
     )
@@ -755,6 +782,19 @@ object InternalParameterForm {
         optionalNumbers = Seq("minimum", "maximum"),
         optionalAnys = Seq("default")
       )
+    )
+  }
+
+}
+
+object InternalHeaderRefForm {
+
+  def apply(json: JsObject): InternalHeaderRefForm = {
+    val datatype = InternalDatatype(json)
+
+    InternalHeaderRefForm(
+      name = JsonUtil.asOptString(json \ "name"),
+      required = JsonUtil.asOptBoolean(json \ "required").getOrElse(true)
     )
   }
 

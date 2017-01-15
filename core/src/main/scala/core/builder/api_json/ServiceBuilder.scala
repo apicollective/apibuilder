@@ -237,6 +237,8 @@ case class ServiceBuilder(
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         body = internal.body.map { BodyBuilder(_) },
         parameters = pathParameters ++ internalParams,
+        requestHeaders = internal.request_headers.map { HeaderRefBuilder(_) },
+        responseHeaders = internal.response_headers.map { HeaderRefBuilder(_) },
         responses = internal.responses.map { ResponseBuilder(_) },
         attributes = internal.attributes.map { AttributeBuilder(_) }
       )
@@ -424,6 +426,17 @@ case class ServiceBuilder(
         deprecation = im.deprecation.map(DeprecationBuilder(_)),
         fields = im.fields.map { FieldBuilder(_) },
         attributes = im.attributes.map { AttributeBuilder(_) }
+      )
+    }
+
+  }
+
+  object HeaderRefBuilder {
+
+    def apply(internal: InternalHeaderRefForm): HeaderRef = {
+      HeaderRef(
+        name = internal.name.get,
+        required = internal.required
       )
     }
 
