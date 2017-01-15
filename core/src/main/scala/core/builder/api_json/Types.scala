@@ -73,7 +73,7 @@ private[api_json] case class RecursiveTypesProvider(
             case Nil => {
               Seq(TypesProvider.FromService(importer.service)) ++ resolve(importUris.drop(1), imported ++ Set(uri))
             }
-            case errors => {
+            case _ => {
               // There are errors w/ this import - skip it
               resolve(importUris.drop(1), imported ++ Set(uri))
             }

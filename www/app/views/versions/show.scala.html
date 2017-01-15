@@ -101,7 +101,11 @@
         <a name="model-@lib.UrlKey.generate(model.name)"></a>
         <div class="version_model">
           <h3>@model.name</h3>
-          @model.deprecation.map(deprecation(_))
+          Example Json:
+             <a href="@routes.Versions.example(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, typeName = model.name)">Minimal</a> |
+             <a href="@routes.Versions.example(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, typeName = model.name, optionalFields = Some(true))">Full</a>
+
+             @model.deprecation.map(deprecation(_))
 
           @Html(lib.Markdown(model.description))
 
