@@ -1,7 +1,7 @@
 package builder
 
 import core.{TypeValidator, TypesProvider}
-import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Method, Operation, ParameterLocation, ResponseCode}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Header, Method, Operation, ParameterLocation, ResponseCode}
 import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, UnionType}
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
 import scala.util.{Failure, Success, Try}
@@ -50,7 +50,7 @@ case class ServiceSpecValidator(
     validateModels() ++
     validateEnums() ++
     validateUnions() ++
-    validateHeaders() ++
+    validateHeaders(service.headers, "Header") ++
     validateModelAndEnumAndUnionNamesAreDistinct() ++
     validateFields() ++
     validateFieldDefaults() ++
@@ -286,25 +286,25 @@ case class ServiceSpecValidator(
     }
   }
 
-  private def validateHeaders(): Seq[String] = {
+  private def validateHeaders(headers: Seq[Header], location: String): Seq[String] = {
     val enumNames = service.enums.map(_.name).toSet
 
-    val headersWithInvalidTypes = service.headers.flatMap { header =>
+    val headersWithInvalidTypes = headers.flatMap { header =>
       typeResolver.parse(header.`type`) match {
-        case None => Some(s"Header[${header.name}] type[${header.`type`}] is invalid")
+        case None => Some(s"$location[${header.name}] type[${header.`type`}] is invalid")
         case Some(kind) => {
           kind match {
             case Kind.Enum(_) | Kind.Primitive("string") => None
             case Kind.List(Kind.Enum(_) | Kind.Primitive("string")) => None
             case Kind.Model(_) | Kind.Union(_) | Kind.Primitive(_) | Kind.List(_) | Kind.Map(_) => {
-              Some(s"Header[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
+              Some(s"$location[${header.name}] type[${header.`type`}] is invalid: Must be a string or the name of an enum")
             }
           }
         }
       }
     }
 
-    val duplicates = dupsError("Header", service.headers.map(_.name))
+    val duplicates = dupsError(location, headers.map(_.name))
 
     headersWithInvalidTypes ++ duplicates
   }
@@ -694,7 +694,15 @@ case class ServiceSpecValidator(
       }
     }
 
-    invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ noContentWithTypes
+    val invalidHeaders = for {
+      resource <- service.resources
+      op <- resource.operations
+      r <- op.responses
+    } yield {
+      validateHeaders(r.headers, opLabel(resource, op, s"response code[${responseCodeString(r.code)}] header"))
+    }
+
+    invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ noContentWithTypes ++ invalidHeaders.flatten
   }
 
 

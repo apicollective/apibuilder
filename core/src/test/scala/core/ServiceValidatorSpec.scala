@@ -178,7 +178,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     }
   }
 
-  it("accepts header params") {
+  it("accepts request header params") {
     val json = """
     {
       "name": "Api Doc",
@@ -212,6 +212,54 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     guid.location should be(ParameterLocation.Header)
 
     TestHelper.serviceValidatorFromApiJson(json.format("user")).errors.mkString("") should be("Resource[user] DELETE /users/:guid Parameter[guid] has an invalid type[user]. Model and union types are not supported as header parameters.")
+  }
+
+  it("accepts response headers") {
+    val header = """{ "name": "foo", "type": "%s" }"""
+    val json = """
+    {
+      "name": "Api Doc",
+      "apidoc": { "version": "0.9.6" },
+      "models": {
+        "user": {
+          "fields": [
+            { "name": "guid", "type": "string" }
+          ]
+        }
+      },
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "path": "/:guid",
+              "responses": {
+                "200": {
+                  "type": "user",
+                  "headers" : [
+                    %s
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+    """
+    val stringHeader = header.format("string")
+    val userHeader = header.format("user")
+
+    val validator = TestHelper.serviceValidatorFromApiJson(json.format(stringHeader))
+    validator.errors.mkString("") should be("")
+    val headers = validator.service.resources.head.operations.head.responses.head.headers
+    headers.size should be(1)
+    headers(0).name should be("foo")
+    headers(0).`type` should be("string")
+
+    TestHelper.serviceValidatorFromApiJson(json.format(s"$stringHeader, $stringHeader")).errors.mkString("") should be("Resource[user] GET /users/:guid response code[200] header[foo] appears more than once")
+
+    TestHelper.serviceValidatorFromApiJson(json.format(userHeader)).errors.mkString("") should be("Resource[user] GET /users/:guid response code[200] header[foo] type[user] is invalid: Must be a string or the name of an enum")
   }
 
   it("operations w/ a valid response validates correct") {

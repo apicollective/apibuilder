@@ -175,6 +175,7 @@ package com.bryzek.apidoc.spec.v0.models {
   case class Response(
     code: com.bryzek.apidoc.spec.v0.models.ResponseCode,
     `type`: String,
+    headers: Seq[com.bryzek.apidoc.spec.v0.models.Header] = Nil,
     description: _root_.scala.Option[String] = None,
     deprecation: _root_.scala.Option[com.bryzek.apidoc.spec.v0.models.Deprecation] = None
   )
@@ -1052,6 +1053,7 @@ package com.bryzek.apidoc.spec.v0.models {
       (
         (__ \ "code").read[com.bryzek.apidoc.spec.v0.models.ResponseCode] and
         (__ \ "type").read[String] and
+        (__ \ "headers").read[Seq[com.bryzek.apidoc.spec.v0.models.Header]] and
         (__ \ "description").readNullable[String] and
         (__ \ "deprecation").readNullable[com.bryzek.apidoc.spec.v0.models.Deprecation]
       )(Response.apply _)
@@ -1060,7 +1062,8 @@ package com.bryzek.apidoc.spec.v0.models {
     def jsObjectResponse(obj: com.bryzek.apidoc.spec.v0.models.Response) = {
       play.api.libs.json.Json.obj(
         "code" -> jsObjectResponseCode(obj.code),
-        "type" -> play.api.libs.json.JsString(obj.`type`)
+        "type" -> play.api.libs.json.JsString(obj.`type`),
+        "headers" -> play.api.libs.json.Json.toJson(obj.headers)
       ) ++ (obj.description match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("description" -> play.api.libs.json.JsString(x))
