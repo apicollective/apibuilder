@@ -49,19 +49,45 @@
                  @parameters(org, application, version, service, operation)
                }
 
-               <h4>Response</h4>
-               @operation.responses.map { response =>
-                 <p>
-                   HTTP @{response.code match {
-                     case com.bryzek.apidoc.spec.v0.models.ResponseCodeInt(value) => value
-                     case com.bryzek.apidoc.spec.v0.models.ResponseCodeOption.Default => "*"
-                     case com.bryzek.apidoc.spec.v0.models.ResponseCodeOption.UNDEFINED(value) => value
-                     case com.bryzek.apidoc.spec.v0.models.ResponseCodeUndefinedType(value) => value
-                   }}:
-                   @datatype(org, application, version, service, response.`type`)
-                   @Html(lib.Markdown(response.description))
-                   @response.deprecation.map(deprecation(_))
-                 </p>
+               <h4>Responses</h4>
+               @if(!operation.responses.isEmpty) {
+                 <table class="borderless table-condensed">
+                   <tbody>
+                     @operation.responses.map { response =>
+                       <tr>
+                         <th>HTTP @{response.code match {
+                           case com.bryzek.apidoc.spec.v0.models.ResponseCodeInt(value) => value
+                           case com.bryzek.apidoc.spec.v0.models.ResponseCodeOption.Default => "*"
+                           case com.bryzek.apidoc.spec.v0.models.ResponseCodeOption.UNDEFINED(value) => value
+                           case com.bryzek.apidoc.spec.v0.models.ResponseCodeUndefinedType(value) => value
+                         }}</th>
+                         <td>@datatype(org, application, version, service, response.`type`)</td>
+                       </tr>
+                       @if(!response.description.isEmpty) {
+                         <tr>
+                           <td></td>
+                           <td>@Html(lib.Markdown(response.description))</td>
+                         </tr>
+                       }
+                       @if(!response.deprecation.isEmpty) {
+                         <tr>
+                           <td></td>
+                           <td>@response.deprecation.map(deprecation(_))</td>
+                         </tr>
+                       }
+                       @if(!response.headers.isEmpty) {
+                         <tr>
+                           <td></td>
+                           <th>Headers</th>
+                         </tr>
+                         <tr>
+                           <td></td>
+                           <td>@headers(org, application, version, service, response.headers)</td>
+                         </tr>
+                       }
+                     }
+                   </tbody>
+                 </table>
                }
              </td>
 
