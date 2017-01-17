@@ -33,7 +33,8 @@
       "values": [
 	{ "name": "Path" },
 	{ "name": "Query" },
-	{ "name": "Form" }
+	{ "name": "Form" },
+	{ "name": "Header" }        
       ]
     },
 
@@ -214,6 +215,7 @@
       "fields": [
 	{ "name": "code", "type": "response_code" },
 	{ "name": "type", "type": "string" },
+	{ "name": "headers", "type": "[header]", "required": false },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false }
       ]
