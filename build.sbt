@@ -17,6 +17,8 @@ lazy val lib = project
 
 val avroVersion = "1.8.1"
 
+val playJsonVersion = "2.4.6"
+
 lazy val avro = project
   .in(file("avro"))
   .dependsOn(generated, lib)
@@ -25,7 +27,7 @@ lazy val avro = project
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
-      "com.typesafe.play" %% "play-json" % "2.4.6",
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
   )
@@ -37,7 +39,7 @@ lazy val swagger = project
   .settings(
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.24",
-      "com.typesafe.play" %% "play-json" % "2.4.6",
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
   )
@@ -50,7 +52,7 @@ lazy val core = project
   .settings(
     resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.4.6"
+      "com.typesafe.play" %% "play-json" % playJsonVersion
     )
   )
 
@@ -96,7 +98,7 @@ lazy val www = project
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-compress" % "1.12",
+      "org.apache.commons" % "commons-compress" % "1.13",
       "com.github.tototoshi" %% "scala-csv" % "1.3.4",
       "org.pegdown" % "pegdown" % "1.6.0"
     )
@@ -118,7 +120,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
   organization := "com.bryzek.apidoc",
   libraryDependencies ++= Seq(
-    "org.atteo" % "evo-inflector" % "1.2.1",
+    "org.atteo" % "evo-inflector" % "1.2.2",
     "org.scalatest" %% "scalatest" % "2.2.6" % "test"
   ),
   scalacOptions += "-feature",
@@ -156,4 +158,4 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
 )
 
 publishSettings
-version := "0.11.51"
+version := "0.11.52"

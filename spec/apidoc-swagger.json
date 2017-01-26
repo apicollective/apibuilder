@@ -1,0 +1,299 @@
+{
+  "name": "apidoc swagger",
+  "description": "Specification of swagger using the apidoc format",
+  "enums": {
+    "api_key_in_type": {
+      "values": [
+        {"name": "query"},
+        {"name": "header"}
+      ]
+    },
+    "collection_format_type": {
+      "values": [
+        {"name": "csv"},
+        {"name": "ssv"},
+        {"name": "tsv"},
+        {"name": "pipes"}
+      ]
+    },
+    "items_type": {
+      "values": [
+        { "name": "string" },
+        { "name": "number" },
+        { "name": "integer" },
+        { "name": "boolean" },
+        { "name": "array" }
+      ]
+    },
+    "format_type": {
+      "values": [
+        { "name": "binary" },
+        { "name": "byte" },
+        { "name": "date" },
+        { "name": "date-time" },
+        { "name": "double" },
+        { "name": "float" },
+        { "name": "int32" },
+        { "name": "int64" },
+        { "name": "password" }
+      ]
+    },
+    "parameter_in_type": {
+      "values": [
+        { "name": "query" },
+        { "name": "header" },
+        { "name": "path" },
+        { "name": "formData" },
+        { "name": "body" }
+      ]
+    },
+    "security_scheme_type": {
+      "values": [
+        {"name": "basic"},
+        {"name": "apiKey"},
+        {"name": "oauth2"}
+      ]
+    }
+  },
+  "models": {
+    "contact": {
+      "fields": [
+        { "name": "name", "type": "string", "required": false },
+        { "name": "url", "type": "string", "required": false },
+        { "name": "email", "type": "string", "required": false }
+      ]
+    },
+    "external_documentation": {
+      "fields": [
+        { "name": "description", "type": "string", "required": false },
+        { "name": "url", "type": "string" }
+      ]
+    },
+    "header": {
+      "description": "TODO: Can this be a union type with items?",
+      "fields": [
+        { "name": "description", "type": "string", "required": false },
+        { "name": "type", "type": "items_type" },
+        { "name": "format", "type": "format_type", "required": false },
+        { "name": "items", "type": "items", "required": false, "description": "NOTE: This is required if type is 'array'" },
+        { "name": "collectionFormat", "type": "collection_format_type", "required": false },
+        { "name": "default", "type": "object", "required": false },
+        { "name": "maximum", "type": "long", "required": false },
+        { "name": "exclusiveMaximum", "type": "boolean", "required": false },
+        { "name": "minimum", "type": "long", "required": false },
+        { "name": "exclusiveMinimum", "type": "boolean", "required": false },
+        { "name": "maxLength", "type": "integer", "required": false },
+        { "name": "minLength", "type": "integer", "required": false },
+        { "name": "pattern", "type": "string", "required": false },
+        { "name": "maxItems", "type": "integer", "required": false },
+        { "name": "minItems", "type": "integer", "required": false },
+        { "name": "uniqueItems", "type": "boolean", "required": false },
+        { "name": "enum", "type": "[object]", "required": false },
+        { "name": "multipleOf", "type": "long", "required": false }
+      ]
+    },
+    "info": {
+      "fields": [
+        { "name": "title", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "termsOfService", "type": "string", "required": false },
+        { "name": "contact", "type": "contact", "required": false },
+        { "name": "license", "type": "license", "required": false },
+        { "name": "version", "type": "string" }
+      ]
+    },
+    "items": {
+      "fields": [
+        { "name": "type", "type": "items_type" },
+        { "name": "format", "type": "format_type", "required": false },
+        { "name": "items", "type": "items", "required": false, "description": "NOTE: This is required if type is 'array'" },
+        { "name": "collectionFormat", "type": "collection_format_type", "required": false },
+        { "name": "default", "type": "object", "required": false },
+        { "name": "maximum", "type": "long", "required": false },
+        { "name": "exclusiveMaximum", "type": "boolean", "required": false },
+        { "name": "minimum", "type": "long", "required": false },
+        { "name": "exclusiveMinimum", "type": "boolean", "required": false },
+        { "name": "maxLength", "type": "integer", "required": false },
+        { "name": "minLength", "type": "integer", "required": false },
+        { "name": "pattern", "type": "string", "required": false },
+        { "name": "maxItems", "type": "integer", "required": false },
+        { "name": "minItems", "type": "integer", "required": false },
+        { "name": "uniqueItems", "type": "boolean", "required": false },
+        { "name": "enum", "type": "[object]", "required": false },
+        { "name": "multipleOf", "type": "long", "required": false }
+      ]
+    },
+    "license": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "url", "type": "string", "required": false }
+      ]
+    },
+    "operation": {
+      "fields": [
+        { "name": "tags", "type": "[string]", "required": false },
+        { "name": "summary", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "externalDocs", "type": "external_documentation", "required": false },
+        { "name": "operationId", "type": "string", "required": false },
+        { "name": "consumes", "type": "[string]", "required": false },
+        { "name": "produces", "type": "[string]", "required": false },
+        { "name": "parameters", "type": "[parameter_or_ref]", "required": false },
+        { "name": "responses", "type": "map[response_or_ref]" },
+        { "name": "schemes", "type": "[string]", "required": false },
+        { "name": "deprecated", "type": "boolean", "required": false },
+        { "name": "security", "type": "[map[[string]]]", "required": false }
+      ]
+    },
+    "parameter": {
+      "description": "TODO: This might need to be a complex union type, given the different requirements based on the 'in' property. http://swagger.io/specification/#parameterObject",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "in", "type": "parameter_in_type" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "required", "type": "boolean" },
+        { "name": "schema", "type": "schema", "required": false },
+        { "name": "type", "type": "string", "required": false },
+        { "name": "format", "type": "string", "required": false },
+        { "name": "allowEmptyValue", "type": "boolean", "required": false },
+        { "name": "items", "type": "items", "required": false },
+        { "name": "collectionFormat", "type": "collection_format_type", "required": false },
+        { "name": "default", "type": "object", "required": false },
+        { "name": "maximum", "type": "long", "required": false },
+        { "name": "exclusiveMaximum", "type": "boolean", "required": false },
+        { "name": "minimum", "type": "long", "required": false },
+        { "name": "exclusiveMinimum", "type": "boolean", "required": false },
+        { "name": "maxLength", "type": "integer", "required": false },
+        { "name": "minLength", "type": "integer", "required": false },
+        { "name": "pattern", "type": "string", "required": false },
+        { "name": "maxItems", "type": "integer", "required": false },
+        { "name": "minItems", "type": "integer", "required": false },
+        { "name": "uniqueItems", "type": "boolean", "required": false },
+        { "name": "enum", "type": "[object]", "required": false },
+        { "name": "multipleOf", "type": "long", "required": false }
+      ]
+    },
+    "path_item": {
+      "fields": [
+        { "name": "ref", "type": "string", "required": false, "description": "TODO: Needs to be named '$ref'" },
+        { "name": "get", "type": "operation", "required": false },
+        { "name": "put", "type": "operation", "required": false },
+        { "name": "post", "type": "operation", "required": false },
+        { "name": "delete", "type": "operation", "required": false },
+        { "name": "options", "type": "operation", "required": false },
+        { "name": "head", "type": "operation", "required": false },
+        { "name": "patch", "type": "operation", "required": false },
+        { "name": "parameters", "type": "[parameter_or_ref]", "required": false }
+      ]
+    },
+    "reference": {
+      "fields": [
+        { "name": "ref", "type": "string", "description": "TODO: Needs to be named '$ref'" }
+      ]
+    },
+    "response": {
+      "fields": [
+        { "name": "description", "type": "string" },
+        { "name": "schema", "type": "schema", "required": false },
+        { "name": "headers", "type": "map[header]", "required": false },
+        { "name": "examples", "type": "object", "required": false }
+      ]
+    },
+    "schema": {
+      "fields": [
+        { "name": "ref", "type": "string", "required": false, "description": "TODO: Needs to be named '$ref'" },
+        { "name": "format", "type": "format_type", "required": false },
+        { "name": "title", "type": "string", "required": false },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "default", "type": "object", "required": false },
+        { "name": "multipleOf", "type": "long", "required": false },
+        { "name": "maximum", "type": "long", "required": false },
+        { "name": "exclusiveMaximum", "type": "boolean", "required": false },
+        { "name": "minimum", "type": "long", "required": false },
+        { "name": "exclusiveMinimum", "type": "boolean", "required": false },
+        { "name": "maxLength", "type": "integer", "required": false },
+        { "name": "minLength", "type": "integer", "required": false },
+        { "name": "pattern", "type": "string", "required": false },
+        { "name": "maxItems", "type": "integer", "required": false },
+        { "name": "minItems", "type": "integer", "required": false },
+        { "name": "uniqueItems", "type": "boolean", "required": false },
+        { "name": "maxProperties", "type": "integer", "required": false },
+        { "name": "minProperties", "type": "integer", "required": false },
+        { "name": "required", "type": "[string]", "required": false },
+        { "name": "enum", "type": "[object]", "required": false },
+        { "name": "type", "type": "[string]", "required": false },
+        { "name": "items", "type": "schema", "required": false, "description": "TODO: figure out if this also needs to support boolean (http://json-schema.org/latest/json-schema-validation.html#rfc.section.5.9). It's possible that a uni-directional approach may allow us to avoid supporting this odd type." },
+        { "name": "allOf", "type": "[schema]", "required": false },
+        { "name": "properties", "type": "map[schema]", "required": false },
+        { "name": "additionalProperties", "type": "schema", "required": false, "description": "TODO: figure out if this also needs to support boolean (http://json-schema.org/latest/json-schema-validation.html#rfc.section.5.18). It's possible that a uni-directional approach may allow us to avoid supporting this odd type." },
+        { "name": "discriminator", "type": "string", "required": false },
+        { "name": "readOnly", "type": "boolean", "required": false },
+        { "name": "xml", "type": "xml", "required": false },
+        { "name": "externalDocs", "type": "external_documentation", "required": false },
+        { "name": "example", "type": "object", "required": false }
+      ]
+    },
+    "security_scheme": {
+      "description": "TODO: Consider making this a union type of the three different schemes (and their required fields)",
+      "fields": [
+        { "name": "type", "type": "security_scheme_type" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "name", "type": "string", "required": false, "description": "Required for apiKey" },
+        { "name": "in", "type": "api_key_in_type", "required": false, "description": "Required for apiKey" },
+        { "name": "flow", "type": "string", "required": false, "description": "Required for oauth2" },
+        { "name": "authorizationUrl", "type": "string", "required": false, "description": "Required for oauth2" },
+        { "name": "tokenUrl", "type": "string", "required": false, "description": "Required for oauth2" },
+        { "name": "scopes", "type": "map[string]", "required": false, "description": "Required for oauth2" }
+      ]
+    },
+    "swagger": {
+      "fields": [
+        { "name": "swagger", "type": "string" },
+        { "name": "info", "type": "info" },
+        { "name": "host", "type": "string", "required": false },
+        { "name": "basePath", "type": "string", "required": false },
+        { "name": "schemes", "type": "[string]", "required": false },
+        { "name": "consumes", "type": "[string]", "required": false },
+        { "name": "produces", "type": "[string]", "required": false },
+        { "name": "paths", "type": "map[path_item]" },
+        { "name": "definitions", "type": "map[schema]", "required": false },
+        { "name": "parameters", "type": "map[parameter]", "required": false },
+        { "name": "responses", "type": "map[response]", "required": false },
+        { "name": "securityDefinitions", "type": "map[security_scheme]", "required": false },
+        { "name": "security", "type": "map[string]", "required": false },
+        { "name": "tags", "type": "[tag]", "required": false },
+        { "name": "externalDocs", "type": "external_documentation", "required": false }
+      ]
+    },
+    "tag": {
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "description", "type": "string", "required": false },
+        { "name": "externalDocs", "type": "external_documentation", "required": false }
+      ]
+    },
+    "xml": {
+      "fields": [
+        { "name": "name", "type": "string", "required": false },
+        { "name": "namespace", "type": "string", "required": false },
+        { "name": "prefix", "type": "string", "required": false },
+        { "name": "attribute", "type": "boolean", "required": false },
+        { "name": "wrapped", "type": "boolean", "required": false }
+      ]
+    }
+  },
+  "unions": {
+    "parameter_or_ref": {
+      "types": [
+        { "type": "parameter" },
+        { "type": "reference" }
+      ]
+    },
+    "response_or_ref": {
+      "types": [
+        { "type": "response" },
+        { "type": "reference" }
+      ]
+    }
+  }
+}

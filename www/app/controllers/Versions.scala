@@ -110,6 +110,27 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
     }
   }
 
+  def example(
+    orgKey: String, applicationKey: String, versionName: String, typeName: String, optionalFields: Option[Boolean]
+  ) = AnonymousOrg.async { implicit request =>
+    lib.ApiClient.callWith404(
+      request.api.versions.getExampleByApplicationKeyAndVersionAndTypeName(orgKey, applicationKey, versionName, typeName, optionalFields = optionalFields)
+    ).map {
+      case None => {
+        if (LatestVersion == versionName) {
+          Redirect(routes.Organizations.show(orgKey)).flashing("warning" -> s"Application not found: ${applicationKey}")
+        } else {
+          Redirect(routes.Versions.show(orgKey, applicationKey, LatestVersion))
+            .flashing("warning" -> s"Version not found: ${versionName}")
+        }
+      }
+
+      case Some(example) => {
+        Ok(example)
+      }
+    }
+  }
+
   def serviceJson(orgKey: String, applicationKey: String, versionName: String) = AnonymousOrg.async { implicit request =>
     lib.ApiClient.callWith404(
       request.api.versions.getByApplicationKeyAndVersion(orgKey, applicationKey, versionName)
