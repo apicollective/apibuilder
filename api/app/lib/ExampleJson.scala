@@ -57,7 +57,16 @@ case class ExampleJson(service: Service, selection: Selection) {
   private[this] def makeUnion(union: Union): JsValue = {
     union.types.headOption match {
       case None => Json.obj()
-      case Some(typ) => mockValue(TextDatatype.parse(typ.`type`))
+      case Some(typ) =>
+        val value: JsObject = mockValue(TextDatatype.parse(typ.`type`)) match {
+          case obj: JsObject => obj                // objects are serialized as is
+          case jsval => Json.obj("value" -> jsval) // arrays and primitives are wrapped in a 'value' field
+        }
+        union.discriminator.fold {
+          Json.obj(typ.`type` -> value)
+        }{ discriminator =>
+          Json.obj(discriminator -> JsString(typ.`type`)) ++ value
+        }
     }
   }
 
