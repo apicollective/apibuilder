@@ -20,7 +20,10 @@ import java.util.UUID
 
 import scala.annotation.tailrec
 
-case class MigrationStats(good: Long, bad: Long)
+case class
+
+
+MigrationStats(good: Long, bad: Long)
 
 @Singleton
 class VersionsDao @Inject() (
@@ -261,7 +264,7 @@ class VersionsDao @Inject() (
     var good = 0l
     var bad = 0l
 
-    val sql = BaseQuery.trim + " and versions.deleted_at is null and services.guid is null and originals.data is not null limit $limit offset $offset"
+    val sql = BaseQuery.trim + s" and versions.deleted_at is null and services.guid is null and originals.data is not null limit $limit offset $offset"
 
     val processed = DB.withConnection { implicit c =>
       val records = SQL(sql)().toList
