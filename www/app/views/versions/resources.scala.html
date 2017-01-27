@@ -82,7 +82,7 @@
                          </tr>
                          <tr>
                            <td></td>
-                           <td>@headers(org, application, version, service, response.headers)</td>
+                           <td>@headers(org, application, version, service, response.headers.getOrElse(Nil))</td>
                          </tr>
                        }
                      }

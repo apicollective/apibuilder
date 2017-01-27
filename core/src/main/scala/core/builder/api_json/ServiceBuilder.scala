@@ -438,7 +438,10 @@ case class ServiceBuilder(
           case Failure(ex) => ResponseCodeOption(internal.code)
         },
         `type` = internal.datatype.get.label,
-        headers = internal.headers.map { HeaderBuilder(resolver, _) },
+        headers = internal.headers.map { HeaderBuilder(resolver, _) }.toList match {
+          case Nil => None
+          case headers => Some(headers)
+        },
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_))
       )
