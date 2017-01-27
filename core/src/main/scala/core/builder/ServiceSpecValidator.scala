@@ -699,7 +699,7 @@ case class ServiceSpecValidator(
       op <- resource.operations
       r <- op.responses
     } yield {
-      validateHeaders(r.headers, opLabel(resource, op, s"response code[${responseCodeString(r.code)}] header"))
+      validateHeaders(r.headers.getOrElse(Nil), opLabel(resource, op, s"response code[${responseCodeString(r.code)}] header"))
     }
 
     invalidCodes ++ invalidMethods ++ missingOrInvalidTypes ++ mixed2xxResponseTypes ++ noContentWithTypes ++ invalidHeaders.flatten

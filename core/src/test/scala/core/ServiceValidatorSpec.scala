@@ -254,8 +254,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
     validator.errors.mkString("") should be("")
     val headers = validator.service.resources.head.operations.head.responses.head.headers
     headers.size should be(1)
-    headers(0).name should be("foo")
-    headers(0).`type` should be("string")
+    headers.get(0).name should be("foo")
+    headers.get(0).`type` should be("string")
 
     TestHelper.serviceValidatorFromApiJson(json.format(s"$stringHeader, $stringHeader")).errors.mkString("") should be("Resource[user] GET /users/:guid response code[200] header[foo] appears more than once")
 
