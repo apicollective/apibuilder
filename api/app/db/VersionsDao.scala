@@ -11,11 +11,16 @@ import com.bryzek.apidoc.spec.v0.models.json._
 import lib.VersionTag
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
+
 import play.api.db._
 import play.api.Logger
 import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
+
+import scala.annotation.tailrec
+
+case class MigrationStats(good: Long, bad: Long)
 
 @Singleton
 class VersionsDao @Inject() (
@@ -251,14 +256,16 @@ class VersionsDao @Inject() (
     }
   }
 
-  def migrate(): Map[String, Int] = {
-    var good = 0
-    var bad = 0
+  @tailrec
+  final def migrate(limit: Int = 100, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
+    var good = 0l
+    var bad = 0l
 
-    val sql = BaseQuery.trim + " and versions.deleted_at is null and services.guid is null and originals.data is not null"
+    val sql = BaseQuery.trim + " and versions.deleted_at is null and services.guid is null and originals.data is not null limit $limit offset $offset"
 
-    DB.withConnection { implicit c =>
-      SQL(sql)().toList.foreach { row =>
+    val processed = DB.withConnection { implicit c =>
+      val records = SQL(sql)().toList
+      records.foreach { row =>
         val orgKey = row[String]("organization_key")
         val applicationKey = row[String]("application_key")
         val versionName = row[String]("version")
@@ -286,7 +293,7 @@ class VersionsDao @Inject() (
           )
           validator.validate() match {
             case Left(errors) => {
-            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
+              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
               bad += 1
             }
             case Right(service) => {
@@ -301,12 +308,16 @@ class VersionsDao @Inject() (
           }
         }
       }
+      records
     }
 
-    Map(
-      "number_migrated" -> good,
-      "number_errors" -> bad
-    )
+    val finalStats = MigrationStats(good = stats.good + good, bad = stats.bad + bad)
+
+    if (processed.size < limit) {
+      finalStats
+    } else {
+      migrate(limit, offset + limit, finalStats)
+    }
   }
 
   private[this] def softDeleteService(
