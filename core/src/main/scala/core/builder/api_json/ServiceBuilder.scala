@@ -38,7 +38,7 @@ case class ServiceBuilder(
     val enums = internal.enums.map { EnumBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val unions = internal.unions.map { UnionBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
     val models = internal.models.map { ModelBuilder(_) }.sortWith(_.name.toLowerCase < _.name.toLowerCase)
-    val resources = internal.resources.map { ResourceBuilder(resolver.provider, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
+    val resources = internal.resources.map { ResourceBuilder(resolver, _) }.sortWith(_.`type`.toLowerCase < _.`type`.toLowerCase)
     val attributes = internal.attributes.map { AttributeBuilder(_) }
 
     val info = internal.info match {
@@ -115,10 +115,10 @@ case class ServiceBuilder(
     }
 
     def apply(
-      resolver: TypesProvider,
+      resolver: TypeResolver,
       internal: InternalResourceForm
     ): Resource = {
-      val resolution = resolve(resolver, internal.datatype.name)
+      val resolution = resolve(resolver.provider, internal.datatype.name)
 
       resolution.enum match {
         case Some(enum) => {
@@ -189,7 +189,7 @@ case class ServiceBuilder(
     def apply(
       internal: InternalOperationForm,
       resourcePath: String,
-      resolver: TypesProvider,
+      resolver: TypeResolver,
       model: Option[TypesProviderModel] = None,
       union: Option[TypesProviderUnion] = None
     ): Operation = {
@@ -202,7 +202,7 @@ case class ServiceBuilder(
             val datatypeLabel: String = model.flatMap(_.fields.find(_.name == name)) match {
               case Some(field) => field.`type`
               case None => {
-                union.flatMap(commonField(resolver, _, name)).getOrElse {
+                union.flatMap(commonField(resolver.provider, _, name)).getOrElse {
                   Primitives.String.toString
                 }
               }
@@ -237,7 +237,7 @@ case class ServiceBuilder(
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         body = internal.body.map { BodyBuilder(_) },
         parameters = pathParameters ++ internalParams,
-        responses = internal.responses.map { ResponseBuilder(_) },
+        responses = internal.responses.map { ResponseBuilder(resolver, _) },
         attributes = internal.attributes.map { AttributeBuilder(_) }
       )
     }
@@ -431,13 +431,14 @@ case class ServiceBuilder(
 
   object ResponseBuilder {
 
-    def apply(internal: InternalResponseForm): Response = {
+    def apply(resolver: TypeResolver, internal: InternalResponseForm): Response = {
       Response(
         code = Try(internal.code.toInt) match {
           case Success(code) => ResponseCodeInt(code)
           case Failure(ex) => ResponseCodeOption(internal.code)
         },
         `type` = internal.datatype.get.label,
+        headers = internal.headers.map { HeaderBuilder(resolver, _) },
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_))
       )

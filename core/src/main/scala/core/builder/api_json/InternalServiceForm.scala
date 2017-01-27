@@ -75,38 +75,7 @@ private[api_json] case class InternalServiceForm(
     }
   }
 
-  lazy val headers: Seq[InternalHeaderForm] = {
-    (json \ "headers").asOpt[JsArray].map(_.value).getOrElse(Seq.empty).flatMap { el =>
-      el match {
-        case o: JsObject => {
-          val datatype = InternalDatatype(o)
-
-          val headerName = JsonUtil.asOptString(o \ "name")
-          Some(
-            InternalHeaderForm(
-              name = headerName,
-              datatype = datatype,
-              required = datatype.map(_.required).getOrElse(true),
-              description = JsonUtil.asOptString(o \ "description"),
-              deprecation = InternalDeprecationForm.fromJsValue(o),
-              default = JsonUtil.asOptString(o \ "default"),
-              attributes = InternalAttributeForm.attributesFromJson((o \ "attributes").asOpt[JsArray]),
-              warnings = JsonUtil.validate(
-                o,
-                strings = Seq("name", "type"),
-                optionalBooleans = Seq("required"),
-                optionalObjects = Seq("deprecation"),
-                optionalStrings = Seq("default", "description"),
-                optionalArraysOfObjects = Seq("attributes"),
-                prefix = Some(s"Header[${headerName.getOrElse("")}]".trim)
-              )
-            )
-          )
-        }
-        case _ => None
-      }
-    }
-  }
+  lazy val headers: Seq[InternalHeaderForm] = InternalHeaderForm(json)
 
   lazy val resources: Seq[InternalResourceForm] = {
     (json \ "resources").asOpt[JsValue] match {
@@ -296,6 +265,7 @@ case class InternalBodyForm(
 case class InternalResponseForm(
   code: String,
   datatype: Option[InternalDatatype] = None,
+  headers: Seq[InternalHeaderForm] = Nil,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm] = None,
   warnings: Seq[String] = Seq.empty
@@ -509,6 +479,41 @@ object InternalEnumForm {
 
 }
 
+object InternalHeaderForm {
+  def apply(json: JsValue): Seq[InternalHeaderForm] = {
+    (json \ "headers").asOpt[JsArray].map(_.value).getOrElse(Seq.empty).flatMap { el =>
+      el match {
+        case o: JsObject => {
+          val datatype = InternalDatatype(o)
+
+          val headerName = JsonUtil.asOptString(o \ "name")
+          Some(
+            InternalHeaderForm(
+              name = headerName,
+              datatype = datatype,
+              required = datatype.map(_.required).getOrElse(true),
+              description = JsonUtil.asOptString(o \ "description"),
+              deprecation = InternalDeprecationForm.fromJsValue(o),
+              default = JsonUtil.asOptString(o \ "default"),
+              attributes = InternalAttributeForm.attributesFromJson((o \ "attributes").asOpt[JsArray]),
+              warnings = JsonUtil.validate(
+                o,
+                strings = Seq("name", "type"),
+                optionalBooleans = Seq("required"),
+                optionalObjects = Seq("deprecation"),
+                optionalStrings = Seq("default", "description"),
+                optionalArraysOfObjects = Seq("attributes"),
+                prefix = Some(s"Header[${headerName.getOrElse("")}]".trim)
+              )
+            )
+          )
+        }
+        case _ => None
+      }
+    }
+  }
+}
+
 object InternalResourceForm {
 
   def apply(
@@ -653,12 +658,14 @@ object InternalResponseForm {
     InternalResponseForm(
       code = code,
       datatype = JsonUtil.asOptString(json \ "type").map(InternalDatatype(_)),
+      headers = InternalHeaderForm(json),
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
       warnings = JsonUtil.validate(
         json,
         strings = Seq("type"),
         optionalStrings = Seq("description"),
+        optionalArraysOfObjects = Seq("headers"),
         optionalObjects = Seq("deprecation")
       )
     )
