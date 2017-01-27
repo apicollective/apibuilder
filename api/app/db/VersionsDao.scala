@@ -210,7 +210,7 @@ class VersionsDao @Inject() (
       applicationGuid.map { _ => "and versions.application_guid = {application_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },
       isDeleted.map(Filters.isDeleted("versions", _)),
-      Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
+      Some(s"order by versions.version_sort_key desc, versions.created_at desc limit $limit offset $offset")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
@@ -247,7 +247,7 @@ class VersionsDao @Inject() (
           service = service,
           audit = AuditsDao.fromRowCreation(row)
         )
-      }.toSeq
+      }
     }
   }
 
@@ -284,7 +284,7 @@ class VersionsDao @Inject() (
             fetcher = DatabaseServiceFetcher(Authorization.All),
             migration = VersionMigration(internal = true)
           )
-          validator.validate match {
+          validator.validate() match {
             case Left(errors) => {
             Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
               bad += 1
