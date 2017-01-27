@@ -52,6 +52,7 @@ object Global extends WithFilters(LoggingFilter) {
     } match {
       case Success(result) => Logger.info("ensureServices() completed: " + result)
       case Failure(ex) => Logger.error(s"Error migrating versions: ${ex.getMessage}")
+    }
   }
 
 }
