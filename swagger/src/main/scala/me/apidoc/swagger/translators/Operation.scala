@@ -2,8 +2,8 @@ package me.apidoc.swagger.translators
 
 import me.apidoc.swagger.Util
 import com.bryzek.apidoc.spec.v0.{ models => apidoc }
-import com.wordnik.swagger.{ models => swagger }
-import com.wordnik.swagger.models.parameters.BodyParameter
+import io.swagger.{ models => swagger }
+import io.swagger.models.parameters.BodyParameter
 
 object Operation {
 
@@ -11,7 +11,7 @@ object Operation {
     resolver: Resolver,
     method: apidoc.Method,
     url: String,
-    op: com.wordnik.swagger.models.Operation
+    op: io.swagger.models.Operation
   ): apidoc.Operation = {
     val summary = Option(op.getSummary())
     val description = Option(op.getDescription())
