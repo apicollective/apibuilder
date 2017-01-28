@@ -262,17 +262,17 @@ class VersionsDao @Inject() (
     * remaining versions cannot be upgraded.
     */
   def migrate(): MigrationStats = {
-    val totals = migrateSingleRun()
-
-    var good = totals.good
     var stats = migrateSingleRun()
+    var totalRecords = stats.good + stats.bad
+    var totalGood = stats.good
+
     while (stats.good > 0) {
       Logger.info(s"migrate() interim statistics: ${stats}")
-      good += stats.good
       stats = migrateSingleRun()
+      totalGood += stats.good
     }
 
-    val finalStats = MigrationStats(good = good, bad = (totals.good + totals.bad) - good)
+    val finalStats = MigrationStats(good = totalGood, bad = totalRecords - totalGood)
     Logger.info(s"migrate() finished: good[${finalStats.good}] bad[${finalStats.bad}]")
     finalStats
   }
