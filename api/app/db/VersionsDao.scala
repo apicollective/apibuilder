@@ -259,8 +259,20 @@ class VersionsDao @Inject() (
     }
   }
 
+  def migrate(): MigrationStats = {
+    val totals = migrateSingleRun()
+
+    var good = totals.good
+    var stats = migrateSingleRun()
+    while (stats.good > 0) {
+      good += stats.good
+    }
+
+    MigrationStats(good = good, bad = (totals.good + totals.bad) - good)
+  }
+
   @tailrec
-  final def migrate(limit: Int = 100, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
+  private[this] def migrateSingleRun(limit: Int = 100, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
     var good = 0l
     var bad = 0l
 
@@ -320,7 +332,7 @@ class VersionsDao @Inject() (
     if (processed.size < limit) {
       finalStats
     } else {
-      migrate(limit, offset + limit, finalStats)
+      migrateSingleRun(limit, offset + limit, finalStats)
     }
   }
 
