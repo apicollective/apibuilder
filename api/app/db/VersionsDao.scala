@@ -20,10 +20,7 @@ import java.util.UUID
 
 import scala.annotation.tailrec
 
-case class
-
-
-MigrationStats(good: Long, bad: Long)
+case class MigrationStats(good: Long, bad: Long)
 
 @Singleton
 class VersionsDao @Inject() (
@@ -265,6 +262,11 @@ class VersionsDao @Inject() (
     var good = totals.good
     var stats = migrateSingleRun()
     while (stats.good > 0) {
+      println("")
+      println("")
+      println(s"STATS: ${stats}")
+      println("")
+      println("")
       good += stats.good
     }
 
