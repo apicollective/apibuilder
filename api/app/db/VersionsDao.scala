@@ -274,7 +274,7 @@ class VersionsDao @Inject() (
         val versionName = row[String]("version")
         val versionGuid = row[UUID]("guid")
 
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionGuid to version $ServiceVersionNumber")
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest apidoc spec version[$ServiceVersionNumber]")
 
         val config = ServiceConfiguration(
           orgKey = orgKey,
@@ -296,7 +296,7 @@ class VersionsDao @Inject() (
           )
           validator.validate() match {
             case Left(errors) => {
-              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
+              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
               bad += 1
             }
             case Right(service) => {
@@ -306,7 +306,8 @@ class VersionsDao @Inject() (
           }
         } catch {
           case e: Throwable => {
-            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] to service versionNumber[$ServiceVersionNumber]: $e")
+            e.printStackTrace(System.err)
+            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: $e")
             bad += 1
           }
         }
