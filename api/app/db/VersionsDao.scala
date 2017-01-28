@@ -256,21 +256,25 @@ class VersionsDao @Inject() (
     }
   }
 
+  /**
+    * Upgrades all versions to the latest apidoc spec in multiple
+    * passes until we have either upgraded all of them or all
+    * remaining versions cannot be upgraded.
+    */
   def migrate(): MigrationStats = {
     val totals = migrateSingleRun()
 
     var good = totals.good
     var stats = migrateSingleRun()
     while (stats.good > 0) {
-      println("")
-      println("")
-      println(s"STATS: ${stats}")
-      println("")
-      println("")
+      Logger.info(s"migrate() interim statistics: ${stats}")
       good += stats.good
+      stats = migrateSingleRun()
     }
 
-    MigrationStats(good = good, bad = (totals.good + totals.bad) - good)
+    val finalStats = MigrationStats(good = good, bad = (totals.good + totals.bad) - good)
+    Logger.info(s"migrate() finished: good[${finalStats.good}] bad[${finalStats.bad}]")
+    finalStats
   }
 
   @tailrec
@@ -278,7 +282,7 @@ class VersionsDao @Inject() (
     var good = 0l
     var bad = 0l
 
-    val sql = BaseQuery.trim + s" and versions.deleted_at is null and services.guid is null and originals.data is not null limit $limit offset $offset"
+    val sql = BaseQuery.trim + s" and versions.deleted_at is null and services.guid is null and originals.data is not null order by versions.created_at desc limit $limit offset $offset"
 
     val processed = DB.withConnection { implicit c =>
       val records = SQL(sql)().toList
