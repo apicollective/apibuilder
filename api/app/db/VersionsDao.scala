@@ -259,8 +259,20 @@ class VersionsDao @Inject() (
     }
   }
 
+  def migrate(): MigrationStats = {
+    val totals = migrateSingleRun()
+
+    var good = totals.good
+    var stats = migrateSingleRun()
+    while (stats.good > 0) {
+      good += stats.good
+    }
+
+    MigrationStats(good = good, bad = (totals.good + totals.bad) - good)
+  }
+
   @tailrec
-  final def migrate(limit: Int = 100, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
+  private[this] def migrateSingleRun(limit: Int = 100, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
     var good = 0l
     var bad = 0l
 
@@ -274,7 +286,7 @@ class VersionsDao @Inject() (
         val versionName = row[String]("version")
         val versionGuid = row[UUID]("guid")
 
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionGuid to version $ServiceVersionNumber")
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest apidoc spec version[$ServiceVersionNumber]")
 
         val config = ServiceConfiguration(
           orgKey = orgKey,
@@ -296,7 +308,7 @@ class VersionsDao @Inject() (
           )
           validator.validate() match {
             case Left(errors) => {
-              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
+              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
               bad += 1
             }
             case Right(service) => {
@@ -306,7 +318,8 @@ class VersionsDao @Inject() (
           }
         } catch {
           case e: Throwable => {
-            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] to service versionNumber[$ServiceVersionNumber]: $e")
+            e.printStackTrace(System.err)
+            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: $e")
             bad += 1
           }
         }
@@ -319,7 +332,7 @@ class VersionsDao @Inject() (
     if (processed.size < limit) {
       finalStats
     } else {
-      migrate(limit, offset + limit, finalStats)
+      migrateSingleRun(limit, offset + limit, finalStats)
     }
   }
 
