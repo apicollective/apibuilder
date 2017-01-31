@@ -2,15 +2,15 @@ package me.apidoc.swagger
 
 import translators.Resolver
 import lib.{ServiceConfiguration, Text, UrlKey}
-
 import io.swagger.parser.SwaggerParser
 import com.wordnik.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
 import java.io.File
 
 import scala.collection.JavaConversions._
 import com.bryzek.apidoc.spec.v0.models._
+
 import scala.annotation.tailrec
-import com.wordnik.swagger.models.properties.{RefProperty, ArrayProperty}
+import com.wordnik.swagger.models.properties.{ArrayProperty, RefProperty}
 
 case class Parser(config: ServiceConfiguration) {
 
@@ -28,8 +28,9 @@ case class Parser(config: ServiceConfiguration) {
     }
     val info = swagger.getInfo() // TODO
     val applicationKey = UrlKey.generate(info.getTitle())
-    val specModels = models(swagger)
-    val resolver = Resolver(models = specModels)
+    val specModelsAndEnums = models(swagger)
+    val specModels = specModelsAndEnums._1
+    val resolver = Resolver(models = specModels, enums = specModelsAndEnums._2)
 
     Service(
       apidoc = Apidoc(version = com.bryzek.apidoc.spec.v0.Constants.Version),
@@ -44,7 +45,7 @@ case class Parser(config: ServiceConfiguration) {
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
       version = config.version,
-      enums = Nil,
+      enums = specModelsAndEnums._2,
       unions = Nil,
       models = specModels,
       imports = Nil,
@@ -53,10 +54,10 @@ case class Parser(config: ServiceConfiguration) {
     )
   }
 
-  private def models(swagger: Swagger): Seq[Model] = {
+  private def models(swagger: Swagger): (Seq[Model], Seq[Enum]) = {
     buildModels(
       selector = ModelSelector(Util.toMap(swagger.getDefinitions)),
-      resolver = Resolver(models = Nil)
+      resolver = Resolver(models = Nil, enums = Nil)
     )
   }
 
@@ -64,16 +65,17 @@ case class Parser(config: ServiceConfiguration) {
   private def buildModels(
     selector: ModelSelector,
     resolver: Resolver
-  ): Seq[Model] = {
+  ): (Seq[Model], Seq[Enum]) = {
     selector.next() match {
       case None => {
         selector.remaining.toList match {
-          case Nil => resolver.models
+          case Nil => (resolver.models, resolver.enums)
           case remaining => sys.error("Failed to resolve definitions: " + selector.remaining.map(_.name).mkString(", "))
         }
       }
 
       case Some(mydefinition) => {
+        var newEnums = Seq[Enum]()
         val name = mydefinition.name
         val newModel = mydefinition.definition match {
           case m: ComposedModel => {
@@ -86,7 +88,11 @@ case class Parser(config: ServiceConfiguration) {
             m.getAllOf.foreach { swaggerModel =>
               val thisModel = swaggerModel match {
                 case m: RefModel => resolver.resolveWithError(m)
-                case m: ModelImpl => translators.Model(resolver, name, m)
+                case m: ModelImpl => {
+                  val translated = translators.Model(resolver, name, m)
+                  newEnums ++= translated._2
+                  translated._1
+                }
                 case _ => sys.error(s"Unsupported composition model[$name] - $swaggerModel")
               }
 
@@ -107,13 +113,17 @@ case class Parser(config: ServiceConfiguration) {
           }
 
           case rm: RefModel => resolver.resolveWithError(rm)
-          case m: ModelImpl => translators.Model(resolver, name, m)
+          case m: ModelImpl => {
+            val translated = translators.Model(resolver, name, m)
+            newEnums ++= translated._2
+            translated._1
+          }
           case _ => sys.error(s"Unsupported definition for name[$name]")
         }
 
         buildModels(
           selector = selector,
-          resolver = Resolver(models = resolver.models ++ Seq(newModel))
+          resolver = Resolver(models = resolver.models ++ Seq(newModel), enums = resolver.enums ++ newEnums)
         )
       }
     }

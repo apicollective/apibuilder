@@ -47,6 +47,125 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
 
   describe("Swagger parser") {
 
+    it("should parse petstore-enums.json") {
+      val files = Seq("petstore-enums.json")
+      files.foreach {
+        filename =>
+          val path = s"swagger/src/test/resources/$filename"
+          println(s"Reading file[$path]")
+          SwaggerServiceValidator(config, readFile(path)).validate match {
+            case Left(errors) => {
+              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            }
+            case Right(service) => {
+              service.name should be("Swagger Petstore")
+              service.namespace should be("me.apidoc.swagger.petstore.v0")
+              service.organization.key should be("apidoc")
+              service.application.key should be("swagger-petstore")
+              service.version should be("0.0.2-dev")
+              service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
+              service.headers should be(Seq.empty)
+              service.imports should be(Seq.empty)
+              service.enums.size should be(1)
+              service.enums(0).name should be("enum_sex")
+              service.enums(0).values.size should be(2)
+              service.enums(0).values.map(_.name).sorted should be(Seq("female", "male"))
+              service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
+
+              checkModel(
+                service.models.find(_.name == "Pet").get,
+                Model(
+                  name = "Pet",
+                  plural = "Pets",
+                  description = Some("Definition of a pet"),
+                  fields = Seq(
+                    Field(
+                      name = "id",
+                      `type` = "long",
+                      required = true
+                    ),
+                    Field(
+                      name = "name",
+                      `type` = "string",
+                      required = true
+                    ),
+                    Field(
+                      name = "tag",
+                      `type` = "string",
+                      required = false
+                    ),
+                    Field(
+                      name = "sex",
+                      `type` = "enum_sex",
+                      required = false
+                    )
+                  )
+                )
+              )
+
+              checkModel(
+                service.models.find(_.name == "Error").get,
+                Model(
+                  name = "Error",
+                  plural = "Errors",
+                  description = None,
+                  fields = Seq(
+                    Field(
+                      name = "code",
+                      `type` = "integer",
+                      required = true
+                    ),
+                    Field(
+                      name = "message",
+                      `type` = "string",
+                      required = true
+                    )
+                  )
+                )
+              )
+
+              service.resources.foreach {
+                r =>
+                  println(s" Resource ${r.`type`}")
+                  r.operations.foreach {
+                    op =>
+                      println(s"  ${op.method} ${op.path}")
+
+                      println(s"   body:")
+                      op.body match {
+                        case None => {
+                          println("    none")
+                        }
+                        case Some(b) => {
+                          println(s"    ${b.`type`}")
+                        }
+                      }
+
+                      println(s"   parameters:")
+                      op.parameters match {
+                        case Nil => {
+                          println("    none")
+                        }
+                        case params => {
+                          params.foreach {
+                            p =>
+                              println(s"    ${p.name}: ${p.`type`} (${p.location}) ${printRequired(p.required)}")
+                          }
+                        }
+                      }
+
+                      println(s"   responses:")
+                      op.responses.foreach {
+                        r =>
+                          println(s"    ${r.code}: ${r.`type`}")
+                      }
+                  }
+              }
+            }
+          }
+      }
+    }
+
     it("should parse petstore-with-external-docs.json") {
       val files = Seq("petstore-with-external-docs.json")
       files.foreach {
