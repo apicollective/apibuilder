@@ -2,7 +2,7 @@ package me.apidoc.swagger.translators
 
 import lib.Primitives
 import com.bryzek.apidoc.spec.v0.{ models => apidoc }
-import com.wordnik.swagger.{ models => swagger }
+import io.swagger.{ models => swagger }
 
 object Response {
 

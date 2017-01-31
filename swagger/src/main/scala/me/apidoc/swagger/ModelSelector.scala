@@ -1,7 +1,7 @@
 package me.apidoc.swagger
 
-import com.wordnik.swagger.{models => swagger}
-import com.wordnik.swagger.models.properties.{ArrayProperty, Property, RefProperty}
+import io.swagger.{models => swagger}
+import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
 
 private[swagger] case class MyDefinition(name: String, definition: swagger.Model) {
 

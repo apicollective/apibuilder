@@ -11,11 +11,16 @@ import com.bryzek.apidoc.spec.v0.models.json._
 import lib.VersionTag
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
+
 import play.api.db._
 import play.api.Logger
 import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
+
+import scala.annotation.tailrec
+
+case class MigrationStats(good: Long, bad: Long)
 
 @Singleton
 class VersionsDao @Inject() (
@@ -210,7 +215,7 @@ class VersionsDao @Inject() (
       applicationGuid.map { _ => "and versions.application_guid = {application_guid}::uuid" },
       version.map { v => "and versions.version = {version}" },
       isDeleted.map(Filters.isDeleted("versions", _)),
-      Some(s"order by versions.version_sort_key desc, versions.created_at desc limit ${limit} offset ${offset}")
+      Some(s"order by versions.version_sort_key desc, versions.created_at desc limit $limit offset $offset")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
@@ -247,24 +252,47 @@ class VersionsDao @Inject() (
           service = service,
           audit = AuditsDao.fromRowCreation(row)
         )
-      }.toSeq
+      }
     }
   }
 
-  def migrate(): Map[String, Int] = {
-    var good = 0
-    var bad = 0
+  /**
+    * Upgrades all versions to the latest apidoc spec in multiple
+    * passes until we have either upgraded all of them or all
+    * remaining versions cannot be upgraded.
+    */
+  def migrate(): MigrationStats = {
+    var stats = migrateSingleRun()
+    var totalRecords = stats.good + stats.bad
+    var totalGood = stats.good
 
-    val sql = BaseQuery.trim + " and versions.deleted_at is null and services.guid is null and originals.data is not null"
+    while (stats.good > 0) {
+      Logger.info(s"migrate() interim statistics: ${stats}")
+      stats = migrateSingleRun()
+      totalGood += stats.good
+    }
 
-    DB.withConnection { implicit c =>
-      SQL(sql)().toList.foreach { row =>
+    val finalStats = MigrationStats(good = totalGood, bad = totalRecords - totalGood)
+    Logger.info(s"migrate() finished: good[${finalStats.good}] bad[${finalStats.bad}]")
+    finalStats
+  }
+
+  @tailrec
+  private[this] def migrateSingleRun(limit: Int = 100, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
+    var good = 0l
+    var bad = 0l
+
+    val sql = BaseQuery.trim + s" and versions.deleted_at is null and services.guid is null and originals.data is not null order by versions.created_at desc limit $limit offset $offset"
+
+    val processed = DB.withConnection { implicit c =>
+      val records = SQL(sql)().toList
+      records.foreach { row =>
         val orgKey = row[String]("organization_key")
         val applicationKey = row[String]("application_key")
         val versionName = row[String]("version")
         val versionGuid = row[UUID]("guid")
 
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionGuid to version $ServiceVersionNumber")
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest apidoc spec version[$ServiceVersionNumber]")
 
         val config = ServiceConfiguration(
           orgKey = orgKey,
@@ -284,9 +312,9 @@ class VersionsDao @Inject() (
             fetcher = DatabaseServiceFetcher(Authorization.All),
             migration = VersionMigration(internal = true)
           )
-          validator.validate match {
+          validator.validate() match {
             case Left(errors) => {
-            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
+              Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] - invalid JSON: " + errors.distinct.mkString(", "))
               bad += 1
             }
             case Right(service) => {
@@ -296,17 +324,22 @@ class VersionsDao @Inject() (
           }
         } catch {
           case e: Throwable => {
-            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName guid[$versionGuid] to service versionNumber[$ServiceVersionNumber]: $e")
+            e.printStackTrace(System.err)
+            Logger.error(s"Error migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid]: $e")
             bad += 1
           }
         }
       }
+      records
     }
 
-    Map(
-      "number_migrated" -> good,
-      "number_errors" -> bad
-    )
+    val finalStats = MigrationStats(good = stats.good + good, bad = stats.bad + bad)
+
+    if (processed.size < limit) {
+      finalStats
+    } else {
+      migrateSingleRun(limit, offset + limit, finalStats)
+    }
   }
 
   private[this] def softDeleteService(

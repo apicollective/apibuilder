@@ -3,9 +3,9 @@ package me.apidoc.swagger.translators
 import lib.Primitives
 import me.apidoc.swagger.{SchemaType, Util}
 import com.bryzek.apidoc.spec.v0.{models => apidoc}
-import com.wordnik.swagger.{models => swagger}
-import com.wordnik.swagger.models.{parameters => swaggerparams}
-import com.wordnik.swagger.models.{properties => swaggerproperties}
+import io.swagger.{models => swagger}
+import io.swagger.models.{parameters => swaggerparams}
+import io.swagger.models.{properties => swaggerproperties}
 
 object Parameter {
 

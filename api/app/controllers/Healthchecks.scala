@@ -21,8 +21,12 @@ class Healthchecks @Inject() (
   }
 
   def getMigrate() = Action { request =>
-    val result = versionsDao.migrate()
-    Ok(Json.toJson(result))
+    val stats = versionsDao.migrate()
+    Ok(
+      Json.toJson(
+        Map("good" -> stats.good, "bad" -> stats.bad)
+      )
+    )
   }
 
 }

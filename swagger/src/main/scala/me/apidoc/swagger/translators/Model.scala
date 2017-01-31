@@ -3,11 +3,8 @@ package me.apidoc.swagger.translators
 import com.bryzek.apidoc.spec.v0.models.EnumValue
 import lib.Text
 import me.apidoc.swagger.Util
-import com.bryzek.apidoc.spec.v0.{models => apidoc}
-import com.wordnik.swagger.models.properties.StringProperty
-import com.wordnik.swagger.{models => swagger}
-
-import scala.language.implicitConversions
+import com.bryzek.apidoc.spec.v0.{ models => apidoc }
+import io.swagger.{ models => swagger }
 
 object Model {
 
@@ -42,7 +39,7 @@ object Model {
     Util.toMap(m.getProperties).map {
       case (key, prop) => {
         prop match {
-          case sp: StringProperty if(sp.getEnum!=null && !sp.getEnum.isEmpty) => {
+          case sp: swagger.properties.StringProperty if(sp.getEnum!=null && !sp.getEnum.isEmpty) => {
               Some(apidoc.Enum(
                 name = s"enum_${key}",
                 plural = "",

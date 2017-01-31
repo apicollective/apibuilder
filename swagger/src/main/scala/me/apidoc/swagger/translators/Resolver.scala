@@ -1,9 +1,9 @@
 package me.apidoc.swagger.translators
 
 import me.apidoc.swagger.{SchemaType, Util}
-import com.bryzek.apidoc.spec.v0.{models => apidoc}
-import com.wordnik.swagger.models.RefModel
-import com.wordnik.swagger.models.properties.{ArrayProperty, Property, RefProperty, StringProperty}
+import com.bryzek.apidoc.spec.v0.{ models => apidoc }
+import io.swagger.models.RefModel
+import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
 
 case class Resolver(
   models: Seq[apidoc.Model], enums: Seq[apidoc.Enum]

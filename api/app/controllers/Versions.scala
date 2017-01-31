@@ -3,11 +3,11 @@ package controllers
 import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
 import com.bryzek.apidoc.api.v0.models.json._
 import com.bryzek.apidoc.spec.v0.models.Service
-import lib.ServiceConfiguration
+import lib._
 import builder.OriginalValidator
-import lib.{DatabaseServiceFetcher, OriginalUtil, Validation}
-import db.{ApplicationsDao, Authorization, OrganizationsDao, VersionValidator, VersionsDao}
+import db._
 import javax.inject.{Inject, Singleton}
+
 import play.api.mvc._
 import play.api.libs.json._
 
@@ -36,6 +36,25 @@ class Versions @Inject() (
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
       case None => NotFound
       case Some(v: Version) => Ok(Json.toJson(v))
+    }
+  }
+
+  def getExampleByApplicationKeyAndVersionAndTypeName(
+    orgKey: String, applicationKey: String, version: String, typeName: String, optionalFields: Option[Boolean]
+  ) = AnonymousRequest { request =>
+    versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
+      case None => NotFound
+      case Some(v: Version) => {
+        val example = if (optionalFields.getOrElse(false)) {
+          ExampleJson.allFields(v.service)
+        } else {
+          ExampleJson.requiredFieldsOnly(v.service)
+        }
+        example.sample(typeName) match {
+          case None => NotFound
+          case Some(js) => Ok(js)
+        }
+      }
     }
   }
 

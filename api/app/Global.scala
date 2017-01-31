@@ -2,13 +2,15 @@ import com.bryzek.apidoc.api.v0.models.json._
 import actors.MainActor
 import db.VersionsDao
 import lib.Validation
-
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.mvc.Results._
+
 import scala.concurrent.Future
 import play.api.Play.current
+
+import scala.util.{Failure, Success, Try}
 
 object Global extends WithFilters(LoggingFilter) {
 
@@ -45,8 +47,12 @@ object Global extends WithFilters(LoggingFilter) {
   private[this] def ensureServices() {
     Logger.info("Starting ensureServices()")
     val versionsDao = play.api.Play.current.injector.instanceOf[VersionsDao]
-    val result = versionsDao.migrate()
-    Logger.info("ensureServices() completed: " + result)
+    Try {
+      versionsDao.migrate()
+    } match {
+      case Success(result) => Logger.info("ensureServices() completed: " + result)
+      case Failure(ex) => Logger.error(s"Error migrating versions: ${ex.getMessage}")
+    }
   }
 
 }

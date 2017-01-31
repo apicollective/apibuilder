@@ -3,14 +3,14 @@ package me.apidoc.swagger
 import translators.Resolver
 import lib.{ServiceConfiguration, Text, UrlKey}
 import io.swagger.parser.SwaggerParser
-import com.wordnik.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
+import io.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
 import java.io.File
 
 import scala.collection.JavaConversions._
 import com.bryzek.apidoc.spec.v0.models._
 
 import scala.annotation.tailrec
-import com.wordnik.swagger.models.properties.{ArrayProperty, RefProperty}
+import io.swagger.models.properties.{RefProperty, ArrayProperty}
 
 case class Parser(config: ServiceConfiguration) {
 
@@ -80,10 +80,6 @@ case class Parser(config: ServiceConfiguration) {
         val newModel = mydefinition.definition match {
           case m: ComposedModel => {
             var composedModel: Option[Model] = None
-
-            m.getInterfaces.foreach { i =>
-              sys.error(s"TODO: Handle interfaces for definition[$name]: $i")
-            }
 
             m.getAllOf.foreach { swaggerModel =>
               val thisModel = swaggerModel match {
