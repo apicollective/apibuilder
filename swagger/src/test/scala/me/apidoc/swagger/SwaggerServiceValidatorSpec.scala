@@ -1,6 +1,8 @@
 package me.apidoc.swagger
 
-import com.bryzek.apidoc.spec.v0.models.{Field, Model}
+import com.bryzek.apidoc.spec.v0.models.Method.Get
+import com.bryzek.apidoc.spec.v0.models.ParameterLocation.{Path, Query}
+import com.bryzek.apidoc.spec.v0.models.{EnumValue, _}
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 
@@ -18,25 +20,15 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   private def checkModel(actual: Model, target: Model) {
-    actual.name should be(target.name)
-    actual.plural should be(target.plural)
-    actual.description should be(target.description)
-    actual.fields.map(_.name) should be(target.fields.map(_.name))
-    actual.fields.foreach { f =>
-      checkField(f, target.fields.find(_.name == f.name).get)
-    }
+    actual should be(target)
   }
 
-  private def checkField(actual: Field, target: Field) {
-    actual.name should be(target.name)
-    actual.`type` should be(target.`type`)
-    actual.description should be(target.description)
-    actual.deprecation should be(target.deprecation)
-    actual.default should be(target.default)
-    actual.required should be(target.required)
-    actual.minimum should be(target.minimum)
-    actual.maximum should be(target.maximum)
-    actual.example should be(target.example)
+  private def checkResource(actual: Resource, target: Resource): Unit = {
+    actual should be(target)
+  }
+
+  private def checkEnum(actual: Enum, target: Enum): Unit = {
+    actual should be(target)
   }
 
   val config = ServiceConfiguration(
@@ -66,12 +58,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
               service.headers should be(Seq.empty)
               service.imports should be(Seq.empty)
-              service.enums.size should be(1)
-              service.enums(0).name should be("enum_sex")
-              service.enums(0).values.size should be(2)
-              service.enums(0).values.map(_.name).sorted should be(Seq("female", "male"))
-              service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
 
+              service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
               checkModel(
                 service.models.find(_.name == "Pet").get,
                 Model(
@@ -95,8 +83,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       required = false
                     ),
                     Field(
-                      name = "sex",
-                      `type` = "enum_sex",
+                      name = "status",
+                      `type` = "enum_status",
                       required = false
                     )
                   )
@@ -124,43 +112,94 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                 )
               )
 
-              service.resources.foreach {
-                r =>
-                  println(s" Resource ${r.`type`}")
-                  r.operations.foreach {
-                    op =>
-                      println(s"  ${op.method} ${op.path}")
+              service.resources.size should be(1)
+              checkResource(service.resources(0),
+                Resource(
+                  `type` = "Pet",
+                  plural = "Pets",
+                  path = None,
+                  description = None,
+                  deprecation = None,
+                  operations = Seq(
+                    Operation(
+                      method = Get,
+                      path = "/pets/",
+                      description = Some("finds pets by status - as a query param"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(Parameter(
+                        name = "status",
+                        `type` = "string", //TODO "enum_status"
+                        location = Query,
+                        description = None,
+                        deprecation = None,
+                        required = true,
+                        default = None,
+                        minimum = None,
+                        maximum = None,
+                        example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(200),
+                          `type` = "[Pet]",
+                          description = Some("find pet response"),
+                          deprecation = None),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
+                      attributes = Nil),
+                    Operation(
+                      method = Get,
+                      path = "/pets/:status",
+                      description = Some("finds pets by status - as a path param"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(Parameter(
+                        name = "status",
+                        `type` = "string",  //TODO "enum_status"
+                        location = Path,
+                        description = None,
+                        deprecation = None,
+                        required = true,
+                        default = None,
+                        minimum = None,
+                        maximum = None,
+                        example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(200),
+                          `type` = "[Pet]",
+                          description = Some("find pet response"),
+                          deprecation = None),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
+                      attributes = Nil)
+                  ),
+                  attributes = Seq())
+                )
 
-                      println(s"   body:")
-                      op.body match {
-                        case None => {
-                          println("    none")
-                        }
-                        case Some(b) => {
-                          println(s"    ${b.`type`}")
-                        }
-                      }
-
-                      println(s"   parameters:")
-                      op.parameters match {
-                        case Nil => {
-                          println("    none")
-                        }
-                        case params => {
-                          params.foreach {
-                            p =>
-                              println(s"    ${p.name}: ${p.`type`} (${p.location}) ${printRequired(p.required)}")
-                          }
-                        }
-                      }
-
-                      println(s"   responses:")
-                      op.responses.foreach {
-                        r =>
-                          println(s"    ${r.code}: ${r.`type`}")
-                      }
-                  }
-              }
+              service.enums.size should be(1)
+              checkEnum(service.enums(0),
+                Enum(
+                  name = "enum_status",
+                  plural = "",
+                  description = None,
+                  deprecation = None,
+                  values = Seq(
+                    EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "pending", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "sold", description = None, deprecation = None, attributes = Seq())),
+                  attributes = Seq()
+                ))
             }
           }
       }

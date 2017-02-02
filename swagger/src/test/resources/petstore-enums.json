@@ -18,13 +18,59 @@
     "http"
   ],
   "paths": {
-    "/pets": {
+    "/pets/{status}": {
       "get": {
         "tags": [ "Pet Operations" ],
-        "summary": "finds pets in the system",
+        "summary": "finds pets by status - as a path param",
+        "parameters":[
+          {
+            "name":"status",
+            "in":"path",
+            "required":true,
+            "type":"string",
+            "enum":["available", "pending", "sold"]
+          }
+        ],
         "responses": {
           "200": {
-            "description": "pet response",
+            "description": "find pet response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pet"
+              }
+            },
+            "headers": {
+              "x-expires": {
+                "type": "string"
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/pets/": {
+      "get": {
+        "tags": [ "Pet Operations" ],
+        "summary": "finds pets by status - as a query param",
+        "parameters":[
+          {
+            "name":"status",
+            "in":"query",
+            "required":true,
+            "type":"string",
+            "enum":["available", "pending", "sold"]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "find pet response",
             "schema": {
               "type": "array",
               "items": {
