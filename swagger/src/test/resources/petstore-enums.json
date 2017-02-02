@@ -65,9 +65,9 @@
         "tag": {
           "type": "string"
         },
-        "sex": {
+        "status": {
           "type": "string",
-          "enum": ["male", "female"]
+          "enum": ["available", "pending", "sold"]
         }
       }
     },
