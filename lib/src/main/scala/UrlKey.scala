@@ -5,7 +5,7 @@ object UrlKey {
   private val MinKeyLength = 3
 
   // Only want lower case letters and dashes
-  private val Regexp1 = """([^0-9a-z\-\_\.])""".r
+  private val Regexp1 = """([^0-9a-z\-\_])""".r
 
   // Turn multiple dashes into single dashes
   private val Regexp2 = """(\-+)""".r
