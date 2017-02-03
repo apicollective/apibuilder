@@ -97,7 +97,7 @@ case class TypeLabel(
 
   private[this] def importLink(imp: Import, kind: String, shortName: String, fullName: String): String = {
     Href(
-      s"$fullName:$version",
+      s"$fullName:${imp.version}",
       Href.prefix(imp.organization.key, imp.application.key, imp.version) + s"#$kind-${UrlKey.generate(shortName)}"
     ).html
   }
