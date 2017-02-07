@@ -101,11 +101,9 @@
         <a name="model-@lib.UrlKey.generate(model.name)"></a>
         <div class="version_model">
           <h3>@model.name</h3>
-          Example Json:
-             <a href="@routes.Versions.example(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, typeName = model.name)">Minimal</a> |
-             <a href="@routes.Versions.example(orgKey = service.organization.key, applicationKey = service.application.key, version = service.version, typeName = model.name, optionalFields = Some(true))">Full</a>
+          @exampleJson(tpl.org.get, application, tpl.version.get, model.name)
 
-             @model.deprecation.map(deprecation(_))
+          @model.deprecation.map(deprecation(_))
 
           @Html(lib.Markdown(model.description))
 
@@ -122,6 +120,7 @@
         <a name="union-@lib.UrlKey.generate(union.name)"></a>
         <div class="version_union">
           <h3>@union.name</h3>
+          @exampleJson(tpl.org.get, application, tpl.version.get, union.name)
           <ul>
 	    <li>Type discriminator: @union.discriminator.getOrElse("N/A")</li>
             @union.deprecation.map { deprecation => <li> + deprecation(deprecation) </li> }

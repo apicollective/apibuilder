@@ -1,0 +1,9 @@
+@(org: com.bryzek.apidoc.api.v0.models.Organization,
+  app: com.bryzek.apidoc.api.v0.models.Application,
+  version: String,
+  typeName: String
+)
+
+Example Json:
+  <a href="@routes.Versions.example(orgKey = org.key, applicationKey = app.key, version = version, typeName = typeName)">Minimal</a> |
+  <a href="@routes.Versions.example(orgKey = org.key, applicationKey = app.key, version = version, typeName = typeName, optionalFields = Some(true))">Full</a>
