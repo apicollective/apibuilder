@@ -77,12 +77,12 @@ object Field {
       case p: AbstractNumericProperty => {
         // Also covers DecimalProperty, DoubleProperty, FloatProperty, IntegerProperty, LongProperty
         base.copy(
-          minimum = Option(p.getMinimum()).map(_.toLong) match {
-            case None => Option(p.getMinimum()).map(_.toLong)
+          minimum = Option(p.getMinimum()).map(_.longValue) match {
+            case None => Option(p.getMinimum()).map(_.longValue)
             case Some(v) => Some(v)
           },
-          maximum = Option(p.getMaximum()).map(_.toLong) match {
-            case None => Option(p.getMaximum()).map(_.toLong)
+          maximum = Option(p.getMaximum()).map(_.longValue) match {
+            case None => Option(p.getMaximum()).map(_.longValue)
             case Some(v) => Some(v)
           }
         )

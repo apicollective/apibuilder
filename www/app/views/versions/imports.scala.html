@@ -4,7 +4,7 @@
   <tbody>
    @imports.map { imp =>
      <tr>
-       <td><a href="@imp.uri">@imp.uri</a></td>
+       <td><a href="@imp.uri.reverse.dropWhile(_ != '/').drop(1).reverse">@imp.uri</a></td>
      </tr>
    }
   </tbody>
