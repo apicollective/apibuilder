@@ -49,7 +49,7 @@ case class ExampleJson(service: Service, selection: Selection) {
 
     parentUnionType(enum.name).fold(value) { union =>
       union.discriminator.fold {
-        Json.obj("value" -> value)
+        Json.obj(enum.name -> value)
       }{ discriminator =>
         Json.obj(
           discriminator -> JsString(enum.name),
@@ -84,7 +84,24 @@ case class ExampleJson(service: Service, selection: Selection) {
     union.types.headOption.fold {
       Json.obj(): JsValue
     } { typ =>
-      mockValue(TextDatatype.parse(typ.`type`))
+      mockValue(TextDatatype.parse(typ.`type`)) match {
+        case js: JsBoolean => primitiveUnionWrapper(union, js)
+        case js: JsNumber => primitiveUnionWrapper(union, js)
+        case js: JsString => primitiveUnionWrapper(union, js)
+        case other => other
+      }
+    }
+  }
+
+  // primitives in a union type are wrapped in a 'value' field
+  private[this] def primitiveUnionWrapper(union: Union, js: JsValue): JsValue = {
+    union.discriminator.fold {
+      Json.obj("value" -> js)
+    } { discriminator =>
+      Json.obj(
+        discriminator -> union.name,
+        "value" -> js
+      )
     }
   }
 
@@ -179,9 +196,14 @@ case class ExampleJson(service: Service, selection: Selection) {
       }
 
       case Some(p) => {
-        field.example match {
-          case None => mockPrimitive(p)
-          case Some(ex) => primitiveExample(p, ex)
+        field.default match {
+          case Some(default) => primitiveExample(p, default)
+          case None => {
+            field.example match {
+              case None => mockPrimitive(p)
+              case Some(ex) => primitiveExample(p, ex)
+            }
+          }
         }
       }
     }
