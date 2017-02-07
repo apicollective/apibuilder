@@ -36,14 +36,32 @@ case class ExampleJson(service: Service, selection: Selection) {
     }
   }
 
-  private[this] def makeEnum(enum: Enum): JsString = {
-    JsString(
-      enum.values.headOption.map(_.toString).getOrElse("undefined")
+  private[this] def parentUnionType(typeName: String): Option[Union] = {
+    service.unions.find { u =>
+      u.types.map(_.`type`).contains(typeName)
+    }
+  }
+
+  private[this] def makeEnum(enum: Enum): JsValue = {
+    val value: JsValue = JsString(
+      enum.values.headOption.map(_.name.toString).getOrElse("undefined")
     )
+
+    parentUnionType(enum.name).fold(value) { union =>
+      union.discriminator.fold {
+        Json.obj(enum.name -> value)
+      }{ discriminator =>
+        Json.obj(
+          discriminator -> JsString(enum.name),
+          "value" -> value
+        )
+      }
+    }
+    
   }
 
   private[this] def makeModel(model: Model): JsValue = {
-    Json.toJson(
+    val value = JsObject(
       Map(
         model.fields.
           filter { f => selection == Selection.All || f.required }.
@@ -52,21 +70,38 @@ case class ExampleJson(service: Service, selection: Selection) {
           }: _*
       )
     )
+
+    parentUnionType(model.name).fold(value) { union =>
+      union.discriminator.fold {
+        Json.obj(model.name -> value)
+      }{ discriminator =>
+        Json.obj(discriminator -> JsString(model.name)) ++ value
+      }
+    }
   }
 
   private[this] def makeUnion(union: Union): JsValue = {
-    union.types.headOption match {
-      case None => Json.obj()
-      case Some(typ) =>
-        val value: JsObject = mockValue(TextDatatype.parse(typ.`type`)) match {
-          case obj: JsObject => obj                // objects are serialized as is
-          case jsval => Json.obj("value" -> jsval) // arrays and primitives are wrapped in a 'value' field
-        }
-        union.discriminator.fold {
-          Json.obj(typ.`type` -> value)
-        }{ discriminator =>
-          Json.obj(discriminator -> JsString(typ.`type`)) ++ value
-        }
+    union.types.headOption.fold {
+      Json.obj(): JsValue
+    } { typ =>
+      mockValue(TextDatatype.parse(typ.`type`)) match {
+        case js: JsBoolean => primitiveUnionWrapper(union, js)
+        case js: JsNumber => primitiveUnionWrapper(union, js)
+        case js: JsString => primitiveUnionWrapper(union, js)
+        case other => other
+      }
+    }
+  }
+
+  // primitives in a union type are wrapped in a 'value' field
+  private[this] def primitiveUnionWrapper(union: Union, js: JsValue): JsValue = {
+    union.discriminator.fold {
+      Json.obj("value" -> js)
+    } { discriminator =>
+      Json.obj(
+        discriminator -> union.name,
+        "value" -> js
+      )
     }
   }
 
@@ -88,6 +123,7 @@ case class ExampleJson(service: Service, selection: Selection) {
           case None => {
             service.models.find(_.name == typ) match {
               case Some(m) => makeModel(m)
+
               case None => {
                 service.unions.find(_.name == typ) match {
                   case Some(u) => makeUnion(u)
@@ -160,9 +196,14 @@ case class ExampleJson(service: Service, selection: Selection) {
       }
 
       case Some(p) => {
-        field.example match {
-          case None => mockPrimitive(p)
-          case Some(ex) => primitiveExample(p, ex)
+        field.default match {
+          case Some(default) => primitiveExample(p, default)
+          case None => {
+            field.example match {
+              case None => mockPrimitive(p)
+              case Some(ex) => primitiveExample(p, ex)
+            }
+          }
         }
       }
     }
