@@ -3,7 +3,6 @@ package me.apidoc.swagger.translators
 import lib.Primitives
 import me.apidoc.swagger.{SchemaType, Util}
 import com.bryzek.apidoc.spec.v0.{models => apidoc}
-import io.swagger.{models => swagger}
 import io.swagger.models.{parameters => swaggerparams}
 import io.swagger.models.{properties => swaggerproperties}
 
@@ -49,10 +48,16 @@ object Parameter {
         toSchemaType(resolver, p, Option(p.getItems))
       }
       case p: swaggerparams.PathParameter => {
-        toSchemaType(resolver, p, Option(p.getItems))
+        if(Util.hasStringEnum(p))
+          SchemaDetails(`type` = Util.buildEnumTypeName(p.getName))
+        else
+          toSchemaType(resolver, p, Option(p.getItems))
       }
       case p: swaggerparams.QueryParameter => {
-        toSchemaType(resolver, p, Option(p.getItems))
+        if(Util.hasStringEnum(p))
+          SchemaDetails(`type` = Util.buildEnumTypeName(p.getName))
+        else
+          toSchemaType(resolver, p, Option(p.getItems))
       }
       case _ => {
         SchemaDetails(`type` = template.`type`)

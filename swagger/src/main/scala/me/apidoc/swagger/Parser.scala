@@ -7,10 +7,12 @@ import io.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
 import java.io.File
 
 import scala.collection.JavaConversions._
+import collection.JavaConverters._
 import com.bryzek.apidoc.spec.v0.models._
+import io.swagger.models.parameters.{AbstractSerializableParameter, PathParameter, QueryParameter}
 
 import scala.annotation.tailrec
-import io.swagger.models.properties.{RefProperty, ArrayProperty}
+import io.swagger.models.properties.{ArrayProperty, RefProperty, StringProperty}
 
 case class Parser(config: ServiceConfiguration) {
 
@@ -28,9 +30,10 @@ case class Parser(config: ServiceConfiguration) {
     }
     val info = swagger.getInfo() // TODO
     val applicationKey = UrlKey.generate(info.getTitle())
-    val specModelsAndEnums = models(swagger)
+    val specModelsAndEnums = parseDefinitions(swagger)
     val specModels = specModelsAndEnums._1
     val resolver = Resolver(models = specModels, enums = specModelsAndEnums._2)
+    val resourcesAndParamEnums = parseResources(swagger, resolver)
 
     Service(
       apidoc = Apidoc(version = com.bryzek.apidoc.spec.v0.Constants.Version),
@@ -45,16 +48,16 @@ case class Parser(config: ServiceConfiguration) {
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
       version = config.version,
-      enums = specModelsAndEnums._2,
+      enums = (specModelsAndEnums._2 ++ resourcesAndParamEnums._2).toSet.toSeq,
       unions = Nil,
       models = specModels,
       imports = Nil,
       headers = Nil,
-      resources = translators.Resource.mergeAll(resources(swagger, resolver))
+      resources = translators.Resource.mergeAll(resourcesAndParamEnums._1)
     )
   }
 
-  private def models(swagger: Swagger): (Seq[Model], Seq[Enum]) = {
+  private def parseDefinitions(swagger: Swagger): (Seq[Model], Seq[Enum]) = {
     buildModels(
       selector = ModelSelector(Util.toMap(swagger.getDefinitions)),
       resolver = Resolver(models = Nil, enums = Nil)
@@ -125,11 +128,11 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
-  private def resources(
+  private def parseResources(
     swagger: Swagger,
     resolver: Resolver
-  ): Seq[Resource] =
-    (for {
+  ): (Seq[Resource], Set[Enum]) = {
+    val resourceAndParamEnums = (for {
       (url, p) <- swagger.getPaths
       operation <- p.getOperations
       response <- operation.getResponses.toMap.get("200")
@@ -140,13 +143,35 @@ case class Parser(config: ServiceConfiguration) {
         case ref: RefProperty =>
           ref
       }
-      model match {
+      val resource = model match {
         case ref: RefProperty =>
           resolver.findModelByOkResponseSchema(ref.getSimpleRef) match {
             case Some(model) => translators.Resource(resolver, model, url, p)
             case None => sys.error(s"Could not find model at url[$url]")
           }
       }
+
+      val paramStringEnums = operation.getParameters.filter(p =>
+        (p.isInstanceOf[PathParameter] || p.isInstanceOf[QueryParameter]) && Util.hasStringEnum(p)).map { param =>
+        Enum(
+          name = Util.buildEnumTypeName(param.getName),
+          plural = "",
+          description = None,
+          deprecation = None,
+          values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.map { value =>
+            EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
+          },
+          attributes = Seq())
+      }.toSet
+
+      (resource, paramStringEnums)
     }) toSeq
 
+    //merge all enums
+    val allParamEnums = resourceAndParamEnums.foldLeft(Set[Enum]())((acc, resourceAndEnums) => acc ++ resourceAndEnums._2)
+
+    (resourceAndParamEnums.map(_._1), allParamEnums)
+  }
+
 }
+

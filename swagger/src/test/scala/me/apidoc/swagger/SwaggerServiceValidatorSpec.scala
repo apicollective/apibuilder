@@ -113,7 +113,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               )
 
               service.resources.size should be(1)
-              checkResource(service.resources(0),
+              checkResource(service.resources(0), //TODO sort operations for more robust comparison (or look them up)
                 Resource(
                   `type` = "Pet",
                   plural = "Pets",
@@ -129,7 +129,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       body = None,
                       parameters = Seq(Parameter(
                         name = "status",
-                        `type` = "string", //TODO "enum_status"
+                        `type` = "enum_status",
                         location = Query,
                         description = None,
                         deprecation = None,
@@ -160,7 +160,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       body = None,
                       parameters = Seq(Parameter(
                         name = "status",
-                        `type` = "string",  //TODO "enum_status"
+                        `type` = "enum_status",
                         location = Path,
                         description = None,
                         deprecation = None,

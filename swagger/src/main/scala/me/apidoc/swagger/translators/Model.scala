@@ -41,7 +41,7 @@ object Model {
         prop match {
           case sp: swagger.properties.StringProperty if(sp.getEnum!=null && !sp.getEnum.isEmpty) => {
               Some(apidoc.Enum(
-                name = s"enum_${key}",
+                name = Util.buildEnumTypeName(key),
                 plural = "",
                 description = None,
                 deprecation = None,

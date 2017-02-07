@@ -109,7 +109,7 @@ object Field {
       case p: StringProperty => {
         if(p.getEnum!=null && !p.getEnum.isEmpty){
           stringProperty(base, None, None, None).copy(
-            `type` = s"enum_${base.name}"
+            `type` = Util.buildEnumTypeName(base.name)
           )
         } else {
           stringProperty(base, Option(p.getMinLength), Option(p.getMaxLength), Option(p.getPattern)).copy(
