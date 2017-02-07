@@ -54,4 +54,10 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     exampleMinimal.sample("foo") should be(None)
   }
 
+  it("union type containing an enum") {
+    val js = exampleMinimal.sample("response_code_option").get
+    val opt = Json.parse(js.toString()).as[ResponseCodeOption]
+    opt should be(ResponseCodeOption.Default)
+  }
+
 }
