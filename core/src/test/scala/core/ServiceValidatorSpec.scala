@@ -16,7 +16,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("service name must be a valid name") {
-    val json = """
+    val json =
+      """
     {
       "name": "5@4",
       "apidoc": { "version": "0.9.6" }
@@ -27,7 +28,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("base url shouldn't end with a '/'") {
-    val json = """
+    val json =
+      """
     {
       "name": "TestApp",
       "base_url": "http://localhost:9000/",
@@ -40,7 +42,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("model that is missing fields") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -56,7 +59,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("model has a field with an invalid name") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -74,7 +78,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("model with duplicate field names") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "models": {
@@ -93,7 +98,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
 
   it("reference that points to a non-existent model") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -111,7 +117,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("types are lowercased in service definition") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "models": {
@@ -130,7 +137,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("base_url is optional") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -148,7 +156,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("defaults to a NoContent response") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -179,7 +188,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("accepts request header params") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -216,7 +226,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
   it("accepts response headers") {
     val header = """{ "name": "foo", "type": "%s" }"""
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -263,7 +274,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("operations w/ a valid response validates correct") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -298,7 +310,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("operations w/ a valid attributes validates correct") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -331,7 +344,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("includes path parameter in operations") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -363,7 +377,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("DELETE supports query parameters") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -399,7 +414,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   it("path parameters must be required") {
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -432,7 +448,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
   it("infers datatype for a path parameter from the associated model") {
 
-    val json = """
+    val json =
+      """
     {
       "name": "Api Doc",
       "apidoc": { "version": "0.9.6" },
@@ -466,7 +483,8 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
   describe("parameter validations") {
 
-    val baseJson = """
+    val baseJson =
+      """
     {
         "name": "Test Validation of Parameters",
         "apidoc": { "version": "0.9.6" },
@@ -525,4 +543,28 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
   }
 
+  it("model with duplicate plural names") {
+    val json =
+      """
+    {
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "plural": "users",
+          "fields": [
+            { "name": "id", "type": "string" }
+          ]
+        },
+        "person": {
+          "plural": "users",
+          "fields": [
+            { "name": "id", "type": "string" }
+          ]
+        }
+      }
+    }
+    """
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString("") should be("Model with plural[users] appears more than once")
+  }
 }
