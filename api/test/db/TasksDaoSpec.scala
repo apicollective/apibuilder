@@ -199,9 +199,11 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
     it("raises error if recently deleted") {
       val task = createTaskDataDiffVersion()
       tasksDao.softDelete(user, task)
-      intercept[PSQLException] {
+      val ex = intercept[PSQLException] {
         tasksDao.purge(user, task)
-      }.getMessage should be("ERROR: Physical deletes on this table can occur only after 1 month of deleting the records")
+      }
+      println(ex.getMessage)
+      ex.getMessage.contains("ERROR: Physical deletes on this table can occur only after 1 month of deleting the records") should be(true)
     }
 
     it("purges if old") {
