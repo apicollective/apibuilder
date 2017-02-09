@@ -117,6 +117,20 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
       ).map(_.guid) should be(Nil)
     }
 
+    it("nOrMoreMinutesYoung") {
+      val task = createTaskDataDiffVersion()
+
+      tasksDao.findAll(
+        guid = Some(task.guid),
+        nOrMoreMinutesYoung = Some(10)
+      ).map(_.guid) should be(Seq(task.guid))
+
+      tasksDao.findAll(
+        guid = Some(task.guid),
+        nOrMoreMinutesYoung = Some(-10)
+      ).map(_.guid) should be(Nil)
+    }
+
     it("isDeleted") {
       val task = createTaskDataDiffVersion()
 
