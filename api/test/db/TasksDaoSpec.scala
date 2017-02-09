@@ -110,12 +110,12 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
       tasksDao.findAll(
         guid = Some(task.guid),
-        createdOnOrBefore = Some(DateTime.now.minusHours(1))
+        createdOnOrBefore = Some(DateTime.now.plusHours(1))
       ).map(_.guid) should be(Seq(task.guid))
 
       tasksDao.findAll(
         guid = Some(task.guid),
-        createdOnOrBefore = Some(DateTime.now.plusHours(1))
+        createdOnOrBefore = Some(DateTime.now.minusHours(1))
       ).map(_.guid) should be(Nil)
     }
 
