@@ -79,6 +79,7 @@ lazy val api = project
     libraryDependencies ++= Seq(
       ws,
       jdbc,
+      filters,
       "com.typesafe.play" %% "anorm"         % "2.5.0",
       "org.postgresql"    %  "postgresql"    % "9.4.1212",
       "org.mindrot"       %  "jbcrypt"       % "0.3m",
