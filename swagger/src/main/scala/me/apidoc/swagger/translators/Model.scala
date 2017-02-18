@@ -37,12 +37,13 @@ object Model {
 
   private def enums(m: swagger.ModelImpl): Seq[apidoc.Enum] = {
     Util.toMap(m.getProperties).map {
-      case (key, prop) => {
+      case (name, prop) => {
         prop match {
           case sp: swagger.properties.StringProperty if(sp.getEnum!=null && !sp.getEnum.isEmpty) => {
+              val enumTypeName = Util.buildEnumTypeName(name)
               Some(apidoc.Enum(
-                name = Util.buildEnumTypeName(key),
-                plural = "",
+                name = enumTypeName,
+                plural = Text.pluralize(enumTypeName),
                 description = None,
                 deprecation = None,
                 values = Util.toArray(sp.getEnum).map { value =>

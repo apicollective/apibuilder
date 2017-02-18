@@ -191,7 +191,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               checkEnum(service.enums(0),
                 Enum(
                   name = "enum_status",
-                  plural = "",
+                  plural = "enum_statuses",
                   description = None,
                   deprecation = None,
                   values = Seq(

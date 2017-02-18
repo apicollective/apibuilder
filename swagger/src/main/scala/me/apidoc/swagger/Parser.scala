@@ -153,9 +153,10 @@ case class Parser(config: ServiceConfiguration) {
 
       val paramStringEnums = operation.getParameters.filter(p =>
         (p.isInstanceOf[PathParameter] || p.isInstanceOf[QueryParameter]) && Util.hasStringEnum(p)).map { param =>
+        val enumTypeName = Util.buildEnumTypeName(param.getName)
         Enum(
-          name = Util.buildEnumTypeName(param.getName),
-          plural = "",
+          name = enumTypeName,
+          plural = Text.pluralize(enumTypeName),
           description = None,
           deprecation = None,
           values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.map { value =>
