@@ -57,4 +57,8 @@ class DocController extends Controller {
     Ok(views.html.doc.playUnionTypes(request.user))
   }
 
+  def apiTokens = Anonymous { implicit request =>
+    Ok(views.html.doc.apiTokens(request.user))
+  }
+
 }
