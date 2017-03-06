@@ -3,8 +3,9 @@ package me.apidoc.swagger.translators
 import com.bryzek.apidoc.spec.v0.models.EnumValue
 import lib.Text
 import me.apidoc.swagger.Util
-import com.bryzek.apidoc.spec.v0.{ models => apidoc }
-import io.swagger.{ models => swagger }
+import com.bryzek.apidoc.spec.v0.{models => apidoc}
+import io.swagger.models.properties.StringProperty
+import io.swagger.{models => swagger}
 
 object Model {
 
@@ -30,25 +31,30 @@ object Model {
       ),
       deprecation = None,
       fields = Util.toMap(m.getProperties).map {
-        case (key, prop) => Field(resolver, key, prop)
+        case (key, prop) => Field(resolver, name, key, prop)
       }.toSeq
-    ), enums(m))
+    ), enums(m, name))
   }
 
-  private def enums(m: swagger.ModelImpl): Seq[apidoc.Enum] = {
+  private def enums(m: swagger.ModelImpl, apidocModelName: String): Seq[apidoc.Enum] = {
     Util.toMap(m.getProperties).map {
       case (name, prop) => {
         prop match {
-          case sp: swagger.properties.StringProperty if(sp.getEnum!=null && !sp.getEnum.isEmpty) => {
-              val enumTypeName = Util.buildEnumTypeName(name)
+          case sp: swagger.properties.StringProperty => {
+            if(Util.hasStringEnum(sp)) {
+              val enumTypeName = Util.buildPropertyEnumTypeName(apidocModelName, name)
               Some(apidoc.Enum(
                 name = enumTypeName,
                 plural = Text.pluralize(enumTypeName),
                 description = None,
                 deprecation = None,
                 values = Util.toArray(sp.getEnum).map { value =>
-                  EnumValue(name = value, description = None, deprecation = None, attributes = Seq())},
+                  EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
+                },
                 attributes = Seq()))
+            } else {
+              None
+            }
           }
           case _ => None
         }

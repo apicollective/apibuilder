@@ -131,7 +131,7 @@ case class Parser(config: ServiceConfiguration) {
   private def parseResources(
     swagger: Swagger,
     resolver: Resolver
-  ): (Seq[Resource], Set[Enum]) = {
+  ): (Seq[Resource], Seq[Enum]) = {
     val resourceAndParamEnums = (for {
       (url, p) <- swagger.getPaths
       operation <- p.getOperations
@@ -151,27 +151,30 @@ case class Parser(config: ServiceConfiguration) {
           }
       }
 
-      val paramStringEnums = operation.getParameters.filter(p =>
-        (p.isInstanceOf[PathParameter] || p.isInstanceOf[QueryParameter]) && Util.hasStringEnum(p)).map { param =>
-        val enumTypeName = Util.buildEnumTypeName(param.getName)
-        Enum(
-          name = enumTypeName,
-          plural = Text.pluralize(enumTypeName),
-          description = None,
-          deprecation = None,
-          values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.map { value =>
-            EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
-          },
-          attributes = Seq())
-      }.toSet
+      val paramStringEnums =
+        operation.getParameters
+          .filter(p => Util.hasStringEnum(p))
+          .map { param =>
+            val httpMethod = Util.retrieveMethod(operation, p).get
+            val enumTypeName = Util.buildParamEnumTypeName(resource.`type`, param, httpMethod.toString)
+            Enum(
+              name = enumTypeName,
+              plural = Text.pluralize(enumTypeName),
+              description = None,
+              deprecation = None,
+              values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.map { value =>
+                EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
+              },
+              attributes = Seq())
+        }
 
       (resource, paramStringEnums)
     }) toSeq
 
-    //merge all enums
-    val allParamEnums = resourceAndParamEnums.foldLeft(Set[Enum]())((acc, resourceAndEnums) => acc ++ resourceAndEnums._2)
+    val allResources = resourceAndParamEnums.map(_._1)
+    val allParamEnums = resourceAndParamEnums.flatten { case (_, seqEnums) => seqEnums }
 
-    (resourceAndParamEnums.map(_._1), allParamEnums)
+    (allResources, allParamEnums)
   }
 
 }

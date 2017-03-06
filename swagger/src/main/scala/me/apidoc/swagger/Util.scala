@@ -1,15 +1,14 @@
 package me.apidoc.swagger
 
-import lib.Text
-
-import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
+import collection.JavaConverters._
 import java.nio.file.{Files, Paths}
 import java.nio.charset.StandardCharsets
 import java.io.File
 import java.util.UUID
 
-import io.swagger.models.{parameters => swaggerparams}
-import io.swagger.models.{properties => swaggerproperties}
+import io.swagger.{models => swaggermodels}
+import io.swagger.models.{parameters => swaggerparams, properties => swaggerproperties}
 
 object Util {
 
@@ -102,20 +101,42 @@ object Util {
   }
 
   /**
-    * Checks if the swagger parameter has string enum values.
+    * Checks if the swagger parameter is a query or path parameter and if it has string enum values.
     */
   def hasStringEnum(param: swaggerparams.Parameter): Boolean = {
-    param match {
-      case p: swaggerparams.AbstractSerializableParameter[_] =>
-        val enumerableParam = param.asInstanceOf[swaggerparams.AbstractSerializableParameter[_]]
-        enumerableParam.getType.equals(swaggerproperties.StringProperty.TYPE) && enumerableParam.getEnum != null && !enumerableParam.getEnum.isEmpty
-      case _ => false
+    (param.isInstanceOf[swaggerparams.PathParameter] || param.isInstanceOf[swaggerparams.QueryParameter]) && {
+      param match {
+        case p: swaggerparams.AbstractSerializableParameter[_] =>
+          val enumerableParam = param.asInstanceOf[swaggerparams.AbstractSerializableParameter[_]]
+          enumerableParam.getType.equals(swaggerproperties.StringProperty.TYPE) && enumerableParam.getEnum != null && !enumerableParam.getEnum.isEmpty
+        case _ => false
+      }
     }
   }
 
   /**
-    * Convention on enum's type name: prefix "enum_" in front of the property (or param) name
+    * Checks if the swagger string property and has string enum values.
     */
-  def buildEnumTypeName(propertyName: String): String = s"enum_$propertyName"
+  def hasStringEnum(stringProperty: swaggerproperties.StringProperty): Boolean = {
+      stringProperty.getEnum!=null && !stringProperty.getEnum.isEmpty
+  }
+
+  def buildPropertyEnumTypeName(modelName: String, enumName: String) = {
+    List(modelName, enumName).map(_.toLowerCase.capitalize).mkString //camel case with first letter capitalized
+  }
+
+  def buildParamEnumTypeName(resourceName: String, param: swaggerparams.Parameter, method: String): String = {
+    param match {
+      case p: swaggerparams.QueryParameter =>
+        List(resourceName, p.getName, method, "Query").map(_.toLowerCase.capitalize).mkString //camel case with first letter capitalized
+      case p: swaggerparams.PathParameter =>
+        List(resourceName, p.getName, method, "Path").map(_.toLowerCase.capitalize).mkString //camel case with first letter capitalized
+      case _ =>
+        sys.error(s"Enumerations not supported for swagger parameters of type ${param.getClass}")
+    }
+  }
+
+  def retrieveMethod(operation: swaggermodels.Operation, path: swaggermodels.Path): Option[swaggermodels.HttpMethod] =
+    path.getOperationMap().find(_._2 == operation).map(_._1)
 
 }
