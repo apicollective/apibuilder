@@ -5,6 +5,7 @@ import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 
 class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
+  private val resourcesDir = "swagger/src/test/resources/"
 
   private def readFile(path: String): String = {
     scala.io.Source.fromFile(path).getLines.mkString("\n")
@@ -51,7 +52,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       val files = Seq("petstore-with-external-docs.json")
       files.foreach {
         filename =>
-          val path = s"swagger/src/test/resources/$filename"
+          val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate match {
             case Left(errors) => {
@@ -199,7 +200,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       val files = Seq("petstore-with-external-docs-and-complex-path.json")
       files.foreach {
         filename =>
-          val path = s"swagger/src/test/resources/$filename"
+          val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate match {
             case Left(errors) => {
@@ -347,7 +348,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       val files = Seq("refs.json")
       files.foreach {
         filename =>
-          val path = s"swagger/src/test/resources/$filename"
+          val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate match {
             case Left(errors) => {
