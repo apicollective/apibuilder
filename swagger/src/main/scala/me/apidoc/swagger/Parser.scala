@@ -80,13 +80,13 @@ case class Parser(config: ServiceConfiguration) {
       case Some(mydefinition) => {
         var newEnums = Seq[Enum]()
         val name = mydefinition.name
-        val newModel = mydefinition.definition match {
+        val newModelOpt = mydefinition.definition match {
           case m: ComposedModel => {
             var composedModel: Option[Model] = None
 
             m.getAllOf.foreach { swaggerModel =>
-              val thisModel = swaggerModel match {
-                case m: RefModel => resolver.resolveWithError(m)
+              val thisModelOpt = swaggerModel match {
+                case m: RefModel => Some(resolver.resolveWithError(m))
                 case m: ModelImpl => {
                   val translated = translators.Model(resolver, name, m)
                   newEnums ++= translated._2
@@ -96,22 +96,27 @@ case class Parser(config: ServiceConfiguration) {
               }
 
               composedModel = composedModel match {
-                case None => Some(
+                case None => thisModelOpt map {thisModel =>
                   thisModel.copy(
                     name = name,
                     plural = Text.pluralize(name)
                   )
-                )
-                case Some(cm) => Some(translators.Model.compose(cm, thisModel))
+                }
+                case Some(cm) => thisModelOpt map { thisModel => translators.Model.compose(cm, thisModel)}
               }
             }
 
+            /*
             composedModel.getOrElse {
               sys.error(s"Empty composed model: $name")
             }
+            */
+            if(!composedModel.isDefined)
+              sys.error(s"Empty composed model: $name")
+            composedModel
           }
 
-          case rm: RefModel => resolver.resolveWithError(rm)
+          case rm: RefModel => Some(resolver.resolveWithError(rm))
           case m: ModelImpl => {
             val translated = translators.Model(resolver, name, m)
             newEnums ++= translated._2
@@ -122,7 +127,10 @@ case class Parser(config: ServiceConfiguration) {
 
         buildModels(
           selector = selector,
-          resolver = Resolver(models = resolver.models ++ Seq(newModel), enums = resolver.enums ++ newEnums)
+          resolver =
+            Resolver(
+              models  = resolver.models ++ { if(newModelOpt.isDefined) Seq(newModelOpt.get) else None },
+              enums   = resolver.enums ++ newEnums)
         )
       }
     }

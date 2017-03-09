@@ -4,7 +4,6 @@ import com.bryzek.apidoc.spec.v0.models.EnumValue
 import lib.Text
 import me.apidoc.swagger.Util
 import com.bryzek.apidoc.spec.v0.{models => apidoc}
-import io.swagger.models.properties.StringProperty
 import io.swagger.{models => swagger}
 
 object Model {
@@ -13,27 +12,37 @@ object Model {
     resolver: Resolver,
     name: String,
     m: swagger.ModelImpl
-  ): (apidoc.Model, Seq[apidoc.Enum]) = {
-    // TODO println("  - type: " + Option(schema.getType()))
-    // TODO println("  - discriminator: " + Option(schema.getDiscriminator()))
-    Option(m.getAdditionalProperties()).map { prop =>
-      // TODO: println("    - additional property: " + prop)
+  ): (Option[apidoc.Model], Seq[apidoc.Enum]) = {
+    Util.isEnum(m) match {
+      case true =>
+        (None,
+          Seq(
+            apidoc.Enum(
+              name = name,
+              plural = Text.pluralize(name),
+              description = None,
+              deprecation = None,
+              values = Util.toArray(m.getEnum).map { value =>
+                EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
+              },
+              attributes = Seq())
+        ))
+      case false =>
+        (Some(apidoc.Model(
+          name = name,
+          plural = Text.pluralize(name),
+          description = Util.combine(
+            Seq(
+              Option(m.getDescription()),
+              ExternalDoc(Option(m.getExternalDocs))
+            )
+          ),
+          deprecation = None,
+          fields = Util.toMap(m.getProperties).map {
+            case (key, prop) => Field(resolver, name, key, prop)
+          }.toSeq
+        )), enums(m, name))
     }
-
-    (apidoc.Model(
-      name = name,
-      plural = Text.pluralize(name),
-      description = Util.combine(
-        Seq(
-          Option(m.getDescription()),
-          ExternalDoc(Option(m.getExternalDocs))
-        )
-      ),
-      deprecation = None,
-      fields = Util.toMap(m.getProperties).map {
-        case (key, prop) => Field(resolver, name, key, prop)
-      }.toSeq
-    ), enums(m, name))
   }
 
   private def enums(m: swagger.ModelImpl, apidocModelName: String): Seq[apidoc.Enum] = {

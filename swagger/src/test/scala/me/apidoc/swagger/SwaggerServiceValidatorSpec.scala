@@ -228,7 +228,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
           }
       }
     }
-    /*
+
     it("should parse petstore-enums-ref.json") {
       val files = Seq("petstore-enums-ref.json")
       files.foreach {
@@ -381,7 +381,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               checkEnum(service.enums.find(_.name == "Status").get,
                 Enum(
                   name = "Status",
-                  plural = "Status",
+                  plural = "Statuses",
                   description = None,
                   deprecation = None,
                   values = Seq(
@@ -418,7 +418,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
           }
       }
     }
-    */
+
     it("should parse petstore-with-external-docs.json") {
       val files = Seq("petstore-with-external-docs.json")
       files.foreach {

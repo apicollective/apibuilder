@@ -100,6 +100,8 @@ object Util {
     }
   }
 
+  def isEnum(model: swaggermodels.ModelImpl) = model.getEnum != null && !model.getEnum.isEmpty
+
   /**
     * Checks if the swagger parameter is a query or path parameter and if it has string enum values.
     */
