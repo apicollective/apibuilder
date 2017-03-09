@@ -32,7 +32,8 @@ case class Parser(config: ServiceConfiguration) {
     val applicationKey = UrlKey.generate(info.getTitle())
     val specModelsAndEnums = parseDefinitions(swagger)
     val specModels = specModelsAndEnums._1
-    val resolver = Resolver(models = specModels, enums = specModelsAndEnums._2)
+    val specEnums = specModelsAndEnums._2
+    val resolver = Resolver(models = specModels, enums = specEnums)
     val resourcesAndParamEnums = parseResources(swagger, resolver)
 
     Service(
@@ -48,7 +49,7 @@ case class Parser(config: ServiceConfiguration) {
       organization = Organization(key = config.orgKey),
       application = Application(key = applicationKey),
       version = config.version,
-      enums = (specModelsAndEnums._2 ++ resourcesAndParamEnums._2).toSet.toSeq,
+      enums = (specEnums ++ resourcesAndParamEnums._2).toSet.toSeq,
       unions = Nil,
       models = specModels,
       imports = Nil,
@@ -86,13 +87,14 @@ case class Parser(config: ServiceConfiguration) {
 
             m.getAllOf.foreach { swaggerModel =>
               val thisModelOpt = swaggerModel match {
-                case m: RefModel => Some(resolver.resolveWithError(m))
-                case m: ModelImpl => {
+                case m: RefModel =>
+                  Some(resolver.resolveWithError(m))
+                case m: ModelImpl =>
                   val translated = translators.Model(resolver, name, m)
                   newEnums ++= translated._2
                   translated._1
-                }
-                case _ => sys.error(s"Unsupported composition model[$name] - $swaggerModel")
+                case _ =>
+                  sys.error(s"Unsupported composition model[$name] - $swaggerModel")
               }
 
               composedModel = composedModel match {
@@ -106,11 +108,6 @@ case class Parser(config: ServiceConfiguration) {
               }
             }
 
-            /*
-            composedModel.getOrElse {
-              sys.error(s"Empty composed model: $name")
-            }
-            */
             if(!composedModel.isDefined)
               sys.error(s"Empty composed model: $name")
             composedModel
@@ -129,7 +126,7 @@ case class Parser(config: ServiceConfiguration) {
           selector = selector,
           resolver =
             Resolver(
-              models  = resolver.models ++ { if(newModelOpt.isDefined) Seq(newModelOpt.get) else None },
+              models  = resolver.models ++ newModelOpt.map(Seq(_)).getOrElse(Seq()),
               enums   = resolver.enums ++ newEnums)
         )
       }

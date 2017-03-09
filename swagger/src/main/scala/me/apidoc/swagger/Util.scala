@@ -108,9 +108,10 @@ object Util {
   def hasStringEnum(param: swaggerparams.Parameter): Boolean = {
     (param.isInstanceOf[swaggerparams.PathParameter] || param.isInstanceOf[swaggerparams.QueryParameter]) && {
       param match {
-        case p: swaggerparams.AbstractSerializableParameter[_] =>
-          val enumerableParam = param.asInstanceOf[swaggerparams.AbstractSerializableParameter[_]]
-          enumerableParam.getType.equals(swaggerproperties.StringProperty.TYPE) && enumerableParam.getEnum != null && !enumerableParam.getEnum.isEmpty
+        case enumerableParam: swaggerparams.AbstractSerializableParameter[_] =>
+          enumerableParam.getType.equals(swaggerproperties.StringProperty.TYPE) &&
+            enumerableParam.getEnum != null &&
+            !enumerableParam.getEnum.isEmpty
         case _ => false
       }
     }
@@ -124,15 +125,15 @@ object Util {
   }
 
   def buildPropertyEnumTypeName(modelName: String, enumName: String) = {
-    List(modelName, enumName).map(_.toLowerCase.capitalize).mkString //camel case with first letter capitalized
+    List(modelName, enumName).map(camelCaseInitialCapitalized(_)).mkString
   }
 
   def buildParamEnumTypeName(resourceName: String, param: swaggerparams.Parameter, method: String): String = {
     param match {
-      case p: swaggerparams.QueryParameter =>
-        List(resourceName, p.getName, method, "Query").map(_.toLowerCase.capitalize).mkString //camel case with first letter capitalized
-      case p: swaggerparams.PathParameter =>
-        List(resourceName, p.getName, method, "Path").map(_.toLowerCase.capitalize).mkString //camel case with first letter capitalized
+      case qp: swaggerparams.QueryParameter =>
+        List(resourceName, qp.getName, method, "Query").map(camelCaseInitialCapitalized(_)).mkString
+      case pp: swaggerparams.PathParameter =>
+        List(resourceName, pp.getName, method, "Path").map(camelCaseInitialCapitalized(_)).mkString
       case _ =>
         sys.error(s"Enumerations not supported for swagger parameters of type ${param.getClass}")
     }
@@ -140,5 +141,8 @@ object Util {
 
   def retrieveMethod(operation: swaggermodels.Operation, path: swaggermodels.Path): Option[swaggermodels.HttpMethod] =
     path.getOperationMap().find(_._2 == operation).map(_._1)
+
+  def camelCaseInitialCapitalized(s: String): String = s.toLowerCase.capitalize
+
 
 }
