@@ -434,7 +434,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                 Enum(
                   name = "Status",
                   plural = "Statuses",
-                  description = None,
+                  description = Some("Possible statuses of a pet"),
                   deprecation = None,
                   values = Seq(
                     EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),

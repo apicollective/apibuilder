@@ -20,7 +20,7 @@ object Model {
             apidoc.Enum(
               name = name,
               plural = Text.pluralize(name),
-              description = None,
+              description = Option(m.getDescription),
               deprecation = None,
               values = Util.toArray(m.getEnum).map { value =>
                 EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
