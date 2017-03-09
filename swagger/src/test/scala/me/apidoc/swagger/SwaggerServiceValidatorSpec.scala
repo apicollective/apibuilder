@@ -124,20 +124,32 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     Operation(
                       method = Get,
                       path = "/pets/",
-                      description = Some("finds pets by status - as a query param"),
+                      description = Some("find pets by name and status - as query params"),
                       deprecation = None,
                       body = None,
-                      parameters = Seq(Parameter(
-                        name = "status",
-                        `type` = "PetStatusGetQuery",
-                        location = Query,
-                        description = None,
-                        deprecation = None,
-                        required = true,
-                        default = None,
-                        minimum = None,
-                        maximum = None,
-                        example = None)
+                      parameters = Seq(
+                        Parameter(
+                          name = "name",
+                          `type` = "string",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None),
+                        Parameter(
+                          name = "status",
+                          `type` = "PetStatusGetQuery",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None)
                       ),
                       responses = Seq(
                         Response(
@@ -155,7 +167,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     Operation(
                       method = Get,
                       path = "/pets/:status",
-                      description = Some("finds pets by status - as a path param"),
+                      description = Some("find pets by status - as a path param"),
                       deprecation = None,
                       body = None,
                       parameters = Seq(Parameter(
@@ -341,20 +353,32 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     Operation(
                       method = Get,
                       path = "/pets/",
-                      description = Some("finds pets by status - as a query param"),
+                      description = Some("find pets by name and status - as query params"),
                       deprecation = None,
                       body = None,
-                      parameters = Seq(Parameter(
-                        name = "status",
-                        `type` = "PetStatusGetQuery",
-                        location = Query,
-                        description = None,
-                        deprecation = None,
-                        required = true,
-                        default = None,
-                        minimum = None,
-                        maximum = None,
-                        example = None)
+                      parameters = Seq(
+                        Parameter(
+                          name = "name",
+                          `type` = "string",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None),
+                        Parameter(
+                          name = "status",
+                          `type` = "PetStatusGetQuery",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None)
                       ),
                       responses = Seq(
                         Response(
@@ -372,7 +396,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                     Operation(
                       method = Get,
                       path = "/pets/:status",
-                      description = Some("finds pets by status - as a path param"),
+                      description = Some("find pets by status - as a path param"),
                       deprecation = None,
                       body = None,
                       parameters = Seq(Parameter(

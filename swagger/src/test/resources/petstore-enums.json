@@ -20,8 +20,7 @@
   "paths": {
     "/pets/{status}": {
       "get": {
-        "tags": [ "Pet Operations" ],
-        "summary": "finds pets by status - as a path param",
+        "summary": "find pets by status - as a path param",
         "parameters":[
           {
             "name":"status",
@@ -57,9 +56,14 @@
     },
     "/pets/": {
       "get": {
-        "tags": [ "Pet Operations" ],
-        "summary": "finds pets by status - as a query param",
+        "summary": "find pets by name and status - as query params",
         "parameters":[
+          {
+            "name":"name",
+            "in":"query",
+            "required":true,
+            "type":"string"
+          },
           {
             "name":"status",
             "in":"query",
