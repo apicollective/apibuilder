@@ -1,10 +1,11 @@
 package db
 
+import anorm._
 import com.bryzek.apidoc.internal.v0.models.{Task, TaskData}
 import com.bryzek.apidoc.internal.v0.models.json._
 import com.bryzek.apidoc.api.v0.models.User
-import anorm._
 import javax.inject.{Inject, Named, Singleton}
+import org.joda.time.DateTime
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
@@ -133,7 +134,8 @@ class TasksDao @Inject() (
     guid: Option[UUID] = None,
     nOrFewerAttempts: Option[Long] = None,
     nOrMoreAttempts: Option[Long] = None,
-    nOrMoreMinutesOld: Option[Long] = None,
+    createdOnOrBefore: Option[DateTime] = None,
+    createdOnOrAfter: Option[DateTime] = None,
     isDeleted: Option[Boolean] = Some(false),
     deletedAtLeastNDaysAgo: Option[Long] = None,
     limit: Long = 25,
@@ -151,7 +153,8 @@ class TasksDao @Inject() (
       guid.map { v => "and tasks.guid = {guid}::uuid" },
       nOrFewerAttempts.map { v => "and tasks.number_attempts <= {n_or_fewer_attempts}" },
       nOrMoreAttempts.map { v => "and tasks.number_attempts >= {n_or_more_attempts}" },
-      nOrMoreMinutesOld.map { v => s"and tasks.updated_at <= timezone('utc', now()) - interval '$v minutes'" },
+      createdOnOrBefore.map { v => s"and tasks.created_at <= {created_on_or_before}::timestamptz" },
+      createdOnOrAfter.map { v => s"and tasks.created_at >= {created_on_or_after}::timestamptz" },
       isDeleted.map { Filters.isDeleted("tasks", _) },
       deletedAtLeastNDaysAgo.map { v => s"and tasks.deleted_at <= timezone('utc', now()) - interval '$v days'" },
       Some(s"order by tasks.number_attempts, tasks.created_at limit ${limit} offset ${offset}")
@@ -160,7 +163,9 @@ class TasksDao @Inject() (
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       nOrFewerAttempts.map('n_or_fewer_attempts -> _),
-      nOrMoreAttempts.map('n_or_more_attempts -> _)
+      nOrMoreAttempts.map('n_or_more_attempts -> _),
+      createdOnOrBefore.map(ts => 'created_on_or_before -> ts.toString),
+      createdOnOrAfter.map(ts => 'created_on_or_after -> ts.toString)
     ).flatten
 
     DB.withConnection { implicit c =>

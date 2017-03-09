@@ -23,6 +23,7 @@ case class ExampleService(
 
 object Util {
 
+  private[this] val ApiHost = Config.requiredString("apidoc.api.host")
   val Host = Config.requiredString("apidoc.www.host")
 
   val SubscriptionsText = "Subscriptions"
@@ -33,7 +34,8 @@ object Util {
   val OrgAttributesText = "Org Attributes"
   val ServiceJsonText = "service.json"
 
-  val ApidocExample = ExampleService("bryzek", "apidoc-api")
+  val ApidocApi = ExampleService("bryzek", "apidoc-api")
+  val ApidocExample = ApidocApi
   val ApidocExampleWithVersionNumber = ExampleService("bryzek", "apidoc-api", Config.requiredString("git.version"))
   val ApidocGeneratorExample = ExampleService("bryzek", "apidoc-generator")
   val ApidocSpecExample = ExampleService("bryzek", "apidoc-spec")
@@ -45,6 +47,7 @@ object Util {
   val ApidocGeneratorGitHubUrl = s"$gitHub/apidoc-generator"
 
   def fullUrl(stub: String): String = s"$Host$stub"
+  def fullApiUrl(stub: String): String = s"$ApiHost$stub"
 
   def formatUri(value: String): String = {
     if (value.toLowerCase.trim.startsWith("http")) {

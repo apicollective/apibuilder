@@ -5,10 +5,10 @@ import com.bryzek.apidoc.api.v0.models.{Application, Diff, DiffBreaking, DiffNon
 import com.bryzek.apidoc.internal.v0.models.{Task, TaskDataDiffVersion, TaskDataIndexApplication, TaskDataUndefinedType}
 import db.{ApplicationsDao, Authorization, ChangesDao, OrganizationsDao, TasksDao, UsersDao, VersionsDao, WatchesDao}
 import lib.{ServiceDiff, Text}
-import play.api.Logger
-import play.api.libs.concurrent.Akka
-import play.api.Play.current
 import java.util.UUID
+
+import org.joda.time.DateTime
+
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
@@ -37,7 +37,7 @@ class TaskActor @javax.inject.Inject() (
   watchesDao: WatchesDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
-  implicit val ec = system.dispatchers.lookup("task-actor-context")
+  private[this] implicit val ec = system.dispatchers.lookup("task-actor-context")
 
   private[this] val NumberDaysBeforePurge = 30
   private[this] case class Process(guid: UUID)
@@ -75,7 +75,7 @@ class TaskActor @javax.inject.Inject() (
     case m @ TaskActor.Messages.RestartDroppedTasks => withVerboseErrorHandler(m) {
       tasksDao.findAll(
         nOrFewerAttempts = Some(2),
-        nOrMoreMinutesOld = Some(1)
+        createdOnOrBefore = Some(DateTime.now.minusMinutes(1))
       ).foreach { task =>
         self ! Process(task.guid)
       }
@@ -83,7 +83,9 @@ class TaskActor @javax.inject.Inject() (
 
     case m @ TaskActor.Messages.NotifyFailed => withVerboseErrorHandler(m) {
       val errors = tasksDao.findAll(
-        nOrMoreAttempts = Some(2)
+        nOrMoreAttempts = Some(2),
+        isDeleted = Some(false),
+        createdOnOrAfter = Some(DateTime.now.minusDays(3))
       ).map { task =>
         val errorType = task.data match {
           case TaskDataDiffVersion(a, b) => s"TaskDataDiffVersion($a, $b)"

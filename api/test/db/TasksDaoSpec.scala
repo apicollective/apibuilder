@@ -4,7 +4,9 @@ import com.bryzek.apidoc.internal.v0.models.{Task, TaskData, TaskDataDiffVersion
 import org.scalatest.{FunSpec, Matchers}
 import org.postgresql.util.PSQLException
 import java.util.UUID
+
 import anorm._
+import org.joda.time.DateTime
 import play.api.db._
 import play.api.Play.current
 
@@ -108,12 +110,26 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
       tasksDao.findAll(
         guid = Some(task.guid),
-        nOrMoreMinutesOld = Some(0)
+        createdOnOrBefore = Some(DateTime.now.plusHours(1))
       ).map(_.guid) should be(Seq(task.guid))
 
       tasksDao.findAll(
         guid = Some(task.guid),
-        nOrMoreMinutesOld = Some(10)
+        createdOnOrBefore = Some(DateTime.now.minusHours(1))
+      ).map(_.guid) should be(Nil)
+    }
+
+    it("nOrMoreMinutesYoung") {
+      val task = createTaskDataDiffVersion()
+
+      tasksDao.findAll(
+        guid = Some(task.guid),
+        createdOnOrAfter = Some(DateTime.now.minusHours(1))
+      ).map(_.guid) should be(Seq(task.guid))
+
+      tasksDao.findAll(
+        guid = Some(task.guid),
+        createdOnOrAfter = Some(DateTime.now.plusHours(1))
       ).map(_.guid) should be(Nil)
     }
 
@@ -199,9 +215,11 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
     it("raises error if recently deleted") {
       val task = createTaskDataDiffVersion()
       tasksDao.softDelete(user, task)
-      intercept[PSQLException] {
+      val ex = intercept[PSQLException] {
         tasksDao.purge(user, task)
-      }.getMessage should be("ERROR: Physical deletes on this table can occur only after 1 month of deleting the records")
+      }
+      println(ex.getMessage)
+      ex.getMessage.contains("ERROR: Physical deletes on this table can occur only after 1 month of deleting the records") should be(true)
     }
 
     it("purges if old") {

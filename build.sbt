@@ -38,7 +38,7 @@ lazy val swagger = project
   .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(
-      "io.swagger" % "swagger-parser" % "1.0.25",
+      "io.swagger" % "swagger-parser" % "1.0.26",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
@@ -79,9 +79,10 @@ lazy val api = project
     libraryDependencies ++= Seq(
       ws,
       jdbc,
+      filters,
       "com.typesafe.play" %% "anorm"         % "2.5.0",
       "org.postgresql"    %  "postgresql"    % "9.4.1212",
-      "org.mindrot"       %  "jbcrypt"       % "0.3m",
+      "org.mindrot"       %  "jbcrypt"       % "0.4",
       "com.sendgrid"      %  "sendgrid-java" % "3.1.0",
       specs2              %  Test,
       "org.scalatestplus" %% "play" % "1.4.0" % "test"
@@ -158,4 +159,4 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
 )
 
 publishSettings
-version := "0.11.67"
+version := "0.11.72"
