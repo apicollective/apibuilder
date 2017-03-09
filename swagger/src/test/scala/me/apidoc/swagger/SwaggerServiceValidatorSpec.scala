@@ -44,7 +44,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       val files = Seq("petstore-enums.json")
       files.foreach {
         filename =>
-          val path = s"swagger/src/test/resources/$filename"
+          val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate match {
             case Left(errors) => {
@@ -246,7 +246,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       val files = Seq("petstore-enums-ref.json")
       files.foreach {
         filename =>
-          val path = s"swagger/src/test/resources/$filename"
+          val path = resourcesDir + filename
           println(s"Reading file[$path]")
           SwaggerServiceValidator(config, readFile(path)).validate match {
             case Left(errors) => {
