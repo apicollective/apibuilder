@@ -17,6 +17,7 @@ object SchemaType {
     SchemaType("number", Some("float"), "double"),
     SchemaType("number", Some("double"), "double"),
     SchemaType("string", None, "string"),
+    SchemaType("string", Some("string"), "string"),
     SchemaType("string", Some("byte"), "string"), // TODO: apidoc needs support for byte
     SchemaType("string", Some("binary"), "string"),
     SchemaType("boolean", None, "boolean"),
