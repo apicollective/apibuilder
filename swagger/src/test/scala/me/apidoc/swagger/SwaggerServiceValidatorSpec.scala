@@ -1,6 +1,8 @@
 package me.apidoc.swagger
 
-import com.bryzek.apidoc.spec.v0.models.{Field, Model}
+import com.bryzek.apidoc.spec.v0.models.Method.Get
+import com.bryzek.apidoc.spec.v0.models.ParameterLocation.{Path, Query}
+import com.bryzek.apidoc.spec.v0.models.{EnumValue, _}
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 
@@ -19,25 +21,15 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   }
 
   private def checkModel(actual: Model, target: Model) {
-    actual.name should be(target.name)
-    actual.plural should be(target.plural)
-    actual.description should be(target.description)
-    actual.fields.map(_.name) should be(target.fields.map(_.name))
-    actual.fields.foreach { f =>
-      checkField(f, target.fields.find(_.name == f.name).get)
-    }
+    actual should be(target)
   }
 
-  private def checkField(actual: Field, target: Field) {
-    actual.name should be(target.name)
-    actual.`type` should be(target.`type`)
-    actual.description should be(target.description)
-    actual.deprecation should be(target.deprecation)
-    actual.default should be(target.default)
-    actual.required should be(target.required)
-    actual.minimum should be(target.minimum)
-    actual.maximum should be(target.maximum)
-    actual.example should be(target.example)
+  private def checkResource(actual: Resource, target: Resource): Unit = {
+    actual should be(target)
+  }
+
+  private def checkEnum(actual: Enum, target: Enum): Unit = {
+    actual should be(target)
   }
 
   val config = ServiceConfiguration(
@@ -47,6 +39,437 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   )
 
   describe("Swagger parser") {
+
+    it("should parse petstore-enums.json") {
+      val files = Seq("petstore-enums.json")
+      files.foreach {
+        filename =>
+          val path = resourcesDir + filename
+          println(s"Reading file[$path]")
+          SwaggerServiceValidator(config, readFile(path)).validate match {
+            case Left(errors) => {
+              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            }
+            case Right(service) => {
+              service.name should be("Swagger Petstore")
+              service.namespace should be("me.apidoc.swagger.petstore.v0")
+              service.organization.key should be("apidoc")
+              service.application.key should be("swagger-petstore")
+              service.version should be("0.0.2-dev")
+              service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
+              service.headers should be(Seq.empty)
+              service.imports should be(Seq.empty)
+
+              service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
+              checkModel(
+                service.models.find(_.name == "Pet").get,
+                Model(
+                  name = "Pet",
+                  plural = "Pets",
+                  description = Some("Definition of a pet"),
+                  fields = Seq(
+                    Field(
+                      name = "id",
+                      `type` = "long",
+                      required = true
+                    ),
+                    Field(
+                      name = "name",
+                      `type` = "string",
+                      required = true
+                    ),
+                    Field(
+                      name = "tag",
+                      `type` = "string",
+                      required = false
+                    ),
+                    Field(
+                      name = "status",
+                      `type` = "PetStatus",
+                      required = false
+                    )
+                  )
+                )
+              )
+
+              checkModel(
+                service.models.find(_.name == "Error").get,
+                Model(
+                  name = "Error",
+                  plural = "Errors",
+                  description = None,
+                  fields = Seq(
+                    Field(
+                      name = "code",
+                      `type` = "integer",
+                      required = true
+                    ),
+                    Field(
+                      name = "message",
+                      `type` = "string",
+                      required = true
+                    )
+                  )
+                )
+              )
+
+              service.resources.size should be(1)
+              checkResource(service.resources.find(_.`type` == "Pet").get,
+                Resource(
+                  `type` = "Pet",
+                  plural = "Pets",
+                  path = None,
+                  description = None,
+                  deprecation = None,
+                  operations = Seq(
+                    Operation(
+                      method = Get,
+                      path = "/pets/",
+                      description = Some("find pets by name and status - as query params"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(
+                        Parameter(
+                          name = "name",
+                          `type` = "string",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None),
+                        Parameter(
+                          name = "status",
+                          `type` = "PetStatusGetQuery",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(200),
+                          `type` = "[Pet]",
+                          description = Some("find pet response"),
+                          deprecation = None),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
+                      attributes = Nil),
+                    Operation(
+                      method = Get,
+                      path = "/pets/:status",
+                      description = Some("find pets by status - as a path param"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(Parameter(
+                        name = "status",
+                        `type` = "PetStatusGetPath",
+                        location = Path,
+                        description = None,
+                        deprecation = None,
+                        required = true,
+                        default = None,
+                        minimum = None,
+                        maximum = None,
+                        example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(200),
+                          `type` = "[Pet]",
+                          description = Some("find pet response"),
+                          deprecation = None),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
+                      attributes = Nil)
+                  ),
+                  attributes = Seq())
+                )
+
+              service.enums.size should be(3)
+              checkEnum(service.enums.find(_.name == "PetStatus").get,
+                Enum(
+                  name = "PetStatus",
+                  plural = "PetStatuses",
+                  description = None,
+                  deprecation = None,
+                  values = Seq(
+                    EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "pending", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "sold", description = None, deprecation = None, attributes = Seq())),
+                  attributes = Seq()
+                ))
+              checkEnum(service.enums.find(_.name == "PetStatusGetQuery").get,
+                Enum(
+                  name = "PetStatusGetQuery",
+                  plural = "PetStatusGetQueries",
+                  description = None,
+                  deprecation = None,
+                  values = Seq(
+                    EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "pending", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "sold", description = None, deprecation = None, attributes = Seq())),
+                  attributes = Seq()
+                ))
+              checkEnum(service.enums.find(_.name == "PetStatusGetPath").get,
+                Enum(
+                  name = "PetStatusGetPath",
+                  plural = "PetStatusGetPaths",
+                  description = None,
+                  deprecation = None,
+                  values = Seq(
+                    EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "pending", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "sold", description = None, deprecation = None, attributes = Seq())),
+                  attributes = Seq()
+                ))
+            }
+          }
+      }
+    }
+
+    it("should parse petstore-enums-ref.json") {
+      val files = Seq("petstore-enums-ref.json")
+      files.foreach {
+        filename =>
+          val path = resourcesDir + filename
+          println(s"Reading file[$path]")
+          SwaggerServiceValidator(config, readFile(path)).validate match {
+            case Left(errors) => {
+              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            }
+            case Right(service) => {
+              service.name should be("Swagger Petstore")
+              service.namespace should be("me.apidoc.swagger.petstore.v0")
+              service.organization.key should be("apidoc")
+              service.application.key should be("swagger-petstore")
+              service.version should be("0.0.2-dev")
+              service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
+              service.headers should be(Seq.empty)
+              service.imports should be(Seq.empty)
+
+              service.models.map(_.name).sorted should be(Seq("Accessory", "Error", "Pet"))
+
+              checkModel(
+                service.models.find(_.name == "Pet").get,
+                Model(
+                  name = "Pet",
+                  plural = "Pets",
+                  description = Some("Definition of a pet"),
+                  fields = Seq(
+                    Field(
+                      name = "id",
+                      `type` = "long",
+                      required = true
+                    ),
+                    Field(
+                      name = "name",
+                      `type` = "string",
+                      required = true
+                    ),
+                    Field(
+                      name = "tag",
+                      `type` = "string",
+                      required = false
+                    ),
+                    Field(
+                      name = "status",
+                      `type` = "Status",
+                      required = false
+                    )
+                  )
+                )
+              )
+
+              checkModel(
+                service.models.find(_.name == "Accessory").get,
+                Model(
+                  name = "Accessory",
+                  plural = "Accessories",
+                  description = Some("Accessory for a pet"),
+                  fields = Seq(
+                    Field(
+                      name = "id",
+                      `type` = "long",
+                      required = true
+                    ),
+                    Field(
+                      name = "name",
+                      `type` = "string",
+                      required = true
+                    ),
+                    Field(
+                      name = "status",
+                      `type` = "Status",
+                      required = false
+                    )
+                  )
+                )
+              )
+
+              checkModel(
+                service.models.find(_.name == "Error").get,
+                Model(
+                  name = "Error",
+                  plural = "Errors",
+                  description = None,
+                  fields = Seq(
+                    Field(
+                      name = "code",
+                      `type` = "integer",
+                      required = true
+                    ),
+                    Field(
+                      name = "message",
+                      `type` = "string",
+                      required = true
+                    )
+                  )
+                )
+              )
+
+              service.resources.size should be(1)
+              checkResource(service.resources.find(_.`type` == "Pet").get,
+                Resource(
+                  `type` = "Pet",
+                  plural = "Pets",
+                  path = None,
+                  description = None,
+                  deprecation = None,
+                  operations = Seq(
+                    Operation(
+                      method = Get,
+                      path = "/pets/",
+                      description = Some("find pets by name and status - as query params"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(
+                        Parameter(
+                          name = "name",
+                          `type` = "string",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None),
+                        Parameter(
+                          name = "status",
+                          `type` = "PetStatusGetQuery",
+                          location = Query,
+                          description = None,
+                          deprecation = None,
+                          required = true,
+                          default = None,
+                          minimum = None,
+                          maximum = None,
+                          example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(200),
+                          `type` = "[Pet]",
+                          description = Some("find pet response"),
+                          deprecation = None),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
+                      attributes = Nil),
+                    Operation(
+                      method = Get,
+                      path = "/pets/:status",
+                      description = Some("find pets by status - as a path param"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(Parameter(
+                        name = "status",
+                        `type` = "PetStatusGetPath",
+                        location = Path,
+                        description = None,
+                        deprecation = None,
+                        required = true,
+                        default = None,
+                        minimum = None,
+                        maximum = None,
+                        example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(200),
+                          `type` = "[Pet]",
+                          description = Some("find pet response"),
+                          deprecation = None),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
+                      attributes = Nil)
+                  ),
+                  attributes = Seq())
+              )
+
+              service.enums.size should be(3)
+              checkEnum(service.enums.find(_.name == "Status").get,
+                Enum(
+                  name = "Status",
+                  plural = "Statuses",
+                  description = Some("Possible statuses of a pet"),
+                  deprecation = None,
+                  values = Seq(
+                    EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "pending", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "sold", description = None, deprecation = None, attributes = Seq())),
+                  attributes = Seq()
+                ))
+              checkEnum(service.enums.find(_.name == "PetStatusGetQuery").get,
+                Enum(
+                  name = "PetStatusGetQuery",
+                  plural = "PetStatusGetQueries",
+                  description = None,
+                  deprecation = None,
+                  values = Seq(
+                    EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "pending", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "sold", description = None, deprecation = None, attributes = Seq())),
+                  attributes = Seq()
+                ))
+              checkEnum(service.enums.find(_.name == "PetStatusGetPath").get,
+                Enum(
+                  name = "PetStatusGetPath",
+                  plural = "PetStatusGetPaths",
+                  description = None,
+                  deprecation = None,
+                  values = Seq(
+                    EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "pending", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "sold", description = None, deprecation = None, attributes = Seq())),
+                  attributes = Seq()
+                ))
+            }
+          }
+      }
+    }
 
     it("should parse petstore-with-external-docs.json") {
       val files = Seq("petstore-with-external-docs.json")

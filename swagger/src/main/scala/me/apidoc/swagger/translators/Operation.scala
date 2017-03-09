@@ -19,7 +19,7 @@ object Operation {
     val parameters = Util.toArray(op.getParameters).flatMap { param =>
       param match {
         case p: BodyParameter => None
-        case _ => Some(Parameter(resolver, param))
+        case _ => Some(Parameter(resolver, url, method, param))
       }
     }
 

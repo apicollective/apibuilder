@@ -11,6 +11,7 @@ object Field {
 
   def apply(
     resolver: Resolver,
+    modelName: String,
     name: String,
     prop: Property
   ): apidoc.Field = {
@@ -24,7 +25,7 @@ object Field {
       required = prop.getRequired(),
       example = Option(prop.getExample()).map(_.toString)
     )
-    specialize(base, prop)
+    specialize(base, prop, modelName)
   }
 
   def compose(f1: apidoc.Field, f2: apidoc.Field): apidoc.Field = {
@@ -43,7 +44,8 @@ object Field {
 
   private def specialize(
     base: apidoc.Field,
-    prop: Property
+    prop: Property,
+    modelName: String
   ): apidoc.Field = {
     prop match {
 
@@ -107,9 +109,16 @@ object Field {
       }
 
       case p: StringProperty => {
-        stringProperty(base, Option(p.getMinLength), Option(p.getMaxLength), Option(p.getPattern)).copy(
-          `type` = Primitives.String.toString
-        )
+        if(p.getEnum!=null && !p.getEnum.isEmpty){
+          stringProperty(base, None, None, None).copy(
+            `type` = Util.buildPropertyEnumTypeName(modelName, base.name)
+          )
+        } else {
+          stringProperty(base, Option(p.getMinLength), Option(p.getMaxLength), Option(p.getPattern)).copy(
+            `type` = Primitives.String.toString
+          )
+        }
+
       }
 
       case p: UUIDProperty => {

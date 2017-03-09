@@ -6,7 +6,7 @@ import io.swagger.models.RefModel
 import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
 
 case class Resolver(
-  models: Seq[apidoc.Model]
+  models: Seq[apidoc.Model], enums: Seq[apidoc.Enum]
 ) {
 
   def resolve(
@@ -51,10 +51,9 @@ case class Resolver(
         s"[$schema]"
       }
       case p: RefProperty => {
-        val model = models.find(_.name == p.getSimpleRef()).getOrElse {
-          sys.error("Cannot find model for reference: " + p.get$ref())
-        }
-        model.name
+        models.find(_.name == p.getSimpleRef()).map(_.name)
+          .getOrElse(enums.find(_.name == p.getSimpleRef()).map(_.name)
+            .getOrElse(sys.error("Cannot find model for reference: " + p.get$ref())))
       }
       case _ => {
         if (prop.getType == null) {
