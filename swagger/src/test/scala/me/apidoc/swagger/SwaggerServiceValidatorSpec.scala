@@ -249,7 +249,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               service.headers should be(Seq.empty)
               service.imports should be(Seq.empty)
 
-              service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
+              service.models.map(_.name).sorted should be(Seq("Accessory", "Error", "Pet"))
+
               checkModel(
                 service.models.find(_.name == "Pet").get,
                 Model(
@@ -271,6 +272,32 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       name = "tag",
                       `type` = "string",
                       required = false
+                    ),
+                    Field(
+                      name = "status",
+                      `type` = "Status",
+                      required = false
+                    )
+                  )
+                )
+              )
+
+              checkModel(
+                service.models.find(_.name == "Accessory").get,
+                Model(
+                  name = "Accessory",
+                  plural = "Accessories",
+                  description = Some("Accessory for a pet"),
+                  fields = Seq(
+                    Field(
+                      name = "id",
+                      `type` = "long",
+                      required = true
+                    ),
+                    Field(
+                      name = "name",
+                      `type` = "string",
+                      required = true
                     ),
                     Field(
                       name = "status",
