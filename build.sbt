@@ -17,7 +17,7 @@ lazy val lib = project
 
 val avroVersion = "1.8.1"
 
-val playJsonVersion = "2.4.6"
+val playJsonVersion = "2.5.12"
 
 lazy val avro = project
   .in(file("avro"))
@@ -28,7 +28,7 @@ lazy val avro = project
       "org.apache.avro"   % "avro"              % avroVersion,
       "org.apache.avro"   % "avro-compiler"     % avroVersion,
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
+      "org.scalatest"     %% "scalatest" % "3.0.1" % "test"
     )
   )
 
@@ -40,7 +40,7 @@ lazy val swagger = project
     libraryDependencies ++= Seq(
       "io.swagger" % "swagger-parser" % "1.0.26",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
+      "org.scalatest"     %% "scalatest" % "3.0.1" % "test"
     )
   )
 
@@ -80,7 +80,7 @@ lazy val api = project
       ws,
       jdbc,
       filters,
-      "com.typesafe.play" %% "anorm"         % "2.5.0",
+      "com.typesafe.play" %% "anorm"         % "2.5.3",
       "org.postgresql"    %  "postgresql"    % "9.4.1212",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
       "com.sendgrid"      %  "sendgrid-java" % "3.1.0",
@@ -122,7 +122,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.bryzek.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.2",
-    "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
   ),
   scalacOptions += "-feature",
   sources in (Compile,doc) := Seq.empty,
