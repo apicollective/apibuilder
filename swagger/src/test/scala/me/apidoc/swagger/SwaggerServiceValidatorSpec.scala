@@ -816,6 +816,43 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                 )
               )
 
+              checkModel(
+                service.models.find(_.name == "Inventory").get,
+                Model(
+                  name = "Inventory",
+                  plural = "Inventories",
+                  description = None,
+                  fields = Seq(
+                    Field(
+                      name = "help",
+                      `type` = "string",
+                      required = true
+                    ),
+                    Field(
+                      name = "messages",
+                      `type` = "Messages",
+                      required = true
+                    )
+                  )
+                )
+              )
+
+              checkModel(
+                service.models.find(_.name == "Messages").get,
+                Model(
+                  name = "Messages",
+                  plural = "Messages",
+                  description = None,
+                  fields = Seq(
+                    Field(
+                      name = "product",
+                      `type` = "[Message]",
+                      required = false
+                    )
+                  )
+                )
+              )
+
               service.resources.foreach {
                 r =>
                   println(s" Resource ${r.`type`}")
