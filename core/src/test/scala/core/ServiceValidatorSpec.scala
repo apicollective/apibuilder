@@ -543,7 +543,7 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
 
   }
 
-  it("model with duplicate plural names") {
+  it("model with duplicate plural names are allowed as long as not exposed as resources") {
     val json =
       """
     {
@@ -561,10 +561,62 @@ class ServiceValidatorSpec extends FunSpec with Matchers {
             { "name": "id", "type": "string" }
           ]
         }
+      },
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET"
+            }
+          ]
+        }
       }
     }
     """
+
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("Model with plural[users] appears more than once")
+    validator.errors.mkString("") should be("")
+  }
+
+  it("resources with duplicate plural names are NOT allowed") {
+        val json =
+      """
+    {
+      "name": "Api Doc",
+      "models": {
+        "user": {
+          "plural": "users",
+          "fields": [
+            { "name": "id", "type": "string" }
+          ]
+        },
+        "person": {
+          "plural": "users",
+          "fields": [
+            { "name": "id", "type": "string" }
+          ]
+        }
+      },
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET"
+            }
+          ]
+        },
+        "person": {
+          "operations": [
+            {
+              "method": "GET"
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString("") should be("Resource with plural[users] appears more than once")
   }
 }

@@ -113,9 +113,7 @@ case class ServiceSpecValidator(
 
     val duplicates = dupsError("Model", service.models.map(_.name))
 
-    val duplicatePlurals = dupsError("Model with plural", service.models.map(_.plural))
-
-    nameErrors ++ fieldErrors ++ duplicates ++ duplicatePlurals
+    nameErrors ++ fieldErrors ++ duplicates
   }
 
   private def validateEnums(): Seq[String] = {
@@ -444,7 +442,9 @@ case class ServiceSpecValidator(
       }
     }.distinct
 
-    datatypeErrors ++ missingOperations ++ duplicateModels
+    val duplicatePlurals = dupsError("Resource with plural", service.resources.map(_.plural))
+
+    datatypeErrors ++ missingOperations ++ duplicateModels ++ duplicatePlurals
   }
 
   private def validateParameterLocations(): Seq[String] = {
