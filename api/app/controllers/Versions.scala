@@ -45,10 +45,32 @@ class Versions @Inject() (
     versionsDao.findVersion(request.authorization, orgKey, applicationKey, version) match {
       case None => NotFound
       case Some(v: Version) => {
+
+        def resolveChildren(service: Service, acc: Map[String, Service] = Map.empty): Map[String, Service] = {
+          service.imports.foldLeft(acc) { case (acc, imp) =>
+            if (acc.contains(imp.namespace)) {
+              acc
+            } else {
+              versionsDao.findVersion(request.authorization, imp.organization.key, imp.application.key, imp.version) match {
+                case None => acc
+                case Some(v: Version) => resolveChildren(v.service, acc + (imp.namespace -> v.service))
+              }
+            }
+          }
+        }
+
+        val service = resolveChildren(v.service).foldLeft(v.service) { case (service, (namespace, child)) =>
+          service.copy(
+            enums = service.enums ++ child.enums.map(e => e.copy(name = s"$namespace.enums.${e.name}")),
+            models = service.models ++ child.models.map(m => m.copy(name = s"$namespace.models.${m.name}")),
+            unions = service.unions ++ child.unions.map(u => u.copy(name = s"$namespace.unions.${u.name}"))
+          )
+        }
+
         val example = if (optionalFields.getOrElse(false)) {
-          ExampleJson.allFields(v.service)
+          ExampleJson.allFields(service)
         } else {
-          ExampleJson.requiredFieldsOnly(v.service)
+          ExampleJson.requiredFieldsOnly(service)
         }
         example.sample(typeName) match {
           case None => NotFound
