@@ -38,7 +38,8 @@ class HistoryController @Inject() (val messagesApi: MessagesApi) extends Control
         orgKey = orgKey,
         appKey = appKey,
         from = from,
-        to = to
+        to = to,
+        typ = `type`
       ))
     }
   }
