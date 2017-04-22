@@ -1952,6 +1952,18 @@ package com.bryzek.apidoc.api.v0 {
 
 package com.bryzek.apidoc.api.v0 {
 
+  case class RequestOptions(
+    responseEnvelope: Boolean = false
+  )
+
+  case class Response[T](
+    status: Int,
+    value: T,
+    headers: Seq[(String, String)],
+    raw: Array[Byte],
+    underlying: play.api.libs.ws.WSResponse
+  )
+
   object Constants {
 
     val BaseUrl = "http://api.apidoc.me"
@@ -1962,10 +1974,11 @@ package com.bryzek.apidoc.api.v0 {
 
   }
 
-  class Client(
-    val baseUrl: String = "http://api.apidoc.me",
+  case class Client(
+    baseUrl: String = "http://api.apidoc.me",
     auth: scala.Option[com.bryzek.apidoc.api.v0.Authorization] = None,
-    defaultHeaders: Seq[(String, String)] = Nil
+    defaultHeaders: Seq[(String, String)] = Nil,
+    requestOptions: RequestOptions = RequestOptions()
   ) extends interfaces.Client {
     import com.bryzek.apidoc.api.v0.models.json._
     import com.bryzek.apidoc.common.v0.models.json._
@@ -1975,6 +1988,14 @@ package com.bryzek.apidoc.api.v0 {
     private[this] val logger = play.api.Logger("com.bryzek.apidoc.api.v0.Client")
 
     logger.info(s"Initializing com.bryzek.apidoc.api.v0.Client for url $baseUrl")
+
+    def withEnvelope(responseEnvelope: Boolean = true): Client = {
+      this.copy(
+        requestOptions = requestOptions.copy(
+          responseEnvelope = responseEnvelope
+        )
+      )
+    }
 
     def applications: Applications = Applications
 
@@ -2010,7 +2031,10 @@ package com.bryzek.apidoc.api.v0 {
 
     def tokens: Tokens = Tokens
 
-    def users: Users = Users
+    def users: Users = requestOptions.responseEnvelope match {
+      case true => UsersWithEnvelope
+      case false => Users
+    }
 
     def validations: Validations = Validations
 
@@ -2792,13 +2816,13 @@ package com.bryzek.apidoc.api.v0 {
       }
     }
 
-    object Users extends Users {
+    object UsersWithEnvelope extends UsersWithEnvelope {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         email: _root_.scala.Option[String] = None,
         token: _root_.scala.Option[String] = None,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.apidoc.api.v0.models.User]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Seq[com.bryzek.apidoc.api.v0.models.User]]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           email.map("email" -> _),
@@ -2806,9 +2830,31 @@ package com.bryzek.apidoc.api.v0 {
         ).flatten
 
         _executeRequest("GET", s"/users", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.User]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.User]])
+          case r if r.status == 200 => Response(
+            status = r.status,
+            value = _root_.com.bryzek.apidoc.api.v0.Client.parseJson("Seq[com.bryzek.apidoc.api.v0.models.User]", r, _.validate[Seq[com.bryzek.apidoc.api.v0.models.User]]),
+            headers = Nil, // TODO r.headers,
+            raw = r.bodyAsBytes,
+            underlying = r
+          )
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
+      }
+    }
+
+    object Users extends Users {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        email: _root_.scala.Option[String] = None,
+        token: _root_.scala.Option[String] = None,
+        requestHeaders: Seq[(String, String)] = Nil
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.apidoc.api.v0.models.User]] = {
+        UsersWithEnvelope.get(
+          guid = guid,
+          email = email,
+          token = token,
+          requestHeaders = requestHeaders
+        ).map(_.value)
       }
 
       override def getByGuid(
@@ -3653,6 +3699,19 @@ package com.bryzek.apidoc.api.v0 {
       guid: _root_.java.util.UUID,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait UsersWithEnvelope {
+    /**
+     * Search for a specific user. You must specify at least 1 parameter - either a
+     * guid, email or token - and will receive back either 0 or 1 users.
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      email: _root_.scala.Option[String] = None,
+      token: _root_.scala.Option[String] = None,
+      requestHeaders: Seq[(String, String)] = Nil
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Response[Seq[com.bryzek.apidoc.api.v0.models.User]]]
   }
 
   trait Users {
