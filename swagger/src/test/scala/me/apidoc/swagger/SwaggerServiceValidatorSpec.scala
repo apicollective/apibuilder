@@ -1,6 +1,6 @@
 package me.apidoc.swagger
 
-import com.bryzek.apidoc.spec.v0.models.Method.Get
+import com.bryzek.apidoc.spec.v0.models.Method.{Delete, Get}
 import com.bryzek.apidoc.spec.v0.models.ParameterLocation.{Path, Query}
 import com.bryzek.apidoc.spec.v0.models.{EnumValue, _}
 import lib.ServiceConfiguration
@@ -195,12 +195,43 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                           description = Some("unexpected error"),
                           deprecation = None)
                       ),
+                      attributes = Nil),
+                    Operation(
+                      method = Delete,
+                      path = "/pets/:status",
+                      description = Some("delete pets by status - as a path param"),
+                      deprecation = None,
+                      body = None,
+                      parameters = Seq(Parameter(
+                        name = "status",
+                        `type` = "PetStatusDeletePath",
+                        location = Path,
+                        description = None,
+                        deprecation = None,
+                        required = true,
+                        default = None,
+                        minimum = None,
+                        maximum = None,
+                        example = None)
+                      ),
+                      responses = Seq(
+                        Response(
+                          code = ResponseCodeInt(204),
+                          `type` = "unit",
+                          description = Some("pets deleted - no response body content"),
+                          deprecation = None),
+                        Response(
+                          code = ResponseCodeOption.Default,
+                          `type` = "Error",
+                          description = Some("unexpected error"),
+                          deprecation = None)
+                      ),
                       attributes = Nil)
                   ),
                   attributes = Seq())
                 )
 
-              service.enums.size should be(3)
+              service.enums.size should be(4)
               checkEnum(service.enums.find(_.name == "PetStatus").get,
                 Enum(
                   name = "PetStatus",
@@ -229,6 +260,18 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                 Enum(
                   name = "PetStatusGetPath",
                   plural = "PetStatusGetPaths",
+                  description = None,
+                  deprecation = None,
+                  values = Seq(
+                    EnumValue(name = "available", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "pending", description = None, deprecation = None, attributes = Seq()),
+                    EnumValue(name = "sold", description = None, deprecation = None, attributes = Seq())),
+                  attributes = Seq()
+                ))
+              checkEnum(service.enums.find(_.name == "PetStatusDeletePath").get,
+                Enum(
+                  name = "PetStatusDeletePath",
+                  plural = "PetStatusDeletePaths",
                   description = None,
                   deprecation = None,
                   values = Seq(
