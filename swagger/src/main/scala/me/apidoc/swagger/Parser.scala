@@ -138,9 +138,9 @@ case class Parser(config: ServiceConfiguration) {
     resolver: Resolver
   ): (Seq[Resource], Seq[Enum]) = {
     val resourceAndParamEnums = (for {
-      (url, p) <- swagger.getPaths
+      (url, p)  <- swagger.getPaths
       operation <- p.getOperations
-      response <- operation.getResponses.toMap.get("200")
+      response  <- operation.getResponses.toMap.get("200")
     } yield {
       val model = response.getSchema match {
         case array: ArrayProperty =>
@@ -148,36 +148,46 @@ case class Parser(config: ServiceConfiguration) {
         case ref: RefProperty =>
           ref
       }
+
+      val paramStringEnums =
+        model match {
+          case ref: RefProperty =>
+            //Search for param enums among all operations (even the ones with no 200 response) of this resource
+            for{
+              resourceOp  <- p.getOperations
+              param       <- resourceOp.getParameters
+              if(Util.hasStringEnum(param))
+            } yield {
+              val httpMethod = Util.retrieveMethod(resourceOp, p).get
+              val enumTypeName = Util.buildParamEnumTypeName(ref.getSimpleRef, param, httpMethod.toString)
+              Enum(
+                name = enumTypeName,
+                plural = Text.pluralize(enumTypeName),
+                description = None,
+                deprecation = None,
+                values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.map { value =>
+                  EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
+                },
+                attributes = Seq())
+            }
+          case _ => Seq()
+        }
+
       val resource = model match {
         case ref: RefProperty =>
           resolver.findModelByOkResponseSchema(ref.getSimpleRef) match {
-            case Some(model) => translators.Resource(resolver, model, url, p)
+            case Some(model) => translators.Resource(resolver.copy(enums = resolver.enums ++ paramStringEnums), model, url, p)
             case None => sys.error(s"Could not find model at url[$url]")
           }
       }
-
-      val paramStringEnums =
-        operation.getParameters
-          .filter(p => Util.hasStringEnum(p))
-          .map { param =>
-            val httpMethod = Util.retrieveMethod(operation, p).get
-            val enumTypeName = Util.buildParamEnumTypeName(resource.`type`, param, httpMethod.toString)
-            Enum(
-              name = enumTypeName,
-              plural = Text.pluralize(enumTypeName),
-              description = None,
-              deprecation = None,
-              values = param.asInstanceOf[AbstractSerializableParameter[_]].getEnum.map { value =>
-                EnumValue(name = value, description = None, deprecation = None, attributes = Seq())
-              },
-              attributes = Seq())
-        }
 
       (resource, paramStringEnums)
     }) toSeq
 
     val allResources = resourceAndParamEnums.map(_._1)
-    val allParamEnums = resourceAndParamEnums.flatten { case (_, seqEnums) => seqEnums }
+    val allParamEnums =
+      (resourceAndParamEnums.flatten { case (_, seqEnums) => seqEnums })
+      .toSet.toSeq  //remove duplicates (in case same param with same enum values is on several paths/operations with same method for same resource)
 
     (allResources, allParamEnums)
   }

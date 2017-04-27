@@ -52,6 +52,29 @@
             }
           }
         }
+      },
+      "delete": {
+        "summary": "delete pets by status - as a path param",
+        "parameters":[
+          {
+            "name":"status",
+            "in":"path",
+            "required":true,
+            "type":"string",
+            "enum":["available", "pending", "sold"]
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "pets deleted - no response body content"
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
       }
     },
     "/pets/": {

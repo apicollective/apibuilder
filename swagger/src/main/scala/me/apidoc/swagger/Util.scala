@@ -125,24 +125,28 @@ object Util {
   }
 
   def buildPropertyEnumTypeName(modelName: String, enumName: String) = {
-    List(modelName, enumName).map(camelCaseInitialCapitalized(_)).mkString
+    List(modelName, enumName).map(_.capitalize).mkString
   }
 
   def buildParamEnumTypeName(resourceName: String, param: swaggerparams.Parameter, method: String): String = {
     param match {
       case qp: swaggerparams.QueryParameter =>
-        List(resourceName, qp.getName, method, "Query").map(camelCaseInitialCapitalized(_)).mkString
+        formatName(resourceName, qp.getName, method, "Query")
       case pp: swaggerparams.PathParameter =>
-        List(resourceName, pp.getName, method, "Path").map(camelCaseInitialCapitalized(_)).mkString
+        formatName(resourceName, pp.getName, method, "Path")
       case _ =>
         sys.error(s"Enumerations not supported for swagger parameters of type ${param.getClass}")
     }
   }
 
+  def formatName(resourceName: String, paramName: String, method: String, location: String) = {
+    List(
+      resourceName,
+      paramName.capitalize,
+      method.toLowerCase.capitalize,
+      location.capitalize).mkString
+  }
+
   def retrieveMethod(operation: swaggermodels.Operation, path: swaggermodels.Path): Option[swaggermodels.HttpMethod] =
     path.getOperationMap().find(_._2 == operation).map(_._1)
-
-  def camelCaseInitialCapitalized(s: String): String = s.toLowerCase.capitalize
-
-
 }

@@ -9,7 +9,7 @@ object Parameter {
 
   def apply(
     resolver: Resolver,
-    url: String,
+    modelName: String,
     method: apidoc.Method,
     param: swaggerparams.Parameter
   ): apidoc.Parameter = {
@@ -49,17 +49,15 @@ object Parameter {
         toSchemaType(resolver, p, Option(p.getItems))
       }
       case p: swaggerparams.PathParameter => {
-        if(Util.hasStringEnum(p)) {
-          val resourceName = resolver.findModelByUrl(url).map(_.name).getOrElse("")
-          SchemaDetails(`type` = Util.buildParamEnumTypeName(resourceName, p, method.toString))
+        if(Util.hasStringEnum(p)){
+          SchemaDetails(`type` = Util.buildParamEnumTypeName(modelName, p, method.toString))
         } else {
           toSchemaType(resolver, p, Option(p.getItems))
         }
       }
       case p: swaggerparams.QueryParameter => {
         if(Util.hasStringEnum(p)) {
-          val resourceName = resolver.findModelByUrl(url).map(_.name).getOrElse("")
-          SchemaDetails(`type` = Util.buildParamEnumTypeName(resourceName, p, method.toString))
+          SchemaDetails(`type` = Util.buildParamEnumTypeName(modelName, p, method.toString))
         } else {
           toSchemaType(resolver, p, Option(p.getItems))
         }

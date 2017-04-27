@@ -9,6 +9,7 @@ object Operation {
 
   def apply(
     resolver: Resolver,
+    modelName: String,
     method: apidoc.Method,
     url: String,
     op: io.swagger.models.Operation
@@ -19,7 +20,7 @@ object Operation {
     val parameters = Util.toArray(op.getParameters).flatMap { param =>
       param match {
         case p: BodyParameter => None
-        case _ => Some(Parameter(resolver, url, method, param))
+        case _ => Some(Parameter(resolver, modelName, method, param))
       }
     }
 
