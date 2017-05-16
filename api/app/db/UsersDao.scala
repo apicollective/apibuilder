@@ -209,8 +209,8 @@ class UsersDao @Inject() (
     SQL(InsertQuery).on(
       'guid -> guid,
       'email -> email.trim.toLowerCase,
+      'nickname -> nickname.trim.toLowerCase,
       'name -> toOptionString(name),
-      'nickname -> nickname.trim,
       'avatar_url -> toOptionString(avatarUrl),
       'gravatar_id -> toOptionString(gravatarId),
       'created_by_guid -> Constants.DefaultUserGuid,
