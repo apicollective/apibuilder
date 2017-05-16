@@ -3,7 +3,7 @@
   returnUrl: Option[String] = None
 )(implicit flash: Flash, messages: Messages)
 
-@main(tpl.copy(headTitle = Some("apidoc: Login"))) {
+@main(tpl.copy(headTitle = Some("apidoc: Sign in"))) {
 
   <div class="container">
     <div class="row">
@@ -11,7 +11,7 @@
         <div class="pull-left">
 
           <a class="btn btn-block btn-social btn-github" href="@lib.Github.oauthUrl(returnUrl)">
-            <span class="fa fa-github"></span> Login with Github
+            <span class="fa fa-github"></span> Sign in with Github
           </a>
         </div>
       </section>
@@ -19,7 +19,7 @@
       <section class="col-xs-12 px0">
         <div class="pull-left">
           <a class="btn btn-block btn-social btn-github" href="@routes.LoginController.legacy(returnUrl)">
-            <span class="fa"></span> Legacy signin
+            <span class="fa"></span> Legacy Sign in
           </a>
         </div>
       </section>
