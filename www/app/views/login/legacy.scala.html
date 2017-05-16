@@ -14,11 +14,16 @@
         <div class="" id="loginModal">
           <div class="modal-body">
             <div class="well">
-              <ul class="nav nav-tabs">
-                <li@if(tab == controllers.LoginController.Tab.Login) { " class='active'" }><a href="#login" data-toggle="tab">Login</a></li>
-              </ul>
-
               <div class="tab-content">
+                <p><b>Sign in</b></p>
+
+                <p>
+                  <em>
+                    Note this login method is deprecated and will be
+                    removed around June 22, 2017 at which point the
+                    only way to login will be via GitHub.
+                  </em>
+                </p>
 
                 @errorMessage.map { msg =>
                   <p><span class="error">@msg</span></p>
