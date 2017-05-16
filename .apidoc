@@ -4,11 +4,6 @@ upload:
       path: service/service.json
 
 code:
-  flow:
-    github-oauth:
-      version: latest
-      generators:
-        play_2_4_client: generated/app
   bryzek:
     apidoc-spec:
       version: latest
