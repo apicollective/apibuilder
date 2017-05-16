@@ -546,6 +546,19 @@
 	  }
 	},
 
+	{
+	  "method": "POST",
+	  "path": "/authenticate_github",
+	  "description": "Used to authenticate a user using a github access token. This is equivalent to running the following command to get the user info: curl -H 'Authorization: Bearer code' https://api.github.com/user",
+	  "parameters": [
+	    { "name": "token", "type": "string", "description": "The GitHub assigned oauth token" }
+	  ],
+          "responses": {
+            "200": { "type": "user" },
+            "409": { "type": "[error]" }
+	  }
+	},
+
         {
           "method": "POST",
           "description": "Create a new user.",

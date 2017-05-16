@@ -4,22 +4,29 @@ import java.net.URLEncoder
 
 object Github {
 
-  lazy val clientId = Config.requiredString("apibuilder.github.oauth.client.id")
-  lazy val clientSecret = Config.requiredString("apibuilder.github.oauth.client.secret")
-  lazy val baseUrl = Util.fullUrl("/login/github")
+  lazy val clientId: String = Config.requiredString("apibuilder.github.oauth.client.id")
+  lazy val clientSecret: String = Config.requiredString("apibuilder.github.oauth.client.secret")
+  private[this] lazy val baseUrl = Util.fullUrl("/login/github/callback")
 
-  private[this] val Scopes = Seq("user:email", "repo", "read:repo_hook", "write:repo_hook")
+  private[this] val Scopes = Seq("user:email")
 
   private[this] val OauthUrl = "https://github.com/login/oauth/authorize"
 
   def oauthUrl(returnUrl: Option[String]): String = {
-    OauthUrl + "?" + Seq(
-      Some("scope" -> Scopes.mkString(",")),
-      Some("client_id" -> clientId),
-      returnUrl.map { url => ("redirect_uri" -> (s"$baseUrl?return_url=" + URLEncoder.encode(url, "UTF-8"))) }
-    ).flatten.map { case (key, value) =>
-        s"$key=" + URLEncoder.encode(value, "UTF-8")
+    val finalUrl = URLEncoder.encode(
+      Util.fullUrl(returnUrl.getOrElse("/")),
+      "UTF-8"
+    )
+
+    val u = OauthUrl + "?" + Seq(
+      "scope" -> Scopes.mkString(","),
+      "client_id" -> clientId,
+      "redirect_uri" -> s"$baseUrl?return_url=$finalUrl"
+    ).map { case (key, value) =>
+      s"$key=" + URLEncoder.encode(value, "UTF-8")
     }.mkString("&")
+    println(u)
+    u
   }
 
 }

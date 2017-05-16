@@ -10,6 +10,7 @@ GET     /login/forgotPassword                                     controllers.Lo
 POST    /login/forgotPassword                                     controllers.LoginController.postForgotPassword
 GET     /login/resetPassword/:token                               controllers.LoginController.resetPassword(token: String)
 POST    /login/resetPassword/:token                               controllers.LoginController.postResetPassword(token: String)
+GET     /login/github/callback                                    controllers.GithubController.callback(code: String, return_url: String)
 
 GET     /account                                                  controllers.AccountController.redirect
 GET     /account/                                                 controllers.AccountController.index()

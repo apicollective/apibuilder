@@ -3,25 +3,38 @@ package controllers
 import com.bryzek.apidoc.api.v0.models.{User, UserForm, UserUpdateForm}
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
-import db.{UsersDao, UserPasswordsDao}
+import db.{UserPasswordsDao, UsersDao}
 import javax.inject.{Inject, Singleton}
+
 import play.api.mvc._
-import play.api.libs.json.{ Json, JsError, JsSuccess }
+import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
 import java.util.UUID
+
+import play.api.libs.ws.WSClient
+
+import scala.concurrent.Future
 
 @Singleton
 class Users @Inject() (
   usersDao: UsersDao,
-  userPasswordsDao: UserPasswordsDao
+  userPasswordsDao: UserPasswordsDao,
+  ws: WSClient
 ) extends Controller {
 
-  case class UserAuthenticationForm(email: String, password: String)
-  object UserAuthenticationForm {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  private[this] case class UserAuthenticationForm(email: String, password: String)
+  private[this] object UserAuthenticationForm {
     implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
   }
 
+  private[this] case class GithubAuthenticationForm(token: String)
+  private[this] object GithubAuthenticationForm {
+    implicit val githubAuthenticationFormReads = Json.reads[GithubAuthenticationForm]
+  }
+
   def get(guid: Option[UUID], email: Option[String], token: Option[String]) = AnonymousRequest { request =>
-    require(!request.tokenUser.isEmpty, "Missing API Token")
+    require(request.tokenUser.isDefined, "Missing API Token")
     val users = usersDao.findAll(guid = guid.map(_.toString),
                                 email = email,
                                 token = token)
@@ -29,7 +42,7 @@ class Users @Inject() (
   }
 
   def getByGuid(guid: UUID) = AnonymousRequest { request =>
-    require(!request.tokenUser.isEmpty, "Missing API Token")
+    require(request.tokenUser.isDefined, "Missing API Token")
     usersDao.findByGuid(guid) match {
       case None => NotFound
       case Some(user: User) => Ok(Json.toJson(user))
@@ -97,7 +110,7 @@ class Users @Inject() (
   }
 
   def postAuthenticate() = AnonymousRequest(parse.json) { request =>
-    require(!request.tokenUser.isEmpty, "Missing API Token")
+    require(request.tokenUser.isDefined, "Missing API Token")
 
     request.body.validate[UserAuthenticationForm] match {
       case e: JsError => {
@@ -118,6 +131,35 @@ class Users @Inject() (
               Conflict(Json.toJson(Validation.userAuthorizationFailed()))
             }
           }
+        }
+      }
+    }
+  }
+
+  def postAuthenticateGithub() = Action.async(parse.json) { request =>
+    request.body.validate[GithubAuthenticationForm] match {
+      case e: JsError => Future.successful {
+        Conflict(Json.toJson(Validation.invalidJson(e)))
+      }
+      case s: JsSuccess[GithubAuthenticationForm] => {
+        val token = s.get.token
+        ws.url("https://api.github.com/user").
+        withHeaders(
+          "Authorization" -> s"Bearer $token"
+        ).get().map { response =>
+          val obj = Json.parse(response.body).as[JsObject]
+          val email = (obj \ "email").as[String]
+
+          val user = usersDao.findByEmail(email).getOrElse {
+            usersDao.createForGithub(
+              login = (obj \ "login").as[String],
+              email = email,
+              name = (obj \ "name").asOpt[String],
+              avatarUrl = (obj \ "avatar_url").asOpt[String],
+              gravatarId = (obj \ "gravatar_id").asOpt[String]
+            )
+          }
+          Ok(Json.toJson(user))
         }
       }
     }
