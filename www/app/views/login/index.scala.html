@@ -3,7 +3,7 @@
   returnUrl: Option[String] = None
 )(implicit flash: Flash, messages: Messages)
 
-@main(tpl.copy(headTitle = Some("apidoc: Sign in"))) {
+@main(tpl.copy(headTitle = Some("Sign in"))) {
 
   <div class="container">
     <div class="row">
@@ -18,7 +18,7 @@
 
       <section class="col-xs-12 px0">
         <div class="pull-left">
-          <a class="btn btn-block btn-social btn-github" href="@routes.LoginController.legacy(returnUrl)">
+          <a href="@routes.LoginController.legacy(returnUrl)">
             <span class="fa"></span> Legacy Sign in
           </a>
         </div>
