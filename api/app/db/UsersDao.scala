@@ -37,6 +37,8 @@ class UsersDao @Inject() (
            users.email,
            users.name,
            users.nickname,
+           users.avatar_url,
+           users.gravatar_id,
            ${AuditsDao.query("users")}
       from users
      where true
@@ -44,9 +46,9 @@ class UsersDao @Inject() (
 
   private[this] val InsertQuery = """
     insert into users
-    (guid, email, name, nickname, created_by_guid, updated_by_guid)
+    (guid, email, name, nickname, avatar_url, gravatar_id, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {email}, {name}, {nickname}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
+    ({guid}::uuid, {email}, {name}, {nickname}, {avatar_url}, {gravatar_id}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
   private[this] val UpdateQuery = """
@@ -135,31 +137,87 @@ class UsersDao @Inject() (
 
   }
 
-  def create(form: UserForm): User = {
-    val errors = validateNewUser(form)
-    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
-
-    val guid = UUID.randomUUID
-    DB.withTransaction { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'email -> form.email.trim.toLowerCase,
-        'name -> form.name.map(_.trim),
-        'nickname -> form.nickname.getOrElse(generateNickname(form.email)),
-        'created_by_guid -> Constants.DefaultUserGuid,
-        'updated_by_guid -> Constants.DefaultUserGuid
-      ).execute()
-
-      userPasswordsDao.doCreate(c, guid, guid, form.password)
-    }
-
-    val user = findByGuid(guid).getOrElse {
-      sys.error("Failed to create user")
+  def createForGithub(
+    login: String,
+    email: String,
+    name: Option[String],
+    avatarUrl: Option[String],
+    gravatarId: Option[String]
+  ): User = {
+    val guid = DB.withConnection { implicit c =>
+      doInsert(
+        nickname = login,
+        email = email,
+        name = name,
+        avatarUrl = avatarUrl,
+        gravatarId = gravatarId
+      )
     }
 
     mainActor ! actors.MainActor.Messages.UserCreated(guid)
 
-    user
+    findByGuid(guid).getOrElse {
+      sys.error("Failed to create user")
+    }
+  }
+
+  private[this] def toOptionString(value: Option[String]): Option[String] = {
+    value.flatMap(toOptionString)
+  }
+
+  private[this] def toOptionString(value: String): Option[String] = {
+    value.trim match {
+      case "" => None
+      case v => Some(v)
+    }
+  }
+
+  def create(form: UserForm): User = {
+    val errors = validateNewUser(form)
+    assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
+
+    val guid = DB.withTransaction { implicit c =>
+      val id = doInsert(
+        nickname = form.nickname.getOrElse(generateNickname(form.email)),
+        email = form.email,
+        name = form.name,
+        avatarUrl = None,
+        gravatarId = None
+      )
+
+      userPasswordsDao.doCreate(c, id, id, form.password)
+
+      id
+    }
+
+    mainActor ! actors.MainActor.Messages.UserCreated(guid)
+
+    findByGuid(guid).getOrElse {
+      sys.error("Failed to create user")
+    }
+  }
+
+  private[this] def doInsert(
+    nickname: String,
+    email: String,
+    name: Option[String],
+    avatarUrl: Option[String],
+    gravatarId: Option[String]
+  )(implicit c: java.sql.Connection): UUID = {
+    val guid = UUID.randomUUID
+
+    SQL(InsertQuery).on(
+      'guid -> guid,
+      'email -> email.trim.toLowerCase,
+      'name -> toOptionString(name),
+      'nickname -> nickname.trim,
+      'avatar_url -> toOptionString(avatarUrl),
+      'gravatar_id -> toOptionString(gravatarId),
+      'created_by_guid -> Constants.DefaultUserGuid,
+      'updated_by_guid -> Constants.DefaultUserGuid
+    ).execute()
+
+    guid
   }
 
   def processUserCreated(guid: UUID) {
