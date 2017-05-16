@@ -1,7 +1,5 @@
 package controllers
 
-import io.flow.github.oauth.v0.models.AccessTokenForm
-import io.flow.github.oauth.v0.models.json._
 import lib.Github
 import play.api.Logger
 import play.api.libs.json.Json
@@ -16,8 +14,6 @@ class GithubController @javax.inject.Inject() (
 ) extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-
-  private[this] lazy val githubOauthClient = new io.flow.github.oauth.v0.Client()
 
   def callback(
     code: String,
@@ -46,15 +42,13 @@ class GithubController @javax.inject.Inject() (
   }
 
   private[this] def getAccessToken(code: String): Future[Either[Throwable, String]] = {
-    val form = AccessTokenForm(
-      clientId = Github.clientId,
-      clientSecret = Github.clientSecret,
-      code = code
+    val form = Json.obj(
+      "client_id" -> Github.clientId,
+      "client_secret" -> Github.clientSecret,
+      "code" -> code
     )
 
-    ws.
-      url("https://github.com/login/oauth/access_token").
-      post(Json.toJson(form)).map { result =>
+    ws.url("https://github.com/login/oauth/access_token").post(form).map { result =>
       val parsed = FormUrlEncodedParser.parse(result.body)
       val accessToken = parsed.get("access_token").getOrElse {
         sys.error(s"GitHub Oauth response did not contain an access_token: ${result.body}")
