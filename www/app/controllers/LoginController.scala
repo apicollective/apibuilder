@@ -21,51 +21,41 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
-    val lForm = LoginController.loginForm.fill(LoginController.LoginData(email = "", password = "", returnUrl = returnUrl))
-    val rForm = LoginController.registerForm.fill(LoginController.RegisterData(name = None, email = "", password = "", passwordVerify = "", returnUrl = returnUrl))
-    Ok(views.html.login.index(tpl, LoginController.Tab.Login, lForm, rForm))
+    Ok(views.html.login.index(tpl, LoginController.Tab.Login, returnUrl))
   }
 
-  def indexPost = Action.async { implicit request =>
+  def legacy(returnUrl: Option[String]) = Action { implicit request =>
+    val tpl = MainTemplate(requestPath = request.path)
+    val lForm = LoginController.loginForm.fill(LoginController.LoginData(email = "", password = "", returnUrl = returnUrl))
+    val rForm = LoginController.registerForm.fill(LoginController.RegisterData(name = None, email = "", password = "", passwordVerify = "", returnUrl = returnUrl))
+    Ok(views.html.login.legacy(tpl, LoginController.Tab.Login, lForm, rForm))
+  }
+
+  def legacyPost = Action.async { implicit request =>
     val tpl = MainTemplate(requestPath = request.path)
     val form = LoginController.loginForm.bindFromRequest
     form.fold (
 
-      formWithErrors => Future {
-        Ok(views.html.login.index(tpl, LoginController.Tab.Login, formWithErrors, LoginController.registerForm))
+      formWithErrors => Future.successful {
+        Ok(views.html.login.legacy(tpl, LoginController.Tab.Login, formWithErrors, LoginController.registerForm))
       },
 
       validForm => {
-        val returnUrl = validForm.returnUrl.getOrElse("/")
-        Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { user =>
-          Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
-        }.recover {
-          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
-            Ok(views.html.login.index(tpl, LoginController.Tab.Login, form, LoginController.registerForm, Some(r.errors.map(_.message).mkString(", "))))
+        val url = validForm.returnUrl match {
+          case None => {
+            routes.ApplicationController.index().path
+          }
+          case Some(u) => {
+            assert(u.startsWith("/"), s"Redirect URL[$u] must start with /")
+            u
           }
         }
-      }
 
-    )
-  }
-
-  def registerPost = Action.async { implicit request =>
-    val tpl = MainTemplate(requestPath = request.path)
-
-    val form = LoginController.registerForm.bindFromRequest
-    form.fold (
-
-      formWithErrors => Future {
-        Ok(views.html.login.index(tpl, LoginController.Tab.Register, LoginController.loginForm, formWithErrors))
-      },
-
-      validForm => {
-        val returnUrl = validForm.returnUrl.getOrElse("/")
-        Authenticated.api().Users.post(UserForm(name = validForm.name, email = validForm.email, password = validForm.password)).map { user =>
-          Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
+        Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { user =>
+          Redirect(url).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
-            Ok(views.html.login.index(tpl, LoginController.Tab.Register, LoginController.loginForm, form, Some(r.errors.map(_.message).mkString(", "))))
+            Ok(views.html.login.legacy(tpl, LoginController.Tab.Login, form, LoginController.registerForm, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
       }
