@@ -1,0 +1,66 @@
+@(tpl: models.MainTemplate,
+  tab: controllers.LoginController.Tab,
+  loginForm: Form[controllers.LoginController.LoginData],
+  registerForm: Form[controllers.LoginController.RegisterData],
+  errorMessage: Option[String] = None,
+  returnUrl: Option[String] = None
+)(implicit flash: Flash, messages: Messages)
+
+@main(tpl.copy(headTitle = Some("apidoc: Legacy Login"))) {
+
+  <div class="container">
+    <div class="row">
+      <div class="span12">
+        <div class="" id="loginModal">
+          <div class="modal-body">
+            <div class="well">
+              <ul class="nav nav-tabs">
+                <li@if(tab == controllers.LoginController.Tab.Login) { " class='active'" }><a href="#login" data-toggle="tab">Login</a></li>
+              </ul>
+
+              <div class="tab-content">
+
+                @errorMessage.map { msg =>
+                  <p><span class="error">@msg</span></p>
+                }
+
+                <div id="login" class="tab-pane @if(tab == controllers.LoginController.Tab.Login) { active in } else { fade }">
+
+                  @helper.form(action = routes.LoginController.legacyPost) {
+                    <input type="hidden" name="return_url" value='@loginForm("return_url").value'/>
+
+                    @loginForm.globalErrors.map(_.message).map { msg =>
+                      <p><span class="error">@msg</span></p>
+                    }
+
+                    <fieldset>
+                        @helper.inputText(
+                            loginForm("email"),
+                            '_label -> "Email address",
+                            '_error -> loginForm.error("email")
+                        )
+
+                        @helper.inputPassword(
+                            loginForm("password"),
+                            '_label -> "Password",
+                            '_error -> loginForm.error("password")
+                        )
+
+                    </fieldset>
+
+                    <button class="btn btn-large btn-primary" type="submit">Login</button>
+
+                    <div class="forgot_password"><p><a href="@routes.LoginController.forgotPassword">Forgot password</a></p></div>
+
+                  }
+
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+}
