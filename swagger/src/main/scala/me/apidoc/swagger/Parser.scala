@@ -59,8 +59,12 @@ case class Parser(config: ServiceConfiguration) {
           SwaggerData(
             externalDocs = swagger.getExternalDocs,
             serviceSecurity = swagger.getSecurity,
-            securityDefinitions = swagger.getSecurityDefinitions).toAttribute)
-          .flatten
+            securityDefinitions = swagger.getSecurityDefinitions,
+            schemes = swagger.getSchemes,
+            host = swagger.getHost,
+            basePath = swagger.getBasePath
+          ).toAttribute
+        ).flatten
     )
   }
 

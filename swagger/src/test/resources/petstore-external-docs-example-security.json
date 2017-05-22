@@ -102,6 +102,7 @@
       "post": {
         "description": "Creates a new pet in the store.  Duplicates are allowed",
         "operationId": "addPet",
+        "tags": ["tag1", "tag2"],
         "produces": [
           "application/json"
         ],

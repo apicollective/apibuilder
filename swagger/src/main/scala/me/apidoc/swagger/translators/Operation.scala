@@ -64,7 +64,12 @@ object Operation {
         Seq(
           SwaggerData(
             externalDocs = op.getExternalDocs,
-            operationSecurity = op.getSecurity).toAttribute
+            operationSecurity = op.getSecurity,
+            schemes = op.getSchemes,
+            summary = op.getSummary,
+            operationId = op.getOperationId,
+            tags = op.getTags
+          ).toAttribute
         ).flatten
     )
   }
