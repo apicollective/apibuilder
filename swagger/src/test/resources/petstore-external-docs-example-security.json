@@ -30,6 +30,21 @@
   "produces": [
     "application/json"
   ],
+  "securityDefinitions": {
+    "read": {
+      "type": "basic",
+      "description": "Security def for read operations"
+    },
+    "write": {
+      "type": "basic",
+      "description": "Security def for write operations"
+    }
+  },
+  "security": [
+    {
+      "read": []
+    }
+  ],
   "paths": {
     "/pets": {
       "get": {
@@ -89,6 +104,11 @@
         "operationId": "addPet",
         "produces": [
           "application/json"
+        ],
+        "security":[
+          {
+            "write": []
+          }
         ],
         "parameters": [
           {
@@ -155,6 +175,11 @@
       "delete": {
         "description": "deletes a single pet based on the ID supplied",
         "operationId": "deletePet",
+        "security":[
+          {
+            "write": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -204,12 +229,16 @@
         "tag": {
           "type": "string"
         }
+      },
+      "example": {
+        "id": "123",
+        "name": "Storm"
       }
     },
     "newPet": {
       "allOf": [
         {
-          "$ref": "pet"
+          "$ref": "#/definitions/pet"
         },
         {
           "required": [

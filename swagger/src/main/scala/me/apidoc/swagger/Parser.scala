@@ -1,18 +1,17 @@
 package me.apidoc.swagger
 
-import translators.Resolver
-import lib.{ServiceConfiguration, Text, UrlKey}
-import io.swagger.parser.SwaggerParser
-import io.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
 import java.io.File
 
-import scala.collection.JavaConversions._
-import collection.JavaConverters._
 import com.bryzek.apidoc.spec.v0.models._
-import io.swagger.models.parameters.{AbstractSerializableParameter, PathParameter, QueryParameter}
+import io.swagger.models.parameters.AbstractSerializableParameter
+import io.swagger.models.properties.{ArrayProperty, RefProperty}
+import io.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
+import io.swagger.parser.SwaggerParser
+import lib.{ServiceConfiguration, Text, UrlKey}
+import me.apidoc.swagger.translators.Resolver
 
 import scala.annotation.tailrec
-import io.swagger.models.properties.{ArrayProperty, RefProperty, StringProperty}
+import scala.collection.JavaConversions._
 
 case class Parser(config: ServiceConfiguration) {
 
@@ -54,7 +53,14 @@ case class Parser(config: ServiceConfiguration) {
       models = specModels,
       imports = Nil,
       headers = Nil,
-      resources = translators.Resource.mergeAll(resourcesAndParamEnums._1)
+      resources = translators.Resource.mergeAll(resourcesAndParamEnums._1),
+      attributes =
+        Seq(
+          SwaggerData(
+            externalDocs = swagger.getExternalDocs,
+            serviceSecurity = swagger.getSecurity,
+            securityDefinitions = swagger.getSecurityDefinitions).toAttribute)
+          .flatten
     )
   }
 

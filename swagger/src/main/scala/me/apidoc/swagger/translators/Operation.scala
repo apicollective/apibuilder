@@ -1,9 +1,11 @@
 package me.apidoc.swagger.translators
 
-import me.apidoc.swagger.Util
-import com.bryzek.apidoc.spec.v0.{ models => apidoc }
-import io.swagger.{ models => swagger }
+import com.bryzek.apidoc.spec.v0.{models => apidoc}
 import io.swagger.models.parameters.BodyParameter
+import io.swagger.{models => swagger}
+import me.apidoc.swagger.{SwaggerData, Util}
+
+import scala.collection.JavaConverters._
 
 object Operation {
 
@@ -57,7 +59,13 @@ object Operation {
       parameters = parameters,
       responses = Util.toMap(op.getResponses).map {
         case (code, swaggerResponse) => Response(resolver, code, swaggerResponse)
-      }.toSeq
+      }.toSeq,
+      attributes =
+        Seq(
+          SwaggerData(
+            externalDocs = op.getExternalDocs,
+            operationSecurity = op.getSecurity).toAttribute
+        ).flatten
     )
   }
 

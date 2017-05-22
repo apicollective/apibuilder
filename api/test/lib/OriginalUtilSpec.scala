@@ -27,7 +27,7 @@ class OriginalUtilSpec extends FunSpec with ShouldMatchers {
     }
 
     it("swaggerJson") {
-      OriginalUtil.guessType(TestHelper.readFile("../swagger/src/test/resources/petstore-with-external-docs.json")) should be(Some(OriginalType.SwaggerJson))
+      OriginalUtil.guessType(TestHelper.readFile("../swagger/src/test/resources/petstore-external-docs-example-security.json")) should be(Some(OriginalType.SwaggerJson))
     }
 
     it("avroIdl") {

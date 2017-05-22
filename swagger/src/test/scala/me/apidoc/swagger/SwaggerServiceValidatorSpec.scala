@@ -5,6 +5,7 @@ import com.bryzek.apidoc.spec.v0.models.ParameterLocation.{Path, Query}
 import com.bryzek.apidoc.spec.v0.models.{EnumValue, _}
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
+import play.api.libs.json.{JsArray, JsNull, JsObject, JsString}
 
 class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
   private val resourcesDir = "swagger/src/test/resources/"
@@ -59,6 +60,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
               service.headers should be(Seq.empty)
               service.imports should be(Seq.empty)
+              service.attributes should be (Seq.empty)
 
               service.models.map(_.name).sorted should be(Seq("Error", "Pet"))
               checkModel(
@@ -304,6 +306,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               service.baseUrl should be(Some("http://petstore.swagger.wordnik.com/api"))
               service.headers should be(Seq.empty)
               service.imports should be(Seq.empty)
+              service.attributes should be(Seq.empty)
 
               service.models.map(_.name).sorted should be(Seq("Accessory", "Error", "Pet"))
 
@@ -436,7 +439,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                           description = Some("unexpected error"),
                           deprecation = None)
                       ),
-                      attributes = Nil),
+                      attributes =  Seq()),
                     Operation(
                       method = Get,
                       path = "/pets/:status",
@@ -514,8 +517,8 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
       }
     }
 
-    it("should parse petstore-with-external-docs.json") {
-      val files = Seq("petstore-with-external-docs.json")
+    it("should parse petstore-external-docs-example-security.json") {
+      val files = Seq("petstore-external-docs-example-security.json")
       files.foreach {
         filename =>
           val path = resourcesDir + filename
@@ -536,6 +539,29 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               service.imports should be(Seq.empty)
               service.enums should be(Seq.empty)
               service.models.map(_.name).sorted should be(Seq("errorModel", "newPet", "pet"))
+              service.attributes should be (
+                Seq(Attribute(
+                  name = SwaggerData.AttributeName,
+                  description = Some(SwaggerData.AttributeDescription),
+                  value = JsObject(Seq(
+                    ("externalDocs", JsObject(Seq(
+                      ("description", JsString("find more info here")),
+                      ("url", JsString("https://helloreverb.com/about"))))),
+                    ("securityDefinitions", JsObject(Seq(
+                      ("read", JsObject(Seq(
+                        ("type", JsString("basic")),
+                        ("description", JsString("Security def for read operations"))
+                      ))),
+                      ("write", JsObject(Seq(
+                        ("type", JsString("basic")),
+                        ("description", JsString("Security def for write operations"))
+                      )))))),
+                    ("security", JsArray(Seq(
+                      JsObject(Seq(
+                        ("scopes", JsNull),
+                        ("read", JsArray())
+                      )))))
+                  )))))
 
               checkModel(
                 service.models.find(_.name == "pet").get,
@@ -564,7 +590,17 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       `type` = "string",
                       required = false
                     )
-                  )
+                  ),
+                  attributes = Seq(Attribute(
+                    name = SwaggerData.AttributeName,
+                    description = Some(SwaggerData.AttributeDescription),
+                    value = JsObject(Seq(
+                      ("externalDocs", JsObject(Seq(
+                        ("description", JsString("find more info here")),
+                        ("url", JsString("https://helloreverb.com/about"))))),
+                      ("example", JsObject(Seq(
+                        ("id", JsString("123")),
+                        ("name", JsString("Storm")))))))))
                 )
               )
 
@@ -595,7 +631,17 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       `type` = "string",
                       required = false
                     )
-                  )
+                  ),
+                  attributes = Seq(Attribute(
+                    name = SwaggerData.AttributeName,
+                    description = Some(SwaggerData.AttributeDescription),
+                    value = JsObject(Seq(
+                      ("externalDocs", JsObject(Seq(
+                        ("description", JsString("find more info here")),
+                        ("url", JsString("https://helloreverb.com/about"))))),
+                      ("example", JsObject(Seq(
+                        ("id", JsString("123")),
+                        ("name", JsString("Storm")))))))))
                 )
               )
 
@@ -650,6 +696,19 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                         }
                       }
 
+                      println(s"   attributes:")
+                      op.attributes match {
+                        case Nil | Seq() => {
+                          println("    none")
+                        }
+                        case attributes => {
+                          attributes.foreach {
+                            a =>
+                              println(s"    ${a.name}: ${a.value}")
+                          }
+                        }
+                      }
+
                       println(s"   responses:")
                       op.responses.foreach {
                         r =>
@@ -684,6 +743,14 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               service.imports should be(Seq.empty)
               service.enums should be(Seq.empty)
               service.models.map(_.name).sorted should be(Seq("errorModel", "newPet", "pet"))
+              service.attributes should be (
+                Seq(Attribute(
+                  name = SwaggerData.AttributeName,
+                  description = Some(SwaggerData.AttributeDescription),
+                  value = JsObject(Seq(
+                    ("externalDocs", JsObject(Seq(
+                      ("description", JsString("find more info here")),
+                      ("url", JsString("https://helloreverb.com/about"))))))))))
 
               checkModel(
                 service.models.find(_.name == "pet").get,
@@ -707,7 +774,14 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       `type` = "string",
                       required = false
                     )
-                  )
+                  ),
+                  attributes = Seq(Attribute(
+                    name = SwaggerData.AttributeName,
+                    description = Some(SwaggerData.AttributeDescription),
+                    value = JsObject(Seq(
+                      ("externalDocs", JsObject(Seq(
+                        ("description", JsString("find more info here")),
+                        ("url", JsString("https://helloreverb.com/about")))))))))
                 )
               )
 
@@ -733,7 +807,14 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
                       `type` = "string",
                       required = false
                     )
-                  )
+                  ),
+                  attributes = Seq(Attribute(
+                    name = SwaggerData.AttributeName,
+                    description = Some(SwaggerData.AttributeDescription),
+                    value = JsObject(Seq(
+                      ("externalDocs", JsObject(Seq(
+                        ("description", JsString("find more info here")),
+                        ("url", JsString("https://helloreverb.com/about")))))))))
                 )
               )
 
@@ -832,6 +913,7 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
               service.imports should be(Seq.empty)
               service.enums should be(Seq.empty)
               service.models.map(_.name).sorted should be(Seq("Body", "Error", "Inventory", "Message", "Messages", "Request", "Response", "Result", "Variant"))
+              service.imports should be(Seq.empty)
 
               checkModel(
                 service.models.find(_.name == "Response").get,
