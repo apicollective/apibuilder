@@ -7,8 +7,10 @@ import java.nio.charset.StandardCharsets
 import java.io.File
 import java.util.UUID
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.{models => swaggermodels}
 import io.swagger.models.{parameters => swaggerparams, properties => swaggerproperties}
+import play.api.libs.json.{JsValue, Json}
 
 object Util {
 
@@ -149,4 +151,15 @@ object Util {
 
   def retrieveMethod(operation: swaggermodels.Operation, path: swaggermodels.Path): Option[swaggermodels.HttpMethod] =
     path.getOperationMap().find(_._2 == operation).map(_._1)
+
+  /*
+   * Useful to serialize (with Jackson) Java objects from Swagger parser
+   */
+  val JacksonSerializer = new ObjectMapper() //it's thread-safe
+  def toJsonString(jsonJavaModel: java.lang.Object): String = JacksonSerializer.writeValueAsString(jsonJavaModel)
+
+  /*
+   * Transforms a Java JSON model into the corresponding PlayJson JsValue
+   */
+  def toJsValue(jsonJavaModel: java.lang.Object): JsValue = Json.parse(toJsonString(jsonJavaModel))
 }

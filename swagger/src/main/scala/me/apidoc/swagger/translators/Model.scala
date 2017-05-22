@@ -1,10 +1,10 @@
 package me.apidoc.swagger.translators
 
 import com.bryzek.apidoc.spec.v0.models.EnumValue
-import lib.Text
-import me.apidoc.swagger.Util
 import com.bryzek.apidoc.spec.v0.{models => apidoc}
 import io.swagger.{models => swagger}
+import lib.Text
+import me.apidoc.swagger.{SwaggerData, Util}
 
 object Model {
 
@@ -40,7 +40,13 @@ object Model {
           deprecation = None,
           fields = Util.toMap(m.getProperties).map {
             case (key, prop) => Field(resolver, name, key, prop)
-          }.toSeq
+          }.toSeq,
+          attributes =
+            Seq(
+              SwaggerData(
+                externalDocs = m.getExternalDocs,
+                example = m.getExample).toAttribute)
+              .flatten
         )), enums(m, name))
     }
   }

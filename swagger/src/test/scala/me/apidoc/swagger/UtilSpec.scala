@@ -1,6 +1,5 @@
 package me.apidoc.swagger
 
-import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 
 class UtilSpec extends FunSpec with Matchers {
