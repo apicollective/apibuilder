@@ -96,11 +96,6 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    packagedArtifacts in publishLocal := {
-      val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publishLocal).value
-      val assets: java.io.File = (playPackageAssets in Compile).value
-      artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
-    },
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
@@ -109,8 +104,7 @@ lazy val www = project
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.6.0-M1",
       "org.webjars" % "bootstrap" % "3.3.7",
-      "org.webjars" % "bootstrap-social" % "5.0.0",
-      "org.webjars" % "jquery" % "3.2.0"
+      "org.webjars" % "bootstrap-social" % "5.0.0"
     )
   )
 
