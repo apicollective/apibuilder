@@ -109,8 +109,8 @@ lazy val www = project
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.6.0-M1",
       "org.webjars" % "bootstrap" % "3.3.7",
-      "org.webjars" % "bootstrap-social" % "5.0.0"
-
+      "org.webjars" % "bootstrap-social" % "5.0.0",
+      "org.webjars" % "jquery" % "3.2.0"
     )
   )
 
