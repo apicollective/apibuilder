@@ -25,7 +25,7 @@ case class Parser(config: ServiceConfiguration) {
     path: File
   ): Service = {
     val swagger = Option(new SwaggerParser().read(path.toString)).getOrElse {
-      sys.error("File is not a valid swagger.json format")
+      sys.error("File is not a valid Swagger JSON or YAML format")
     }
     val info = swagger.getInfo() // TODO
     val applicationKey = UrlKey.generate(info.getTitle())
