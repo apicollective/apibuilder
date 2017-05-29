@@ -148,6 +148,7 @@ class Users @Inject() (
           "Authorization" -> s"Bearer $token"
         ).get().map { response =>
           val obj = Json.parse(response.body).as[JsObject]
+          play.api.Logger.info(s"GITHUB USER: " + Json.prettyPrint(obj))
           val email = (obj \ "email").as[String]
 
           val user = usersDao.findByEmail(email).getOrElse {
