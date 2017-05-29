@@ -66,7 +66,7 @@
 	{ "name": "api_json", "description": "The original is in the api.json format" },
 	{ "name": "avro_idl", "description": "The original is in Avro Idl format" },
 	{ "name": "service_json", "description": "This is the canonical service spec for apidoc itself. See http://apidoc.me/bryzek/apidoc-spec/latest#model-service" },
-	{ "name": "swagger_json", "description": "The original in the swagger.json format" }
+	{ "name": "swagger", "description": "The original in the Swagger JSON or YAML format" }
       ]
     }
 
