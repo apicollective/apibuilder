@@ -3,7 +3,7 @@ package core
 import _root_.builder.OriginalValidator
 import lib.ServiceConfiguration
 import com.bryzek.apidoc.api.v0.models.Original
-import com.bryzek.apidoc.api.v0.models.OriginalType.SwaggerJson
+import com.bryzek.apidoc.api.v0.models.OriginalType.Swagger
 import org.scalatest.{FunSpec, Matchers}
 
 class OriginalValidatorSpec
@@ -29,7 +29,7 @@ class OriginalValidatorSpec
         OriginalValidator(
           config,
           original = Original (
-            SwaggerJson,
+            Swagger,
             readFile(path)
           ),
           new MockServiceFetcher()
@@ -44,7 +44,7 @@ class OriginalValidatorSpec
         OriginalValidator(
           config,
           original = Original (
-            SwaggerJson,
+            Swagger,
             readFile(path)
           ),
           new MockServiceFetcher()

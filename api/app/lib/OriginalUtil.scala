@@ -30,7 +30,7 @@ object OriginalUtil {
           case None => None
           case Some(o) => {
             (o \ "swagger").asOpt[JsString] match {
-              case Some(v) => Some(OriginalType.SwaggerJson)
+              case Some(v) => Some(OriginalType.Swagger)
               case None => {
                 o.validate[Service] match {
                   case JsSuccess(_, _) => Some(OriginalType.ServiceJson)

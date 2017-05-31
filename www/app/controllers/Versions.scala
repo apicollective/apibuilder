@@ -1,21 +1,19 @@
 package controllers
 
-import models.MainTemplate
-import lib.{UrlKey, Util, VersionedName, VersionTag}
-import com.bryzek.apidoc.api.v0.models.{Application, OriginalForm, OriginalType, Organization, User, Version, VersionForm, Visibility, WatchForm}
-import com.bryzek.apidoc.spec.v0.models.Service
-import com.bryzek.apidoc.spec.v0.models.json._
-import play.api.libs.json._
-import play.api.data._
-import play.api.data.Forms._
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
 import java.io.File
-
 import javax.inject.Inject
-import play.api._
-import play.api.i18n.{MessagesApi, I18nSupport}
+
+import com.bryzek.apidoc.api.v0.models._
+import com.bryzek.apidoc.spec.v0.models.json._
+import lib.{Util, VersionTag}
+import play.api.data.Forms._
+import play.api.data._
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.json._
 import play.api.mvc.{Action, Controller}
+
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with I18nSupport {
 
@@ -94,7 +92,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
           }
           case Some(original) => {
             original.`type` match {
-              case OriginalType.ApiJson | OriginalType.SwaggerJson | OriginalType.ServiceJson => {
+              case OriginalType.ApiJson | OriginalType.Swagger | OriginalType.ServiceJson => {
                 Ok(original.data).withHeaders("Content-Type" -> "application/json")
               }
               case OriginalType.AvroIdl => {
