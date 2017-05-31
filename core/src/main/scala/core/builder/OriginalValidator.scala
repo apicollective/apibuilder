@@ -1,12 +1,12 @@
 package builder
 
-import me.apidoc.swagger.SwaggerServiceValidator
-import me.apidoc.avro.AvroIdlServiceValidator
-import api_json.{ApiJsonServiceValidator, ServiceJsonServiceValidator}
-import lib.{ServiceConfiguration, ServiceValidator}
-import core.{ServiceFetcher, VersionMigration}
+import builder.api_json.{ApiJsonServiceValidator, ServiceJsonServiceValidator}
 import com.bryzek.apidoc.api.v0.models.{Original, OriginalType}
 import com.bryzek.apidoc.spec.v0.models.Service
+import core.{ServiceFetcher, VersionMigration}
+import lib.{ServiceConfiguration, ServiceValidator}
+import me.apidoc.avro.AvroIdlServiceValidator
+import me.apidoc.swagger.SwaggerServiceValidator
 
 object OriginalValidator {
 
@@ -28,7 +28,7 @@ object OriginalValidator {
       case OriginalType.ServiceJson => {
         ServiceJsonServiceValidator(original.data)
       }
-      case OriginalType.SwaggerJson => {
+      case OriginalType.Swagger => {
         SwaggerServiceValidator(config, original.data)
       }
       case OriginalType.UNDEFINED(other) => {
