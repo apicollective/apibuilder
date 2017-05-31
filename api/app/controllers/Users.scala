@@ -7,7 +7,7 @@ import db.{UserPasswordsDao, UsersDao}
 import javax.inject.{Inject, Singleton}
 
 import play.api.mvc._
-import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
+import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
 import java.util.UUID
 
 import play.api.libs.ws.WSClient
@@ -143,12 +143,29 @@ class Users @Inject() (
       }
       case s: JsSuccess[GithubAuthenticationForm] => {
         val token = s.get.token
-        ws.url("https://api.github.com/user").
-        withHeaders(
-          "Authorization" -> s"Bearer $token"
-        ).get().map { response =>
-          val obj = Json.parse(response.body).as[JsObject]
-          val email = (obj \ "email").as[String]
+
+        for {
+          userResponse <- ws.url("https://api.github.com/user").
+          withHeaders(
+            "Authorization" -> s"Bearer $token"
+          ).get()
+
+          emailsResponse <- ws.url("https://api.github.com/user/emails").
+          withHeaders(
+            "Authorization" -> s"Bearer $token"
+          ).get()
+        } yield {
+          val obj = Json.parse(userResponse.body).as[JsObject]
+          play.api.Logger.info(s"GITHUB USER: " + Json.prettyPrint(obj))
+
+          val emails = Json.parse(emailsResponse.body).as[JsArray]
+          play.api.Logger.info(s"GITHUB USER EMAILS: " + Json.prettyPrint(emails))
+          val primaryEmailObject = emails.value.map(_.as[JsObject]).find { js =>
+            (js \ "primary").as[JsBoolean].value
+          }.getOrElse {
+            sys.error("Github user does not have a primary email address: " + Json.prettyPrint(emails))
+          }
+          val email = (primaryEmailObject \ "email").as[JsString].value
 
           val user = usersDao.findByEmail(email).getOrElse {
             usersDao.createForGithub(

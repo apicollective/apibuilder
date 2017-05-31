@@ -57,6 +57,30 @@ object Util {
     }
   }
 
+  private[this] val WhiteListedDomains = Seq(
+    "http://apidoc.me", "http://www.apidoc.me",
+    "https://apidoc.me", "https://www.apidoc.me"
+  )
+
+  def validateReturnUrl(value: String): Either[Seq[String], String] = {
+    if (value.startsWith("/")) {
+      Right(value)
+    } else {
+      WhiteListedDomains.find { d => value.startsWith(d) } match {
+        case None => Left(Seq(s"Redirect URL[$value] must start with / or a known domain"))
+        case Some(d) => Right(
+          value.substring(d.length).trim match {
+            case "" => "/"
+            case trimmed => {
+              assert(trimmed.startsWith("/"), s"Redirect URL[$value] must start with /")
+              trimmed
+            }
+          }
+        )
+      }
+    }
+  }
+
   def searchUrl(detail: ItemDetail): Option[String] = {
     detail match {
       case com.bryzek.apidoc.api.v0.models.ApplicationSummary(guid, org, key) => {

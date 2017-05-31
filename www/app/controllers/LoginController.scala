@@ -1,6 +1,7 @@
 package controllers
 
 import com.bryzek.apidoc.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
+import lib.Util
 import models.MainTemplate
 import play.api.data._
 import play.api.data.Forms._
@@ -46,8 +47,15 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
             routes.ApplicationController.index().path
           }
           case Some(u) => {
-            assert(u.startsWith("/"), s"Redirect URL[$u] must start with /")
-            u
+            Util.validateReturnUrl(u) match {
+              case Left(errors) => {
+                Logger.warn(s"Ignoring redirect url[$u]: $errors")
+                "/"
+              }
+              case Right(validUrl) => {
+                validUrl
+              }
+            }
           }
         }
 
