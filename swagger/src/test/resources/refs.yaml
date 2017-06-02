@@ -1,3 +1,6 @@
+#
+# Translated from refs.json using https://app.swaggerhub.com
+#
 swagger: '2.0'
 info:
   title: Inventory API
