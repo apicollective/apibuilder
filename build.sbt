@@ -15,9 +15,9 @@ lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings: _*)
 
-val avroVersion = "1.8.1"
+val avroVersion = "1.8.2"
 
-val playJsonVersion = "2.4.6"
+val playJsonVersion = "2.4.10"
 
 lazy val avro = project
   .in(file("avro"))
@@ -38,7 +38,7 @@ lazy val swagger = project
   .aggregate(generated, lib)
   .settings(
     libraryDependencies ++= Seq(
-      "io.swagger" % "swagger-parser" % "1.0.26",
+      "io.swagger" % "swagger-parser" % "1.0.29",
       "com.typesafe.play" %% "play-json" % playJsonVersion,
       "org.scalatest"     %% "scalatest" % "2.2.6" % "test"
     )
@@ -99,7 +99,7 @@ lazy val www = project
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-compress" % "1.13",
+      "org.apache.commons" % "commons-compress" % "1.14",
       "com.github.tototoshi" %% "scala-csv" % "1.3.4",
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.6.0-M1",
