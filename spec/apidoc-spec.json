@@ -122,8 +122,7 @@
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
 	{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" },
-  { "name": "default", "type": "string", "required": false, "description": "The name of the discriminator type to use by default. This provides a way to serialize/deserialize JSON given a model that does not contain a discriminator field." }
+	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
@@ -133,7 +132,8 @@
 	{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+  { "name": "default", "type": "boolean", "required": false, "description": "Indicates if this union type should be used for JSON serialization/deserialization no discriminator is provided" },
+  { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
