@@ -18,15 +18,13 @@ object Github {
       "UTF-8"
     )
 
-    val u = OauthUrl + "?" + Seq(
+    OauthUrl + "?" + Seq(
       "scope" -> Scopes.mkString(","),
       "client_id" -> clientId,
       "redirect_uri" -> s"$baseUrl?return_url=$finalUrl"
     ).map { case (key, value) =>
       s"$key=" + URLEncoder.encode(value, "UTF-8")
     }.mkString("&")
-    println(u)
-    u
   }
 
 }
