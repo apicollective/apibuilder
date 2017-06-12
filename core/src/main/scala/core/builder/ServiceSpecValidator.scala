@@ -2,9 +2,8 @@ package builder
 
 import core.{TypeValidator, TypesProvider}
 import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Header, Method, Operation, ParameterLocation, ResponseCode}
-import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union, UnionType}
+import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union}
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
-import scala.util.{Failure, Success, Try}
 
 case class ServiceSpecValidator(
   service: Service
@@ -21,13 +20,13 @@ case class ServiceSpecValidator(
   private val typeResolver = DatatypeResolver(
     enumNames = localTypeResolver.enumNames ++ service.imports.flatMap { service =>
       service.enums.map { enum =>
-        s"${service.namespace}.enums.${enum}"
+        s"${service.namespace}.enums.$enum"
       }
     },
 
     modelNames = localTypeResolver.modelNames ++ service.imports.flatMap { service =>
       service.models.map { model =>
-        s"${service.namespace}.models.${model}"
+        s"${service.namespace}.models.$model"
       }
     },
 
@@ -376,23 +375,25 @@ case class ServiceSpecValidator(
       case Nil => {
         service.models.flatMap { model =>
           model.fields.
-            filter { f => !f.minimum.isEmpty || !f.maximum.isEmpty }.
-            filter { f => !f.default.isEmpty && JsonUtil.isNumeric(f.default.get) }.
+            filter { f => f.minimum.isDefined || f.maximum.isDefined }.
+            filter { f => f.default.isDefined && JsonUtil.isNumeric(f.default.get) }.
             flatMap { field =>
               field.default match {
                 case None => Nil
                 case Some(default) => {
                   Seq(
                     field.minimum.flatMap { min =>
-                      default.toLong < min match {
-                        case false => None
-                        case true => Some(s"${model.name}.${field.name} default[$default] must be >= specified minimum[$min]")
+                      if (default.toLong < min) {
+                        Some(s"${model.name}.${field.name} default[$default] must be >= specified minimum[$min]")
+                      } else {
+                        None
                       }
                     },
                     field.maximum.flatMap { max =>
-                      default.toLong > max match {
-                        case false => None
-                        case true => Some(s"${model.name}.${field.name} default[$default] must be <= specified maximum[$max]")
+                      if (default.toLong > max) {
+                        Some(s"${model.name}.${field.name} default[$default] must be <= specified maximum[$max]")
+                      } else {
+                        None
                       }
                     }
                   ).flatten
@@ -434,7 +435,7 @@ case class ServiceSpecValidator(
     }
 
     val duplicateModels = service.resources.flatMap { resource =>
-      val numberResources = service.resources.filter { _.`type` == resource.`type` }.size
+      val numberResources = service.resources.count(_.`type` == resource.`type`)
       if (numberResources <= 1) {
         None
       } else {
@@ -449,7 +450,7 @@ case class ServiceSpecValidator(
 
   private def validateParameterLocations(): Seq[String] = {
     service.resources.flatMap { resource =>
-      resource.operations.filter(!_.parameters.isEmpty).flatMap { op =>
+      resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
         op.parameters.flatMap { param =>
           param.location match {
             case ParameterLocation.UNDEFINED(name) => Some(opLabel(resource, op, s"location[$name] is not recognized. Must be one of: ${ParameterLocation.all.map(_.toString.toLowerCase).mkString(", ")}"))
@@ -476,7 +477,7 @@ case class ServiceSpecValidator(
     }
 
     val invalidMethods = service.resources.flatMap { resource =>
-      resource.operations.filter(op => !op.body.isEmpty && !Methods.isJsonDocumentMethod(op.method.toString)).map { op =>
+      resource.operations.filter(op => op.body.isDefined && !Methods.isJsonDocumentMethod(op.method.toString)).map { op =>
         opLabel(resource, op, s"Cannot specify body for HTTP method[${op.method}]")
       }
     }
@@ -486,15 +487,16 @@ case class ServiceSpecValidator(
 
   private def validateParameterDefaults(): Seq[String] = {
     service.resources.flatMap { resource =>
-      resource.operations.filter(!_.parameters.isEmpty).flatMap { op =>
+      resource.operations.filter(_.parameters.nonEmpty).flatMap { op =>
         op.parameters.flatMap { param =>
           typeResolver.parse(param.`type`).flatMap { pd =>
             param.default match {
               case None => None
               case Some(default) => {
-                param.required match {
-                  case false => Some(opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required"))
-                  case true => validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
+                if (param.required) {
+                  validateDefault(opLabel(resource, op, s"param[${param.name}]"), param.`type`, default)
+                } else {
+                  Some(opLabel(resource, op, s"param[${param.name}] has a default specified. It must be marked required"))
                 }
               }
             }
@@ -543,18 +545,16 @@ case class ServiceSpecValidator(
 
                 case ParameterLocation.Path => {
                   // Path parameters are required
-                  p.required match {
-                    case true => {
-                      // Verify that path parameter is actually in the path
-                      val index = op.path.indexOf(s"${p.name}")
-                      (index < 0) match {
-                        case true => Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
-                        case false => None
-                      }
+                  if (p.required) {
+                    // Verify that path parameter is actually in the path
+                    val index = op.path.indexOf(s"${p.name}")
+                    if ((index < 0)) {
+                      Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
+                    } else {
+                      None
                     }
-                    case false => {
-                      Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
-                    }
+                  } else {
+                    Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
                   }
                 }
 
@@ -580,9 +580,10 @@ case class ServiceSpecValidator(
               Some(errorTemplate.format(p.`type`))
             }
             case Some(kind) => {
-              isValidInPath(kind) match {
-                case true => None
-                case false => Some(errorTemplate.format(kind.toString))
+              if (isValidInPath(kind)) {
+                None
+              } else {
+                Some(errorTemplate.format(kind.toString))
               }
             }
           }
@@ -603,13 +604,6 @@ case class ServiceSpecValidator(
       case Kind.Model(_) | Kind.Union(_) | Kind.List(_) | Kind.Map(_) => {
         false
       }
-    }
-  }
-
-  private def responseCode5xx(responseCode: ResponseCode): Boolean = {
-    responseCode match {
-      case ResponseCodeInt(value) => value >= 500
-      case ResponseCodeOption.Default | ResponseCodeOption.UNDEFINED(_) | ResponseCodeUndefinedType(_) => false
     }
   }
 
