@@ -8,7 +8,12 @@
   <tbody>
    @union.types.map { t =>
      <tr>
-       <td>@datatype(org, app, version, service, t.`type`)@t.deprecation.map(deprecation(_))</td>
+       <td>
+         @datatype(org, app, version, service, t.`type`)@t.deprecation.map(deprecation(_))
+         @if(t.default.getOrElse(false)) {
+           (Default)
+         }
+       </td>
        <td>@Html(lib.Markdown(t.description))</td>
      </tr>
    }
