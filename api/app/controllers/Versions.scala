@@ -2,7 +2,7 @@ package controllers
 
 import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
 import com.bryzek.apidoc.api.v0.models.json._
-import com.bryzek.apidoc.spec.v0.models.Service
+import com.bryzek.apidoc.spec.v0.models.{Service, UnionType}
 import lib._
 import builder.OriginalValidator
 import db._
@@ -60,10 +60,21 @@ class Versions @Inject() (
         }
 
         val service = resolveChildren(v.service).foldLeft(v.service) { case (service, (namespace, child)) =>
+          def prefixUnionType(unionType: UnionType): UnionType = {
+            if (child.models.exists(_.name == unionType.`type`)) {
+              unionType.copy(`type` = s"$namespace.models.${unionType.`type`}")
+            } else if (child.enums.exists(_.name == unionType.`type`)) {
+              unionType.copy(`type` = s"$namespace.enums.${unionType.`type`}")
+            } else if (child.unions.exists(_.name == unionType.`type`)) {
+              unionType.copy(`type` = s"$namespace.unions.${unionType.`type`}")
+            } else {
+              unionType
+            }
+          }
           service.copy(
             enums = service.enums ++ child.enums.map(e => e.copy(name = s"$namespace.enums.${e.name}")),
             models = service.models ++ child.models.map(m => m.copy(name = s"$namespace.models.${m.name}")),
-            unions = service.unions ++ child.unions.map(u => u.copy(name = s"$namespace.unions.${u.name}"))
+            unions = service.unions ++ child.unions.map(u => u.copy(name = s"$namespace.unions.${u.name}", types = u.types.map(prefixUnionType)))
           )
         }
 
