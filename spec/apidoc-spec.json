@@ -132,7 +132,8 @@
 	{ "name": "type", "type": "string", "description": "The name of a type (a primitive, model name, or enum name) that makes up this union type" },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
-	{ "name": "attributes", "type": "[attribute]", "default": "[]" }
+  { "name": "default", "type": "boolean", "required": false, "description": "Indicates if this union type should be used for JSON serialization/deserialization no discriminator is provided" },
+  { "name": "attributes", "type": "[attribute]", "default": "[]" }
       ]
     },
 
