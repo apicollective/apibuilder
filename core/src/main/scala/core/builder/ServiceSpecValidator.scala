@@ -294,8 +294,6 @@ case class ServiceSpecValidator(
   }
 
   private def validateHeaders(headers: Seq[Header], location: String): Seq[String] = {
-    val enumNames = service.enums.map(_.name).toSet
-
     val headersWithInvalidTypes = headers.flatMap { header =>
       typeResolver.parse(header.`type`) match {
         case None => Some(s"$location[${header.name}] type[${header.`type`}] is invalid")
