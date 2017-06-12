@@ -162,11 +162,30 @@ case class ApiJsonServiceValidator(
   }
 
   private def validateUnionTypes(union: InternalUnionForm): Seq[String] = {
-    val attributeErrors = union.types.filter(!_.datatype.isEmpty).flatMap { typ =>
+    val attributeErrors = union.types.filter(_.datatype.isDefined).flatMap { typ =>
       validateAttributes(s"Union[${union.name}] type[${typ.datatype.get}]", typ.attributes)
     }
 
-    union.types.flatMap(_.warnings) ++ attributeErrors
+    val defaultErrors = union.discriminator match {
+      case None => {
+        union.types.filter(_.default.isDefined).flatMap(_.datatype.map(_.name)).toList match {
+          case Nil => Nil
+          case types => {
+            val plural = if (types.length > 1) { "types" } else { "type "}
+            Seq(s"Union[${union.name}] $plural[${types.mkString(", ")}] cannot specify 'default' as the union does not define an explicit discriminator.")
+          }
+        }
+      }
+
+      case Some(_) => {
+        union.types.filter(_.default.getOrElse(false)).flatMap(_.datatype.map(_.name)).toList match {
+          case Nil => Nil
+          case _ :: Nil => Nil
+          case types => Seq(s"Union[${union.name}] More than one type marked as default: " + types.mkString(", "))
+        }
+      }
+    }
+    union.types.flatMap(_.warnings) ++ attributeErrors ++ defaultErrors
   }
 
   private def validateEnums(): Seq[String] = {
@@ -207,7 +226,7 @@ case class ApiJsonServiceValidator(
   private def validateHeaders(): Seq[String] = {
     val warnings = internalService.get.headers.flatMap(_.warnings)
 
-    val attributeErrors = internalService.get.headers.filter(!_.name.isEmpty).flatMap { header =>
+    val attributeErrors = internalService.get.headers.filter(_.name.isDefined).flatMap { header =>
       validateAttributes(s"Header[${header.name}]", header.attributes)
     }
 
@@ -222,13 +241,13 @@ case class ApiJsonServiceValidator(
     }
 
     val missingTypes = internalService.get.models.flatMap { model =>
-      model.fields.filter(!_.name.isEmpty).filter(_.datatype.isEmpty).map { f =>
+      model.fields.filter(_.name.isDefined).filter(_.datatype.isEmpty).map { f =>
         s"Model[${model.name}] field[${f.name.get}] must have a type"
       }
     }
 
     val attributeErrors = internalService.get.models.flatMap { model =>
-      model.fields.filter(!_.name.isEmpty).flatMap { f =>
+      model.fields.filter(_.name.isDefined).flatMap { f =>
         validateAttributes(s"Model[${model.name}] field[${f.name.get}]", f.attributes)
       }
     }
