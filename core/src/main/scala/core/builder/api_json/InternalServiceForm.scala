@@ -177,6 +177,7 @@ case class InternalUnionTypeForm(
   description: Option[String],
   deprecation: Option[InternalDeprecationForm],
   attributes: Seq[InternalAttributeForm],
+  default: Option[Boolean],
   warnings: Seq[String]
 )
 
@@ -343,11 +344,13 @@ object InternalUnionForm {
                datatype = typeName,
                description = JsonUtil.asOptString(json \ "description"),
                deprecation = InternalDeprecationForm.fromJsValue(json),
+               default = JsonUtil.asOptBoolean(json \ "default"),
                attributes = InternalAttributeForm.attributesFromJson((value \ "attributes").asOpt[JsArray]),
                warnings = JsonUtil.validate(
                  json,
                  strings = Seq("type"),
                  optionalStrings = Seq("description"),
+                 optionalBooleans = Seq("default"),
                  optionalObjects = Seq("deprecation"),
                  optionalArraysOfObjects = Seq("attributes"),
                  prefix = Some(s"Union[$name] type[${typeName.getOrElse("")}]")

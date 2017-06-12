@@ -198,7 +198,15 @@ case class ServiceSpecValidator(
         }
         case None => {
           union.discriminator match {
-            case None => Nil
+            case None => {
+              union.types.filter { t => t.default.isDefined }.toList match {
+                case Nil => None
+                case types => Seq(
+                  s"Union[${union.name}] types cannot specify default as the union type does not have a 'discriminator' specified: " + types.map(_.`type`).mkString(", ")
+                )
+              }
+            }
+
             case Some(discriminator) => {
               if (discriminator == ReservedDiscriminatorValue) {
                 Seq(s"Union[${union.name}] discriminator[$discriminator]: The keyword[$discriminator] is reserved for the wrapper objects for primitive values and cannot be used as a discriminator")
