@@ -336,7 +336,8 @@ case class ServiceBuilder(
           UnionType(
             `type` = it.datatype.get.label,
             description = it.description,
-            deprecation = it.deprecation.map(DeprecationBuilder(_))
+            deprecation = it.deprecation.map(DeprecationBuilder(_)),
+            default = it.default
           )
         },
         attributes = internal.attributes.map { AttributeBuilder(_) }

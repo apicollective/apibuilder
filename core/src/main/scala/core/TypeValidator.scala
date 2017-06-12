@@ -1,13 +1,15 @@
 package core
 
-import com.bryzek.apidoc.spec.v0.models.{Model, Service}
-import builder.JsonUtil
-import lib.{PrimitiveMetadata, Primitives, Kind}
+import com.bryzek.apidoc.spec.v0.models.Service
+import lib.{Kind, PrimitiveMetadata, Primitives}
 import java.util.UUID
+
+import builder.JsonUtil
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._
-import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
+import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}
 import com.fasterxml.jackson.databind.JsonMappingException
+
 import scala.util.{Failure, Success, Try}
 
 trait TypesProviderWithName {
@@ -18,9 +20,10 @@ trait TypesProviderWithName {
   def plural: String
 
   def fullName: String = {
-    name.startsWith(namespace) match {
-      case true => name
-      case false => Seq(namespace, packageName, name).mkString(".")
+    if (name.startsWith(namespace)) {
+      name
+    } else {
+      Seq(namespace, packageName, name).mkString(".")
     }
   }
 
