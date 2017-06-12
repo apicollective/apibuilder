@@ -72,10 +72,12 @@ case class ExampleJson(service: Service, selection: Selection) {
     )
 
     parentUnionType(model.name).fold(value) { union =>
+      // strip any namespace prefix from model name
+      val name = model.name.reverse.takeWhile(_ != '.').reverse
       union.discriminator.fold {
-        Json.obj(model.name -> value)
+        Json.obj(name -> value)
       }{ discriminator =>
-        Json.obj(discriminator -> JsString(model.name)) ++ value
+        Json.obj(discriminator -> JsString(name)) ++ value
       }
     }
   }
