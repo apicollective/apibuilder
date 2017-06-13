@@ -552,6 +552,12 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
         )
       )
 
+      ServiceDiff(base.copy(unions = Seq(union.copy(discriminator = Some("type_identifier")))), serviceWithUnion).differences should be(
+        Seq(
+          DiffBreaking("union user discriminator removed: type_identifier")
+        )
+      )
+
       val unionType2 = unionType.copy(`type` = "guest")
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType, unionType2))))).differences should be(
         Seq(
@@ -570,6 +576,34 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       ServiceDiff(serviceWithUnion, base.copy(unions = Seq(union.copy(types = Seq(unionType.copy(deprecation = Some(Deprecation()))))))).differences should be(
         Seq(
           DiffNonBreaking("union user type registered deprecated")
+        )
+      )
+    }
+
+    it("change union type default") {
+      val unionWithDiscriminator = union.copy(
+        discriminator = Some("discriminator")
+      )
+
+      val unionWithDiscriminatorAndDefault = union.copy(
+        discriminator = Some("discriminator"),
+        types = Seq(
+          unionType.copy(default = Some(true))
+        )
+      )
+
+      val serviceNoDefault = base.copy(unions = Seq(unionWithDiscriminator))
+      val serviceWithDefault = base.copy(unions = Seq(unionWithDiscriminatorAndDefault))
+
+      ServiceDiff(serviceNoDefault, serviceWithDefault).differences should be(
+        Seq(
+          DiffNonBreaking("union user default type added: registered")
+        )
+      )
+
+      ServiceDiff(serviceWithDefault, serviceNoDefault).differences should be(
+        Seq(
+          DiffBreaking("union user default type removed: registered")
         )
       )
     }
@@ -733,10 +767,8 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))),
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1DescriptionUpdated))))
       ).differences should be(
-        (
-          Seq(
-            DiffNonBreaking("model user attribute 'attribute1' description changed from Description 1 to Description updated")
-          )
+        Seq(
+          DiffNonBreaking("model user attribute 'attribute1' description changed from Description 1 to Description updated")
         )
       )
 
@@ -744,10 +776,8 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1)))),
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1DescriptionRemoved))))
       ).differences should be(
-        (
-          Seq(
-            DiffNonBreaking("model user attribute 'attribute1' description removed: Description 1")
-          )
+        Seq(
+          DiffNonBreaking("model user attribute 'attribute1' description removed: Description 1")
         )
       )
 
@@ -755,10 +785,8 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1DescriptionRemoved)))),
         base.copy(models = Seq(model.copy(attributes = Seq(attribute1))))
       ).differences should be(
-        (
-          Seq(
-            DiffNonBreaking("model user attribute 'attribute1' description added: Description 1")
-          )
+        Seq(
+          DiffNonBreaking("model user attribute 'attribute1' description added: Description 1")
         )
       )
 
