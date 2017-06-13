@@ -193,7 +193,23 @@ case class ServiceDiff(
     Helpers.diffOptionalStringNonBreaking(s"$prefix description", a.description, b.description) ++
     Helpers.diffAttributes(prefix, a.attributes, b.attributes) ++
     Helpers.diffDeprecation(prefix, a.deprecation, b.deprecation) ++
+    diffUnionTypeDefault(a, b) ++
     diffUnionTypes(a.name, a.types, b.types)
+  }
+
+  private[this] def diffUnionTypeDefault(a: Union, b: Union): Seq[Diff] = {
+    val prefix = s"union ${a.name} default type"
+
+    val defaultTypeA: Option[String] = a.types.find(_.default.getOrElse(false)).map(_.`type`)
+    val defaultTypeB: Option[String] = b.types.find(_.default.getOrElse(false)).map(_.`type`)
+
+    (defaultTypeA, defaultTypeB) match {
+      case (None, None) => Nil
+      case (None, Some(typeNameB)) => Seq(DiffNonBreaking(Helpers.added(prefix, typeNameB)))
+      case (Some(typeNameA), Some(typeNameB)) if typeNameA == typeNameB => Nil
+      case (Some(typeNameA), Some(typeNameB)) => Seq(DiffBreaking(Helpers.changed(prefix, typeNameA, typeNameB)))
+      case (Some(typeNameA), None) => Seq(DiffBreaking(Helpers.removed(prefix, typeNameA)))
+    }
   }
 
   private[this] def diffUnionTypes(unionName: String, a: Seq[UnionType], b: Seq[UnionType]): Seq[Diff] = {
