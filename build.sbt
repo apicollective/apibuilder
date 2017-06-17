@@ -81,7 +81,7 @@ lazy val api = project
       jdbc,
       filters,
       "com.typesafe.play" %% "anorm"         % "2.5.0",
-      "org.postgresql"    %  "postgresql"    % "9.4.1212",
+      "org.postgresql"    %  "postgresql"    % "42.1.1",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
       "com.sendgrid"      %  "sendgrid-java" % "3.2.0",
       specs2              %  Test,
