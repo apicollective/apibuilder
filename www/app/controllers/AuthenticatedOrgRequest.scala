@@ -62,16 +62,17 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
 
     val orgKeyOption = request.path.split("/").drop(1).headOption
 
-    request.session.get("user_guid").map { userGuid =>
+    request.session.get("session_id").map { sessionId =>
 
-      lib.ApiClient.awaitCallWith404(Authenticated.api().Users.getByGuid(UUID.fromString(userGuid))) match {
+      lib.ApiClient.awaitCallWith404(Authenticated.api().authentications.getSessionById(sessionId)) match {
 
         case None => {
           // have a user guid, but user does not exist
           Future.successful(Redirect(routes.LoginController.index(return_url = returnUrl(orgKeyOption))).withNewSession)
         }
 
-        case Some(u: User) => {
+        case Some(auth) => {
+          val u = auth.user
           val orgKey = orgKeyOption.getOrElse {
             sys.error(s"No org key for request path[${request.path}]")
           }

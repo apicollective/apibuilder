@@ -107,8 +107,8 @@ object AnonymousRequest {
     ApiClient.awaitCallWith404( Authenticated.api(user).Organizations.getByKey(key) )
   }
 
-  def resources(requestPath: String, userGuid: Option[String]): RequestResources = {
-    val user = userGuid.flatMap { ApiClient.getUser(_) }
+  def resources(requestPath: String, sessionId: Option[String]): RequestResources = {
+    val user = sessionId.flatMap { ApiClient.getUserBySessionId(_) }
     val org = requestPath.split("/").drop(1).headOption.flatMap { getOrganization(user, _) }
 
     val memberships = (user, org) match {
@@ -132,7 +132,7 @@ object Anonymous extends ActionBuilder[AnonymousRequest] {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def invokeBlock[A](request: Request[A], block: (AnonymousRequest[A]) => Future[Result]) = {
-    val resources = AnonymousRequest.resources(request.path, request.session.get("user_guid"))
+    val resources = AnonymousRequest.resources(request.path, request.session.get("session_id"))
     block(new AnonymousRequest(resources, request))
   }
 }
@@ -142,7 +142,7 @@ object AnonymousOrg extends ActionBuilder[AnonymousOrgRequest] {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def invokeBlock[A](request: Request[A], block: (AnonymousOrgRequest[A]) => Future[Result]) = {
-    val resources = AnonymousRequest.resources(request.path, request.session.get("user_guid"))
+    val resources = AnonymousRequest.resources(request.path, request.session.get("session_id"))
     if (resources.org.isEmpty) {
       Future.successful(Redirect("/").flashing("warning" -> "Org not found or access denied"))
     } else {
