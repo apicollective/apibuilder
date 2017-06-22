@@ -1,10 +1,13 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{User, UserForm, UserUpdateForm}
+import com.bryzek.apidoc.api.v0.models.{Authentication, Session, User, UserForm, UserUpdateForm}
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
+import util.SessionIdGenerator
 import db.{UserPasswordsDao, UsersDao}
+import db.generated.SessionsDao
 import javax.inject.{Inject, Singleton}
+import org.joda.time.DateTime
 
 import play.api.mvc._
 import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
@@ -16,12 +19,15 @@ import scala.concurrent.Future
 
 @Singleton
 class Users @Inject() (
+  sessionsDao: SessionsDao,
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao,
   ws: WSClient
 ) extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  private[this] val DefaultSessionExpirationHours = 24 * 30
 
   private[this] case class UserAuthenticationForm(email: String, password: String)
   private[this] object UserAuthenticationForm {
@@ -126,7 +132,7 @@ class Users @Inject() (
 
           case Some(u: User) => {
             if (userPasswordsDao.isValid(u.guid, form.password)) {
-              Ok(Json.toJson(u))
+              Ok(Json.toJson(createAuthentication(u)))
             } else {
               Conflict(Json.toJson(Validation.userAuthorizationFailed()))
             }
@@ -147,12 +153,12 @@ class Users @Inject() (
         for {
           userResponse <- ws.url("https://api.github.com/user").
           withHeaders(
-            "Authorization" -> s"Bearer $token"
+            "Authentication" -> s"Bearer $token"
           ).get()
 
           emailsResponse <- ws.url("https://api.github.com/user/emails").
           withHeaders(
-            "Authorization" -> s"Bearer $token"
+            "Authentication" -> s"Bearer $token"
           ).get()
         } yield {
           val obj = Json.parse(userResponse.body).as[JsObject]
@@ -176,10 +182,38 @@ class Users @Inject() (
               gravatarId = (obj \ "gravatar_id").asOpt[String]
             )
           }
-          Ok(Json.toJson(user))
+          Ok(Json.toJson(createAuthentication(user)))
         }
       }
     }
   }
 
+  private[this] def createAuthentication(u: User): Authentication = {
+    val id = SessionIdGenerator.generate()
+
+    sessionsDao.insert(
+      usersDao.AdminUser.guid,
+      _root_.db.generated.SessionForm(
+        id = id,
+        userGuid = u.guid,
+        expiresAt = DateTime.now().plusHours(DefaultSessionExpirationHours)
+      )
+    )
+
+    val dbSession = sessionsDao.findById(id).getOrElse {
+      sys.error("Failed to create session")
+    }
+
+    Authentication(
+      session = toSession(dbSession),
+      user = u
+    )
+  }
+
+  private[this] def toSession(db: _root_.db.generated.Session): Session = {
+    Session(
+      id = db.id,
+      expiresAt = db.expiresAt
+    )
+  }
 }

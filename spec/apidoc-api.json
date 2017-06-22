@@ -136,7 +136,7 @@
     "session": {
       "description": "Represents a user sessions (e.g. user logged into site)",
       "fields": [
-        { "name": "guid", "type": "string", "description": "Cryptographically secure session id" },
+        { "name": "id", "type": "string", "description": "Cryptographically secure session id" },
         { "name": "expires_at", "type": "date-time-iso8601" }
       ]
     },
@@ -557,7 +557,7 @@
 	    { "name": "password", "type": "string" }
 	  ],
           "responses": {
-            "200": { "type": "authorization" },
+            "200": { "type": "authentication" },
             "409": { "type": "[error]" }
 	  }
 	},
@@ -570,7 +570,7 @@
 	    { "name": "token", "type": "string", "description": "The GitHub assigned oauth token" }
 	  ],
           "responses": {
-            "200": { "type": "authorization" },
+            "200": { "type": "authentication" },
             "409": { "type": "[error]" }
 	  }
 	},
