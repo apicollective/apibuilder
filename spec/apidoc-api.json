@@ -133,6 +133,22 @@
       ]
     },
 
+    "session": {
+      "description": "Represents a user sessions (e.g. user logged into site)",
+      "fields": [
+        { "name": "guid", "type": "string", "description": "Cryptographically secure session id" },
+        { "name": "expires_at", "type": "date-time-iso8601" }
+      ]
+    },
+
+    "authentication": {
+      "description": "Represents the result of a successful authorization",
+      "fields": [
+        { "name": "user", "type": "user" },
+        { "name": "session", "type": "session" }
+      ]
+    },
+
     "user_summary": {
       "description": "Summary of a user sufficient for display",
       "fields": [
@@ -541,7 +557,7 @@
 	    { "name": "password", "type": "string" }
 	  ],
           "responses": {
-            "200": { "type": "user" },
+            "200": { "type": "authorization" },
             "409": { "type": "[error]" }
 	  }
 	},
@@ -554,7 +570,7 @@
 	    { "name": "token", "type": "string", "description": "The GitHub assigned oauth token" }
 	  ],
           "responses": {
-            "200": { "type": "user" },
+            "200": { "type": "authorization" },
             "409": { "type": "[error]" }
 	  }
 	},
