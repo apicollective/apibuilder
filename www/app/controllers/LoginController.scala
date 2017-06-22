@@ -59,8 +59,8 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
           }
         }
 
-        Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { user =>
-          Redirect(returnUrl).withSession { "session_id" -> auth.session.id }
+        Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { auth =>
+          Redirect(url).withSession { "session_id" -> auth.session.id }
         }.recover {
           case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
             Ok(views.html.login.legacy(tpl, LoginController.Tab.Login, form, LoginController.registerForm, Some(r.errors.map(_.message).mkString(", "))))
