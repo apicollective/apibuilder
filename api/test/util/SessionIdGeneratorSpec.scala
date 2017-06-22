@@ -1,11 +1,11 @@
-package utils
+package util
 
 import org.scalatest.{FunSpec, Matchers}
 
 class SessionIdGeneratorSpec extends FunSpec with Matchers {
 
   it("starts with prefix") {
-    SessionIdGenerator.generate().startsWith("F51") should be (true)
+    SessionIdGenerator.generate().startsWith("A51") should be (true)
   }
 
   it("64 characters long") {
