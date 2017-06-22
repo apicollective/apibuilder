@@ -5,6 +5,7 @@ import org.apache.commons.codec.binary.Base64
 object BasicAuthorization {
 
   trait Authorization
+  case class Session(id: String) extends Authorization
   case class Token(token: String) extends Authorization
   case class User(user: String, password: String) extends Authorization
 
@@ -27,8 +28,11 @@ object BasicAuthorization {
         Some(User(userPassword.head, userPassword.last))
 
       } else {
-          None
+        None
       }
+
+    } else if (parts.length == 2 && parts.head.toLowerCase == "session") {
+      Some(Session(parts.last))
 
     } else {
       None
