@@ -36,7 +36,7 @@ class Emails @Inject() (
   subscriptionsDao: SubscriptionsDao
 ) {
 
-  private lazy val sendErrorsTo = Config.requiredString("apidoc.sendErrorsTo").split("\\s+")
+  private lazy val sendErrorsTo = Config.requiredString("apibuilder.sendErrorsTo").split("\\s+")
 
   def deliver(
     context: Emails.Context,
