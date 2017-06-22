@@ -145,11 +145,11 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
   licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/mit-license.html")),
-  homepage := Some(url("https://github.com/mbryzek/apidoc")),
+  homepage := Some(url("https://github.com/apicollective/apibuilder")),
   pomExtra := (
   <scm>
-    <url>https://github.com/mbryzek/apidoc.git</url>
-    <connection>scm:git:git@github.com:mbryzek/apidoc.git</connection>
+    <url>https://github.com/apicollective/apibuilder.git</url>
+    <connection>scm:git:git@github.com:apicollective/apibuilder.git</connection>
   </scm>
   <developers>
     <developer>
