@@ -60,9 +60,6 @@ private[controllers] object RequestHelper {
       case _: BasicAuthorization.User => None
     }
 
-    println(s"tokenUser[$tokenUser]")
-    println(s"user: " + authHeaders.userGuid.flatMap(usersDao.findByGuid(_)))
-
     authHeaders.userGuid.flatMap(usersDao.findByGuid(_)) match {
       case None => {
         /**
@@ -71,7 +68,7 @@ private[controllers] object RequestHelper {
           * accessing the API directly and the user is the same as the
           * token user (if set).
           */
-        val tUser = tokenUser match {
+        tokenUser match {
           case None => UserAuth(None, None)
           case Some(u) => {
             if (u.email == UsersDao.AdminUserEmail) {
@@ -81,8 +78,6 @@ private[controllers] object RequestHelper {
             }
           }
         }
-        println(s"tUser[$tUser]")
-        tUser
       }
       case Some(userFromHeader) => {
         UserAuth(tokenUser, Some(userFromHeader))

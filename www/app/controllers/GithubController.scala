@@ -55,7 +55,6 @@ class GithubController @javax.inject.Inject() (
       }.headOption.getOrElse {
         sys.error(s"GitHub Oauth response returned an empty list for access_token: ${result.body}")
       }
-      println(s"accessToken[$accessToken] for form: $form")
       Right(accessToken)
 
     }.recover {
