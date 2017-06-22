@@ -71,8 +71,8 @@ object MainTemplate {
     sys.error("git.version is required")
   }
 
-  val supportEmail = current.configuration.getString("apidoc.supportEmail").getOrElse {
-    sys.error("apidoc.supportEmail is required")
+  val supportEmail = current.configuration.getString("apibuilder.supportEmail").getOrElse {
+    sys.error("apibuilder.supportEmail is required")
   }
 
 }

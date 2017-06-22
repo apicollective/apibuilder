@@ -152,20 +152,19 @@ class Users @Inject() (
       }
       case s: JsSuccess[GithubAuthenticationForm] => {
         val token = s.get.token
+        val headers = ("Authentication" -> s"Bearer $token")
+        println(s"Token: $token")
 
         for {
-          userResponse <- ws.url("https://api.github.com/user").
-          withHeaders(
-            "Authentication" -> s"Bearer $token"
-          ).get()
+          userResponse <- ws.url("https://api.github.com/user").withHeaders(headers).get()
 
-          emailsResponse <- ws.url("https://api.github.com/user/emails").
-          withHeaders(
-            "Authentication" -> s"Bearer $token"
-          ).get()
+          emailsResponse <- ws.url("https://api.github.com/user/emails").withHeaders(headers).get()
         } yield {
           val obj = Json.parse(userResponse.body).as[JsObject]
           play.api.Logger.info(s"GITHUB USER: " + Json.prettyPrint(obj))
+          val login = (obj \ "login").asOpt[String].getOrElse {
+            sys.error(s"Failed to get github user login. Response: $obj")
+          }
 
           val emails = Json.parse(emailsResponse.body).as[JsArray]
           play.api.Logger.info(s"GITHUB USER EMAILS: " + Json.prettyPrint(emails))
@@ -178,13 +177,14 @@ class Users @Inject() (
 
           val user = usersDao.findByEmail(email).getOrElse {
             usersDao.createForGithub(
-              login = (obj \ "login").as[String],
+              login = login,
               email = email,
               name = (obj \ "name").asOpt[String],
               avatarUrl = (obj \ "avatar_url").asOpt[String],
               gravatarId = (obj \ "gravatar_id").asOpt[String]
             )
           }
+
           Ok(Json.toJson(createAuthentication(user)))
         }
       }
