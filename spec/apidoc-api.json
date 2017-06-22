@@ -388,13 +388,6 @@
       ]
     },
 
-    "password_reset_success": {
-      "description": "On a successful password reset, return some metadata about the user modified.",
-      "fields": [
-	{ "name": "user_guid", "type": "uuid" }
-      ]
-    },
-
     "error": {
       "fields": [
         { "name": "code", "type": "string", "description": "Machine readable code for this specific error message" },
@@ -1307,7 +1300,7 @@
           "description": "Change the password for this token. If the token is invalid, has been used, or otherwise no longer can be applied, errors will be returned as 409s. A 204 represents that the user has successfully changed their password.",
 	  "body": { "type": "password_reset" },
           "responses": {
-            "200": { "type": "password_reset_success" },
+            "200": { "type": "authentication" },
             "409": { "type": "[error]" }
           }
         }

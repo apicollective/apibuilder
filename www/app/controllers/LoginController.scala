@@ -116,7 +116,7 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
           passwordReset = PasswordReset(token = token, password = validForm.password)
         ).map { result =>
           Redirect("/").
-            withSession { "user_guid" -> result.userGuid.toString }.
+            withSession { "session_id" -> result.session.id }.
             flashing("success" -> "Your password has been reset and you are now logged in")
         
         }.recover {

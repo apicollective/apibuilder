@@ -337,13 +337,6 @@ package com.bryzek.apidoc.api.v0.models {
   )
 
   /**
-   * On a successful password reset, return some metadata about the user modified.
-   */
-  case class PasswordResetSuccess(
-    userGuid: _root_.java.util.UUID
-  )
-
-  /**
    * Represents a user sessions (e.g. user logged into site)
    */
   case class Session(
@@ -1488,24 +1481,6 @@ package com.bryzek.apidoc.api.v0.models {
       new play.api.libs.json.Writes[com.bryzek.apidoc.api.v0.models.PasswordResetRequest] {
         def writes(obj: com.bryzek.apidoc.api.v0.models.PasswordResetRequest) = {
           jsObjectPasswordResetRequest(obj)
-        }
-      }
-    }
-
-    implicit def jsonReadsApidocapiPasswordResetSuccess: play.api.libs.json.Reads[PasswordResetSuccess] = {
-      (__ \ "user_guid").read[_root_.java.util.UUID].map { x => new PasswordResetSuccess(userGuid = x) }
-    }
-
-    def jsObjectPasswordResetSuccess(obj: com.bryzek.apidoc.api.v0.models.PasswordResetSuccess): play.api.libs.json.JsObject = {
-      play.api.libs.json.Json.obj(
-        "user_guid" -> play.api.libs.json.JsString(obj.userGuid.toString)
-      )
-    }
-
-    implicit def jsonWritesApidocapiPasswordResetSuccess: play.api.libs.json.Writes[PasswordResetSuccess] = {
-      new play.api.libs.json.Writes[com.bryzek.apidoc.api.v0.models.PasswordResetSuccess] {
-        def writes(obj: com.bryzek.apidoc.api.v0.models.PasswordResetSuccess) = {
-          jsObjectPasswordResetSuccess(obj)
         }
       }
     }
@@ -2743,11 +2718,11 @@ package com.bryzek.apidoc.api.v0 {
       override def post(
         passwordReset: com.bryzek.apidoc.api.v0.models.PasswordReset,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.PasswordResetSuccess] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Authentication] = {
         val payload = play.api.libs.json.Json.toJson(passwordReset)
 
         _executeRequest("POST", s"/password_resets", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.PasswordResetSuccess", r, _.validate[com.bryzek.apidoc.api.v0.models.PasswordResetSuccess])
+          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Authentication", r, _.validate[com.bryzek.apidoc.api.v0.models.Authentication])
           case r if r.status == 409 => throw new com.bryzek.apidoc.api.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
         }
@@ -3685,7 +3660,7 @@ package com.bryzek.apidoc.api.v0 {
     def post(
       passwordReset: com.bryzek.apidoc.api.v0.models.PasswordReset,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.PasswordResetSuccess]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Authentication]
   }
 
   trait Subscriptions {
