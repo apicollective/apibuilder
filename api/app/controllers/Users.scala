@@ -114,14 +114,12 @@ class Users @Inject() (
   }
 
   def postAuthenticate() = AnonymousRequest(parse.json) { request =>
-    println(s"postAuthenticate")
     request.body.validate[UserAuthenticationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[UserAuthenticationForm] => {
         val form = s.get
-        println(s"postAuthenticate: $form")
 
         usersDao.findByEmail(form.email) match {
 
@@ -148,8 +146,7 @@ class Users @Inject() (
       }
       case s: JsSuccess[GithubAuthenticationForm] => {
         val token = s.get.token
-        val headers = ("Authentication" -> s"Bearer $token")
-        println(s"Token: $token")
+        val headers = ("Authorization" -> s"Bearer $token")
 
         for {
           userResponse <- ws.url("https://api.github.com/user").withHeaders(headers).get()
