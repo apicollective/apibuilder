@@ -1,9 +1,10 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{PasswordReset, PasswordResetSuccess}
+import com.bryzek.apidoc.api.v0.models.{Authentication, PasswordReset}
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
 import db.{PasswordResetRequestsDao, UserPasswordsDao, UsersDao}
+import util.SessionHelper
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._
@@ -11,6 +12,7 @@ import play.api.libs.json._
 @Singleton
 class PasswordResets @Inject() (
   passwordResetRequestsDao: PasswordResetRequestsDao,
+  sessionHelper: SessionHelper,
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao
 ) extends Controller {
@@ -40,7 +42,7 @@ class PasswordResets @Inject() (
                   userPasswordsDao.validate(form.password) match {
                     case Nil => {
                       passwordResetRequestsDao.resetPassword(request.user, pr, form.password)
-                      Ok(Json.toJson(PasswordResetSuccess(userGuid = user.guid)))
+                      Ok(Json.toJson(sessionHelper.createAuthentication(user)))
                     }
                     case errors => {
                       Conflict(Json.toJson(errors))

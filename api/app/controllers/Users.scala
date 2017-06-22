@@ -3,11 +3,9 @@ package controllers
 import com.bryzek.apidoc.api.v0.models.{Authentication, Session, User, UserForm, UserUpdateForm}
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
-import util.{Conversions, SessionIdGenerator}
+import util.{Conversions, SessionIdGenerator, SessionHelper}
 import db.{UserPasswordsDao, UsersDao}
-import db.generated.SessionsDao
 import javax.inject.{Inject, Singleton}
-import org.joda.time.DateTime
 
 import play.api.mvc._
 import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
@@ -19,15 +17,13 @@ import scala.concurrent.Future
 
 @Singleton
 class Users @Inject() (
-  sessionsDao: SessionsDao,
+  sessionHelper: SessionHelper,
   usersDao: UsersDao,
   userPasswordsDao: UserPasswordsDao,
   ws: WSClient
 ) extends Controller {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-
-  private[this] val DefaultSessionExpirationHours = 24 * 30
 
   private[this] case class UserAuthenticationForm(email: String, password: String)
   private[this] object UserAuthenticationForm {
@@ -133,9 +129,9 @@ class Users @Inject() (
             Conflict(Json.toJson(Validation.userAuthorizationFailed()))
           }
 
-          case Some(u: User) => {
-            if (userPasswordsDao.isValid(u.guid, form.password)) {
-              Ok(Json.toJson(createAuthentication(u)))
+          case Some(user) => {
+            if (userPasswordsDao.isValid(user.guid, form.password)) {
+              Ok(Json.toJson(sessionHelper.createAuthentication(user)))
             } else {
               Conflict(Json.toJson(Validation.userAuthorizationFailed()))
             }
@@ -185,28 +181,10 @@ class Users @Inject() (
             )
           }
 
-          Ok(Json.toJson(createAuthentication(user)))
+          Ok(Json.toJson(sessionHelper.createAuthentication(user)))
         }
       }
     }
   }
 
-  private[this] def createAuthentication(u: User): Authentication = {
-    val id = SessionIdGenerator.generate()
-
-    sessionsDao.insert(
-      usersDao.AdminUser.guid,
-      _root_.db.generated.SessionForm(
-        id = id,
-        userGuid = u.guid,
-        expiresAt = DateTime.now().plusHours(DefaultSessionExpirationHours)
-      )
-    )
-
-    val dbSession = sessionsDao.findById(id).getOrElse {
-      sys.error("Failed to create session")
-    }
-
-    Conversions.toAuthentication(dbSession, u)
-  }
 }
