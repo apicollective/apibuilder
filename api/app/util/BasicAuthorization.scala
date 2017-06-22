@@ -4,7 +4,7 @@ import org.apache.commons.codec.binary.Base64
 
 object BasicAuthorization {
 
-  trait Authorization
+  sealed trait Authorization
   case class Session(id: String) extends Authorization
   case class Token(token: String) extends Authorization
   case class User(user: String, password: String) extends Authorization

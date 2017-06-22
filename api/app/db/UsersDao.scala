@@ -233,6 +233,10 @@ class UsersDao @Inject() (
     findAll(token = Some(token)).headOption
   }
 
+  def findBySessionId(sessionId: String): Option[User] = {
+    findAll(sessionId = Some(sessionId)).headOption
+  }
+
   def findByEmail(email: String): Option[User] = {
     findAll(email = Some(email)).headOption
   }
@@ -249,10 +253,14 @@ class UsersDao @Inject() (
     guid: Option[String] = None,
     email: Option[String] = None,
     nickname: Option[String] = None,
+    sessionId: Option[String] = None,
     token: Option[String] = None,
     isDeleted: Option[Boolean] = None
   ): Seq[User] = {
-    require(!guid.isEmpty || !email.isEmpty || !token.isEmpty || !nickname.isEmpty, "Must have either a guid, email, token, or nickname")
+    require(
+      !guid.isEmpty || !email.isEmpty || !token.isEmpty || !sessionId.isEmpty || !nickname.isEmpty,
+      "Must have either a guid, email, token, sessionId, or nickname"
+    )
 
     val sql = Seq(
       Some(BaseQuery.trim),
@@ -267,6 +275,7 @@ class UsersDao @Inject() (
       guid.map { v => "and users.guid = {guid}::uuid" },
       email.map { v => "and users.email = trim(lower({email}))" },
       nickname.map { v => "and users.nickname = trim(lower({nickname}))" },
+      sessionId.map { v => "and users.guid = (select user_guid from sessions where id = {session_id})"},
       token.map { v => "and users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)"},
       isDeleted.map(Filters.isDeleted("users", _)),
       Some("limit 1")
@@ -276,7 +285,8 @@ class UsersDao @Inject() (
       guid.map('guid -> _),
       email.map('email -> _),
       nickname.map('nickname -> _),
-      token.map('token ->_)
+      sessionId.map('session_id -> _),
+      token.map('token -> _)
     ).flatten
 
     DB.withConnection { implicit c =>

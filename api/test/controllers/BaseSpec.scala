@@ -34,6 +34,13 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
     }
   }
 
+  def newSessionClient(sessionId: String) = {
+    new com.bryzek.apidoc.api.v0.Client(
+      s"http://localhost:$port",
+      defaultHeaders = Seq("Authorization" -> s"Session $sessionId")
+    )
+  }
+
   def createRandomName(suffix: String): String = {
     s"z-test-$suffix-" + UUID.randomUUID.toString
   }
@@ -68,8 +75,9 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
     description = description
   )
   
-  def createUser(): User = {
-    val form = createUserForm()
+  def createUser(
+    form: UserForm = createUserForm()
+  ): User = {
     await(client.users.post(form))
   }
 

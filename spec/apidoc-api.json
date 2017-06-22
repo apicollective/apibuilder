@@ -523,6 +523,19 @@
       ]
     },
 
+    "authentication": {
+      "operations": [
+        {
+          "method": "GET",
+          "path": "/session/:id",
+          "responses": {
+            "200": { "type": "authentication" },
+            "404": { "type": "unit" }
+          }
+        }
+      ]
+    },
+    
     "user": {
       "operations": [
         {

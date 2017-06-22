@@ -41,6 +41,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
       }
     }
 
+    request.session.get("session_id").map { sessionId =>
     request.session.get("user_guid").map { userGuid =>
       ApiClient.getUser(userGuid) match {
 

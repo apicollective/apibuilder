@@ -3,7 +3,7 @@ package controllers
 import com.bryzek.apidoc.api.v0.models.{Authentication, Session, User, UserForm, UserUpdateForm}
 import com.bryzek.apidoc.api.v0.models.json._
 import lib.Validation
-import util.SessionIdGenerator
+import util.{Conversions, SessionIdGenerator}
 import db.{UserPasswordsDao, UsersDao}
 import db.generated.SessionsDao
 import javax.inject.{Inject, Singleton}
@@ -41,9 +41,11 @@ class Users @Inject() (
 
   def get(guid: Option[UUID], email: Option[String], token: Option[String]) = AnonymousRequest { request =>
     require(request.tokenUser.isDefined, "Missing API Token")
-    val users = usersDao.findAll(guid = guid.map(_.toString),
-                                email = email,
-                                token = token)
+    val users = usersDao.findAll(
+      guid = guid.map(_.toString),
+      email = email,
+      token = token
+    )
     Ok(Json.toJson(users))
   }
 
@@ -116,14 +118,15 @@ class Users @Inject() (
   }
 
   def postAuthenticate() = AnonymousRequest(parse.json) { request =>
-    require(request.tokenUser.isDefined, "Missing API Token")
-
+    println(s"postAuthenticate")
     request.body.validate[UserAuthenticationForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[UserAuthenticationForm] => {
         val form = s.get
+        println(s"postAuthenticate: $form")
+
         usersDao.findByEmail(form.email) match {
 
           case None => {
@@ -204,16 +207,6 @@ class Users @Inject() (
       sys.error("Failed to create session")
     }
 
-    Authentication(
-      session = toSession(dbSession),
-      user = u
-    )
-  }
-
-  private[this] def toSession(db: _root_.db.generated.Session): Session = {
-    Session(
-      id = db.id,
-      expiresAt = db.expiresAt
-    )
+    Conversions.toAuthentication(dbSession, u)
   }
 }
