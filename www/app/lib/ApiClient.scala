@@ -32,16 +32,13 @@ object ApiClient {
   }
 
   /**
-    * Blocking call to fetch a user. If the provided guid is not a
-    * valid UUID, returns none.
+    * Blocking call to fetch a user. If the provided session id is not
+    * valid, returns none.
     */
-  def getUser(
-    guid: String
+  def getUserBySessionId(
+    sessionId: String
   )(implicit ec: ExecutionContext): Option[User] = {
-    Try(UUID.fromString(guid)) match {
-      case Success(userGuid) => awaitCallWith404( unauthenticatedClient.users.getByGuid(userGuid) )
-      case Failure(ex) => None
-    }
+    awaitCallWith404( unauthenticatedClient.authentications.getSessionById(sessionId) ).map(_.user)
   }
 
 }

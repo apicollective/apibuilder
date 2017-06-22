@@ -42,11 +42,9 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
     }
 
     request.session.get("session_id").map { sessionId =>
-    request.session.get("user_guid").map { userGuid =>
-      ApiClient.getUser(userGuid) match {
+      ApiClient.getUserBySessionId(sessionId) match {
 
         case None => {
-          // have a user guid, but user does not exist
           Future.successful(Redirect(routes.LoginController.index(return_url = returnUrl)).withNewSession)
         }
 
