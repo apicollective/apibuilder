@@ -1,10 +1,9 @@
 package util
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 import com.bryzek.apidoc.api.v0.models.{Authentication, User}
 import org.joda.time.DateTime
 
-@Singleton
 class SessionHelper @Inject() (
   sessionsDao: db.generated.SessionsDao,
   usersDao: db.UsersDao

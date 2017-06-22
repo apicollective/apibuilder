@@ -17,12 +17,12 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
 
   lazy val TestUser = usersDao.create(createUserForm())
 
-  lazy val apiToken = {
+  private[this] lazy val apiToken = {
     val token = tokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
     tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
 
-  lazy val apiAuth = com.bryzek.apidoc.api.v0.Authorization.Basic(apiToken)
+  private[this] lazy val apiAuth = com.bryzek.apidoc.api.v0.Authorization.Basic(apiToken)
 
   lazy val client = newClient(TestUser)
 
