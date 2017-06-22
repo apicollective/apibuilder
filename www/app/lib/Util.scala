@@ -23,8 +23,8 @@ case class ExampleService(
 
 object Util {
 
-  private[this] val ApiHost = Config.requiredString("apidoc.api.host")
-  val Host = Config.requiredString("apidoc.www.host")
+  private[this] val ApiHost = Config.requiredString("apibuilder.api.host")
+  val Host = Config.requiredString("apibuilder.www.host")
 
   val SubscriptionsText = "Subscriptions"
   val SubscriptionsVersionsCreateText = "For applications that I watch, email me when a version is created."

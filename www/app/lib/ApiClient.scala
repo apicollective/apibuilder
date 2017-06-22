@@ -45,7 +45,7 @@ object ApiClient {
 
 case class ApiClient(user: Option[User]) {
 
-  private[this] val baseUrl = Config.requiredString("apidoc.api.host")
+  private[this] val baseUrl = Config.requiredString("apibuilder.api.host")
   private[this] val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
   private[this] val defaultHeaders = Seq(
     user.map { u =>

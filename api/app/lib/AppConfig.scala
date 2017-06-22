@@ -2,6 +2,6 @@ package lib
 
 object AppConfig {
 
-  val apidocWwwHost = Config.requiredString("apidoc.www.host")
+  val apidocWwwHost = Config.requiredString("apibuilder.www.host")
 
 }
