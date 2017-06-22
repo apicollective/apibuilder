@@ -73,6 +73,7 @@ lazy val api = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
+    testOptions += Tests.Argument("-oF"),
     routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",

@@ -28,7 +28,7 @@ class GithubController @javax.inject.Inject() (
       }
       case Right(token) => {
         request.api.users.postAuthenticateGithub(token).map { auth =>
-          Redirect(returnUrl).withSession { "session_id" -> auth.id }
+          Redirect(returnUrl).withSession { "session_id" -> auth.session.id }
         }.recover {
           case ex: Throwable => {
             Logger.error(s"Api failed to authenticate user with valid github token: ${ex.getMessage}", ex)

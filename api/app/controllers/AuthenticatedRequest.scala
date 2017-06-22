@@ -54,12 +54,14 @@ private[controllers] object RequestHelper {
   val AuthorizationHeader = "Authorization"
 
   def userAuth(authHeaders: AuthHeaders): UserAuth = {
-    val tokenUser: Option[User] = BasicAuthorization.get(authHeaders.authorization) match {
-      case Some(auth: BasicAuthorization.Token) => {
-        usersDao.findByToken(auth.token)
-      }
-      case _ => None
+    val tokenUser: Option[User] = BasicAuthorization.get(authHeaders.authorization).flatMap {
+      case BasicAuthorization.Token(t) => usersDao.findByToken(t)
+      case BasicAuthorization.Session(id) => usersDao.findBySessionId(id)
+      case _: BasicAuthorization.User => None
     }
+
+    println(s"tokenUser[$tokenUser]")
+    println(s"user: " + authHeaders.userGuid.flatMap(usersDao.findByGuid(_)))
 
     authHeaders.userGuid.flatMap(usersDao.findByGuid(_)) match {
       case None => {
@@ -69,7 +71,7 @@ private[controllers] object RequestHelper {
           * accessing the API directly and the user is the same as the
           * token user (if set).
           */
-        tokenUser match {
+        val tUser = tokenUser match {
           case None => UserAuth(None, None)
           case Some(u) => {
             if (u.email == UsersDao.AdminUserEmail) {
@@ -79,6 +81,8 @@ private[controllers] object RequestHelper {
             }
           }
         }
+        println(s"tUser[$tUser]")
+        tUser
       }
       case Some(userFromHeader) => {
         UserAuth(tokenUser, Some(userFromHeader))
@@ -148,7 +152,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
     userAuth.user match {
       case None => {
-        Future.successful(Unauthorized(s"Failed basic authorization or missing ${RequestHelper.UserGuidHeader} header"))
+        Future.successful(Unauthorized(s"Failed authorization or missing ${RequestHelper.UserGuidHeader} header"))
       }
 
       case Some(user) => {

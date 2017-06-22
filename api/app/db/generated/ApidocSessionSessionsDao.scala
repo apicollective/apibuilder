@@ -40,33 +40,29 @@ class SessionsDao @Inject() (
       |        sessions.created_at,
       |        sessions.created_by_guid,
       |        sessions.updated_at,
-      |        sessions.updated_by_guid,
-      |        sessions.hash_code
+      |        sessions.updated_by_guid
       |   from sessions
   """.stripMargin)
 
   private[this] val InsertQuery = Query("""
     | insert into sessions
-    | (id, user_guid, expires_at, created_by_guid, updated_by_guid, hash_code)
+    | (id, user_guid, expires_at, created_by_guid, updated_by_guid)
     | values
-    | ({id}, {user_guid}::uuid, {expires_at}::timestamptz, {created_by_guid}::uuid, {updated_by_guid}::uuid, {hash_code}::bigint)
+    | ({id}, {user_guid}::uuid, {expires_at}::timestamptz, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """.stripMargin)
 
   private[this] val UpdateQuery = Query("""
     | update sessions
     |    set user_guid = {user_guid}::uuid,
     |        expires_at = {expires_at}::timestamptz,
-    |        updated_by_guid = {updated_by_guid}::uuid,
-    |        hash_code = {hash_code}::bigint
+    |        updated_by_guid = {updated_by_guid}::uuid
     |  where id = {id}
-    |    and (sessions.hash_code is null or sessions.hash_code != {hash_code}::bigint)
   """.stripMargin)
 
   private[this] def bindQuery(query: Query, form: SessionForm): Query = {
     query.
       bind("user_guid", form.userGuid).
-      bind("expires_at", form.expiresAt).
-      bind("hash_code", form.hashCode())
+      bind("expires_at", form.expiresAt)
   }
 
   def insert(updatedBy: UUID, form: SessionForm) {

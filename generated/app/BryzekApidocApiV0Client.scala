@@ -2042,6 +2042,8 @@ package com.bryzek.apidoc.api.v0 {
 
     def attributes: Attributes = Attributes
 
+    def authentications: Authentications = Authentications
+
     def changes: Changes = Changes
 
     def code: Code = Code
@@ -2217,6 +2219,19 @@ package com.bryzek.apidoc.api.v0 {
           case r if r.status == 401 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+        }
+      }
+    }
+
+    object Authentications extends Authentications {
+      override def getSessionById(
+        id: String,
+        requestHeaders: Seq[(String, String)] = Nil
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Authentication] = {
+        _executeRequest("GET", s"/authentications/session/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
+          case r if r.status == 200 => _root_.com.bryzek.apidoc.api.v0.Client.parseJson("com.bryzek.apidoc.api.v0.models.Authentication", r, _.validate[com.bryzek.apidoc.api.v0.models.Authentication])
+          case r if r.status == 404 => throw new com.bryzek.apidoc.api.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.apidoc.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
         }
       }
     }
@@ -3236,6 +3251,7 @@ package com.bryzek.apidoc.api.v0 {
       def baseUrl: String
       def applications: com.bryzek.apidoc.api.v0.Applications
       def attributes: com.bryzek.apidoc.api.v0.Attributes
+      def authentications: com.bryzek.apidoc.api.v0.Authentications
       def changes: com.bryzek.apidoc.api.v0.Changes
       def code: com.bryzek.apidoc.api.v0.Code
       def domains: com.bryzek.apidoc.api.v0.Domains
@@ -3349,6 +3365,13 @@ package com.bryzek.apidoc.api.v0 {
       name: String,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait Authentications {
+    def getSessionById(
+      id: String,
+      requestHeaders: Seq[(String, String)] = Nil
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.apidoc.api.v0.models.Authentication]
   }
 
   trait Changes {
