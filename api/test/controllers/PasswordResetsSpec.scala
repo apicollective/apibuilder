@@ -1,7 +1,7 @@
 package controllers
 
 import db.PasswordResetRequestsDao
-import com.bryzek.apidoc.api.v0.models.{PasswordReset, PasswordResetSuccess, PasswordResetRequest, User}
+import com.bryzek.apidoc.api.v0.models.{Authentication, PasswordReset, PasswordResetRequest, User}
 import com.bryzek.apidoc.api.v0.errors.ErrorsResponse
 import java.util.UUID
 
@@ -12,7 +12,7 @@ class PasswordResetsSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def resetPassword(token: String, pwd: String): PasswordResetSuccess = {
+  def resetPassword(token: String, pwd: String): Authentication = {
     await(
       client.passwordResets.post(
         PasswordReset(token = token, password = pwd)
@@ -29,7 +29,7 @@ class PasswordResetsSpec extends BaseSpec {
     userPasswordsDao.isValid(user.guid, pwd) must be(false)
 
     val result = resetPassword(pr.token, pwd)
-    result.userGuid must be(user.guid)
+    result.user.guid must be(user.guid)
 
     userPasswordsDao.isValid(user.guid, pwd) must be(true)
 
