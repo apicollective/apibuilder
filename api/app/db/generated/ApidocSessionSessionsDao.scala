@@ -1,8 +1,7 @@
 package db.generated
 
 import anorm._
-import io.flow.postgresql.{OrderBy, Query}
-import io.flow.postgresql.play.db.DbHelpers
+import util.Query
 import java.sql.Connection
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -33,8 +32,6 @@ case class SessionForm(
 class SessionsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
-
-  private[this] val dbHelpers = DbHelpers(db, "sessions")
 
   private[this] val BaseQuery = Query("""
       | select sessions.id,
@@ -80,7 +77,7 @@ class SessionsDao @Inject() (
   def insert(implicit c: Connection, updatedBy: UUID, form: SessionForm) {
     bindQuery(InsertQuery, form).
       bind("id", form.id).
-      bind("updated_by_user_id", updatedBy.id).
+      bind("updated_by_user_id", updatedBy).
       anormSql.execute()
   }
 
@@ -99,7 +96,7 @@ class SessionsDao @Inject() (
   def updateById(implicit c: Connection, updatedBy: UUID, id: String, form: SessionForm) {
     bindQuery(UpdateQuery, form).
       bind("id", id).
-      bind("updated_by_user_id", updatedBy.id).
+      bind("updated_by_user_id", updatedBy).
       anormSql.execute()
   }
 
@@ -114,7 +111,7 @@ class SessionsDao @Inject() (
   }
 
   def delete(deletedBy: UUID, session: Session) {
-    dbHelpers.delete(deletedBy, session.id)
+    delete(deletedBy, session.id)
   }
   
   def deleteById(deletedBy: UUID, id: String) {
@@ -124,7 +121,7 @@ class SessionsDao @Inject() (
   }
   
   def deleteById(c: java.sql.Connection, deletedBy: UUID, id: String) {
-    dbHelpers.delete(c, deletedBy, id)
+    delete(c, deletedBy, id)
   }
 
   def findById(id: String): Option[Session] = {
@@ -136,7 +133,7 @@ class SessionsDao @Inject() (
     userGuid: Option[UUID] = None,
     limit: Long,
     offset: Long = 0,
-    orderBy: OrderBy = OrderBy("sessions.id")
+    orderBy: String = "sessions.id"
   ) (
     implicit customQueryModifier: Query => Query = { q => q }
   ): Seq[Session] = {
@@ -146,11 +143,31 @@ class SessionsDao @Inject() (
         equals("sessions.user_guid", userGuid).
         limit(limit).
         offset(offset).
-        orderBy(orderBy.sql).
+        orderBy(orderBy).
         as(SessionsDao.parser().*)
     }
   }
 
+  private[this] val DeleteQuery = s"""
+    delete from sessions where id = {id}
+  """
+
+  def delete(deletedBy: UUID, id: String) {
+    db.withConnection { implicit c =>
+      delete(c, deletedBy, id)
+    }
+  }
+
+  def delete(
+    implicit c: java.sql.Connection,
+    deletedBy: UUID,
+    id: String
+  ) {
+    SQL(DeleteQuery).on(
+      'id -> id
+    ).execute()
+  }
+  
 }
 
 object SessionsDao {
