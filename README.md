@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/mbryzek/apidoc.svg?branch=master)](https://travis-ci.org/mbryzek/apidoc)
+[![Build Status](https://travis-ci.org/apicollective/apibuilder.svg?branch=master)](https://travis-ci.org/apicollective/apibuilder)
 
 apibuilder
 ==========
