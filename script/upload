@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# Uploads all of the specs in this repo to apidoc.
+# Uploads all of the specs in this repo to apibuilder.
 #
 # Usage:
 #
@@ -17,7 +17,7 @@
 #
 #    upload --tag 0.0.2-dev
 #
-#  Upload using a specific apidoc profile
+#  Upload using a specific apibuilder profile
 #
 #    upload --profile localhost
 #
@@ -25,7 +25,7 @@
 require 'pathname'
 require 'json'
 
-ORGANIZATION = "bryzek"
+ORGANIZATION = "apicollective"
 
 args = {}
 ARGV.each_slice(2) { |pair|
@@ -83,7 +83,7 @@ def resolved?(specs, spec)
   }
 end
 
-assert_installed("apidoc", "https://github.com/mbryzek/apidoc-cli")
+assert_installed("apidoc", "https://github.com/apicollective/apibuilder-cli")
 
 tag = args[:tag] || calculate_next_tag
 spec_dir = Pathname.new(File.join(File.dirname(__FILE__), '/../spec')).cleanpath
