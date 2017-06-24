@@ -7,7 +7,7 @@ package io.apibuilder.spec.v0.models {
 
   sealed trait ResponseCode extends _root_.scala.Product with _root_.scala.Serializable
 
-  case class Apibuilder(
+  case class Apidoc(
     version: String
   )
 
@@ -181,7 +181,7 @@ package io.apibuilder.spec.v0.models {
   )
 
   case class Service(
-    apibuilder: io.apibuilder.spec.v0.models.Apibuilder,
+    apidoc: io.apibuilder.spec.v0.models.Apidoc,
     name: String,
     organization: io.apibuilder.spec.v0.models.Organization,
     application: io.apibuilder.spec.v0.models.Application,
@@ -467,20 +467,20 @@ package io.apibuilder.spec.v0.models {
       }
     }
 
-    implicit def jsonReadsApibuilderspecApibuilder: play.api.libs.json.Reads[Apibuilder] = {
-      (__ \ "version").read[String].map { x => new Apibuilder(version = x) }
+    implicit def jsonReadsApibuilderspecApidoc: play.api.libs.json.Reads[Apidoc] = {
+      (__ \ "version").read[String].map { x => new Apidoc(version = x) }
     }
 
-    def jsObjectApibuilder(obj: io.apibuilder.spec.v0.models.Apibuilder): play.api.libs.json.JsObject = {
+    def jsObjectApidoc(obj: io.apibuilder.spec.v0.models.Apidoc): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "version" -> play.api.libs.json.JsString(obj.version)
       )
     }
 
-    implicit def jsonWritesApibuilderspecApibuilder: play.api.libs.json.Writes[Apibuilder] = {
-      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Apibuilder] {
-        def writes(obj: io.apibuilder.spec.v0.models.Apibuilder) = {
-          jsObjectApibuilder(obj)
+    implicit def jsonWritesApibuilderspecApidoc: play.api.libs.json.Writes[Apidoc] = {
+      new play.api.libs.json.Writes[io.apibuilder.spec.v0.models.Apidoc] {
+        def writes(obj: io.apibuilder.spec.v0.models.Apidoc) = {
+          jsObjectApidoc(obj)
         }
       }
     }
@@ -1088,7 +1088,7 @@ package io.apibuilder.spec.v0.models {
 
     implicit def jsonReadsApibuilderspecService: play.api.libs.json.Reads[Service] = {
       (
-        (__ \ "apibuilder").read[io.apibuilder.spec.v0.models.Apibuilder] and
+        (__ \ "apidoc").read[io.apibuilder.spec.v0.models.Apidoc] and
         (__ \ "name").read[String] and
         (__ \ "organization").read[io.apibuilder.spec.v0.models.Organization] and
         (__ \ "application").read[io.apibuilder.spec.v0.models.Application] and
@@ -1109,7 +1109,7 @@ package io.apibuilder.spec.v0.models {
 
     def jsObjectService(obj: io.apibuilder.spec.v0.models.Service): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "apibuilder" -> jsObjectApibuilder(obj.apibuilder),
+        "apidoc" -> jsObjectApidoc(obj.apidoc),
         "name" -> play.api.libs.json.JsString(obj.name),
         "organization" -> jsObjectOrganization(obj.organization),
         "application" -> jsObjectApplication(obj.application),

@@ -55,7 +55,7 @@
   },
 
   "models": {
-    "apibuilder": {
+    "apidoc": {
       "fields": [
 	{ "name": "version", "type": "string", "example": "1.0.3" }
       ]
@@ -63,7 +63,7 @@
 
     "service": {
       "fields": [
-	{ "name": "apibuilder", "type": "apibuilder", "description": "Documents that this is an apibuilder document, noting the specific version used. Internally the version is then used for backwards compatibility when applicable as new features are added to apibuilder." },
+	{ "name": "apidoc", "type": "apidoc", "description": "Documents that this is an apibuilder document, noting the specific version used. Internally the version is then used for backwards compatibility when applicable as new features are added to apibuilder. Note naming refers to the original name of this project, 'apidoc', and is left here to avoid a breaking change for preexisting services." },
 	{ "name": "name", "type": "string" },
 	{ "name": "organization", "type": "organization" },
 	{ "name": "application", "type": "application" },
