@@ -13,30 +13,27 @@
     <pre>
       curl @lib.Util.fullApiUrl("/organizations")
 
-      [
-        {
-          "guid": "b3c4d0d9-e05b-4c6b-ad61-b41beb9dd527",
-          "organization": {
-            "guid": "1677afdc-5490-4774-849a-3a2bd8b45a0c",
-            "key": "bryzek"
-          },
-          "name": "apidoc api",
-          "key": "apidoc-api",
-          "visibility": "public",
-          "audit": {
-            "created_at": "2015-03-14T23:13:02.876Z",
-            "created_by": {
-              "guid": "28e6f993-3311-4b47-adba-9fbe49fd95e8"
-            },
-            "updated_at": "2015-06-06T21:18:57.842Z",
-            "updated_by": {
-              "guid": "28e6f993-3311-4b47-adba-9fbe49fd95e8"
+        [
+          {
+            "guid": "480d042d-2bf9-47f3-a743-204a05eaa319",
+            "key": "apicollective",
+            "name": "API Collective",
+            "namespace": "io",
+            "visibility": "public",
+            "domains": [],
+            "audit": {
+              "created_at": "2017-06-24T14:25:01.918Z",
+              "created_by": {
+                "guid": "b0c45ffe-8ab2-4bbd-8742-8d16adbd1dc4"
+              },
+              "updated_at": "2017-06-24T14:58:07.459Z",
+              "updated_by": {
+                "guid": "b0c45ffe-8ab2-4bbd-8742-8d16adbd1dc4"
+              }
             }
           },
-          "description": "Host API documentation for applications providing REST APIs, facilitating the design of good resource first APIs."
-        },
-        ...
-      ]
+          ...
+        ]
     </pre>
   </p>
 
@@ -57,8 +54,8 @@
   
   <p>
 
-    Full documentation of the apidoc api is available online at
-    <a href="@lib.Util.ApidocApi.docsUrl">@lib.Util.fullUrl(lib.Util.ApidocApi.docsUrl)</a>
+    Full documentation of the API Builder API is available online at
+    <a href="@lib.Util.ApibuilderApi.docsUrl">@lib.Util.fullUrl(lib.Util.ApibuilderApi.docsUrl)</a>
 
   </p>
 

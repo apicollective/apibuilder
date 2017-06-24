@@ -1,6 +1,6 @@
 package lib
 
-import io.apibuilder.api.v0.models.{ApplicationSummary, ItemDetail, ItemDetailUndefinedType}
+import io.apibuilder.api.v0.models.ItemDetail
 
 case class ExampleService(
   organizationKey: String,
@@ -8,23 +8,23 @@ case class ExampleService(
   version: String = "latest"
 ) {
 
-  val label = s"$organizationKey/$applicationKey"
+  val label: String = s"$organizationKey/$applicationKey"
 
-  val docsUrl = if (version == "latest") {
+  val docsUrl: String = if (version == "latest") {
     s"/$organizationKey/$applicationKey"
   } else {
     s"/$organizationKey/$applicationKey/$version"
   }
 
-  val originalJsonUrl = s"/$organizationKey/$applicationKey/$version/original"
-  val serviceJsonUrl = s"/$organizationKey/$applicationKey/$version/service.json"
+  val originalJsonUrl: String = s"/$organizationKey/$applicationKey/$version/original"
+  val serviceJsonUrl: String = s"/$organizationKey/$applicationKey/$version/service.json"
 
 }
 
 object Util {
 
-  private[this] val ApiHost = Config.requiredString("apibuilder.api.host")
-  val Host = Config.requiredString("apibuilder.www.host")
+  private[this] val ApiHost: String = Config.requiredString("apibuilder.api.host")
+  val Host: String = Config.requiredString("apibuilder.www.host")
 
   val SubscriptionsText = "Subscriptions"
   val SubscriptionsVersionsCreateText = "For applications that I watch, email me when a version is created."
@@ -34,17 +34,18 @@ object Util {
   val OrgAttributesText = "Org Attributes"
   val ServiceJsonText = "service.json"
 
-  val ApidocApi = ExampleService("bryzek", "apidoc-api")
-  val ApidocExample = ApidocApi
-  val ApidocExampleWithVersionNumber = ExampleService("bryzek", "apidoc-api", Config.requiredString("git.version"))
-  val ApidocGeneratorExample = ExampleService("bryzek", "apidoc-generator")
-  val ApidocSpecExample = ExampleService("bryzek", "apidoc-spec")
-  val Examples = Seq(ApidocExample, ApidocGeneratorExample, ApidocSpecExample)
+  val ApibuilderApi = ExampleService("apicollective", "apibuilder-api")
+  val ApibuilderExample = ApibuilderApi
+  val ApibuilderExampleWithVersionNumber = ExampleService("apicollective", "apibuilder-api", Config.requiredString("git.version"))
+  val ApibuilderGeneratorExample = ExampleService("apicollective", "apibuilder-generator")
+  val ApibuilderSpecExample = ExampleService("apicollective", "apibuilder-spec")
+  val Examples = Seq(ApibuilderExample, ApibuilderGeneratorExample, ApibuilderSpecExample)
 
-  private val gitHub = "https://github.com/mbryzek"
-  val ApidocGitHubUrl = s"$gitHub/apidoc"
-  val ApidocCliGitHubUrl = s"$gitHub/apidoc-cli"
-  val ApidocGeneratorGitHubUrl = s"$gitHub/apidoc-generator"
+  private val gitHub = "https://github.com/apicollective"
+  val ApibuilderGitHubUrl = s"$gitHub/apibuilder"
+  val ApibuilderCliGitHubUrl = s"$gitHub/apibuilder-cli"
+  val ApibuilderGeneratorGitHubUrl = s"$gitHub/apibuilder-generator"
+  val ApibuilderSwaggerGeneratorGitHubUrl = s"$gitHub/apibuilder-swagger-generator"
 
   def fullUrl(stub: String): String = s"$Host$stub"
   def fullApiUrl(stub: String): String = s"$ApiHost$stub"
@@ -59,7 +60,9 @@ object Util {
 
   private[this] val WhiteListedDomains = Seq(
     "http://apidoc.me", "http://www.apidoc.me",
-    "https://apidoc.me", "https://www.apidoc.me"
+    "https://apidoc.me", "https://www.apidoc.me",
+    "http://apibuilder.io", "http://www.apibuilder.io", "http://app.apibuilder.io", "http://ui.apibuilder.io",
+    "https://apibuilder.io", "https://www.apibuilder.io", "https://app.apibuilder.io", "https://ui.apibuilder.io"
   )
 
   def validateReturnUrl(value: String): Either[Seq[String], String] = {
@@ -83,14 +86,9 @@ object Util {
 
   def searchUrl(detail: ItemDetail): Option[String] = {
     detail match {
-      case io.apibuilder.api.v0.models.ApplicationSummary(guid, org, key) => {
-	Some(s"/${org.key}/${key}/latest")
-      }
-      case io.apibuilder.api.v0.models.ItemDetailUndefinedType(desc) => {
-	None
-      }
+      case io.apibuilder.api.v0.models.ApplicationSummary(_, org, key) => Some(s"/${org.key}/$key/latest")
+      case io.apibuilder.api.v0.models.ItemDetailUndefinedType(_) => None
     }
   }
-
 
 }

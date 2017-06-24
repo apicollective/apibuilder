@@ -2,16 +2,47 @@
 
 @doc.main(routes.DocController.releaseNotes.url, user, Some("Release notes")) {
 
+<h3>0.12.1 - June 25 2017</h3>
+
+<ul>
+
+    <li> apidoc officially renamed to API Builder</li>
+
+</ul>
+
+<h3>Feb 28 2016 - June 19 2017</h3>
+
+<ul>
+
+    <li> Release full Swagger compatibility = upload swagger or generate a swagger file. See <a href='@lib.Util.ApibuilderSwaggerGeneratorGitHubUrl'>apibuilder-swagger-generator</a></li>
+    <li> Android: implemented imports, fixed enum values, fixed union types. See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/217'>PR 217</a></li>
+    <li> Add implicit converter to make scala 2.11 Either monadic See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/214'>PR 214</a></li>
+    <li> Add support for default union type discriminator, making it fully compatible to change a type from a model to a union, declaring the original model as default See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/212'>PR 212</a></li>
+    <li> Add http4s/circe client generator See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/200'>PR 200</a></li>
+    <li> Fix recursive type issue See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/209'>PR 209</a></li>
+    <li> Set better defaults for collections See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/206'>PR 206</a></li>
+    <li> Union type support for android_clients See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/201'>PR 201</a></li>
+    <li> Remove check for 22 fields See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/199'>PR 199</a></li>
+    <li> Make generator classes extensible See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/198'>PR 198</a></li>
+    <li> Enable recursively defined union types See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/196'>PR 196</a></li>
+    <li> Create new session auth header as default authentication method See <a href='@lib.Util.ApibuilderGitHubUrl/pull/635'>PR 635</a></li>
+    <li> Introduce optional 'default' type for unions with a discriminator See <a href='@lib.Util.ApibuilderGitHubUrl/pull/630'>PR 630</a></li>
+    <li> Support example generation of imported union types See <a href='@lib.Util.ApibuilderGitHubUrl/pull/629'>PR 629</a></li>
+    <li> Upgrade io.swagger.swagger-parser See <a href='@lib.Util.ApibuilderGitHubUrl/pull/624'>PR 624</a></li>
+    <li> Import Swagger YAML files See <a href='@lib.Util.ApibuilderGitHubUrl/pull/618'>PR 618</a></li>
+    <li> Implement Login via GitHub See <a href='@lib.Util.ApibuilderGitHubUrl/pull/614'>PR 614</a></li>
+</ul>
+
 <h3>0.11.16 - Feb 28 2016</h3>
 
 <ul>
 
     <li> Refactor type system to truly treat collections as
-        types. See <a href='@lib.Util.ApidocGitHubUrl/pull/415'>PR
+        types. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/415'>PR
         415</a></li>
 
     <li> Fix bug with error when visiting /attributes/ when not
-        logged. See <a href='@lib.Util.ApidocGitHubUrl/pull/416'>PR
+        logged. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/416'>PR
         416</a></li>
 
 </ul>
@@ -33,20 +64,20 @@
   <ul>
 
     <li> Ruby client: Fix bug with serialization of enum to query
-        parameter. See <a href='@lib.Util.ApidocGeneratorGitHubUrl/pull/73'>PR
+        parameter. See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/73'>PR
         73</a></li>
 
     <li> Fix bug in play routes generation for routes w/ enum and
-        default. See <a href='@lib.Util.ApidocGeneratorGitHubUrl/pull/74'>PR
+        default. See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/74'>PR
         74</a></li>
 
     <li> Fix validation error of 'boxed error' by actually validating
         the application
-        key. See <a href='@lib.Util.ApidocGitHubUrl/pull/411'>PR
+        key. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/411'>PR
         411</a></li>
 
     <li> Let any org member delete an application /
-        version. See <a href='@lib.Util.ApidocGitHubUrl/pull/412'>PR
+        version. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/412'>PR
         412</a></li>
   
   </ul>
@@ -94,7 +125,7 @@
     mock client makes it easy to override just the methods you need to
     test a particular scenario.</li>
 
-    <li> Fix bug that for some organizations introduced an error when searching. See <a href='@lib.Util.ApidocGitHubUrl/issues/397'>Issue
+    <li> Fix bug that for some organizations introduced an error when searching. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/397'>Issue
     397</a></li>
 
   </ul>
@@ -104,7 +135,7 @@
 
   <ul>
 
-    <li> Fix bug introduced that was serializing null values. See <a href='@lib.Util.ApidocGitHubUrl/issues/396'>Issue
+    <li> Fix bug introduced that was serializing null values. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/396'>Issue
     396</a></li>
 
   </ul>
@@ -189,7 +220,7 @@
     <li> Introduction of a play 2.4.x code generator. Only minor changes from 2.3.x.</li>
     <li> apidoc itself is now running play 2.4.2 </li>
     <li> Introduction of a java model code
-    generator. See <a href='@lib.Util.ApidocGeneratorGitHubUrl/pull/29'>PR
+    generator. See <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/29'>PR
     29</a>. Many thanks
     to <a href="https://github.com/jkenny">jkenny</a> for this change.
 
@@ -204,13 +235,13 @@
     file contains a recommended file name and the contents of this
     file. This change was made in anticipation of a java code
     generator which requires multiple
-    files. See <a href='@lib.Util.ApidocGitHubUrl/pull/349'>PR 349</a>
-    and <a href='@lib.Util.ApidocGitHubUrl/pull/351'>PR 351</a>. Many
+    files. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/349'>PR 349</a>
+    and <a href='@lib.Util.ApibuilderGitHubUrl/pull/351'>PR 351</a>. Many
     thanks to <a href="https://github.com/jkenny">jkenny</a> for
     this change.
     </li>
 
-    <li> Fixed bug in swagger input related to arrays. See <a href='@lib.Util.ApidocGitHubUrl/pull/361'>PR
+    <li> Fixed bug in swagger input related to arrays. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/361'>PR
     361</a>. Many thanks
     to <a href="https://github.com/dspeele">dspeele</a> for this fix.
     </li>
@@ -223,8 +254,8 @@
 
     <li> Better support for swagger input, including resolution of
     references and mapping of API Urls to
-    resources. See <a href='@lib.Util.ApidocGitHubUrl/pull/353'>PR
-    353</a> and <a href='@lib.Util.ApidocGitHubUrl/pull/356'>PR
+    resources. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/353'>PR
+    353</a> and <a href='@lib.Util.ApibuilderGitHubUrl/pull/356'>PR
     356</a>. Many thanks
     to <a href="https://github.com/dspeele">dspeele</a> for these
     contributions.
@@ -304,7 +335,7 @@
     will now have to explicitly specify 404 for any responses that
     return 404s. Previously, any GET method that returned a singleton
     automatically inferred a
-    404. See <a href='@lib.Util.ApidocGitHubUrl/pull/320'>PR 320</a>.
+    404. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/320'>PR 320</a>.
     </li>
 
   </ul>
@@ -367,8 +398,8 @@
 
     </ul>
 
-    For more information, see <a href='@lib.Util.ApidocGeneratorGitHubUrl/pull/6'>PR 6</a> and
-    <a href='@lib.Util.ApidocGeneratorGitHubUrl/issues/5'>Issue 5</a>.
+    For more information, see <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/pull/6'>PR 6</a> and
+    <a href='@lib.Util.ApibuilderGeneratorGitHubUrl/issues/5'>Issue 5</a>.
     </li>
 
     <li> Experimental support for Swagger Json (2.0 only). This
@@ -391,7 +422,7 @@
 
       <li> We have tested swagger integration using the petstore
       example only
-      (see <a href="@lib.Util.ApidocGitHubUrl/tree/master/swagger/src/test/resources/petstore-with-external-docs.json">petstore-with-external-docs.json</a>)
+      (see <a href="@lib.Util.ApibuilderGitHubUrl/tree/master/swagger/src/test/resources/petstore-with-external-docs.json">petstore-with-external-docs.json</a>)
       and have not yet verified that the clients actually work... so
       more to come in this area (and if you are interested in helping
       - please let us know!)</li>
@@ -431,13 +462,13 @@
     <li> Much stronger validation on the elements present in the
     api.json document - e.g. you will see validation errors if you
     mistype an
-    attribute. See <a href='@lib.Util.ApidocGitHubUrl/issues/292'>Issue
+    attribute. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/292'>Issue
     292</a></li>
 
     <li> Introduced <em>deprecation</em> element on all relevant
     types. This allows you to mark elements of your API as deprecated
     with an optional
-    description. See <a href='@lib.Util.ApidocGitHubUrl/issues/220'>Issue
+    description. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/220'>Issue
     220</a></li>
 
     <li> Better handling for original uploads, including identifying
@@ -446,7 +477,7 @@
     are going to look at swagger json as an input format.</li>
 
     <li> UI now has a link to delete a specific version of a
-    service. See <a href='@lib.Util.ApidocGitHubUrl/issues/300'>Issue
+    service. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/300'>Issue
     300</a></li>
 
     <li> Numerous small bug fixes and minor improvements</li>
@@ -602,17 +633,17 @@ are support for union types and imports.</p>
     into a service description that we now call a
     &quot;Service&quot;. A Service is a full description of the REST
     API. The schema for a service can be found
-    at <a href="@lib.Util.ApidocSpecExample.docsUrl">@lib.Util.ApidocSpecExample.label</a>.</li>
+    at <a href="@lib.Util.ApibuilderSpecExample.docsUrl">@lib.Util.ApibuilderSpecExample.label</a>.</li>
 
     <li>Code generators have been moved out of the apidoc code
     repository and into a separate repository (<a
-    href="@lib.Util.ApidocGeneratorGitHubUrl">@lib.Util.ApidocGeneratorGitHubUrl</a>). Combined
+    href="@lib.Util.ApibuilderGeneratorGitHubUrl">@lib.Util.ApibuilderGeneratorGitHubUrl</a>). Combined
     with the introduction of the service schema, we now have a much
     simpler interface to create code generators. Code generators are
     functions that accept an instance of a service
     and return a string (actual code). For specific information on the
     API to create a code generator,
-    see <a href="@lib.Util.ApidocGeneratorExample.docsUrl">@lib.Util.ApidocGeneratorExample.label</a>.</li>
+    see <a href="@lib.Util.ApibuilderGeneratorExample.docsUrl">@lib.Util.ApibuilderGeneratorExample.label</a>.</li>
 
     <li> Services now have a namespace as part of the service
     specification. When uploading new version of an application, we
@@ -669,17 +700,17 @@ are support for union types and imports.</p>
 
     </ol>
 
-    The @lib.Util.ApidocGeneratorExample.label project uses imports as
+    The @lib.Util.ApibuilderGeneratorExample.label project uses imports as
     part of its declaration - the simplest way to get started is to
     look at
-    the <a href="@lib.Util.ApidocGeneratorExample.originalJsonUrl">api.json</a>
+    the <a href="@lib.Util.ApibuilderGeneratorExample.originalJsonUrl">api.json</a>
     file for that service.
 
     </li>
 
     <li> This release introduces a client code generator based on the
     latest ning version (1.9.11). See
-    <a href="@lib.Util.ApidocGitHubUrl/tree/master/client-tests/ning_1_9_scala_2_11">example ning 1.9 play project</a>.</li>
+    <a href="@lib.Util.ApibuilderGitHubUrl/tree/master/client-tests/ning_1_9_scala_2_11">example ning 1.9 play project</a>.</li>
 
   </ul>
 
@@ -692,7 +723,7 @@ are support for union types and imports.</p>
     applications. Visit <a href="@routes.TokensController.index()">@routes.TokensController.index()</a>
     to manage tokens. There is an experimental CLI that relies on
     these tokens available
-    at <a href="@lib.Util.ApidocCliGitHubUrl">@lib.Util.ApidocCliGitHubUrl</a></li>
+    at <a href="@lib.Util.ApibuilderCliGitHubUrl">@lib.Util.ApibuilderCliGitHubUrl</a></li>
 
     <li> We added JSON error handling in the play client. This means
     that you will get a much nicer error message if we are unable to
@@ -749,15 +780,15 @@ are support for union types and imports.</p>
     create copies of the instances with changes to specific
     fields. Example:
     <pre>
-      domain = Apidoc::Models::Domain.new(:name => "apidoc.me")
+      domain = Apidoc::Models::Domain.new(:name => "apibuilder.io")
       puts domain.name
-      => apidoc.me
+      => apibuilder.io
 
       puts domain.copy(:name => "bryzek.com").name
       => bryzek.com
     </pre>
 
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/212'>Issue
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/212'>Issue
     212</a></li>
 
   </ul>
@@ -794,7 +825,7 @@ are support for union types and imports.</p>
     <ol>
 
       <li> Create a service implementing
-      the <a href="@lib.Util.ApidocGeneratorExample.docsUrl">@lib.Util.ApidocGeneratorExample.label
+      the <a href="@lib.Util.ApibuilderGeneratorExample.docsUrl">@lib.Util.ApibuilderGeneratorExample.label
       API</a>.</li>
 
       <li>
@@ -804,8 +835,8 @@ are support for union types and imports.</p>
     </ol>
 
     Many thanks to <a href="https://github.com/gheine">gheine</a> for this contribution!
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/914'>PR 194</a>
-    and <a href='@lib.Util.ApidocGitHubUrl/pull/216'>PR 216</a>.
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/914'>PR 194</a>
+    and <a href='@lib.Util.ApibuilderGitHubUrl/pull/216'>PR 216</a>.
 
   </ul>
 
@@ -816,38 +847,38 @@ are support for union types and imports.</p>
     datatype. While usage is anticipated to be rare, there are a few
     common use-cases to be able to send arbitrary json objects. We've
     added support for the 'object' datatype as a primitive to support
-    these cases. See <a href='@lib.Util.ApidocGitHubUrl/issues/215'>Issue
+    these cases. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/215'>Issue
     215</a></li>
 
     <li> Ruby client models support explicit JSON serialization - each
     model will now have a to_json method to make explicit how the
     client expects json to be
-    generated. See <a href='@lib.Util.ApidocGitHubUrl/issues/213'>Issue
+    generated. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/213'>Issue
     213</a></li>
 
     <li> Ruby client to_hash method now checks for nil, avoiding null
     pointer errors in some cases -
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/214'>Issue 214</a></li>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/214'>Issue 214</a></li>
 
     <li> Remove scala.collection.Seq and replace with Seq -
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/204'>Issue 204</a></li>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/204'>Issue 204</a></li>
 
     <li> Standardize parameter names in ruby
-    client. See <a href='@lib.Util.ApidocGitHubUrl/issues/203'>Issue
+    client. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/203'>Issue
     203</a></li>
 
     <li> Enum value names now handle dots correctly,
     e.g. incidents.create will generate IncidentsCreate constant in
     the scala
-    clients. See <a href='@lib.Util.ApidocGitHubUrl/issues/199'>Issue
+    clients. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/199'>Issue
     199</a></li>
 
     <li> Fix bug in scala clients when an operation has multiple 2xx
-    response codes. See <a href='@lib.Util.ApidocGitHubUrl/issues/187'>Issue
+    response codes. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/187'>Issue
     187</a></li>
 
     <li> Add validation for query parameters with models when there is
-    a body present. See <a href='@lib.Util.ApidocGitHubUrl/issues/172'>Issue
+    a body present. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/172'>Issue
     172</a></li>
 
   </ul>
@@ -876,7 +907,7 @@ are support for union types and imports.</p>
     <li>Code refactoring in apidoc itself - project is mature enough
     now that we were able to replace the internal models used to
     bootstrap apidoc with the apidoc generated models! Thanks
-    gheine. See <a href='@lib.Util.ApidocGitHubUrl/pull/176'>PR
+    gheine. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/176'>PR
     176</a></li>
 
     <li>Better pluralization using org.atteo.evo-inflector
@@ -888,7 +919,7 @@ are support for union types and imports.</p>
     <li>Code generation targets are extensible internally. First step
     towards opening up a simple way for anybody to contribute
     generators based on the apidoc
-    model. See <a href='@lib.Util.ApidocGitHubUrl/pull/171'>PR
+    model. See <a href='@lib.Util.ApibuilderGitHubUrl/pull/171'>PR
     171</a></li>
 
     <li>Number of smaller bug fixes</li>
@@ -902,7 +933,7 @@ are support for union types and imports.</p>
     <li>Date Type: New '@lib.Primitives.DateIso8601.toString' type
     introduced. In ruby clients, maps to a Date instance. In JVM
     clients, maps to an <code>org.joda.time.LocalDate</code>
-    instance. See <a href='@lib.Util.ApidocGitHubUrl/issues/161'>Issue
+    instance. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/161'>Issue
     161</a></li>
 
     <li>Dates now Supported in paths. When specifing an API, instances
@@ -911,13 +942,13 @@ are support for union types and imports.</p>
     serialization is unclear; Serialization remains the responsibility
     of the service itself and thus apidoc will just document that the
     type is a
-    date. See <a href='@lib.Util.ApidocGitHubUrl/issues/161'>Issue
+    date. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/161'>Issue
     161</a></li>
 
     <li>UI refactored so that resources are hyperlinked to their
     underlying model; All models, even if mapped to resources, are now
     listed in the Models section of the UI of
-    apidoc. See <a href='@lib.Util.ApidocGitHubUrl/issues/152'>Issue
+    apidoc. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/152'>Issue
     152</a></li>
 
     <li>When downloading a client for the 'latest' version of a
@@ -931,7 +962,7 @@ are support for union types and imports.</p>
   <ul>
 
     <li>Play client: Move Traits out of client so they can be accessed
-    directly. See <a href='@lib.Util.ApidocGitHubUrl/issues/158'>Issue
+    directly. See <a href='@lib.Util.ApibuilderGitHubUrl/issues/158'>Issue
     158</a></li>
 
   </ul>
@@ -946,7 +977,7 @@ are support for union types and imports.</p>
     on <a href="https://github.com/AsyncHttpClient/async-http-client">ning's
     http async library</a>. The only dependencies you will need are
     play-ws and com.ning.async-http-client version
-    1.8.x. See <a href="@lib.Util.ApidocGitHubUrl/tree/master/client-tests/ning_1_8">ning
+    1.8.x. See <a href="@lib.Util.ApibuilderGitHubUrl/tree/master/client-tests/ning_1_8">ning
     1 8 sample project</a> for an example SBT project setup to use the
     ning clients.</li>
 
@@ -1007,7 +1038,7 @@ are support for union types and imports.</p>
     to describe what headers the service understands, including
     setting default values which will be automatically included in all
     requests made via the generated clients.
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/131'>PR
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/131'>PR
     131</a></li>
 
     <li>Improved documentation of api.json format -
@@ -1031,16 +1062,16 @@ are support for union types and imports.</p>
     which is the package name to use for JVM based clients. This
     allows you to specify explicitly the package name for all
     generated clients.
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/86'>Issue
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/86'>Issue
     86</a></li>
 
     <li> Expand support for body to include primitive types and enums.
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/139'>Issue
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/139'>Issue
     139</a></li>
 
     <li> Play and ruby clients now use strong types for all parameters
     of type enum. Previously these were sent as Strings.
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/127'>Issue
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/127'>Issue
     127</a></li>
 
     <li> Add support to play and ruby clients for GET parameters that
@@ -1051,19 +1082,19 @@ are support for union types and imports.</p>
     parameters are explicitly excluded from the generated routes file
     - instead you will see a comment describing the additional
     parameter.
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/139'>Issue
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/139'>Issue
     139</a></li>
 
     <li> Better JSON validation around requiring JsObjects for things
     like models, enum, body, etc.
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/138'>Issue 138</a>
-    and <a href='@lib.Util.ApidocGitHubUrl/issues/134'>Issue 134</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/138'>Issue 138</a>
+    and <a href='@lib.Util.ApibuilderGitHubUrl/issues/134'>Issue 134</a>
     for examples.
     </li>
 
     <li> Better error messages when explicitly speciying a 404
     response w/ a type.
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/135'>Issue
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/135'>Issue
     135</a>.
     </li>
 
@@ -1080,7 +1111,7 @@ are support for union types and imports.</p>
     will get a validation error message to help with
     migration. See <a href="@routes.DocController.apiJson">apiJson documentation</a>
     for notes on the new enum support.
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/131'>PR 131</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/131'>PR 131</a>
     </li>
 
   </ul>
@@ -1095,11 +1126,11 @@ are support for union types and imports.</p>
     (play 2.2 does not support patch natively). If you need to access
     a service using patch, you can override the PATCH method in the
     generated client to implement your own PATCH method.
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/122'>PR 122</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/122'>PR 122</a>
     </li>
 
     <li>Bug fixed in encoding of path parameters - thanks Gary!
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/120'>PR 120</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/120'>PR 120</a>
     </li>
 
     <li>Play client: FailedResponse class renamed to FailedRequest as
@@ -1109,15 +1140,15 @@ are support for union types and imports.</p>
     default user agent to identify the version of apidoc that
     generated the client as well as the specific org, service, and
     version of the service description used to generate the client.
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/116'>PR 116</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/116'>PR 116</a>
     </li>
 
     <li>Few bug fixes to make enum values more readable and to enable
     using the ruby client library both with objects as well as hashes (from
     json).
-    See <a href='@lib.Util.ApidocGitHubUrl/issues/114'>Issue 114</a>,
-    <a href='@lib.Util.ApidocGitHubUrl/issues/117'>Issue 117</a>,
-    and <a href='@lib.Util.ApidocGitHubUrl/issues/118'>Issue 118</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/issues/114'>Issue 114</a>,
+    <a href='@lib.Util.ApibuilderGitHubUrl/issues/117'>Issue 117</a>,
+    and <a href='@lib.Util.ApibuilderGitHubUrl/issues/118'>Issue 118</a>
     </li>
 
 </li>
@@ -1132,17 +1163,17 @@ are support for union types and imports.</p>
     possible to list org domains (e.g. bryzek.com, giltcity.com) for
     auto association with org when new users
     register.
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/102'>PR 102</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/102'>PR 102</a>
     </li>
 
     <li>Ruby client: Improved support for date time objects (able to
     instantiate models with date times using Ruby's Time or DateTime
     classes, in addition to existing string support.
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/105'>PR 105</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/105'>PR 105</a>
     </li>
 
     <li>Avro: Add support for DataTime.
-    See <a href='@lib.Util.ApidocGitHubUrl/pull/106'>PR 106</a>
+    See <a href='@lib.Util.ApibuilderGitHubUrl/pull/106'>PR 106</a>
     </li>
 
   </ul>
@@ -1211,7 +1242,7 @@ are support for union types and imports.</p>
 
     <li>Added date time helper for parsing date time query parameters
     in play framework routes file. Thanks to Gary Coady - see
-    @lib.Util.ApidocGitHubUrl/pull/62</li>
+    @lib.Util.ApibuilderGitHubUrl/pull/62</li>
 
     <li>Update ruby client to ensure enums are fully supported.</li>
 

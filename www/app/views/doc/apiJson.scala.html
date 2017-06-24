@@ -26,9 +26,9 @@
     where:
     <ul>
       <li><em>name</em>: the human readable name of this service. Used for display, and as the basis for generating a unique key for URL.</li>
-      <li><em>apidoc</em>: optionally specify the specific version of apidoc for which your service is written. If not provided, we automatically default to the current production version. See <a href="#apidoc">Apidoc</a></li></li>
+      <li><em>apidoc</em>: optionally specify the specific version of API Builder for which your service is written. If not provided, we automatically default to the current production version. See <a href="#apidoc">Apidoc</a></li></li>
       <li><em>info</em>: optionally specify additional metadata about this service (e.g. contact info, license). See <a href="#info">Info</a></li></li>
-      <li><em>namespace</em>: specifies the namespace for this service. Namespace is primarily used when other services import definitions from your service and in the code generators when defining things like package names. If not specified, we will automatically generate a namespace based on [organization namespace].[formatted service name].[major version number]. Note that by default apidoc includes the major version number in the package name which allows service authors and clients to interact with multiple versions of the service where changes have been made in a non backwards compatible way.</li>
+      <li><em>namespace</em>: specifies the namespace for this service. Namespace is primarily used when other services import definitions from your service and in the code generators when defining things like package names. If not specified, we will automatically generate a namespace based on [organization namespace].[formatted service name].[major version number]. Note that by default API Builder includes the major version number in the package name which allows service authors and clients to interact with multiple versions of the service where changes have been made in a non backwards compatible way.</li>
       <li><em>baseUrl</em>: the base URL where this service is hosted. Must start with http.</li>
       @description("service")
       <li><em>imports</em> JSON array defining any other services whose schema definitions we would like to import into our service.. See <a href="#import">Import</a></li>
@@ -36,7 +36,7 @@
       <li><em>enums</em> JSON object defining all of the enums in this API. The key of each object is the enum name. See <a href="#enum">Enum</a></li>
       <li><em>models</em> JSON object defining all of the models in this API. The key of each object is the model name. See <a href="#model">Model</a></li>
       <li><em>resources</em> JSON object defining all of the resources in this API. The key of each object is the name of a type that this resource represents. The type must be the name of a model or an enum. See <a href="#resource">Resource</a></li>
-      <li><em>attributes</em> JSON array defining additional meta data about this service. Attributes are used to add custom extensions to Apidoc and are typically used by generators to enable advanced code generation. See <a href="#attribute">Attribute</a></li>
+      <li><em>attributes</em> JSON array defining additional meta data about this service. Attributes are used to add custom extensions to API Builder and are typically used by generators to enable advanced code generation. See <a href="#attribute">Attribute</a></li>
     </ul>
 
   </p>
@@ -113,7 +113,7 @@
 
     where:
     <ul>
-      <li><em>version</em> specifies the version of the apidoc specification that this file is written for. The latest version can be found by visiting <a href="@lib.Util.ApidocSpecExample.docsUrl">@lib.Util.ApidocSpecExample.docsUrl</a>.
+      <li><em>version</em> specifies the version of the API Builder specification that this file is written for. The latest version can be found by visiting <a href="@lib.Util.ApibuilderSpecExample.docsUrl">@lib.Util.ApibuilderSpecExample.docsUrl</a>.
     </ul>
   </p>
 
@@ -426,7 +426,7 @@
 
     where
     <ul>
-      <li><em>uri</em> The complete URI to the service specification that we are importing. Within apidoc, you can find the URL to the service specification by clicking on the &quot;service.json&quot; link for a service. Example: <a href="@lib.Util.ApidocExampleWithVersionNumber.serviceJsonUrl">@lib.Util.fullUrl(lib.Util.ApidocExampleWithVersionNumber.serviceJsonUrl)</a>.</li>
+      <li><em>uri</em> The complete URI to the service specification that we are importing. Within API Builder, you can find the URL to the service specification by clicking on the &quot;service.json&quot; link for a service. Example: <a href="@lib.Util.ApibuilderExampleWithVersionNumber.serviceJsonUrl">@lib.Util.fullUrl(lib.Util.ApibuilderExampleWithVersionNumber.serviceJsonUrl)</a>.</li>
     </ul>
 
   <a name="header"></a>

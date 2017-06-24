@@ -19,7 +19,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
   private[this] implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   def show(orgKey: String, page: Int = 0) = AuthenticatedOrg.async { implicit request =>
-    request.requireMember
+    request.requireMember()
     for {
       orgs <- request.api.Organizations.get(key = Some(orgKey))
       members <- request.api.Memberships.get(orgKey = Some(orgKey),
@@ -31,7 +31,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
 
         case None => Redirect("/").flashing("warning" -> "Organization not found")
 
-        case Some(o: Organization) => {
+        case Some(o: Organization) =>
           val tpl = request.mainTemplate(Some("Members")).copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
           Ok(views.html.members.show(tpl, 
                                      members = PaginatedCollection(page, members),
@@ -39,13 +39,12 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
                                      haveMembershipRequests = requests.nonEmpty
                                      )
           )
-        }
       }
     }
   }
 
   def add(orgKey: String) = AuthenticatedOrg { implicit request =>
-    request.requireMember
+    request.requireMember()
     val filledForm = Members.addMemberForm.fill(Members.AddMemberData(role = Role.Member.key, email = ""))
 
     Ok(views.html.members.add(request.mainTemplate(Some("Add member")),
@@ -53,7 +52,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
   }
 
   def addPost(orgKey: String) = AuthenticatedOrg { implicit request =>
-    request.requireMember
+    request.requireMember()
     val tpl = request.mainTemplate(Some("Add member"))
 
     Members.addMemberForm.bindFromRequest.fold (
@@ -82,7 +81,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
   }
 
   def postRemove(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
-    request.requireAdmin
+    request.requireAdmin()
 
     for {
       response <- request.api.Memberships.deleteByGuid(guid)
@@ -92,7 +91,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
   }
 
   def postRevokeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
-    request.requireAdmin
+    request.requireAdmin()
 
     for {
       membership <- lib.ApiClient.callWith404(request.api.Memberships.getByGuid(guid))
@@ -118,7 +117,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
   }
 
   def postMakeAdmin(orgKey: String, guid: UUID) = AuthenticatedOrg.async { implicit request =>
-    request.requireAdmin
+    request.requireAdmin()
 
     for {
       membership <- lib.ApiClient.callWith404(request.api.Memberships.getByGuid(guid))
@@ -144,14 +143,14 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
   }
 
   def downloadCsv(orgKey: String) = AuthenticatedOrg.async { implicit request =>
-    request.requireAdmin
+    request.requireAdmin()
     for {
-      path <- MemberDownload(request.sessionId, orgKey).csv
+      path <- MemberDownload(request.sessionId, orgKey).csv()
     } yield {
       val date = DateHelper.mediumDateTime(UserTimeZone(request.user), DateTime.now())
       Ok.sendFile(
         content = path,
-        fileName = _ => s"apidoc-${orgKey}-members-${date}.csv"
+        fileName = _ => s"apibuilder-$orgKey-members-$date.csv"
       )
     }
   }
