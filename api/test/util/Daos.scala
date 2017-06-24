@@ -29,4 +29,5 @@ trait Daos {
   def emails = play.api.Play.current.injector.instanceOf[actors.Emails]
   def search = play.api.Play.current.injector.instanceOf[actors.Search]
 
+  def sessionHelper = play.api.Play.current.injector.instanceOf[SessionHelper]
 }

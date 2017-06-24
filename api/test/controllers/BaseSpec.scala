@@ -27,16 +27,14 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
   lazy val client = newClient(TestUser)
 
   def newClient(user: User) = {
-    new io.apibuilder.api.v0.Client(s"http://localhost:$port", Some(apiAuth)) {
-      override def _requestHolder(path: String) = {
-        super._requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
-      }
-    }
+    val auth = sessionHelper.createAuthentication(user)
+    newSessionClient(auth.session.id)
   }
 
   def newSessionClient(sessionId: String) = {
     new io.apibuilder.api.v0.Client(
       s"http://localhost:$port",
+      Some(apiAuth),
       defaultHeaders = Seq("Authorization" -> s"Session $sessionId")
     )
   }

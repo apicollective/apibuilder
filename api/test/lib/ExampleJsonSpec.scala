@@ -7,7 +7,7 @@ import play.api.libs.json.{JsNumber, Json}
 
 class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplication {
 
-  private[this] lazy val service = TestHelper.readService("../spec/apidoc-spec.json")
+  private[this] lazy val service = TestHelper.readService("../spec/apibuilder-spec.json")
   private[this] lazy val exampleAll = ExampleJson.allFields(service)
   private[this] lazy val exampleMinimal = ExampleJson.requiredFieldsOnly(service)
 
