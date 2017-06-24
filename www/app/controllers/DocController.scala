@@ -45,10 +45,6 @@ class DocController extends Controller {
     Ok(views.html.doc.releaseNotes(request.user))
   }
 
-  def todo = Anonymous { implicit request =>
-    Ok(views.html.doc.todo(request.user))
-  }
-
   def playRoutesFile = Anonymous { implicit request =>
     Ok(views.html.doc.playRoutesFile(request.user))
   }

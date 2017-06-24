@@ -13,7 +13,10 @@ import scala.util.{Failure, Success, Try}
 
 object UsersDao {
 
-  val AdminUserEmail = "admin@apidoc.me"
+  val AdminUserEmails = Seq(
+    "admin@apibuilder.io",
+    "admin@apidoc.me"
+  )
 
 }
 
@@ -28,8 +31,8 @@ class UsersDao @Inject() (
   private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
   private[this] def userPasswordsDao = play.api.Play.current.injector.instanceOf[UserPasswordsDao]
 
-  lazy val AdminUser = findByEmail(UsersDao.AdminUserEmail).getOrElse {
-    sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmail}]")
+  lazy val AdminUser = UsersDao.AdminUserEmails.flatMap(findByEmail).headOption.getOrElse {
+    sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmails.mkString(", ")}]")
   }
 
   private[this] val BaseQuery = s"""

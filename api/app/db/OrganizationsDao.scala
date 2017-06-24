@@ -105,7 +105,7 @@ class OrganizationsDao @Inject() (
       case None => {
         isDomainValid(form.namespace.trim) match {
           case true => Seq.empty
-          case false => Seq("Namespace is not valid. Expected a name like io.apibuilder or me.apidoc")
+          case false => Seq("Namespace is not valid. Expected a name like io.apibuilder")
         }
       }
       case Some(org: Organization) => {
@@ -118,7 +118,7 @@ class OrganizationsDao @Inject() (
       case None => Seq(s"Invalid visibility[${form.visibility.toString}]")
     }
 
-    val domainErrors = form.domains.getOrElse(Nil).filter(!isDomainValid(_)).map(d => s"Domain $d is not valid. Expected a domain name like apidoc.me")
+    val domainErrors = form.domains.getOrElse(Nil).filter(!isDomainValid(_)).map(d => s"Domain $d is not valid. Expected a domain name like apibuilder.io")
 
     Validation.errors(nameErrors ++ keyErrors ++ namespaceErrors ++ visibilityErrors ++ domainErrors)
   }

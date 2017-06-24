@@ -33,7 +33,6 @@ GET     /doc/examples                                             controllers.Do
 GET     /doc/generators                                           controllers.DocController.generators
 GET     /doc/history                                              controllers.DocController.history
 GET     /doc/releaseNotes                                         controllers.DocController.releaseNotes
-GET     /doc/todo                                                 controllers.DocController.todo
 GET     /doc/playRoutesFile                                       controllers.DocController.playRoutesFile
 GET     /doc/playUnionTypes                                       controllers.DocController.playUnionTypes
 GET     /doc/apiTokens                                            controllers.DocController.apiTokens

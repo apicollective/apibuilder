@@ -14,7 +14,7 @@
   </p>
 
   <p>
-   The idea for apidoc stems from our team's realization that, in
+   The idea for apibuilder stems from our team's realization that, in
    order to continue iterating and growing, we needed a new approach
    to handle the complexity of a growing microservice architecture.
   </p>
@@ -38,8 +38,8 @@
    <ul>
 
     <li> Incredibly nice clients w/ no dependencies - the developer
-    experience using apidoc clients is amazing - we want developers to
-    love apidoc clients so much they no longer want to write their own
+    experience using apibuilder clients is amazing - we want developers to
+    love apibuilder clients so much they no longer want to write their own
     client libraries.</li>
 
     <li> Zero runtime dependencies / changes in production code.</li>
@@ -49,14 +49,16 @@
     developers - seamlessly including native application, web, and
     backend developers.</li>
 
-    <li> REST first: Specifically api.json starts with a list of
+    <li> Resource first: Specifically api.json starts with a list of
     resources instead of operations as we want to encourage the
-    identification of REST resources as early as possible in the
-    development process.</li>
+    identification of resources as early as possible in the
+    development process. This has proven to be very valuable with
+    the rise of new approaches (like GraphQL) that are themselves
+    resource first.</li>
 
     <li> Simple documentation: Upload a JSON file and you have
     documentation. We want documentation to be first class, simple and
-    immediate. Using apidoc just for documentation is one of our core
+    immediate. Using apibuilder just for documentation is one of our core
     intended use cases.</li>
 
     <li> Simple and terse schema: We wanted a web developer to be able
@@ -71,10 +73,8 @@
 
     <li> Compatibility with existing tools: We borrowed everything we
     could from other projects and thus where possible we adopted
-    standards from existing work. We were heavily inspired by
-    <a href="http://swagger.wordnik.com">swagger</a> in particular and
-    support a subset of swagger 2.0 specs as input into apidoc (still
-    very early and experimental).</li>
+    standards from existing work. This allows API Builder to be fully
+    compatible with other frameworks including Swagger and Avro.</li>
 
    </ul>
 

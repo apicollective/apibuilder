@@ -98,7 +98,7 @@ object TestHelper {
   }
 
   def writeToTempFile(contents: String): String = {
-    val tmpPath = "/tmp/apidoc.tmp." + UUID.randomUUID.toString
+    val tmpPath = "/tmp/apibuilder.tmp." + UUID.randomUUID.toString
     writeToFile(tmpPath, contents)
     tmpPath
   }
@@ -144,7 +144,7 @@ object TestHelper {
 
   def assertEqualsFile(filename: String, contents: String) {
     if (contents.trim != readFile(filename).trim) {
-      val tmpPath = "/tmp/apidoc.tmp." + Text.safeName(filename)
+      val tmpPath = "/tmp/apibuilder.tmp." + Text.safeName(filename)
       TestHelper.writeToFile(tmpPath, contents.trim)
       sys.error(s"Test output did not match. diff $tmpPath $filename")
     }

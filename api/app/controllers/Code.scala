@@ -30,7 +30,7 @@ class Code @Inject() (
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] lazy val apidocVersion = Config.requiredString("git.version")
+  private[this] lazy val apibuilderVersion = Config.requiredString("git.version")
 
   def get(
     orgKey: String,
@@ -55,7 +55,7 @@ class Code @Inject() (
                 Future.successful(Conflict(Json.toJson(Validation.error(s"Generator with key[$generatorKey] not found"))))
               }
               case Some(gws) => {
-                val userAgent = s"apidoc:$apidocVersion ${AppConfig.apidocWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
+                val userAgent = s"apibuilder:$apibuilderVersion ${AppConfig.apibuilderWwwHost}/${orgKey}/${applicationKey}/${version.version}/${gws.generator.key}"
 
                 val attributes = getAllAttributes(version.organization.guid, gws.generator.attributes)
 

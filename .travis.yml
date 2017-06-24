@@ -1,6 +1,6 @@
 language: scala
 scala:
-  - 2.11.8
+  - 2.11.11
 jdk:
   - oraclejdk8
 cache:
@@ -10,7 +10,7 @@ cache:
 services:
   - docker
 before_script:
-  - docker run -d -p 127.0.0.1:7659:5432 flowcommerce/apidoc-postgresql:latest
+  - docker run -d -p 127.0.0.1:7659:5432 flowcommerce/apibuilder-postgresql:latest
 script: 
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test
   # Tricks to avoid unnecessary cache updates
