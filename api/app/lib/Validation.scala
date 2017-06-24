@@ -8,6 +8,7 @@ object Validation {
 
   private[this] val InvalidJsonCode = "invalid_json"
   private[this] val UserAuthorizationFailedCode = "user_authorization_failed"
+  private[this] val Unauthorized = "unauthorized"
   private[this] val ErrorCode = "validation_error"
   private[this] val ServerError = "server_error"
 
@@ -21,6 +22,10 @@ object Validation {
 
   def userAuthorizationFailed(): Seq[Error] = {
     Seq(Error(UserAuthorizationFailedCode, "Email address and/or password did not match"))
+  }
+
+  def unauthorized(message: String): Seq[Error] = {
+    Seq(Error(Unauthorized, message))
   }
 
   def error(message: String): Seq[Error] = {

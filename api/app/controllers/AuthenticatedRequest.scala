@@ -147,7 +147,11 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
     userAuth.user match {
       case None => {
-        Future.successful(Unauthorized(s"Failed authorization or missing ${RequestHelper.UserGuidHeader} header"))
+        Future.successful(
+          Json.toJson(
+            Validate.unauthorized(s"Authorization failed. Verify the 'Authorization' header is provided and contains a valid token")
+          )
+        )
       }
 
       case Some(user) => {
