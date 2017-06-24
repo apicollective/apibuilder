@@ -39,7 +39,7 @@ case class MemberDownload(
           membership.user.guid,
           membership.user.email,
           membership.user.nickname,
-          membership.user.name
+          membership.user.name.getOrElse("")
         )
       )
     }
