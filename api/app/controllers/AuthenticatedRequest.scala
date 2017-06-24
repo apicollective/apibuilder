@@ -40,7 +40,7 @@ private[controllers] object RequestHelper {
     tokenUser match {
       case None => UserAuth(None, None)
       case Some(u) => {
-        if (u.email == UsersDao.AdminUserEmail) {
+        if (UsersDao.AdminUserEmails.contains(u.email)) {
           UserAuth(Some(u), None)
         } else {
           UserAuth(Some(u), Some(u))
