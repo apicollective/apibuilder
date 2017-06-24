@@ -14,9 +14,10 @@ class AuthenticatedOrgRequest[A](
   val org: Organization,
   val isMember: Boolean,
   val isAdmin: Boolean,
+  sessionId: String,
   user: User,
   request: Request[A]
-) extends AuthenticatedRequest[A](user, request) {
+) extends AuthenticatedRequest[A](sessionId, user, request) {
   require(
     !isAdmin || (isAdmin && isMember),
     "A user that is an admin should always be considered a member"
@@ -77,8 +78,8 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             sys.error(s"No org key for request path[${request.path}]")
           }
 
-          val orgOption = lib.ApiClient.awaitCallWith404(Authenticated.api(Some(u)).Organizations.getByKey(orgKey)).headOption
-          val memberships = Await.result(Authenticated.api(Some(u)).Memberships.get(orgKey = Some(orgKey), userGuid = Some(u.guid)), 1000.millis)
+          val orgOption = lib.ApiClient.awaitCallWith404(Authenticated.api(Some(sessionId)).Organizations.getByKey(orgKey)).headOption
+          val memberships = Await.result(Authenticated.api(Some(sessionId)).Memberships.get(orgKey = Some(orgKey), userGuid = Some(u.guid)), 1000.millis)
           orgOption match {
             case None => {
               Future.successful(Redirect("/").flashing("warning" -> s"Organization $orgKey not found"))
@@ -87,7 +88,7 @@ object AuthenticatedOrg extends ActionBuilder[AuthenticatedOrgRequest] {
             case Some(org: Organization) => {
               val isAdmin = !memberships.find(_.role == Role.Admin.key).isEmpty
               val isMember = isAdmin || !memberships.find(_.role == Role.Member.key).isEmpty
-              val authRequest = new AuthenticatedOrgRequest(org, isMember, isAdmin, u, request)
+              val authRequest = new AuthenticatedOrgRequest(org, isMember, isAdmin, sessionId, u, request)
               block(authRequest)
             }
           }

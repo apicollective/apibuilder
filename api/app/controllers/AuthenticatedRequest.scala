@@ -1,11 +1,14 @@
 package controllers
 
 import com.bryzek.apidoc.api.v0.models.{Organization, User}
+import com.bryzek.apidoc.api.v0.models.json._
 import db.{Authorization, MembershipsDao, UsersDao}
+import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.mvc.Results.Unauthorized
 import scala.concurrent.Future
 import util.BasicAuthorization
+import lib.Validation
 
 private[controllers] case class UserAuth(
 
@@ -15,82 +18,40 @@ private[controllers] case class UserAuth(
   tokenUser: Option[User],
 
   /**
-    * The user as identified by the UserGuidHeader
+    * The actual user as identified by the session Id
     */
   user: Option[User]
 )
 
 
-case class AuthHeaders(
-  authorization: Option[String],
-  userGuid: Option[String]
-) extends Controller {
-
-  def toSeq(): Seq[(String, String)] = {
-    Seq(
-      authorization.map { v => (RequestHelper.AuthorizationHeader, v) },
-      userGuid.map { v => (RequestHelper.UserGuidHeader, v) }
-    ).flatten
-  }
-
-}
-
-object AuthHeaders {
-
-  def apply(headers: play.api.mvc.Headers): AuthHeaders = {
-    AuthHeaders(
-      authorization = headers.get(RequestHelper.AuthorizationHeader),
-      userGuid = headers.get(RequestHelper.UserGuidHeader)
-    )
-  }
-
-}
-
 private[controllers] object RequestHelper {
 
   private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
 
-  val UserGuidHeader = "X-User-Guid"
   val AuthorizationHeader = "Authorization"
 
-  def userAuth(authHeaders: AuthHeaders): UserAuth = {
-    val tokenUser: Option[User] = BasicAuthorization.get(authHeaders.authorization).flatMap {
+  def userAuth(headers: Headers): UserAuth = {
+    val tokenUser: Option[User] = BasicAuthorization.get(headers.get(AuthorizationHeader)).flatMap {
       case BasicAuthorization.Token(t) => usersDao.findByToken(t)
       case BasicAuthorization.Session(id) => usersDao.findBySessionId(id)
       case _: BasicAuthorization.User => None
     }
 
-    authHeaders.userGuid.flatMap(usersDao.findByGuid(_)) match {
-      case None => {
-        /**
-          * Currently a hack. If the token user is NOT our system user
-          * that is used by the webapp, then we assume this is a user
-          * accessing the API directly and the user is the same as the
-          * token user (if set).
-          */
-        tokenUser match {
-          case None => UserAuth(None, None)
-          case Some(u) => {
-            if (u.email == UsersDao.AdminUserEmail) {
-              UserAuth(Some(u), None)
-            } else {
-              UserAuth(Some(u), Some(u))
-            }
-          }
+    tokenUser match {
+      case None => UserAuth(None, None)
+      case Some(u) => {
+        if (u.email == UsersDao.AdminUserEmail) {
+          UserAuth(Some(u), None)
+        } else {
+          UserAuth(Some(u), Some(u))
         }
       }
-      case Some(userFromHeader) => {
-        UserAuth(tokenUser, Some(userFromHeader))
-      }
     }
-
   }
-
 
 }
 
 class AnonymousRequest[A](
-  val authHeaders: AuthHeaders,
   val tokenUser: Option[User],
   val user: Option[User],
   request: Request[A]
@@ -103,12 +64,10 @@ class AnonymousRequest[A](
 object AnonymousRequest extends ActionBuilder[AnonymousRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AnonymousRequest[A]) => Future[Result]) = {
-    val headers = AuthHeaders(request.headers)
-    val userAuth = RequestHelper.userAuth(headers)
+    val userAuth = RequestHelper.userAuth(request.headers)
 
     block(
       new AnonymousRequest(
-        authHeaders = headers,
         tokenUser = userAuth.tokenUser,
         user = userAuth.user,
         request = request
@@ -119,7 +78,6 @@ object AnonymousRequest extends ActionBuilder[AnonymousRequest] {
 }
 
 class AuthenticatedRequest[A](
-  val authHeaders: AuthHeaders,
   val tokenUser: User,
   val user: User,
   request: Request[A]
@@ -142,17 +100,23 @@ class AuthenticatedRequest[A](
 object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
-    val headers = AuthHeaders(request.headers)
-    val userAuth = RequestHelper.userAuth(headers)
+    val userAuth = RequestHelper.userAuth(request.headers)
 
     userAuth.user match {
       case None => {
-        Future.successful(Unauthorized(s"Failed authorization or missing ${RequestHelper.UserGuidHeader} header"))
+        Future.successful(
+          Unauthorized(
+            Json.toJson(
+              Validation.unauthorized(
+                "Authorization failed. Verify the 'Authorization' header is provided and contains a valid token"
+              )
+            )
+          )
+        )
       }
 
       case Some(user) => {
         block(new AuthenticatedRequest(
-          authHeaders = headers,
           userAuth.tokenUser.get,
           user,
           request)

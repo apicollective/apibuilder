@@ -8,7 +8,7 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 case class MemberDownload(
-  user: User,
+  sessionId: String,
   orgKey: String
 ) {
 
@@ -20,7 +20,7 @@ case class MemberDownload(
     val writer = CSVWriter.open(file)
     writer.writeRow(Seq("guid", "role", "user_guid", "user_email", "user_nickname", "user_name"))
 
-    val client = ApiClient(Some(user)).client
+    val client = ApiClient(Some(sessionId)).client
 
     Pager.eachPage[Membership] { offset =>
       Await.result(
@@ -39,7 +39,7 @@ case class MemberDownload(
           membership.user.guid,
           membership.user.email,
           membership.user.nickname,
-          membership.user.name
+          membership.user.name.getOrElse("")
         )
       )
     }

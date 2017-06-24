@@ -146,7 +146,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
   def downloadCsv(orgKey: String) = AuthenticatedOrg.async { implicit request =>
     request.requireAdmin
     for {
-      path <- MemberDownload(request.user, orgKey).csv
+      path <- MemberDownload(request.sessionId, orgKey).csv
     } yield {
       val date = DateHelper.mediumDateTime(UserTimeZone(request.user), DateTime.now())
       Ok.sendFile(
