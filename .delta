@@ -1,9 +1,13 @@
 builds:
   - api:
       dockerfile: api/Dockerfile
+      initial.number.instances: 2
+      instance.type: t2.medium
       port.container: 9000
       port.host: 7071
   - www:
       dockerfile: www/Dockerfile
+      initial.number.instances: 2
+      instance.type: t2.small
       port.container: 9000
       port.host: 7070
