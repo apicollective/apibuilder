@@ -257,7 +257,7 @@ class VersionsDao @Inject() (
   }
 
   /**
-    * Upgrades all versions to the latest apidoc spec in multiple
+    * Upgrades all versions to the latest API Builder spec in multiple
     * passes until we have either upgraded all of them or all
     * remaining versions cannot be upgraded.
     */
@@ -292,7 +292,7 @@ class VersionsDao @Inject() (
         val versionName = row[String]("version")
         val versionGuid = row[UUID]("guid")
 
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest apidoc spec version[$ServiceVersionNumber]")
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
 
         val config = ServiceConfiguration(
           orgKey = orgKey,
