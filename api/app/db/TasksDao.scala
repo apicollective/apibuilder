@@ -1,9 +1,9 @@
 package db
 
 import anorm._
-import io.apibuilder.apidoc.internal.v0.models.{Task, TaskData}
-import io.apibuilder.apidoc.internal.v0.models.json._
-import io.apibuilder.apidoc.api.v0.models.User
+import io.apibuilder.internal.v0.models.{Task, TaskData}
+import io.apibuilder.internal.v0.models.json._
+import io.apibuilder.api.v0.models.User
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.DateTime
 import play.api.db._

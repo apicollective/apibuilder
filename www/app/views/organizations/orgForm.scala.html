@@ -23,7 +23,7 @@
 
         @helper.select(
             form("visibility"),
-            Seq( ("" -> "-- select --") ) ++ io.apibuilder.apidoc.api.v0.models.Visibility.all.map( v => (v.toString -> v.toString) ),
+            Seq( ("" -> "-- select --") ) ++ io.apibuilder.api.v0.models.Visibility.all.map( v => (v.toString -> v.toString) ),
             '_label -> "Visibility",
             '_error -> form.error("visibility"),
             '_help -> "Determines whether or not this organization shows up in the public directory."

@@ -1,8 +1,8 @@
 package controllers
 
 import db.OrganizationsDao
-import io.apibuilder.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
-import io.apibuilder.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
+import io.apibuilder.api.v0.models.{Organization, OrganizationForm, Visibility}
+import io.apibuilder.api.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._

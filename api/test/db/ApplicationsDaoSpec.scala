@@ -1,7 +1,7 @@
 package db
 
 import lib.Role
-import io.apibuilder.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OriginalType, Visibility}
+import io.apibuilder.api.v0.models.{Application, ApplicationForm, Organization, OriginalType, Visibility}
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID
@@ -11,7 +11,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
 
   private lazy val baseUrl = "http://localhost"
 
-  private[this] val Original = io.apibuilder.apidoc.api.v0.models.Original(
+  private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
     data = Json.obj("name" -> s"test-${UUID.randomUUID}").toString
   )

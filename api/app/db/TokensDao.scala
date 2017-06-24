@@ -1,6 +1,6 @@
 package db
 
-import io.apibuilder.apidoc.api.v0.models.{CleartextToken, Error, Token, TokenForm, User}
+import io.apibuilder.api.v0.models.{CleartextToken, Error, Token, TokenForm, User}
 import lib.{Constants, Role, TokenGenerator}
 import anorm._
 import javax.inject.{Inject, Singleton}

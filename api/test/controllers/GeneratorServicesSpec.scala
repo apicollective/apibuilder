@@ -2,8 +2,8 @@ package controllers
 
 import db.Authorization
 import db.generators.ServicesDao
-import io.apibuilder.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
-import io.apibuilder.apidoc.api.v0.errors.UnitResponse
+import io.apibuilder.api.v0.models.{GeneratorService, GeneratorServiceForm}
+import io.apibuilder.api.v0.errors.UnitResponse
 import java.util.UUID
 
 import play.api.test._

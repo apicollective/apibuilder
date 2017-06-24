@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.apidoc.api.v0.models.{ Membership, Organization, User }
+import io.apibuilder.api.v0.models.{ Membership, Organization, User }
 import models.MainTemplate
 import lib.Role
 import play.api.mvc._

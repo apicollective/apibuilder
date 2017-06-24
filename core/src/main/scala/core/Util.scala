@@ -1,6 +1,6 @@
 package core
 
-import io.apibuilder.apidoc.spec.v0.models.Enum
+import io.apibuilder.spec.v0.models.Enum
 import java.net.{MalformedURLException, URL}
 import scala.util.{Failure, Success, Try}
 

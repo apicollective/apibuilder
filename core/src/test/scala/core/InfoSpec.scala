@@ -1,6 +1,6 @@
 package core
 
-import io.apibuilder.apidoc.spec.v0.models.{Contact, Info, License}
+import io.apibuilder.spec.v0.models.{Contact, Info, License}
 import lib.VersionTag
 import org.scalatest.{FunSpec, Matchers}
 

@@ -1,6 +1,6 @@
 package db
 
-import io.apibuilder.apidoc.api.v0.models.{Organization, User}
+import io.apibuilder.api.v0.models.{Organization, User}
 import lib.Validation
 
 case class VersionValidator(

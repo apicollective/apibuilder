@@ -1,7 +1,7 @@
 package controllers
 
-import io.apibuilder.apidoc.api.v0.models.PasswordResetRequest
-import io.apibuilder.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.PasswordResetRequest
+import io.apibuilder.api.v0.models.json._
 import lib.Validation
 import db.{PasswordResetRequestsDao, UsersDao}
 import javax.inject.{Inject, Singleton}

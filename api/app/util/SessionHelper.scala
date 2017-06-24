@@ -1,7 +1,7 @@
 package util
 
 import javax.inject.Inject
-import io.apibuilder.apidoc.api.v0.models.{Authentication, User}
+import io.apibuilder.api.v0.models.{Authentication, User}
 import org.joda.time.DateTime
 
 class SessionHelper @Inject() (

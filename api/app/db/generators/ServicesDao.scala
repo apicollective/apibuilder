@@ -1,8 +1,8 @@
 package db.generators
 
-import io.apibuilder.apidoc.api.v0.models.{GeneratorService, GeneratorServiceForm}
+import io.apibuilder.api.v0.models.{GeneratorService, GeneratorServiceForm}
 import db.{AuditsDao, Authorization, SoftDelete}
-import io.apibuilder.apidoc.api.v0.models.{Error, User}
+import io.apibuilder.api.v0.models.{Error, User}
 import core.Util
 import javax.inject.{Inject, Singleton}
 import lib.{Pager, Validation}

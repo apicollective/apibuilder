@@ -1,7 +1,7 @@
 package controllers
 
-import io.apibuilder.apidoc.api.v0.models.{Organization, Application, User, Watch, WatchForm}
-import io.apibuilder.apidoc.api.v0.errors.{ErrorsResponse, FailedRequest}
+import io.apibuilder.api.v0.models.{Organization, Application, User, Watch, WatchForm}
+import io.apibuilder.api.v0.errors.{ErrorsResponse, FailedRequest}
 import java.util.UUID
 
 import play.api.test._

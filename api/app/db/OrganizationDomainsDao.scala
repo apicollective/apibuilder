@@ -1,6 +1,6 @@
 package db
 
-import io.apibuilder.apidoc.api.v0.models.{Domain, Organization, User}
+import io.apibuilder.api.v0.models.{Domain, Organization, User}
 import lib.{Role, UrlKey}
 import anorm._
 import javax.inject.{Inject, Singleton}

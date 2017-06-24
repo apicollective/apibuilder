@@ -2,7 +2,7 @@ package me.apidoc.avro
 
 import lib.{ServiceConfiguration, ServiceValidator}
 import scala.util.{Failure, Success, Try}
-import io.apibuilder.apidoc.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.Service
 
 case class AvroIdlServiceValidator(
   config: ServiceConfiguration,

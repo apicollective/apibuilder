@@ -1,6 +1,6 @@
 package core
 
-import io.apibuilder.apidoc.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.Service
 import scala.util.{Failure, Success, Try}
 
 case class Importer(fetcher: ServiceFetcher, uri: String) {

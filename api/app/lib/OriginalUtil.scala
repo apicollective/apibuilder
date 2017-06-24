@@ -1,8 +1,8 @@
 package lib
 
-import io.apibuilder.apidoc.api.v0.models.{Original, OriginalForm, OriginalType}
-import io.apibuilder.apidoc.spec.v0.models.Service
-import io.apibuilder.apidoc.spec.v0.models.json._
+import io.apibuilder.api.v0.models.{Original, OriginalForm, OriginalType}
+import io.apibuilder.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.json._
 import play.api.libs.json.{Json, JsString, JsObject, JsSuccess}
 import scala.util.{Failure, Success, Try}
 

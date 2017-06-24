@@ -2,8 +2,8 @@ package controllers
 
 import db.AttributesDao
 import lib.Validation
-import io.apibuilder.apidoc.api.v0.models.{User, Attribute, AttributeForm}
-import io.apibuilder.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.{User, Attribute, AttributeForm}
+import io.apibuilder.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import javax.inject.{Inject, Singleton}

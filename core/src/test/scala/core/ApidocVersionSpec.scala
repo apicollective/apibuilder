@@ -14,7 +14,7 @@ class ApidocVersionSpec extends FunSpec with Matchers {
     it("defaults to latest version") {
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
-      validator.service.apidoc.version should be(io.apibuilder.apidoc.spec.v0.Constants.Version)
+      validator.service.apidoc.version should be(io.apibuilder.spec.v0.Constants.Version)
     }
 
   }
@@ -31,7 +31,7 @@ class ApidocVersionSpec extends FunSpec with Matchers {
   """
 
     it("current version is ok") {
-      val json = baseJson.format(io.apibuilder.apidoc.spec.v0.Constants.Version)
+      val json = baseJson.format(io.apibuilder.spec.v0.Constants.Version)
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString("") should be("")
     }
@@ -39,7 +39,7 @@ class ApidocVersionSpec extends FunSpec with Matchers {
     it("rejects invalid version") {
       val json = baseJson.format("!")
       val validator = TestHelper.serviceValidatorFromApiJson(json)
-      validator.errors.mkString("") should be(s"Invalid apidoc version[!]. Latest version of apidoc specification is ${io.apibuilder.apidoc.spec.v0.Constants.Version}")
+      validator.errors.mkString("") should be(s"Invalid apidoc version[!]. Latest version of apidoc specification is ${io.apibuilder.spec.v0.Constants.Version}")
     }
 
   }

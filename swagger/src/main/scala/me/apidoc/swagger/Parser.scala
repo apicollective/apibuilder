@@ -2,7 +2,7 @@ package me.apidoc.swagger
 
 import java.io.File
 
-import io.apibuilder.apidoc.spec.v0.models._
+import io.apibuilder.spec.v0.models._
 import io.swagger.models.parameters.AbstractSerializableParameter
 import io.swagger.models.properties.{ArrayProperty, RefProperty}
 import io.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
@@ -36,7 +36,7 @@ case class Parser(config: ServiceConfiguration) {
     val resourcesAndParamEnums = parseResources(swagger, resolver)
 
     Service(
-      apidoc = Apidoc(version = io.apibuilder.apidoc.spec.v0.Constants.Version),
+      apidoc = Apidoc(version = io.apibuilder.spec.v0.Constants.Version),
       name = info.getTitle(),
       info = Info(
         contact = None,

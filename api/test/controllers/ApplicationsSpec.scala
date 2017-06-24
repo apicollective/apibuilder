@@ -1,8 +1,8 @@
 package controllers
 
 import db.ApplicationsDao
-import io.apibuilder.apidoc.api.v0.models.{Application, ApplicationForm, MoveForm, Organization, Visibility}
-import io.apibuilder.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
+import io.apibuilder.api.v0.models.{Application, ApplicationForm, MoveForm, Organization, Visibility}
+import io.apibuilder.api.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
 
 import play.api.test._

@@ -1,7 +1,7 @@
 package actors
 
-import io.apibuilder.apidoc.api.v0.models.{Application, ApplicationSummary, Organization}
-import io.apibuilder.apidoc.common.v0.models.Reference
+import io.apibuilder.api.v0.models.{Application, ApplicationSummary, Organization}
+import io.apibuilder.common.v0.models.Reference
 import db.{ApplicationsDao, Authorization, ItemsDao, OrganizationsDao}
 import java.util.UUID
 import javax.inject.{Inject, Singleton}

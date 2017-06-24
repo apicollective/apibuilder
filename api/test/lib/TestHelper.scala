@@ -2,8 +2,8 @@ package lib
 
 import db.Authorization
 import builder.OriginalValidator
-import io.apibuilder.apidoc.api.v0.models.{Original, OriginalType}
-import io.apibuilder.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
+import io.apibuilder.api.v0.models.{Original, OriginalType}
+import io.apibuilder.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
 
 import org.scalatest.{FunSpec, ShouldMatchers}
 

@@ -1,6 +1,6 @@
 package db
 
-import io.apibuilder.apidoc.api.v0.models.Visibility
+import io.apibuilder.api.v0.models.Visibility
 import java.util.UUID
 import anorm.NamedParameter
 

@@ -1,6 +1,6 @@
 package core
 
-import io.apibuilder.apidoc.spec.v0.models.Method
+import io.apibuilder.spec.v0.models.Method
 import org.scalatest.{FunSpec, Matchers}
 
 class DeprecationSpec extends FunSpec with Matchers {

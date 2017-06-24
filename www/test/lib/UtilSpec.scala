@@ -1,6 +1,6 @@
 package lib
 
-import io.apibuilder.apidoc.api.v0.models.{OrganizationForm, Visibility}
+import io.apibuilder.api.v0.models.{OrganizationForm, Visibility}
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._
 import java.util.UUID

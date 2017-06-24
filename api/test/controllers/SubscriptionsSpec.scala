@@ -1,7 +1,7 @@
 package controllers
 
-import io.apibuilder.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm}
-import io.apibuilder.apidoc.api.v0.errors.{ErrorsResponse, FailedRequest, UnitResponse}
+import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm}
+import io.apibuilder.api.v0.errors.{ErrorsResponse, FailedRequest, UnitResponse}
 import java.util.UUID
 
 import play.api.test._

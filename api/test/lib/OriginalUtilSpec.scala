@@ -1,6 +1,6 @@
 package lib
 
-import io.apibuilder.apidoc.api.v0.models.{Original, OriginalForm, OriginalType}
+import io.apibuilder.api.v0.models.{Original, OriginalForm, OriginalType}
 import org.scalatest.{FunSpec, ShouldMatchers}
 
 class OriginalUtilSpec extends FunSpec with ShouldMatchers {

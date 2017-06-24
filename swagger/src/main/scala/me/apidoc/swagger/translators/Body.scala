@@ -1,6 +1,6 @@
 package me.apidoc.swagger.translators
 
-import io.apibuilder.apidoc.spec.v0.{ models => apidoc }
+import io.apibuilder.spec.v0.{ models => apidoc }
 import io.swagger.models.{ModelImpl, RefModel}
 import io.swagger.models.{ parameters => swaggerParams }
 

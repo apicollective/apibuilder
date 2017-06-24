@@ -2,7 +2,7 @@ package lib
 
 import java.util.UUID
 
-import io.apibuilder.apidoc.spec.v0.models._
+import io.apibuilder.spec.v0.models._
 import org.joda.time.{DateTime, LocalDate}
 import org.joda.time.format.ISODateTimeFormat
 import play.api.libs.json._

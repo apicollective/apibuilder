@@ -3,11 +3,11 @@ package db
 import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import core.VersionMigration
 import builder.OriginalValidator
-import io.apibuilder.apidoc.api.v0.models.{Application, Original, OriginalType, User, Version, VersionForm, Visibility}
-import io.apibuilder.apidoc.common.v0.models.Reference
-import io.apibuilder.apidoc.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
-import io.apibuilder.apidoc.spec.v0.models.Service
-import io.apibuilder.apidoc.spec.v0.models.json._
+import io.apibuilder.api.v0.models.{Application, Original, OriginalType, User, Version, VersionForm, Visibility}
+import io.apibuilder.common.v0.models.Reference
+import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
+import io.apibuilder.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.json._
 import lib.VersionTag
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
@@ -33,7 +33,7 @@ class VersionsDao @Inject() (
 
   private[this] val LatestVersion = "latest"
 
-  private[this] val ServiceVersionNumber: String = io.apibuilder.apidoc.spec.v0.Constants.Version.toLowerCase
+  private[this] val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
 
   private[this] val BaseQuery = s"""
     select versions.guid, versions.version,

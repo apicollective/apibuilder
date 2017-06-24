@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.apidoc.api.v0.models.{Application, Organization, OriginalForm, OriginalType, Version, VersionForm}
+import io.apibuilder.api.v0.models.{Application, Organization, OriginalForm, OriginalType, Version, VersionForm}
 import java.util.UUID
 
 import play.api.test._

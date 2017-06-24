@@ -1,7 +1,7 @@
 package controllers
 
-import io.apibuilder.apidoc.api.v0.models.{Authentication, PasswordReset}
-import io.apibuilder.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.{Authentication, PasswordReset}
+import io.apibuilder.api.v0.models.json._
 import lib.Validation
 import db.{PasswordResetRequestsDao, UserPasswordsDao, UsersDao}
 import util.SessionHelper

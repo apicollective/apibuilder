@@ -2,8 +2,8 @@ package controllers
 
 import db.{Authorization, SubscriptionsDao}
 import lib.Validation
-import io.apibuilder.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm, User}
-import io.apibuilder.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm, User}
+import io.apibuilder.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._

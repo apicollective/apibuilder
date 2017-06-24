@@ -1,7 +1,7 @@
-@(org: io.apibuilder.apidoc.api.v0.models.Organization,
-  application: io.apibuilder.apidoc.api.v0.models.Application,
+@(org: io.apibuilder.api.v0.models.Organization,
+  application: io.apibuilder.api.v0.models.Application,
   version: String,
-  service: io.apibuilder.apidoc.spec.v0.models.Service
+  service: io.apibuilder.spec.v0.models.Service
 )
 
 @service.resources.map { resource =>
@@ -56,10 +56,10 @@
                      @operation.responses.map { response =>
                        <tr>
                          <th>HTTP @{response.code match {
-                           case io.apibuilder.apidoc.spec.v0.models.ResponseCodeInt(value) => value
-                           case io.apibuilder.apidoc.spec.v0.models.ResponseCodeOption.Default => "*"
-                           case io.apibuilder.apidoc.spec.v0.models.ResponseCodeOption.UNDEFINED(value) => value
-                           case io.apibuilder.apidoc.spec.v0.models.ResponseCodeUndefinedType(value) => value
+                           case io.apibuilder.spec.v0.models.ResponseCodeInt(value) => value
+                           case io.apibuilder.spec.v0.models.ResponseCodeOption.Default => "*"
+                           case io.apibuilder.spec.v0.models.ResponseCodeOption.UNDEFINED(value) => value
+                           case io.apibuilder.spec.v0.models.ResponseCodeUndefinedType(value) => value
                          }}</th>
                          <td>@datatype(org, application, version, service, response.`type`)</td>
                        </tr>

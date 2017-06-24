@@ -1,7 +1,7 @@
 package controllers
 
-import io.apibuilder.apidoc.api.v0.models.EmailVerificationConfirmationForm
-import io.apibuilder.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
+import io.apibuilder.api.v0.models.json._
 import db.EmailVerificationsDao
 import java.util.UUID
 import javax.inject.{Inject, Singleton}

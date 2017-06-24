@@ -1,6 +1,6 @@
 package core
 
-import io.apibuilder.apidoc.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.Service
 import lib.{Kind, PrimitiveMetadata, Primitives}
 import java.util.UUID
 

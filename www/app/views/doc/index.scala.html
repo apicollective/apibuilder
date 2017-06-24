@@ -1,4 +1,4 @@
-@(user: Option[io.apibuilder.apidoc.api.v0.models.User])
+@(user: Option[io.apibuilder.api.v0.models.User])
 
 @doc.main(routes.DocController.index.url, user) {
 
@@ -78,7 +78,7 @@
 
     <p><b>Example from Scala:</b></p>
     <pre>
-      val client = new io.apibuilder.apidoc.api.v0.Client("http://localhost:8000")
+      val client = new io.apibuilder.api.v0.Client("http://localhost:8000")
 
       val organizations = client.organizations.get(limit = 10, offset = 0)
       organizations.foreach { org =>

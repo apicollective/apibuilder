@@ -1,7 +1,7 @@
 package db
 
-import io.apibuilder.apidoc.api.v0.models.{ApplicationSummary, Item, Organization}
-import io.apibuilder.apidoc.common.v0.models.Reference
+import io.apibuilder.api.v0.models.{ApplicationSummary, Item, Organization}
+import io.apibuilder.common.v0.models.Reference
 import org.scalatest.{FunSpec, Matchers}
 import org.postgresql.util.PSQLException
 import java.util.UUID

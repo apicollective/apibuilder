@@ -1,7 +1,7 @@
 package controllers
 
-import io.apibuilder.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeValueForm, Organization, OrganizationForm, User}
-import io.apibuilder.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.{Attribute, AttributeSummary, AttributeValueForm, Organization, OrganizationForm, User}
+import io.apibuilder.api.v0.models.json._
 import lib.Validation
 import db.{AttributesDao, Authorization, OrganizationsDao, OrganizationAttributeValuesDao}
 import javax.inject.{Inject, Singleton}

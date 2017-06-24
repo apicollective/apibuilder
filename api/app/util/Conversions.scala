@@ -1,6 +1,6 @@
 package util
 
-import io.apibuilder.apidoc.api.v0.models.{Authentication, Session, User}
+import io.apibuilder.api.v0.models.{Authentication, Session, User}
 
 object Conversions {
 

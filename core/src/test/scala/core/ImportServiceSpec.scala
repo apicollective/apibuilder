@@ -1,7 +1,7 @@
 package core
 
 import builder.OriginalValidator
-import io.apibuilder.apidoc.api.v0.models.{Original, OriginalType}
+import io.apibuilder.api.v0.models.{Original, OriginalType}
 import org.scalatest.{FunSpec, Matchers}
 
 class ImportServiceSpec extends FunSpec with Matchers {

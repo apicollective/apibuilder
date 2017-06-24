@@ -1,7 +1,7 @@
 package lib
 
-import io.apibuilder.apidoc.api.v0.models.{Application, Organization}
-import io.apibuilder.apidoc.spec.v0.models.{Import, Service}
+import io.apibuilder.api.v0.models.{Application, Organization}
+import io.apibuilder.spec.v0.models.{Import, Service}
 import play.api.Logger
 
 case class TypeLabel(

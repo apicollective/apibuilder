@@ -1,6 +1,6 @@
 package db
 
-import io.apibuilder.apidoc.common.v0.models.{Audit, ReferenceGuid}
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import anorm._
 import anorm.JodaParameterMetaData._
 import org.joda.time.DateTime

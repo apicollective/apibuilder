@@ -2,8 +2,8 @@ package db
 
 import lib.Text
 import lib.query.{Query, QueryParser}
-import io.apibuilder.apidoc.api.v0.models.{ApplicationSummary, Item, ItemDetail, ItemDetailUndefinedType, User}
-import io.apibuilder.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.{ApplicationSummary, Item, ItemDetail, ItemDetailUndefinedType, User}
+import io.apibuilder.api.v0.models.json._
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._

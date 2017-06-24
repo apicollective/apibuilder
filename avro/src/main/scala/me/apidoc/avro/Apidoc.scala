@@ -2,7 +2,7 @@ package me.apidoc.avro
 
 import org.apache.avro.Schema
 import scala.collection.JavaConversions._
-import io.apibuilder.apidoc.spec.v0.models._
+import io.apibuilder.spec.v0.models._
 
 object Apidoc {
 
@@ -35,7 +35,7 @@ object Apidoc {
         Some(field.defaultValue().toString())
       }
 
-      io.apibuilder.apidoc.spec.v0.models.Field(
+      io.apibuilder.spec.v0.models.Field(
         name = Util.formatName(field.name),
         `type` = t.name,
         description = Util.toOption(field.doc),

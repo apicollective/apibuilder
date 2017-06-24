@@ -1,7 +1,7 @@
 package me.apidoc.swagger.translators
 
 import me.apidoc.swagger.Util
-import io.apibuilder.apidoc.spec.v0.{ models => apidoc }
+import io.apibuilder.spec.v0.{ models => apidoc }
 import io.swagger.{ models => swagger }
 
 object Resource {

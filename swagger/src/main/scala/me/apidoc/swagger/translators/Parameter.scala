@@ -2,7 +2,7 @@ package me.apidoc.swagger.translators
 
 import lib.Primitives
 import me.apidoc.swagger.{SchemaType, Util}
-import io.apibuilder.apidoc.spec.v0.{models => apidoc}
+import io.apibuilder.spec.v0.{models => apidoc}
 import io.swagger.models.{parameters => swaggerparams, properties => swaggerproperties}
 
 object Parameter {

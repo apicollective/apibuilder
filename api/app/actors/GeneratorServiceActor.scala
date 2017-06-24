@@ -2,9 +2,9 @@ package actors
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
 import lib.Pager
-import io.apibuilder.apidoc.api.v0.models.{GeneratorForm, GeneratorService}
-import io.apibuilder.apidoc.generator.v0.Client
-import io.apibuilder.apidoc.generator.v0.models.Generator
+import io.apibuilder.api.v0.models.{GeneratorForm, GeneratorService}
+import io.apibuilder.generator.v0.Client
+import io.apibuilder.generator.v0.models.Generator
 import db.{Authorization, UsersDao}
 import db.generators.{GeneratorsDao, ServicesDao}
 import play.api.Logger

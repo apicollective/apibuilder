@@ -1,9 +1,9 @@
 package db
 
-import io.apibuilder.apidoc.api.v0.models._
-import io.apibuilder.apidoc.api.v0.models.json._
-import io.apibuilder.apidoc.common.v0.models.{Audit, ReferenceGuid}
-import io.apibuilder.apidoc.common.v0.models.json._
+import io.apibuilder.api.v0.models._
+import io.apibuilder.api.v0.models.json._
+import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
+import io.apibuilder.common.v0.models.json._
 import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
 import javax.inject.{Inject, Singleton}
@@ -60,7 +60,7 @@ class OrganizationsDao @Inject() (
   def validate(
     form: OrganizationForm,
     existing: Option[Organization] = None
-  ): Seq[io.apibuilder.apidoc.api.v0.models.Error] = {
+  ): Seq[io.apibuilder.api.v0.models.Error] = {
 
     val nameErrors = if (form.name.length < MinNameLength) {
       Seq(s"name must be at least $MinNameLength characters")

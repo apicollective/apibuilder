@@ -1,8 +1,8 @@
 package controllers
 
 import db.AttributesDao
-import io.apibuilder.apidoc.api.v0.models.{Attribute, AttributeForm}
-import io.apibuilder.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
+import io.apibuilder.api.v0.models.{Attribute, AttributeForm}
+import io.apibuilder.api.v0.errors.{ErrorsResponse, UnitResponse}
 
 import play.api.test._
 import play.api.test.Helpers._

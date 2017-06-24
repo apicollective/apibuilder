@@ -1,7 +1,7 @@
 package models
 
-import io.apibuilder.apidoc.api.v0.models.{Attribute, Application, GeneratorService, GeneratorWithService, Organization, User, Version}
-import io.apibuilder.apidoc.spec.v0.models.{Resource, Service}
+import io.apibuilder.api.v0.models.{Attribute, Application, GeneratorService, GeneratorWithService, Organization, User, Version}
+import io.apibuilder.spec.v0.models.{Resource, Service}
 import play.api.Play.current
 
 case class UserTimeZone(

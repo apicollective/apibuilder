@@ -1,6 +1,6 @@
 package me.apidoc.swagger
 
-import io.apibuilder.apidoc.spec.v0.models.Attribute
+import io.apibuilder.spec.v0.models.Attribute
 import io.swagger.models.auth.SecuritySchemeDefinition
 import io.swagger.models.{ExternalDocs, Scheme, SecurityRequirement}
 import me.apidoc.swagger.SwaggerData._
