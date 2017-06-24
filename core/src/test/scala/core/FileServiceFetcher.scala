@@ -1,7 +1,7 @@
 package core
 
-import com.bryzek.apidoc.spec.v0.models.Service
-import com.bryzek.apidoc.spec.v0.models.json._
+import io.apibuilder.apidoc.spec.v0.models.Service
+import io.apibuilder.apidoc.spec.v0.models.json._
 import play.api.libs.json.Json
 import java.net.URI
 

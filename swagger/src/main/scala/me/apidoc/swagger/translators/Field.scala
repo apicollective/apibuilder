@@ -2,7 +2,7 @@ package me.apidoc.swagger.translators
 
 import lib.Primitives
 import me.apidoc.swagger.Util
-import com.bryzek.apidoc.spec.v0.{ models => apidoc }
+import io.apibuilder.apidoc.spec.v0.{ models => apidoc }
 import io.swagger.{ models => swagger }
 import io.swagger.models.properties._
 import scala.collection.JavaConversions._

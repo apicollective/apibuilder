@@ -1,6 +1,6 @@
 package core
 
-import com.bryzek.apidoc.spec.v0.models.Method
+import io.apibuilder.apidoc.spec.v0.models.Method
 import org.scalatest.{FunSpec, Matchers}
 
 class SvcApiDocJson extends FunSpec with Matchers {

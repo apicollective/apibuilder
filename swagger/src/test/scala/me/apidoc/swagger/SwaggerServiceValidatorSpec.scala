@@ -1,8 +1,8 @@
 package me.apidoc.swagger
 
-import com.bryzek.apidoc.spec.v0.models.Method.{Delete, Get}
-import com.bryzek.apidoc.spec.v0.models.ParameterLocation.{Path, Query}
-import com.bryzek.apidoc.spec.v0.models.{EnumValue, _}
+import io.apibuilder.apidoc.spec.v0.models.Method.{Delete, Get}
+import io.apibuilder.apidoc.spec.v0.models.ParameterLocation.{Path, Query}
+import io.apibuilder.apidoc.spec.v0.models.{EnumValue, _}
 import lib.ServiceConfiguration
 import org.scalatest.{FunSpec, Matchers}
 import play.api.libs.json.{JsArray, JsNull, JsObject, JsString}

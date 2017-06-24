@@ -1,6 +1,6 @@
 package core
 
-import com.bryzek.apidoc.spec.v0.models.Service
+import io.apibuilder.apidoc.spec.v0.models.Service
 
 trait ServiceFetcher {
 

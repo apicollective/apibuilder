@@ -1,7 +1,7 @@
 package me.apidoc.swagger.translators
 
 import me.apidoc.swagger.{SchemaType, Util}
-import com.bryzek.apidoc.spec.v0.{ models => apidoc }
+import io.apibuilder.apidoc.spec.v0.{ models => apidoc }
 import io.swagger.models.RefModel
 import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
 

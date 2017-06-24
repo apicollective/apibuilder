@@ -1,8 +1,8 @@
 package builder
 
 import core.{TypeValidator, TypesProvider}
-import com.bryzek.apidoc.spec.v0.models.{ResponseCodeInt, Header, Method, Operation, ParameterLocation, ResponseCode}
-import com.bryzek.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union}
+import io.apibuilder.apidoc.spec.v0.models.{ResponseCodeInt, Header, Method, Operation, ParameterLocation, ResponseCode}
+import io.apibuilder.apidoc.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union}
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
 
 case class ServiceSpecValidator(
@@ -64,7 +64,7 @@ case class ServiceSpecValidator(
 
   private def validateApidoc(): Seq[String] = {
     val specified = VersionTag(service.apidoc.version)
-    val current = com.bryzek.apidoc.spec.v0.Constants.Version
+    val current = io.apibuilder.apidoc.spec.v0.Constants.Version
     specified.major match {
       case None => {
         Seq(s"Invalid apidoc version[${service.apidoc.version}]. Latest version of apidoc specification is $current")

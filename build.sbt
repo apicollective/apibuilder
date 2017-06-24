@@ -4,7 +4,7 @@ import scoverage.ScoverageKeys
 
 name := "apidoc"
 
-organization := "com.bryzek.apidoc"
+organization := "io.apibuilder.apidoc"
 
 scalaVersion in ThisBuild := "2.11.8"
 
@@ -74,7 +74,7 @@ lazy val api = project
   .settings(commonSettings: _*)
   .settings(
     testOptions += Tests.Argument("-oF"),
-    routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
+    routesImport += "io.apibuilder.apidoc.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
     libraryDependencies ++= Seq(
@@ -97,7 +97,7 @@ lazy val www = project
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
-    routesImport += "com.bryzek.apidoc.api.v0.Bindables._",
+    routesImport += "io.apibuilder.apidoc.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       "org.apache.commons" % "commons-compress" % "1.13",
@@ -123,7 +123,7 @@ lazy val spec = project
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("apidoc-" + _),
-  organization := "com.bryzek.apidoc",
+  organization := "io.apibuilder.apidoc",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.2",
     "org.scalatest" %% "scalatest" % "2.2.6" % "test"

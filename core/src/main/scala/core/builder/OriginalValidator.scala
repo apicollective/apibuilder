@@ -1,8 +1,8 @@
 package builder
 
 import builder.api_json.{ApiJsonServiceValidator, ServiceJsonServiceValidator}
-import com.bryzek.apidoc.api.v0.models.{Original, OriginalType}
-import com.bryzek.apidoc.spec.v0.models.Service
+import io.apibuilder.apidoc.api.v0.models.{Original, OriginalType}
+import io.apibuilder.apidoc.spec.v0.models.Service
 import core.{ServiceFetcher, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator}
 import me.apidoc.avro.AvroIdlServiceValidator

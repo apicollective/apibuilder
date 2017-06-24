@@ -1,6 +1,6 @@
 package core
 
-import com.bryzek.apidoc.spec.v0.models.{Application, Organization, Import}
+import io.apibuilder.apidoc.spec.v0.models.{Application, Organization, Import}
 import org.scalatest.{FunSpec, Matchers}
 
 class ImporterSpec extends FunSpec with Matchers {

@@ -1,7 +1,7 @@
 package builder.api_json
 
-import com.bryzek.apidoc.spec.v0.models.Service
-import com.bryzek.apidoc.spec.v0.models.json._
+import io.apibuilder.apidoc.spec.v0.models.Service
+import io.apibuilder.apidoc.spec.v0.models.json._
 import lib.ServiceValidator
 import play.api.libs.json.{Json, JsError, JsSuccess}
 import com.fasterxml.jackson.core.{JsonParseException, JsonProcessingException}

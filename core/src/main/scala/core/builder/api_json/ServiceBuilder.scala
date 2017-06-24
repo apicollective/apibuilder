@@ -2,7 +2,7 @@ package builder.api_json
 
 import core.{Importer, ServiceFetcher, VersionMigration, TypesProvider, TypesProviderEnum, TypesProviderModel, TypesProviderUnion}
 import lib.{Methods, Primitives, ServiceConfiguration, Text, Kind, UrlKey}
-import com.bryzek.apidoc.spec.v0.models._
+import io.apibuilder.apidoc.spec.v0.models._
 import play.api.libs.json._
 import scala.util.{Failure, Success, Try}
 
@@ -52,7 +52,7 @@ case class ServiceBuilder(
     Service(
       apidoc = internal.apidoc.flatMap(_.version) match {
         case Some(v) => Apidoc(version = v)
-        case None => Apidoc(version = com.bryzek.apidoc.spec.v0.Constants.Version)
+        case None => Apidoc(version = io.apibuilder.apidoc.spec.v0.Constants.Version)
       },
       info = info,
       name = name,

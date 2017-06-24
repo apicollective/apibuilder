@@ -1,6 +1,6 @@
 package core
 
-import com.bryzek.apidoc.spec.v0.models.ParameterLocation
+import io.apibuilder.apidoc.spec.v0.models.ParameterLocation
 import org.scalatest.{FunSpec, Matchers}
 
 class ServiceValidatorSpec extends FunSpec with Matchers {
