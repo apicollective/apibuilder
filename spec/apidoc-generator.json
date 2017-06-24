@@ -1,7 +1,7 @@
 {
-  "name": "apidoc generator",
-  "description": "Documentation for an apidoc code generator API",
-  "base_url": "http://www.apidoc.me",
+  "name": "apibuilder generator",
+  "description": "Documentation for an apibuilder code generator API",
+  "base_url": "http://www.apibuilder.io",
 
   "info": {
     "contact": {
@@ -17,8 +17,8 @@
 
 
   "imports": [
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-common/latest/service.json" },
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-spec/latest/service.json" }
+    { "uri": "http://www.apibuilder.io/bryzek/apibuilder-common/latest/service.json" },
+    { "uri": "http://www.apibuilder.io/bryzek/apibuilder-spec/latest/service.json" }
   ],
 
   "info": {
@@ -41,7 +41,7 @@
         { "name": "name", "type": "string" },
         { "name": "language", "type": "string", "required": false, "description": "A comma separate list of the programming language(s) that this generator produces", "example": "scala" },
         { "name": "description", "type": "string", "required": false },
-        { "name": "attributes", "type": "[string]", "default": "[]", "description": "The list of attributes that this code generator can use. You can find the full list of available attributes and their descriptions at http://apidoc.me/doc/attributes" }
+        { "name": "attributes", "type": "[string]", "default": "[]", "description": "The list of attributes that this code generator can use. You can find the full list of available attributes and their descriptions at http://apibuilder.io/doc/attributes" }
       ]
     },
 
@@ -49,7 +49,7 @@
       "description": "Represents a source file",
       "fields": [
         { "name": "name", "type": "string", "description": "The recommended name for the file.", "example": "BryzekApidocApiClient.scala" },
-	{ "name": "dir", "type": "string", "description": "The recommended directory path for the file where appropriate.", "example": "com/bryzek/apidoc", "required": false },
+	{ "name": "dir", "type": "string", "description": "The recommended directory path for the file where appropriate.", "example": "com/bryzek/apibuilder", "required": false },
         { "name": "contents", "type": "string", "description": "The actual source code." }
       ]
     },
@@ -65,7 +65,7 @@
     "invocation_form": {
       "description": "The invocation form is the payload send to the code generators when requesting generation of client code.",
       "fields": [
-        { "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service" },
+        { "name": "service", "type": "com.bryzek.apibuilder.spec.v0.models.service" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
         { "name": "user_agent", "type": "string", "required": false }
       ]
