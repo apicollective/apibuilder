@@ -17,21 +17,9 @@
 
 
   "imports": [
-    { "uri": "http://www.apibuilder.io/bryzek/apibuilder-common/latest/service.json" },
-    { "uri": "http://www.apibuilder.io/bryzek/apibuilder-spec/latest/service.json" }
+    { "uri": "http://www.apibuilder.io/apicollective/apibuilder-common/latest/service.json" },
+    { "uri": "http://www.apibuilder.io/apicollective/apibuilder-spec/latest/service.json" }
   ],
-
-  "info": {
-    "contact": {
-      "name": "Michael Bryzek",
-      "email": "mbryzek@alum.mit.edu",
-      "url": "http://twitter.com/mbryzek"
-    },
-    "license": {
-      "name": "MIT",
-      "url": "http://opensource.org/licenses/MIT"
-    }
-  },
 
   "models": {
     "generator": {
@@ -48,8 +36,8 @@
     "file": {
       "description": "Represents a source file",
       "fields": [
-        { "name": "name", "type": "string", "description": "The recommended name for the file.", "example": "BryzekApidocApiClient.scala" },
-	{ "name": "dir", "type": "string", "description": "The recommended directory path for the file where appropriate.", "example": "com/bryzek/apibuilder", "required": false },
+        { "name": "name", "type": "string", "description": "The recommended name for the file.", "example": "ApiCollectiveApiBuilderApiClient.scala" },
+	{ "name": "dir", "type": "string", "description": "The recommended directory path for the file where appropriate.", "example": "io/apicollective/apibuilder", "required": false },
         { "name": "contents", "type": "string", "description": "The actual source code." }
       ]
     },
@@ -65,7 +53,7 @@
     "invocation_form": {
       "description": "The invocation form is the payload send to the code generators when requesting generation of client code.",
       "fields": [
-        { "name": "service", "type": "com.bryzek.apibuilder.spec.v0.models.service" },
+        { "name": "service", "type": "io.apibuilder.spec.v0.models.service" },
         { "name": "attributes", "type": "[attribute]", "default": "[]" },
         { "name": "user_agent", "type": "string", "required": false }
       ]

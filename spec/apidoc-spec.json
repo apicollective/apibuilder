@@ -67,7 +67,7 @@
 	{ "name": "name", "type": "string" },
 	{ "name": "organization", "type": "organization" },
 	{ "name": "application", "type": "application" },
-	{ "name": "namespace", "type": "string", "description": "Fully qualified namespace for this service", "example": "com.bryzek.apibuilder" },
+	{ "name": "namespace", "type": "string", "description": "Fully qualified namespace for this service", "example": "io.apibuilder" },
 	{ "name": "version", "type": "string", "example": "1.0.0" },
 	{ "name": "base_url", "type": "string", "required": false },
 	{ "name": "description", "type": "string", "required": false },
@@ -262,8 +262,8 @@
     "import": {
       "description": "An import is used to declare a dependency on another application. This allows you to reference the models and or enums from that application in your own app.",
       "fields": [
-	{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "http://www.apibuilder.io/bryzek/apibuilder-spec/0.7.38/service.json"  },
-	{ "name": "namespace", "type": "string", "description": "the fully qualified namespace that we have imported", "example": "com.bryzek.apibuilder" },
+	{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "http://www.apibuilder.io/apicollective/apibuilder-spec/0.7.38/service.json"  },
+	{ "name": "namespace", "type": "string", "description": "the fully qualified namespace that we have imported", "example": "io.apibuilder" },
 	{ "name": "organization", "type": "organization" },
 	{ "name": "application", "type": "application" },
 	{ "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
