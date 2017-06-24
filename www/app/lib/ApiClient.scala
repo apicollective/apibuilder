@@ -47,7 +47,7 @@ object ApiClient {
 case class ApiClient(sessionId: Option[String]) {
 
   private[this] val baseUrl = Config.requiredString("apibuilder.api.host")
-  private[this] val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
+  private[this] val apiAuth = Authorization.Basic(Config.requiredString("apibuilder.api.token"))
 
   val client: Client = new io.apibuilder.api.v0.Client(
     baseUrl = baseUrl,
