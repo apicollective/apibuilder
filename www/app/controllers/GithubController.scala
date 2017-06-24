@@ -15,6 +15,14 @@ class GithubController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  def redirect(returnUrl: Option[String]) = Action {
+    Redirect(routes.GithubController.index(returnUrl))
+  }
+
+  def index(returnUrl: Option[String]) = Action {
+    Redirect(lib.Github.oauthUrl(returnUrl = returnUrl))
+  }
+
   def callback(
     code: String,
     returnUrl: String
