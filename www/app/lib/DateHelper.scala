@@ -3,7 +3,7 @@ package lib
 import models.UserTimeZone
 import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.DateTimeFormat
-import com.bryzek.apidoc.api.v0.models.User
+import io.apibuilder.api.v0.models.User
 
 object DateHelper {
 

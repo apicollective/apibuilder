@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.TokenForm
+import io.apibuilder.api.v0.models.TokenForm
 import lib.{Pagination, PaginatedCollection}
 import models.MainTemplate
 import play.api.data._
@@ -90,7 +90,7 @@ class TokensController @Inject() (val messagesApi: MessagesApi) extends Controll
         ).map { token =>
           Redirect(routes.TokensController.show(token.guid)).flashing("success" -> "Token created")
         }.recover {
-          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
             Ok(views.html.tokens.create(tpl, form, r.errors.map(_.message)))
           }
         }

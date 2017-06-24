@@ -1,7 +1,7 @@
 package me.apidoc.swagger.translators
 
-import com.bryzek.apidoc.spec.v0.models.EnumValue
-import com.bryzek.apidoc.spec.v0.{models => apidoc}
+import io.apibuilder.spec.v0.models.EnumValue
+import io.apibuilder.spec.v0.{models => apidoc}
 import io.swagger.{models => swagger}
 import lib.Text
 import me.apidoc.swagger.{SwaggerData, Util}

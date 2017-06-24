@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{Authentication, Session, User, UserForm, UserUpdateForm}
-import com.bryzek.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.{Authentication, Session, User, UserForm, UserUpdateForm}
+import io.apibuilder.api.v0.models.json._
 import lib.Validation
 import util.{Conversions, SessionIdGenerator, SessionHelper}
 import db.{UserPasswordsDao, UsersDao}

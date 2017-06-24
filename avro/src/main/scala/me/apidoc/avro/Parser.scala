@@ -11,7 +11,7 @@ import play.api.libs.json.{Json, JsArray, JsObject, JsString, JsValue}
 import java.util.UUID
 
 import lib.Text
-import com.bryzek.apidoc.spec.v0.models._
+import io.apibuilder.spec.v0.models._
 
 private[avro] case class Builder() {
 
@@ -26,7 +26,7 @@ private[avro] case class Builder() {
     applicationKey: String
   ): Service = {
     Service(
-      apidoc = com.bryzek.apidoc.spec.v0.models.Apidoc(version = com.bryzek.apidoc.spec.v0.Constants.Version),
+      apidoc = io.apibuilder.spec.v0.models.Apidoc(version = io.apibuilder.spec.v0.Constants.Version),
       name = name,
       info = Info(license = None, contact = None),
       baseUrl = None,

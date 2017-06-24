@@ -1,8 +1,8 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
-import com.bryzek.apidoc.api.v0.models.json._
-import com.bryzek.apidoc.spec.v0.models.{Service, UnionType}
+import io.apibuilder.api.v0.models.{Application, ApplicationForm, Error, Organization, Original, User, Version, VersionForm, Visibility}
+import io.apibuilder.api.v0.models.json._
+import io.apibuilder.spec.v0.models.{Service, UnionType}
 import lib._
 import builder.OriginalValidator
 import db._

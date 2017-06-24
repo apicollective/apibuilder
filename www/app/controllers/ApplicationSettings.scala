@@ -1,8 +1,8 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, MoveForm, Organization, User, Visibility}
-import com.bryzek.apidoc.spec.v0.models.Service
-import com.bryzek.apidoc.spec.v0.models.json._
+import io.apibuilder.api.v0.models.{Application, ApplicationForm, MoveForm, Organization, User, Visibility}
+import io.apibuilder.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.json._
 import models._
 
 import javax.inject.Inject
@@ -34,7 +34,7 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
   }
 
   private[this] def mainTemplate(
-    api: com.bryzek.apidoc.api.v0.Client,
+    api: io.apibuilder.api.v0.Client,
     base: MainTemplate,
     applicationKey: String,
     versionName: String = "latest"
@@ -110,7 +110,7 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
               ).map { app =>
                 Redirect(routes.ApplicationSettings.show(request.org.key, application.key, versionName)).flashing("success" -> s"Settings updated")
               }.recover {
-                case response: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+                case response: io.apibuilder.api.v0.errors.ErrorsResponse => {
                   Ok(views.html.application_settings.form(tpl, boundForm, response.errors.map(_.message)))
                 }
               }
@@ -161,7 +161,7 @@ class ApplicationSettings @Inject() (val messagesApi: MessagesApi) extends Contr
               ).map { app =>
                 Redirect(routes.ApplicationSettings.show(app.organization.key, app.key, "latest")).flashing("success" -> s"Application moved")
               }.recover {
-                case response: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+                case response: io.apibuilder.api.v0.errors.ErrorsResponse => {
                   Ok(views.html.application_settings.move_form(tpl, boundForm, response.errors.map(_.message)))
                 }
               }

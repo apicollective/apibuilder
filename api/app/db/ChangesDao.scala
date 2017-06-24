@@ -1,9 +1,9 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Application, Change, ChangeVersion, User, UserSummary, Version}
-import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
-import com.bryzek.apidoc.common.v0.models.{Reference, ReferenceGuid}
-import com.bryzek.apidoc.internal.v0.models.json._
+import io.apibuilder.api.v0.models.{Application, Change, ChangeVersion, User, UserSummary, Version}
+import io.apibuilder.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking, DiffUndefinedType}
+import io.apibuilder.common.v0.models.{Reference, ReferenceGuid}
+import io.apibuilder.internal.v0.models.json._
 import anorm._
 import anorm.JodaParameterMetaData._
 import javax.inject.{Inject, Named, Singleton}

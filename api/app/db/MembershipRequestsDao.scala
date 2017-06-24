@@ -1,8 +1,8 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{MembershipRequest, Organization, User}
-import com.bryzek.apidoc.api.v0.models.json._
-import com.bryzek.apidoc.common.v0.models.json._
+import io.apibuilder.api.v0.models.{MembershipRequest, Organization, User}
+import io.apibuilder.api.v0.models.json._
+import io.apibuilder.common.v0.models.json._
 import lib.Role
 import anorm._
 import javax.inject.{Inject, Named, Singleton}

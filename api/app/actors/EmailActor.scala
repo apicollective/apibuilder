@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
 import db._
-import com.bryzek.apidoc.api.v0.models.{Application, Membership, Publication, Version}
+import io.apibuilder.api.v0.models.{Application, Membership, Publication, Version}
 import lib.{Email, Person, Role}
 import play.api.Logger
 import akka.actor.Actor

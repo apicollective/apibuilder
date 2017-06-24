@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.UserForm
+import io.apibuilder.api.v0.models.UserForm
 import lib.Role
 import org.scalatest.{FunSpec, Matchers}
 import org.junit.Assert._

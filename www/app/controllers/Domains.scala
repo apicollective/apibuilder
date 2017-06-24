@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{Domain, Organization, User}
+import io.apibuilder.api.v0.models.{Domain, Organization, User}
 import models._
 import play.api.data._
 import play.api.data.Forms._
@@ -42,7 +42,7 @@ class Domains @Inject() (val messagesApi: MessagesApi) extends Controller with I
         ).map { d =>
           Redirect(routes.Domains.index(request.org.key)).flashing("success" -> s"Domain added")
         }.recover {
-          case response: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+          case response: io.apibuilder.api.v0.errors.ErrorsResponse => {
             Ok(views.html.domains.form(tpl, boundForm, response.errors.map(_.message)))
           }
         }

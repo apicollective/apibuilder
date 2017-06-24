@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.Membership
-import com.bryzek.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.Membership
+import io.apibuilder.api.v0.models.json._
 import db.{Authorization, MembershipsDao}
 import java.util.UUID
 import javax.inject.{Inject, Singleton}

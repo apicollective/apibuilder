@@ -1,7 +1,7 @@
 package db.generators
 
 import db.Authorization
-import com.bryzek.apidoc.api.v0.models.{GeneratorServiceForm}
+import io.apibuilder.api.v0.models.{GeneratorServiceForm}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 

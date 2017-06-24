@@ -2,26 +2,26 @@ package db
 
 import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import builder.OriginalValidator
-import com.bryzek.apidoc.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
-import com.bryzek.apidoc.spec.v0.models.{Application, Organization, Service}
-import com.bryzek.apidoc.spec.v0.models.json._
+import io.apibuilder.api.v0.models.{ApplicationForm, OriginalType, Version, Visibility}
+import io.apibuilder.spec.v0.models.{Application, Organization, Service}
+import io.apibuilder.spec.v0.models.json._
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 import play.api.libs.json.{Json, JsObject}
 
 class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
-  private[this] val Original = com.bryzek.apidoc.api.v0.models.Original(
+  private[this] val Original = io.apibuilder.api.v0.models.Original(
     `type` = OriginalType.ApiJson,
     data = Json.obj(
       "apidoc" -> Json.obj(
-        "version" -> com.bryzek.apidoc.spec.v0.Constants.Version
+        "version" -> io.apibuilder.spec.v0.Constants.Version
       ),
       "name" -> s"test-${UUID.randomUUID}"
     ).toString
   )
 
-  private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): com.bryzek.apidoc.api.v0.models.Application = {
+  private[this] def createApplication(key: String = "test-" + UUID.randomUUID.toString): io.apibuilder.api.v0.models.Application = {
     Util.createApplication(
       org = Util.testOrg,
       form = Util.createApplicationForm().copy(key = Some(key))
@@ -31,7 +31,7 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
   describe("with an application") {
 
     val applicationKey = "test-" + UUID.randomUUID.toString
-    val application: com.bryzek.apidoc.api.v0.models.Application = createApplication(applicationKey)
+    val application: io.apibuilder.api.v0.models.Application = createApplication(applicationKey)
     val service = Util.createService(application)
 
     it("create") {

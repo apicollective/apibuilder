@@ -3,8 +3,8 @@ package controllers
 import java.io.File
 import javax.inject.Inject
 
-import com.bryzek.apidoc.api.v0.models._
-import com.bryzek.apidoc.spec.v0.models.json._
+import io.apibuilder.api.v0.models._
+import io.apibuilder.spec.v0.models.json._
 import lib.{Util, VersionTag}
 import play.api.data.Forms._
 import play.api.data._
@@ -299,7 +299,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
                 ).map { version =>
                   Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version updated" )
                 }.recover {
-                  case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+                  case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
                     Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }
@@ -314,7 +314,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
                 ).map { version =>
                   Redirect(routes.Versions.show(version.organization.key, version.application.key, version.version)).flashing( "success" -> "Application version created" )
                 }.recover {
-                  case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+                  case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
                     Ok(views.html.versions.form(tpl, applicationKey, boundForm, r.errors.map(_.message)))
                   }
                 }
@@ -327,7 +327,7 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
   }
 
   private[this] def isWatching(
-    api: com.bryzek.apidoc.api.v0.Client,
+    api: io.apibuilder.api.v0.Client,
     user: Option[User],
     orgKey: String,
     applicationKey: String

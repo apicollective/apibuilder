@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.internal.v0.models.{Task, TaskData, TaskDataDiffVersion, TaskDataUndefinedType}
+import io.apibuilder.internal.v0.models.{Task, TaskData, TaskDataDiffVersion, TaskDataUndefinedType}
 import org.scalatest.{FunSpec, Matchers}
 import org.postgresql.util.PSQLException
 import java.util.UUID

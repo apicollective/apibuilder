@@ -1,7 +1,7 @@
 package controllers
 
 import lib.Util
-import com.bryzek.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm}
+import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 

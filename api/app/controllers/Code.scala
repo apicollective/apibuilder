@@ -3,13 +3,13 @@ package controllers
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-import com.bryzek.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.json._
 
-import com.bryzek.apidoc.spec.v0.models.json._
-import com.bryzek.apidoc.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.json._
+import io.apibuilder.spec.v0.models.Service
 
-import com.bryzek.apidoc.generator.v0.Client
-import com.bryzek.apidoc.generator.v0.models.{Attribute, InvocationForm}
+import io.apibuilder.generator.v0.Client
+import io.apibuilder.generator.v0.models.{Attribute, InvocationForm}
 
 import db.generators.{GeneratorsDao, ServicesDao}
 import db.{Authorization, OrganizationAttributeValuesDao, VersionsDao}
@@ -67,16 +67,16 @@ class Code @Inject() (
                     attributes = attributes
                   )
                 ).map { invocation =>
-                  Ok(Json.toJson(com.bryzek.apidoc.api.v0.models.Code(
+                  Ok(Json.toJson(io.apibuilder.api.v0.models.Code(
                     generator = gws,
                     files = invocation.files,
                     source = invocation.source
                   )))
                 }.recover {
-                  case r: com.bryzek.apidoc.generator.v0.errors.ErrorsResponse => {
+                  case r: io.apibuilder.generator.v0.errors.ErrorsResponse => {
                     Conflict(Json.toJson(Validation.errors(r.errors.map(_.message))))
                   }
-                  case r: com.bryzek.apidoc.generator.v0.errors.FailedRequest => {
+                  case r: io.apibuilder.generator.v0.errors.FailedRequest => {
                     Conflict(Json.toJson(Validation.errors(Seq(s"Generator failed with ${r.getMessage}"))))
                   }
                 }

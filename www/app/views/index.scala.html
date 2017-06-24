@@ -1,7 +1,7 @@
 @(tpl: models.MainTemplate,
-  organizations: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Organization],
-  membershipRequests: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.MembershipRequest],
-  publicOrganizations: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Organization])(implicit flash: Flash, messages: Messages)
+  organizations: lib.PaginatedCollection[io.apibuilder.api.v0.models.Organization],
+  membershipRequests: lib.PaginatedCollection[io.apibuilder.api.v0.models.MembershipRequest],
+  publicOrganizations: lib.PaginatedCollection[io.apibuilder.api.v0.models.Organization])(implicit flash: Flash, messages: Messages)
 
 @main(tpl) {
 

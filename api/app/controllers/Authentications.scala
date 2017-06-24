@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.json._
+import io.apibuilder.api.v0.models.json._
 import util.Conversions
 import db.UsersDao
 import db.generated.SessionsDao

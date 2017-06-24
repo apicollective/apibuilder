@@ -2,8 +2,8 @@ package core
 
 import _root_.builder.OriginalValidator
 import lib.ServiceConfiguration
-import com.bryzek.apidoc.api.v0.models.Original
-import com.bryzek.apidoc.api.v0.models.OriginalType.Swagger
+import io.apibuilder.api.v0.models.Original
+import io.apibuilder.api.v0.models.OriginalType.Swagger
 import org.scalatest.{FunSpec, Matchers}
 
 class OriginalValidatorSpec

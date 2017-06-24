@@ -1,6 +1,6 @@
 {
-  "name": "apidoc common",
-  "description": "Models in common across various APIs in apidoc",
+  "name": "apibuilder common",
+  "description": "Models in common across various APIs in apibuilder",
 
   "info": {
     "contact": {

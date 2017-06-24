@@ -2,7 +2,7 @@ package me.apidoc.swagger
 
 import java.util
 
-import com.bryzek.apidoc.spec.v0.models.Attribute
+import io.apibuilder.spec.v0.models.Attribute
 import io.swagger.models.SecurityRequirement
 import io.swagger.models.auth.SecuritySchemeDefinition
 import org.scalatest.{FunSpec, Matchers}

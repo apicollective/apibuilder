@@ -3,7 +3,7 @@ package builder.api_json
 import builder.JsonUtil
 import core.{Importer, ServiceFetcher, Util, VersionMigration}
 import lib.{ServiceConfiguration, ServiceValidator, UrlKey, VersionTag}
-import com.bryzek.apidoc.spec.v0.models.Service
+import io.apibuilder.spec.v0.models.Service
 import play.api.libs.json.{Json, JsObject}
 import com.fasterxml.jackson.core.{ JsonParseException, JsonProcessingException }
 import scala.util.{Failure, Success, Try}

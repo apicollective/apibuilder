@@ -1,7 +1,7 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeForm, User}
-import com.bryzek.apidoc.common.v0.models.Audit
+import io.apibuilder.api.v0.models.{Attribute, AttributeForm, User}
+import io.apibuilder.common.v0.models.Audit
 import lib.{Validation, UrlKey}
 import anorm._
 import javax.inject.{Inject, Singleton}
@@ -39,7 +39,7 @@ class AttributesDao @Inject() () {
 
   def validate(
     form: AttributeForm
-  ): Seq[com.bryzek.apidoc.api.v0.models.Error] = {
+  ): Seq[io.apibuilder.api.v0.models.Error] = {
 
     val nameErrors = if (form.name.trim.isEmpty) {
       Seq(s"Attribute name is required")

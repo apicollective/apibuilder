@@ -73,6 +73,6 @@ Apidoc Features not Supported by Swagger
 Internal To-Dos
 ===============
 
-1. [imports](https://github.com/mbryzek/apidoc-swagger-generator/issues/3)
-2. [More automated testing](https://github.com/mbryzek/apidoc-swagger-generator/issues/4)
-3. [Integration tests](https://github.com/mbryzek/apidoc-swagger-generator/issues/5)
+1. [imports](https://github.com/apicollective/apibuilder-swagger-generator/issues/3)
+2. [More automated testing](https://github.com/apicollective/apibuilder-swagger-generator/issues/4)
+3. [Integration tests](https://github.com/apicollective/apibuilder-swagger-generator/issues/5)

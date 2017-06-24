@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
+import io.apibuilder.api.v0.models.{PasswordReset, PasswordResetRequest, UserForm}
 import lib.Util
 import models.MainTemplate
 import play.api.data._
@@ -62,7 +62,7 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
         Authenticated.api().Users.postAuthenticate(email = validForm.email, password = validForm.password).map { auth =>
           Redirect(url).withSession { "session_id" -> auth.session.id }
         }.recover {
-          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
             Ok(views.html.login.legacy(tpl, LoginController.Tab.Login, form, LoginController.registerForm, Some(r.errors.map(_.message).mkString(", "))))
           }
         }
@@ -120,7 +120,7 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
             flashing("success" -> "Your password has been reset and you are now logged in")
         
         }.recover {
-          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
             Ok(views.html.login.resetPassword(tpl, token, form, Some(r.errors.map(_.message).mkString(", "))))
           }
         }

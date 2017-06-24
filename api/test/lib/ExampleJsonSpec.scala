@@ -1,7 +1,7 @@
 package lib
 
-import com.bryzek.apidoc.spec.v0.models._
-import com.bryzek.apidoc.spec.v0.models.json._
+import io.apibuilder.spec.v0.models._
+import io.apibuilder.spec.v0.models.json._
 import org.scalatest.{FunSpec, ShouldMatchers}
 import play.api.libs.json.{JsNumber, Json}
 

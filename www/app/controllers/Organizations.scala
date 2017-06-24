@@ -4,14 +4,14 @@ import java.util.UUID
 
 import lib.{PaginatedCollection, Pagination, Role}
 import models.{SettingSection, SettingsMenu}
-import com.bryzek.apidoc.api.v0.models.{Organization, OrganizationForm, Visibility}
+import io.apibuilder.api.v0.models.{Organization, OrganizationForm, Visibility}
 import play.api.data._
 import play.api.data.Forms._
 
 import scala.concurrent.Future
 import javax.inject.Inject
 
-import com.bryzek.apidoc.api.v0.Client
+import io.apibuilder.api.v0.Client
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.Controller
 
@@ -149,7 +149,7 @@ class Organizations @Inject() (val messagesApi: MessagesApi) extends Controller 
         ).map { org =>
           Redirect(routes.Organizations.show(org.key)).flashing("success" -> "Org created")
         }.recover {
-          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
             Ok(views.html.organizations.create(tpl, form, r.errors.map(_.message)))
           }
         }
@@ -209,7 +209,7 @@ class Organizations @Inject() (val messagesApi: MessagesApi) extends Controller 
               ).map { org =>
                 Redirect(routes.Organizations.details(updatedKey)).flashing("success" -> "Org updated")
               }.recover {
-                case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+                case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
                   Ok(views.html.organizations.edit(tpl, org, form, r.errors.map(_.message)))
                 }
               }

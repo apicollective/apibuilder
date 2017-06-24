@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{GeneratorServiceForm, User}
-import com.bryzek.apidoc.generator.v0.models.Generator
+import io.apibuilder.api.v0.models.{GeneratorServiceForm, User}
+import io.apibuilder.generator.v0.models.Generator
 import lib.{Pagination, PaginatedCollection}
 import models.MainTemplate
 import play.api.data.Forms._
@@ -79,7 +79,7 @@ class Generators @Inject() (val messagesApi: MessagesApi) extends Controller wit
         ).map { generator =>
           Redirect(routes.Generators.index()).flashing("success" -> "Generator created")
         }.recover {
-          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
             Ok(views.html.generators.create(request.mainTemplate(), form, r.errors.map(_.message)))
           }
         }

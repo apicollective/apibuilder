@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Application, Change, Diff, DiffBreaking, DiffNonBreaking, Organization, Version}
+import io.apibuilder.api.v0.models.{Application, Change, Diff, DiffBreaking, DiffNonBreaking, Organization, Version}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 

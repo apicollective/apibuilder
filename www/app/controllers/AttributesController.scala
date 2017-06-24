@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{AttributeForm, User}
+import io.apibuilder.api.v0.models.{AttributeForm, User}
 import lib.{Pagination, PaginatedCollection}
 import models.MainTemplate
 import scala.concurrent.Future
@@ -81,7 +81,7 @@ class AttributesController @Inject() (val messagesApi: MessagesApi) extends Cont
         ).map { attribute =>
           Redirect(routes.AttributesController.index()).flashing("success" -> "Attribute created")
         }.recover {
-          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
             Ok(views.html.attributes.create(request.mainTemplate(), form, r.errors.map(_.message)))
           }
         }

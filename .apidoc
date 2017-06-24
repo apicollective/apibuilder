@@ -1,27 +1,22 @@
-upload:
-  bryzek:
-    apidoc-spec:
-      path: service/service.json
-
 code:
-  bryzek:
-    apidoc-spec:
+  apicollective:
+    apibuilder-spec:
       version: latest
       generators:
         play_2_4_client: generated/app
-    apidoc-common:
+    apibuilder-common:
       version: latest
       generators:
         play_2_x_json: generated/app
-    apidoc-generator:
+    apibuilder-generator:
       version: latest
       generators:
         play_2_4_client: generated/app
-    apidoc-internal:
+    apibuilder-internal:
       version: latest
       generators:
         play_2_x_json: generated/app
-    apidoc-api:
+    apibuilder-api:
       version: latest
       generators:
         play_2_4_client: generated/app

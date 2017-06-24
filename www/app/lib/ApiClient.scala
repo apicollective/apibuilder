@@ -1,7 +1,7 @@
 package lib
 
-import com.bryzek.apidoc.api.v0.models.User
-import com.bryzek.apidoc.api.v0.{Authorization, Client}
+import io.apibuilder.api.v0.models.User
+import io.apibuilder.api.v0.{Authorization, Client}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
@@ -18,7 +18,7 @@ object ApiClient {
     f.map {
       value => Some(value)
     }.recover {
-      case com.bryzek.apidoc.api.v0.errors.UnitResponse(404) => None
+      case io.apibuilder.api.v0.errors.UnitResponse(404) => None
       case ex: Throwable => throw ex
     }
   }
@@ -49,7 +49,7 @@ case class ApiClient(sessionId: Option[String]) {
   private[this] val baseUrl = Config.requiredString("apibuilder.api.host")
   private[this] val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
 
-  val client: Client = new com.bryzek.apidoc.api.v0.Client(
+  val client: Client = new io.apibuilder.api.v0.Client(
     baseUrl = baseUrl,
     auth = Some(apiAuth),
     defaultHeaders = sessionId.map { id =>

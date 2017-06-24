@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.EmailVerificationConfirmationForm
+import io.apibuilder.api.v0.models.EmailVerificationConfirmationForm
 import play.api._
 import play.api.mvc._
 
@@ -14,7 +14,7 @@ class EmailVerifications extends Controller {
     ).map { _ =>
       Redirect(routes.ApplicationController.index()).flashing("success" -> "Email confirmed")
     }.recover {
-      case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+      case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
         Redirect(routes.ApplicationController.index()).flashing("warning" -> r.errors.map(_.message).mkString(", "))
       }
     }

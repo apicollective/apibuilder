@@ -1,6 +1,6 @@
 {
-  "name": "apidoc swagger",
-  "description": "Specification of swagger using the apidoc format",
+  "name": "apibuilder swagger",
+  "description": "Specification of swagger using the apibuilder format",
   "enums": {
     "api_key_in_type": {
       "values": [

@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{AttributeValueForm, User}
+import io.apibuilder.api.v0.models.{AttributeValueForm, User}
 import lib.{Pagination, PaginatedCollection}
 import models.{MainTemplate, SettingsMenu, SettingSection}
 import scala.concurrent.Future
@@ -82,7 +82,7 @@ class OrganizationAttributesController @Inject() (val messagesApi: MessagesApi) 
               request.api.organizations.deleteAttributesByKeyAndName(orgKey, name).map { value =>
                 Redirect(routes.OrganizationAttributesController.index(orgKey)).flashing("success" -> s"Deleted value for $name")
               }.recover {
-                case com.bryzek.apidoc.api.v0.errors.UnitResponse(404) => {
+                case io.apibuilder.api.v0.errors.UnitResponse(404) => {
                   Redirect(routes.OrganizationAttributesController.index(orgKey)).flashing("success" -> s"Deleted value for $name")
                 }
               }
@@ -95,7 +95,7 @@ class OrganizationAttributesController @Inject() (val messagesApi: MessagesApi) 
               ).map { value =>
                 Redirect(routes.OrganizationAttributesController.index(orgKey)).flashing("success" -> s"Updated value for $name")
               }.recover {
-                case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+                case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
                   Ok(views.html.organization_attributes.edit(request.mainTemplate(), attr, form, r.errors.map(_.message)))
                 }
               }

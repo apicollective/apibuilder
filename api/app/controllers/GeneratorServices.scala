@@ -2,9 +2,9 @@ package controllers
 
 import db.generators.ServicesDao
 import lib.Validation
-import com.bryzek.apidoc.api.v0.models.{User, GeneratorServiceForm}
-import com.bryzek.apidoc.api.v0.models.json._
-import com.bryzek.apidoc.generator.v0.models.json._
+import io.apibuilder.api.v0.models.{User, GeneratorServiceForm}
+import io.apibuilder.api.v0.models.json._
+import io.apibuilder.generator.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID

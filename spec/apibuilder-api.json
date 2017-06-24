@@ -1,7 +1,7 @@
 {
-  "name": "apidoc api",
+  "name": "apibuilder api",
   "description": "Host API documentation for applications providing REST APIs, facilitating the design of good resource first APIs.",
-  "base_url": "http://api.apidoc.me",
+  "base_url": "http://api.apibuilder.io",
 
   "info": {
     "contact": {
@@ -36,9 +36,9 @@
   },
 
   "imports": [
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-spec/latest/service.json" },
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-common/latest/service.json" },
-    { "uri": "http://www.apidoc.me/bryzek/apidoc-generator/latest/service.json" }
+    { "uri": "http://www.apibuilder.io/apicollective/apibuilder-spec/latest/service.json" },
+    { "uri": "http://www.apibuilder.io/apicollective/apibuilder-common/latest/service.json" },
+    { "uri": "http://www.apibuilder.io/apicollective/apibuilder-generator/latest/service.json" }
   ],
 
   "enums": {
@@ -65,7 +65,7 @@
       "values": [
 	{ "name": "api_json", "description": "The original is in the api.json format" },
 	{ "name": "avro_idl", "description": "The original is in Avro Idl format" },
-	{ "name": "service_json", "description": "This is the canonical service spec for apidoc itself. See http://apidoc.me/bryzek/apidoc-spec/latest#model-service" },
+	{ "name": "service_json", "description": "This is the canonical service spec for apibuilder itself. See https://www.apibuilder.io/apicollective/apibuilder-spec/latest#model-service" },
 	{ "name": "swagger", "description": "The original in the Swagger JSON or YAML format" }
       ]
     }
@@ -88,7 +88,7 @@
         { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this attribute." },
         { "name": "name", "type": "string", "description": "The name of the attribute. Globally unique and an 'identifier' (lower case, url safe, etc.)" },
         { "name": "description", "type": "string", "description": "Optional description - a good description here will indicate which code generators it applies to and what effect it will have on those code generators.", "required": false },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -112,7 +112,7 @@
         { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this attribute value." },
         { "name": "attribute", "type": "attribute_summary" },
         { "name": "value", "type": "string" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -129,7 +129,7 @@
         { "name": "email", "type": "string" },
         { "name": "nickname", "type": "string", "description": "Public unique identifier for this user." },
         { "name": "name", "type": "string", "required": false },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -181,7 +181,7 @@
         { "name": "user", "type": "user", "description": "The user to which this token belongs." },
         { "name": "masked_token", "type": "string", "description": "The masked from of the token." },
         { "name": "description", "type": "string", "description": "optional description to help the user manage the token.", "required": false },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -205,10 +205,10 @@
         { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this organization." },
         { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the organization name." },
         { "name": "name", "type": "string", "description": "The name of this organization." },
-        { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.bryzek" },
+        { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "io.apicollective" },
         { "name": "visibility", "type": "visibility" },
         { "name": "domains", "type": "[domain]", "default": "[]" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -216,16 +216,16 @@
       "fields": [
         { "name": "name", "type": "string" },
         { "name": "key", "type": "string", "required": false, "description": "Defaults to a url friendy version of the name" },
-        { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "com.bryzek" },
-        { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apidoc directory. Organizations with visibility organization will only be visible to members of that org.", "default": "organization" },
-        { "name": "domains", "type": "[string]", "required": false, "example": "apidoc.me" }
+        { "name": "namespace", "type": "string", "description": "Global namespace for this organization.", "example": "io.apicollective" },
+        { "name": "visibility", "type": "visibility", "description": "Public organizations will be listed in apibuilder directory. Organizations with visibility organization will only be visible to members of that org.", "default": "organization" },
+        { "name": "domains", "type": "[string]", "required": false, "example": "apibuilder.io" }
       ]
     },
 
     "domain": {
-      "description": "Represents a single domain name (e.g. www.apidoc.me). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of foo@bryzek.com, we will automatically create a membership request on your behalf to join the organization with domain bryzek.com.",
+      "description": "Represents a single domain name (e.g. www.apibuilder.io). When a new user registers and confirms their email, we automatically associate that user with a member of the organization associated with their domain. For example, if you confirm your account with an email address of example@somedomain.com, we will automatically create a membership request on your behalf to join the organization with domain somedomain.com.",
       "fields": [
-        { "name": "name", "type": "string", "description": "The domain name", "example": "www.apidoc.me" }
+        { "name": "name", "type": "string", "description": "The domain name", "example": "www.apibuilder.io" }
       ]
     },
 
@@ -236,7 +236,7 @@
         { "name": "user", "type": "user" },
         { "name": "organization", "type": "organization" },
         { "name": "role", "type": "string", "description": "The role this user plays for this organization. Typically member or admin.", "example": "member" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -247,7 +247,7 @@
         { "name": "user", "type": "user" },
         { "name": "organization", "type": "organization" },
         { "name": "role", "type": "string", "description": "The requested role for membership to this organization. Typically member or admin.", "example": "member" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -255,12 +255,12 @@
       "description": "An application has a name and multiple versions of its API.",
       "fields": [
         { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this application." },
-        { "name": "organization", "type": "com.bryzek.apidoc.common.v0.models.reference" },
+        { "name": "organization", "type": "io.apibuilder.common.v0.models.reference" },
         { "name": "name", "type": "string", "description": "The unique name for this application." },
         { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the application name." },
         { "name": "visibility", "type": "visibility", "description": "Controls who is able to view this application" },
         { "name": "description", "type": "string", "required": false },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -277,7 +277,7 @@
       "description": "Summary of an application sufficient for display and links",
       "fields": [
         { "name": "guid", "type": "uuid" },
-        { "name": "organization", "type": "com.bryzek.apidoc.common.v0.models.reference" },
+        { "name": "organization", "type": "io.apibuilder.common.v0.models.reference" },
         { "name": "key", "type": "string" }
       ]
     },
@@ -302,12 +302,12 @@
       "description": "Represents a unique version of the application.",
       "fields": [
         { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this version." },
-        { "name": "organization", "type": "com.bryzek.apidoc.common.v0.models.reference" },
-        { "name": "application", "type": "com.bryzek.apidoc.common.v0.models.reference" },
+        { "name": "organization", "type": "io.apibuilder.common.v0.models.reference" },
+        { "name": "application", "type": "io.apibuilder.common.v0.models.reference" },
         { "name": "version", "type": "string", "description": "The tag for this version. Can be anything, but if semver style version number is used, we automatically correctly sort by version number to find latest. Otherwise latest version is considered to be the most recently created.", "example": "1.0.0" },
 	{ "name": "original", "type": "original", "required": false, "description": "The original uploaded file describing this version, if available" },
-	{ "name": "service", "type": "com.bryzek.apidoc.spec.v0.models.service", "description": "spec/spec.json description of this API" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+	{ "name": "service", "type": "io.apibuilder.spec.v0.models.service", "description": "spec/spec.json description of this API" },
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -324,7 +324,7 @@
       "fields": [
         { "name": "generator", "type": "generator_with_service" },
         { "name": "source", "type": "string", "description": "The actual source code.", "deprecation": { "description": "Use files instead" } },
-        { "name": "files", "type": "[com.bryzek.apidoc.generator.v0.models.file]", "description": "A collection of source files", "default": "[]" }
+        { "name": "files", "type": "[io.apibuilder.generator.v0.models.file]", "description": "A collection of source files", "default": "[]" }
       ]
     },
 
@@ -335,7 +335,7 @@
 	{ "name": "organization", "type": "organization" },
 	{ "name": "user", "type": "user" },
 	{ "name": "publication", "type": "publication" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -354,7 +354,7 @@
 	{ "name": "user", "type": "user" },
 	{ "name": "organization", "type": "organization" },
 	{ "name": "application", "type": "application" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -423,14 +423,14 @@
       "description": "Represents a single change from one version of a service to another",
       "fields": [
         { "name": "guid", "type": "uuid" },
-        { "name": "organization", "type": "com.bryzek.apidoc.common.v0.models.reference" },
-        { "name": "application", "type": "com.bryzek.apidoc.common.v0.models.reference" },
+        { "name": "organization", "type": "io.apibuilder.common.v0.models.reference" },
+        { "name": "application", "type": "io.apibuilder.common.v0.models.reference" },
         { "name": "from_version", "type": "change_version" },
         { "name": "to_version", "type": "change_version" },
         { "name": "diff", "type": "diff" },
         { "name": "changed_at", "type": "date-time-iso8601", "description": "Records the timestamp of when the actual change occurred (vs. when we created the changed record)" },
 	{ "name": "changed_by", "type": "user_summary", "description": "Records who made the actual change" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -447,7 +447,7 @@
       "fields": [
         { "name": "guid", "type": "uuid" },
         { "name": "uri", "type": "string" },
-        { "name": "audit", "type": "com.bryzek.apidoc.common.v0.models.audit" }
+        { "name": "audit", "type": "io.apibuilder.common.v0.models.audit" }
       ]
     },
 
@@ -461,14 +461,14 @@
       "description": "Wraps a service and a generator providing easier access for applications.",
       "fields": [
         { "name": "service", "type": "generator_service" },
-        { "name": "generator", "type": "com.bryzek.apidoc.generator.v0.models.generator" }
+        { "name": "generator", "type": "io.apibuilder.generator.v0.models.generator" }
       ]
     },
 
     "generator_form": {
       "fields": [
         { "name": "service_guid", "type": "uuid" },
-        { "name": "generator", "type": "com.bryzek.apidoc.generator.v0.models.generator" }
+        { "name": "generator", "type": "io.apibuilder.generator.v0.models.generator" }
       ]
     },
 
@@ -482,14 +482,14 @@
 
   "resources": {
 
-    "com.bryzek.apidoc.generator.v0.models.healthcheck": {
+    "io.apibuilder.generator.v0.models.healthcheck": {
       "path": "/_internal_",
       "operations": [
         {
           "method": "GET",
 	  "path": "/healthcheck",
           "responses": {
-            "200": { "type": "com.bryzek.apidoc.generator.v0.models.healthcheck" }
+            "200": { "type": "io.apibuilder.generator.v0.models.healthcheck" }
           }
         },
 

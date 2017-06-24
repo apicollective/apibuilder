@@ -1,6 +1,6 @@
 {
-  "name": "apidoc spec",
-  "description": "Specification of apidoc api.json schema",
+  "name": "apibuilder spec",
+  "description": "Specification of apibuilder api.json schema",
 
   "info": {
     "contact": {
@@ -63,11 +63,11 @@
 
     "service": {
       "fields": [
-	{ "name": "apidoc", "type": "apidoc", "description": "Documents that this is an apidoc document, noting the specific version used. Internally the version is then used for backwards compatibility when applicable as new features are added to apidoc." },
+	{ "name": "apidoc", "type": "apidoc", "description": "Documents that this is an apibuilder document, noting the specific version used. Internally the version is then used for backwards compatibility when applicable as new features are added to apibuilder. Note naming refers to the original name of this project, 'apidoc', and is left here to avoid a breaking change for preexisting services." },
 	{ "name": "name", "type": "string" },
 	{ "name": "organization", "type": "organization" },
 	{ "name": "application", "type": "application" },
-	{ "name": "namespace", "type": "string", "description": "Fully qualified namespace for this service", "example": "com.bryzek.apidoc" },
+	{ "name": "namespace", "type": "string", "description": "Fully qualified namespace for this service", "example": "io.apibuilder" },
 	{ "name": "version", "type": "string", "example": "1.0.0" },
 	{ "name": "base_url", "type": "string", "required": false },
 	{ "name": "description", "type": "string", "required": false },
@@ -118,7 +118,7 @@
       "fields": [
 	{ "name": "name", "type": "string" },
 	{ "name": "plural", "type": "string" },
-	{ "name": "discriminator", "type": "string", "required": false, "description": "If a type discriminator is provided, serialization of these union types will always contain a field named with the value of the discriminator that will contain the name of the type. This provides a simpler (for many use cases) JSON serialization/deserialization mechanism. When specified, apidoc itself will verify that none of the types in the union type itself contain a field with the same name as the discriminator", "example": "discriminator or type" },
+	{ "name": "discriminator", "type": "string", "required": false, "description": "If a type discriminator is provided, serialization of these union types will always contain a field named with the value of the discriminator that will contain the name of the type. This provides a simpler (for many use cases) JSON serialization/deserialization mechanism. When specified, apibuilder itself will verify that none of the types in the union type itself contain a field with the same name as the discriminator", "example": "discriminator or type" },
 	{ "name": "description", "type": "string", "required": false },
 	{ "name": "deprecation", "type": "deprecation", "required": false },
 	{ "name": "types", "type": "[union_type]", "minimum": 1, "description": "The names of the types that make up this union type" },
@@ -242,8 +242,8 @@
       "description": "Describes the primary contact for this service",
       "fields": [
 	{ "name": "name", "type": "string", "example": "Michael Bryzek", "required": false  },
-	{ "name": "url", "type": "string", "example": "http://www.apidoc.me", "required": false  },
-	{ "name": "email", "type": "string", "example": "michael@test.apidoc.me", "required": false  }
+	{ "name": "url", "type": "string", "example": "http://www.apibuilder.io", "required": false  },
+	{ "name": "email", "type": "string", "example": "michael@test.apibuilder.io", "required": false  }
       ]
     },
 
@@ -262,8 +262,8 @@
     "import": {
       "description": "An import is used to declare a dependency on another application. This allows you to reference the models and or enums from that application in your own app.",
       "fields": [
-	{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "http://www.apidoc.me/bryzek/apidoc-spec/0.7.38/service.json"  },
-	{ "name": "namespace", "type": "string", "description": "the fully qualified namespace that we have imported", "example": "com.bryzek.apidoc" },
+	{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "http://www.apibuilder.io/apicollective/apibuilder-spec/0.7.38/service.json"  },
+	{ "name": "namespace", "type": "string", "description": "the fully qualified namespace that we have imported", "example": "io.apibuilder" },
 	{ "name": "organization", "type": "organization" },
 	{ "name": "application", "type": "application" },
 	{ "name": "version", "type": "string", "description": "The version of the service that we are importing", "example": "1.0.0" },
@@ -281,7 +281,7 @@
     },
 
     "attribute": {
-      "description": "Represents an additional attribute that is attached to one of the objects in apidoc. The main use case is to capture additional metadata that doesn't necessarily define the API but aids in code generation. Examples would be hints for certain code generators about classes to extend, interfaces to implement, annotations to add, names to assign to certain methods, etc. The specific attributes will be applicable only in the context of the specific code generators usings them.",
+      "description": "Represents an additional attribute that is attached to one of the objects in apibuilder. The main use case is to capture additional metadata that doesn't necessarily define the API but aids in code generation. Examples would be hints for certain code generators about classes to extend, interfaces to implement, annotations to add, names to assign to certain methods, etc. The specific attributes will be applicable only in the context of the specific code generators usings them.",
 	    "fields": [
 	      { "name": "name", "type": "string" },
 	      { "name": "value", "type": "object" },

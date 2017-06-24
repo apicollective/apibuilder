@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{UserForm, UserUpdateForm}
+import io.apibuilder.api.v0.models.{UserForm, UserUpdateForm}
 import javax.inject.Inject
 import play.api.data._
 import play.api.data.Forms._
@@ -54,7 +54,7 @@ class AccountProfileController @Inject() (val messagesApi: MessagesApi) extends 
         ).map { user =>
           Redirect(routes.AccountProfileController.index()).flashing("success" -> "Profile updated")
         }.recover {
-          case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+          case r: io.apibuilder.api.v0.errors.ErrorsResponse => {
             Ok(views.html.account.profile.edit(tpl, request.user, form, r.errors.map(_.message)))
           }
         }

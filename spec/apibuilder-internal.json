@@ -1,6 +1,6 @@
 {
-  "name": "apidoc internal",
-  "description": "Internal models used in the implementation of apidoc",
+  "name": "apibuilder internal",
+  "description": "Internal models used in the implementation of apibuilder",
 
   "info": {
     "contact": {

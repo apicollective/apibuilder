@@ -2,8 +2,8 @@ package core
 
 import lib.{ServiceConfiguration, ServiceValidator}
 import builder.OriginalValidator
-import com.bryzek.apidoc.api.v0.models.{Original, OriginalType}
-import com.bryzek.apidoc.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
+import io.apibuilder.api.v0.models.{Original, OriginalType}
+import io.apibuilder.spec.v0.models.{Service, ResponseCode, ResponseCodeOption, ResponseCodeUndefinedType, ResponseCodeInt}
 import lib.Text
 import java.nio.file.{Paths, Files}
 import java.nio.charset.StandardCharsets
@@ -44,7 +44,7 @@ object TestHelper {
 
   private val bryzekConfig = ServiceConfiguration(
     orgKey = "bryzek",
-    orgNamespace = "com.bryzek",
+    orgNamespace = "io.apibuilder",
     version = "0.0.41"
   )
 
@@ -63,7 +63,7 @@ object TestHelper {
   private lazy val generatorService: Service = {
     val fetcher = MockServiceFetcher()
 
-    Seq(com.bryzek.apidoc.spec.v0.Constants.Version, "latest").foreach { version =>
+    Seq(io.apibuilder.spec.v0.Constants.Version, "latest").foreach { version =>
       fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
       fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
     }
@@ -116,7 +116,7 @@ object TestHelper {
   def parseFile(filename: String): ServiceValidatorForSpecs = {
     val fetcher = MockServiceFetcher()
     if (filename == "spec/apidoc-api.json") {
-      Seq(com.bryzek.apidoc.spec.v0.Constants.Version, "latest").foreach { version =>
+      Seq(io.apibuilder.spec.v0.Constants.Version, "latest").foreach { version =>
         fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
         fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
         fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-generator/$version/service.json", generatorService)

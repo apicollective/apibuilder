@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  changes: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Change],
+  changes: lib.PaginatedCollection[io.apibuilder.api.v0.models.Change],
   orgKey: Option[String] = None,
   appKey: Option[String] = None,
   from: Option[String] = None,
@@ -44,9 +44,9 @@
            </td>
            <td>
              @{change.diff match {
-               case com.bryzek.apidoc.api.v0.models.DiffBreaking(desc) => Html(s"<span class='label label-warning'>Breaking</span> $desc")
-               case com.bryzek.apidoc.api.v0.models.DiffNonBreaking(desc) => desc
-               case com.bryzek.apidoc.api.v0.models.DiffUndefinedType(desc) => desc
+               case io.apibuilder.api.v0.models.DiffBreaking(desc) => Html(s"<span class='label label-warning'>Breaking</span> $desc")
+               case io.apibuilder.api.v0.models.DiffNonBreaking(desc) => desc
+               case io.apibuilder.api.v0.models.DiffUndefinedType(desc) => desc
              }}
            </td>
            <td>
