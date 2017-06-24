@@ -118,7 +118,7 @@ class OrganizationsDao @Inject() (
       case None => Seq(s"Invalid visibility[${form.visibility.toString}]")
     }
 
-    val domainErrors = form.domains.getOrElse(Nil).filter(!isDomainValid(_)).map(d => s"Domain $d is not valid. Expected a domain name like apicollective.io")
+    val domainErrors = form.domains.getOrElse(Nil).filter(!isDomainValid(_)).map(d => s"Domain $d is not valid. Expected a domain name like apibuilder.io")
 
     Validation.errors(nameErrors ++ keyErrors ++ namespaceErrors ++ visibilityErrors ++ domainErrors)
   }
