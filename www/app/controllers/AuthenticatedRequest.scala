@@ -11,9 +11,9 @@ import scala.concurrent.duration._
 import play.api.Play.current
 import java.util.UUID
 
-class AuthenticatedRequest[A](val user: User, request: Request[A]) extends WrappedRequest[A](request) {
+class AuthenticatedRequest[A](val sessionId: String, val user: User, request: Request[A]) extends WrappedRequest[A](request) {
 
-  lazy val api = Authenticated.api(Some(user))
+  lazy val api = Authenticated.api(Some(sessionId))
 
   def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(
@@ -29,7 +29,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def api(user: Option[User] = None) = ApiClient(user).client
+  def api(sessionId: Option[String] = None) = ApiClient(sessionId).client
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
 
@@ -49,7 +49,7 @@ object Authenticated extends ActionBuilder[AuthenticatedRequest] {
         }
 
         case Some(u: User) => {
-          block(new AuthenticatedRequest(u, request))
+          block(new AuthenticatedRequest(sessionId, u, request))
         }
 
       }

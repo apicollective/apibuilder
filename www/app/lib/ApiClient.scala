@@ -6,6 +6,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 import java.util.UUID
+import java.net.URLEncoder
 
 object ApiClient {
 
@@ -43,20 +44,17 @@ object ApiClient {
 
 }
 
-case class ApiClient(user: Option[User]) {
+case class ApiClient(sessionId: Option[String]) {
 
   private[this] val baseUrl = Config.requiredString("apibuilder.api.host")
   private[this] val apiAuth = Authorization.Basic(Config.requiredString("apidoc.api.token"))
-  private[this] val defaultHeaders = Seq(
-    user.map { u =>
-      ("X-User-Guid", u.guid.toString)
-    }
-  ).flatten
 
   val client: Client = new com.bryzek.apidoc.api.v0.Client(
     baseUrl = baseUrl,
     auth = Some(apiAuth),
-    defaultHeaders = defaultHeaders
+    defaultHeaders = sessionId.map { id =>
+      "Authorization" -> ("Session " + URLEncoder.encode(id, "UTF-8"))
+    }.toSeq
   )
 
 }

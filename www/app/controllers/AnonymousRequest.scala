@@ -19,7 +19,7 @@ class AnonymousRequest[A](
   val isAdmin = resources.isAdmin
   val isMember = resources.isMember
 
-  lazy val api = Authenticated.api(user)
+  lazy val api = Authenticated.api(resources.sessionId)
 
   def mainTemplate(title: Option[String] = None): MainTemplate = {
     MainTemplate(
@@ -62,6 +62,7 @@ class AnonymousOrgRequest[A](
 
 
 case class RequestResources(
+  sessionId: Option[String],
   user: Option[User],
   org: Option[Organization],
   memberships: Seq[Membership]
@@ -103,22 +104,26 @@ object AnonymousRequest {
   /**
     * Blocking call to fetch an organization
     */
-  private[this] def getOrganization(user: Option[User], key: String): Option[Organization] = {
-    ApiClient.awaitCallWith404( Authenticated.api(user).Organizations.getByKey(key) )
+  private[this] def getOrganization(sessionId: Option[String], key: String): Option[Organization] = {
+    ApiClient.awaitCallWith404( Authenticated.api(sessionId).Organizations.getByKey(key) )
   }
 
   def resources(requestPath: String, sessionId: Option[String]): RequestResources = {
     val user = sessionId.flatMap { ApiClient.getUserBySessionId(_) }
-    val org = requestPath.split("/").drop(1).headOption.flatMap { getOrganization(user, _) }
+    val org = requestPath.split("/").drop(1).headOption.flatMap { getOrganization(sessionId, _) }
 
     val memberships = (user, org) match {
       case (Some(u), Some(o)) => {
-        Await.result(Authenticated.api(user).Memberships.get(orgKey = Some(o.key), userGuid = Some(u.guid)), 1000.millis)
+        Await.result(
+          Authenticated.api(sessionId).Memberships.get(orgKey = Some(o.key), userGuid = Some(u.guid)),
+          1000.millis
+        )
       }
       case _ => Seq.empty
     }
 
     RequestResources(
+      sessionId = sessionId,
       user = user,
       org = org,
       memberships = memberships
