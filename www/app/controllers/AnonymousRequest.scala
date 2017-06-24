@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{ Membership, Organization, User, Visibility }
+import io.apibuilder.apidoc.api.v0.models.{ Membership, Organization, User, Visibility }
 import models.MainTemplate
 import lib.{ApiClient, Role}
 import play.api.mvc._

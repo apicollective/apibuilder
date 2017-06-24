@@ -1,8 +1,8 @@
 package controllers
 
 import db.OrganizationsDao
-import com.bryzek.apidoc.api.v0.models.{AttributeValueForm, Visibility}
-import com.bryzek.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
+import io.apibuilder.apidoc.api.v0.models.{AttributeValueForm, Visibility}
+import io.apibuilder.apidoc.api.v0.errors.{ErrorsResponse, UnitResponse}
 
 import play.api.test._
 import play.api.test.Helpers._

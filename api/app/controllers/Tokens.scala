@@ -2,8 +2,8 @@ package controllers
 
 import db.{Authorization, TokensDao}
 import lib.Validation
-import com.bryzek.apidoc.api.v0.models.{User, Token, TokenForm}
-import com.bryzek.apidoc.api.v0.models.json._
+import io.apibuilder.apidoc.api.v0.models.{User, Token, TokenForm}
+import io.apibuilder.apidoc.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.libs.json._

@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.errors.{ErrorsResponse, FailedRequest}
-import com.bryzek.apidoc.api.v0.models.UserUpdateForm
+import io.apibuilder.apidoc.api.v0.errors.{ErrorsResponse, FailedRequest}
+import io.apibuilder.apidoc.api.v0.models.UserUpdateForm
 
 import play.api.test._
 import play.api.test.Helpers._

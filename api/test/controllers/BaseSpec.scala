@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models._
+import io.apibuilder.apidoc.api.v0.models._
 import db.{Authorization, TokensDao, UsersDao}
 import java.util.UUID
 
@@ -22,12 +22,12 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
     tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
 
-  private[this] lazy val apiAuth = com.bryzek.apidoc.api.v0.Authorization.Basic(apiToken)
+  private[this] lazy val apiAuth = io.apibuilder.apidoc.api.v0.Authorization.Basic(apiToken)
 
   lazy val client = newClient(TestUser)
 
   def newClient(user: User) = {
-    new com.bryzek.apidoc.api.v0.Client(s"http://localhost:$port", Some(apiAuth)) {
+    new io.apibuilder.apidoc.api.v0.Client(s"http://localhost:$port", Some(apiAuth)) {
       override def _requestHolder(path: String) = {
         super._requestHolder(path).withHeaders("X-User-Guid" -> user.guid.toString)
       }
@@ -35,7 +35,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
   }
 
   def newSessionClient(sessionId: String) = {
-    new com.bryzek.apidoc.api.v0.Client(
+    new io.apibuilder.apidoc.api.v0.Client(
       s"http://localhost:$port",
       defaultHeaders = Seq("Authorization" -> s"Session $sessionId")
     )
@@ -140,7 +140,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
     name: String = UUID.randomUUID.toString
   ): VersionForm = {
     val data = s"""{ "name": "$name" }"""
-    com.bryzek.apidoc.api.v0.models.VersionForm(
+    io.apibuilder.apidoc.api.v0.models.VersionForm(
       originalForm = OriginalForm(
         data = data
       )

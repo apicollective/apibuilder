@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.User
+import io.apibuilder.apidoc.api.v0.models.User
 import lib.TokenGenerator
 import anorm._
 import anorm.JodaParameterMetaData._

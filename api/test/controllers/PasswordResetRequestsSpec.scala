@@ -1,8 +1,8 @@
 package controllers
 
 import db.PasswordResetRequestsDao
-import com.bryzek.apidoc.api.v0.models.{PasswordReset, PasswordResetRequest, User}
-import com.bryzek.apidoc.api.v0.errors.ErrorsResponse
+import io.apibuilder.apidoc.api.v0.models.{PasswordReset, PasswordResetRequest, User}
+import io.apibuilder.apidoc.api.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import play.api.test._

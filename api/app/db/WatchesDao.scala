@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Error, Organization, Application, Watch, WatchForm, User}
+import io.apibuilder.apidoc.api.v0.models.{Error, Organization, Application, Watch, WatchForm, User}
 import anorm._
 import lib.Validation
 import play.api.db._

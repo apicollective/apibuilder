@@ -1,6 +1,6 @@
 package lib
 
-import com.bryzek.apidoc.api.v0.models.Error
+import io.apibuilder.apidoc.api.v0.models.Error
 import play.api.libs.json.Json
 import play.api.libs.json.JsError
 

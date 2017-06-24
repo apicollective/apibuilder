@@ -2,7 +2,7 @@ package actors
 
 import db.MembershipsDao
 import lib.Role
-import com.bryzek.apidoc.api.v0.models.Visibility
+import io.apibuilder.apidoc.api.v0.models.Visibility
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 

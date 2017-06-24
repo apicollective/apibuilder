@@ -1,7 +1,7 @@
 package actors
 
 import akka.actor._
-import com.bryzek.apidoc.api.v0.models.{Application, Organization, Publication, Subscription, User, Visibility}
+import io.apibuilder.apidoc.api.v0.models.{Application, Organization, Publication, Subscription, User, Visibility}
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import javax.inject.{Inject, Singleton}
 import lib.{Config, Email, Pager, Person}
@@ -22,7 +22,7 @@ object Emails {
     */
   sealed trait Context
   object Context {
-    case class Application(application: com.bryzek.apidoc.api.v0.models.Application) extends Context
+    case class Application(application: io.apibuilder.apidoc.api.v0.models.Application) extends Context
     case object OrganizationAdmin extends Context
     case object OrganizationMember extends Context
   }

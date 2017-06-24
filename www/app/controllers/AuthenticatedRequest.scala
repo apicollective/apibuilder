@@ -1,9 +1,9 @@
 package controllers
 
-import com.bryzek.apidoc.spec.v0.models.Method
+import io.apibuilder.apidoc.spec.v0.models.Method
 import lib.{ApiClient, Config}
 import models.MainTemplate
-import com.bryzek.apidoc.api.v0.models.User
+import io.apibuilder.apidoc.api.v0.models.User
 import play.api.mvc._
 import play.api.mvc.Results.Redirect
 import scala.concurrent.{ Await, Future }

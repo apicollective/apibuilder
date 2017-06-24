@@ -1,5 +1,5 @@
 @(tpl: models.MainTemplate,
-  applications: lib.PaginatedCollection[com.bryzek.apidoc.api.v0.models.Application],
+  applications: lib.PaginatedCollection[io.apibuilder.apidoc.api.v0.models.Application],
   haveMembershipRequests: Boolean
 )(implicit flash: Flash, messages: Messages)
 
@@ -31,9 +31,9 @@
              <a href="@routes.Versions.show(tpl.org.get.key, application.key, "latest")">@application.name</a>
 
              @{application.visibility match {
-                case com.bryzek.apidoc.api.v0.models.Visibility.Public => ""
-                case com.bryzek.apidoc.api.v0.models.Visibility.Organization | com.bryzek.apidoc.api.v0.models.Visibility.User => icon("icons/lock-locked-2x.png", "Private")
-                case com.bryzek.apidoc.api.v0.models.Visibility.UNDEFINED(name) => name
+                case io.apibuilder.apidoc.api.v0.models.Visibility.Public => ""
+                case io.apibuilder.apidoc.api.v0.models.Visibility.Organization | io.apibuilder.apidoc.api.v0.models.Visibility.User => icon("icons/lock-locked-2x.png", "Private")
+                case io.apibuilder.apidoc.api.v0.models.Visibility.UNDEFINED(name) => name
              }}
            </td>
            <td>@lib.Text.truncate(application.description.getOrElse(""))</td>

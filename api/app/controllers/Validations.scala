@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{Original, OriginalType, Validation}
-import com.bryzek.apidoc.api.v0.models.json._
+import io.apibuilder.apidoc.api.v0.models.{Original, OriginalType, Validation}
+import io.apibuilder.apidoc.api.v0.models.json._
 import core.ServiceFetcher
 import lib.{DatabaseServiceFetcher, OriginalUtil, ServiceConfiguration}
 import javax.inject.{Inject, Singleton}

@@ -2,7 +2,7 @@ package lib
 
 import java.io.FileOutputStream
 import java.util.zip.{ZipEntry, ZipOutputStream}
-import com.bryzek.apidoc.generator.v0.models.File
+import io.apibuilder.apidoc.generator.v0.models.File
 
 object Zipfile {
 

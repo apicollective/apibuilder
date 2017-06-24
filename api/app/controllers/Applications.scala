@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{ApplicationForm, MoveForm}
-import com.bryzek.apidoc.api.v0.models.json._
+import io.apibuilder.apidoc.api.v0.models.{ApplicationForm, MoveForm}
+import io.apibuilder.apidoc.api.v0.models.json._
 import db.{Authorization, OrganizationsDao, ApplicationsDao}
 import javax.inject.{Inject, Singleton}
 import lib.Validation

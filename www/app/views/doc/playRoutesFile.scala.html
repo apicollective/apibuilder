@@ -1,4 +1,4 @@
-@(user: Option[com.bryzek.apidoc.api.v0.models.User])
+@(user: Option[io.apibuilder.apidoc.api.v0.models.User])
 
 @doc.main(routes.DocController.playRoutesFile.url, user, Some("Play Routes")) {
 
@@ -62,7 +62,7 @@
 
       for example:
       <pre>
-        routesImport += "com.bryzek.apidoc.api.v@{com.bryzek.apidoc.api.v0.Constants.VersionMajor}.Bindables._"
+        routesImport += "io.apibuilder.apidoc.api.v@{io.apibuilder.apidoc.api.v0.Constants.VersionMajor}.Bindables._"
       </pre>
 
     </li>

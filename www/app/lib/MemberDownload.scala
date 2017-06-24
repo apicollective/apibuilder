@@ -1,7 +1,7 @@
 package lib
 
-import com.bryzek.apidoc.api.v0.Client
-import com.bryzek.apidoc.api.v0.models.{Membership, User}
+import io.apibuilder.apidoc.api.v0.Client
+import io.apibuilder.apidoc.api.v0.models.{Membership, User}
 import com.github.tototoshi.csv.CSVWriter
 import java.io.File
 import scala.concurrent.{Await, Future}

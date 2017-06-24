@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Original, User}
+import io.apibuilder.apidoc.api.v0.models.{Original, User}
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._

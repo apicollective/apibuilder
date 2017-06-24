@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.User
+import io.apibuilder.apidoc.api.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current

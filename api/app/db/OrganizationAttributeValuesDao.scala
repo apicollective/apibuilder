@@ -1,7 +1,7 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeValue, AttributeValueForm, Organization, User}
-import com.bryzek.apidoc.common.v0.models.Audit
+import io.apibuilder.apidoc.api.v0.models.{Attribute, AttributeSummary, AttributeValue, AttributeValueForm, Organization, User}
+import io.apibuilder.apidoc.common.v0.models.Audit
 import lib.Validation
 import anorm._
 import javax.inject.{Inject, Singleton}
@@ -45,7 +45,7 @@ class OrganizationAttributeValuesDao @Inject() (
     attribute: AttributeSummary,
     form: AttributeValueForm,
     existing: Option[AttributeValue]
-  ): Seq[com.bryzek.apidoc.api.v0.models.Error] = {
+  ): Seq[io.apibuilder.apidoc.api.v0.models.Error] = {
 
     val attributeErrors = attributesDao.findByName(attribute.name) match {
       case None => Seq("Attribute not found")

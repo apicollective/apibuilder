@@ -1,8 +1,8 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType}
-import com.bryzek.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
-import com.bryzek.apidoc.spec.v0.{models => spec}
+import io.apibuilder.apidoc.api.v0.models.{Application, ApplicationForm, Organization, OrganizationForm, Original, OriginalType}
+import io.apibuilder.apidoc.api.v0.models.{Publication, Subscription, SubscriptionForm, User, UserForm, Version, Visibility}
+import io.apibuilder.apidoc.spec.v0.{models => spec}
 import play.api.libs.json.{Json, JsObject}
 import lib.Role
 import java.util.UUID
@@ -96,11 +96,11 @@ object Util extends util.Daos {
   }
 
   def createOriginal(): Original = {
-    com.bryzek.apidoc.api.v0.models.Original(
+    io.apibuilder.apidoc.api.v0.models.Original(
       `type` = OriginalType.ApiJson,
       data = Json.obj(
         "apidoc" -> Json.obj(
-          "version" -> com.bryzek.apidoc.spec.v0.Constants.Version
+          "version" -> io.apibuilder.apidoc.spec.v0.Constants.Version
         ),
         "name" -> s"test-${UUID.randomUUID}"
       ).toString
@@ -111,7 +111,7 @@ object Util extends util.Daos {
     org: Organization,
     user: User = Util.createRandomUser(),
     role: Role = Role.Admin
-  ): com.bryzek.apidoc.api.v0.models.Membership = {
+  ): io.apibuilder.apidoc.api.v0.models.Membership = {
     val request = membershipRequestsDao.upsert(Util.createdBy, org, user, role)
     membershipRequestsDao.accept(Util.createdBy, request)
 
@@ -135,8 +135,8 @@ object Util extends util.Daos {
     )
   }
 
-  def createService(app: com.bryzek.apidoc.api.v0.models.Application): spec.Service = spec.Service(
-    apidoc = spec.Apidoc(version = com.bryzek.apidoc.spec.v0.Constants.Version),
+  def createService(app: io.apibuilder.apidoc.api.v0.models.Application): spec.Service = spec.Service(
+    apidoc = spec.Apidoc(version = io.apibuilder.apidoc.spec.v0.Constants.Version),
     info = spec.Info(contact = None, license = None),
     name = app.name,
     organization = spec.Organization(key = app.organization.key),

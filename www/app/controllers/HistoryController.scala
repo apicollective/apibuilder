@@ -2,7 +2,7 @@ package controllers
 
 import lib.{Pagination, PaginatedCollection}
 import scala.concurrent.Future
-import com.bryzek.apidoc.api.v0.errors.UnitResponse
+import io.apibuilder.apidoc.api.v0.errors.UnitResponse
 
 import javax.inject.Inject
 import play.api._

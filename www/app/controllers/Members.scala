@@ -1,7 +1,7 @@
 package controllers
 
 import lib.{DateHelper, MemberDownload, Pagination, PaginatedCollection, Review, Role}
-import com.bryzek.apidoc.api.v0.models.{Organization, User}
+import io.apibuilder.apidoc.api.v0.models.{Organization, User}
 import models._
 import play.api.data._
 import play.api.data.Forms._
@@ -156,7 +156,7 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
     }
   }
 
-  private[this] def createMembership(api: com.bryzek.apidoc.api.v0.Client, org: Organization, userGuid: UUID, role: Role) {
+  private[this] def createMembership(api: io.apibuilder.apidoc.api.v0.Client, org: Organization, userGuid: UUID, role: Role) {
     val membershipRequest = Await.result(
       api.MembershipRequests.post(orgGuid = org.guid, userGuid = userGuid, role = role.key),
       1500.millis

@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.Client
-import com.bryzek.apidoc.generator.v0.models.File
+import io.apibuilder.apidoc.api.v0.Client
+import io.apibuilder.apidoc.generator.v0.models.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
 import play.api.i18n.{MessagesApi, I18nSupport}
@@ -25,7 +25,7 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
         ))
       }
     }.recover {
-      case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+      case r: io.apibuilder.apidoc.api.v0.errors.ErrorsResponse => {
         Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> r.errors.map(_.message).mkString(", "))
       }
     }
@@ -76,7 +76,7 @@ class Code @Inject() (val messagesApi: MessagesApi) extends Controller with I18n
       }
 
     }.recover {
-      case r: com.bryzek.apidoc.api.v0.errors.ErrorsResponse => {
+      case r: io.apibuilder.apidoc.api.v0.errors.ErrorsResponse => {
         Redirect(routes.Versions.show(orgKey, applicationKey, version)).flashing("warning" -> r.errors.map(_.message).mkString(", "))
       }
     }

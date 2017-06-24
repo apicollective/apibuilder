@@ -2,7 +2,7 @@ package lib
 
 import java.io.{BufferedOutputStream, FileOutputStream}
 
-import com.bryzek.apidoc.generator.v0.models.File
+import io.apibuilder.apidoc.generator.v0.models.File
 import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveOutputStream}
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 

@@ -1,8 +1,8 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, User, Version, Visibility}
-import com.bryzek.apidoc.common.v0.models.Reference
-import com.bryzek.apidoc.internal.v0.models.TaskDataIndexApplication
+import io.apibuilder.apidoc.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, User, Version, Visibility}
+import io.apibuilder.apidoc.common.v0.models.Reference
+import io.apibuilder.apidoc.internal.v0.models.TaskDataIndexApplication
 import javax.inject.{Inject, Named, Singleton}
 import lib.{UrlKey, Validation}
 import anorm._

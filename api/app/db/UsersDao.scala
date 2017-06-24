@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Error, User, UserForm, UserUpdateForm}
+import io.apibuilder.apidoc.api.v0.models.{Error, User, UserForm, UserUpdateForm}
 import lib.{Constants, Misc, Role, UrlKey, Validation}
 import anorm._
 import javax.inject.{Inject, Named, Singleton}

@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{Organization, Publication}
+import io.apibuilder.apidoc.api.v0.models.{Organization, Publication}
 import lib.Role
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID

@@ -2,8 +2,8 @@ package lib
 
 import play.api.libs.json.Json
 
-import com.bryzek.apidoc.spec.v0.models._
-import com.bryzek.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
+import io.apibuilder.apidoc.spec.v0.models._
+import io.apibuilder.apidoc.api.v0.models.{Diff, DiffBreaking, DiffNonBreaking}
 
 /**
   * Takes two service descriptions. Returns a list of changes from

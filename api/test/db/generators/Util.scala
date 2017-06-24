@@ -1,8 +1,8 @@
 package db.generators
 
 import db.Authorization
-import com.bryzek.apidoc.api.v0.models.{GeneratorForm, GeneratorService, GeneratorServiceForm, GeneratorWithService}
-import com.bryzek.apidoc.generator.v0.models.Generator
+import io.apibuilder.apidoc.api.v0.models.{GeneratorForm, GeneratorService, GeneratorServiceForm, GeneratorWithService}
+import io.apibuilder.apidoc.generator.v0.models.Generator
 import java.util.UUID
 
 object Util extends util.Daos {

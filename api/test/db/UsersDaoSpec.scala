@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.apidoc.api.v0.models.{UserForm, UserUpdateForm}
+import io.apibuilder.apidoc.api.v0.models.{UserForm, UserUpdateForm}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
 import lib.Role

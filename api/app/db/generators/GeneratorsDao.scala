@@ -1,8 +1,8 @@
 package db.generators
 
 import db.{AuditsDao, Authorization, SoftDelete}
-import com.bryzek.apidoc.api.v0.models.{GeneratorForm, Error, GeneratorService, GeneratorWithService, User}
-import com.bryzek.apidoc.generator.v0.models.Generator
+import io.apibuilder.apidoc.api.v0.models.{GeneratorForm, Error, GeneratorService, GeneratorWithService, User}
+import io.apibuilder.apidoc.generator.v0.models.Generator
 import core.Util
 import javax.inject.{Inject, Singleton}
 import lib.Validation

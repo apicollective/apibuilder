@@ -1,7 +1,7 @@
 package lib
 
 import core.ServiceFetcher
-import com.bryzek.apidoc.spec.v0.models.Service
+import io.apibuilder.apidoc.spec.v0.models.Service
 import db.{Authorization, VersionsDao}
 
 /**

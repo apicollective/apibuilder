@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.json._
-import com.bryzek.apidoc.api.v0.models.Domain
+import io.apibuilder.apidoc.api.v0.models.json._
+import io.apibuilder.apidoc.api.v0.models.Domain
 import db.{OrganizationsDao, OrganizationDomainsDao}
 import javax.inject.{Inject, Singleton}
 import lib.Validation

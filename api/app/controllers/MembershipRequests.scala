@@ -1,7 +1,7 @@
 package controllers
 
-import com.bryzek.apidoc.api.v0.models.{Organization, User}
-import com.bryzek.apidoc.api.v0.models.json._
+import io.apibuilder.apidoc.api.v0.models.{Organization, User}
+import io.apibuilder.apidoc.api.v0.models.json._
 import lib.{Review, Role, Validation}
 import db.{Authorization, MembershipRequestsDao, OrganizationsDao, UsersDao}
 import play.api.mvc._
