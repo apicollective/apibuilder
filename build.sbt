@@ -2,7 +2,7 @@ import play.PlayImport.PlayKeys._
 import play.sbt.PlayImport._
 import scoverage.ScoverageKeys
 
-name := "apidoc"
+name := "apibuilder"
 
 organization := "io.apibuilder"
 
@@ -122,7 +122,7 @@ lazy val spec = project
 
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
-  name <<= name("apidoc-" + _),
+  name <<= name("apibuilder-" + _),
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.2",
