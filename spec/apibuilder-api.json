@@ -1,7 +1,7 @@
 {
   "name": "apibuilder api",
   "description": "Host API documentation for applications providing REST APIs, facilitating the design of good resource first APIs.",
-  "base_url": "http://api.apibuilder.io",
+  "base_url": "https://api.apibuilder.io",
 
   "info": {
     "contact": {

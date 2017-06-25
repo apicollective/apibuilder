@@ -83,7 +83,7 @@ def resolved?(specs, spec)
   }
 end
 
-assert_installed("apidoc", "https://github.com/apicollective/apibuilder-cli")
+assert_installed("apibuilder", "https://github.com/apicollective/apibuilder-cli")
 
 tag = args[:tag] || calculate_next_tag
 spec_dir = Pathname.new(File.join(File.dirname(__FILE__), '/../spec')).cleanpath
@@ -134,7 +134,7 @@ class Spec
     if profile
       cmds << "PROFILE=%s" % profile
     end
-    cmds << "apidoc upload %s %s %s --version %s" % [ORGANIZATION, @application, @path, tag]
+    cmds << "apibuilder upload %s %s %s --version %s" % [ORGANIZATION, @application, @path, tag]
     cmds.join(" ")
   end
   
