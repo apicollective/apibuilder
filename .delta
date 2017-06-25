@@ -4,6 +4,7 @@ builds:
       initial.number.instances: 2
       instance.type: t2.medium
       port.container: 9000
+      memory: 3500
       port.host: 7071
   - www:
       dockerfile: www/Dockerfile
