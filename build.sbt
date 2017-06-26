@@ -6,7 +6,7 @@ name := "apibuilder"
 
 organization := "io.apibuilder"
 
-scalaVersion in ThisBuild := "2.11.8"
+scalaVersion in ThisBuild := "2.11.11"
 
 // required because of issue between scoverage & sbt
 parallelExecution in Test in ThisBuild := true
@@ -15,9 +15,9 @@ lazy val lib = project
   .in(file("lib"))
   .settings(commonSettings: _*)
 
-val avroVersion = "1.8.1"
+val avroVersion = "1.8.2"
 
-val playJsonVersion = "2.4.6"
+val playJsonVersion = "2.4.11"
 
 lazy val avro = project
   .in(file("avro"))
@@ -100,7 +100,7 @@ lazy val www = project
     routesImport += "io.apibuilder.api.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "org.apache.commons" % "commons-compress" % "1.13",
+      "org.apache.commons" % "commons-compress" % "1.14",
       "com.github.tototoshi" %% "scala-csv" % "1.3.4",
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.6.0-M1",
