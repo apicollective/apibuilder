@@ -3,6 +3,6 @@
 apibuilder
 ==========
 
-Simple, Comprehensive Tooling for Modern APIs
+Simple, Comprehensive Tooling for Modern APIs.
 
 See https://www.apibuilder.io
