@@ -154,13 +154,11 @@ class Users @Inject() (
           emailsResponse <- ws.url("https://api.github.com/user/emails").withHeaders(headers).get()
         } yield {
           val obj = Json.parse(userResponse.body).as[JsObject]
-          play.api.Logger.info(s"GITHUB USER: " + Json.prettyPrint(obj))
           val login = (obj \ "login").asOpt[String].getOrElse {
             sys.error(s"Failed to get github user login. Response: $obj")
           }
 
           val emails = Json.parse(emailsResponse.body).as[JsArray]
-          play.api.Logger.info(s"GITHUB USER EMAILS: " + Json.prettyPrint(emails))
           val primaryEmailObject = emails.value.map(_.as[JsObject]).find { js =>
             (js \ "primary").as[JsBoolean].value
           }.getOrElse {
