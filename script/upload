@@ -97,7 +97,9 @@ class Dependency
   end
 
   def Dependency.from_uri(uri)
-    if md = uri.match(/^https?:\/\/www.apibuilder.io\/([^\/]+)\/([^\/]+)/)
+    if md = uri.match(/^https?:\/\/app.apibuilder.io\/([^\/]+)\/([^\/]+)/)
+      Dependency.new(md[1], md[2])
+    elsif md = uri.match(/^https?:\/\/www.apibuilder.io\/([^\/]+)\/([^\/]+)/)
       Dependency.new(md[1], md[2])
     else
       raise "Could not parse import uri[%s]" % uri
