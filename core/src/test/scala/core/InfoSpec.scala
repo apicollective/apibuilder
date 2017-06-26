@@ -31,7 +31,7 @@ class InfoSpec extends FunSpec with Matchers {
       val json = baseJson.format("""
         "contact": {
           "name": "Foo",
-          "email": "Foo@test.apidoc.me",
+          "email": "Foo@test.apibuilder.me",
           "url": "http://www.apidoc.me"
         }
       """)
@@ -39,7 +39,7 @@ class InfoSpec extends FunSpec with Matchers {
       validator.errors.mkString("") should be("")
       val contact = Contact(
         name = Some("Foo"),
-        email = Some("Foo@test.apidoc.me"),
+        email = Some("Foo@test.apibuilder.me"),
         url = Some("http://www.apidoc.me")
       )
       validator.service.info should be(Info(contact = Some(contact)))

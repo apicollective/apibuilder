@@ -77,7 +77,7 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
     val serviceConfig = ServiceConfiguration(
       orgKey = "test",
-      orgNamespace = "test.apidoc",
+      orgNamespace = "test.apibuilder",
       version = "0.0.2"
     )
 

@@ -8,7 +8,7 @@ import lib.Role
 class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   def createUserForm(
-    email: String = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
+    email: String = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
     nickname: Option[String] = None
   ) = UserForm(email = email, password = UUID.randomUUID.toString, nickname = nickname)
 
@@ -36,7 +36,7 @@ class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
   it("user can login after creation") {
     val form = UserForm(
-      email = UUID.randomUUID.toString + "@test.apidoc.me",
+      email = UUID.randomUUID.toString + "@test.apibuilder.io",
       password = "testing"
     )
     val user = usersDao.create(form)
@@ -57,7 +57,7 @@ class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
     it("email is unique") {
       val form = UserForm(
-        email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
+        email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
         password = "testing"
       )
 
@@ -79,7 +79,7 @@ class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
     it("password") {
       val form = UserForm(
-        email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
+        email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
         password = "bad"
       )
 
@@ -87,7 +87,7 @@ class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
     }
 
     it("email in upper case with whitespace") {
-      val email = "TEST-user-" + UUID.randomUUID.toString + "@test.apidoc.me"
+      val email = "TEST-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
       val form = UserForm(
         email = " " + email,
         password = "testing"
@@ -113,7 +113,7 @@ class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
     it("nickname is unique") {
       val form = UserForm(
-        email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
+        email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
         password = "testing",
         nickname = Some(UUID.randomUUID.toString)
       )

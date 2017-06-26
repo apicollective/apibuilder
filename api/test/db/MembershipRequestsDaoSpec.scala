@@ -69,7 +69,7 @@ class MembershipRequestsDaoSpec extends FlatSpec with util.TestApplication {
   }
 
   it should "findAllForUser" in {
-    val newUser = Util.upsertUser(UUID.randomUUID().toString + "@test.apidoc.me")
+    val newUser = Util.upsertUser(UUID.randomUUID().toString + "@test.apibuilder.io")
     val newOrg = Util.createOrganization()
 
     val request1 = membershipRequestsDao.upsert(Util.createdBy, newOrg, newUser, Role.Admin)

@@ -26,7 +26,7 @@ class ImporterSpec extends FunSpec with Matchers {
       "apidoc": { "version": "0.9.6" },
       "organization": { "key": "test" },
       "application": { "key": "import-shared" },
-      "namespace": "test.apidoc.import-shared",
+      "namespace": "test.apibuilder.import-shared",
       "version": "1.0.0",
       "attributes": [],
 
@@ -59,7 +59,7 @@ class ImporterSpec extends FunSpec with Matchers {
       service.name should be("Import Shared")
       service.organization should be(Organization(key = "test"))
       service.application should be(Application(key = "import-shared"))
-      service.namespace should be("test.apidoc.import-shared")
+      service.namespace should be("test.apibuilder.import-shared")
 
       service.models.map(_.name) should be(Seq("user"))
 

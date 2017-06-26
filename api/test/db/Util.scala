@@ -11,12 +11,12 @@ object Util extends util.Daos {
   // new play.core.StaticApplication(new java.io.File("."))
 
   def createRandomUser(): User = {
-    val email = "random-user-" + UUID.randomUUID.toString + "@test.apidoc.me"
+    val email = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io"
     usersDao.create(UserForm(email = email, password = "test1"))
   }
 
   def upsertUser(
-    email: String = "random-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
+    email: String = "random-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
     name: String = "Admin",
     password: String = "test1"
   ): User = {
