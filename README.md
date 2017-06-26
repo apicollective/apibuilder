@@ -3,12 +3,6 @@
 apibuilder
 ==========
 
-Beautiful documentation for REST services.
+Simple, Comprehensive Tooling for Modern APIs
 
-Simple native client libraries with no dependencies.
-
-Better REST services - written by hand with love.
-
-https://www.apibuilder.io
-
-We fully support [Swagger 2.0](SWAGGER.md)!
+See https://www.apibuilder.io
