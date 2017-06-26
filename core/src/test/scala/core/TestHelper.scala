@@ -68,6 +68,10 @@ object TestHelper {
       fetcher.add(s"http://www.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
       fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
       fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
+      fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+      fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
+      fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+      fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
     }
 
     val contents = readFile("spec/apibuilder-generator.json")
@@ -125,6 +129,12 @@ object TestHelper {
         fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
         fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
         fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
+        fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+        fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
+        fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
+        fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+        fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
+        fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
       }
     }
     parseFile(filename, fetcher)
