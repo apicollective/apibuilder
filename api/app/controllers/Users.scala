@@ -129,7 +129,10 @@ class Users @Inject() (
 
           case Some(user) => {
             if (userPasswordsDao.isValid(user.guid, form.password)) {
-              Ok(Json.toJson(sessionHelper.createAuthentication(user)))
+              // Include user information to keep backwards compatible from an API perspective
+              val js = Json.toJson(user).asInstanceOf[JsObject]
+              val auth = Json.toJson(sessionHelper.createAuthentication(user)).asInstanceOf[JsObject]
+              Ok(Json.toJson(js ++ auth))
             } else {
               Conflict(Json.toJson(Validation.userAuthorizationFailed()))
             }
