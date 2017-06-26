@@ -80,7 +80,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
   }
 
   def createUserForm() = UserForm(
-    email = "test-user-" + UUID.randomUUID.toString + "@test.apidoc.me",
+    email = "test-user-" + UUID.randomUUID.toString + "@test.apibuilder.io",
     password = UUID.randomUUID.toString,
     name = None
   )

@@ -81,7 +81,7 @@ class ExampleJsonSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     info.contact should be(Some(
       Contact(
         name = Some("Michael Bryzek"),
-        url = Some("http://www.apibuilder.io"),
+        url = Some("https://www.apibuilder.io"),
         email = Some("michael@test.apibuilder.io")
       )
     ))

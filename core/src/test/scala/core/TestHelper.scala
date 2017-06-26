@@ -38,25 +38,25 @@ object TestHelper {
 
   val serviceConfig = ServiceConfiguration(
     orgKey = "test",
-    orgNamespace = "test.apidoc",
+    orgNamespace = "test.apibuilder",
     version = "0.0.1-dev"
   )
 
-  private val bryzekConfig = ServiceConfiguration(
-    orgKey = "bryzek",
-    orgNamespace = "io.apibuilder",
+  private val apibuilderConfig = ServiceConfiguration(
+    orgKey = "apicollective",
+    orgNamespace = "io",
     version = "0.0.41"
   )
 
   private lazy val specService: Service = {
-    val contents = readFile("spec/apidoc-spec.json")
-    val validator = OriginalValidator(bryzekConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+    val contents = readFile("spec/apibuilder-spec.json")
+    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
     TestServiceValidator(validator).service
   }
 
   private lazy val commonService: Service = {
-    val contents = readFile("spec/apidoc-common.json")
-    val validator = OriginalValidator(bryzekConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
+    val contents = readFile("spec/apibuilder-common.json")
+    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), new MockServiceFetcher())
     TestServiceValidator(validator).service
   }
 
@@ -64,12 +64,14 @@ object TestHelper {
     val fetcher = MockServiceFetcher()
 
     Seq(io.apibuilder.spec.v0.Constants.Version, "latest").foreach { version =>
-      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
-      fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
+      fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+      fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
+      fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+      fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
     }
 
-    val contents = readFile("spec/apidoc-generator.json")
-    val validator = OriginalValidator(bryzekConfig, Original(OriginalType.ApiJson, contents), fetcher)
+    val contents = readFile("spec/apibuilder-generator.json")
+    val validator = OriginalValidator(apibuilderConfig, Original(OriginalType.ApiJson, contents), fetcher)
     TestServiceValidator(validator).service
   }
 
@@ -115,11 +117,14 @@ object TestHelper {
 
   def parseFile(filename: String): ServiceValidatorForSpecs = {
     val fetcher = MockServiceFetcher()
-    if (filename == "spec/apidoc-api.json") {
+    if (filename == "spec/apibuilder-api.json") {
       Seq(io.apibuilder.spec.v0.Constants.Version, "latest").foreach { version =>
-        fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-spec/$version/service.json", specService)
-        fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-common/$version/service.json", commonService)
-        fetcher.add(s"http://www.apidoc.me/bryzek/apidoc-generator/$version/service.json", generatorService)
+        fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+        fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
+        fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
+        fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
+        fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
+        fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
       }
     }
     parseFile(filename, fetcher)

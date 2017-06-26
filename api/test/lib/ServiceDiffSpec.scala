@@ -300,7 +300,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
   describe("import") {
 
     val imp = Import(
-      uri = "http://www.apidoc.me/bryzek/apidoc-spec/0.9.6/service.json",
+      uri = "https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json",
       namespace = "io.apibuilder.spec.v0",
       organization = Organization(key = "gilt"),
       application = Application(key = "apidoc-spec"),
@@ -320,7 +320,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     it("remove import") {
       ServiceDiff(serviceWithImport, base).differences should be(
         Seq(
-          DiffNonBreaking("import removed: http://www.apidoc.me/bryzek/apidoc-spec/0.9.6/service.json")
+          DiffNonBreaking("import removed: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
         )
       )
     }
@@ -328,14 +328,14 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
     it("add import") {
       ServiceDiff(base, serviceWithImport).differences should be(
         Seq(
-          DiffNonBreaking("import added: http://www.apidoc.me/bryzek/apidoc-spec/0.9.6/service.json")
+          DiffNonBreaking("import added: https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json")
         )
       )
     }
 
     it("change import") {
       val imp2 = Import(
-        uri = "http://www.apidoc.me/bryzek/apidoc-spec/0.9.6/service.json",
+        uri = "https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json",
         namespace = "io.apibuilder.spec.v1",
         organization = Organization(key = "gilt2"),
         application = Application(key = "apidoc-spec2"),
@@ -345,7 +345,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
         models = Seq("baz")
       )
 
-      val prefix = "import http://www.apidoc.me/bryzek/apidoc-spec/0.9.6/service.json"
+      val prefix = "import https://www.apibuilder.io/apicollective/apibuilder-spec/0.9.6/service.json"
 
       ServiceDiff(serviceWithImport, base.copy(imports = Seq(imp.copy(namespace = imp2.namespace)))).differences should be(
         Seq(

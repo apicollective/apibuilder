@@ -1,7 +1,7 @@
 {
   "name": "apibuilder generator",
   "description": "Documentation for an apibuilder code generator API",
-  "base_url": "http://www.apibuilder.io",
+  "base_url": "https://api.apibuilder.io",
 
   "info": {
     "contact": {
@@ -17,8 +17,8 @@
 
 
   "imports": [
-    { "uri": "http://www.apibuilder.io/apicollective/apibuilder-common/latest/service.json" },
-    { "uri": "http://www.apibuilder.io/apicollective/apibuilder-spec/latest/service.json" }
+    { "uri": "https://app.apibuilder.io/apicollective/apibuilder-common/latest/service.json" },
+    { "uri": "https://app.apibuilder.io/apicollective/apibuilder-spec/latest/service.json" }
   ],
 
   "models": {

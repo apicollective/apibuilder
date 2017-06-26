@@ -242,7 +242,7 @@
       "description": "Describes the primary contact for this service",
       "fields": [
 	{ "name": "name", "type": "string", "example": "Michael Bryzek", "required": false  },
-	{ "name": "url", "type": "string", "example": "http://www.apibuilder.io", "required": false  },
+	{ "name": "url", "type": "string", "example": "https://www.apibuilder.io", "required": false  },
 	{ "name": "email", "type": "string", "example": "michael@test.apibuilder.io", "required": false  }
       ]
     },
@@ -262,7 +262,7 @@
     "import": {
       "description": "An import is used to declare a dependency on another application. This allows you to reference the models and or enums from that application in your own app.",
       "fields": [
-	{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "http://www.apibuilder.io/apicollective/apibuilder-spec/0.7.38/service.json"  },
+	{ "name": "uri", "type": "string", "description": "Full URI to the service.json file of the service we are importing", "example": "https://www.apibuilder.io/apicollective/apibuilder-spec/0.7.38/service.json"  },
 	{ "name": "namespace", "type": "string", "description": "the fully qualified namespace that we have imported", "example": "io.apibuilder" },
 	{ "name": "organization", "type": "organization" },
 	{ "name": "application", "type": "application" },

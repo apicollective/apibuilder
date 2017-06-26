@@ -56,7 +56,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
       "info": {},
       "organization": { "key": "test" },
       "application": { "key": "import-shared" },
-      "namespace": "test.apidoc.import-shared",
+      "namespace": "test.apibuilder.import-shared",
       "version": "1.0.0",
       "attributes": [],
 
@@ -145,14 +145,14 @@ class ImportServiceSpec extends FunSpec with Matchers {
         "membership": {
           "fields": [
             { "name": "id", "type": "long" },
-            { "name": "user", "type": "test.apidoc.import-shared.models.user" },
-            { "name": "age_group", "type": "test.apidoc.import-shared.enums.age_group" }
+            { "name": "user", "type": "test.apibuilder.import-shared.models.user" },
+            { "name": "age_group", "type": "test.apibuilder.import-shared.enums.age_group" }
           ]
         }
       },
 
       "resources": {
-        "test.apidoc.import-shared.models.user": {
+        "test.apibuilder.import-shared.models.user": {
           "operations": [
             {
               "method": "GET",
@@ -161,7 +161,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
           ]
         },
 
-        "test.apidoc.import-shared.unions.user_or_guest": {
+        "test.apibuilder.import-shared.unions.user_or_guest": {
           "operations": [
             {
               "method": "GET",
@@ -170,7 +170,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
           ]
         },
 
-        "test.apidoc.import-shared.unions.user_or_random": {
+        "test.apibuilder.import-shared.unions.user_or_random": {
           "operations": [
             {
               "method": "GET",
@@ -205,7 +205,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
     }
 
     it("infers datatype for an imported field") {
-      val resource = validService.resources.find(_.`type` == "test.apidoc.import-shared.models.user").getOrElse {
+      val resource = validService.resources.find(_.`type` == "test.apibuilder.import-shared.models.user").getOrElse {
         sys.error("Could not find resource")
       }
       resource.operations.head.parameters.find(_.name == "id").getOrElse {
@@ -214,7 +214,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
     }
 
     it("infers datatype for an imported field from a union type") {
-      val resource = validService.resources.find(_.`type` == "test.apidoc.import-shared.unions.user_or_guest").getOrElse {
+      val resource = validService.resources.find(_.`type` == "test.apibuilder.import-shared.unions.user_or_guest").getOrElse {
         sys.error("Could not find resource")
       }
       resource.operations.head.parameters.find(_.name == "id").getOrElse {
@@ -223,7 +223,7 @@ class ImportServiceSpec extends FunSpec with Matchers {
     }
 
     it("defaults datatype to string when type varies across union types") {
-      val resource = validService.resources.find(_.`type` == "test.apidoc.import-shared.unions.user_or_random").getOrElse {
+      val resource = validService.resources.find(_.`type` == "test.apibuilder.import-shared.unions.user_or_random").getOrElse {
         sys.error("Could not find resource")
       }
       resource.operations.head.parameters.find(_.name == "id").getOrElse {
