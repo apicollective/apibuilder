@@ -44,7 +44,7 @@ object TestHelper {
 
   private val apibuilderConfig = ServiceConfiguration(
     orgKey = "apicollective",
-    orgNamespace = "io.apibuilder",
+    orgNamespace = "io",
     version = "0.0.41"
   )
 
@@ -64,10 +64,6 @@ object TestHelper {
     val fetcher = MockServiceFetcher()
 
     Seq(io.apibuilder.spec.v0.Constants.Version, "latest").foreach { version =>
-      fetcher.add(s"http://www.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
-      fetcher.add(s"http://www.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
-      fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
-      fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
       fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
       fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
       fetcher.add(s"https://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
@@ -123,12 +119,6 @@ object TestHelper {
     val fetcher = MockServiceFetcher()
     if (filename == "spec/apibuilder-api.json") {
       Seq(io.apibuilder.spec.v0.Constants.Version, "latest").foreach { version =>
-        fetcher.add(s"http://www.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
-        fetcher.add(s"http://www.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
-        fetcher.add(s"http://www.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
-        fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
-        fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
-        fetcher.add(s"https://www.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
         fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-spec/$version/service.json", specService)
         fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-common/$version/service.json", commonService)
         fetcher.add(s"http://app.apibuilder.io/apicollective/apibuilder-generator/$version/service.json", generatorService)
