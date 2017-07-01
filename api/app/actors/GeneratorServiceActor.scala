@@ -61,7 +61,7 @@ object GeneratorServiceActor {
             generator = gen
           )
         ) match {
-          case Left(errors) => Logger.error("Error fetching generators for service[${service.guid}] uri[${service.uri}]: " + errors.mkString(", "))
+          case Left(errors) => Logger.error(s"Error fetching generators for service[${service.guid}] uri[${service.uri}]: " + errors.mkString(", "))
           case Right(_) => {}
         }
       }
