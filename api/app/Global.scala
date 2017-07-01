@@ -48,7 +48,8 @@ object Global extends WithFilters(LoggingFilter) {
     Logger.info("Starting ensureServices()")
     val versionsDao = play.api.Play.current.injector.instanceOf[VersionsDao]
     Try {
-      versionsDao.migrate()
+      Logger.warn("Migration disabled")
+      //versionsDao.migrate()
     } match {
       case Success(result) => Logger.info("ensureServices() completed: " + result)
       case Failure(ex) => Logger.error(s"Error migrating versions: ${ex.getMessage}")
