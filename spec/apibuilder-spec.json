@@ -36,21 +36,6 @@
 	{ "name": "Form" },
 	{ "name": "Header" }
      ]
-    },
-
-    "response_code_option": {
-      "values": [
-	{ "name": "Default" }
-      ]
-    }
-  },
-
-  "unions": {
-    "response_code": {
-      "types": [
-	{ "type": "integer", "description": "Documents an HTTP status code (e.g. 200, 409, etc.)" },
-	{ "type": "response_code_option", "description": "An individual operation can specify a response code of default to handle all other response codes. This is most useful for providing consistent error handling from an operation." }
-      ]
     }
   },
 
@@ -214,7 +199,7 @@
 
     "response": {
       "fields": [
-	{ "name": "code", "type": "response_code" },
+	{ "name": "code", "type": "string", "description": "The specific response code. Must be an integer (e.g. 200) or the '*' symbol to indicate all repsonse codes", "example": "200" },
 	{ "name": "type", "type": "string" },
 	{ "name": "headers", "type": "[header]", "required": false },
 	{ "name": "description", "type": "string", "required": false },
