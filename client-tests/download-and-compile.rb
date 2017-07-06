@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
-CLI_PATH = "/web/apidoc-cli/bin/apidoc"
+CLI_DIR = "/web/apicollective/apibuilder-cli"
+CLI_PATH = File.join(CLI_DIR, "bin/apibuilder")
 
 if !File.exists?(CLI_PATH)
   puts "ERROR: Could not find CLI at #{CLI_PATH}"
@@ -8,14 +9,14 @@ if !File.exists?(CLI_PATH)
   exit(1)
 end
 
-load '/web/apidoc-cli/lib/apidoc-cli/args.rb'
+load File.join(CLI_DIR, "lib/apibuilder-cli/args.rb")
 
-args = ApidocCli::Args.parse(ARGV)
+args = ApibuilderCli::Args.parse(ARGV)
 
 PROFILE = args[:profile]
 
-orgs = [] # ['bryzek']
-applications = []  # ['apidoc', 'apidoc-spec', 'apidoc-generator']
+orgs = [] # ['apicollective']
+applications = [] # ['apibuilder-api']
 
 if !args.has_key?(:force) && (!orgs.empty? || !applications.empty?)
   puts "Confirm you would like to limit tests to:"
