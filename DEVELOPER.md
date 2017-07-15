@@ -57,7 +57,7 @@ Developing
 
 You'll need to run the postgresql database (version 9.5 or greater). Two options:
 
-  1. docker run -d -p 5432:5432 apicollective/apibuilder-postgresql:latest
+  1. docker run -d -p 5432:5432 flowcommerce/apibuilder-postgresql:latest
 
   2. run locally - see the project https://github.com/apicollective/apibuilder-postgresql
 
