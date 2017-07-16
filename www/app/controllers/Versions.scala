@@ -64,7 +64,9 @@ class Versions @Inject() (val messagesApi: MessagesApi) extends Controller with 
                 versionObject = Some(v),
                 generators = generators
               )
-              Ok(views.html.versions.show(tpl, application, v.service, watches))
+              Ok(views.html.versions.show(tpl, application, v.service, watches)).withHeaders(
+                CACHE_CONTROL -> "max-age=0, s-maxage=0"
+              )
             }
           }
         }
