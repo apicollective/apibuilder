@@ -23,7 +23,7 @@ class OriginalUtilSpec extends FunSpec with ShouldMatchers {
     }
 
     it("serviceJson") {
-      OriginalUtil.guessType(TestHelper.readFile("../core/src/test/resources/apidoc-service.json")) should be(Some(OriginalType.ServiceJson))
+      OriginalUtil.guessType(TestHelper.readFile("../core/src/test/resources/apibuilder-service.json")) should be(Some(OriginalType.ServiceJson))
     }
 
     it("swaggerJson") {
