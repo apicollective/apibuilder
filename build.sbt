@@ -71,6 +71,7 @@ lazy val api = project
   .dependsOn(generated, core)
   .aggregate(generated, core)
   .enablePlugins(PlayScala)
+  .enablePlugins(NewRelic)
   .settings(commonSettings: _*)
   .settings(
     testOptions += Tests.Argument("-oF"),
@@ -95,6 +96,7 @@ lazy val www = project
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .enablePlugins(PlayScala)
+  .enablePlugins(NewRelic)
   .settings(commonSettings: _*)
   .settings(
     routesImport += "io.apibuilder.api.v0.Bindables._",
