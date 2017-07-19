@@ -278,7 +278,7 @@ class VersionsDao @Inject() (
   }
 
   @tailrec
-  private[this] def migrateSingleRun(limit: Int = 100, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
+  private[this] def migrateSingleRun(limit: Int = 5000, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
     var good = 0l
     var bad = 0l
 
