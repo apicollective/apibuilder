@@ -4,7 +4,7 @@ import java.io.File
 
 import io.apibuilder.spec.v0.models._
 import io.swagger.models.parameters.AbstractSerializableParameter
-import io.swagger.models.properties.{ArrayProperty, RefProperty}
+import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
 import io.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
 import io.swagger.parser.SwaggerParser
 import lib.{ServiceConfiguration, Text, UrlKey}
@@ -143,6 +143,17 @@ case class Parser(config: ServiceConfiguration) {
     }
   }
 
+  @tailrec
+  private def retrieveModel(schema: Property): Option[Property] = {
+    schema match {
+      case array: ArrayProperty =>
+        retrieveModel(array.getItems)
+      case ref: RefProperty =>
+        Some(ref)
+      case _ => None
+    }
+  }
+
   private def parseResources(
     swagger: Swagger,
     resolver: Resolver
@@ -151,14 +162,9 @@ case class Parser(config: ServiceConfiguration) {
       (url, p)  <- swagger.getPaths
       operation <- p.getOperations
       response  <- operation.getResponses.toMap.get("200")
+      model     <- retrieveModel(response.getSchema)
+      if Option(model).isDefined
     } yield {
-      val model = response.getSchema match {
-        case array: ArrayProperty =>
-          array.getItems
-        case ref: RefProperty =>
-          ref
-      }
-
       val paramStringEnums =
         model match {
           case ref: RefProperty =>
@@ -166,7 +172,7 @@ case class Parser(config: ServiceConfiguration) {
             for{
               resourceOp  <- p.getOperations
               param       <- resourceOp.getParameters
-              if(Util.hasStringEnum(param))
+              if Util.hasStringEnum(param)
             } yield {
               val httpMethod = Util.retrieveMethod(resourceOp, p).get
               val enumTypeName = Util.buildParamEnumTypeName(ref.getSimpleRef, param, httpMethod.toString)
@@ -189,6 +195,7 @@ case class Parser(config: ServiceConfiguration) {
             case Some(model) => translators.Resource(resolver.copy(enums = resolver.enums ++ paramStringEnums), model, url, p)
             case None => sys.error(s"Could not find model at url[$url]")
           }
+        case _ => sys.error(s"Unexpected resource model type: $model. Operation: $operation; Response: $response")
       }
 
       (resource, paramStringEnums)

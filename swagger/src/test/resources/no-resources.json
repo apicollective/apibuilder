@@ -1,0 +1,40 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Example with no models in the responses (just type string)",
+    "description": "Example with no models in the responses (just type string)"
+  },
+  "paths": {
+    "/return-string": {
+      "get": {
+        "description": "Returns a string",
+        "responses": {
+          "200": {
+            "description": "Just a random string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/return-array-of-strings": {
+      "get": {
+        "description": "Returns an array of strings",
+        "responses": {
+          "200": {
+            "description": "Just an array of random strings",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {}
+}
