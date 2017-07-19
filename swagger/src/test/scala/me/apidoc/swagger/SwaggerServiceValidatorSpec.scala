@@ -950,6 +950,24 @@ class SwaggerServiceValidatorSpec extends FunSpec with Matchers {
           assertRefsSpec(path)
       }
     }
+
+    it("should not fail when no resource model can be found") {
+      val files = Seq("no-resources.json")
+      files.foreach {
+        filename =>
+          val path = resourcesDir + filename
+          println(s"Reading file[$path]")
+          SwaggerServiceValidator(config, readFile(path)).validate match {
+            case Left(errors) => {
+              fail(s"Service validation failed for path[$path]: " + errors.mkString(", "))
+            }
+            case Right(service) => {
+              service.resources should be(Seq())
+              service.models should be (Seq())
+            }
+          }
+      }
+    }
   }
 
   def assertRefsSpec(path: String) = {
