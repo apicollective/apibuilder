@@ -17,6 +17,7 @@
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
             <li@if(title == None) { class="active" }><a href="@routes.DocController.index">Introduction</a></li>
+            <li@if(title == Some("Why Choose API Builder?")) { class="active" }><a href="@routes.DocController.why">Why API Builder?</a></li>
             <li@if(title == Some("Getting Started")) { class="active" }><a href="@routes.DocController.start">Getting Started</a></li>
             <li@if(title == Some("api.json format")) { class="active" }><a href="@routes.DocController.apiJson">api.json format</a></li>
             <li@if(title == Some("Types")) { class="active" }><a href="@routes.DocController.types">Types</a></li>

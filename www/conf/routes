@@ -38,6 +38,7 @@ GET     /doc/releaseNotes                                         controllers.Do
 GET     /doc/playRoutesFile                                       controllers.DocController.playRoutesFile
 GET     /doc/playUnionTypes                                       controllers.DocController.playUnionTypes
 GET     /doc/apiTokens                                            controllers.DocController.apiTokens
+GET     /doc/why                                                  controllers.DocController.why
 
 GET     /email-verifications/:token                               controllers.EmailVerifications.get(token: String)
 
