@@ -14,8 +14,10 @@ class UtilSpec extends FunSpec with Matchers with TestApplication {
 
   it("validateReturnUrl for valid domains") {
     Util.validateReturnUrl("/") should be(Right("/"))
-    Util.validateReturnUrl("https://www.apidoc.me") should be(Right("/"))
-    Util.validateReturnUrl("https://www.apidoc.me/") should be(Right("/"))
+    Util.validateReturnUrl("https://www.apibuilder.io") should be(Right("/"))
+    Util.validateReturnUrl("https://www.apibuilder.io/") should be(Right("/"))
+    Util.validateReturnUrl("https://app.apibuilder.io") should be(Right("/"))
+    Util.validateReturnUrl("https://app.apibuilder.io/") should be(Right("/"))
   }
 
 }
