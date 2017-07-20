@@ -57,4 +57,8 @@ class DocController extends Controller {
     Ok(views.html.doc.apiTokens(request.user))
   }
 
+  def why = Anonymous { implicit request =>
+    Ok(views.html.doc.why(request.user))
+  }
+
 }
