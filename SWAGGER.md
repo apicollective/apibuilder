@@ -2,8 +2,58 @@ Swagger Support
 ===============
 
 We aim to keep up with the [Swagger 2.0 Specification](http://swagger.io/specification/) for both import and export.
-Because Apidoc is a subset of Swagger coverage, there will be some features that we consciously do not support; those
+Because API Builder is a subset of Swagger coverage, there will be some features that we consciously do not support; those
 gaps will be noted here.
+
+
+Array Models
+============
+
+Swagger supports model definitions that are a simple array of another model:
+
+```yaml
+definitions:
+  Pet:
+    required:
+      - id
+      - name
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      tag:
+        type: string
+  Pets:
+    type: array
+    items:
+      $ref: '#/definitions/Pet'
+```
+
+Because API Builder focuses on the model (and its accompanying resources), plurals (captured as JSON arrays) are
+supported natively. Instead of defining a `Pets` model as an array, API Builder refers to such an array as `[Pet]`. This
+centralizes the model definition on a single model that can be used - in single or in multiple - without referring to a
+second model for the multiple definition. If you see an error that refers to these array models, you can resolve this
+by instead defining the array directly wherever your spec refers to the array model. For example, instead of
+
+```yaml
+responses:
+  '200':
+    schema:
+      $ref: '#/definitions/Pets'
+```
+
+use
+
+```yaml
+responses:
+  '200':
+    schema:
+      type: array
+      items:
+        $ref: '#/definitions/Pet'
+```
 
 
 Intentional Gaps
