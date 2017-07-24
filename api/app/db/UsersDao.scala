@@ -149,7 +149,7 @@ class UsersDao @Inject() (
   ): User = {
     val guid = DB.withConnection { implicit c =>
       doInsert(
-        nickname = login,
+        nickname = generateNickname(login),
         email = email,
         name = name,
         avatarUrl = avatarUrl,
