@@ -5,7 +5,7 @@ import java.io.File
 import io.apibuilder.spec.v0.models._
 import io.swagger.models.parameters.AbstractSerializableParameter
 import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
-import io.swagger.models.{Model => _, _}
+import io.swagger.models.{Info => _, Model => _, _}
 import io.swagger.parser.SwaggerParser
 import lib.{ServiceConfiguration, Text, UrlKey}
 import me.apidoc.swagger.translators.Resolver
