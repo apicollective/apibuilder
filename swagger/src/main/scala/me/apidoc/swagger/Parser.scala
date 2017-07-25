@@ -5,7 +5,7 @@ import java.io.File
 import io.apibuilder.spec.v0.models._
 import io.swagger.models.parameters.AbstractSerializableParameter
 import io.swagger.models.properties.{ArrayProperty, Property, RefProperty}
-import io.swagger.models.{ComposedModel, ModelImpl, RefModel, Swagger}
+import io.swagger.models.{Model => _, _}
 import io.swagger.parser.SwaggerParser
 import lib.{ServiceConfiguration, Text, UrlKey}
 import me.apidoc.swagger.translators.Resolver
@@ -129,6 +129,7 @@ case class Parser(config: ServiceConfiguration) {
             newEnums ++= translated._2
             translated._1
           }
+          case am: ArrayModel => sys.error(s"Unsupported definition for name[$name]. Array models are not supported - please see https://github.com/apicollective/apibuilder/blob/master/SWAGGER.md")
           case _ => sys.error(s"Unsupported definition for name[$name]")
         }
 
