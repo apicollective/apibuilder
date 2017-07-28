@@ -17,7 +17,7 @@ class TokensDao @Inject() (
 
   private[this] val BaseQuery = Query(s"""
     select tokens.guid,
-           'XXX-XXXX-XXX' as masked_token,
+           'XXX-XXX-XXX' as masked_token,
            tokens.description,
            ${AuditsParserDao.queryCreation("tokens")},
            users.guid as user_guid,
@@ -27,7 +27,7 @@ class TokensDao @Inject() (
            ${AuditsParserDao.queryWithAlias("users", "user")}
       from tokens
       join users on users.guid = tokens.user_guid and users.deleted_at is null
-  """)
+  """).withDebugging()
 
   private[this] val FindCleartextQuery = Query(s"""
     select token from tokens where guid = {guid}::uuid and deleted_at is null
@@ -45,7 +45,7 @@ class TokensDao @Inject() (
     form: TokenForm
   ): Seq[Error] = {
     val authErrors = if (user.guid == form.userGuid) {
-      Seq.empty
+      Nil
     } else {
       Seq("You are not authorized to create a token for this user")
     }

@@ -296,7 +296,7 @@ class UsersDao @Inject() (
   }
 
   @tailrec
-  private[this] final def generateNickname(input: String, iteration: Int = 1): String = {
+  private[db] final def generateNickname(input: String, iteration: Int = 1): String = {
     assert(iteration < 100, s"Possible infinite loop - input[$input] iteration[$iteration]")
 
     val prefix = input.trim.split("@").toList match {

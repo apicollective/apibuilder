@@ -3,7 +3,6 @@ package db
 import io.apibuilder.api.v0.models.{UserForm, UserUpdateForm}
 import org.scalatest.{FunSpec, Matchers}
 import java.util.UUID
-import lib.Role
 
 class UsersDaoSpec extends FunSpec with Matchers with util.TestApplication {
 

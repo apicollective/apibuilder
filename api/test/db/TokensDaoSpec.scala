@@ -1,18 +1,18 @@
 package db
 
-import java.util.UUID
-
 import io.apibuilder.api.v0.models.TokenForm
 import org.scalatest.{FunSpec, Matchers}
 
-class TokensDaoSpec extends FunSpec with Matchers with util.Daos {
+class TokensDaoSpec extends FunSpec with Matchers with util.TestApplication {
 
-  it("obfuscate") {
+  it("obfuscates token by default") {
+    val user = Util.upsertUser()
     val token = tokensDao.create(
-      usersDao.AdminUser,
-      TokenForm(userGuid = UUID.randomUUID)
+      user,
+      TokenForm(userGuid = user.guid)
     )
-    token.maskedToken should be("XXX-XXXX-XXXX")
+    token.user.guid should be(user.guid)
+    token.maskedToken should be("XXX-XXX-XXX")
 
     val clear = tokensDao.findCleartextByGuid(Authorization.All, token.guid).get
     tokensDao.findByToken(clear.token).get.guid should be(token.guid)
