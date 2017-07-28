@@ -10,7 +10,7 @@ class OrganizationDomainsDaoSpec extends FunSpec with Matchers with util.TestApp
     val domainName = UUID.randomUUID.toString + ".org"
     val org = Util.createOrganization()
     val domain = organizationDomainsDao.create(Util.createdBy, org, domainName)
-    domain.domain should be(domainName)
+    domain.domain.name should be(domainName)
 
     organizationDomainsDao.findAll(guid = Some(domain.guid)).map(_.guid) should be(Seq(domain.guid))
 
