@@ -175,16 +175,4 @@ class SubscriptionsDao @Inject() () {
     }
   }
 
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Subscription = {
-    Subscription(
-      guid = row[UUID]("guid"),
-      organization = organizationsDao.summaryFromRow(row, Some("organization")),
-      user = usersDao.fromRow(row, Some("user")),
-      publication = Publication(row[String]("publication")),
-      audit = AuditsDao.fromRowCreation(row)
-    )
-  }
-
 }

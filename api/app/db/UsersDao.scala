@@ -7,7 +7,6 @@ import anorm._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import java.util.UUID
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
@@ -28,15 +27,19 @@ class UsersDao @Inject() (
 
   // TODO: Inject directly - here because of circular references
   private[this] def emailVerificationsDao = play.api.Play.current.injector.instanceOf[EmailVerificationsDao]
+
   private[this] def membershipRequestsDao = play.api.Play.current.injector.instanceOf[MembershipRequestsDao]
+
   private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
+
   private[this] def userPasswordsDao = play.api.Play.current.injector.instanceOf[UserPasswordsDao]
 
-  lazy val AdminUser = UsersDao.AdminUserEmails.flatMap(findByEmail).headOption.getOrElse {
+  lazy val AdminUser: User = UsersDao.AdminUserEmails.flatMap(findByEmail).headOption.getOrElse {
     sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmails.mkString(", ")}]")
   }
 
-  private[this] val BaseQuery = Query(s"""
+  private[this] val BaseQuery = Query(
+    s"""
     select users.guid,
            users.email,
            users.name,
@@ -47,14 +50,16 @@ class UsersDao @Inject() (
       from users
   """)
 
-  private[this] val InsertQuery = """
+  private[this] val InsertQuery =
+    """
     insert into users
     (guid, email, name, nickname, avatar_url, gravatar_id, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {email}, {name}, {nickname}, {avatar_url}, {gravatar_id}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
-  private[this] val UpdateQuery = """
+  private[this] val UpdateQuery =
+    """
   update users
      set email = {email},
          name = {name},
@@ -78,20 +83,19 @@ class UsersDao @Inject() (
     password: Option[String] = None,
     existingUser: Option[User] = None
   ): Seq[Error] = {
-    val emailErrors = Misc.isValidEmail(form.email) match {
-      case false => Seq("Invalid email address")
-      case true => {
-        findByEmail(form.email) match {
-          case None => Seq.empty
-          case Some(u) => {
-            if (existingUser.map(_.guid) == Some(u.guid)) {
-              Seq.empty
-            } else {
-              Seq("User with this email address already exists")
-            }
+    val emailErrors = if (Misc.isValidEmail(form.email)) {
+      findByEmail(form.email) match {
+        case None => Seq.empty
+        case Some(u) => {
+          if (existingUser.map(_.guid).contains(u.guid)) {
+            Nil
+          } else {
+            Seq("User with this email address already exists")
           }
         }
       }
+    } else {
+      Seq("Invalid email address")
     }
 
     val nicknameErrors = UrlKey.validate(form.nickname) match {
@@ -99,7 +103,7 @@ class UsersDao @Inject() (
         findAll(nickname = Some(form.nickname)).headOption match {
           case None => Seq.empty
           case Some(u) => {
-            if (existingUser.map(_.guid) == Some(u.guid)) {
+            if (existingUser.map(_.guid).contains(u.guid)) {
               Seq.empty
             } else {
               Seq("User with this nickname already exists")
@@ -264,7 +268,7 @@ class UsersDao @Inject() (
     isDeleted: Option[Boolean] = None
   ): Seq[User] = {
     require(
-      !guid.isEmpty || !email.isEmpty || !token.isEmpty || !sessionId.isEmpty || !nickname.isEmpty,
+      guid.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
       "Must have either a guid, email, token, sessionId, or nickname"
     )
 
@@ -286,19 +290,17 @@ class UsersDao @Inject() (
         and(isDeleted.map(Filters2.isDeleted("users", _))).
         limit(1).
         anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.User.parser().*
-        )
+        io.apibuilder.api.v0.anorm.parsers.User.parser().*
+      )
     }
   }
 
   @tailrec
-  private[db] final def generateNickname(input: String, iteration: Int = 1): String = {
+  private[this] final def generateNickname(input: String, iteration: Int = 1): String = {
     assert(iteration < 100, s"Possible infinite loop - input[$input] iteration[$iteration]")
 
     val prefix = input.trim.split("@").toList match {
-      case username :: domain :: Nil => {
-        username.toLowerCase.trim
-      }
+      case username :: _ :: Nil => username.toLowerCase.trim
       case _ => input.toLowerCase.trim
     }
 
@@ -309,22 +311,8 @@ class UsersDao @Inject() (
 
     findAll(nickname = Some(fullPrefix)).headOption match {
       case None => fullPrefix
-      case Some(org) => generateNickname(input, iteration + 1)
+      case Some(_) => generateNickname(input, iteration + 1)
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row,
-    prefix: Option[String] = None
-  ) = {
-    val p = prefix.map( _ + "_").getOrElse("")
-    User(
-      guid = row[UUID](s"${p}guid"),
-      email = row[String](s"${p}email"),
-      nickname = row[String](s"${p}nickname"),
-      name = row[Option[String]](s"${p}name"),
-      audit = AuditsDao.fromRow(row, prefix)
-    )
   }
 
 }
