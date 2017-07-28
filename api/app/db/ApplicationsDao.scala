@@ -3,6 +3,7 @@ package db
 import io.apibuilder.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, User, Version, Visibility}
 import io.apibuilder.common.v0.models.Reference
 import io.apibuilder.internal.v0.models.TaskDataIndexApplication
+import io.flow.postgresql.Query
 import javax.inject.{Inject, Named, Singleton}
 import lib.{UrlKey, Validation}
 import anorm._
@@ -18,7 +19,8 @@ class ApplicationsDao @Inject() (
   tasksDao: TasksDao
 ) {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(
+    s"""
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
            ${AuditsDao.query("applications")},
            organizations.guid as organization_guid,
@@ -27,7 +29,8 @@ class ApplicationsDao @Inject() (
       from applications
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
      where true
-  """
+    """
+  )
 
   private[this] val InsertQuery = """
     insert into applications
@@ -292,44 +295,81 @@ class ApplicationsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Application] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.applicationFilter().map(v => "and " + v),
-      guid.map { v => "and applications.guid = {guid}::uuid" },
-      orgKey.map { v => "and organizations.key = {organization_key}" },
-      name.map { v => "and lower(trim(applications.name)) = lower(trim({name}))" },
-      key.map { v => "and applications.key = lower(trim({key}))" },
-      version.map { v => "and applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)" },
-      hasVersion.map { v =>
-        v match {
-          case true => { "and exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
-          case false => { "and not exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
-        }
-      },
-      isDeleted.map(Filters.isDeleted("applications", _)),
-      Some(s"order by lower(applications.name) limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val authorizationUserGuid = authorization match {
-      case Authorization.User(guid) => Some(guid)
-      case _ => None
-    }
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      orgKey.map('organization_key -> _),
-      name.map('name -> _),
-      key.map('key -> _),
-      version.map('version_guid -> _.guid.toString)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+
+      BaseQuery.
+        and(authorization.applicationFilter()).
+        equals("applications.guid", guid).
+        equals("organizations.key", orgKey).
+        and(
+          name.map { _ =>
+            "lower(trim(applications.name)) = lower(trim({name}))"
+          }
+        ).bind("name", name).
+        and(
+          key.map { _ =>
+            "applications.key = lower(trim({key}))"
+          }
+        ).bind("key", key).
+        and(
+          version.map { _ =>
+            "and applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
+          }
+        ).bind("version", "version_guid").
+        and(
+          hasVersion.map { v =>
+            v match {
+              case true => { "and exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
+              case false => { "and not exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
+            }
+          }
+        ).
+        and(isDeleted.map(Filters.isDeleted("applications", _))).
+        limit(limit).
+        offset(offset).
+        anormSql().as(ApplicationsDao.parser)
     }
   }
 
-  private[db] def fromRow(
-    row: anorm.Row,
+  private[this] def withTasks(
+    user: User,
+    guid: UUID,
+    f: java.sql.Connection => Unit
+  ) {
+    val taskGuid = DB.withTransaction { implicit c =>
+      f(c)
+      tasksDao.insert(c, user, TaskDataIndexApplication(guid))
+    }
+    mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
+  }
+
+}
+
+/*
+object ApplicationsDao {
+
+  def parser(prefix: Option[String] = None): RowParser[Application] = {
+    val p = prefix.map( _ + "_").getOrElse("")
+    SqlParser.get[UUID](s"${p}guid") ~
+    SqlParser.get[UUID](s"organization_guid") ~
+    SqlParser.str(s"organization_key") ~
+    SqlParser.str(s"${p}name") ~
+    SqlParser.str(s"${p}key") ~
+    SqlParser.str(s"${p}visibility") ~
+    SqlParser.str(s"${p}description") ~
+    AuditsDao.parser(prefix) map {
+      case guid ~ organizationGuid ~ organizationKey ~ name ~ key ~ visibility ~ description ~ audit => {
+        Application(
+        Password(
+          id = id,
+          user = UserReference(id = userId),
+          algorithm = algorithm,
+          hash = hash
+        )
+      }
+    }
+  }  
+
     prefix: Option[String] = None
   ): Application = {
     val p = prefix.map( _ + "_").getOrElse("")
@@ -346,17 +386,4 @@ class ApplicationsDao @Inject() (
       audit = AuditsDao.fromRow(row, prefix)
     )
   }
-
-  private[this] def withTasks(
-    user: User,
-    guid: UUID,
-    f: java.sql.Connection => Unit
-  ) {
-    val taskGuid = DB.withTransaction { implicit c =>
-      f(c)
-      tasksDao.insert(c, user, TaskDataIndexApplication(guid))
-    }
-    mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
-  }
-
-}
+ */

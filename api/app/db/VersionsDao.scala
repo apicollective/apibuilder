@@ -172,7 +172,12 @@ class VersionsDao @Inject() (
     }
   }
 
-  def findVersion(authorization: Authorization, orgKey: String, applicationKey: String, version: String): Option[Version] = {
+  def findVersion(
+    authorization: Authorization,
+    orgKey: String,
+    applicationKey: String,
+    version: String
+  ): Option[Version] = {
     applicationsDao.findByOrganizationKeyAndApplicationKey(authorization, orgKey, applicationKey).flatMap { application =>
       if (version == LatestVersion) {
         findAll(authorization, applicationGuid = Some(application.guid), limit = 1).headOption
