@@ -28,7 +28,7 @@ class Domains @Inject() (
             organizationDomainsDao.findAll(domain = Some(form.name)).headOption match {
               case None => {
                 val od = organizationDomainsDao.create(request.user, org, form.name)
-                Ok(Json.toJson(od.toDomain))
+                Ok(Json.toJson(od.domain))
               }
               case Some(d) => {
                 Conflict(Json.toJson(Validation.error("domain has already been registered")))

@@ -41,7 +41,7 @@ class OrganizationsDao @Inject() (
              '[]'
            ) as domains
       from organizations
-  """).withDebugging()
+  """)
 
   private[this] val InsertQuery = """
     insert into organizations
@@ -151,7 +151,7 @@ class OrganizationsDao @Inject() (
   def findByEmailDomain(email: String): Option[Organization] = {
     Misc.emailDomain(email).flatMap { domain =>
       organizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
-        findByGuid(Authorization.All, domain.organization_guid)
+        findByGuid(Authorization.All, domain.organizationGuid)
       }
     }
   }
