@@ -230,7 +230,7 @@ class VersionsDao @Inject() (
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
+      sys.error("TODO PARSER") /*SQL(sql).on(bind: _*)().toList.map { row =>
         val version = row[String]("version")
 
         val original = row[Option[String]]("original_data").map { data =>
@@ -257,7 +257,7 @@ class VersionsDao @Inject() (
           service = service,
           audit = AuditsDao.fromRowCreation(row)
         )
-      }
+                                }*/
     }
   }
 
@@ -282,8 +282,10 @@ class VersionsDao @Inject() (
     finalStats
   }
 
-  @tailrec
+//  @tailrec
   private[this] def migrateSingleRun(limit: Int = 5000, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
+    sys.error("TODO PARSER")
+    /*
     var good = 0l
     var bad = 0l
 
@@ -345,6 +347,7 @@ class VersionsDao @Inject() (
     } else {
       migrateSingleRun(limit, offset + limit, finalStats)
     }
+         */
   }
 
   private[this] def softDeleteService(
@@ -373,5 +376,4 @@ class VersionsDao @Inject() (
       'user_guid -> user.guid
     ).execute()
   }
-
 }

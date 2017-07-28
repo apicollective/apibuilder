@@ -173,14 +173,14 @@ class UserPasswordsDao @Inject() () {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
+      sys.error("TODO PARSER")/* SQL(sql).on(bind: _*)().toList.map { row =>
         UserPassword(
           guid = UUID.fromString(row[String]("guid")),
           userGuid = UUID.fromString(row[String]("user_guid")),
           algorithm = PasswordAlgorithm.fromString(row[String]("algorithm_key")).getOrElse(PasswordAlgorithm.Unknown),
           hash = new String(Base64.decodeBase64(row[String]("hash").getBytes))
         )
-      }.toSeq.headOption
+      }.toSeq.headOption*/
     }
   }
 

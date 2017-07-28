@@ -25,10 +25,9 @@ class ApplicationsDao @Inject() (
            ${AuditsDao.query("applications")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,
-           ${AuditsDao.queryWithAlias("organizations", "organization")}
+           ${AuditsParserDao.queryWithAlias("organizations", "organization")}
       from applications
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
-     where true
     """
   )
 
@@ -296,10 +295,9 @@ class ApplicationsDao @Inject() (
     offset: Long = 0
   ): Seq[Application] = {
     DB.withConnection { implicit c =>
-
       BaseQuery.
         and(authorization.applicationFilter()).
-        equals("applications.guid", guid).
+        equals("applications.guid::uuid", guid).
         equals("organizations.key", orgKey).
         and(
           name.map { _ =>
@@ -313,18 +311,19 @@ class ApplicationsDao @Inject() (
         ).bind("key", key).
         and(
           version.map { _ =>
-            "and applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
+            "applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
           }
-        ).bind("version", "version_guid").
+        ).bind("version_guid", "version_guid").
         and(
           hasVersion.map { v =>
+            val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
             v match {
-              case true => { "and exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
-              case false => { "and not exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
+              case true => { s"exists ($clause)" }
+              case false => { s"not exists ($clause)" }
             }
           }
         ).
-        and(isDeleted.map(Filters.isDeleted("applications", _))).
+        and(isDeleted.map(Filters2.isDeleted("applications", _))).
         limit(limit).
         offset(offset).
         anormSql().as(

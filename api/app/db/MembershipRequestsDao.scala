@@ -196,7 +196,9 @@ class MembershipRequestsDao @Inject() (
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
+      sys.error("TODO PARSER")
+      /*
+SQL(sql).on(bind: _*)().toList.map { row =>
         MembershipRequest(
           guid = row[UUID]("guid"),
           organization = organizationsDao.summaryFromRow(row, Some("organization")),
@@ -205,6 +207,7 @@ class MembershipRequestsDao @Inject() (
           audit = AuditsDao.fromRowCreation(row)
         )
       }.toSeq
+       */
     }
   }
 

@@ -164,7 +164,7 @@ class ChangesDao @Inject() () {
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      sys.error("TODO PARSER") // SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
     }
   }
 

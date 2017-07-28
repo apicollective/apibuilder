@@ -69,13 +69,14 @@ class OrganizationLogsDao @Inject() () {
     ).flatten ++ authorization.bindVariables
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
+      sys.error("TODO PARSER")
+      /*SQL(sql).on(bind: _*)().toList.map { row =>
         OrganizationLog(
           guid = row[String]("guid"),
           organization_guid = row[UUID]("organization_guid"),
           message = row[String]("message")
         )
-      }.toSeq
+      }.toSeq*/
     }
   }
 

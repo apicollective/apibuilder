@@ -38,7 +38,7 @@ class Users @Inject() (
   def get(guid: Option[UUID], email: Option[String], token: Option[String]) = AnonymousRequest { request =>
     require(request.tokenUser.isDefined, "Missing API Token")
     val users = usersDao.findAll(
-      guid = guid.map(_.toString),
+      guid = guid,
       email = email,
       token = token
     )

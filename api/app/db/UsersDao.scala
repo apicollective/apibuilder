@@ -1,6 +1,7 @@
 package db
 
 import io.apibuilder.api.v0.models.{Error, User, UserForm, UserUpdateForm}
+import io.flow.postgresql.Query
 import lib.{Constants, Misc, Role, UrlKey, Validation}
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
@@ -35,17 +36,16 @@ class UsersDao @Inject() (
     sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmails.mkString(", ")}]")
   }
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select users.guid,
            users.email,
            users.name,
            users.nickname,
            users.avatar_url,
            users.gravatar_id,
-           ${AuditsDao.query("users")}
+           ${AuditsParserDao.query("users")}
       from users
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into users
@@ -245,15 +245,18 @@ class UsersDao @Inject() (
   }
 
   def findByGuid(guid: String): Option[User] = {
-    findAll(guid = Some(guid)).headOption
+    Try(UUID.fromString(guid)) match {
+      case Success(g) => findByGuid(g)
+      case Failure(_) => None
+    }
   }
 
   def findByGuid(guid: UUID): Option[User] = {
-    findByGuid(guid.toString)
+    findAll(guid = Some(guid)).headOption
   }
 
   def findAll(
-    guid: Option[String] = None,
+    guid: Option[UUID] = None,
     email: Option[String] = None,
     nickname: Option[String] = None,
     sessionId: Option[String] = None,
@@ -265,35 +268,26 @@ class UsersDao @Inject() (
       "Must have either a guid, email, token, sessionId, or nickname"
     )
 
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v =>
-        Try(UUID.fromString(v)) match {
-          case Success(uuid) => "and users.guid = {guid}::uuid"
-          case Failure(e) => e match {
-            case e: IllegalArgumentException => "and false"
-          }
-        }
-      },
-      guid.map { v => "and users.guid = {guid}::uuid" },
-      email.map { v => "and users.email = trim(lower({email}))" },
-      nickname.map { v => "and users.nickname = trim(lower({nickname}))" },
-      sessionId.map { v => "and users.guid = (select user_guid from sessions where id = {session_id})"},
-      token.map { v => "and users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)"},
-      isDeleted.map(Filters.isDeleted("users", _)),
-      Some("limit 1")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _),
-      email.map('email -> _),
-      nickname.map('nickname -> _),
-      sessionId.map('session_id -> _),
-      token.map('token -> _)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      BaseQuery.
+        equals("users.guid::uuid", guid).
+        and(
+          email.map { _ => "users.email = trim(lower({email}))" }
+        ).bind("email", email).
+        and(
+          nickname.map { _ => "users.nickname = trim(lower({nickname}))" }
+        ).bind("nickname", nickname).
+        and(
+          sessionId.map { _ => "users.guid = (select user_guid from sessions where id = {session_id})" }
+        ).bind("session_id", sessionId).
+        and(
+          token.map { _ => "users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)" }
+        ).bind("token", token).
+        and(isDeleted.map(Filters2.isDeleted("users", _))).
+        limit(1).
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.User.parser().*
+        )
     }
   }
 

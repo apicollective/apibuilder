@@ -4,6 +4,7 @@ import io.apibuilder.api.v0.models._
 import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.apibuilder.common.v0.models.json._
+import io.flow.postgresql.Query
 import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
 import javax.inject.{Inject, Singleton}
@@ -25,20 +26,22 @@ class OrganizationsDao @Inject() (
 
   private[this] val MinNameLength = 3
 
-  private[db] val BaseQuery = s"""
+  private[db] val BaseQuery = Query(s"""
     select organizations.guid,
            organizations.name,
            organizations.key,
            organizations.visibility,
            organizations.namespace,
-           ${AuditsDao.query("organizations")},
-           (select array_to_string(array_agg(domain), ' ') 
-              from organization_domains
-             where deleted_at is null
-               and organization_guid = organizations.guid) as domains
+           ${AuditsParserDao.query("organizations")},
+           coalesce(
+             (select array_to_string(array_agg(domain), ' ') 
+                from organization_domains
+               where deleted_at is null
+                 and organization_guid = organizations.guid),
+             '[]'
+           ) as domains
       from organizations
-     where true
-  """
+  """).withDebugging()
 
   private[this] val InsertQuery = """
     insert into organizations
@@ -243,38 +246,38 @@ class OrganizationsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Organization] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.organizationFilter().map(v => "and " + v),
-      userGuid.map { v =>
-        "and organizations.guid in (" +
-        "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
-        ")"
-      },
-      application.map { v =>
-        "and organizations.guid in (" +
-        "select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid" +
-        ")"
-      },
-      guid.map { v => "and organizations.guid = {guid}::uuid" },
-      key.map { v => "and organizations.key = lower(trim({key}))" },
-      name.map { v => "and lower(trim(organizations.name)) = lower(trim({name}))" },
-      namespace.map { v => "and organizations.namespace = lower(trim({namespace}))" },
-      isDeleted.map(Filters.isDeleted("organizations", _)),
-      Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      application.map('application_guid -> _.guid.toString),
-      key.map('key -> _),
-      name.map('name ->_),
-      namespace.map('namespace ->_)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      // TODO: and(authorization.organizationFilter()).
+      BaseQuery.
+        equals("organizations.guid", guid).
+        equals("organizations.key", key).
+        and(
+          userGuid.map { _ =>
+            "organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"
+          }
+        ).bind("user_guid", userGuid).
+        and(
+          application.map { _ =>
+            "organizations.guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
+          }
+        ).bind("application_guid", application.map(_.guid)).
+        and(
+          name.map { _ =>
+            "lower(trim(organizations.name)) = lower(trim({name}))"
+          }
+        ).bind("name", name).
+        and(
+          name.map { _ =>
+            "organizations.namespace = lower(trim({namespace}))"
+          }
+        ).bind("namespace", namespace).
+        and(isDeleted.map(Filters2.isDeleted("organizations", _))).
+        orderBy("lower(organizations.name), organizations.created_at").
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.Organization.parser().*
+        )
     }
   }
 

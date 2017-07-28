@@ -79,13 +79,15 @@ class OrganizationDomainsDao @Inject() () {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
+      sys.error("TODO PARSER")
+      /*SQL(sql).on(bind: _*)().toList.map { row =>
         OrganizationDomain(
           guid = row[String]("guid"),
           organization_guid = row[UUID]("organization_guid"),
           domain = row[String]("domain")
         )
       }.toSeq
+       */
     }
   }
 
