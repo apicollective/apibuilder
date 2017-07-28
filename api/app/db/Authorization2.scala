@@ -144,9 +144,12 @@ object Authorization2 {
       query: Query,
       organizationsTableName: String = "organizations"
     ) = {
-      query.and(
-        s"($organizationsTableName.visibility = '${Visibility.Public}' or $organizationsTableName.guid in ($OrgsByUserQuery))"
-      )
+      query.or(
+        List(
+          s"($organizationsTableName.visibility = '${Visibility.Public}'",
+          s"$organizationsTableName.guid in ($OrgsByUserQuery))"
+        )
+      ).bind("authorization_user_guid", userGuid)
     }
 
     override def applicationFilter(
@@ -154,14 +157,12 @@ object Authorization2 {
       applicationsTableName: String = "applications",
       organizationsTableName: String = "organizations"
     ) = {
-      organizationFilter(query, organizationsTableName)
-        .and(
-          "(" +
-          PublicApplicationsQuery.format(applicationsTableName) +
-          " or " +
-          s"$organizationsTableName.guid in ($OrgsByUserQuery)" +
-          ")"
+      organizationFilter(query, organizationsTableName).or(
+        List(
+          PublicApplicationsQuery.format(applicationsTableName),
+          s"$organizationsTableName.guid in ($OrgsByUserQuery)"
         )
+      )
     }
 
     override def tokenFilter(
