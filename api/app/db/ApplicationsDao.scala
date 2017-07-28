@@ -327,7 +327,9 @@ class ApplicationsDao @Inject() (
         and(isDeleted.map(Filters.isDeleted("applications", _))).
         limit(limit).
         offset(offset).
-        anormSql().as(ApplicationsDao.parser)
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.Application.parser().*
+        )
     }
   }
 
