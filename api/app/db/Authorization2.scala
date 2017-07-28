@@ -69,6 +69,14 @@ sealed trait Authorization2 {
 
 object Authorization2 {
 
+  def apply(auth: Authorization): Authorization2 = {
+    auth match {
+      case Authorization.PublicOnly => Authorization2.PublicOnly
+      case Authorization.All => Authorization2.All
+      case Authorization.User(guid) => Authorization2.User(guid)
+    }
+  }
+
   private[this] val OrgsByUserQuery =
     s"select organization_guid from memberships where memberships.deleted_at is null and memberships.user_guid = {authorization_user_guid}::uuid"
 
