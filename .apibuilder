@@ -10,6 +10,7 @@ code:
       version: latest
       generators:
         play_2_4_client: generated/app
+        anorm_2_x_parsers: api/app/generated
     apibuilder-common:
       version: latest
       generators:
@@ -19,13 +20,9 @@ code:
       version: latest
       generators:
         play_2_4_client: generated/app
+        anorm_2_x_parsers: api/app/generated
     apibuilder-internal:
       version: latest
       generators:
         play_2_x_json: generated/app
-    apibuilder-api:
-      version: latest
-      generators:
-        play_2_4_client: generated/app
-        play_2_x_routes: api/conf/routes
-        anorm_2_x_parsers: generated/app
+        anorm_2_x_parsers: api/app/generated
