@@ -1,6 +1,7 @@
 package db
 
 import io.apibuilder.api.v0.models.User
+import io.flow.postgresql.Query
 import lib.{Role, TokenGenerator}
 import anorm._
 import anorm.JodaParameterMetaData._
@@ -30,15 +31,14 @@ class EmailVerificationsDao @Inject() (
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 168
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = Query("""
     select email_verifications.guid,
            email_verifications.user_guid,
            email_verifications.email,
            email_verifications.token,
            email_verifications.expires_at
       from email_verifications
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into email_verifications
@@ -119,43 +119,40 @@ class EmailVerificationsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[EmailVerification] = {
-
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and email_verifications.guid = {guid}::uuid" },
-      userGuid.map { v => "and email_verifications.user_guid = {user_guid}::uuid" },
-      email.map { v => "and lower(email_verifications.email) = lower(trim({email}))" },
-      token.map { v => "and email_verifications.token = {token}" },
-      isExpired.map { v =>
-        v match {
-          case true => { "and email_verifications.expires_at < now()" }
-          case false => { "and email_verifications.expires_at >= now()" }
-        }
-      },
-      isDeleted.map(Filters.isDeleted("email_verifications", _)),
-      Some(s"order by email_verifications.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      email.map('email -> _),
-      token.map('token -> _)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      sys.error("TODO PARSER") // SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      BaseQuery.
+        equals("email_verifications.guid::uuid", guid).
+        equals("email_verifications.user_guid::uuid", userGuid).
+        equals("email_verifications.email", email).
+        equals("email_verifications.token", token).
+        and(isExpired.map(Filters2.isExpired("email_verifications", _))).
+        and(isDeleted.map(Filters2.isDeleted("email_verifications", _))).
+        orderBy("email_verifications.created_at").
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+          parser().*
+        )
     }
   }
 
-  private[db] def fromRow(
-    row: anorm.Row
-  ) = EmailVerification(
-    guid = row[UUID]("guid"),
-    userGuid = row[UUID]("user_guid"),
-    email = row[String]("email"),
-    token = row[String]("token"),
-    expiresAt = row[DateTime]("expires_at")
-  )
+  private[this] def parser(): RowParser[EmailVerification] = {
+    SqlParser.get[UUID]("guid") ~
+    SqlParser.get[UUID]("user_guid") ~
+    SqlParser.str("email") ~
+    SqlParser.str("token") ~
+    SqlParser.get[DateTime]("expires_at") map {
+      case guid ~ userGuid ~ email ~ token ~ expiresAt => {
+        EmailVerification(
+          guid = guid,
+          userGuid= userGuid,
+          email = email,
+          token = token,
+          expiresAt = expiresAt
+        )
+      }
+    }
+  }
+  
 
 }

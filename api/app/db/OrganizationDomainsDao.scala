@@ -77,13 +77,13 @@ class OrganizationDomainsDao @Inject() () {
   }
 
   private[this] def parser(): RowParser[OrganizationDomain] = {
-    SqlParser.get[_root_.java.util.UUID]("guid") ~
-    SqlParser.get[_root_.java.util.UUID]("organization_guid") ~
+    SqlParser.get[UUID]("guid") ~
+    SqlParser.get[UUID]("organization_guid") ~
     SqlParser.str("domain") map {
-      case guid ~ organizationGuidguid ~ domain => {
+      case guid ~ organizationGuid ~ domain => {
         OrganizationDomain(
           guid = guid,
-          organizationGuid = organizationGuidguid,
+          organizationGuid = organizationGuid,
           domain = Domain(domain)
         )
       }
