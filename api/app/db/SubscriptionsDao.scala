@@ -1,12 +1,12 @@
 package db
 
 import io.apibuilder.api.v0.models.{Error, Organization, Publication, Subscription, SubscriptionForm, User}
+import io.flow.postgresql.Query
 import anorm._
 import lib.Validation
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import java.util.UUID
 
 object SubscriptionsDao {
@@ -21,10 +21,10 @@ class SubscriptionsDao @Inject() () {
   private[this] def subscriptionsDao = play.api.Play.current.injector.instanceOf[SubscriptionsDao]
   private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select subscriptions.guid,
            subscriptions.publication,
-           ${AuditsDao.queryCreation("subscriptions")},
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
@@ -35,12 +35,12 @@ class SubscriptionsDao @Inject() () {
            organizations.name as organization_name,
            organizations.namespace as organization_namespace,
            organizations.visibility as organization_visibility,
+           '[]' as organization_domains,
            ${AuditsDao.queryWithAlias("organizations", "organization")}
       from subscriptions
       join users on users.guid = subscriptions.user_guid and users.deleted_at is null
       join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into subscriptions
@@ -57,21 +57,21 @@ class SubscriptionsDao @Inject() () {
 
     val organizationKeyErrors = org match {
         case None => Seq("Organization not found")
-        case Some(_) => Seq.empty
+        case Some(_) => Nil
     }
 
     val publicationErrors = form.publication match {
       case Publication.UNDEFINED(_) => Seq("Publication not found")
-      case _ => Seq.empty
+      case _ => Nil
     }
 
     val userErrors = usersDao.findByGuid(form.userGuid) match {
         case None => Seq("User not found")
-        case Some(_) => Seq.empty
+        case Some(_) => Nil
     }
 
     val alreadySubscribed = org match {
-      case None => Seq.empty
+      case None => Nil
       case Some(o) => {
         subscriptionsDao.findAll(
           Authorization.All,
@@ -80,7 +80,7 @@ class SubscriptionsDao @Inject() () {
           publication = Some(form.publication),
           limit = 1
         ).headOption match {
-          case None => Seq.empty
+          case None => Nil
           case Some(_) => Seq("User is already subscribed to this publication for this organization")
         }
       }
@@ -150,41 +150,21 @@ class SubscriptionsDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Subscription] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.subscriptionFilter().map(v => "and " + v),
-      guid.map { v => "and subscriptions.guid = {guid}::uuid" },
-      organization.map { v => "and subscriptions.organization_guid = {organization_guid}::uuid" },
-      organizationKey.map { v => "and subscriptions.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))" },
-      userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
-      publication.map { v => "and subscriptions.publication = {publication}" },
-      isDeleted.map(Filters.isDeleted("subscriptions", _)),
-      Some(s"order by subscriptions.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      organization.map('organization_guid -> _.guid.toString),
-      organizationKey.map('organization_key -> _),
-      userGuid.map('user_guid -> _.toString),
-      publication.map('publication -> _.toString)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      authorization.subscriptionFilter(BaseQuery).
+        equals("subscriptions.guid", guid).
+        equals("subscriptions.organization_guid", organization.map(_.guid)).
+        equals("organizations.key", organizationKey.map(_.toLowerCase.trim)).
+        equals("subscriptions.user_guid", userGuid).
+        equals("subscriptions.publication", publication.map(_.toString)).
+        and(isDeleted.map(Filters.isDeleted("subscriptions", _))).
+        orderBy("subscriptions.created_at").
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.Subscription.parser().*
+        )
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Subscription = {
-    Subscription(
-      guid = row[UUID]("guid"),
-      organization = organizationsDao.summaryFromRow(row, Some("organization")),
-      user = usersDao.fromRow(row, Some("user")),
-      publication = Publication(row[String]("publication")),
-      audit = AuditsDao.fromRowCreation(row)
-    )
   }
 
 }

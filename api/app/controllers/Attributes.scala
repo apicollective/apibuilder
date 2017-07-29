@@ -2,7 +2,7 @@ package controllers
 
 import db.AttributesDao
 import lib.Validation
-import io.apibuilder.api.v0.models.{User, Attribute, AttributeForm}
+import io.apibuilder.api.v0.models.AttributeForm
 import io.apibuilder.api.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
@@ -19,7 +19,7 @@ class Attributes @Inject() (
     name: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Action { request =>
+  ) = Action { _ =>
     val attributes = attributesDao.findAll(
       guid = guid,
       name = name,
@@ -29,7 +29,7 @@ class Attributes @Inject() (
     Ok(Json.toJson(attributes))
   }
 
-  def getByName(name: String) = Action { request =>
+  def getByName(name: String) = Action { _ =>
     attributesDao.findByName(name) match {
       case None => NotFound
       case Some(attribute) => Ok(Json.toJson(attribute))
@@ -62,14 +62,11 @@ class Attributes @Inject() (
         NotFound
       }
       case Some(attribute) => {
-        attribute.audit.createdBy.guid == request.user.guid match {
-          case false => {
-            Unauthorized
-          }
-          case true => {
-            attributesDao.softDelete(request.user, attribute)
-            NoContent
-          }
+        if (attribute.audit.createdBy.guid == request.user.guid) {
+          attributesDao.softDelete(request.user, attribute)
+          NoContent
+        } else {
+          Unauthorized
         }
       }
     }

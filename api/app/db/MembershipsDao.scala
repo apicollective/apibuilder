@@ -1,15 +1,13 @@
 package db
 
 import io.apibuilder.api.v0.models.{Membership, Organization, User}
-import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
-import io.apibuilder.common.v0.models.json._
+import io.flow.postgresql.Query
 import lib.Role
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.DateTime
 
@@ -28,15 +26,17 @@ class MembershipsDao @Inject() (
     ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
   """
 
-  private[this] val BaseQuery = s"""
+  // TODO: Properly select domains
+  private[this] val BaseQuery = Query(s"""
     select memberships.guid,
            memberships.role,
-           ${AuditsDao.queryCreation("memberships")},
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("memberships")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
+           '[]' as organization_domains,
            ${AuditsDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
@@ -46,8 +46,7 @@ class MembershipsDao @Inject() (
       from memberships
       join organizations on organizations.guid = memberships.organization_guid
       join users on users.guid = memberships.user_guid
-     where true
-  """
+  """)
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
@@ -160,36 +159,24 @@ class MembershipsDao @Inject() (
     offset: Long = 0
   ): Seq[Membership] = {
     // TODO Implement authorization
-
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and memberships.guid = {guid}::uuid" },
-      organizationGuid.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
-      organizationKey.map { v => "and memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
-      userGuid.map { v => "and memberships.user_guid = {user_guid}::uuid" },
-      role.map { v => "and role = {role}" },
-      isDeleted.map(Filters.isDeleted("memberships", _)),
-      Some(s"order by lower(users.name), lower(users.email) limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString ),
-      organizationGuid.map('organization_guid -> _.toString ),
-      organizationKey.map('organization_key -> _ ),
-      userGuid.map('user_guid -> _.toString),
-      role.map('role -> _)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        Membership(
-          guid = row[UUID]("guid"),
-          organization = organizationsDao.summaryFromRow(row, Some("organization")),
-          user = usersDao.fromRow(row, Some("user")),
-          role = row[String]("role"),
-          audit = AuditsDao.fromRowCreation(row)
+      BaseQuery.
+        equals("memberships.guid", guid).
+        equals("memberships.organization_guid", organizationGuid).
+        equals("memberships.user_guid", userGuid).
+        and(
+          organizationKey.map { _ =>
+            "memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"
+          }
+        ).bind("organization_key", organizationKey).
+        equals("memberships.role", role).
+        and(isDeleted.map(Filters.isDeleted("memberships", _))).
+        orderBy("lower(users.name), lower(users.email)").
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.Membership.parser().*
         )
-      }.toSeq
     }
   }
 

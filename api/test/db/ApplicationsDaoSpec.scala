@@ -68,7 +68,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
     )
 
     it("returns empty if valid") {
-      applicationsDao.validate(Util.testOrg, createForm(), None) should be(Seq.empty)
+      applicationsDao.validate(Util.testOrg, createForm(), None) should be(Nil)
     }
 
     it("returns error if name already exists") {
@@ -80,7 +80,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
     it("returns empty if name exists but belongs to the application we are updating") {
       val form = createForm()
       val application = applicationsDao.create(Util.createdBy, Util.testOrg, form)
-      applicationsDao.validate(Util.testOrg, form, Some(application)) should be(Seq.empty)
+      applicationsDao.validate(Util.testOrg, form, Some(application)) should be(Nil)
     }
 
     it("key") {
@@ -89,7 +89,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
 
       val newForm = form.copy(name = application.name + "2", key = Some(application.key))
       applicationsDao.validate(Util.testOrg, newForm, None).map(_.message) should be(Seq("Application with this key already exists"))
-      applicationsDao.validate(Util.testOrg, newForm, Some(application)) should be(Seq.empty)
+      applicationsDao.validate(Util.testOrg, newForm, Some(application)) should be(Nil)
     }
 
   }
@@ -177,7 +177,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
         Authorization.All,
         guid = Some(app.guid),
         hasVersion = Some(true)
-      ).map(_.guid) should be(Seq.empty)
+      ).map(_.guid) should be(Nil)
 
       val service = Util.createService(app)
       val version = versionsDao.create(Util.createdBy, app, "1.0.0", Original, service)
@@ -186,7 +186,7 @@ class ApplicationsDaoSpec extends FunSpec with Matchers with util.TestApplicatio
         Authorization.All,
         guid = Some(app.guid),
         hasVersion = Some(false)
-      ).map(_.guid) should be(Seq.empty)
+      ).map(_.guid) should be(Nil)
 
       applicationsDao.findAll(
         Authorization.All,

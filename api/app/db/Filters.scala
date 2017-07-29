@@ -7,8 +7,8 @@ object Filters {
     value: Boolean
   ): String = {
     value match {
-      case true => s"and $tableName.deleted_at is not null"
-      case false => s"and $tableName.deleted_at is null"
+      case true => s"$tableName.deleted_at is not null"
+      case false => s"$tableName.deleted_at is null"
     }
   }
 
@@ -17,8 +17,8 @@ object Filters {
     value: Boolean
   ): String = {
     value match {
-      case true => { s"and $tableName.expires_at < now()" }
-      case false => { s"and $tableName.expires_at >= now()" }
+      case true => { s"$tableName.expires_at < now()" }
+      case false => { s"$tableName.expires_at >= now()" }
     }
   }
 

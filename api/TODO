@@ -1,0 +1,5 @@
+remove
+  - fromRwo
+  - summaryFromRow
+  - Filter and rename Filter2 to Filter
+  - db/Authorization class

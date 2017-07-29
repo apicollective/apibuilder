@@ -1,13 +1,14 @@
 package db
 
 import io.apibuilder.api.v0.models.{Organization, User}
+import io.flow.postgresql.Query
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
 
-case class OrganizationLog(guid: String, organization_guid: UUID, message: String)
+case class OrganizationLog(guid: UUID, organizationGuid: UUID, message: String)
 
 /**
  * Journal of changes to organizations
@@ -15,11 +16,10 @@ case class OrganizationLog(guid: String, organization_guid: UUID, message: Strin
 @Singleton
 class OrganizationLogsDao @Inject() () {
 
-  private[this] val BaseQuery = """
-    select guid::varchar, organization_guid, message
+  private[this] val BaseQuery = Query("""
+    select guid::text, organization_guid, message
       from organization_logs
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into organization_logs
@@ -36,14 +36,14 @@ class OrganizationLogsDao @Inject() () {
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, message: String): OrganizationLog = {
     val log = OrganizationLog(
-      guid = UUID.randomUUID.toString,
-      organization_guid = organization.guid,
+      guid = UUID.randomUUID,
+      organizationGuid = organization.guid,
       message = message
     )
 
     SQL(InsertQuery).on(
       'guid -> log.guid,
-      'organization_guid -> log.organization_guid,
+      'organization_guid -> log.organizationGuid,
       'message -> log.message,
       'created_by_guid -> createdBy.guid
     ).execute()
@@ -57,25 +57,27 @@ class OrganizationLogsDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[OrganizationLog] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.organizationFilter().map(v => "and " + v),
-      organization.map(v => "and organization_logs.organization_guid = {organization_guid}::uuid"),
-      Some(s"order by organization_logs.created_at desc limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      organization.map('organization_guid -> _.guid)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
+      authorization.organizationFilter(BaseQuery).
+        equals("organization_logs.organization_guid", organization.map(_.guid)).
+        orderBy("organization_logs.created_at desc").
+        limit(limit).
+        offset(offset).
+        anormSql().as(parser().*)
+    }
+  }
+
+  private[this] def parser(): RowParser[OrganizationLog] = {
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.get[UUID]("organization_guid") ~
+      SqlParser.str("message") map {
+      case guid ~ organizationGuid ~ message => {
         OrganizationLog(
-          guid = row[String]("guid"),
-          organization_guid = row[UUID]("organization_guid"),
-          message = row[String]("message")
+          guid = guid,
+          organizationGuid = organizationGuid,
+          message = message
         )
-      }.toSeq
+      }
     }
   }
 

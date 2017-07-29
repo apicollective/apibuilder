@@ -28,7 +28,7 @@ class Versions @Inject() (
         limit = limit,
         offset = offset
       )
-    }.getOrElse(Seq.empty)
+    }.getOrElse(Nil)
     Ok(Json.toJson(versions))
   }
 

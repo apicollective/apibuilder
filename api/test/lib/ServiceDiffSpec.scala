@@ -622,7 +622,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       minimum = None,
       maximum = None,
       example = None,
-      attributes = Seq.empty
+      attributes = Nil
     )
 
     val model = Model(
@@ -631,7 +631,7 @@ class ServiceDiffSpec extends FunSpec with ShouldMatchers with util.TestApplicat
       description = None,
       deprecation = None,
       fields = Seq(field),
-      attributes = Seq.empty
+      attributes = Nil
     )
 
     val base = service.copy(models = Nil)

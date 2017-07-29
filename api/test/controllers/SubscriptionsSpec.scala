@@ -138,11 +138,11 @@ class SubscriptionsSpec extends BaseSpec {
       )
     )
 
-    await(client.subscriptions.get(organizationKey = Some(UUID.randomUUID.toString))) must be(Seq.empty)
+    await(client.subscriptions.get(organizationKey = Some(UUID.randomUUID.toString))) must be(Nil)
     await(client.subscriptions.get(organizationKey = Some(org1.key))).map(_.guid) must be(Seq(subscription1.guid))
     await(client.subscriptions.get(organizationKey = Some(org2.key))).map(_.guid) must be(Seq(subscription2.guid))
 
-    await(client.subscriptions.get(userGuid = Some(UUID.randomUUID))) must be(Seq.empty)
+    await(client.subscriptions.get(userGuid = Some(UUID.randomUUID))) must be(Nil)
     await(client.subscriptions.get(userGuid = Some(user1.guid))).map(_.guid) must be(Seq(subscription1.guid))
     await(client.subscriptions.get(userGuid = Some(user2.guid))).map(_.guid) must be(Seq(subscription2.guid))
 
@@ -150,7 +150,7 @@ class SubscriptionsSpec extends BaseSpec {
     await(client.subscriptions.get(userGuid = Some(user2.guid), publication = Some(Publication.ApplicationsCreate))).map(_.guid) must be(Seq(subscription2.guid))
 
     intercept[FailedRequest] {
-      await(client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))) must be(Seq.empty)
+      await(client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))) must be(Nil)
     }.responseCode must be(400)
   }
 

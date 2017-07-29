@@ -1,15 +1,13 @@
 package db
 
 import io.apibuilder.api.v0.models._
-import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
-import io.apibuilder.common.v0.models.json._
+import io.flow.postgresql.Query
 import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.DateTime
 
@@ -21,24 +19,24 @@ class OrganizationsDao @Inject() (
   // TODO: resolve cicrular dependency
   private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
 
-  private[this] val DefaultVisibility = Visibility.Organization
-
   private[this] val MinNameLength = 3
 
-  private[db] val BaseQuery = s"""
+  private[db] val BaseQuery = Query(s"""
     select organizations.guid,
            organizations.name,
            organizations.key,
            organizations.visibility,
            organizations.namespace,
            ${AuditsDao.query("organizations")},
-           (select array_to_string(array_agg(domain), ' ') 
-              from organization_domains
-             where deleted_at is null
-               and organization_guid = organizations.guid) as domains
+           coalesce(
+             (select to_json(array_agg(json_build_object('name', domain)))
+                from organization_domains
+               where deleted_at is null
+                 and organization_guid = organizations.guid),
+             '[]'::json
+           ) as domains
       from organizations
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into organizations
@@ -66,10 +64,10 @@ class OrganizationsDao @Inject() (
       Seq(s"name must be at least $MinNameLength characters")
     } else {
       findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
-        case None => Seq.empty
+        case None => Nil
         case Some(org: Organization) => {
-          if (existing.map(_.guid) == Some(org.guid)) {
-            Seq.empty
+          if (existing.map(_.guid).contains(org.guid)) {
+            Nil
           } else {
             Seq("Org with this name already exists")
           }
@@ -86,10 +84,10 @@ class OrganizationsDao @Inject() (
         UrlKey.validate(key) match {
           case Nil => {
             findByKey(Authorization.All, key) match {
-              case None => Seq.empty
+              case None => Nil
               case Some(found) => {
-                if (existing.map(_.guid) == Some(found.guid)) {
-                  Seq.empty
+                if (existing.map(_.guid).contains(found.guid)) {
+                  Nil
                 } else {
                   Seq("Org with this key already exists")
                 }
@@ -103,18 +101,19 @@ class OrganizationsDao @Inject() (
 
     val namespaceErrors = findAll(Authorization.All, namespace = Some(form.namespace.trim), limit = 1).headOption match {
       case None => {
-        isDomainValid(form.namespace.trim) match {
-          case true => Seq.empty
-          case false => Seq("Namespace is not valid. Expected a name like io.apibuilder")
+        if (isDomainValid(form.namespace.trim)) {
+          Nil
+        } else {
+          Seq("Namespace is not valid. Expected a name like io.apibuilder")
         }
       }
-      case Some(org: Organization) => {
-        Seq.empty
+      case Some(_) => {
+        Nil
       }
     }
 
     val visibilityErrors =  Visibility.fromString(form.visibility.toString) match {
-      case Some(_) => Seq.empty
+      case Some(_) => Nil
       case None => Seq(s"Invalid visibility[${form.visibility.toString}]")
     }
 
@@ -148,7 +147,7 @@ class OrganizationsDao @Inject() (
   def findByEmailDomain(email: String): Option[Organization] = {
     Misc.emailDomain(email).flatMap { domain =>
       organizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
-        findByGuid(Authorization.All, domain.organization_guid)
+        findByGuid(Authorization.All, domain.organizationGuid)
       }
     }
   }
@@ -186,7 +185,7 @@ class OrganizationsDao @Inject() (
       name = form.name.trim,
       namespace = form.namespace.trim,
       visibility = form.visibility,
-      domains = form.domains.getOrElse(Nil).map(Domain(_)),
+      domains = form.domains.getOrElse(Nil).map(Domain),
       audit = Audit(
         createdAt = DateTime.now,
         createdBy = ReferenceGuid(user.guid),
@@ -243,63 +242,38 @@ class OrganizationsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Organization] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.organizationFilter().map(v => "and " + v),
-      userGuid.map { v =>
-        "and organizations.guid in (" +
-        "select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid" +
-        ")"
-      },
-      application.map { v =>
-        "and organizations.guid in (" +
-        "select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid" +
-        ")"
-      },
-      guid.map { v => "and organizations.guid = {guid}::uuid" },
-      key.map { v => "and organizations.key = lower(trim({key}))" },
-      name.map { v => "and lower(trim(organizations.name)) = lower(trim({name}))" },
-      namespace.map { v => "and organizations.namespace = lower(trim({namespace}))" },
-      isDeleted.map(Filters.isDeleted("organizations", _)),
-      Some(s"order by lower(organizations.name) limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      application.map('application_guid -> _.guid.toString),
-      key.map('key -> _),
-      name.map('name ->_),
-      namespace.map('namespace ->_)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      authorization.organizationFilter(BaseQuery).
+        equals("organizations.guid", guid).
+        equals("organizations.key", key).
+        and(
+          userGuid.map { _ =>
+            "organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)"
+          }
+        ).bind("user_guid", userGuid).
+        and(
+          application.map { _ =>
+            "organizations.guid in (select organization_guid from applications where deleted_at is null and guid = {application_guid}::uuid)"
+          }
+        ).bind("application_guid", application.map(_.guid)).
+        and(
+          name.map { _ =>
+            "lower(trim(organizations.name)) = lower(trim({name}))"
+          }
+        ).bind("name", name).
+        and(
+          namespace.map { _ =>
+            "organizations.namespace = lower(trim({namespace}))"
+          }
+        ).bind("namespace", namespace).
+        and(isDeleted.map(Filters.isDeleted("organizations", _))).
+        orderBy("lower(organizations.name), organizations.created_at").
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.Organization.parser().*
+        )
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Organization = {
-    summaryFromRow(row).copy(
-      domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_))
-    )
-  }
-
-  private[db] def summaryFromRow(
-    row: anorm.Row,
-    prefix: Option[String] = None
-  ): Organization = {
-    val p = prefix.map( _ + "_").getOrElse("")
-
-    Organization(
-      guid = row[UUID](s"${p}guid"),
-      key = row[String](s"${p}key"),
-      name = row[String](s"${p}name"),
-      namespace = row[String](s"${p}namespace"),
-      visibility = Visibility(row[String](s"${p}visibility")),
-      audit = AuditsDao.fromRow(row, prefix)
-    )
   }
 
 }

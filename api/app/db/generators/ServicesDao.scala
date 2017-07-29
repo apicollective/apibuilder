@@ -1,15 +1,18 @@
 package db.generators
 
 import io.apibuilder.api.v0.models.{GeneratorService, GeneratorServiceForm}
-import db.{AuditsDao, Authorization, SoftDelete}
+import db._
 import io.apibuilder.api.v0.models.{Error, User}
 import core.Util
 import javax.inject.{Inject, Singleton}
+
 import lib.{Pager, Validation}
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
+
+import io.flow.postgresql.Query
 
 @Singleton
 class ServicesDao @Inject() (
@@ -17,13 +20,12 @@ class ServicesDao @Inject() (
   generatorsDao: GeneratorsDao
 ) {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select services.guid,
            services.uri,
-           ${AuditsDao.queryCreation("services")}
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("services")}
       from generators.services
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into generators.services
@@ -74,13 +76,6 @@ class ServicesDao @Inject() (
     }
   }
 
-  private[this] def optionIfEmpty(value: String): Option[String] = {
-    value.trim match {
-      case "" => None
-      case v => Some(v)
-    }
-  }
-
   /**
     * Also will soft delete all generators for this service
     */
@@ -111,36 +106,25 @@ class ServicesDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[GeneratorService] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.generatorServicesFilter().map { v => s"and $v" },
-      guid.map { v => "and services.guid = {guid}::uuid" },
-      uri.map { v => "and lower(services.uri) = lower(trim({uri}))" },
-      generatorKey.map { v => "and guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))" },
-      isDeleted.map(db.Filters.isDeleted("services", _))
-    ).flatten.mkString("\n   ") + s" order by lower(services.uri) limit ${limit} offset ${offset}"
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      uri.map('uri ->_),
-      generatorKey.map('generator_key -> _)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      authorization.generatorServicesFilter(BaseQuery).
+        equals("services.guid", guid).
+        and(
+          uri.map { _ =>
+            "lower(services.uri) = lower(trim({uri}))"
+          }
+        ).bind("uri", uri).
+        and(
+          generatorKey.map { _ =>
+            "services.guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))"
+          }
+        ).bind("generator_key", generatorKey).
+        and(isDeleted.map(db.Filters.isDeleted("services", _))).
+        orderBy("lower(services.uri)").
+        limit(limit).
+        offset(offset).
+        as(io.apibuilder.api.v0.anorm.parsers.GeneratorService.parser().*)
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row,
-    prefix: Option[String] = None
-  ) = {
-    val p = prefix.map(v => v + "_").getOrElse("")
-    GeneratorService(
-      guid = row[UUID](s"${p}guid"),
-      uri = row[String](s"${p}uri"),
-      audit = AuditsDao.fromRowCreation(row)
-    )
   }
 
 }

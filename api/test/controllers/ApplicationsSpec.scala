@@ -49,7 +49,7 @@ class ApplicationsSpec extends BaseSpec {
     val app1 = createApplication(org)
     val app2 = createApplication(org)
 
-    await(client.applications.get(org.key, name = Some(UUID.randomUUID.toString))) must be(Seq.empty)
+    await(client.applications.get(org.key, name = Some(UUID.randomUUID.toString))) must be(Nil)
     await(client.applications.get(org.key, name = Some(app1.name))).map(_.guid) must be(Seq(app1.guid))
     await(client.applications.get(org.key, name = Some(app2.name.toUpperCase))).map(_.guid) must be(Seq(app2.guid))
   }
@@ -58,7 +58,7 @@ class ApplicationsSpec extends BaseSpec {
     val app1 = createApplication(org)
     val app2 = createApplication(org)
 
-    await(client.applications.get(org.key, key = Some(UUID.randomUUID.toString))) must be(Seq.empty)
+    await(client.applications.get(org.key, key = Some(UUID.randomUUID.toString))) must be(Nil)
     await(client.applications.get(org.key, key = Some(app1.key))).map(_.guid) must be(Seq(app1.guid))
     await(client.applications.get(org.key, key = Some(app2.key.toUpperCase))).map(_.guid) must be(Seq(app2.guid))
   }

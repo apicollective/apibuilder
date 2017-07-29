@@ -81,7 +81,7 @@ object Email {
   }
 
   private[this] def localDelivery(dir: Path, to: Person, subject: String, body: String): String = {
-    val timestamp = UrlKey.generate(ISODateTimeFormat.dateTimeNoMillis.print(new DateTime()))
+    val timestamp = UrlKey.generate(ISODateTimeFormat.dateTimeNoMillis.print(DateTime.now))
 
     Files.createDirectories(dir)
     val target = Paths.get(dir.toString, timestamp + "-" + UUID.randomUUID.toString + ".html")

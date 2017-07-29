@@ -1,35 +1,37 @@
 package db.generators
 
-import db.{AuditsDao, Authorization, SoftDelete}
-import io.apibuilder.api.v0.models.{GeneratorForm, Error, GeneratorService, GeneratorWithService, User}
+import db.{AuditsDao, Authorization}
+import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
-import core.Util
+import io.flow.postgresql.Query
 import javax.inject.{Inject, Singleton}
-import lib.Validation
+
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
+
 import scala.util.{Failure, Success, Try}
 
 @Singleton
 class GeneratorsDao @Inject() () {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select generators.guid,
-           generators.service_guid,
            generators.key,
            generators.name,
            generators.description,
            generators.language,
-           generators.attributes,
+           coalesce(generators.attributes, '[]') as attributes,
            services.guid as service_guid,
            services.uri as service_uri,
-           ${AuditsDao.queryCreationWithAlias("services", "service")}
+           services.created_at as service_created_at,
+           services.created_by_guid as service_created_by_guid,
+           services.created_at as service_updated_at,
+           services.created_by_guid as service_updated_by_guid
       from generators.generators
       join generators.services on services.guid = generators.service_guid and services.deleted_at is null
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into generators.generators
@@ -161,51 +163,50 @@ class GeneratorsDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[GeneratorWithService] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.generatorServicesFilter().map { v => s"and $v" },
-      guid.map { v => "and generators.guid = {guid}::uuid" },
-      serviceGuid.map { v => "and generators.service_guid = {service_guid}::uuid" },
-      serviceUri.map { v => "and lower(services.uri) = lower(trim({uri}))" },
-      key.map { v => "and lower(trim(generators.key)) = lower(trim({key}))" },
-      attributeName.map { v =>
-        // TODO: structure this filter
-        "and generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
-      },
-      isDeleted.map(db.Filters.isDeleted("generators", _))
-    ).flatten.mkString("\n   ") + s" order by lower(generators.name), lower(generators.key), generators.created_at desc limit ${limit} offset ${offset}"
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      serviceGuid.map('service_guid -> _.toString),
-      serviceUri.map('service_uri -> _),
-      key.map('key -> _),
-      attributeName.map('attribute_name -> _)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      authorization.generatorServicesFilter(BaseQuery).
+        equals("generators.guid", guid).
+        equals("generators.service_guid", serviceGuid).
+        and(
+          serviceUri.map { _ =>
+            "lower(services.uri) = lower(trim({service_uri}))"
+          }
+        ).bind("service_uri", serviceUri).
+        and(
+          key.map { _ =>
+            "lower(generators.key) = lower(trim({generator_key}))"
+          }
+        ).bind("generator_key", key).
+        and(
+          attributeName.map { _ =>
+            // TODO: structure this filter
+            "generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
+          }
+        ).bind("attribute_name", attributeName).
+        and(isDeleted.map(db.Filters.isDeleted("generators", _))).
+        orderBy("lower(generators.name), lower(generators.key), generators.created_at desc").
+        limit(limit).
+        offset(offset).
+        as(parser().*)
     }
   }
 
-  private[db] def fromRow(
-    row: anorm.Row
-  ) = GeneratorWithService(
-    service = GeneratorService(
-      guid = row[UUID]("service_guid"),
-      uri = row[String]("service_uri"),
-      audit = AuditsDao.fromRowCreation(row, Some("service"))
-    ),
-    generator = Generator(
-      key = row[String]("key"),
-      name = row[String]("name"),
-      description = row[Option[String]]("description"),
-      language = row[Option[String]]("language"),
-      attributes = row[Option[String]]("attributes") match {
-        case None => Nil
-        case Some(value) => value.split("\\s+")
+  private[this] def parser(): RowParser[GeneratorWithService] = {
+    SqlParser.get[_root_.java.util.UUID]("service_guid") ~
+      SqlParser.str("service_uri") ~
+      io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("service") ~
+      io.apibuilder.generator.v0.anorm.parsers.Generator.parser() map {
+      case serviceGuid ~ serviceUri ~ serviceAudit ~ generator => {
+        GeneratorWithService(
+          service = GeneratorService(
+            guid = serviceGuid,
+            uri = serviceUri,
+            audit = serviceAudit
+          ),
+          generator = generator
+        )
       }
-    )
-  )
+    }
+  }
 
 }

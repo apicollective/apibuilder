@@ -1,15 +1,12 @@
 package db
 
 import io.apibuilder.api.v0.models.{MembershipRequest, Organization, User}
-import io.apibuilder.api.v0.models.json._
-import io.apibuilder.common.v0.models.json._
+import io.flow.postgresql.Query
 import lib.Role
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
-import java.sql.Timestamp
-import play.api.libs.json._
 import java.util.UUID
 
 @Singleton
@@ -21,18 +18,18 @@ class MembershipRequestsDao @Inject() (
   usersDao: UsersDao
 ) {
 
-  implicit val membershipRequestWrites = Json.writes[MembershipRequest]
-
-  private[this] val BaseQuery = s"""
+  // TODO: Properly select domains
+  private[this] val BaseQuery = Query(s"""
     select membership_requests.guid,
            membership_requests.role,
-           membership_requests.created_at::varchar,
-           ${AuditsDao.queryCreation("membership_requests")},
+           membership_requests.created_at::text,
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("membership_requests")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
+           '[]' as organization_domains,
            ${AuditsDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
@@ -42,8 +39,7 @@ class MembershipRequestsDao @Inject() (
       from membership_requests
       join organizations on organizations.guid = membership_requests.organization_guid
       join users on users.guid = membership_requests.user_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
    insert into membership_requests
@@ -176,35 +172,24 @@ class MembershipRequestsDao @Inject() (
   ): Seq[MembershipRequest] = {
     // TODO Implement authorization
 
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and membership_requests.guid = {guid}::uuid" },
-      organizationGuid.map { v => "and membership_requests.organization_guid = {organization_guid}::uuid" },
-      organizationKey.map { v => "and membership_requests.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})" },
-      userGuid.map { v => "and membership_requests.user_guid = {user_guid}::uuid" },
-      role.map { v => "and membership_requests.role = {role}" },
-      isDeleted.map(Filters.isDeleted("membership_requests", _)),
-      Some(s"order by membership_requests.created_at desc limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _),
-      organizationGuid.map('organization_guid -> _.toString),
-      organizationKey.map('organization_key -> _),
-      userGuid.map('user_guid -> _.toString),
-      role.map('role ->_)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { row =>
-        MembershipRequest(
-          guid = row[UUID]("guid"),
-          organization = organizationsDao.summaryFromRow(row, Some("organization")),
-          user = usersDao.fromRow(row, Some("user")),
-          role = row[String]("role"),
-          audit = AuditsDao.fromRowCreation(row)
+      BaseQuery.
+        equals("membership_requests.guid", guid).
+        equals("membership_requests.organization_guid", organizationGuid).
+        equals("membership_requests.user_guid", userGuid).
+        and(
+          organizationKey.map { _ =>
+            "membership_requests.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"
+          }
+        ).bind("organization_key", organizationKey).
+        equals("membership_requests.role", role).
+        and(isDeleted.map(Filters.isDeleted("membership_requests", _))).
+        orderBy("membership_requests.created_at desc").
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.MembershipRequest.parser().*
         )
-      }.toSeq
     }
   }
 

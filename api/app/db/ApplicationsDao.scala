@@ -3,6 +3,7 @@ package db
 import io.apibuilder.api.v0.models.{Application, ApplicationForm, Error, MoveForm, Organization, User, Version, Visibility}
 import io.apibuilder.common.v0.models.Reference
 import io.apibuilder.internal.v0.models.TaskDataIndexApplication
+import io.flow.postgresql.Query
 import javax.inject.{Inject, Named, Singleton}
 import lib.{UrlKey, Validation}
 import anorm._
@@ -18,7 +19,8 @@ class ApplicationsDao @Inject() (
   tasksDao: TasksDao
 ) {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(
+    s"""
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
            ${AuditsDao.query("applications")},
            organizations.guid as organization_guid,
@@ -26,17 +28,19 @@ class ApplicationsDao @Inject() (
            ${AuditsDao.queryWithAlias("organizations", "organization")}
       from applications
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
-     where true
-  """
+    """
+  )
 
-  private[this] val InsertQuery = """
+  private[this] val InsertQuery =
+    """
     insert into applications
     (guid, organization_guid, name, description, key, visibility, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {organization_guid}::uuid, {name}, {description}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] val UpdateQuery = """
+  private[this] val UpdateQuery =
+    """
     update applications
        set name = {name},
            visibility = {visibility},
@@ -45,21 +49,24 @@ class ApplicationsDao @Inject() (
      where guid = {guid}::uuid
   """
 
-  private[this] val InsertMoveQuery = """
+  private[this] val InsertMoveQuery =
+    """
     insert into application_moves
     (guid, application_guid, from_organization_guid, to_organization_guid, created_by_guid)
     values
     ({guid}::uuid, {application_guid}::uuid, {from_organization_guid}::uuid, {to_organization_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] val UpdateOrganizationQuery = """
+  private[this] val UpdateOrganizationQuery =
+    """
     update applications
        set organization_guid = {org_guid}::uuid,
            updated_by_guid = {updated_by_guid}::uuid
      where guid = {guid}::uuid
   """
 
-  private[this] val UpdateVisibilityQuery = """
+  private[this] val UpdateVisibilityQuery =
+    """
     update applications
        set visibility = {visibility},
            updated_by_guid = {updated_by_guid}::uuid
@@ -96,10 +103,10 @@ class ApplicationsDao @Inject() (
     existing: Option[Application] = None
   ): Seq[Error] = {
     val nameErrors = findByOrganizationAndName(Authorization.All, org, form.name) match {
-      case None => Seq.empty
+      case None => Nil
       case Some(application: Application) => {
         if (existing.map(_.guid) == Some(application.guid)) {
-          Seq.empty
+          Nil
         } else {
           Seq("Application with this name already exists")
         }
@@ -107,15 +114,15 @@ class ApplicationsDao @Inject() (
     }
 
     val keyErrors = form.key match {
-      case None => Seq.empty
+      case None => Nil
       case Some(key) => {
         UrlKey.validate(key) match {
           case Nil => {
             findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) match {
-              case None => Seq.empty
+              case None => Nil
               case Some(application: Application) => {
                 if (existing.map(_.guid) == Some(application.guid)) {
-                  Seq.empty
+                  Nil
                 } else {
                   Seq("Application with this key already exists")
                 }
@@ -128,7 +135,7 @@ class ApplicationsDao @Inject() (
     }
 
     val visibilityErrors = Visibility.fromString(form.visibility.toString) match {
-      case Some(_) => Seq.empty
+      case Some(_) => Nil
       case None => Seq(s"Visibility[${form.visibility}] not recognized")
     }
 
@@ -249,7 +256,7 @@ class ApplicationsDao @Inject() (
     })
 
     mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
-    
+
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create application")
     }
@@ -292,59 +299,42 @@ class ApplicationsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Application] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.applicationFilter().map(v => "and " + v),
-      guid.map { v => "and applications.guid = {guid}::uuid" },
-      orgKey.map { v => "and organizations.key = {organization_key}" },
-      name.map { v => "and lower(trim(applications.name)) = lower(trim({name}))" },
-      key.map { v => "and applications.key = lower(trim({key}))" },
-      version.map { v => "and applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)" },
-      hasVersion.map { v =>
-        v match {
-          case true => { "and exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
-          case false => { "and not exists (select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid)" }
-        }
-      },
-      isDeleted.map(Filters.isDeleted("applications", _)),
-      Some(s"order by lower(applications.name) limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val authorizationUserGuid = authorization match {
-      case Authorization.User(guid) => Some(guid)
-      case _ => None
-    }
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      orgKey.map('organization_key -> _),
-      name.map('name -> _),
-      key.map('key -> _),
-      version.map('version_guid -> _.guid.toString)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      authorization.applicationFilter(BaseQuery).
+        equals("applications.guid", guid).
+        equals("organizations.key", orgKey).
+        and(
+          name.map { _ =>
+            "lower(trim(applications.name)) = lower(trim({name}))"
+          }
+        ).bind("name", name).
+        and(
+          key.map { _ =>
+            "applications.key = lower(trim({application_key}))"
+          }
+        ).bind("application_key", key).
+        and(
+          version.map { _ =>
+            "applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
+          }
+        ).bind("version_guid", "version_guid").
+        and(
+          hasVersion.map { v =>
+            val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
+            if (v) {
+              s"exists ($clause)"
+            } else {
+              s"not exists ($clause)"
+            }
+          }
+        ).
+        and(isDeleted.map(Filters.isDeleted("applications", _))).
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.Application.parser().*
+        )
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row,
-    prefix: Option[String] = None
-  ): Application = {
-    val p = prefix.map( _ + "_").getOrElse("")
-    Application(
-      guid = row[UUID](s"${p}guid"),
-      organization = Reference(
-        guid = row[UUID]("organization_guid"),
-        key = row[String]("organization_key")
-      ),
-      name = row[String](s"${p}name"),
-      key = row[String](s"${p}key"),
-      visibility = Visibility(row[String](s"${p}visibility")),
-      description = row[Option[String]](s"${p}description"),
-      audit = AuditsDao.fromRow(row, prefix)
-    )
   }
 
   private[this] def withTasks(

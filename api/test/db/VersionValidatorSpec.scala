@@ -28,14 +28,14 @@ class VersionValidatorSpec extends FunSpec with Matchers with util.TestApplicati
       val org = Util.createOrganization()
       val existing = Util.createApplication(org)
 
-      VersionValidator(Util.createdBy, org, UUID.randomUUID.toString).validate should be(Seq.empty)
+      VersionValidator(Util.createdBy, org, UUID.randomUUID.toString).validate should be(Nil)
     }
 
     it("no errors when updating an application with the same key") {
       val org = Util.createOrganization()
       val existing = Util.createApplication(org)
 
-      VersionValidator(Util.createdBy, org, existing.key, Some(existing.key)).validate should be(Seq.empty)
+      VersionValidator(Util.createdBy, org, existing.key, Some(existing.key)).validate should be(Nil)
     }
 
     it("validates that key is not changing") {

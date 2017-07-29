@@ -4,6 +4,7 @@ import anorm._
 import io.apibuilder.internal.v0.models.{Task, TaskData}
 import io.apibuilder.internal.v0.models.json._
 import io.apibuilder.api.v0.models.User
+import io.flow.postgresql.Query
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.DateTime
 import play.api.db._
@@ -36,14 +37,13 @@ class TasksDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = Query("""
     select tasks.guid,
-           tasks.data::varchar,
+           tasks.data::text,
            tasks.number_attempts,
            tasks.last_error
       from tasks
-     where true
-  """
+  """)
 
   val IncrementNumberAttemptsQuery = """
     update tasks
@@ -141,47 +141,47 @@ class TasksDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Task] = {
-    deletedAtLeastNDaysAgo.map { n =>
+    deletedAtLeastNDaysAgo.foreach { _ =>
       isDeleted match {
-        case None | Some(true) => {}
+        case None | Some(true) => // no-op
         case Some(false) => sys.error("When filtering by deletedAtLeastNDaysAgo, you must also set isDeleted")
       }
     }
 
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and tasks.guid = {guid}::uuid" },
-      nOrFewerAttempts.map { v => "and tasks.number_attempts <= {n_or_fewer_attempts}" },
-      nOrMoreAttempts.map { v => "and tasks.number_attempts >= {n_or_more_attempts}" },
-      createdOnOrBefore.map { v => s"and tasks.created_at <= {created_on_or_before}::timestamptz" },
-      createdOnOrAfter.map { v => s"and tasks.created_at >= {created_on_or_after}::timestamptz" },
-      isDeleted.map { Filters.isDeleted("tasks", _) },
-      deletedAtLeastNDaysAgo.map { v => s"and tasks.deleted_at <= timezone('utc', now()) - interval '$v days'" },
-      Some(s"order by tasks.number_attempts, tasks.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      nOrFewerAttempts.map('n_or_fewer_attempts -> _),
-      nOrMoreAttempts.map('n_or_more_attempts -> _),
-      createdOnOrBefore.map(ts => 'created_on_or_before -> ts.toString),
-      createdOnOrAfter.map(ts => 'created_on_or_after -> ts.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      BaseQuery.
+        equals("tasks.guid", guid).
+        lessThanOrEquals("tasks.number_attempts", nOrFewerAttempts).
+        greaterThanOrEquals("tasks.number_attempts", nOrMoreAttempts).
+        lessThanOrEquals("tasks.created_at", createdOnOrBefore).
+        greaterThanOrEquals("tasks.created_at", createdOnOrAfter).
+        and(isDeleted.map {
+          Filters.isDeleted("tasks", _)
+        }).
+        lessThanOrEquals("tasks.deleted_at", deletedAtLeastNDaysAgo.map(days => DateTime.now.minusDays(days.toInt))).
+        orderBy("tasks.number_attempts, tasks.created_at").
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+        parser().*
+      )
     }
   }
 
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Task = {
-    Task(
-      guid = row[UUID]("guid"),
-      data = Json.parse(row[String]("data")).as[TaskData],
-      numberAttempts = row[Long]("number_attempts"),
-      lastError = row[Option[String]]("last_error")
-    )
+  private[this] def parser(): RowParser[Task] = {
+    SqlParser.get[UUID]("guid") ~
+    SqlParser.str("data") ~
+    SqlParser.long("number_attempts") ~
+    SqlParser.str("last_error").? map {
+      case guid ~ data ~ numberAttempts ~ lastError => {
+        Task(
+          guid = guid,
+          data = Json.parse(data).as[TaskData],
+          numberAttempts = numberAttempts,
+          lastError = lastError
+        )
+      }
+    }
   }
 
 }

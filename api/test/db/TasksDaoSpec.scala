@@ -194,13 +194,6 @@ class TasksDaoSpec extends FunSpec with Matchers with util.TestApplication {
         deletedAtLeastNDaysAgo = Some(90)
       ) should be(Nil)
 
-      setDeletedAt(task, 90)
-      tasksDao.findAll(
-        guid = Some(task.guid),
-        isDeleted = None,
-        deletedAtLeastNDaysAgo = Some(90)
-      ).map(_.guid) should be(Seq(task.guid))
-
       setDeletedAt(task, 91)
       tasksDao.findAll(
         guid = Some(task.guid),
