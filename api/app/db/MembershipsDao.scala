@@ -26,15 +26,17 @@ class MembershipsDao @Inject() (
     ({guid}::uuid, {organization_guid}::uuid, {user_guid}::uuid, {role}, {created_by_guid}::uuid)
   """
 
+  // TODO: Properly select domains
   private[this] val BaseQuery = Query(s"""
     select memberships.guid,
            memberships.role,
-           ${AuditsParserDao.queryCreation("memberships")},
+           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("memberships")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
+           '[]' as organization_domains,
            ${AuditsParserDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
@@ -44,7 +46,7 @@ class MembershipsDao @Inject() (
       from memberships
       join organizations on organizations.guid = memberships.organization_guid
       join users on users.guid = memberships.user_guid
-  """).withDebugging()
+  """)
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
     val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {

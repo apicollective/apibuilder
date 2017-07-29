@@ -1,8 +1,6 @@
 package db
 
 import io.apibuilder.api.v0.models.{MembershipRequest, Organization, User}
-import io.apibuilder.common.v0.models.json._
-import io.apibuilder.api.v0.models.json._
 import io.flow.postgresql.Query
 import lib.Role
 import anorm._
@@ -21,18 +19,18 @@ class MembershipRequestsDao @Inject() (
   usersDao: UsersDao
 ) {
 
-  private[this] implicit val membershipRequestWrites = Json.writes[MembershipRequest]
-
+  // TODO: Properly select domains
   private[this] val BaseQuery = Query(s"""
     select membership_requests.guid,
            membership_requests.role,
            membership_requests.created_at::varchar,
-           ${AuditsParserDao.queryCreation("membership_requests")},
+           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("membership_requests")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
+           '[]' as organization_domains,
            ${AuditsParserDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
@@ -42,7 +40,7 @@ class MembershipRequestsDao @Inject() (
       from membership_requests
       join organizations on organizations.guid = membership_requests.organization_guid
       join users on users.guid = membership_requests.user_guid
-  """).withDebugging()
+  """)
 
   private[this] val InsertQuery = """
    insert into membership_requests
