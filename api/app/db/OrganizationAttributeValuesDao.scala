@@ -137,9 +137,9 @@ class OrganizationAttributeValuesDao @Inject() (
   ): Seq[AttributeValue] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("organization_attribute_values.guid::uuid", guid).
-        equals("organization_attribute_values.organization_guid::uuid", organizationGuid).
-        equals("organization_attribute_values.attribute_guid::uuid", attributeGuid).
+        equals("organization_attribute_values.guid, guid).
+        equals("organization_attribute_values.organization_guid, organizationGuid).
+        equals("organization_attribute_values.attribute_guid, attributeGuid).
         optionalIn("attributes.name", attributeNames).
         and(isDeleted.map(Filters.isDeleted("organization_attribute_values", _))).
         orderBy("lower(organization_attribute_values.value), organization_attribute_values.created_at").

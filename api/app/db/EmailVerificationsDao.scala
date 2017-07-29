@@ -121,8 +121,8 @@ class EmailVerificationsDao @Inject() (
   ): Seq[EmailVerification] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("email_verifications.guid::uuid", guid).
-        equals("email_verifications.user_guid::uuid", userGuid).
+        equals("email_verifications.guid, guid).
+        equals("email_verifications.user_guid, userGuid).
         equals("email_verifications.email", email).
         equals("email_verifications.token", token).
         and(isExpired.map(Filters.isExpired("email_verifications", _))).

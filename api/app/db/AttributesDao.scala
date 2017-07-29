@@ -93,7 +93,7 @@ class AttributesDao @Inject() () {
   ): Seq[Attribute] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("attributes.guid::uuid", guid).
+        equals("attributes.guid, guid).
         and(
           name.map { _ =>
             "lower(trim(attributes.name)) = lower(trim({name}))"

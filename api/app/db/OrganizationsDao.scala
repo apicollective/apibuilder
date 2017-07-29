@@ -34,11 +34,11 @@ class OrganizationsDao @Inject() (
            organizations.namespace,
            ${AuditsDao.query("organizations")},
            coalesce(
-             (select array_to_string(array_agg(domain), ' ') 
-                from organization_domains
-               where deleted_at is null
-                 and organization_guid = organizations.guid),
-             '[]'
+             (select to_json(array_agg(json_build_object('name', domain)))
+               from organization_domains
+                where deleted_at is null
+                  and organization_guid = organizations.guid),
+             '[]'::json
            ) as domains
       from organizations
   """)
@@ -266,8 +266,8 @@ class OrganizationsDao @Inject() (
           }
         ).bind("name", name).
         and(
-          name.map { _ =>
-            "organizations.namespace = lower(trim({namespace}))"
+          namespace.map { _ =>
+            "lower(trim(organizations.namespace)) = lower(trim({namespace}))"
           }
         ).bind("namespace", namespace).
         and(isDeleted.map(Filters.isDeleted("organizations", _))).

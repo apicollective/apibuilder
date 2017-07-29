@@ -106,8 +106,8 @@ class PasswordResetRequestsDao @Inject() (
   ): Seq[PasswordReset] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("password_resets.guid::uuid", guid).
-        equals("password_resets.user_guid::uuid", userGuid).
+        equals("password_resets.guid, guid).
+        equals("password_resets.user_guid, userGuid).
         equals("password_resets.token", token).
         and(isDeleted.map(Filters.isDeleted("password_resets", _))).
         and(isExpired.map(Filters.isExpired("password_resets", _))).

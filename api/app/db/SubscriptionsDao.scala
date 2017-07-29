@@ -35,7 +35,7 @@ class SubscriptionsDao @Inject() () {
            organizations.name as organization_name,
            organizations.namespace as organization_namespace,
            organizations.visibility as organization_visibility,
-           '[]' as organization_domains,
+           '[]'::json as organization_domains,
            ${AuditsDao.queryWithAlias("organizations", "organization")}
       from subscriptions
       join users on users.guid = subscriptions.user_guid and users.deleted_at is null
@@ -152,14 +152,14 @@ class SubscriptionsDao @Inject() () {
   ): Seq[Subscription] = {
     DB.withConnection { implicit c =>
       authorization.subscriptionFilter(BaseQuery).
-        equals("subscriptions.guid::uuid", guid).
-        equals("subscriptions.organization_guid::uuid", organization.map(_.guid)).
+        equals("subscriptions.guid, guid).
+        equals("subscriptions.organization_guid, organization.map(_.guid)).
         and(
           organizationKey.map { _ =>
             "and subscriptions.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))"
           }
         ).bind("organization_key", organizationKey).
-        equals("subscriptions.user_guid::uuid", userGuid).
+        equals("subscriptions.user_guid, userGuid).
         equals("subscriptions.publication", publication.map(_.toString)).
         and(isDeleted.map(Filters.isDeleted("subscriptions", _))).
         orderBy("subscriptions.created_at").
