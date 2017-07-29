@@ -25,7 +25,10 @@ class GeneratorsDao @Inject() () {
            generators.attributes,
            services.guid as service_guid,
            services.uri as service_uri,
-           ${AuditsDao.queryCreationWithAlias("services", "service")}
+           services.created_at as service_created_at,
+           services.created_by_guid as service_created_by_guid,
+           services.created_at as service_updated_at,
+           services.created_by_guid as service_updated_by_guid
       from generators.generators
       join generators.services on services.guid = generators.service_guid and services.deleted_at is null
   """)
@@ -175,7 +178,7 @@ class GeneratorsDao @Inject() () {
           }
         ).bind("generator_key", key).
         and(
-          attributeName.map { v =>
+          attributeName.map { _ =>
             // TODO: structure this filter
             "generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
           }
