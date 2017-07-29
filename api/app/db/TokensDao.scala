@@ -19,7 +19,7 @@ class TokensDao @Inject() (
     select tokens.guid,
            'XXX-XXX-XXX' as masked_token,
            tokens.description,
-           ${AuditsParserDao.queryCreation("tokens")},
+           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("tokens")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
