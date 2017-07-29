@@ -154,11 +154,7 @@ class SubscriptionsDao @Inject() () {
       authorization.subscriptionFilter(BaseQuery).
         equals("subscriptions.guid", guid).
         equals("subscriptions.organization_guid", organization.map(_.guid)).
-        and(
-          organizationKey.map { _ =>
-            "and subscriptions.organization_guid = (select guid from organizations where deleted_at is null and key = lower(trim({organization_key})))"
-          }
-        ).bind("organization_key", organizationKey).
+        equals("organizations.key", organizationKey.map(_.toLowerCase.trim)).
         equals("subscriptions.user_guid", userGuid).
         equals("subscriptions.publication", publication.map(_.toString)).
         and(isDeleted.map(Filters.isDeleted("subscriptions", _))).
