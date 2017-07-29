@@ -1,6 +1,6 @@
 package db.generators
 
-import db.{AuditsDao, Authorization}
+import db.Authorization
 import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
@@ -10,6 +10,8 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
+
+import play.api.libs.json.Json
 
 import scala.util.{Failure, Success, Try}
 
@@ -123,7 +125,9 @@ class GeneratorsDao @Inject() () {
       'name -> form.generator.name.trim,
       'description -> form.generator.description.map(_.trim),
       'language -> form.generator.language.map(_.trim),
-      'attributes -> optionIfEmpty(form.generator.attributes.map(_.trim).mkString(", ")),
+      'attributes -> Json.toJson(
+        form.generator.attributes.map(_.trim).flatMap(optionIfEmpty)
+      ).toString,
       'created_by_guid -> user.guid,
       'updated_by_guid -> user.guid
     ).execute()
