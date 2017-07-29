@@ -22,8 +22,6 @@ class OrganizationsDao @Inject() (
   // TODO: resolve cicrular dependency
   private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
 
-  private[this] val DefaultVisibility = Visibility.Organization
-
   private[this] val MinNameLength = 3
 
   private[db] val BaseQuery = Query(s"""
@@ -34,11 +32,11 @@ class OrganizationsDao @Inject() (
            organizations.namespace,
            ${AuditsDao.query("organizations")},
            coalesce(
-             (select array_to_string(array_agg(domain), ' ') 
+             (select to_json(array_agg(json_build_object('name', domain)))
                 from organization_domains
                where deleted_at is null
                  and organization_guid = organizations.guid),
-             '[]'
+             '[]'::json
            ) as domains
       from organizations
   """)

@@ -152,12 +152,12 @@ object Util extends util.Daos {
   )
 
 
-  lazy val createdBy = {
+  lazy val createdBy: User = {
     play.api.Play.current.injector.instanceOf[db.UsersDao].AdminUser
   }
 
-  lazy val gilt = upsertOrganization("Gilt Test Org")
+  lazy val gilt: Organization = upsertOrganization("Gilt Test Org")
 
-  lazy val testOrg = upsertOrganization("Test Org %s".format(UUID.randomUUID))
+  lazy val testOrg: Organization = upsertOrganization("Test Org %s".format(UUID.randomUUID))
 
 }
