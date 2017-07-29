@@ -24,7 +24,7 @@ class GeneratorsDao @Inject() () {
            generators.name,
            generators.description,
            generators.language,
-           coalesce(generators.attributes, '[]') as attributes,
+           coalesce(generators.attributes::text, '[]') as attributes,
            services.guid as service_guid,
            services.uri as service_uri,
            services.created_at as service_created_at,
