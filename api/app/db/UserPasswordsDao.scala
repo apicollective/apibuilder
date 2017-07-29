@@ -93,7 +93,7 @@ class UserPasswordsDao @Inject() () {
 
   private[this] val BaseQuery = Query(
     """
-    select guid::text, user_guid::text, algorithm_key, hash
+    select guid, user_guid, algorithm_key, hash
       from user_passwords
   """)
 
@@ -166,7 +166,7 @@ class UserPasswordsDao @Inject() () {
 
   private[db] def findByUserGuid(userGuid: UUID): Option[UserPassword] = {
     DB.withConnection { implicit c =>
-      BaseQuery.withDebugging().
+      BaseQuery.
         isNull("user_passwords.deleted_at").
         equals("user_passwords.user_guid::uuid", userGuid).
         limit(1).
@@ -186,7 +186,7 @@ class UserPasswordsDao @Inject() () {
           algorithm = PasswordAlgorithm.fromString(algorithmKey).getOrElse {
             sys.error(s"Invalid algorithmKey[$algorithmKey] for userGuid[$userGuid]")
           },
-          hash = hash
+          hash = new String(Base64.decodeBase64(hash.getBytes))
         )
       }
     }
