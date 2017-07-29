@@ -27,7 +27,7 @@ class TokensDao @Inject() (
            ${AuditsParserDao.queryWithAlias("users", "user")}
       from tokens
       join users on users.guid = tokens.user_guid and users.deleted_at is null
-  """).withDebugging()
+  """)
 
   private[this] val FindCleartextQuery = Query(s"""
     select token from tokens where guid = {guid}::uuid and deleted_at is null
