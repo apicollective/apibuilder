@@ -30,19 +30,19 @@ class MembershipsDao @Inject() (
   private[this] val BaseQuery = Query(s"""
     select memberships.guid,
            memberships.role,
-           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("memberships")},
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("memberships")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
            '[]' as organization_domains,
-           ${AuditsParserDao.queryWithAlias("organizations", "organization")},
+           ${AuditsDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
            users.name as user_name,
-           ${AuditsParserDao.queryWithAlias("users", "user")}
+           ${AuditsDao.queryWithAlias("users", "user")}
       from memberships
       join organizations on organizations.guid = memberships.organization_guid
       join users on users.guid = memberships.user_guid

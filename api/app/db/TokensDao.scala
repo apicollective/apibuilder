@@ -19,12 +19,12 @@ class TokensDao @Inject() (
     select tokens.guid,
            'XXX-XXX-XXX' as masked_token,
            tokens.description,
-           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("tokens")},
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("tokens")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
            users.name as user_name,
-           ${AuditsParserDao.queryWithAlias("users", "user")}
+           ${AuditsDao.queryWithAlias("users", "user")}
       from tokens
       join users on users.guid = tokens.user_guid and users.deleted_at is null
   """)

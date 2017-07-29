@@ -29,7 +29,7 @@ class ChangesDao @Inject() () {
            changes.description,
            changes.changed_at,
            changes.changed_by_guid::uuid,
-           ${AuditsParserDao.queryCreation("changes")},
+           ${AuditsDao.queryCreation("changes")},
            applications.guid as application_guid,
            applications.key as application_key,
            organizations.guid as organization_guid,

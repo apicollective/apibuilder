@@ -1,6 +1,6 @@
 package db.generators
 
-import db.{AuditsParserDao, Authorization}
+import db.{AuditsDao, Authorization}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
@@ -25,7 +25,7 @@ class GeneratorsDao @Inject() () {
            generators.attributes,
            services.guid as service_guid,
            services.uri as service_uri,
-           ${AuditsParserDao.queryCreationWithAlias("services", "service")}
+           ${AuditsDao.queryCreationWithAlias("services", "service")}
       from generators.generators
       join generators.services on services.guid = generators.service_guid and services.deleted_at is null
   """)

@@ -24,19 +24,19 @@ class SubscriptionsDao @Inject() () {
   private[this] val BaseQuery = Query(s"""
     select subscriptions.guid,
            subscriptions.publication,
-           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("subscriptions")},
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("subscriptions")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
            users.name as user_name,
-           ${AuditsParserDao.queryWithAlias("users", "user")},
+           ${AuditsDao.queryWithAlias("users", "user")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,
            organizations.name as organization_name,
            organizations.namespace as organization_namespace,
            organizations.visibility as organization_visibility,
            '[]' as organization_domains,
-           ${AuditsParserDao.queryWithAlias("organizations", "organization")}
+           ${AuditsDao.queryWithAlias("organizations", "organization")}
       from subscriptions
       join users on users.guid = subscriptions.user_guid and users.deleted_at is null
       join organizations on organizations.guid = subscriptions.organization_guid and organizations.deleted_at is null

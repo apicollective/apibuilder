@@ -38,7 +38,7 @@ class VersionsDao @Inject() (
 
   private[this] val BaseQuery = Query(s"""
     select versions.guid, versions.version,
-           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("versions")},
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("versions")},
            originals.type as original_type,
            originals.data as original_data,
            organizations.guid as organization_guid,

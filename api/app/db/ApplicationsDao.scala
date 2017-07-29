@@ -22,10 +22,10 @@ class ApplicationsDao @Inject() (
   private[this] val BaseQuery = Query(
     s"""
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
-           ${AuditsParserDao.query("applications")},
+           ${AuditsDao.query("applications")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,
-           ${AuditsParserDao.queryWithAlias("organizations", "organization")}
+           ${AuditsDao.queryWithAlias("organizations", "organization")}
       from applications
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
     """

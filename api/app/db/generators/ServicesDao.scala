@@ -23,7 +23,7 @@ class ServicesDao @Inject() (
   private[this] val BaseQuery = Query(s"""
     select services.guid,
            services.uri,
-           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("services")}
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("services")}
       from generators.services
   """)
 

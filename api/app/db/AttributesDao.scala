@@ -16,7 +16,7 @@ class AttributesDao @Inject() () {
     select attributes.guid,
            attributes.name,
            attributes.description,
-           ${AuditsParserDao.query("attributes")}
+           ${AuditsDao.query("attributes")}
       from attributes
   """)
 

@@ -46,7 +46,7 @@ class UsersDao @Inject() (
            users.nickname,
            users.avatar_url,
            users.gravatar_id,
-           ${AuditsParserDao.query("users")}
+           ${AuditsDao.query("users")}
       from users
   """)
 

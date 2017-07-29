@@ -23,19 +23,19 @@ class MembershipRequestsDao @Inject() (
     select membership_requests.guid,
            membership_requests.role,
            membership_requests.created_at::text,
-           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("membership_requests")},
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("membership_requests")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
            '[]' as organization_domains,
-           ${AuditsParserDao.queryWithAlias("organizations", "organization")},
+           ${AuditsDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
            users.name as user_name,
-           ${AuditsParserDao.queryWithAlias("users", "user")}
+           ${AuditsDao.queryWithAlias("users", "user")}
       from membership_requests
       join organizations on organizations.guid = membership_requests.organization_guid
       join users on users.guid = membership_requests.user_guid

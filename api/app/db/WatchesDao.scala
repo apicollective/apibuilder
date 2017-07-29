@@ -55,25 +55,25 @@ class WatchesDao @Inject() (
 
   private[this] val BaseQuery = Query(s"""
     select watches.guid,
-           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("watches")},
+           ${AuditsDao.queryCreationDefaultingUpdatedAt("watches")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
            users.name as user_name,
-           ${AuditsParserDao.queryWithAlias("users", "user")},
+           ${AuditsDao.queryWithAlias("users", "user")},
            applications.guid as application_guid,
            applications.name as application_name,
            applications.key as application_key,
            applications.visibility as application_visibility,
            applications.description as application_description,
-           ${AuditsParserDao.queryWithAlias("applications", "application")},
+           ${AuditsDao.queryWithAlias("applications", "application")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,
            organizations.name as organization_name,
            organizations.namespace as organization_namespace,
            organizations.visibility as organization_visibility,
            '[]' as organization_domains;
-           ${AuditsParserDao.queryWithAlias("organizations", "organization")}
+           ${AuditsDao.queryWithAlias("organizations", "organization")}
       from watches
       join users on users.guid = watches.user_guid and users.deleted_at is null
       join applications on applications.guid = watches.application_guid and applications.deleted_at is null

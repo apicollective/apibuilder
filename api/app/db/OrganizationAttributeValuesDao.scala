@@ -19,7 +19,7 @@ class OrganizationAttributeValuesDao @Inject() (
   private[this] val BaseQuery = Query(s"""
     select organization_attribute_values.guid,
            organization_attribute_values.value,
-           ${AuditsParserDao.query("organization_attribute_values")},
+           ${AuditsDao.query("organization_attribute_values")},
            attributes.guid as attribute_guid,
            attributes.name as attribute_name
       from organization_attribute_values

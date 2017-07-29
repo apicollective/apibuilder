@@ -32,7 +32,7 @@ class OrganizationsDao @Inject() (
            organizations.key,
            organizations.visibility,
            organizations.namespace,
-           ${AuditsParserDao.query("organizations")},
+           ${AuditsDao.query("organizations")},
            coalesce(
              (select array_to_string(array_agg(domain), ' ') 
                 from organization_domains
