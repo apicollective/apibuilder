@@ -89,7 +89,7 @@ class TokensDao @Inject() (
 
   def findCleartextByGuid(authorization: Authorization, guid: UUID): Option[CleartextToken] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).
+      authorization.
         tokenFilter(FindCleartextQuery).
         bind("guid", guid).
         anormSql.as(SqlParser.str("token").*).headOption.map(CleartextToken)
@@ -110,7 +110,7 @@ class TokensDao @Inject() (
     offset: Long = 0
   ): Seq[Token] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).tokenFilter(BaseQuery).
+      authorization.tokenFilter(BaseQuery).
         equals("tokens.guid::uuid", guid).
         equals("tokens.user_guid::uuid", userGuid).
         equals("tokens.token", token).

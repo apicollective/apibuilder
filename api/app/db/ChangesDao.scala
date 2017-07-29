@@ -134,7 +134,7 @@ class ChangesDao @Inject() () {
     offset: Long = 0
   ): Seq[Change] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).applicationFilter(BaseQuery).
+      authorization.applicationFilter(BaseQuery).
         equals("changes.guid::uuid", guid).
         equals("organizations.guid::uuid", organizationGuid).
         equals("applications.guid::uuid", applicationGuid).

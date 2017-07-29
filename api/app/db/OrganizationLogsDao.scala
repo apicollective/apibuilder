@@ -58,7 +58,7 @@ class OrganizationLogsDao @Inject() () {
     offset: Long = 0
   ): Seq[OrganizationLog] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).organizationFilter(BaseQuery).
+      authorization.organizationFilter(BaseQuery).
         equals("organization_logs.organization_guid::uuid", organization.map(_.guid)).
         orderBy("organization_logs.created_at desc").
         limit(limit).

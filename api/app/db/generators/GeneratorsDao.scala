@@ -1,6 +1,6 @@
 package db.generators
 
-import db.{AuditsParserDao, Authorization, Authorization2}
+import db.{AuditsParserDao, Authorization}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
@@ -161,7 +161,7 @@ class GeneratorsDao @Inject() () {
     offset: Long = 0
   ): Seq[GeneratorWithService] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).generatorServicesFilter(BaseQuery).withDebugging().
+      authorization.generatorServicesFilter(BaseQuery).withDebugging().
         equals("generators.guid::uuid", guid).
         equals("generators.service_guid::uuid", serviceGuid).
         and(

@@ -215,7 +215,7 @@ class VersionsDao @Inject() (
   ): Seq[Version] = {
     DB.withConnection { implicit c =>
 
-      Authorization2(authorization).applicationFilter(BaseQuery).
+      authorization.applicationFilter(BaseQuery).
         isNotNull("services.guid").
         equals("versions.guid::uuid", guid).
         equals("versions.application_guid::uuid", applicationGuid).

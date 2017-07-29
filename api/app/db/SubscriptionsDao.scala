@@ -151,7 +151,7 @@ class SubscriptionsDao @Inject() () {
     offset: Long = 0
   ): Seq[Subscription] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).subscriptionFilter(BaseQuery).
+      authorization.subscriptionFilter(BaseQuery).
         equals("subscriptions.guid::uuid", guid).
         equals("subscriptions.organization_guid::uuid", organization.map(_.guid)).
         and(

@@ -300,7 +300,7 @@ class ApplicationsDao @Inject() (
     offset: Long = 0
   ): Seq[Application] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).applicationFilter(BaseQuery).
+      authorization.applicationFilter(BaseQuery).
         equals("applications.guid::uuid", guid).
         equals("organizations.key", orgKey).
         and(

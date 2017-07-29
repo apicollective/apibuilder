@@ -107,7 +107,7 @@ class ServicesDao @Inject() (
     offset: Long = 0
   ): Seq[GeneratorService] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).generatorServicesFilter(BaseQuery).
+      authorization.generatorServicesFilter(BaseQuery).
         equals("services.guid", guid).
         and(
           uri.map { _ =>

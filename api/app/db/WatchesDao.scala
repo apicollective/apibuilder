@@ -152,7 +152,7 @@ class WatchesDao @Inject() (
     offset: Long = 0
   ): Seq[Watch] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).applicationFilter(BaseQuery).
+      authorization.applicationFilter(BaseQuery).
         equals("watches.guid::uuid", guid).
         equals("organizations.key", organizationKey).
         equals("watches.application_guid::uuid", application.map(_.guid)).
