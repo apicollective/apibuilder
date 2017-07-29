@@ -1,16 +1,13 @@
 package db
 
 import io.apibuilder.api.v0.models._
-import io.apibuilder.api.v0.models.json._
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
-import io.apibuilder.common.v0.models.json._
 import io.flow.postgresql.Query
 import lib.{Misc, Role, Validation, UrlKey}
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import java.util.UUID
 import org.joda.time.DateTime
 
@@ -89,7 +86,7 @@ class OrganizationsDao @Inject() (
             findByKey(Authorization.All, key) match {
               case None => Nil
               case Some(found) => {
-                if (existing.map(_.guid) == Some(found.guid)) {
+                if (existing.map(_.guid).contains(found.guid)) {
                   Nil
                 } else {
                   Seq("Org with this key already exists")
@@ -104,12 +101,13 @@ class OrganizationsDao @Inject() (
 
     val namespaceErrors = findAll(Authorization.All, namespace = Some(form.namespace.trim), limit = 1).headOption match {
       case None => {
-        isDomainValid(form.namespace.trim) match {
-          case true => Nil
-          case false => Seq("Namespace is not valid. Expected a name like io.apibuilder")
+        if (isDomainValid(form.namespace.trim)) {
+          Nil
+        } else {
+          Seq("Namespace is not valid. Expected a name like io.apibuilder")
         }
       }
-      case Some(org: Organization) => {
+      case Some(_) => {
         Nil
       }
     }
@@ -187,7 +185,7 @@ class OrganizationsDao @Inject() (
       name = form.name.trim,
       namespace = form.namespace.trim,
       visibility = form.visibility,
-      domains = form.domains.getOrElse(Nil).map(Domain(_)),
+      domains = form.domains.getOrElse(Nil).map(Domain),
       audit = Audit(
         createdAt = DateTime.now,
         createdBy = ReferenceGuid(user.guid),
