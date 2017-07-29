@@ -4,10 +4,12 @@ import io.apibuilder.api.v0.models.User
 import lib.TokenGenerator
 import anorm._
 import anorm.JodaParameterMetaData._
+import java.util.UUID
 import javax.inject.{Inject, Named, Singleton}
+
 import play.api.db._
 import play.api.Play.current
-import java.util.UUID
+import io.flow.postgresql.Query
 import org.joda.time.DateTime
 
 case class PasswordReset(
@@ -27,14 +29,13 @@ class PasswordResetRequestsDao @Inject() (
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 72
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = Query("""
     select password_resets.guid,
            password_resets.user_guid,
            password_resets.token,
            password_resets.expires_at
       from password_resets
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into password_resets
@@ -66,7 +67,7 @@ class PasswordResetRequestsDao @Inject() (
     pr.expiresAt.isBeforeNow
   }
 
-  def resetPassword(user: Option[User], pr: PasswordReset, newPassword: String) = {
+  def resetPassword(user: Option[User], pr: PasswordReset, newPassword: String): Unit = {
     assert(
       !isExpired(pr),
       "Password reset[${pr.guid}] is expired"
@@ -103,35 +104,34 @@ class PasswordResetRequestsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[PasswordReset] = {
-
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and password_resets.guid = {guid}::uuid" },
-      userGuid.map { v => "and password_resets.user_guid = {user_guid}::uuid" },
-      token.map { v => "and password_resets.token = {token}" },
-      isExpired.map(Filters.isExpired("password_resets", _)),
-      isDeleted.map(Filters.isDeleted("password_resets", _)),
-      Some(s"order by password_resets.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      token.map('token -> _)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      sys.error("TODO PARSER") // SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      BaseQuery.
+        equals("password_resets.guid::uuid", guid).
+        equals("password_resets.user_guid::uuid", userGuid).
+        equals("password_resets.token", token).
+        and(isDeleted.map(Filters2.isDeleted("password_resets", _))).
+        and(isExpired.map(Filters2.isExpired("password_resets", _))).
+        orderBy("password_resets.created_at").
+        limit(limit).
+        offset(offset).
+        anormSql().as(parser().*)
     }
   }
 
-  private[db] def fromRow(
-    row: anorm.Row
-  ) = PasswordReset(
-    guid = row[UUID]("guid"),
-    userGuid = row[UUID]("user_guid"),
-    token = row[String]("token"),
-    expiresAt = row[DateTime]("expires_at")
-  )
+  private[this] def parser(): RowParser[PasswordReset] = {
+    SqlParser.get[UUID]("guid") ~
+    SqlParser.get[UUID]("user_guid") ~
+    SqlParser.str("token") ~
+    SqlParser.get[DateTime]("expires_at") map {
+      case guid ~ userGuid ~ token ~ expiresAt => {
+        PasswordReset(
+          guid = guid,
+          userGuid = userGuid,
+          token = token,
+          expiresAt = expiresAt
+        )
+      }
+    }
+  }
 
 }

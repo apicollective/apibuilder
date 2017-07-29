@@ -1,14 +1,16 @@
 package db
 
 import io.apibuilder.api.v0.models.{Error, User}
-import lib.{Constants, Validation}
+import lib.Validation
 import anorm._
 import javax.inject.{Inject, Singleton}
+
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import java.util.UUID
 import java.sql.Connection
+
+import io.flow.postgresql.Query
 import org.mindrot.jbcrypt.BCrypt
 import org.apache.commons.codec.binary.Base64
 
@@ -64,15 +66,15 @@ private[db] case class UnknownPasswordAlgorithm(override val key: String) extend
 object PasswordAlgorithm {
 
   val All = Seq(
-    new BcryptPasswordAlgorithm("bcrypt"),
-    new UnknownPasswordAlgorithm("unknown")
+    BcryptPasswordAlgorithm("bcrypt"),
+    UnknownPasswordAlgorithm("unknown")
   )
 
-  val Latest = fromString("bcrypt").getOrElse {
+  val Latest: PasswordAlgorithm = fromString("bcrypt").getOrElse {
     sys.error("Could not find latest algorithm")
   }
 
-  val Unknown = fromString("unknown").getOrElse {
+  val Unknown: PasswordAlgorithm = fromString("unknown").getOrElse {
     sys.error("Could not find unknown algorithm")
   }
 
@@ -89,20 +91,22 @@ class UserPasswordsDao @Inject() () {
 
   private[this] val MinLength = 5
 
-  private[this] val BaseQuery = """
+  private[this] val BaseQuery = Query(
+    """
     select guid::varchar, user_guid::varchar, algorithm_key, hash
       from user_passwords
-     where deleted_at is null
-  """
+  """)
 
-  private[this] val InsertQuery = """
+  private[this] val InsertQuery =
+    """
     insert into user_passwords
     (guid, user_guid, algorithm_key, hash, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {user_guid}::uuid, {algorithm_key}, {hash}, {created_by_guid}::uuid, {updated_by_guid}::uuid)
   """
 
-  private[this] val SoftDeleteByUserGuidQuery = """
+  private[this] val SoftDeleteByUserGuidQuery =
+    """
     update user_passwords
        set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
      where user_guid = {user_guid}::uuid
@@ -134,7 +138,7 @@ class UserPasswordsDao @Inject() () {
   ) {
     val errors = validate(cleartextPassword)
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
-    
+
     val guid = UUID.randomUUID
     val algorithm = PasswordAlgorithm.Latest
     val hashedPassword = algorithm.hash(cleartextPassword)
@@ -163,25 +167,30 @@ class UserPasswordsDao @Inject() () {
   }
 
   private[db] def findByUserGuid(userGuid: UUID): Option[UserPassword] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some("and user_passwords.user_guid = {guid}::uuid")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      Some('guid -> userGuid)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      sys.error("TODO PARSER")/* SQL(sql).on(bind: _*)().toList.map { row =>
-        UserPassword(
-          guid = UUID.fromString(row[String]("guid")),
-          userGuid = UUID.fromString(row[String]("user_guid")),
-          algorithm = PasswordAlgorithm.fromString(row[String]("algorithm_key")).getOrElse(PasswordAlgorithm.Unknown),
-          hash = new String(Base64.decodeBase64(row[String]("hash").getBytes))
-        )
-      }.toSeq.headOption*/
+      BaseQuery.
+        isNull("user_passwords.deleted_at").
+        equals("user_passwords.user_guid::uuid", userGuid).
+        limit(1).
+        anormSql().as(parser().*).headOption
     }
   }
 
+  private[this] def parser(): RowParser[UserPassword] = {
+    SqlParser.get[UUID]("guid") ~
+      SqlParser.get[UUID]("user_guid") ~
+      SqlParser.str("algorithm_key") ~
+      SqlParser.str("hash") map {
+      case guid ~ userGuid ~ algorithmKey ~ hash => {
+        UserPassword(
+          guid = guid,
+          userGuid = userGuid,
+          algorithm = PasswordAlgorithm.fromString(algorithmKey).getOrElse {
+            sys.error(s"Invalid algorithmKey[$algorithmKey] for userGuid[$userGuid]")
+          },
+          hash = hash
+        )
+      }
+    }
+  }
 }
