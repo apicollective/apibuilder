@@ -103,9 +103,7 @@ class AttributesDao @Inject() () {
         limit(limit).
         offset(offset).
         orderBy("lower(attributes.name)").
-        anormSql().as(
-          io.apibuilder.api.v0.anorm.parsers.Attribute.parser().*
-        )
+        as(io.apibuilder.api.v0.anorm.parsers.Attribute.parser().*)
     }
   }
 
