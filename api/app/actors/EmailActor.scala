@@ -40,7 +40,7 @@ class EmailActor @javax.inject.Inject() (
   def receive = {
 
     case m @ EmailActor.Messages.MembershipRequestCreated(guid) => withVerboseErrorHandler(m) {
-      membershipRequestsDao.findByGuid(Authorization.All, guid).map { request =>
+      membershipRequestsDao.findByGuid(Authorization.All, guid).foreach { request =>
         emails.deliver(
           context = Emails.Context.OrganizationAdmin,
           org = request.organization,
@@ -52,8 +52,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.MembershipRequestAccepted(organizationGuid, userGuid, role) => withVerboseErrorHandler(m) {
-      organizationsDao.findByGuid(Authorization.All, organizationGuid).map { org =>
-        usersDao.findByGuid(userGuid).map { user =>
+      organizationsDao.findByGuid(Authorization.All, organizationGuid).foreach { org =>
+        usersDao.findByGuid(userGuid).foreach { user =>
           Email.sendHtml(
             to = Person(user),
             subject = s"Welcome to ${org.name}",
@@ -64,8 +64,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.MembershipRequestDeclined(organizationGuid, userGuid, role) => withVerboseErrorHandler(m) {
-      organizationsDao.findByGuid(Authorization.All, organizationGuid).map { org =>
-        usersDao.findByGuid(userGuid).map { user =>
+      organizationsDao.findByGuid(Authorization.All, organizationGuid).foreach { org =>
+        usersDao.findByGuid(userGuid).foreach { user =>
           Email.sendHtml(
             to = Person(user),
             subject = s"Your Membership Request to join ${org.name} was declined",
@@ -76,7 +76,7 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.MembershipCreated(guid) => withVerboseErrorHandler(m) {
-      membershipsDao.findByGuid(Authorization.All, guid).map { membership =>
+      membershipsDao.findByGuid(Authorization.All, guid).foreach { membership =>
         emails.deliver(
           context = Emails.Context.OrganizationAdmin,
           org = membership.organization,
@@ -88,8 +88,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.ApplicationCreated(guid) => withVerboseErrorHandler(m) {
-      applicationsDao.findByGuid(Authorization.All, guid).map { application =>
-        organizationsDao.findAll(Authorization.All, application = Some(application)).map { org =>
+      applicationsDao.findByGuid(Authorization.All, guid).foreach { application =>
+        organizationsDao.findAll(Authorization.All, application = Some(application)).foreach { org =>
           emails.deliver(
             context = Emails.Context.OrganizationMember,
             org = org,
@@ -102,8 +102,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.PasswordResetRequestCreated(guid) => withVerboseErrorHandler(m) {
-      passwordResetRequestsDao.findByGuid(guid).map { request =>
-        usersDao.findByGuid(request.userGuid).map { user =>
+      passwordResetRequestsDao.findByGuid(guid).foreach { request =>
+        usersDao.findByGuid(request.userGuid).foreach { user =>
           Email.sendHtml(
             to = Person(user),
             subject = s"Reset your password",
@@ -114,8 +114,8 @@ class EmailActor @javax.inject.Inject() (
     }
 
     case m @ EmailActor.Messages.EmailVerificationCreated(guid) => withVerboseErrorHandler(m) {
-      emailVerificationsDao.findByGuid(guid).map { verification =>
-        usersDao.findByGuid(verification.userGuid).map { user =>
+      emailVerificationsDao.findByGuid(guid).foreach { verification =>
+        usersDao.findByGuid(verification.userGuid).foreach { user =>
           Email.sendHtml(
             to = Person(email = verification.email, name = user.name),
             subject = s"Verify your email address",

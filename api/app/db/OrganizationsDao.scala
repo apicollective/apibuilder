@@ -71,7 +71,7 @@ class OrganizationsDao @Inject() (
       findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
         case None => Nil
         case Some(org: Organization) => {
-          if (existing.map(_.guid) == Some(org.guid)) {
+          if (existing.map(_.guid).contains(org.guid)) {
             Nil
           } else {
             Seq("Org with this name already exists")
@@ -278,30 +278,6 @@ class OrganizationsDao @Inject() (
           io.apibuilder.api.v0.anorm.parsers.Organization.parser().*
         )
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Organization = {
-    summaryFromRow(row).copy(
-      domains = row[Option[String]]("domains").fold(Nil[String])(_.split(" ")).sorted.map(Domain(_))
-    )
-  }
-
-  private[db] def summaryFromRow(
-    row: anorm.Row,
-    prefix: Option[String] = None
-  ): Organization = {
-    val p = prefix.map( _ + "_").getOrElse("")
-
-    Organization(
-      guid = row[UUID](s"${p}guid"),
-      key = row[String](s"${p}key"),
-      name = row[String](s"${p}name"),
-      namespace = row[String](s"${p}namespace"),
-      visibility = Visibility(row[String](s"${p}visibility")),
-      audit = AuditsDao.fromRow(row, prefix)
-    )
   }
 
 }
