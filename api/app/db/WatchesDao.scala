@@ -1,15 +1,15 @@
 package db
 
-import io.apibuilder.api.v0.models.{Error, Organization, Application, Watch, WatchForm, User}
 import anorm._
+import io.apibuilder.api.v0.models.{Application, Error, Organization, User, Watch, WatchForm}
+import io.flow.postgresql.Query
 import lib.Validation
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import javax.inject.{Inject, Singleton}
 import java.util.UUID
 import org.postgresql.util.PSQLException
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 case class FullWatchForm(
   createdBy: User,
@@ -28,12 +28,12 @@ case class FullWatchForm(
     applicationsDao.findByOrganizationKeyAndApplicationKey(auth, o.key, form.applicationKey)
   }
 
-  val user = usersDao.findByGuid(form.userGuid)
+  private[this] lazy val user = usersDao.findByGuid(form.userGuid)
 
   lazy val validate: Seq[Error] = {
     val applicationKeyErrors = application match {
       case None => Seq(s"Application[${form.applicationKey}] not found")
-      case Some(application) => Nil
+      case Some(_) => Nil
     }
 
     val userErrors = user match {
@@ -53,32 +53,32 @@ class WatchesDao @Inject() (
   usersDao: UsersDao
 ) {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select watches.guid,
-           ${AuditsDao.queryCreation("watches")},
+           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("watches")},
            users.guid as user_guid,
            users.email as user_email,
            users.nickname as user_nickname,
            users.name as user_name,
-           ${AuditsDao.queryWithAlias("users", "user")},
+           ${AuditsParserDao.queryWithAlias("users", "user")},
            applications.guid as application_guid,
            applications.name as application_name,
            applications.key as application_key,
            applications.visibility as application_visibility,
            applications.description as application_description,
-           ${AuditsDao.queryWithAlias("applications", "application")},
+           ${AuditsParserDao.queryWithAlias("applications", "application")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,
            organizations.name as organization_name,
            organizations.namespace as organization_namespace,
            organizations.visibility as organization_visibility,
-           ${AuditsDao.queryWithAlias("organizations", "organization")}
+           '[]' as organization_domains;
+           ${AuditsParserDao.queryWithAlias("organizations", "organization")}
       from watches
       join users on users.guid = watches.user_guid and users.deleted_at is null
       join applications on applications.guid = watches.application_guid and applications.deleted_at is null
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into watches
@@ -151,41 +151,19 @@ class WatchesDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Watch] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.applicationFilter().map(v => "and " + v),
-      guid.map { v => "and watches.guid = {guid}::uuid" },
-      userGuid.map { v => "and watches.user_guid = {user_guid}::uuid" },
-      organizationKey.map { v => "and organizations.key = lower(trim({organization_key}))" },
-      application.map { v => "and watches.application_guid = {application_guid}::uuid" },
-      applicationKey.map { v => "and applications.key = lower(trim({application_key}))" },
-      isDeleted.map(Filters.isDeleted("watches", _)),
-      Some(s"order by applications.key, watches.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      organizationKey.map('organization_key -> _),
-      application.map('application_guid -> _.guid.toString),
-      applicationKey.map('application_key -> _)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      sys.error("TODO PARSER") // SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      Authorization2(authorization).applicationFilter(BaseQuery).
+        equals("watches.guid::uuid", guid).
+        equals("organizations.key", organizationKey).
+        equals("watches.application_guid::uuid", application.map(_.guid)).
+        equals("applications.key", applicationKey).
+        equals("watches.user_guid::uuid", userGuid).
+        and(isDeleted.map(Filters2.isDeleted("watches", _))).
+        orderBy("applications.key, watches.created_at").
+        limit(limit).
+        offset(offset).
+        as(io.apibuilder.api.v0.anorm.parsers.Watch.parser().*)
     }
   }
-/*
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Watch = {
-    Watch(
-      guid = row[UUID]("guid"),
-      user = usersDao.fromRow(row, Some("user")),
-      organization = organizationsDao.summaryFromRow(row, Some("organization")),
-      application = applicationsDao.fromRow(row, Some("application")),
-      audit = AuditsDao.fromRowCreation(row)
-    )
-  }
- */
+
 }
