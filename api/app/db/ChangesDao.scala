@@ -139,8 +139,8 @@ class ChangesDao @Inject() () {
         equals("organizations.guid", organizationGuid).
         equals("applications.guid", applicationGuid).
         equals("applications.key", applicationKey).
-        equals("changes.from_version_guid::guid", fromVersionGuid).
-        equals("changes.to_version_guid::guid", toVersionGuid).
+        equals("changes.from_version_guid", fromVersionGuid).
+        equals("changes.to_version_guid", toVersionGuid).
         greaterThanOrEquals("from_version.version_sort_key", fromVersion).
         lessThanOrEquals("to_version.version_sort_key", toVersion).
         equals("changes.type", `type`).
