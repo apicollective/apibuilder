@@ -31,14 +31,16 @@ class ApplicationsDao @Inject() (
     """
   )
 
-  private[this] val InsertQuery = """
+  private[this] val InsertQuery =
+    """
     insert into applications
     (guid, organization_guid, name, description, key, visibility, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {organization_guid}::uuid, {name}, {description}, {key}, {visibility}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] val UpdateQuery = """
+  private[this] val UpdateQuery =
+    """
     update applications
        set name = {name},
            visibility = {visibility},
@@ -47,21 +49,24 @@ class ApplicationsDao @Inject() (
      where guid = {guid}::uuid
   """
 
-  private[this] val InsertMoveQuery = """
+  private[this] val InsertMoveQuery =
+    """
     insert into application_moves
     (guid, application_guid, from_organization_guid, to_organization_guid, created_by_guid)
     values
     ({guid}::uuid, {application_guid}::uuid, {from_organization_guid}::uuid, {to_organization_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] val UpdateOrganizationQuery = """
+  private[this] val UpdateOrganizationQuery =
+    """
     update applications
        set organization_guid = {org_guid}::uuid,
            updated_by_guid = {updated_by_guid}::uuid
      where guid = {guid}::uuid
   """
 
-  private[this] val UpdateVisibilityQuery = """
+  private[this] val UpdateVisibilityQuery =
+    """
     update applications
        set visibility = {visibility},
            updated_by_guid = {updated_by_guid}::uuid
@@ -251,7 +256,7 @@ class ApplicationsDao @Inject() (
     })
 
     mainActor ! actors.MainActor.Messages.ApplicationCreated(guid)
-    
+
     findAll(Authorization.All, orgKey = Some(org.key), key = Some(key)).headOption.getOrElse {
       sys.error("Failed to create application")
     }
@@ -318,8 +323,12 @@ class ApplicationsDao @Inject() (
           hasVersion.map { v =>
             val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
             v match {
-              case true => { s"exists ($clause)" }
-              case false => { s"not exists ($clause)" }
+              case true => {
+                s"exists ($clause)"
+              }
+              case false => {
+                s"not exists ($clause)"
+              }
             }
           }
         ).
@@ -345,46 +354,3 @@ class ApplicationsDao @Inject() (
   }
 
 }
-
-/*
-object ApplicationsDao {
-
-  def parser(prefix: Option[String] = None): RowParser[Application] = {
-    val p = prefix.map( _ + "_").getOrElse("")
-    SqlParser.get[UUID](s"${p}guid") ~
-    SqlParser.get[UUID](s"organization_guid") ~
-    SqlParser.str(s"organization_key") ~
-    SqlParser.str(s"${p}name") ~
-    SqlParser.str(s"${p}key") ~
-    SqlParser.str(s"${p}visibility") ~
-    SqlParser.str(s"${p}description") ~
-    AuditsDao.parser(prefix) map {
-      case guid ~ organizationGuid ~ organizationKey ~ name ~ key ~ visibility ~ description ~ audit => {
-        Application(
-        Password(
-          id = id,
-          user = UserReference(id = userId),
-          algorithm = algorithm,
-          hash = hash
-        )
-      }
-    }
-  }  
-
-    prefix: Option[String] = None
-  ): Application = {
-    val p = prefix.map( _ + "_").getOrElse("")
-    Application(
-      guid = row[UUID](s"${p}guid"),
-      organization = Reference(
-        guid = row[UUID]("organization_guid"),
-        key = row[String]("organization_key")
-      ),
-      name = row[String](s"${p}name"),
-      key = row[String](s"${p}key"),
-      visibility = Visibility(row[String](s"${p}visibility")),
-      description = row[Option[String]](s"${p}description"),
-      audit = AuditsDao.fromRow(row, prefix)
-    )
-  }
- */
