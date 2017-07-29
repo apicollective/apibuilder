@@ -125,8 +125,8 @@ class EmailVerificationsDao @Inject() (
         equals("email_verifications.user_guid::uuid", userGuid).
         equals("email_verifications.email", email).
         equals("email_verifications.token", token).
-        and(isExpired.map(Filters2.isExpired("email_verifications", _))).
-        and(isDeleted.map(Filters2.isDeleted("email_verifications", _))).
+        and(isExpired.map(Filters.isExpired("email_verifications", _))).
+        and(isDeleted.map(Filters.isDeleted("email_verifications", _))).
         orderBy("email_verifications.created_at").
         limit(limit).
         offset(offset).

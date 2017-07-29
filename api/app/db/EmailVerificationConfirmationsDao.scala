@@ -68,7 +68,7 @@ private[db] class EmailVerificationConfirmationsDao @Inject() () {
       BaseQuery.
         equals("email_verification_confirmations.guid", guid).
         equals("email_verification_confirmations.email_verification_guid", emailVerificationGuid).
-        and(isDeleted.map(Filters2.isDeleted("email_verification_confirmations", _))).
+        and(isDeleted.map(Filters.isDeleted("email_verification_confirmations", _))).
         orderBy("email_verification_confirmations.created_at").
         limit(limit).
         offset(offset).

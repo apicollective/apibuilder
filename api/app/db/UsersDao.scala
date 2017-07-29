@@ -287,7 +287,7 @@ class UsersDao @Inject() (
         and(
           token.map { _ => "users.guid = (select user_guid from tokens where token = {token} and deleted_at is null)" }
         ).bind("token", token).
-        and(isDeleted.map(Filters2.isDeleted("users", _))).
+        and(isDeleted.map(Filters.isDeleted("users", _))).
         limit(1).
         anormSql().as(
         io.apibuilder.api.v0.anorm.parsers.User.parser().*

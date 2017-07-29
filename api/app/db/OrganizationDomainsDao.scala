@@ -69,7 +69,7 @@ class OrganizationDomainsDao @Inject() () {
             "organization_domains.domain = lower(trim({domain}))"
           }
         ).bind("domain", domain).
-        and(isDeleted.map(Filters2.isDeleted("organization_domains", _))).
+        and(isDeleted.map(Filters.isDeleted("organization_domains", _))).
         anormSql().as(
           parser().*
         )

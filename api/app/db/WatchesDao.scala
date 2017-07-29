@@ -158,7 +158,7 @@ class WatchesDao @Inject() (
         equals("watches.application_guid::uuid", application.map(_.guid)).
         equals("applications.key", applicationKey).
         equals("watches.user_guid::uuid", userGuid).
-        and(isDeleted.map(Filters2.isDeleted("watches", _))).
+        and(isDeleted.map(Filters.isDeleted("watches", _))).
         orderBy("applications.key, watches.created_at").
         limit(limit).
         offset(offset).

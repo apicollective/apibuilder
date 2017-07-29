@@ -180,7 +180,7 @@ class GeneratorsDao @Inject() () {
             "generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
           }
         ).bind("attribute_name", attributeName).
-        and(isDeleted.map(db.Filters2.isDeleted("generators", _))).
+        and(isDeleted.map(db.Filters.isDeleted("generators", _))).
         orderBy("lower(generators.name), lower(generators.key), generators.created_at desc").
         limit(limit).
         offset(offset).

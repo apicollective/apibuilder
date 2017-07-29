@@ -328,7 +328,7 @@ class ApplicationsDao @Inject() (
             }
           }
         ).
-        and(isDeleted.map(Filters2.isDeleted("applications", _))).
+        and(isDeleted.map(Filters.isDeleted("applications", _))).
         limit(limit).
         offset(offset).
         anormSql().as(

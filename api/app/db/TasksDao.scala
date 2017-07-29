@@ -156,7 +156,7 @@ class TasksDao @Inject() (
         lessThanOrEquals("tasks.created_at", createdOnOrBefore).
         greaterThanOrEquals("tasks.created_at", createdOnOrAfter).
         and(isDeleted.map {
-          Filters2.isDeleted("tasks", _)
+          Filters.isDeleted("tasks", _)
         }).
         lessThanOrEquals("tasks.deleted_at", deletedAtLeastNDaysAgo.map(days => DateTime.now.minusDays(days.toInt))).
         orderBy("tasks.number_attempts, tasks.created_at").

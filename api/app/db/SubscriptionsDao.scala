@@ -161,7 +161,7 @@ class SubscriptionsDao @Inject() () {
         ).bind("organization_key", organizationKey).
         equals("subscriptions.user_guid::uuid", userGuid).
         equals("subscriptions.publication", publication.map(_.toString)).
-        and(isDeleted.map(Filters2.isDeleted("subscriptions", _))).
+        and(isDeleted.map(Filters.isDeleted("subscriptions", _))).
         orderBy("subscriptions.created_at").
         limit(limit).
         offset(offset).

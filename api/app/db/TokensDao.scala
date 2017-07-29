@@ -114,7 +114,7 @@ class TokensDao @Inject() (
         equals("tokens.guid::uuid", guid).
         equals("tokens.user_guid::uuid", userGuid).
         equals("tokens.token", token).
-        and(isDeleted.map(Filters2.isDeleted("tokens", _))).
+        and(isDeleted.map(Filters.isDeleted("tokens", _))).
         orderBy("tokens.created_at").
         limit(limit).
         offset(offset).

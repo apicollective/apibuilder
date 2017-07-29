@@ -99,7 +99,7 @@ class AttributesDao @Inject() () {
             "lower(trim(attributes.name)) = lower(trim({name}))"
           }
         ).bind("name", name).
-        and(isDeleted.map(Filters2.isDeleted("attributes", _))).
+        and(isDeleted.map(Filters.isDeleted("attributes", _))).
         limit(limit).
         offset(offset).
         orderBy("lower(attributes.name)").

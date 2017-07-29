@@ -1,6 +1,6 @@
 package db
 
-object Filters2 {
+object Filters {
 
   def isDeleted(
     tableName: String,

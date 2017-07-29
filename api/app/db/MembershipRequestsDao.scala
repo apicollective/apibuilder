@@ -183,7 +183,7 @@ class MembershipRequestsDao @Inject() (
           }
         ).bind("organization_key", organizationKey).
         equals("membership_requests.role", role).
-        and(isDeleted.map(Filters2.isDeleted("membership_requests", _))).
+        and(isDeleted.map(Filters.isDeleted("membership_requests", _))).
         orderBy("membership_requests.created_at desc").
         limit(limit).
         offset(offset).

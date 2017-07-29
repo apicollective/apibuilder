@@ -141,7 +141,7 @@ class OrganizationAttributeValuesDao @Inject() (
         equals("organization_attribute_values.organization_guid::uuid", organizationGuid).
         equals("organization_attribute_values.attribute_guid::uuid", attributeGuid).
         optionalIn("attributes.name", attributeNames).
-        and(isDeleted.map(Filters2.isDeleted("organization_attribute_values", _))).
+        and(isDeleted.map(Filters.isDeleted("organization_attribute_values", _))).
         orderBy("lower(organization_attribute_values.value), organization_attribute_values.created_at").
         limit(limit).
         offset(offset).

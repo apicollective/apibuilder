@@ -109,8 +109,8 @@ class PasswordResetRequestsDao @Inject() (
         equals("password_resets.guid::uuid", guid).
         equals("password_resets.user_guid::uuid", userGuid).
         equals("password_resets.token", token).
-        and(isDeleted.map(Filters2.isDeleted("password_resets", _))).
-        and(isExpired.map(Filters2.isExpired("password_resets", _))).
+        and(isDeleted.map(Filters.isDeleted("password_resets", _))).
+        and(isExpired.map(Filters.isExpired("password_resets", _))).
         orderBy("password_resets.created_at").
         limit(limit).
         offset(offset).

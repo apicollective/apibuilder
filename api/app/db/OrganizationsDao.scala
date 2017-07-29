@@ -270,7 +270,7 @@ class OrganizationsDao @Inject() (
             "organizations.namespace = lower(trim({namespace}))"
           }
         ).bind("namespace", namespace).
-        and(isDeleted.map(Filters2.isDeleted("organizations", _))).
+        and(isDeleted.map(Filters.isDeleted("organizations", _))).
         orderBy("lower(organizations.name), organizations.created_at").
         limit(limit).
         offset(offset).

@@ -119,7 +119,7 @@ class ServicesDao @Inject() (
             "services.guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))"
           }
         ).bind("generator_key", generatorKey).
-        and(isDeleted.map(db.Filters2.isDeleted("services", _))).
+        and(isDeleted.map(db.Filters.isDeleted("services", _))).
         orderBy("lower(services.uri)").
         limit(limit).
         offset(offset).
