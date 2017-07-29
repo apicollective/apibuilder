@@ -264,7 +264,7 @@ class OrganizationsDao @Inject() (
           }
         ).bind("name", name).
         and(
-          name.map { _ =>
+          namespace.map { _ =>
             "organizations.namespace = lower(trim({namespace}))"
           }
         ).bind("namespace", namespace).
