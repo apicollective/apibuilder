@@ -45,7 +45,7 @@ class VersionsDao @Inject() (
            organizations.namespace as organization_namespace,
            applications.guid as application_guid,
            applications.key as application_key,
-           services.json::varchar as service_json
+           services.json::text as service_json
      from versions
      left join cache.services on services.deleted_at is null and services.version_guid = versions.guid and services.version = '$ServiceVersionNumber'
      left join originals on originals.version_guid = versions.guid and originals.deleted_at is null

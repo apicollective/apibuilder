@@ -30,9 +30,9 @@ class ChangesDao @Inject() () {
            applications.key as application_key,
            organizations.guid as organization_guid,
            organizations.key as organization_key,
-           from_version.guid::varchar as from_guid,
+           from_version.guid::text as from_guid,
            from_version.version as from_version,
-           to_version.guid::varchar as to_guid,
+           to_version.guid::text as to_guid,
            to_version.version as to_version,
            users.guid as user_guid,
            users.nickname as user_nickname

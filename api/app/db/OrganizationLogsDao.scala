@@ -17,7 +17,7 @@ case class OrganizationLog(guid: UUID, organizationGuid: UUID, message: String)
 class OrganizationLogsDao @Inject() () {
 
   private[this] val BaseQuery = Query("""
-    select guid::varchar, organization_guid, message
+    select guid::text, organization_guid, message
       from organization_logs
   """)
 

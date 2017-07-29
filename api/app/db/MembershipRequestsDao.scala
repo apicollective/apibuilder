@@ -22,7 +22,7 @@ class MembershipRequestsDao @Inject() (
   private[this] val BaseQuery = Query(s"""
     select membership_requests.guid,
            membership_requests.role,
-           membership_requests.created_at::varchar,
+           membership_requests.created_at::text,
            ${AuditsParserDao.queryCreationDefaultingUpdatedAt("membership_requests")},
            organizations.guid as organization_guid,
            organizations.name as organization_name,

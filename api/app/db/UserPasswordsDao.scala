@@ -56,7 +56,7 @@ case class BcryptPasswordAlgorithm(override val key: String) extends PasswordAlg
 private[db] case class UnknownPasswordAlgorithm(override val key: String) extends PasswordAlgorithm {
 
   override def hash(password: String): HashedPassword = {
-    sys.error("Unsupported operation for uknown password hash")
+    sys.error("Unsupported operation for UnknownPasswordAlgorithm")
   }
 
   override def check(candidate: String, hashed: String) = false
@@ -65,7 +65,7 @@ private[db] case class UnknownPasswordAlgorithm(override val key: String) extend
 
 object PasswordAlgorithm {
 
-  val All = Seq(
+  private[db] val All = Seq(
     BcryptPasswordAlgorithm("bcrypt"),
     UnknownPasswordAlgorithm("unknown")
   )
@@ -74,7 +74,7 @@ object PasswordAlgorithm {
     sys.error("Could not find latest algorithm")
   }
 
-  val Unknown: PasswordAlgorithm = fromString("unknown").getOrElse {
+  private[db] val Unknown: PasswordAlgorithm = fromString("unknown").getOrElse {
     sys.error("Could not find unknown algorithm")
   }
 
@@ -93,7 +93,7 @@ class UserPasswordsDao @Inject() () {
 
   private[this] val BaseQuery = Query(
     """
-    select guid::varchar, user_guid::varchar, algorithm_key, hash
+    select guid::text, user_guid::text, algorithm_key, hash
       from user_passwords
   """)
 
@@ -160,15 +160,13 @@ class UserPasswordsDao @Inject() () {
   def isValid(userGuid: UUID, cleartextPassword: String): Boolean = {
     findByUserGuid(userGuid) match {
       case None => false
-      case Some(up: UserPassword) => {
-        up.algorithm.check(cleartextPassword, up.hash)
-      }
+      case Some(up: UserPassword) => up.algorithm.check(cleartextPassword, up.hash)
     }
   }
 
   private[db] def findByUserGuid(userGuid: UUID): Option[UserPassword] = {
     DB.withConnection { implicit c =>
-      BaseQuery.
+      BaseQuery.withDebugging().
         isNull("user_passwords.deleted_at").
         equals("user_passwords.user_guid::uuid", userGuid).
         limit(1).

@@ -51,7 +51,7 @@ class PasswordResetRequestsDao @Inject() (
         'guid -> guid,
         'user_guid -> user.guid,
         'token -> TokenGenerator.generate(TokenLength),
-        'expires_at -> new DateTime().plusHours(HoursUntilTokenExpires),
+        'expires_at -> DateTime.now.plusHours(HoursUntilTokenExpires),
         'created_by_guid -> createdBy.getOrElse(user).guid
       ).execute()
     }
@@ -70,7 +70,7 @@ class PasswordResetRequestsDao @Inject() (
   def resetPassword(user: Option[User], pr: PasswordReset, newPassword: String): Unit = {
     assert(
       !isExpired(pr),
-      "Password reset[${pr.guid}] is expired"
+      s"Password reset[${pr.guid}] is expired"
     )
 
     val prUser = usersDao.findByGuid(pr.userGuid).getOrElse {

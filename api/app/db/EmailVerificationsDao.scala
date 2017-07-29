@@ -61,7 +61,7 @@ class EmailVerificationsDao @Inject() (
         'user_guid -> user.guid,
         'email -> email.trim,
         'token -> TokenGenerator.generate(TokenLength),
-        'expires_at -> new DateTime().plusHours(HoursUntilTokenExpires),
+        'expires_at -> DateTime.now.plusHours(HoursUntilTokenExpires),
         'created_by_guid -> createdBy.guid
       ).execute()
     }

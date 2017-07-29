@@ -39,7 +39,7 @@ class TasksDao @Inject() (
 
   private[this] val BaseQuery = Query("""
     select tasks.guid,
-           tasks.data::varchar,
+           tasks.data::text,
            tasks.number_attempts,
            tasks.last_error
       from tasks

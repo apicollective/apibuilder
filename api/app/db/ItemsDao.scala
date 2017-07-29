@@ -19,8 +19,8 @@ class ItemsDao @Inject() () {
   // organizations. This is ONLY used to enforce the authorization
   // filter in findAll
   private[this] val BaseQuery = """
-    select items.guid::varchar,
-           items.detail::varchar,
+    select items.guid::text,
+           items.detail::text,
            items.label,
            items.description
       from search.items

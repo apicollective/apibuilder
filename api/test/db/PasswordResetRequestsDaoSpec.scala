@@ -1,7 +1,6 @@
 package db
 
 import org.scalatest.{FunSpec, Matchers}
-import org.junit.Assert._
 import java.util.UUID
 
 class PasswordResetRequestsDaoSpec extends FunSpec with Matchers with util.TestApplication {
