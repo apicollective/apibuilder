@@ -22,7 +22,7 @@ class ApplicationsDao @Inject() (
   private[this] val BaseQuery = Query(
     s"""
     select applications.guid, applications.name, applications.key, applications.description, applications.visibility,
-           ${AuditsDao.query("applications")},
+           ${AuditsParserDao.query("applications")},
            organizations.guid as organization_guid,
            organizations.key as organization_key,
            ${AuditsParserDao.queryWithAlias("organizations", "organization")}
@@ -300,8 +300,7 @@ class ApplicationsDao @Inject() (
     offset: Long = 0
   ): Seq[Application] = {
     DB.withConnection { implicit c =>
-      BaseQuery.
-        and(authorization.applicationFilter()).
+      Authorization2(authorization).applicationFilter(BaseQuery).
         equals("applications.guid::uuid", guid).
         equals("organizations.key", orgKey).
         and(
@@ -311,9 +310,9 @@ class ApplicationsDao @Inject() (
         ).bind("name", name).
         and(
           key.map { _ =>
-            "applications.key = lower(trim({key}))"
+            "applications.key = lower(trim({application_key}))"
           }
-        ).bind("key", key).
+        ).bind("application_key", key).
         and(
           version.map { _ =>
             "applications.guid = (select application_guid from versions where deleted_at is null and versions.guid = {version_guid}::uuid)"
@@ -322,13 +321,10 @@ class ApplicationsDao @Inject() (
         and(
           hasVersion.map { v =>
             val clause = "select 1 from versions where versions.deleted_at is null and versions.application_guid = applications.guid"
-            v match {
-              case true => {
-                s"exists ($clause)"
-              }
-              case false => {
-                s"not exists ($clause)"
-              }
+            if (v) {
+              s"exists ($clause)"
+            } else {
+              s"not exists ($clause)"
             }
           }
         ).

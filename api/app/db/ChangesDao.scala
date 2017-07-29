@@ -7,25 +7,29 @@ import io.apibuilder.internal.v0.models.json._
 import anorm._
 import anorm.JodaParameterMetaData._
 import javax.inject.{Inject, Named, Singleton}
+
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+
+import io.flow.postgresql.Query
 import lib.VersionTag
 import org.postgresql.util.PSQLException
-import scala.util.{Try, Success, Failure}
+
+import scala.util.{Failure, Success, Try}
 import org.joda.time.DateTime
 
 @Singleton
 class ChangesDao @Inject() () {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select changes.guid,
            changes.type,
            changes.description,
            changes.changed_at,
            changes.changed_by_guid::uuid,
-           ${AuditsDao.queryCreation("changes")},
+           ${AuditsParserDao.queryCreation("changes")},
            applications.guid as application_guid,
            applications.key as application_key,
            organizations.guid as organization_guid,
@@ -42,8 +46,7 @@ class ChangesDao @Inject() () {
       join versions from_version on from_version.guid = changes.from_version_guid
       join versions to_version on to_version.guid = changes.to_version_guid
       join users on users.guid = changes.changed_by_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into changes
@@ -70,13 +73,11 @@ class ChangesDao @Inject() () {
 
     DB.withTransaction { implicit c =>
 
-      differences.map { d =>
-        d match {
-          case DiffBreaking(desc) => ("breaking", desc)
-          case DiffNonBreaking(desc) => ("non_breaking", desc)
-          case DiffUndefinedType(desc) => {
-            sys.error(s"Unrecognized difference type: $desc")
-          }
+      differences.map {
+        case DiffBreaking(desc) => ("breaking", desc)
+        case DiffNonBreaking(desc) => ("non_breaking", desc)
+        case DiffUndefinedType(desc) => {
+          sys.error(s"Unrecognized difference type: $desc")
         }
       }.distinct.foreach {
         case (differenceType, description) => {
@@ -132,63 +133,29 @@ class ChangesDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Change] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      authorization.applicationFilter().map(v => "and " + v),
-      guid.map { v => "and changes.guid = {guid}::uuid" },
-      organizationGuid.map { v => "and organizations.guid = {organization_guid}::uuid" },
-      organizationKey.map { v => "and organizations.key = {organization_key}" },
-      applicationGuid.map { v => "and applications.guid = {application_guid}::uuid" },
-      applicationKey.map { v => "and applications.key = lower(trim({application_key}))" },
-      fromVersionGuid.map { v => "and changes.from_version_guid = {from_version_guid}::uuid" },
-      toVersionGuid.map { v => "and changes.to_version_guid = {to_version_guid}::uuid" },
-      fromVersion.map { v => "and from_version.version_sort_key >= {from_version_sort_key}" },
-      toVersion.map { v => "and to_version.version_sort_key <= {to_version_sort_key}" },
-      `type`.map { v => "and changes.type <= {type}" },
-      description.map { v => "and lower(changes.description) = lower(trim({description}))" },
-      Some(s"order by changes.changed_at desc, lower(organizations.key), lower(applications.key), changes.type, lower(changes.description) limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      organizationGuid.map('organization_guid -> _.toString),
-      organizationKey.map('organization_key -> _),
-      applicationGuid.map('application_guid -> _.toString),
-      applicationKey.map('application_key -> _),
-      fromVersionGuid.map('from_version_guid -> _.toString),
-      toVersionGuid.map('to_version_guid -> _.toString),
-      fromVersion.map(v => 'from_version_sort_key -> VersionTag(v).sortKey),
-      toVersion.map(v => 'to_version_sort_key -> VersionTag(v).sortKey),
-      `type`.map('type -> _),
-      description.map('description -> _)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      sys.error("TODO PARSER") // SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      Authorization2(authorization).applicationFilter(BaseQuery).
+        equals("changes.guid::uuid", guid).
+        equals("organizations.guid::uuid", organizationGuid).
+        equals("applications.guid::uuid", applicationGuid).
+        equals("applications.key", applicationKey).
+        equals("changes.from_version_guid::guid", fromVersionGuid).
+        equals("changes.to_version_guid::guid", toVersionGuid).
+        greaterThanOrEquals("from_version.version_sort_key", fromVersion).
+        lessThanOrEquals("to_version.version_sort_key", toVersion).
+        equals("changes.type", `type`).
+        and(
+          description.map { _ =>
+            "lower(changes.description) = lower(trim({description}))"
+          }
+        ).bind("description", description).
+        orderBy("changes.changed_at desc, lower(organizations.key), lower(applications.key), changes.type, lower(changes.description)").
+        limit(limit).
+        offset(offset).
+        anormSql().as(
+          io.apibuilder.api.v0.anorm.parsers.Change.parser().*
+        )
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Change = {
-    Change(
-      guid = row[UUID]("guid"),
-      application = Reference(row[UUID]("application_guid"), row[String]("application_key")),
-      organization = Reference(row[UUID]("organization_guid"), row[String]("organization_key")),
-      fromVersion = ChangeVersion(row[UUID]("from_guid"), row[String]("from_version")),
-      toVersion = ChangeVersion(row[UUID]("to_guid"), row[String]("to_version")),
-      diff = row[String]("type") match {
-        case "breaking" => DiffBreaking(row[String]("description"))
-        case "non_breaking" => DiffNonBreaking(row[String]("description"))
-        case other => DiffUndefinedType(other)
-      },
-      changedAt = row[DateTime]("changed_at"),
-      changedBy = UserSummary(
-        guid = row[UUID]("user_guid"),
-        nickname = row[String]("user_nickname")
-      ),
-      audit = AuditsDao.fromRowCreation(row)
-    )
   }
 
 }
