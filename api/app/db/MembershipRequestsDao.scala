@@ -7,7 +7,6 @@ import anorm._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Play.current
-import play.api.libs.json._
 import java.util.UUID
 
 @Singleton
