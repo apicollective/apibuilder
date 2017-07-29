@@ -3,8 +3,7 @@ package db
 import lib.{DatabaseServiceFetcher, ServiceConfiguration}
 import core.VersionMigration
 import builder.OriginalValidator
-import io.apibuilder.api.v0.models.{Application, Original, OriginalType, User, Version, VersionForm, Visibility}
-import io.apibuilder.common.v0.models.Reference
+import io.apibuilder.api.v0.models.{Application, Original, User, Version}
 import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
@@ -17,6 +16,8 @@ import play.api.Logger
 import play.api.libs.json._
 import play.api.Play.current
 import java.util.UUID
+
+import io.flow.postgresql.Query
 
 import scala.annotation.tailrec
 
@@ -35,9 +36,9 @@ class VersionsDao @Inject() (
 
   private[this] val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select versions.guid, versions.version,
-           ${AuditsDao.queryCreation("versions")},
+           ${AuditsParserDao.queryCreationDefaultingUpdatedAt("versions")},
            originals.type as original_type,
            originals.data as original_data,
            organizations.guid as organization_guid,
@@ -51,8 +52,7 @@ class VersionsDao @Inject() (
      left join originals on originals.version_guid = versions.guid and originals.deleted_at is null
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
-    where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into versions
@@ -100,7 +100,7 @@ class VersionsDao @Inject() (
       (versionGuid, taskGuid)
     }
 
-    taskGuid.map { guid =>
+    taskGuid.foreach { guid =>
       mainActor ! actors.MainActor.Messages.TaskCreated(guid)
     }
 
@@ -213,51 +213,41 @@ class VersionsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Version] = {
-    val sql = Seq(
-      Some(BaseQuery.trim + " and services.guid is not null "),
-      authorization.applicationFilter().map(v => "and " + v),
-      guid.map { v => "and versions.guid = {guid}::uuid" },
-      applicationGuid.map { _ => "and versions.application_guid = {application_guid}::uuid" },
-      version.map { v => "and versions.version = {version}" },
-      isDeleted.map(Filters.isDeleted("versions", _)),
-      Some(s"order by versions.version_sort_key desc, versions.created_at desc limit $limit offset $offset")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      applicationGuid.map('application_guid -> _.toString),
-      version.map('version ->_)
-    ).flatten ++ authorization.bindVariables
-
     DB.withConnection { implicit c =>
-      sys.error("TODO PARSER") /*SQL(sql).on(bind: _*)().toList.map { row =>
-        val version = row[String]("version")
 
-        val original = row[Option[String]]("original_data").map { data =>
-          Original(
-            `type` = OriginalType(row[String]("original_type")),
-              data = data
-          )
-        }
+      Authorization2(authorization).applicationFilter(BaseQuery).
+        isNotNull("services.guid").
+        equals("versions.guid::uuid", guid).
+        equals("versions.application_guid::uuid", applicationGuid).
+        equals("versions.version", version).
+        and(isDeleted.map(Filters2.isDeleted("versions", _))).
+        orderBy("versions.version_sort_key desc, versions.created_at desc").
+        limit(limit).
+        offset(offset).
+        as(parser().*
+      )
+    }
+  }
 
-        val service = Json.parse(row[String]("service_json")).as[Service]
-
-        Version(
-          guid = row[UUID]("guid"),
-          organization = Reference(
-            guid = row[UUID]("organization_guid"),
-            key = row[String]("organization_key")
-          ),
-          application = Reference(
-            guid = row[UUID]("application_guid"),
-            key = row[String]("application_key")
-          ),
+  private[this] def parser(): RowParser[Version] = {
+    SqlParser.get[_root_.java.util.UUID]("guid") ~
+      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
+      io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("application") ~
+      SqlParser.str("version") ~
+      io.apibuilder.api.v0.anorm.parsers.Original.parserWithPrefix("original").? ~
+      SqlParser.str("service_json") ~
+      io.apibuilder.common.v0.anorm.parsers.Audit.parserWithPrefix("audit") map {
+      case guid ~ organization ~ application ~ version ~ original ~ serviceJson ~ audit => {
+        io.apibuilder.api.v0.models.Version(
+          guid = guid,
+          organization = organization,
+          application = application,
           version = version,
           original = original,
-          service = service,
-          audit = AuditsDao.fromRowCreation(row)
+          service = Json.parse(serviceJson).as[Service],
+          audit = audit
         )
-                                }*/
+      }
     }
   }
 
@@ -268,8 +258,8 @@ class VersionsDao @Inject() (
     */
   def migrate(): MigrationStats = {
     var stats = migrateSingleRun()
-    var totalRecords = stats.good + stats.bad
     var totalGood = stats.good
+    val totalRecords = stats.good + stats.bad
 
     while (stats.good > 0) {
       Logger.info(s"migrate() interim statistics: ${stats}")
@@ -282,40 +272,41 @@ class VersionsDao @Inject() (
     finalStats
   }
 
-//  @tailrec
+  @tailrec
   private[this] def migrateSingleRun(limit: Int = 5000, offset: Int = 0, stats: MigrationStats = MigrationStats(good = 0, bad = 0)): MigrationStats = {
-    sys.error("TODO PARSER")
-    /*
     var good = 0l
     var bad = 0l
 
-    val sql = BaseQuery.trim + s" and versions.deleted_at is null and services.guid is null and originals.data is not null order by versions.created_at desc limit $limit offset $offset"
-
     val processed = DB.withConnection { implicit c =>
-      val records = SQL(sql)().toList
-      records.foreach { row =>
-        val orgKey = row[String]("organization_key")
-        val applicationKey = row[String]("application_key")
-        val versionName = row[String]("version")
-        val versionGuid = row[UUID]("guid")
+      val records = BaseQuery.
+        isNull("deleted_at").
+        isNull("services.guid").
+        isNotNull("originals.data").
+        orderBy("versions.created_at desc").
+        limit(limit).
+        offset(offset).
+        as(parser().*)
 
-        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[$versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
+      records.foreach { version =>
+        val orgKey = version.organization.key
+        val applicationKey = version.application.key
+        val versionName = version.version
+        val versionGuid = version.guid
+
+        Logger.info(s"Migrating $orgKey/$applicationKey/$versionName versionGuid[versionGuid] to latest API Builder spec version[$ServiceVersionNumber]")
 
         val config = ServiceConfiguration(
           orgKey = orgKey,
-          orgNamespace = row[String]("organization_namespace"),
-          version = row[String]("version")
-        )
-
-        val original = Original(
-          `type` = OriginalType(row[String]("original_type")),
-          data = row[String]("original_data")
+          orgNamespace = version.service.namespace,
+          version = versionName
         )
 
         try {
           val validator = OriginalValidator(
             config = config,
-            original = original,
+            original = version.original.getOrElse {
+              sys.error("Missing version")
+            },
             fetcher = DatabaseServiceFetcher(Authorization.All),
             migration = VersionMigration(internal = true)
           )
@@ -347,7 +338,6 @@ class VersionsDao @Inject() (
     } else {
       migrateSingleRun(limit, offset + limit, finalStats)
     }
-         */
   }
 
   private[this] def softDeleteService(
