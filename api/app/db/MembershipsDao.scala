@@ -161,9 +161,9 @@ class MembershipsDao @Inject() (
     // TODO Implement authorization
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("memberships.guid::uuid", guid).
-        equals("memberships.organization_guid::uuid", organizationGuid).
-        equals("memberships.user_guid::uuid", userGuid).
+        equals("memberships.guid", guid).
+        equals("memberships.organization_guid", organizationGuid).
+        equals("memberships.user_guid", userGuid).
         and(
           organizationKey.map { _ =>
             "memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"

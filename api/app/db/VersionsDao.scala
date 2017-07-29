@@ -217,8 +217,8 @@ class VersionsDao @Inject() (
 
       authorization.applicationFilter(BaseQuery).
         isNotNull("services.guid").
-        equals("versions.guid::uuid", guid).
-        equals("versions.application_guid::uuid", applicationGuid).
+        equals("versions.guid", guid).
+        equals("versions.application_guid", applicationGuid).
         equals("versions.version", version).
         and(isDeleted.map(Filters.isDeleted("versions", _))).
         orderBy("versions.version_sort_key desc, versions.created_at desc").

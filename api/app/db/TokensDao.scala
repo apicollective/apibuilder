@@ -111,8 +111,8 @@ class TokensDao @Inject() (
   ): Seq[Token] = {
     DB.withConnection { implicit c =>
       authorization.tokenFilter(BaseQuery).
-        equals("tokens.guid::uuid", guid).
-        equals("tokens.user_guid::uuid", userGuid).
+        equals("tokens.guid", guid).
+        equals("tokens.user_guid", userGuid).
         equals("tokens.token", token).
         and(isDeleted.map(Filters.isDeleted("tokens", _))).
         orderBy("tokens.created_at").

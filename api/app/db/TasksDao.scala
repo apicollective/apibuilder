@@ -150,7 +150,7 @@ class TasksDao @Inject() (
 
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("tasks.guid::uuid", guid).
+        equals("tasks.guid", guid).
         lessThanOrEquals("tasks.number_attempts", nOrFewerAttempts).
         greaterThanOrEquals("tasks.number_attempts", nOrMoreAttempts).
         lessThanOrEquals("tasks.created_at", createdOnOrBefore).
