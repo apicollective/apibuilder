@@ -98,10 +98,10 @@ class ApplicationsDao @Inject() (
     existing: Option[Application] = None
   ): Seq[Error] = {
     val nameErrors = findByOrganizationAndName(Authorization.All, org, form.name) match {
-      case None => Seq.empty
+      case None => Nil
       case Some(application: Application) => {
         if (existing.map(_.guid) == Some(application.guid)) {
-          Seq.empty
+          Nil
         } else {
           Seq("Application with this name already exists")
         }
@@ -109,15 +109,15 @@ class ApplicationsDao @Inject() (
     }
 
     val keyErrors = form.key match {
-      case None => Seq.empty
+      case None => Nil
       case Some(key) => {
         UrlKey.validate(key) match {
           case Nil => {
             findByOrganizationKeyAndApplicationKey(Authorization.All, org.key, key) match {
-              case None => Seq.empty
+              case None => Nil
               case Some(application: Application) => {
                 if (existing.map(_.guid) == Some(application.guid)) {
-                  Seq.empty
+                  Nil
                 } else {
                   Seq("Application with this key already exists")
                 }
@@ -130,7 +130,7 @@ class ApplicationsDao @Inject() (
     }
 
     val visibilityErrors = Visibility.fromString(form.visibility.toString) match {
-      case Some(_) => Seq.empty
+      case Some(_) => Nil
       case None => Seq(s"Visibility[${form.visibility}] not recognized")
     }
 

@@ -69,10 +69,10 @@ class OrganizationsDao @Inject() (
       Seq(s"name must be at least $MinNameLength characters")
     } else {
       findAll(Authorization.All, name = Some(form.name), limit = 1).headOption match {
-        case None => Seq.empty
+        case None => Nil
         case Some(org: Organization) => {
           if (existing.map(_.guid) == Some(org.guid)) {
-            Seq.empty
+            Nil
           } else {
             Seq("Org with this name already exists")
           }
@@ -89,10 +89,10 @@ class OrganizationsDao @Inject() (
         UrlKey.validate(key) match {
           case Nil => {
             findByKey(Authorization.All, key) match {
-              case None => Seq.empty
+              case None => Nil
               case Some(found) => {
                 if (existing.map(_.guid) == Some(found.guid)) {
-                  Seq.empty
+                  Nil
                 } else {
                   Seq("Org with this key already exists")
                 }
@@ -107,17 +107,17 @@ class OrganizationsDao @Inject() (
     val namespaceErrors = findAll(Authorization.All, namespace = Some(form.namespace.trim), limit = 1).headOption match {
       case None => {
         isDomainValid(form.namespace.trim) match {
-          case true => Seq.empty
+          case true => Nil
           case false => Seq("Namespace is not valid. Expected a name like io.apibuilder")
         }
       }
       case Some(org: Organization) => {
-        Seq.empty
+        Nil
       }
     }
 
     val visibilityErrors =  Visibility.fromString(form.visibility.toString) match {
-      case Some(_) => Seq.empty
+      case Some(_) => Nil
       case None => Seq(s"Invalid visibility[${form.visibility.toString}]")
     }
 
@@ -284,7 +284,7 @@ class OrganizationsDao @Inject() (
     row: anorm.Row
   ): Organization = {
     summaryFromRow(row).copy(
-      domains = row[Option[String]]("domains").fold(Seq.empty[String])(_.split(" ")).sorted.map(Domain(_))
+      domains = row[Option[String]]("domains").fold(Nil[String])(_.split(" ")).sorted.map(Domain(_))
     )
   }
 

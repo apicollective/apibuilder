@@ -37,7 +37,7 @@ class AttributesSpec extends BaseSpec {
   "DELETE /attributes/:name" in new WithServer {
     val attr = createAttribute()
     await(client.attributes.deleteByName(attr.name)) must be(())
-    await(client.attributes.get(name = Some(attr.name))) must be(Seq.empty)
+    await(client.attributes.get(name = Some(attr.name))) must be(Nil)
   }
 
   "DELETE /attributes/:name returns 401 if different user attempts to delete" in new WithServer {
@@ -53,7 +53,7 @@ class AttributesSpec extends BaseSpec {
     val attr1 = createAttribute()
     val attr2 = createAttribute()
 
-    await(client.attributes.get(name = Some(createRandomName("attr")))) must be(Seq.empty)
+    await(client.attributes.get(name = Some(createRandomName("attr")))) must be(Nil)
     await(client.attributes.get(name = Some(attr1.name))).head.guid must be(attr1.guid)
     await(client.attributes.get(name = Some(attr2.name))).head.guid must be(attr2.guid)
   }

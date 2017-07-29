@@ -52,15 +52,15 @@ class PasswordResetRequestsDaoSpec extends FunSpec with Matchers with util.TestA
     val pr2 = passwordResetRequestsDao.create(None, user2)
 
     passwordResetRequestsDao.findAll(isExpired = Some(false), guid = Some(pr1.guid)).map(_.userGuid) should be(Seq(user1.guid))
-    passwordResetRequestsDao.findAll(isExpired = Some(true), guid = Some(pr1.guid)).map(_.userGuid) should be(Seq.empty)
+    passwordResetRequestsDao.findAll(isExpired = Some(true), guid = Some(pr1.guid)).map(_.userGuid) should be(Nil)
 
     passwordResetRequestsDao.findAll(guid = Some(pr1.guid)).map(_.userGuid) should be(Seq(user1.guid))
     passwordResetRequestsDao.findAll(guid = Some(pr2.guid)).map(_.userGuid) should be(Seq(user2.guid))
-    passwordResetRequestsDao.findAll(guid = Some(UUID.randomUUID)).map(_.userGuid) should be(Seq.empty)
+    passwordResetRequestsDao.findAll(guid = Some(UUID.randomUUID)).map(_.userGuid) should be(Nil)
 
     passwordResetRequestsDao.findAll(token = Some(pr1.token)).map(_.userGuid) should be(Seq(user1.guid))
     passwordResetRequestsDao.findAll(token = Some(pr2.token)).map(_.userGuid) should be(Seq(user2.guid))
-    passwordResetRequestsDao.findAll(token = Some("bad")).map(_.userGuid) should be(Seq.empty)
+    passwordResetRequestsDao.findAll(token = Some("bad")).map(_.userGuid) should be(Nil)
   }
 
 }

@@ -47,7 +47,7 @@ class AttributesDao @Inject() () {
       UrlKey.validate(form.name.trim, "Name") match {
         case Nil => {
           findByName(form.name) match {
-            case None => Seq.empty
+            case None => Nil
             case Some(_) => {
               Seq("Attribute with this name already exists")
             }

@@ -85,7 +85,7 @@ class UsersDao @Inject() (
   ): Seq[Error] = {
     val emailErrors = if (Misc.isValidEmail(form.email)) {
       findByEmail(form.email) match {
-        case None => Seq.empty
+        case None => Nil
         case Some(u) => {
           if (existingUser.map(_.guid).contains(u.guid)) {
             Nil
@@ -101,10 +101,10 @@ class UsersDao @Inject() (
     val nicknameErrors = UrlKey.validate(form.nickname) match {
       case Nil => {
         findAll(nickname = Some(form.nickname)).headOption match {
-          case None => Seq.empty
+          case None => Nil
           case Some(u) => {
             if (existingUser.map(_.guid).contains(u.guid)) {
-              Seq.empty
+              Nil
             } else {
               Seq("User with this nickname already exists")
             }
@@ -117,7 +117,7 @@ class UsersDao @Inject() (
     }
 
     val passwordErrors = password match {
-      case None => Seq.empty
+      case None => Nil
       case Some(pwd) => userPasswordsDao.validate(pwd)
     }
 

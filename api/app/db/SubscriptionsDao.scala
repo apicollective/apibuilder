@@ -57,21 +57,21 @@ class SubscriptionsDao @Inject() () {
 
     val organizationKeyErrors = org match {
         case None => Seq("Organization not found")
-        case Some(_) => Seq.empty
+        case Some(_) => Nil
     }
 
     val publicationErrors = form.publication match {
       case Publication.UNDEFINED(_) => Seq("Publication not found")
-      case _ => Seq.empty
+      case _ => Nil
     }
 
     val userErrors = usersDao.findByGuid(form.userGuid) match {
         case None => Seq("User not found")
-        case Some(_) => Seq.empty
+        case Some(_) => Nil
     }
 
     val alreadySubscribed = org match {
-      case None => Seq.empty
+      case None => Nil
       case Some(o) => {
         subscriptionsDao.findAll(
           Authorization.All,
@@ -80,7 +80,7 @@ class SubscriptionsDao @Inject() () {
           publication = Some(form.publication),
           limit = 1
         ).headOption match {
-          case None => Seq.empty
+          case None => Nil
           case Some(_) => Seq("User is already subscribed to this publication for this organization")
         }
       }

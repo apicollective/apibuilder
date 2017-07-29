@@ -43,7 +43,7 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers with util.TestAppl
   it("confirm") {
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
-    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) should be(Seq.empty)
+    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)) should be(Nil)
 
     emailVerificationsDao.confirm(None, verification)
     emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification.guid)).map(_.emailVerificationGuid) should be(Seq(verification.guid))
@@ -74,23 +74,23 @@ class EmailVerificationsDaoSpec extends FunSpec with Matchers with util.TestAppl
 
     emailVerificationsDao.findAll(userGuid = Some(user1.guid)).map(_.userGuid).distinct should be(Seq(user1.guid))
     emailVerificationsDao.findAll(userGuid = Some(user2.guid)).map(_.userGuid).distinct should be(Seq(user2.guid))
-    emailVerificationsDao.findAll(userGuid = Some(UUID.randomUUID)).map(_.userGuid).distinct should be(Seq.empty)
+    emailVerificationsDao.findAll(userGuid = Some(UUID.randomUUID)).map(_.userGuid).distinct should be(Nil)
 
     emailVerificationsDao.findAll(isExpired = Some(false), userGuid = Some(user1.guid)).map(_.userGuid).distinct should be(Seq(user1.guid))
-    emailVerificationsDao.findAll(isExpired = Some(true), userGuid = Some(user1.guid)).map(_.userGuid).distinct should be(Seq.empty)
+    emailVerificationsDao.findAll(isExpired = Some(true), userGuid = Some(user1.guid)).map(_.userGuid).distinct should be(Nil)
 
     emailVerificationsDao.findAll(email = Some(user1.email)).map(_.userGuid).distinct should be(Seq(user1.guid))
     emailVerificationsDao.findAll(email = Some(user1.email.toUpperCase)).map(_.userGuid).distinct should be(Seq(user1.guid))
     emailVerificationsDao.findAll(email = Some(user2.email)).map(_.userGuid).distinct should be(Seq(user2.guid))
-    emailVerificationsDao.findAll(email = Some(UUID.randomUUID.toString)).map(_.userGuid).distinct should be(Seq.empty)
+    emailVerificationsDao.findAll(email = Some(UUID.randomUUID.toString)).map(_.userGuid).distinct should be(Nil)
 
     emailVerificationsDao.findAll(guid = Some(verification1.guid)).map(_.userGuid).distinct should be(Seq(user1.guid))
     emailVerificationsDao.findAll(guid = Some(verification2.guid)).map(_.userGuid).distinct should be(Seq(user2.guid))
-    emailVerificationsDao.findAll(guid = Some(UUID.randomUUID)).map(_.userGuid).distinct should be(Seq.empty)
+    emailVerificationsDao.findAll(guid = Some(UUID.randomUUID)).map(_.userGuid).distinct should be(Nil)
 
     emailVerificationsDao.findAll(token = Some(verification1.token)).map(_.userGuid).distinct should be(Seq(user1.guid))
     emailVerificationsDao.findAll(token = Some(verification2.token)).map(_.userGuid).distinct should be(Seq(user2.guid))
-    emailVerificationsDao.findAll(token = Some("bad")).map(_.userGuid).distinct should be(Seq.empty)
+    emailVerificationsDao.findAll(token = Some("bad")).map(_.userGuid).distinct should be(Nil)
   }
 
   describe("membership requests") {

@@ -60,7 +60,7 @@ sealed trait Authorization {
     generatorServicessTableName: String = "services"
   ): Option[String] = None
 
-  def bindVariables(): Seq[NamedParameter] = Seq.empty
+  def bindVariables(): Seq[NamedParameter] = Nil
 
 }
 

@@ -30,11 +30,11 @@ class EmailVerificationConfirmationsDaoSpec extends FunSpec with Matchers with u
 
     emailVerificationConfirmationsDao.findAll(guid = Some(conf1.guid)).map(_.guid) should be(Seq(conf1.guid))
     emailVerificationConfirmationsDao.findAll(guid = Some(conf2.guid)).map(_.guid) should be(Seq(conf2.guid))
-    emailVerificationConfirmationsDao.findAll(guid = Some(UUID.randomUUID)).map(_.guid) should be(Seq.empty)
+    emailVerificationConfirmationsDao.findAll(guid = Some(UUID.randomUUID)).map(_.guid) should be(Nil)
 
     emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification1.guid)).map(_.guid) should be(Seq(conf1.guid))
     emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(verification2.guid)).map(_.guid) should be(Seq(conf2.guid))
-    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(UUID.randomUUID)).map(_.guid) should be(Seq.empty)
+    emailVerificationConfirmationsDao.findAll(emailVerificationGuid = Some(UUID.randomUUID)).map(_.guid) should be(Nil)
   }
 
 }

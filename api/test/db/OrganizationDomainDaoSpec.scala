@@ -15,7 +15,7 @@ class OrganizationDomainsDaoSpec extends FunSpec with Matchers with util.TestApp
     organizationDomainsDao.findAll(guid = Some(domain.guid)).map(_.guid) should be(Seq(domain.guid))
 
     organizationDomainsDao.softDelete(Util.createdBy, domain)
-    organizationDomainsDao.findAll(guid = Some(domain.guid)) should be(Seq.empty)
+    organizationDomainsDao.findAll(guid = Some(domain.guid)) should be(Nil)
   }
 
   it("findAll") {
@@ -24,7 +24,7 @@ class OrganizationDomainsDaoSpec extends FunSpec with Matchers with util.TestApp
     val domain = organizationDomainsDao.create(Util.createdBy, org, domainName)
 
     organizationDomainsDao.findAll(organizationGuid = Some(org.guid)).map(_.guid) should be(Seq(domain.guid))
-    organizationDomainsDao.findAll(organizationGuid = Some(UUID.randomUUID)).map(_.guid) should be(Seq.empty)
+    organizationDomainsDao.findAll(organizationGuid = Some(UUID.randomUUID)).map(_.guid) should be(Nil)
   }
 
 }

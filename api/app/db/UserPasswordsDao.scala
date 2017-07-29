@@ -113,7 +113,7 @@ class UserPasswordsDao @Inject() () {
     val lengthErrors = if (password.trim.length < MinLength) {
       Seq(s"Password must be at least $MinLength characters")
     } else {
-      Seq.empty
+      Nil
     }
 
     Validation.errors(lengthErrors)

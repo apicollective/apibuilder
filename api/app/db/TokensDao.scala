@@ -52,7 +52,7 @@ class TokensDao @Inject() (
 
     val userErrors = usersDao.findByGuid(form.userGuid) match {
       case None => Seq("User not found")
-      case Some(_) => Seq.empty
+      case Some(_) => Nil
     }
 
     Validation.errors(authErrors ++ userErrors)

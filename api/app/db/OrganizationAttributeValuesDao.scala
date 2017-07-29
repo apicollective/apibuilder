@@ -56,7 +56,7 @@ class OrganizationAttributeValuesDao @Inject() (
       Seq(s"Value is required")
     } else {
       findByOrganizationGuidAndAttributeName(organization.guid, attribute.name) match {
-        case None => Seq.empty
+        case None => Nil
         case Some(found) => {
           Some(found.guid) == existing.map(_.guid) match {
             case true => Nil

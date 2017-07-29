@@ -14,7 +14,7 @@ class PasswordResetRequestsSpec extends BaseSpec {
 
   "POST /password_reset_requests" in new WithServer {
     val user = createUser()
-    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must be(Seq.empty)
+    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must be(Nil)
     val pr = createPasswordRequest(user.email)
     passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must be(Seq(user.guid))
   }
@@ -22,7 +22,7 @@ class PasswordResetRequestsSpec extends BaseSpec {
   "POST /password_reset_requests does not reveal whether or not email exists" in new WithServer {
     val user = createUser()
     val pr = createPasswordRequest("other-" + user.email)
-    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must be(Seq.empty)
+    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must be(Nil)
   }
 
 }

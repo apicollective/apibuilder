@@ -33,12 +33,12 @@ case class FullWatchForm(
   lazy val validate: Seq[Error] = {
     val applicationKeyErrors = application match {
       case None => Seq(s"Application[${form.applicationKey}] not found")
-      case Some(application) => Seq.empty
+      case Some(application) => Nil
     }
 
     val userErrors = user match {
         case None => Seq("User not found")
-        case Some(_) => Seq.empty
+        case Some(_) => Nil
     }
 
     Validation.errors(applicationKeyErrors ++ userErrors)
