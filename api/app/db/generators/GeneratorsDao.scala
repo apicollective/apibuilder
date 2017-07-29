@@ -22,7 +22,7 @@ class GeneratorsDao @Inject() () {
            generators.name,
            generators.description,
            generators.language,
-           generators.attributes,
+           coalesce(generators.attributes, '[]') as attributes,
            services.guid as service_guid,
            services.uri as service_uri,
            services.created_at as service_created_at,
@@ -164,7 +164,7 @@ class GeneratorsDao @Inject() () {
     offset: Long = 0
   ): Seq[GeneratorWithService] = {
     DB.withConnection { implicit c =>
-      authorization.generatorServicesFilter(BaseQuery).withDebugging().
+      authorization.generatorServicesFilter(BaseQuery).
         equals("generators.guid", guid).
         equals("generators.service_guid", serviceGuid).
         and(
