@@ -73,12 +73,19 @@ class WatchesDao @Inject() (
            organizations.namespace as organization_namespace,
            organizations.visibility as organization_visibility,
            '[]' as organization_domains,
-           ${AuditsDao.queryWithAlias("organizations", "organization")}
+           ${AuditsDao.queryWithAlias("organizations", "organization")},
+           organizations.guid as application_organization_guid,
+           organizations.key as application_organization_key,
+           organizations.name as application_organization_name,
+           organizations.namespace as application_organization_namespace,
+           organizations.visibility as application_organization_visibility,
+           '[]' as application_organization_domains,
+           ${AuditsDao.queryWithAlias("organizations", "application_organization")}
       from watches
       join users on users.guid = watches.user_guid and users.deleted_at is null
       join applications on applications.guid = watches.application_guid and applications.deleted_at is null
       join organizations on organizations.guid = applications.organization_guid and organizations.deleted_at is null
-  """).withDebugging()
+  """)
 
   private[this] val InsertQuery = """
     insert into watches
