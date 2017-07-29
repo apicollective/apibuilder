@@ -274,7 +274,7 @@ class UsersDao @Inject() (
 
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("users.guid, guid).
+        equals("users.guid::uuid", guid).
         and(
           email.map { _ => "users.email = trim(lower({email}))" }
         ).bind("email", email).

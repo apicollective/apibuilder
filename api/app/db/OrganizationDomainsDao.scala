@@ -62,8 +62,8 @@ class OrganizationDomainsDao @Inject() () {
   ): Seq[OrganizationDomain] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("organization_domains.guid, guid).
-        equals("organization_domains.organization_guid, organizationGuid).
+        equals("organization_domains.guid::uuid", guid).
+        equals("organization_domains.organization_guid::uuid", organizationGuid).
         and(
           domain.map { _ =>
             "organization_domains.domain = lower(trim({domain}))"

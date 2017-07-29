@@ -168,7 +168,7 @@ class UserPasswordsDao @Inject() () {
     DB.withConnection { implicit c =>
       BaseQuery.
         isNull("user_passwords.deleted_at").
-        equals("user_passwords.user_guid, userGuid).
+        equals("user_passwords.user_guid::uuid", userGuid).
         limit(1).
         anormSql().as(parser().*).headOption
     }

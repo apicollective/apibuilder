@@ -36,7 +36,7 @@ class MembershipsDao @Inject() (
            organizations.key as organization_key,
            organizations.visibility as organization_visibility,
            organizations.namespace as organization_namespace,
-           '[]'::json as organization_domains,
+           '[]' as organization_domains,
            ${AuditsDao.queryWithAlias("organizations", "organization")},
            users.guid as user_guid,
            users.email as user_email,
@@ -161,9 +161,9 @@ class MembershipsDao @Inject() (
     // TODO Implement authorization
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("memberships.guid, guid).
-        equals("memberships.organization_guid, organizationGuid).
-        equals("memberships.user_guid, userGuid).
+        equals("memberships.guid::uuid", guid).
+        equals("memberships.organization_guid::uuid", organizationGuid).
+        equals("memberships.user_guid::uuid", userGuid).
         and(
           organizationKey.map { _ =>
             "memberships.organization_guid = (select guid from organizations where deleted_at is null and key = {organization_key})"
