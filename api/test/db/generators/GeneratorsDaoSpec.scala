@@ -49,6 +49,41 @@ class GeneratorsDaoSpec extends FunSpec with Matchers with util.TestApplication 
       second.generator.key should be(gws.generator.key)
     }
 
+    it("stores attributes") {
+      val service = Util.createGeneratorService()
+      val form = Util.createGeneratorForm(
+        service,
+        attributes = Seq("foo", "bar")
+      )
+
+      generatorsDao.upsert(db.Util.createdBy, form)
+      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.generator.attributes should be(
+        Seq("foo", "bar")
+      )
+
+      val form2 = form.copy(
+        serviceGuid = service.guid,
+        generator = form.generator.copy(
+          attributes = Seq("baz")
+        )
+      )
+      generatorsDao.upsert(db.Util.createdBy, form2)
+      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.generator.attributes should be(
+        Seq("baz")
+      )
+
+      val form3 = form.copy(
+        serviceGuid = service.guid,
+        generator = form.generator.copy(
+          attributes = Nil
+        )
+      )
+      generatorsDao.upsert(db.Util.createdBy, form3)
+      generatorsDao.findAll(Authorization.All, serviceGuid = Some(service.guid)).headOption.get.generator.attributes should be(
+        Nil
+      )
+    }
+
   }
 
   it("softDelete") {

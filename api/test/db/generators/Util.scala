@@ -38,7 +38,8 @@ object Util extends util.Daos {
   }
 
   def createGeneratorForm(
-    service: GeneratorService = createGeneratorService()
+    service: GeneratorService = createGeneratorService(),
+    attributes: Seq[String] = Nil
   ): GeneratorForm = {
     val value = UUID.randomUUID.toString.toLowerCase
     GeneratorForm(
@@ -47,7 +48,8 @@ object Util extends util.Daos {
         key = "test_" + value,
         name = "Test " + value,
         description = None,
-        language = None
+        language = None,
+        attributes = attributes
       )
     )
   }

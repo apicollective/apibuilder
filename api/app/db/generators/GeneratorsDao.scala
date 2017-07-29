@@ -1,6 +1,6 @@
 package db.generators
 
-import db.{AuditsDao, Authorization}
+import db.Authorization
 import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
@@ -10,6 +10,8 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import java.util.UUID
+
+import play.api.libs.json.Json
 
 import scala.util.{Failure, Success, Try}
 
@@ -22,7 +24,7 @@ class GeneratorsDao @Inject() () {
            generators.name,
            generators.description,
            generators.language,
-           coalesce(generators.attributes, '[]') as attributes,
+           generators.attributes::text as attributes,
            services.guid as service_guid,
            services.uri as service_uri,
            services.created_at as service_created_at,
@@ -37,7 +39,7 @@ class GeneratorsDao @Inject() () {
     insert into generators.generators
     (guid, service_guid, key, name, description, language, attributes, created_by_guid)
     values
-    ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {attributes}, {created_by_guid}::uuid)
+    ({guid}::uuid, {service_guid}::uuid, {key}, {name}, {description}, {language}, {attributes}::json, {created_by_guid}::uuid)
   """
 
   private[this] val SoftDeleteByKeyQuery = """
@@ -123,7 +125,9 @@ class GeneratorsDao @Inject() () {
       'name -> form.generator.name.trim,
       'description -> form.generator.description.map(_.trim),
       'language -> form.generator.language.map(_.trim),
-      'attributes -> optionIfEmpty(form.generator.attributes.map(_.trim).mkString(", ")),
+      'attributes -> Json.toJson(
+        form.generator.attributes.map(_.trim).flatMap(optionIfEmpty)
+      ).toString,
       'created_by_guid -> user.guid,
       'updated_by_guid -> user.guid
     ).execute()
@@ -180,7 +184,7 @@ class GeneratorsDao @Inject() () {
         and(
           attributeName.map { _ =>
             // TODO: structure this filter
-            "generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
+            "generators.attributes::text like '%' || lower(trim({attribute_name})) || '%'"
           }
         ).bind("attribute_name", attributeName).
         and(isDeleted.map(db.Filters.isDeleted("generators", _))).
