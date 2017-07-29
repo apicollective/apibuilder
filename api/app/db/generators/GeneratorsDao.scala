@@ -161,7 +161,7 @@ class GeneratorsDao @Inject() () {
     offset: Long = 0
   ): Seq[GeneratorWithService] = {
     DB.withConnection { implicit c =>
-      Authorization2(authorization).generatorServicesFilter(BaseQuery).
+      Authorization2(authorization).generatorServicesFilter(BaseQuery).withDebugging().
         equals("generators.guid::uuid", guid).
         equals("generators.service_guid::uuid", serviceGuid).
         and(
@@ -177,10 +177,10 @@ class GeneratorsDao @Inject() () {
         and(
           attributeName.map { v =>
             // TODO: structure this filter
-            "and generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
+            "generators.attributes like '%' || lower(trim({attribute_name})) || '%'"
           }
         ).bind("attribute_name", attributeName).
-        and(isDeleted.map(db.Filters.isDeleted("generators", _))).
+        and(isDeleted.map(db.Filters2.isDeleted("generators", _))).
         orderBy("lower(generators.name), lower(generators.key), generators.created_at desc").
         limit(limit).
         offset(offset).
