@@ -1,8 +1,8 @@
 package db.generated
 
 import anorm._
+import db.DbHelpers
 import io.flow.postgresql.{OrderBy, Query}
-import io.flow.postgresql.play.db.DbHelpers
 import java.sql.Connection
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
