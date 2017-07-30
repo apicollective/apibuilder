@@ -279,7 +279,7 @@ class VersionsDao @Inject() (
 
     val processed = DB.withConnection { implicit c =>
       val records = BaseQuery.
-        isNull("deleted_at").
+        isNull("versions.deleted_at").
         isNull("services.guid").
         isNotNull("originals.data").
         orderBy("versions.created_at desc").
