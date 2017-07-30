@@ -17,14 +17,14 @@ case class DbHelpers(
          set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
        where id = {id}
          and deleted_at is null
-  """).withDebugging()
+  """)
 
   private[this] val softDeleteQueryByGuid = Query(s"""
       update $tableName
          set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
        where guid = {guid}::uuid
          and deleted_at is null
-  """).withDebugging()
+  """)
 
   def delete(deletedBy: UUID, guid: UUID) {
     db.withConnection { implicit c =>
