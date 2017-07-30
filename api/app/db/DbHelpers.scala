@@ -1,8 +1,7 @@
 package db
 
-import java.util.UUID
-
 import io.flow.postgresql.Query
+import java.util.UUID
 import play.api.db.Database
 
 /**
@@ -13,14 +12,21 @@ case class DbHelpers(
   tableName: String
 ) {
 
-  private[this] val softDeleteQuery = Query(s"""
+  private[this] val softDeleteQueryById = Query(s"""
       update $tableName
          set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
-       where guid = {guid)::uuid
+       where id = {id}
          and deleted_at is null
   """).withDebugging()
 
-  def delete(deletedBy: UUID, guid: String) {
+  private[this] val softDeleteQueryByGuid = Query(s"""
+      update $tableName
+         set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now()
+       where guid = {guid}::uuid
+         and deleted_at is null
+  """).withDebugging()
+
+  def delete(deletedBy: UUID, guid: UUID) {
     db.withConnection { implicit c =>
       delete(c, deletedBy, guid)
     }
@@ -29,11 +35,28 @@ case class DbHelpers(
   def delete(
     implicit c: java.sql.Connection,
     deletedBy: UUID,
-    guid: String
+    guid: UUID
   ) {
-    softDeleteQuery.
+    softDeleteQueryByGuid.
       bind("deleted_by_guid", deletedBy).
       bind("guid", guid).
+      anormSql().execute()
+  }
+
+  def delete(deletedBy: UUID, id: String) {
+    db.withConnection { implicit c =>
+      delete(c, deletedBy, id)
+    }
+  }
+
+  def delete(
+    implicit c: java.sql.Connection,
+    deletedBy: UUID,
+    id: String
+  ) {
+    softDeleteQueryById.
+      bind("deleted_by_guid", deletedBy).
+      bind("id", id).
       anormSql().execute()
   }
 
