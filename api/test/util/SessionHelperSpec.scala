@@ -18,10 +18,10 @@ class SessionHelperSpec extends FunSpec with Matchers with util.TestApplication 
     val user = Util.upsertUser("michael@mailinator.com")
     val auth = sessionHelper.createAuthentication(user)
 
-    sessionsDao.findById(auth.session.id).get.deletedAt.isDefined should be(true)
+    sessionsDao.findById(auth.session.id).get.deletedAt.isEmpty should be(true)
 
     sessionsDao.deleteById(user.guid, auth.session.id)
-    sessionsDao.findById(auth.session.id).get.deletedAt.isDefined should be(false)
+    sessionsDao.findById(auth.session.id).get.deletedAt.isEmpty should be(false)
   }
 
 }
