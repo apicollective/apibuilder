@@ -12,13 +12,25 @@ import play.api.db.{Database, NamedDatabase}
 case class Session(
   id: String,
   userGuid: UUID,
-  expiresAt: DateTime
+  expiresAt: DateTime,
+  createdAt: DateTime,
+  createdByGuid: UUID,
+  updatedAt: DateTime,
+  updatedByGuid: UUID,
+  deletedAt: Option[DateTime],
+  deletedByGuid: Option[UUID]
 ) {
 
   lazy val form: SessionForm = SessionForm(
     id = id,
     userGuid = userGuid,
-    expiresAt = expiresAt
+    expiresAt = expiresAt,
+    createdAt = createdAt,
+    createdByGuid = createdByGuid,
+    updatedAt = updatedAt,
+    updatedByGuid = updatedByGuid,
+    deletedAt = deletedAt,
+    deletedByGuid = deletedByGuid
   )
 
 }
@@ -26,7 +38,13 @@ case class Session(
 case class SessionForm(
   id: String,
   userGuid: UUID,
-  expiresAt: DateTime
+  expiresAt: DateTime,
+  createdAt: DateTime,
+  createdByGuid: UUID,
+  updatedAt: DateTime,
+  updatedByGuid: UUID,
+  deletedAt: Option[DateTime],
+  deletedByGuid: Option[UUID]
 )
 
 @Singleton
@@ -41,24 +59,32 @@ class SessionsDao @Inject() (
       |        sessions.user_guid,
       |        sessions.expires_at,
       |        sessions.created_at,
+      |        sessions.created_by_guid,
       |        sessions.updated_at,
-      |        sessions.updated_by_user_id,
+      |        sessions.updated_by_guid,
+      |        sessions.deleted_at,
+      |        sessions.deleted_by_guid,
       |        sessions.hash_code
       |   from sessions
   """.stripMargin)
 
   private[this] val InsertQuery = Query("""
     | insert into sessions
-    | (id, user_guid, expires_at, updated_by_user_id, hash_code)
+    | (id, user_guid, expires_at, created_at, created_by_guid, updated_at, updated_by_guid, deleted_at, deleted_by_guid, hash_code)
     | values
-    | ({id}, {user_guid}::uuid, {expires_at}::timestamptz, {updated_by_user_id}, {hash_code}::bigint)
+    | ({id}, {user_guid}::uuid, {expires_at}::timestamptz, {created_at}::timestamptz, {created_by_guid}::uuid, {updated_at}::timestamptz, {updated_by_guid}::uuid, {deleted_at}::timestamptz, {deleted_by_guid}::uuid, {hash_code}::bigint)
   """.stripMargin)
 
   private[this] val UpdateQuery = Query("""
     | update sessions
     |    set user_guid = {user_guid}::uuid,
     |        expires_at = {expires_at}::timestamptz,
-    |        updated_by_user_id = {updated_by_user_id},
+    |        created_at = {created_at}::timestamptz,
+    |        created_by_guid = {created_by_guid}::uuid,
+    |        updated_at = {updated_at}::timestamptz,
+    |        updated_by_guid = {updated_by_guid}::uuid,
+    |        deleted_at = {deleted_at}::timestamptz,
+    |        deleted_by_guid = {deleted_by_guid}::uuid,
     |        hash_code = {hash_code}::bigint
     |  where id = {id}
     |    and (sessions.hash_code is null or sessions.hash_code != {hash_code}::bigint)
@@ -68,6 +94,12 @@ class SessionsDao @Inject() (
     query.
       bind("user_guid", form.userGuid).
       bind("expires_at", form.expiresAt).
+      bind("created_at", form.createdAt).
+      bind("created_by_guid", form.createdByGuid).
+      bind("updated_at", form.updatedAt).
+      bind("updated_by_guid", form.updatedByGuid).
+      bind("deleted_at", form.deletedAt).
+      bind("deleted_by_guid", form.deletedByGuid).
       bind("hash_code", form.hashCode())
   }
 
@@ -80,7 +112,6 @@ class SessionsDao @Inject() (
   def insert(implicit c: Connection, updatedBy: UUID, form: SessionForm) {
     bindQuery(InsertQuery, form).
       bind("id", form.id).
-      bind("updated_by_user_id", updatedBy).
       anormSql.execute()
   }
 
@@ -99,7 +130,6 @@ class SessionsDao @Inject() (
   def updateById(implicit c: Connection, updatedBy: UUID, id: String, form: SessionForm) {
     bindQuery(UpdateQuery, form).
       bind("id", id).
-      bind("updated_by_user_id", updatedBy).
       anormSql.execute()
   }
 
@@ -158,11 +188,23 @@ object SessionsDao {
   def parser(): RowParser[Session] = {
     SqlParser.str("id") ~
     SqlParser.get[UUID]("user_guid") ~
-    SqlParser.get[DateTime]("expires_at") map {
-      case id ~ userGuid ~ expiresAt => Session(
+    SqlParser.get[DateTime]("expires_at") ~
+    SqlParser.get[DateTime]("created_at") ~
+    SqlParser.get[UUID]("created_by_guid") ~
+    SqlParser.get[DateTime]("updated_at") ~
+    SqlParser.get[UUID]("updated_by_guid") ~
+    SqlParser.get[DateTime]("deleted_at").? ~
+    SqlParser.get[UUID]("deleted_by_guid").? map {
+      case id ~ userGuid ~ expiresAt ~ createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid ~ deletedAt ~ deletedByGuid => Session(
         id = id,
         userGuid = userGuid,
-        expiresAt = expiresAt
+        expiresAt = expiresAt,
+        createdAt = createdAt,
+        createdByGuid = createdByGuid,
+        updatedAt = updatedAt,
+        updatedByGuid = updatedByGuid,
+        deletedAt = deletedAt,
+        deletedByGuid = deletedByGuid
       )
     }
   }

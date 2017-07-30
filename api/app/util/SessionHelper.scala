@@ -13,13 +13,20 @@ class SessionHelper @Inject() (
 
   def createAuthentication(u: User): Authentication = {
     val id = SessionIdGenerator.generate()
+    val ts = DateTime.now
 
     sessionsDao.insert(
       usersDao.AdminUser.guid,
       _root_.db.generated.SessionForm(
         id = id,
         userGuid = u.guid,
-        expiresAt = DateTime.now().plusHours(DefaultSessionExpirationHours)
+        expiresAt = ts.plusHours(DefaultSessionExpirationHours),
+        createdAt = ts,
+        createdByGuid = u.guid,
+        updatedAt = ts,
+        updatedByGuid = u.guid,
+        deletedAt = None,
+        deletedByGuid = None
       )
     )
 

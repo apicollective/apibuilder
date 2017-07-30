@@ -1,5 +1,7 @@
 package util
 
+import db.generated.SessionsDao
+
 trait Daos {
 
   def applicationsDao = play.api.Play.current.injector.instanceOf[db.ApplicationsDao]
@@ -29,5 +31,6 @@ trait Daos {
   def emails = play.api.Play.current.injector.instanceOf[actors.Emails]
   def search = play.api.Play.current.injector.instanceOf[actors.Search]
 
+  def sessionsDao = play.api.Play.current.injector.instanceOf[SessionsDao]
   def sessionHelper = play.api.Play.current.injector.instanceOf[SessionHelper]
 }
