@@ -1,7 +1,6 @@
 package db.generated
 
 import anorm._
-import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{OrderBy, Query}
 import io.flow.postgresql.play.db.DbHelpers
 import java.sql.Connection
@@ -72,59 +71,59 @@ class SessionsDao @Inject() (
       bind("hash_code", form.hashCode())
   }
 
-  def insert(updatedBy: UserReference, form: SessionForm) {
+  def insert(updatedBy: UUID, form: SessionForm) {
     db.withConnection { implicit c =>
       insert(c, updatedBy, form)
     }
   }
   
-  def insert(implicit c: Connection, updatedBy: UserReference, form: SessionForm) {
+  def insert(implicit c: Connection, updatedBy: UUID, form: SessionForm) {
     bindQuery(InsertQuery, form).
       bind("id", form.id).
-      bind("updated_by_user_id", updatedBy.id).
+      bind("updated_by_user_id", updatedBy).
       anormSql.execute()
   }
 
-  def updateIfChangedById(updatedBy: UserReference, id: String, form: SessionForm) {
+  def updateIfChangedById(updatedBy: UUID, id: String, form: SessionForm) {
     if (!findById(id).map(_.form).contains(form)) {
       updateById(updatedBy, id, form)
     }
   }
   
-  def updateById(updatedBy: UserReference, id: String, form: SessionForm) {
+  def updateById(updatedBy: UUID, id: String, form: SessionForm) {
     db.withConnection { implicit c =>
       updateById(c, updatedBy, id, form)
     }
   }
   
-  def updateById(implicit c: Connection, updatedBy: UserReference, id: String, form: SessionForm) {
+  def updateById(implicit c: Connection, updatedBy: UUID, id: String, form: SessionForm) {
     bindQuery(UpdateQuery, form).
       bind("id", id).
-      bind("updated_by_user_id", updatedBy.id).
+      bind("updated_by_user_id", updatedBy).
       anormSql.execute()
   }
 
-  def update(updatedBy: UserReference, existing: Session, form: SessionForm) {
+  def update(updatedBy: UUID, existing: Session, form: SessionForm) {
     db.withConnection { implicit c =>
       update(c, updatedBy, existing, form)
     }
   }
   
-  def update(implicit c: Connection, updatedBy: UserReference, existing: Session, form: SessionForm) {
+  def update(implicit c: Connection, updatedBy: UUID, existing: Session, form: SessionForm) {
     updateById(c, updatedBy, existing.id, form)
   }
 
-  def delete(deletedBy: UserReference, session: Session) {
+  def delete(deletedBy: UUID, session: Session) {
     dbHelpers.delete(deletedBy, session.id)
   }
   
-  def deleteById(deletedBy: UserReference, id: String) {
+  def deleteById(deletedBy: UUID, id: String) {
     db.withConnection { implicit c =>
       deleteById(c, deletedBy, id)
     }
   }
   
-  def deleteById(c: java.sql.Connection, deletedBy: UserReference, id: String) {
+  def deleteById(c: java.sql.Connection, deletedBy: UUID, id: String) {
     dbHelpers.delete(c, deletedBy, id)
   }
 
