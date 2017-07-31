@@ -1,9 +1,10 @@
 package controllers
 
 import io.apibuilder.api.v0.models._
-import db.{Authorization, TokensDao, UsersDao}
+import db.Authorization
 import java.util.UUID
 
+import io.apibuilder.api.v0.Client
 import play.api.test._
 import play.api.test.Helpers._
 import org.scalatestplus.play._
@@ -15,7 +16,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
   implicit override lazy val port = 9010
   implicit override lazy val app: FakeApplication = FakeApplication()
 
-  lazy val TestUser = usersDao.create(createUserForm())
+  lazy val TestUser: User = usersDao.create(createUserForm())
 
   private[this] lazy val apiToken = {
     val token = tokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
@@ -24,14 +25,14 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
 
   private[this] lazy val apiAuth = io.apibuilder.api.v0.Authorization.Basic(apiToken)
 
-  lazy val client = newClient(TestUser)
+  lazy val client: Client = newClient(TestUser)
 
-  def newClient(user: User) = {
+  def newClient(user: User): Client = {
     val auth = sessionHelper.createAuthentication(user)
     newSessionClient(auth.session.id)
   }
 
-  def newSessionClient(sessionId: String) = {
+  def newSessionClient(sessionId: String): Client = {
     new io.apibuilder.api.v0.Client(
       s"http://localhost:$port",
       Some(apiAuth),
@@ -112,7 +113,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
     key: Option[String] = None,
     description: Option[String] = None,
     visibility: Visibility = Visibility.Organization
-  ) = db.Util.createApplicationForm(
+  ): ApplicationForm = db.Util.createApplicationForm(
     name = name,
     key = key,
     description = description,
