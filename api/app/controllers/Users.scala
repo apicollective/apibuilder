@@ -1,9 +1,9 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Authentication, Session, User, UserForm, UserUpdateForm}
+import io.apibuilder.api.v0.models.{User, UserForm, UserUpdateForm}
 import io.apibuilder.api.v0.models.json._
 import lib.Validation
-import util.{Conversions, SessionIdGenerator, SessionHelper}
+import util.SessionHelper
 import db.{UserPasswordsDao, UsersDao}
 import javax.inject.{Inject, Singleton}
 
@@ -11,9 +11,11 @@ import play.api.mvc._
 import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
 import java.util.UUID
 
+import play.api.Logger
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class Users @Inject() (
@@ -26,14 +28,10 @@ class Users @Inject() (
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] case class UserAuthenticationForm(email: String, password: String)
-  private[this] object UserAuthenticationForm {
-    implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
-  }
+  private[this] implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
 
   private[this] case class GithubAuthenticationForm(token: String)
-  private[this] object GithubAuthenticationForm {
-    implicit val githubAuthenticationFormReads = Json.reads[GithubAuthenticationForm]
-  }
+  private[this] implicit val githubAuthenticationFormReads = Json.reads[GithubAuthenticationForm]
 
   def get(guid: Option[UUID], email: Option[String], token: Option[String]) = AnonymousRequest { request =>
     require(request.tokenUser.isDefined, "Missing API Token")
@@ -114,27 +112,49 @@ class Users @Inject() (
   }
 
   def postAuthenticate() = AnonymousRequest(parse.json) { request =>
-    request.body.validate[UserAuthenticationForm] match {
-      case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
-      }
-      case s: JsSuccess[UserAuthenticationForm] => {
-        val form = s.get
+    Try {
+      println("A")
+      request.body.validate[UserAuthenticationForm] match {
+        case e: JsError => {
+          println("A")
+          Conflict(Json.toJson(Validation.invalidJson(e)))
+        }
+        case s: JsSuccess[UserAuthenticationForm] => {
+          println("B")
+          val form = s.get
+          println(s"C: $form")
 
-        usersDao.findByEmail(form.email) match {
+          usersDao.findByEmail(form.email) match {
 
-          case None => {
-            Conflict(Json.toJson(Validation.userAuthorizationFailed()))
-          }
-
-          case Some(user) => {
-            if (userPasswordsDao.isValid(user.guid, form.password)) {
-              Ok(Json.toJson(sessionHelper.createAuthentication(user)))
-            } else {
+            case None => {
               Conflict(Json.toJson(Validation.userAuthorizationFailed()))
+            }
+
+            case Some(user) => {
+              println(s"D: $user")
+              val isValid = userPasswordsDao.isValid(user.guid, form.password)
+              println(" D IS VALID: " + isValid)
+              if (isValid) {
+                println(s"E: VALID:" + sessionHelper.createAuthentication(user))
+                println(s"E: VALID JSON:" + Json.toJson(sessionHelper.createAuthentication(user)))
+                Ok(Json.toJson(sessionHelper.createAuthentication(user)))
+              } else {
+                println("F: not VALID")
+                Conflict(Json.toJson(Validation.userAuthorizationFailed()))
+              }
             }
           }
         }
+      }
+    } match {
+      case Success(js) => js
+      case Failure(ex) => {
+        println(s"G: FAILED: ${ex.getMessage}")
+        println("--------------------------------------------------------------------------------")
+        Logger.error("G: FAILED", ex)
+        ex.printStackTrace(System.out)
+        println("--------------------------------------------------------------------------------")
+        sys.error(ex.getMessage)
       }
     }
   }
