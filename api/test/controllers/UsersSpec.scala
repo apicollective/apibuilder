@@ -1,10 +1,11 @@
 package controllers
 
-import io.apibuilder.api.v0.errors.{ErrorsResponse, FailedRequest}
 import io.apibuilder.api.v0.models.UserUpdateForm
-
 import play.api.test._
 import play.api.test.Helpers._
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 class UsersSpec extends BaseSpec {
 
@@ -14,10 +15,12 @@ class UsersSpec extends BaseSpec {
     val form = createUserForm()
     val user = createUser(form)
 
-    val auth = await {
-      client.users.postAuthenticate(form.email, form.password)
-    }
-    println(auth)
+    // Need to wait longer here as these methods use bcrypt
+    val auth = Await.result(
+      client.users.postAuthenticate(form.email, form.password),
+      Duration.Inf
+    )
+    println("RECEIVED AUTH: " + auth)
 
     val updatedUser = await(
       newSessionClient(auth.session.id).users.putByGuid(
