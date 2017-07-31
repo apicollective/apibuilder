@@ -29,7 +29,6 @@ class UsersSpec extends BaseSpec {
       client.users.postAuthenticate(form.email, form.password),
       Duration.Inf
     )
-    println("RECEIVED AUTH: " + auth)
 
     val updatedUser = await(
       newSessionClient(auth.session.id).users.putByGuid(
