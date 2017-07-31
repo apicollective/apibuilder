@@ -112,49 +112,26 @@ class Users @Inject() (
   }
 
   def postAuthenticate() = AnonymousRequest(parse.json) { request =>
-    Try {
-      println("A")
-      request.body.validate[UserAuthenticationForm] match {
-        case e: JsError => {
-          println("A")
-          Conflict(Json.toJson(Validation.invalidJson(e)))
-        }
-        case s: JsSuccess[UserAuthenticationForm] => {
-          println("B")
-          val form = s.get
-          println(s"C: $form")
+    request.body.validate[UserAuthenticationForm] match {
+      case e: JsError => {
+        Conflict(Json.toJson(Validation.invalidJson(e)))
+      }
+      case s: JsSuccess[UserAuthenticationForm] => {
+        val form = s.get
+        usersDao.findByEmail(form.email) match {
 
-          usersDao.findByEmail(form.email) match {
+          case None => {
+            Conflict(Json.toJson(Validation.userAuthorizationFailed()))
+          }
 
-            case None => {
+          case Some(user) => {
+            if (userPasswordsDao.isValid(user.guid, form.password)) {
+              Ok(Json.toJson(sessionHelper.createAuthentication(user)))
+            } else {
               Conflict(Json.toJson(Validation.userAuthorizationFailed()))
-            }
-
-            case Some(user) => {
-              println(s"D: $user")
-              val isValid = userPasswordsDao.isValid(user.guid, form.password)
-              println(" D IS VALID: " + isValid)
-              if (isValid) {
-                println(s"E: VALID:" + sessionHelper.createAuthentication(user))
-                println(s"E: VALID JSON:" + Json.toJson(sessionHelper.createAuthentication(user)))
-                Ok(Json.toJson(sessionHelper.createAuthentication(user)))
-              } else {
-                println("F: not VALID")
-                Conflict(Json.toJson(Validation.userAuthorizationFailed()))
-              }
             }
           }
         }
-      }
-    } match {
-      case Success(js) => js
-      case Failure(ex) => {
-        println(s"G: FAILED: ${ex.getMessage}")
-        println("--------------------------------------------------------------------------------")
-        Logger.error("G: FAILED", ex)
-        ex.printStackTrace(System.out)
-        println("--------------------------------------------------------------------------------")
-        sys.error(ex.getMessage)
       }
     }
   }

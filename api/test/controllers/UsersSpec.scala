@@ -11,6 +11,15 @@ class UsersSpec extends BaseSpec {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  "POST /users" in new WithServer {
+    val form = createUserForm()
+    val user = Await.result(
+      client.users.post(form),
+      Duration.Inf
+    )
+    user.email must equal(form.email)
+  }
+
   "POST /users/authenticate" in new WithServer {
     val form = createUserForm()
     val user = createUser(form)

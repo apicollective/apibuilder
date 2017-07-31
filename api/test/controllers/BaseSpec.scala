@@ -77,7 +77,7 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
   def createUser(
     form: UserForm = createUserForm()
   ): User = {
-    await(client.users.post(form))
+    usersDao.create(form)
   }
 
   def createUserForm() = UserForm(
