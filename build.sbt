@@ -86,7 +86,7 @@ lazy val api = project
       "org.postgresql"    %  "postgresql"    % "42.1.3",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
       "com.sendgrid"      %  "sendgrid-java" % "4.0.1",
-      "io.flow"           %% "lib-postgresql" % "0.0.47",
+      "io.flow"           %% "lib-postgresql-play" % "0.0.97",
       specs2              %  Test,
       "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
