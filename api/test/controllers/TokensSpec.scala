@@ -42,4 +42,14 @@ class TokensSpec extends PlaySpecification with MockClient {
       newClient(user2).tokens.getUsersByUserGuid(userGuid = user2.guid)
     ).map(_.guid) must beEqualTo(Seq(tokenUser2.guid))
   }
+
+  "GET /tokens/:guid/cleartext" in new WithServer(port=defaultPort) {
+    val user = createUser()
+    val token = await(newClient(user).tokens.post(createTokenForm(user)))
+
+    val clear = await(
+      newClient(user).tokens.getCleartextByGuid(token.guid)
+    )
+    clear.token.length > 30 must beTrue
+  }
 }
