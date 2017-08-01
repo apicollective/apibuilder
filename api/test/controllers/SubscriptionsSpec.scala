@@ -6,16 +6,13 @@ import java.util.UUID
 import play.api.test._
 
 class SubscriptionsSpec extends PlaySpecification with MockClient {
-
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] lazy val user = Util.createRandomUser()
-  private[this] lazy val org = Util.createOrganization(user)
+  lazy val org = createOrganization()
 
-  "POST /subscriptions" in new WithServer(port=defaultPort) {
+  "POST /subscriptions" in new WithServer {
     val user = createUser()
-    val subscription = Util.createSubscription(
-      user,
+    val subscription = createSubscription(
       SubscriptionForm(
         organizationKey = org.key,
         userGuid = user.guid,
@@ -23,107 +20,106 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
       )
     )
 
-    subscription.organization.key must beEqualTo(org.key)
-    subscription.user.guid must beEqualTo(user.guid)
-    subscription.publication must beEqualTo(Publication.MembershipRequestsCreate)
+    subscription.organization.key must be(org.key)
+    subscription.user.guid must be(user.guid)
+    subscription.publication must be(Publication.MembershipRequestsCreate)
   }
 
-  "POST /subscriptions handles user already subscribed" in new WithServer(port=defaultPort) {
+  "POST /subscriptions handles user already subscribed" in new WithServer {
     val user = createUser()
     val form = createSubscriptionForm(org, user)
-    val subscription = Util.createSubscription(user, form)
+    val subscription = createSubscription(form)
 
-    expectErrors {
-      client.subscriptions.post(form)
-    }.errors.map(_.message) must beEqualTo(Seq("User is already subscribed to this publication for this organization"))
+    intercept[ErrorsResponse] {
+      createSubscription(form)
+    }.errors.map(_.message) must be(Seq("User is already subscribed to this publication for this organization"))
   }
 
-  "POST /subscriptions allows user to subscribe to a different organization" in new WithServer(port=defaultPort) {
+  "POST /subscriptions allows user to subscribe to a different organization" in new WithServer {
     val user = createUser()
     val form = createSubscriptionForm(org, user)
-    val subscription1 = Util.createSubscription(user, form)
+    val subscription1 = createSubscription(form)
 
-    subscription1.organization.key must beEqualTo(org.key)
-    subscription1.user.guid must beEqualTo(user.guid)
-    subscription1.publication must beEqualTo(Publication.MembershipRequestsCreate)
+    subscription1.organization.key must be(org.key)
+    subscription1.user.guid must be(user.guid)
+    subscription1.publication must be(Publication.MembershipRequestsCreate)
 
     val org2 = createOrganization()
-    val subscription2 = await(client.subscriptions.post(form.copy(organizationKey = org2.key)))
-    subscription2.organization.key must beEqualTo(org2.key)
-    subscription2.user.guid must beEqualTo(user.guid)
-    subscription2.publication must beEqualTo(Publication.MembershipRequestsCreate)
+    val subscription2 = createSubscription(form.copy(organizationKey = org2.key))
+    subscription2.organization.key must be(org2.key)
+    subscription2.user.guid must be(user.guid)
+    subscription2.publication must be(Publication.MembershipRequestsCreate)
   }
 
-  "POST /subscriptions validates org key" in new WithServer(port=defaultPort) {
+  "POST /subscriptions validates org key" in new WithServer {
     val user = createUser()
 
-    expectErrors {
-      client.subscriptions.post(
+    intercept[ErrorsResponse] {
+      createSubscription(
         SubscriptionForm(
           organizationKey = UUID.randomUUID.toString,
           userGuid = user.guid,
           publication = Publication.MembershipRequestsCreate
         )
       )
-    }.errors.map(_.message) must beEqualTo(Seq("Organization not found"))
+    }.errors.map(_.message) must be(Seq("Organization not found"))
   }
 
-  "POST /subscriptions validates user guid" in new WithServer(port=defaultPort) {
-    expectErrors {
-      client.subscriptions.post(
+  "POST /subscriptions validates user guid" in new WithServer {
+    intercept[ErrorsResponse] {
+      createSubscription(
         SubscriptionForm(
           organizationKey = org.key,
           userGuid = UUID.randomUUID,
           publication = Publication.MembershipRequestsCreate
         )
       )
-    }.errors.map(_.message) must beEqualTo(Seq("User not found"))
+    }.errors.map(_.message) must be(Seq("User not found"))
   }
 
-  "POST /subscriptions validates publication" in new WithServer(port=defaultPort) {
+  "POST /subscriptions validates publication" in new WithServer {
     val user = createUser()
 
-    expectErrors {
-      client.subscriptions.post(
+    intercept[ErrorsResponse] {
+      createSubscription(
         SubscriptionForm(
           organizationKey = org.key,
           userGuid = user.guid,
           publication = Publication(UUID.randomUUID.toString)
         )
       )
-    }.errors.map(_.message) must beEqualTo(Seq("Publication not found"))
+    }.errors.map(_.message) must be(Seq("Publication not found"))
   }
 
-  "DELETE /subscriptions/:guid" in new WithServer(port=defaultPort) {
-    val subscription = Util.createSubscription(user, createSubscriptionForm(org))
-    await(client.subscriptions.deleteByGuid(subscription.guid)) must beEqualTo(())
-    await(client.subscriptions.deleteByGuid(subscription.guid)) must beEqualTo(()) // test idempotence
-    expectNotFound {
-      client.subscriptions.getByGuid(subscription.guid)
-    }
+  "DELETE /subscriptions/:guid" in new WithServer {
+    val subscription = createSubscription(createSubscriptionForm(org))
+    await(client.subscriptions.deleteByGuid(subscription.guid)) must be(())
+    await(client.subscriptions.deleteByGuid(subscription.guid)) must be(()) // test idempotence
+    intercept[UnitResponse] {
+      await(client.subscriptions.getByGuid(subscription.guid))
+    }.status must be(404)
 
     // now recreate
-    val subscription2 = Util.createSubscription(user, createSubscriptionForm(org))
-    await(client.subscriptions.getByGuid(subscription2.guid)) must beEqualTo(subscription2)
+    val subscription2 = createSubscription(createSubscriptionForm(org))
+    await(client.subscriptions.getByGuid(subscription2.guid)) must be(subscription2)
   }
 
 
-  "GET /subscriptions/:guid" in new WithServer(port=defaultPort) {
-    val subscription = Util.createSubscription(user, createSubscriptionForm(org))
-    await(client.subscriptions.getByGuid(subscription.guid)) must beEqualTo(subscription)
+  "GET /subscriptions/:guid" in new WithServer {
+    val subscription = createSubscription(createSubscriptionForm(org))
+    await(client.subscriptions.getByGuid(subscription.guid)) must be(subscription)
 
-    expectNotFound {
-      client.subscriptions.getByGuid(UUID.randomUUID)
-    }
+    intercept[UnitResponse] {
+      await(client.subscriptions.getByGuid(UUID.randomUUID))
+    }.status must be(404)
   }
 
-  "GET /subscriptions filters" in new WithServer(port=defaultPort) {
+  "GET /subscriptions filters" in new WithServer {
     val user1 = createUser()
     val user2 = createUser()
     val org1 = createOrganization()
     val org2 = createOrganization()
-    val subscription1 = Util.createSubscription(
-      user1,
+    val subscription1 = createSubscription(
       SubscriptionForm(
         organizationKey = org1.key,
         userGuid = user1.guid,
@@ -131,8 +127,7 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
       )
     )
 
-    val subscription2 = Util.createSubscription(
-      user2,
+    val subscription2 = createSubscription(
       SubscriptionForm(
         organizationKey = org2.key,
         userGuid = user2.guid,
@@ -140,28 +135,28 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
       )
     )
 
-    await(client.subscriptions.get(organizationKey = Some(UUID.randomUUID.toString))) must beEqualTo(Nil)
-    await(client.subscriptions.get(organizationKey = Some(org1.key))).map(_.guid) must beEqualTo(Seq(subscription1.guid))
-    await(client.subscriptions.get(organizationKey = Some(org2.key))).map(_.guid) must beEqualTo(Seq(subscription2.guid))
+    await(client.subscriptions.get(organizationKey = Some(UUID.randomUUID.toString))) must be(Nil)
+    await(client.subscriptions.get(organizationKey = Some(org1.key))).map(_.guid) must be(Seq(subscription1.guid))
+    await(client.subscriptions.get(organizationKey = Some(org2.key))).map(_.guid) must be(Seq(subscription2.guid))
 
-    await(client.subscriptions.get(userGuid = Some(UUID.randomUUID))) must beEqualTo(Nil)
-    await(client.subscriptions.get(userGuid = Some(user1.guid))).map(_.guid) must beEqualTo(Seq(subscription1.guid))
-    await(client.subscriptions.get(userGuid = Some(user2.guid))).map(_.guid) must beEqualTo(Seq(subscription2.guid))
+    await(client.subscriptions.get(userGuid = Some(UUID.randomUUID))) must be(Nil)
+    await(client.subscriptions.get(userGuid = Some(user1.guid))).map(_.guid) must be(Seq(subscription1.guid))
+    await(client.subscriptions.get(userGuid = Some(user2.guid))).map(_.guid) must be(Seq(subscription2.guid))
 
-    await(client.subscriptions.get(userGuid = Some(user1.guid), publication = Some(Publication.MembershipRequestsCreate))).map(_.guid) must beEqualTo(Seq(subscription1.guid))
-    await(client.subscriptions.get(userGuid = Some(user2.guid), publication = Some(Publication.ApplicationsCreate))).map(_.guid) must beEqualTo(Seq(subscription2.guid))
+    await(client.subscriptions.get(userGuid = Some(user1.guid), publication = Some(Publication.MembershipRequestsCreate))).map(_.guid) must be(Seq(subscription1.guid))
+    await(client.subscriptions.get(userGuid = Some(user2.guid), publication = Some(Publication.ApplicationsCreate))).map(_.guid) must be(Seq(subscription2.guid))
 
-    expectStatus(400) {
-      client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))
-    }
+    intercept[FailedRequest] {
+      await(client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))) must be(Nil)
+    }.responseCode must be(400)
   }
 
-  "GET /subscriptions authorizes user" in new WithServer(port=defaultPort) {
-    val subscription = Util.createSubscription(user, createSubscriptionForm(org))
+  "GET /subscriptions authorizes user" in new WithServer {
+    val subscription = createSubscription(createSubscriptionForm(org))
     val randomUser = createUser()
 
-    await(client.subscriptions.get(guid = Some(subscription.guid))).map(_.guid) must beEqualTo(Seq(subscription.guid))
-    await(newClient(randomUser).subscriptions.get(guid = Some(subscription.guid))).map(_.guid) must beEqualTo(Nil)
+    await(client.subscriptions.get(guid = Some(subscription.guid))).map(_.guid) must be(Seq(subscription.guid))
+    await(newClient(randomUser).subscriptions.get(guid = Some(subscription.guid))).map(_.guid) must be(Nil)
   }
 
 }
