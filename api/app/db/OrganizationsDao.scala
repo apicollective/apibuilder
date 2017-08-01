@@ -3,16 +3,20 @@ package db
 import io.apibuilder.api.v0.models._
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
-import lib.{Misc, Role, Validation, UrlKey}
+import lib.{Misc, Role, UrlKey, Validation}
 import anorm._
 import javax.inject.{Inject, Singleton}
+
 import play.api.db._
 import java.util.UUID
+
 import org.joda.time.DateTime
+import play.api.inject.Injector
 
 @Singleton
 class OrganizationsDao @Inject() (
   @NamedDatabase("default") db: Database,
+  injector: Injector,
   organizationDomainsDao: OrganizationDomainsDao,
   organizationLogsDao: OrganizationLogsDao
 ) {
@@ -20,7 +24,7 @@ class OrganizationsDao @Inject() (
   private[this] val dbHelpers = DbHelpers(db, "organizations")
 
   // TODO: resolve cicrular dependency
-  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
+  private[this] def membershipsDao = injector.instanceOf[MembershipsDao]
 
   private[this] val MinNameLength = 3
 
