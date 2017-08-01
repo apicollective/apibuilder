@@ -7,25 +7,25 @@ import play.api.libs.json._
 import play.api.mvc.Results._
 
 import scala.concurrent.Future
-import play.api.Play.current
+//import play.api.Play.current
 
 import scala.util.{Failure, Success, Try}
 
 object Global extends WithFilters(LoggingFilter) {
 
   override def onStart(app: Application): Unit = {
-    import play.api.libs.concurrent.Akka
-    import scala.concurrent.duration._
-    import scala.concurrent.ExecutionContext.Implicits.global
+//    import play.api.libs.concurrent.Akka
+//    import scala.concurrent.duration._
+//    import scala.concurrent.ExecutionContext.Implicits.global
 
     app.mode match {
       case Mode.Test => {
         // No-op. Skip call to ensure services while testing
       }
       case Mode.Prod | Mode.Dev => {
-        Akka.system.scheduler.scheduleOnce(5.seconds) {
-          ensureServices()
-        }
+        //Akka.system.scheduler.scheduleOnce(5.seconds) {
+        //  ensureServices()
+        //}
       }
     }
   }
@@ -44,6 +44,7 @@ object Global extends WithFilters(LoggingFilter) {
   }
 
   private[this] def ensureServices() {
+    // TODO: Move to background actor and out of global
     Logger.info("Starting ensureServices()")
 
     Try {

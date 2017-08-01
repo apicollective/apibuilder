@@ -50,7 +50,7 @@ class MembershipsDao @Inject() (
       join users on users.guid = memberships.user_guid
   """)
 
-  def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+  def upsert(createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
     val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
       case Some(r) => r
       case None => create(createdBy, organization, user, role)
@@ -68,13 +68,13 @@ class MembershipsDao @Inject() (
     membership
   }
 
-  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+  private[db] def create(createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
     db.withConnection { implicit c =>
       create(c, createdBy, organization, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
     val membership = Membership(
       guid = UUID.randomUUID,
       organization = organization,
@@ -93,7 +93,7 @@ class MembershipsDao @Inject() (
       'organization_guid -> membership.organization.guid,
       'user_guid -> membership.user.guid,
       'role -> membership.role,
-      'created_by_guid -> createdBy.guid
+      'created_by_guid -> createdBy
     ).execute()
 
     mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)

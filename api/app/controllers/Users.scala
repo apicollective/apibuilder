@@ -1,11 +1,11 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Authentication, Session, User, UserForm, UserUpdateForm}
+import io.apibuilder.api.v0.models.{User, UserForm, UserUpdateForm}
 import io.apibuilder.api.v0.models.json._
 import lib.Validation
-import util.{Conversions, SessionIdGenerator, SessionHelper}
+import util.SessionHelper
 import db.{UserPasswordsDao, UsersDao}
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
 import play.api.mvc._
 import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
@@ -15,7 +15,6 @@ import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
 
-@Singleton
 class Users @Inject() (
   sessionHelper: SessionHelper,
   usersDao: UsersDao,
@@ -26,14 +25,10 @@ class Users @Inject() (
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] case class UserAuthenticationForm(email: String, password: String)
-  private[this] object UserAuthenticationForm {
-    implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
-  }
+  private[this] implicit val userAuthenticationFormReads = Json.reads[UserAuthenticationForm]
 
   private[this] case class GithubAuthenticationForm(token: String)
-  private[this] object GithubAuthenticationForm {
-    implicit val githubAuthenticationFormReads = Json.reads[GithubAuthenticationForm]
-  }
+  private[this] implicit val githubAuthenticationFormReads = Json.reads[GithubAuthenticationForm]
 
   def get(guid: Option[UUID], email: Option[String], token: Option[String]) = AnonymousRequest { request =>
     require(request.tokenUser.isDefined, "Missing API Token")

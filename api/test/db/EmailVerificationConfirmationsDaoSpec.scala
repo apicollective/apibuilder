@@ -12,21 +12,21 @@ class EmailVerificationConfirmationsDaoSpec extends FunSpec with Matchers with u
     val user = Util.createRandomUser()
     val verification = emailVerificationsDao.create(Util.createdBy, user, user.email)
 
-    val conf = emailVerificationConfirmationsDao.upsert(Util.createdBy, verification)
+    val conf = emailVerificationConfirmationsDao.upsert(Util.createdBy.guid, verification)
     conf.emailVerificationGuid should be(verification.guid)
 
-    val conf2 = emailVerificationConfirmationsDao.upsert(Util.createdBy, verification)
+    val conf2 = emailVerificationConfirmationsDao.upsert(Util.createdBy.guid, verification)
     conf2.guid should be(conf.guid)
   }
 
   it("findAll") {
     val user1 = Util.createRandomUser()
     val verification1 = emailVerificationsDao.create(Util.createdBy, user1, user1.email)
-    val conf1 = emailVerificationConfirmationsDao.upsert(Util.createdBy, verification1)
+    val conf1 = emailVerificationConfirmationsDao.upsert(Util.createdBy.guid, verification1)
 
     val user2 = Util.createRandomUser()
     val verification2 = emailVerificationsDao.create(Util.createdBy, user2, user2.email)
-    val conf2 = emailVerificationConfirmationsDao.upsert(Util.createdBy, verification2)
+    val conf2 = emailVerificationConfirmationsDao.upsert(Util.createdBy.guid, verification2)
 
     emailVerificationConfirmationsDao.findAll(guid = Some(conf1.guid)).map(_.guid) should be(Seq(conf1.guid))
     emailVerificationConfirmationsDao.findAll(guid = Some(conf2.guid)).map(_.guid) should be(Seq(conf2.guid))

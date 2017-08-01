@@ -51,7 +51,7 @@ class MembershipRequestsDao @Inject() (
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
-    findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
+    findByOrganizationAndUserGuidAndRole(Authorization.All, organization, user.guid, role) match {
       case Some(r: MembershipRequest) => r
       case None => {
         create(createdBy, organization, user, role)
@@ -88,17 +88,17 @@ class MembershipRequestsDao @Inject() (
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
-    doAccept(createdBy, request, s"Accepted membership request for ${request.user.email} to join as ${r.name}")
+    doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as ${r.name}")
   }
 
-  private[db] def acceptViaEmailVerification(createdBy: User, request: MembershipRequest, email: String) {
+  private[db] def acceptViaEmailVerification(createdBy: UUID, request: MembershipRequest, email: String) {
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
     doAccept(createdBy, request, s"$email joined as ${r.name} by verifying their email address")
   }
 
-  private[this] def doAccept(createdBy: User, request: MembershipRequest, message: String) {
+  private[this] def doAccept(createdBy: UUID, request: MembershipRequest, message: String) {
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
@@ -124,7 +124,7 @@ class MembershipRequestsDao @Inject() (
 
     val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
     db.withTransaction { implicit conn =>
-      organizationLogsDao.create(createdBy, request.organization, message)
+      organizationLogsDao.create(createdBy.guid, request.organization, message)
       softDelete(createdBy, request)
     }
 
@@ -138,20 +138,24 @@ class MembershipRequestsDao @Inject() (
     )
   }
 
-  def softDelete(user: User, membershipRequest: MembershipRequest) {
+  def softDelete(user: User, membershipRequest: MembershipRequest): Unit = {
+    softDelete(user.guid, membershipRequest)
+  }
+
+  def softDelete(user: UUID, membershipRequest: MembershipRequest) {
     dbHelpers.delete(user, membershipRequest.guid)
   }
 
-  private[db] def findByOrganizationAndUserAndRole(
+  private[db] def findByOrganizationAndUserGuidAndRole(
     authorization: Authorization,
     org: Organization,
-    user: User,
+    userGuid: UUID,
     role: Role
   ): Option[MembershipRequest] = {
     findAll(
       authorization,
       organizationGuid = Some(org.guid),
-      userGuid = Some(user.guid),
+      userGuid = Some(userGuid),
       role = Some(role.key),
       limit = 1
     ).headOption

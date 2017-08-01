@@ -24,8 +24,7 @@ class EmailVerificationsDao @Inject() (
   @NamedDatabase("default") db: Database,
   emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
   membershipRequestsDao: MembershipRequestsDao,
-  organizationsDao: OrganizationsDao,
-  usersDao: UsersDao
+  organizationsDao: OrganizationsDao
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "email_verifications")
@@ -79,22 +78,18 @@ class EmailVerificationsDao @Inject() (
     verification.expiresAt.isBeforeNow
   }
 
-  def confirm(user: Option[User], verification: EmailVerification) = {
+  def confirm(user: Option[User], verification: EmailVerification): Unit = {
     assert(
       !isExpired(verification),
       "Token for verificationGuid[${verification.guid}] is expired"
     )
 
-    val verificationUser = usersDao.findByGuid(verification.userGuid).getOrElse {
-      sys.error(s"User guid[${verification.userGuid}] does not exist for verification[${verification.guid}]")
-    }
+    val updatingUserGuid = user.map(_.guid).getOrElse(verification.userGuid)
 
-    val updatingUser = user.getOrElse(verificationUser)
-
-    emailVerificationConfirmationsDao.upsert(updatingUser, verification)
+    emailVerificationConfirmationsDao.upsert(updatingUserGuid, verification)
     organizationsDao.findByEmailDomain(verification.email).foreach { org =>
-      membershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, verificationUser, Role.Member).map { request =>
-        membershipRequestsDao.acceptViaEmailVerification(updatingUser, request, verification.email)
+      membershipRequestsDao.findByOrganizationAndUserGuidAndRole(Authorization.All, org, verification.userGuid, Role.Member).foreach { request =>
+        membershipRequestsDao.acceptViaEmailVerification(updatingUserGuid, request, verification.email)
       }
     }
   }

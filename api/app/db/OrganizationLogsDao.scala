@@ -29,13 +29,13 @@ class OrganizationLogsDao @Inject() (
     ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
   """
 
-  def create(createdBy: User, organization: Organization, message: String): OrganizationLog = {
+  def create(createdBy: UUID, organization: Organization, message: String): OrganizationLog = {
     db.withConnection { implicit c =>
       create(c, createdBy, organization, message)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, message: String): OrganizationLog = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, message: String): OrganizationLog = {
     val log = OrganizationLog(
       guid = UUID.randomUUID,
       organizationGuid = organization.guid,
@@ -46,7 +46,7 @@ class OrganizationLogsDao @Inject() (
       'guid -> log.guid,
       'organization_guid -> log.organizationGuid,
       'message -> log.message,
-      'created_by_guid -> createdBy.guid
+      'created_by_guid -> createdBy
     ).execute()
 
     log
