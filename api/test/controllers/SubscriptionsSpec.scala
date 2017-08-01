@@ -10,7 +10,7 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] lazy val user = Util.createRandomUser()
-  private[this] lazy val org = createOrganization()
+  private[this] lazy val org = Util.createOrganization(user)
 
   "POST /subscriptions" in new WithServer(port=defaultPort) {
     val user = createUser()
