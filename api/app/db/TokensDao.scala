@@ -31,9 +31,7 @@ class TokensDao @Inject() (
       join users on users.guid = tokens.user_guid and users.deleted_at is null
   """)
 
-  private[this] val FindCleartextQuery = Query(s"""
-    select token from tokens where guid = {guid}::uuid and deleted_at is null
-  """)
+  private[this] val FindCleartextQuery = Query("select token from tokens")
 
   private[this] val InsertQuery = """
     insert into tokens
@@ -92,8 +90,9 @@ class TokensDao @Inject() (
   def findCleartextByGuid(authorization: Authorization, guid: UUID): Option[CleartextToken] = {
     db.withConnection { implicit c =>
       authorization.
-        tokenFilter(FindCleartextQuery).
-        bind("guid", guid).
+        tokenFilter(FindCleartextQuery).withDebugging().
+        isNull("tokens.deleted_at").
+        equals("tokens.guid", guid).
         anormSql.as(SqlParser.str("token").*).headOption.map(CleartextToken)
     }
   }
