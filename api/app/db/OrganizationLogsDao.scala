@@ -1,6 +1,6 @@
 package db
 
-import io.apibuilder.api.v0.models.{Organization, User}
+import io.apibuilder.api.v0.models.Organization
 import io.flow.postgresql.Query
 import anorm._
 import javax.inject.{Inject, Singleton}

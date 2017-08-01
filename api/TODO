@@ -1,3 +1,5 @@
+Re-enable user email verification - processUserCreated
+
 remove
   - fromRwo
   - summaryFromRow

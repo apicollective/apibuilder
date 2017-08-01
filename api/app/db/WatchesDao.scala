@@ -7,9 +7,7 @@ import lib.Validation
 import play.api.db._
 import javax.inject.{Inject, Singleton}
 import java.util.UUID
-
 import org.postgresql.util.PSQLException
-import play.api.inject.Injector
 
 import scala.util.{Failure, Success, Try}
 
@@ -50,11 +48,7 @@ case class FullWatchForm(
 
 @Singleton
 class WatchesDao @Inject() (
-  @NamedDatabase("default") db: Database,
-  injector: Injector,
-  applicationsDao: ApplicationsDao,
-  organizationsDao: OrganizationsDao,
-  usersDao: UsersDao
+  @NamedDatabase("default") db: Database
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "watches")
@@ -110,6 +104,7 @@ class WatchesDao @Inject() (
 
     val guid = UUID.randomUUID
 
+    // TODO: Remove try, using an on conflict clause in query
     Try(
       db.withConnection { implicit c =>
         SQL(InsertQuery).on(

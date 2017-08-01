@@ -171,7 +171,7 @@ class UserPasswordsDao @Inject() (
         isNull("user_passwords.deleted_at").
         equals("user_passwords.user_guid", userGuid).
         limit(1).
-        anormSql().as(parser().*).headOption
+        as(parser().*).headOption
     }
   }
 

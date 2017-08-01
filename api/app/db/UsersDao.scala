@@ -154,9 +154,10 @@ class UsersDao @Inject() (
     avatarUrl: Option[String],
     gravatarId: Option[String]
   ): User = {
+    val nickname = generateNickname(login)
     val guid = db.withConnection { implicit c =>
       doInsert(
-        nickname = generateNickname(login),
+        nickname = nickname,
         email = email,
         name = name,
         avatarUrl = avatarUrl,
@@ -275,8 +276,8 @@ class UsersDao @Inject() (
       guid.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
       "Must have either a guid, email, token, sessionId, or nickname"
     )
-
-    db.withConnection { implicit c =>
+    import play.api.Play.current
+    DB.withConnection { implicit c =>
       BaseQuery.
         equals("users.guid", guid).
         and(

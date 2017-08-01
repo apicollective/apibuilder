@@ -14,8 +14,7 @@ class MembershipRequestsDao @Inject() (
   @NamedDatabase("default") db: Database,
   membershipsDao: MembershipsDao,
   organizationsDao: OrganizationsDao,
-  organizationLogsDao: OrganizationLogsDao,
-  usersDao: UsersDao
+  organizationLogsDao: OrganizationLogsDao
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "membership_requests")
@@ -105,7 +104,7 @@ class MembershipRequestsDao @Inject() (
 
     db.withTransaction { implicit conn =>
       organizationLogsDao.create(createdBy, request.organization, message)
-      softDelete(createdBy, request)
+      dbHelpers.delete(conn, createdBy, request.guid)
       membershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
 
@@ -139,10 +138,6 @@ class MembershipRequestsDao @Inject() (
   }
 
   def softDelete(user: User, membershipRequest: MembershipRequest): Unit = {
-    softDelete(user.guid, membershipRequest)
-  }
-
-  def softDelete(user: UUID, membershipRequest: MembershipRequest) {
     dbHelpers.delete(user, membershipRequest.guid)
   }
 

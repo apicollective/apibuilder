@@ -26,7 +26,7 @@ private[controllers] case class UserAuth(
 
 private[controllers] object RequestHelper {
 
-  private[this] lazy val usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
+  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
 
   val AuthorizationHeader = "Authorization"
 
@@ -83,7 +83,7 @@ class AuthenticatedRequest[A](
   request: Request[A]
 ) extends WrappedRequest[A](request) {
 
-  private[this] lazy val membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
+  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
 
   val authorization = Authorization.User(user.guid)
 
