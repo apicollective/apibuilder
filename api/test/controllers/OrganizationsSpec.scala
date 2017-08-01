@@ -1,12 +1,9 @@
 package controllers
 
-import db.OrganizationsDao
-import io.apibuilder.api.v0.models.{Organization, OrganizationForm, Visibility}
-import io.apibuilder.api.v0.errors.{ErrorsResponse, UnitResponse}
+import io.apibuilder.api.v0.models.Visibility
 import java.util.UUID
 
 import play.api.test._
-import play.api.test.Helpers._
 
 class OrganizationsSpec extends PlaySpecification with MockClient {
 
@@ -52,9 +49,9 @@ class OrganizationsSpec extends PlaySpecification with MockClient {
   "GET /organizations/:key" in new WithServer(port=defaultPort) {
     val org = createOrganization()
     await(client.organizations.getByKey(org.key)).guid must beEqualTo(org.guid)
-    intercept[UnitResponse] {
-      await(client.organizations.getByKey(UUID.randomUUID.toString))
-    }.status must beEqualTo(404)
+    expectNotFound {
+      client.organizations.getByKey(UUID.randomUUID.toString)
+    }
   }
 
   "GET /organizations for an anonymous user shows only public orgs" in new WithServer(port=defaultPort) {
@@ -63,9 +60,9 @@ class OrganizationsSpec extends PlaySpecification with MockClient {
     val anonymous = createUser()
 
     val client = newClient(anonymous)
-    intercept[UnitResponse] {
-      await(client.organizations.getByKey(privateOrg.key))
-    }.status must beEqualTo(404)
+    expectNotFound {
+      client.organizations.getByKey(privateOrg.key)
+    }
     await(client.organizations.getByKey(publicOrg.key)).key must beEqualTo(publicOrg.key)
 
     await(client.organizations.get(key = Some(privateOrg.key))) must beEqualTo(Nil)

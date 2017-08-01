@@ -125,14 +125,21 @@ object Util extends util.Daos {
     user: User = Util.createRandomUser(),
     publication: Publication = Publication.all.head
   ): Subscription = {
-    subscriptionsDao.create(
-      Util.createdBy,
+    createSubscription(
+      user,
       SubscriptionForm(
         organizationKey = org.key,
         userGuid = user.guid,
         publication = publication
       )
     )
+  }
+
+  def createSubscription(
+    user: User,
+    form: SubscriptionForm
+  ): Subscription = {
+    subscriptionsDao.create(Util.createdBy, form)
   }
 
   def createService(app: io.apibuilder.api.v0.models.Application): spec.Service = spec.Service(

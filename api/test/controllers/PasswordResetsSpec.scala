@@ -1,22 +1,18 @@
 package controllers
 
-import db.PasswordResetRequestsDao
-import io.apibuilder.api.v0.models.{Authentication, PasswordReset, PasswordResetRequest, User}
-import io.apibuilder.api.v0.errors.ErrorsResponse
+import io.apibuilder.api.v0.models.{Authentication, PasswordReset}
 import java.util.UUID
-
 import play.api.test._
-import play.api.test.Helpers._
+
+import scala.concurrent.Future
 
 class PasswordResetsSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def resetPassword(token: String, pwd: String): Authentication = {
-    await(
-      client.passwordResets.post(
-        PasswordReset(token = token, password = pwd)
-      )
+  private[this] def resetPassword(token: String, pwd: String): Future[Authentication] = {
+    client.passwordResets.post(
+      PasswordReset(token = token, password = pwd)
     )
   }
 
@@ -28,7 +24,7 @@ class PasswordResetsSpec extends PlaySpecification with MockClient {
     val pwd = "some password"
     userPasswordsDao.isValid(user.guid, pwd) must beEqualTo(false)
 
-    val result = resetPassword(pr.token, pwd)
+    val result = await(resetPassword(pr.token, pwd))
     result.user.guid must beEqualTo(user.guid)
 
     userPasswordsDao.isValid(user.guid, pwd) must beEqualTo(true)

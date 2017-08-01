@@ -177,12 +177,6 @@ trait MockClient {
     name = None
   )
 
-  def createSubscription(
-    form: SubscriptionForm = createSubscriptionForm()
-  ): Subscription = {
-    await(client.subscriptions.post(form))
-  }
-
   def createSubscriptionForm(
     org: Organization = createOrganization(),
     user: User = createUser()

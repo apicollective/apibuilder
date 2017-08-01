@@ -1,7 +1,6 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{AttributeValueForm}
-import io.apibuilder.api.v0.errors.{ErrorsResponse, UnitResponse}
+import io.apibuilder.api.v0.models.AttributeValueForm
 import play.api.test._
 
 class OrganizationAttributesSpec extends PlaySpecification with MockClient {
@@ -14,12 +13,12 @@ class OrganizationAttributesSpec extends PlaySpecification with MockClient {
     val attribute = createAttribute()
     val form = AttributeValueForm(value = "test")
 
-    val value = await(
+    val attributeValue = await(
       client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form)
     )
-    value.attribute.guid must beEqualTo(attribute.guid)
-    value.attribute.name must beEqualTo(attribute.name)
-    value.value must beEqualTo("test")
+    attributeValue.attribute.guid must beEqualTo(attribute.guid)
+    attributeValue.attribute.name must beEqualTo(attribute.name)
+    attributeValue.value must beEqualTo("test")
   }
 
   "PUT /organizations/:key/attributes validates value" in new WithServer(port=defaultPort) {
@@ -27,16 +26,16 @@ class OrganizationAttributesSpec extends PlaySpecification with MockClient {
     val form = AttributeValueForm(value = "   ")
 
     expectErrors {
-      await(client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form))
+      client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form)
     }.errors.map(_.message) must beEqualTo(Seq(s"Value is required"))
   }
 
   "PUT /organizations/:key/attributes validates attribute" in new WithServer(port=defaultPort) {
     val form = AttributeValueForm(value = "rest")
 
-    intercept[UnitResponse] {
-      await(client.organizations.putAttributesByKeyAndName(org.key, createRandomName("attr"), form))
-    }.status must beEqualTo(404)
+    expectNotFound {
+      client.organizations.putAttributesByKeyAndName(org.key, createRandomName("attr"), form)
+    }
   }
 
   "PUT /organizations/:key/attributes updates existing value" in new WithServer(port=defaultPort) {
@@ -86,9 +85,9 @@ class OrganizationAttributesSpec extends PlaySpecification with MockClient {
     await(client.organizations.getAttributesByKeyAndName(org.key, attribute1.name)).value must beEqualTo("a")
     await(client.organizations.getAttributesByKeyAndName(org.key, attribute2.name)).value must beEqualTo("b")
 
-    intercept[UnitResponse] {
-      await(client.organizations.getAttributesByKeyAndName(org.key, "other"))
-    }.status must beEqualTo(404)
+    expectNotFound {
+      client.organizations.getAttributesByKeyAndName(org.key, "other")
+    }
   }
 
 }
