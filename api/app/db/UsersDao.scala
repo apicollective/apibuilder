@@ -5,8 +5,12 @@ import io.flow.postgresql.Query
 import lib.{Constants, Misc, Role, UrlKey, Validation}
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
+
 import play.api.db._
 import java.util.UUID
+
+import play.api.inject.Injector
+
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
@@ -23,13 +27,14 @@ object UsersDao {
 class UsersDao @Inject() (
   @NamedDatabase("default") db: Database,
   @Named("main-actor") mainActor: akka.actor.ActorRef,
+  injector: Injector,
   userPasswordsDao: UserPasswordsDao
 ) {
 
   // TODO: Inject directly - here because of circular references
-  private[this] def emailVerificationsDao = play.api.Play.current.injector.instanceOf[EmailVerificationsDao]
-  private[this] def membershipRequestsDao = play.api.Play.current.injector.instanceOf[MembershipRequestsDao]
-  private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
+  private[this] def emailVerificationsDao = injector.instanceOf[EmailVerificationsDao]
+  private[this] def membershipRequestsDao = injector.instanceOf[MembershipRequestsDao]
+  private[this] def organizationsDao = injector.instanceOf[OrganizationsDao]
 
   lazy val AdminUser: User = UsersDao.AdminUserEmails.flatMap(findByEmail).headOption.getOrElse {
     sys.error(s"Failed to find background user w/ email[${UsersDao.AdminUserEmails.mkString(", ")}]")
