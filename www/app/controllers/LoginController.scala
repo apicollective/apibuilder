@@ -16,8 +16,24 @@ class LoginController @Inject() (val messagesApi: MessagesApi) extends Controlle
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  private[this] val DevSessionId = "dev"
+
   def redirect = Action {
     Redirect(routes.LoginController.index())
+  }
+
+  def developmentLogin = Action.async {
+    Authenticated.api().authentications.getSessionById(DevSessionId).map { result =>
+      Redirect("/").
+        withSession { "session_id" -> result.session.id }.
+        flashing("success" -> s"You have been logged in as ${result.user.nickname}")
+
+    }.recover {
+      case io.apibuilder.api.v0.errors.UnitResponse(404) => {
+        Redirect("/").
+          flashing("warning" -> "Developer login not enabled")
+      }
+    }
   }
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
