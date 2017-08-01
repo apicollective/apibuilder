@@ -13,7 +13,6 @@ class MembershipRequestsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
   membershipsDao: MembershipsDao,
-  organizationsDao: OrganizationsDao,
   organizationLogsDao: OrganizationLogsDao
 ) {
 

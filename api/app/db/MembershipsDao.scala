@@ -14,7 +14,6 @@ import org.joda.time.DateTime
 class MembershipsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   @NamedDatabase("default") db: Database,
-  organizationsDao: OrganizationsDao,
   subscriptionsDao: SubscriptionsDao
 ) {
 

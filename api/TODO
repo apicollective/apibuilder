@@ -1,7 +1,0 @@
-Re-enable user email verification - processUserCreated
-
-remove
-  - fromRwo
-  - summaryFromRow
-  - Filter and rename Filter2 to Filter
-  - db/Authorization class
