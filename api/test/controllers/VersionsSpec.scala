@@ -1,28 +1,23 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{Application, Organization, OriginalForm, OriginalType, Version, VersionForm}
-import java.util.UUID
-
+import io.apibuilder.api.v0.models.OriginalType
 import play.api.test._
-import play.api.test.Helpers._
 
-class VersionsSpec extends BaseSpec {
+class VersionsSpec extends PlaySpecification with MockClient {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  private[this] lazy val org = createOrganization()
+  private[this] lazy val application = createApplication(org)
 
-  lazy val org = createOrganization()
-  lazy val application = createApplication(org)
-
-  "POST /:orgKey/:version stores the original in the proper format" in new WithServer {
+  "POST /:orgKey/:version stores the original in the proper format" in new WithServer(port=defaultPort) {
     val form = createVersionForm(name = application.name)
     val version = createVersion(application, Some(form))
 
     // Now test that we stored the appropriate original
     version.original match {
-      case None => fail("No original found")
+      case None => sys.error("No original found")
       case Some(original) => {
-        original.`type` must be(OriginalType.ApiJson)
-        original.data must be(form.originalForm.data)
+        original.`type` must beEqualTo(OriginalType.ApiJson)
+        original.data must beEqualTo(form.originalForm.data)
       }
     }
   }
