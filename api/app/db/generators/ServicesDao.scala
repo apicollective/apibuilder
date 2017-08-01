@@ -15,9 +15,11 @@ import io.flow.postgresql.Query
 
 @Singleton
 class ServicesDao @Inject() (
+  @NamedDatabase("default") db: Database,
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
   generatorsDao: GeneratorsDao
 ) {
+  private[this] val dbHelpers = DbHelpers(db, "generators.services")
 
   private[this] val BaseQuery = Query(s"""
     select services.guid,
@@ -89,7 +91,7 @@ class ServicesDao @Inject() (
     } { gen =>
       generatorsDao.softDelete(deletedBy, gen)
     }
-    SoftDelete.delete("generators.services", deletedBy, service.guid)
+    dbHelpers.delete(deletedBy, service.guid)
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[GeneratorService] = {
@@ -118,7 +120,7 @@ class ServicesDao @Inject() (
             "services.guid = (select service_guid from generators.generators where deleted_at is null and lower(key) = lower(trim({generator_key})))"
           }
         ).bind("generator_key", generatorKey).
-        and(isDeleted.map(db.Filters.isDeleted("services", _))).
+        and(isDeleted.map(Filters.isDeleted("services", _))).
         orderBy("lower(services.uri)").
         limit(limit).
         offset(offset).

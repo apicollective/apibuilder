@@ -16,6 +16,8 @@ class OrganizationAttributeValuesDao @Inject() (
   attributesDao: AttributesDao
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "organization_attribute_values")
+
   private[this] val BaseQuery = Query(s"""
     select organization_attribute_values.guid,
            organization_attribute_values.value,
@@ -115,7 +117,7 @@ class OrganizationAttributeValuesDao @Inject() (
   }
 
   def softDelete(deletedBy: User, org: AttributeValue) {
-    SoftDelete.delete("organization_attribute_values", deletedBy, org.guid)
+    dbHelpers.delete(deletedBy, org.guid)
   }
 
   def findByGuid(guid: UUID): Option[AttributeValue] = {

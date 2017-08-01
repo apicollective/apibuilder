@@ -13,6 +13,8 @@ class AttributesDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "attributes")
+
   private[this] val BaseQuery = Query(s"""
     select attributes.guid,
            attributes.name,
@@ -73,8 +75,8 @@ class AttributesDao @Inject() (
     }
   }
 
-  def softDelete(deletedBy: User, org: Attribute) {
-    SoftDelete.delete("attributes", deletedBy, org.guid)
+  def softDelete(deletedBy: User, attributes: Attribute) {
+    dbHelpers.delete(deletedBy.guid, attributes.guid)
   }
 
   def findByGuid(guid: UUID): Option[Attribute] = {

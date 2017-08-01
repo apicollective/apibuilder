@@ -17,6 +17,8 @@ class SubscriptionsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "subscriptions")
+
   // TODO: resolve cicrular dependency
   private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
   private[this] def subscriptionsDao = play.api.Play.current.injector.instanceOf[SubscriptionsDao]
@@ -116,7 +118,7 @@ class SubscriptionsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, subscription: Subscription) {
-    SoftDelete.delete("subscriptions", deletedBy, subscription.guid)
+    dbHelpers.delete(deletedBy, subscription.guid)
   }
 
   def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User) {

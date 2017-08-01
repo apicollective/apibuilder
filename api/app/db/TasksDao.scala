@@ -37,6 +37,8 @@ class TasksDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "tasks")
+
   private[this] val BaseQuery = Query("""
     select tasks.guid,
            tasks.data::text,
@@ -92,7 +94,7 @@ class TasksDao @Inject() (
   }
 
   def softDelete(deletedBy: User, task: Task) {
-    SoftDelete.delete("tasks", deletedBy, task.guid)
+    dbHelpers.delete(deletedBy, task.guid)
   }
 
   def purge(deletedBy: User, task: Task) {

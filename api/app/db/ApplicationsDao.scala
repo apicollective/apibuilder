@@ -18,7 +18,8 @@ class ApplicationsDao @Inject() (
   organizationsDao: OrganizationsDao,
   tasksDao: TasksDao
 ) {
-  private[this] val dbHelpers = 
+
+  private[this] val dbHelpers = DbHelpers(db, "applications")
 
   private[this] val BaseQuery = Query(
     s"""
@@ -265,7 +266,7 @@ class ApplicationsDao @Inject() (
 
   def softDelete(deletedBy: User, application: Application) {
     withTasks(deletedBy, application.guid, { c =>
-      SoftDelete.delete(c, "applications", deletedBy, application.guid)
+      dbHelpers.delete(c, deletedBy.guid, application.guid)
     })
   }
 

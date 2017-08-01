@@ -18,6 +18,8 @@ class MembershipRequestsDao @Inject() (
   usersDao: UsersDao
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "membership_requests")
+
   // TODO: Properly select domains
   private[this] val BaseQuery = Query(s"""
     select membership_requests.guid,
@@ -137,7 +139,7 @@ class MembershipRequestsDao @Inject() (
   }
 
   def softDelete(user: User, membershipRequest: MembershipRequest) {
-    SoftDelete.delete("membership_requests", user, membershipRequest.guid)
+    dbHelpers.delete(user, membershipRequest.guid)
   }
 
   private[db] def findByOrganizationAndUserAndRole(

@@ -1,6 +1,6 @@
 package db.generators
 
-import db.Authorization
+import db.{Authorization, Filters}
 import io.apibuilder.api.v0.models._
 import io.apibuilder.generator.v0.models.Generator
 import io.flow.postgresql.Query
@@ -15,7 +15,9 @@ import play.api.libs.json.Json
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class GeneratorsDao @Inject() () {
+class GeneratorsDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val BaseQuery = Query(s"""
     select generators.guid,
@@ -186,7 +188,7 @@ class GeneratorsDao @Inject() () {
             "generators.attributes::text like '%' || lower(trim({attribute_name})) || '%'"
           }
         ).bind("attribute_name", attributeName).
-        and(isDeleted.map(db.Filters.isDeleted("generators", _))).
+        and(isDeleted.map(Filters.isDeleted("generators", _))).
         orderBy("lower(generators.name), lower(generators.key), generators.created_at desc").
         limit(limit).
         offset(offset).

@@ -16,6 +16,9 @@ class OrganizationsDao @Inject() (
   organizationDomainsDao: OrganizationDomainsDao,
   organizationLogsDao: OrganizationLogsDao
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "organizations")
+
   // TODO: resolve cicrular dependency
   private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
 
@@ -211,7 +214,7 @@ class OrganizationsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, org: Organization) {
-    SoftDelete.delete("organizations", deletedBy, org.guid)
+    dbHelpers.delete(deletedBy, org.guid)
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Organization] = {

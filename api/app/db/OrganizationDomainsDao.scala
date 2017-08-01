@@ -16,6 +16,8 @@ class OrganizationDomainsDao @Inject() (
   @NamedDatabase("default") db: Database
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "organization_domains")
+
   private[this] val BaseQuery = Query("""
     select guid, organization_guid, domain
       from organization_domains
@@ -52,7 +54,7 @@ class OrganizationDomainsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, domain: OrganizationDomain) {
-    SoftDelete.delete("organization_domains", deletedBy, domain.guid)
+    dbHelpers.delete(deletedBy, domain.guid)
   }
 
   def findAll(

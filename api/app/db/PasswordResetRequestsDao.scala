@@ -29,6 +29,8 @@ class PasswordResetRequestsDao @Inject() (
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 72
 
+  private[this] val dbHelpers = DbHelpers(db, "password_resets")
+
   private[this] val BaseQuery = Query("""
     select password_resets.guid,
            password_resets.user_guid,
@@ -84,7 +86,7 @@ class PasswordResetRequestsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, pr: PasswordReset) {
-    SoftDelete.delete("password_resets", deletedBy, pr.guid)
+    dbHelpers.delete(deletedBy, pr.guid)
   }
 
   def findByGuid(guid: UUID): Option[PasswordReset] = {

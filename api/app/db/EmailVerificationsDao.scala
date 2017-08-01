@@ -28,6 +28,8 @@ class EmailVerificationsDao @Inject() (
   usersDao: UsersDao
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "email_verifications")
+
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 168
 
@@ -98,7 +100,7 @@ class EmailVerificationsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, verification: EmailVerification) {
-    SoftDelete.delete("email_verifications", deletedBy, verification.guid)
+    dbHelpers.delete(deletedBy.guid, verification.guid)
   }
 
   def findByGuid(guid: UUID): Option[EmailVerification] = {

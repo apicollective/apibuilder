@@ -15,6 +15,8 @@ class TokensDao @Inject() (
   usersDao: UsersDao
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "tokens")
+
   private[this] val BaseQuery = Query(s"""
     select tokens.guid,
            'XXX-XXX-XXX' as masked_token,
@@ -80,7 +82,7 @@ class TokensDao @Inject() (
   }
 
   def softDelete(deletedBy: User, token: Token) {
-    SoftDelete.delete("tokens", deletedBy, token.guid)
+    dbHelpers.delete(deletedBy, token.guid)
   }
 
   def findByToken(token: String): Option[Token] = {

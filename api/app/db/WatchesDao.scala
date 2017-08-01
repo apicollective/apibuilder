@@ -53,6 +53,8 @@ class WatchesDao @Inject() (
   usersDao: UsersDao
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "watches")
+
   private[this] val BaseQuery = Query(s"""
     select watches.guid,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("watches")},
@@ -136,7 +138,7 @@ class WatchesDao @Inject() (
   }
 
   def softDelete(deletedBy: User, watch: Watch) {
-    SoftDelete.delete("watches", deletedBy, watch.guid)
+    dbHelpers.delete(deletedBy, watch.guid)
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Watch] = {

@@ -19,6 +19,8 @@ class MembershipsDao @Inject() (
   usersDao: UsersDao
 ) {
 
+  private[this] val dbHelpers = DbHelpers(db, "memberships")
+
   private[this] val InsertQuery = """
     insert into memberships
     (guid, organization_guid, user_guid, role, created_by_guid)
@@ -106,7 +108,7 @@ class MembershipsDao @Inject() (
     */
   def softDelete(user: User, membership: Membership) {
     subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
-    SoftDelete.delete("memberships", user, membership.guid)
+    dbHelpers.delete(user, membership.guid)
   }
 
   def isUserAdmin(
