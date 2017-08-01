@@ -4,9 +4,14 @@ import java.util.UUID
 
 import db.Authorization
 import io.apibuilder.api.v0.Client
+import io.apibuilder.api.v0.errors.UnitResponse
 import io.apibuilder.api.v0.models._
 import play.api.test.Helpers._
 import util.SessionHelper
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
 
 trait MockClient {
 
@@ -14,6 +19,7 @@ trait MockClient {
 
   val defaultPort: Int = 9010
 
+  private[this] val DefaultDuration = FiniteDuration(3, SECONDS)
   private[this] def app = play.api.Play.current
 
   def applicationsDao = app.injector.instanceOf[db.ApplicationsDao]
@@ -66,6 +72,63 @@ trait MockClient {
       Some(apiAuth),
       defaultHeaders = Seq("Authorization" -> s"Session $sessionId")
     )
+  }
+
+  def expectErrors[T](
+    f: => Future[T],
+    duration: Duration = DefaultDuration
+  ): io.apibuilder.api.v0.errors.ErrorsResponse = {
+    Try(
+      Await.result(f, duration)
+    ) match {
+      case Success(response) => {
+        sys.error("Expected function to fail but it succeeded with: " + response)
+      }
+      case Failure(ex) =>  ex match {
+        case e: io.apibuilder.api.v0.errors.ErrorsResponse => {
+          e
+        }
+        case e => {
+          sys.error(s"Expected an exception of type[GenericErrorResponse] but got[$e]")
+        }
+      }
+    }
+  }
+
+  def expectNotFound[T](
+    f: => Future[T],
+    duration: Duration = DefaultDuration
+  ) {
+    expectStatus(404) {
+      Await.result(f, duration)
+    }
+  }
+
+  def expectNotAuthorized[T](
+    f: => Future[T],
+    duration: Duration = DefaultDuration
+  ) {
+    expectStatus(401) {
+      Await.result(f, duration)
+    }
+  }
+
+  def expectStatus(code: Int)(f: => Unit) {
+    Try(
+      f
+    ) match {
+      case Success(response) => {
+        org.specs2.execute.Failure(s"Expected HTTP[$code] but got HTTP 2xx")
+      }
+      case Failure(ex) => ex match {
+        case UnitResponse(_) => {
+          org.specs2.execute.Success()
+        }
+        case e => {
+          org.specs2.execute.Failure(s"Unexpected error: $e")
+        }
+      }
+    }
   }
 
   def createRandomName(suffix: String): String = {

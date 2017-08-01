@@ -1,11 +1,7 @@
 package controllers
 
-import db.AttributesDao
-import io.apibuilder.api.v0.models.{Attribute, AttributeForm}
-import io.apibuilder.api.v0.errors.{ErrorsResponse, UnitResponse}
-
+import io.apibuilder.api.v0.errors.UnitResponse
 import play.api.test._
-import play.api.test.Helpers._
 
 class AttributesSpec extends PlaySpecification with MockClient {
 
@@ -15,7 +11,7 @@ class AttributesSpec extends PlaySpecification with MockClient {
     val name = createRandomName("attribute")
     val attr = createAttribute(createAttributeForm(name = name, description = Some("foo")))
     attr.name must beEqualTo(name)
-    attr.description must beEqualTo(Some("foo"))
+    attr.description must beSome("foo")
   }
 
   "POST /attributes trims whitespace in name" in new WithServer(port=defaultPort) {
@@ -25,12 +21,12 @@ class AttributesSpec extends PlaySpecification with MockClient {
   }
 
   "POST /attributes validates name is valid" in new WithServer(port=defaultPort) {
-    intercept[ErrorsResponse] {
-      createAttribute(createAttributeForm(name = "a"))
+    expectErrors {
+      client.attributes.post(createAttributeForm(name = "a"))
     }.errors.map(_.message) must beEqualTo(Seq(s"Name must be at least 3 characters"))
 
-    intercept[ErrorsResponse] {
-      createAttribute(createAttributeForm(name = "a bad name"))
+    expectErrors {
+      client.attributes.post(createAttributeForm(name = "a bad name"))
     }.errors.map(_.message) must beEqualTo(Seq(s"Name must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid name would be: a-bad-name"))
   }
 
@@ -44,9 +40,9 @@ class AttributesSpec extends PlaySpecification with MockClient {
     val attr = createAttribute()
 
     val otherClient = newClient(createUser())
-    intercept[UnitResponse] {
-      await(otherClient.attributes.deleteByName(attr.name))
-    }.status must beEqualTo(401)
+    expectNotAuthorized {
+      otherClient.attributes.deleteByName(attr.name)
+    }
   }
 
   "GET /attributes by name" in new WithServer(port=defaultPort) {
@@ -62,9 +58,9 @@ class AttributesSpec extends PlaySpecification with MockClient {
     val attr = createAttribute()
     await(client.attributes.getByName(attr.name)).guid must beEqualTo(attr.guid)
 
-    intercept[UnitResponse] {
-      await(client.attributes.getByName(createRandomName("attr")))
-    }.status must beEqualTo(404)
+    expectNotFound {
+      client.attributes.getByName(createRandomName("attr"))
+    }
   }
 
 }

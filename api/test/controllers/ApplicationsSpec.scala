@@ -31,11 +31,11 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
   }
 
   "POST /:orgKey validates key is valid" in new WithServer(port=defaultPort) {
-    intercept[ErrorsResponse] {
+    expectErrors {
       createApplication(org, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a")))
     }.errors.map(_.message) must beEqualTo(Seq(s"Key must be at least 3 characters"))
 
-    intercept[ErrorsResponse] {
+    expectErrors {
       createApplication(org, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
     }.errors.map(_.message) must beEqualTo(Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-key"))
   }
@@ -87,7 +87,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val application = createApplication(org)
     val key = UUID.randomUUID.toString
 
-    intercept[ErrorsResponse] {
+    expectErrors {
       await(client.applications.postMoveByApplicationKey(org.key, application.key, MoveForm(orgKey = key)))
     }.errors.map(_.message) must beEqualTo(Seq(s"Organization[$key] not found"))
   }
@@ -101,7 +101,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     await(client.applications.postMoveByApplicationKey(org.key, application.key, MoveForm(orgKey = org.key)))
 
     // Test validation if org key already defined for the org to which we are moving the app
-    intercept[ErrorsResponse] {
+    expectErrors {
       await(client.applications.postMoveByApplicationKey(org.key, application.key, MoveForm(orgKey = org2.key)))
     }.errors.map(_.message) must beEqualTo(Seq(s"Organization[${org2.key}] already has an application[${application.key}]]"))
   }

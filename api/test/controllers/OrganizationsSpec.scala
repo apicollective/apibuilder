@@ -25,11 +25,11 @@ class OrganizationsSpec extends PlaySpecification with MockClient {
   }
 
   "POST /organizations validates key is valid" in new WithServer(port=defaultPort) {
-    intercept[ErrorsResponse] {
+    expectErrors {
       createOrganization(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a")))
     }.errors.map(_.message) must beEqualTo(Seq(s"Key must be at least 3 characters"))
 
-    intercept[ErrorsResponse] {
+    expectErrors {
       createOrganization(createOrganizationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
     }.errors.map(_.message) must beEqualTo(Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-key"))
   }

@@ -33,7 +33,7 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
     val form = createSubscriptionForm(org, user)
     val subscription = createSubscription(form)
 
-    intercept[ErrorsResponse] {
+    expectErrors {
       createSubscription(form)
     }.errors.map(_.message) must beEqualTo(Seq("User is already subscribed to this publication for this organization"))
   }
@@ -57,7 +57,7 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   "POST /subscriptions validates org key" in new WithServer(port=defaultPort) {
     val user = createUser()
 
-    intercept[ErrorsResponse] {
+    expectErrors {
       createSubscription(
         SubscriptionForm(
           organizationKey = UUID.randomUUID.toString,
@@ -69,7 +69,7 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   }
 
   "POST /subscriptions validates user guid" in new WithServer(port=defaultPort) {
-    intercept[ErrorsResponse] {
+    expectErrors {
       createSubscription(
         SubscriptionForm(
           organizationKey = org.key,
@@ -83,7 +83,7 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   "POST /subscriptions validates publication" in new WithServer(port=defaultPort) {
     val user = createUser()
 
-    intercept[ErrorsResponse] {
+    expectErrors {
       createSubscription(
         SubscriptionForm(
           organizationKey = org.key,

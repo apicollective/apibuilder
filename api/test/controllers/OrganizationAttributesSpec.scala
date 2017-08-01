@@ -1,6 +1,6 @@
 package controllers
 
-import io.apibuilder.api.v0.models.{AttributeValueForm, Visibility}
+import io.apibuilder.api.v0.models.{AttributeValueForm}
 import io.apibuilder.api.v0.errors.{ErrorsResponse, UnitResponse}
 import play.api.test._
 
@@ -26,7 +26,7 @@ class OrganizationAttributesSpec extends PlaySpecification with MockClient {
     val attribute = createAttribute()
     val form = AttributeValueForm(value = "   ")
 
-    intercept[ErrorsResponse] {
+    expectErrors {
       await(client.organizations.putAttributesByKeyAndName(org.key, attribute.name, form))
     }.errors.map(_.message) must beEqualTo(Seq(s"Value is required"))
   }

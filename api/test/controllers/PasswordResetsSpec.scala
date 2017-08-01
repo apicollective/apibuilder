@@ -34,7 +34,7 @@ class PasswordResetsSpec extends PlaySpecification with MockClient {
     userPasswordsDao.isValid(user.guid, pwd) must beEqualTo(true)
 
     // Make sure token cannot be reused
-    intercept[ErrorsResponse] {
+    expectErrors {
       resetPassword(pr.token, pwd)
     }.errors.map(_.message) must beEqualTo(Seq(s"Token not found"))
 
@@ -45,14 +45,14 @@ class PasswordResetsSpec extends PlaySpecification with MockClient {
     createPasswordRequest(user.email)
     val pr = passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).head
 
-    intercept[ErrorsResponse] {
+    expectErrors {
       resetPassword(pr.token, "foo")
     }.errors.map(_.message) must beEqualTo(Seq(s"Password must be at least 5 characters"))
 
   }
 
   "POST /password_reset_requests/:token validates token" in new WithServer(port=defaultPort) {
-    intercept[ErrorsResponse] {
+    expectErrors {
       resetPassword(UUID.randomUUID.toString, "testing")
     }.errors.map(_.message) must beEqualTo(Seq(s"Token not found"))
 
