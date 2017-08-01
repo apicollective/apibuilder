@@ -186,6 +186,13 @@ trait MockClient {
     publication = Publication.MembershipRequestsCreate
   )
 
+  def createTokenForm(
+    user: User = createUser()
+  ) = TokenForm(
+    userGuid = user.guid,
+    description = Some("test")
+  )
+
   def createApplication(
     org: Organization,
     form: ApplicationForm = createApplicationForm()
