@@ -8,7 +8,6 @@ import javax.inject.{Inject, Singleton}
 
 import anorm._
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
 import play.api.libs.json.Json
@@ -53,7 +52,7 @@ class GeneratorsDao @Inject() () {
   def upsert(user: User, form: GeneratorForm): Either[Seq[String], GeneratorWithService] = {
     findByKey(form.generator.key) match {
       case None => {
-        val gen = DB.withConnection { implicit c =>
+        val gen = db.withConnection { implicit c =>
           Try(create(c, user, form)) match {
             case Success(guid) => {
               findByGuid(guid).getOrElse {
@@ -73,7 +72,7 @@ class GeneratorsDao @Inject() () {
         if (existing.service.guid == form.serviceGuid) {
           if (isDifferent(existing.generator, form)) {
             // Update to catch any updates to properties
-            val generatorGuid = DB.withConnection { implicit c =>
+            val generatorGuid = db.withConnection { implicit c =>
               softDelete(c, user, existing.service.guid, existing.generator.key)
               create(c, user, form)
             }
@@ -143,7 +142,7 @@ class GeneratorsDao @Inject() () {
   }
 
   def softDelete(deletedBy: User, gws: GeneratorWithService) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       softDelete(c, deletedBy, gws.service.guid, gws.generator.key)
     }
   }
@@ -167,7 +166,7 @@ class GeneratorsDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[GeneratorWithService] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.generatorServicesFilter(BaseQuery).
         equals("generators.guid", guid).
         equals("generators.service_guid", serviceGuid).

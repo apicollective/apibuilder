@@ -7,13 +7,13 @@ import lib.Role
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 import org.joda.time.DateTime
 
 @Singleton
 class MembershipsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
   organizationsDao: OrganizationsDao,
   subscriptionsDao: SubscriptionsDao,
   usersDao: UsersDao
@@ -67,7 +67,7 @@ class MembershipsDao @Inject() (
   }
 
   private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       create(c, createdBy, organization, user, role)
     }
   }
@@ -159,7 +159,7 @@ class MembershipsDao @Inject() (
     offset: Long = 0
   ): Seq[Membership] = {
     // TODO Implement authorization
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("memberships.guid", guid).
         equals("memberships.organization_guid", organizationGuid).

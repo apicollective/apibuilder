@@ -6,12 +6,12 @@ import lib.TokenGenerator
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 import lib.Validation
 
 @Singleton
 class TokensDao @Inject() (
+  @NamedDatabase("default") db: Database,
   usersDao: UsersDao
 ) {
 
@@ -64,7 +64,7 @@ class TokensDao @Inject() (
 
     val guid = UUID.randomUUID
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'user_guid -> form.userGuid,
@@ -88,7 +88,7 @@ class TokensDao @Inject() (
   }
 
   def findCleartextByGuid(authorization: Authorization, guid: UUID): Option[CleartextToken] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.
         tokenFilter(FindCleartextQuery).
         bind("guid", guid).
@@ -109,7 +109,7 @@ class TokensDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Token] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.tokenFilter(BaseQuery).
         equals("tokens.guid", guid).
         equals("tokens.user_guid", userGuid).

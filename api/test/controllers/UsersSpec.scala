@@ -1,10 +1,11 @@
 package controllers
 
-import io.apibuilder.api.v0.errors.{ErrorsResponse, FailedRequest}
+import akka.util.Timeout
 import io.apibuilder.api.v0.models.UserUpdateForm
-
 import play.api.test._
 import play.api.test.Helpers._
+
+import scala.concurrent.duration._
 
 class UsersSpec extends BaseSpec {
 
@@ -14,9 +15,10 @@ class UsersSpec extends BaseSpec {
     val form = createUserForm()
     val user = createUser(form)
 
-    val auth = await {
+    val auth = await(
       client.users.postAuthenticate(form.email, form.password)
-    }
+    )(Timeout(FiniteDuration(3, SECONDS)))
+
     println(auth)
 
     val updatedUser = await(

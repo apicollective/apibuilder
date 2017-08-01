@@ -5,9 +5,9 @@ import util.Query
 import java.sql.Connection
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
+
 import org.joda.time.DateTime
-import play.api.db.{Database, DB, NamedDatabase}
-import play.api.Play.current
+import play.api.db.{Database, NamedDatabase}
 
 case class Session(
   id: String,
@@ -30,7 +30,9 @@ case class SessionForm(
 )
 
 @Singleton
-class SessionsDao @Inject() () {
+class SessionsDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val BaseQuery = Query("""
       | select sessions.id,
@@ -65,7 +67,7 @@ class SessionsDao @Inject() () {
   }
 
   def insert(updatedBy: UUID, form: SessionForm) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       insert(c, updatedBy, form)
     }
   }
@@ -85,7 +87,7 @@ class SessionsDao @Inject() () {
   }
   
   def updateById(updatedBy: UUID, id: String, form: SessionForm) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       updateById(c, updatedBy, id, form)
     }
   }
@@ -98,7 +100,7 @@ class SessionsDao @Inject() () {
   }
 
   def update(updatedBy: UUID, existing: Session, form: SessionForm) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       update(c, updatedBy, existing, form)
     }
   }
@@ -112,7 +114,7 @@ class SessionsDao @Inject() () {
   }
   
   def deleteById(deletedBy: UUID, id: String) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       deleteById(c, deletedBy, id)
     }
   }
@@ -134,7 +136,7 @@ class SessionsDao @Inject() () {
   ) (
     implicit customQueryModifier: Query => Query = { q => q }
   ): Seq[Session] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       customQueryModifier(BaseQuery).
         optionalIn("sessions.id", ids).
         equals("sessions.user_guid", userGuid).
@@ -150,7 +152,7 @@ class SessionsDao @Inject() () {
   """
 
   def delete(deletedBy: UUID, id: String) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       delete(c, deletedBy, id)
     }
   }

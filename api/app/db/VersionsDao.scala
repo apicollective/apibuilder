@@ -14,7 +14,6 @@ import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
 import play.api.Logger
 import play.api.libs.json._
-import play.api.Play.current
 import java.util.UUID
 
 import io.flow.postgresql.Query
@@ -25,6 +24,7 @@ case class MigrationStats(good: Long, bad: Long)
 
 @Singleton
 class VersionsDao @Inject() (
+  @NamedDatabase("default") db: Database,
   @Named("main-actor") mainActor: akka.actor.ActorRef,
   applicationsDao: ApplicationsDao,
   originalsDao: OriginalsDao,
@@ -92,7 +92,7 @@ class VersionsDao @Inject() (
       limit = 1
     ).headOption
 
-    val (guid, taskGuid) = DB.withTransaction { implicit c =>
+    val (guid, taskGuid) = db.withTransaction { implicit c =>
       val versionGuid = doCreate(c, user, application, version, original, service)
       val taskGuid = latestVersion.map { v =>
         createDiffTask(user, v.guid, versionGuid)
@@ -135,7 +135,7 @@ class VersionsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, version: Version) {
-    DB.withTransaction { implicit c =>
+    db.withTransaction { implicit c =>
       softDeleteService(c, deletedBy, version.guid)
       originalsDao.softDeleteByVersionGuid(c, deletedBy, version.guid)
 
@@ -155,7 +155,7 @@ class VersionsDao @Inject() (
   }
 
   def replace(user: User, version: Version, application: Application, original: Original, service: Service): Version = {
-    val (versionGuid, taskGuids) = DB.withTransaction { implicit c =>
+    val (versionGuid, taskGuids) = db.withTransaction { implicit c =>
       softDelete(user, version)
       val versionGuid = doCreate(c, user, application, version.version, original, service)
       val diffTaskGuid = createDiffTask(user, version.guid, versionGuid)
@@ -213,7 +213,7 @@ class VersionsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Version] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
 
       authorization.applicationFilter(BaseQuery).
         isNotNull("services.guid").
@@ -277,7 +277,7 @@ class VersionsDao @Inject() (
     var good = 0l
     var bad = 0l
 
-    val processed = DB.withConnection { implicit c =>
+    val processed = db.withConnection { implicit c =>
       val records = BaseQuery.
         isNull("deleted_at").
         isNull("services.guid").

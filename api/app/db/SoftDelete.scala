@@ -3,10 +3,9 @@ package db
 import io.apibuilder.api.v0.models.User
 import anorm._
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
-private[db] object SoftDelete {
+private[db] case class SoftDelete(db: Database) {
 
   def delete(tableName: String, deletedBy: User, guid: String) {
     delete(tableName, deletedBy, UUID.fromString(guid))
@@ -25,7 +24,7 @@ private[db] object SoftDelete {
   }
 
   def delete(tableName: String, deletedBy: User, field: (String, Option[String], String)) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       delete(c, tableName, deletedBy, field)
     }
   }
@@ -35,7 +34,7 @@ private[db] object SoftDelete {
     val SoftDeleteQuery = s"""
       update %s set deleted_by_guid = {deleted_by_guid}::uuid, deleted_at = now() where ${name} = {${name}}${tpe.getOrElse("")} and deleted_at is null
                           """
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(SoftDeleteQuery.format(tableName)).on('deleted_by_guid -> deletedBy.guid, name -> value).execute()
     }
   }

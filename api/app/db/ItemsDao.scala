@@ -8,12 +8,13 @@ import anorm._
 import javax.inject.{Inject, Singleton}
 
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
 @Singleton
-class ItemsDao @Inject() () {
+class ItemsDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   // For authorization purposes, we assume the only thing we've
   // indexed is the application and thus join applications and
@@ -65,7 +66,7 @@ class ItemsDao @Inject() () {
       case ItemDetailUndefinedType(desc) => None
     }
 
-    DB.withTransaction { implicit c =>
+    db.withTransaction { implicit c =>
       delete(c, guid)
 
       SQL(UpsertQuery).on(
@@ -81,7 +82,7 @@ class ItemsDao @Inject() () {
   }
 
   def delete(guid: UUID) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       delete(c, guid)
     }
   }
@@ -109,7 +110,7 @@ class ItemsDao @Inject() () {
       case Some(query) => parseQuery(query)
     }
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery).
         equals("items.guid", guid).
         and(

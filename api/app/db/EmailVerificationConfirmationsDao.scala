@@ -5,7 +5,6 @@ import anorm._
 import javax.inject.{Inject, Singleton}
 
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
 import io.flow.postgresql.Query
@@ -18,7 +17,9 @@ private[db] case class EmailVerificationConfirmation(
 )
 
 @Singleton
-private[db] class EmailVerificationConfirmationsDao @Inject() () {
+private[db] class EmailVerificationConfirmationsDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val BaseQuery = Query(
     """
@@ -39,7 +40,7 @@ private[db] class EmailVerificationConfirmationsDao @Inject() () {
   def upsert(createdBy: User, conf: EmailVerification): EmailVerificationConfirmation = {
     findAll(emailVerificationGuid = Some(conf.guid), limit = 1).headOption.getOrElse {
       val guid = UUID.randomUUID
-      DB.withConnection { implicit c =>
+      db.withConnection { implicit c =>
         SQL(InsertQuery).on(
           'guid -> guid,
           'email_verification_guid -> conf.guid,
@@ -64,7 +65,7 @@ private[db] class EmailVerificationConfirmationsDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[EmailVerificationConfirmation] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("email_verification_confirmations.guid", guid).
         equals("email_verification_confirmations.email_verification_guid", emailVerificationGuid).

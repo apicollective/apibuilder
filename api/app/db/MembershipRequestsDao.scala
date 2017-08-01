@@ -6,12 +6,12 @@ import lib.Role
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
 @Singleton
 class MembershipRequestsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
   membershipsDao: MembershipsDao,
   organizationsDao: OrganizationsDao,
   organizationLogsDao: OrganizationLogsDao,
@@ -59,7 +59,7 @@ class MembershipRequestsDao @Inject() (
 
   private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
     val guid = UUID.randomUUID
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> organization.guid,
@@ -101,7 +101,7 @@ class MembershipRequestsDao @Inject() (
       sys.error(s"Invalid role[${request.role}]")
     }
 
-    DB.withTransaction { implicit conn =>
+    db.withTransaction { implicit conn =>
       organizationLogsDao.create(createdBy, request.organization, message)
       softDelete(createdBy, request)
       membershipsDao.upsert(createdBy, request.organization, request.user, r)
@@ -121,7 +121,7 @@ class MembershipRequestsDao @Inject() (
     }
 
     val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
-    DB.withTransaction { implicit conn =>
+    db.withTransaction { implicit conn =>
       organizationLogsDao.create(createdBy, request.organization, message)
       softDelete(createdBy, request)
     }
@@ -172,7 +172,7 @@ class MembershipRequestsDao @Inject() (
   ): Seq[MembershipRequest] = {
     // TODO Implement authorization
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("membership_requests.guid", guid).
         equals("membership_requests.organization_guid", organizationGuid).

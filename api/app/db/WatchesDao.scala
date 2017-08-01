@@ -5,7 +5,6 @@ import io.apibuilder.api.v0.models.{Application, Error, Organization, User, Watc
 import io.flow.postgresql.Query
 import lib.Validation
 import play.api.db._
-import play.api.Play.current
 import javax.inject.{Inject, Singleton}
 import java.util.UUID
 import org.postgresql.util.PSQLException
@@ -48,6 +47,7 @@ case class FullWatchForm(
 
 @Singleton
 class WatchesDao @Inject() (
+  @NamedDatabase("default") db: Database,
   applicationsDao: ApplicationsDao,
   organizationsDao: OrganizationsDao,
   usersDao: UsersDao
@@ -105,7 +105,7 @@ class WatchesDao @Inject() (
     val guid = UUID.randomUUID
 
     Try(
-      DB.withConnection { implicit c =>
+      db.withConnection { implicit c =>
         SQL(InsertQuery).on(
           'guid -> guid,
           'user_guid -> fullForm.form.userGuid,
@@ -158,7 +158,7 @@ class WatchesDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Watch] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery).
         equals("watches.guid", guid).
         equals("organizations.key", organizationKey).

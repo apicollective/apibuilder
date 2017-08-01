@@ -8,13 +8,43 @@ import io.apibuilder.api.v0.Client
 import play.api.test._
 import play.api.test.Helpers._
 import org.scalatestplus.play._
+import util.SessionHelper
 
-abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
+class BaseSpec extends PlaySpec with OneServerPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   implicit override lazy val port = 9010
   implicit override lazy val app: FakeApplication = FakeApplication()
+
+  def applicationsDao = play.api.Play.current.injector.instanceOf[db.ApplicationsDao]
+  def attributesDao = play.api.Play.current.injector.instanceOf[db.AttributesDao]
+  def changesDao = play.api.Play.current.injector.instanceOf[db.ChangesDao]
+  def emailVerificationsDao = play.api.Play.current.injector.instanceOf[db.EmailVerificationsDao]
+  def itemsDao = play.api.Play.current.injector.instanceOf[db.ItemsDao]
+  def membershipRequestsDao = play.api.Play.current.injector.instanceOf[db.MembershipRequestsDao]
+  def membershipsDao = play.api.Play.current.injector.instanceOf[db.MembershipsDao]
+  def usersDao = play.api.Play.current.injector.instanceOf[db.UsersDao]
+
+  def organizationAttributeValuesDao = play.api.Play.current.injector.instanceOf[db.OrganizationAttributeValuesDao]
+  def organizationDomainsDao = play.api.Play.current.injector.instanceOf[db.OrganizationDomainsDao]
+  def organizationLogsDao = play.api.Play.current.injector.instanceOf[db.OrganizationLogsDao]
+  def organizationsDao = play.api.Play.current.injector.instanceOf[db.OrganizationsDao]
+  def originalsDao = play.api.Play.current.injector.instanceOf[db.OriginalsDao]
+  def passwordResetRequestsDao = play.api.Play.current.injector.instanceOf[db.PasswordResetRequestsDao]
+  def subscriptionsDao = play.api.Play.current.injector.instanceOf[db.SubscriptionsDao]
+  def tasksDao = play.api.Play.current.injector.instanceOf[db.TasksDao]
+  def tokensDao = play.api.Play.current.injector.instanceOf[db.TokensDao]
+  def userPasswordsDao = play.api.Play.current.injector.instanceOf[db.UserPasswordsDao]
+  def versionsDao = play.api.Play.current.injector.instanceOf[db.VersionsDao]
+
+  def servicesDao = play.api.Play.current.injector.instanceOf[db.generators.ServicesDao]
+  def generatorsDao = play.api.Play.current.injector.instanceOf[db.generators.GeneratorsDao]
+
+  def emails = play.api.Play.current.injector.instanceOf[actors.Emails]
+  def search = play.api.Play.current.injector.instanceOf[actors.Search]
+
+  def sessionHelper = play.api.Play.current.injector.instanceOf[SessionHelper]
 
   lazy val TestUser: User = usersDao.create(createUserForm())
 
@@ -22,7 +52,6 @@ abstract class BaseSpec extends PlaySpec with OneServerPerSuite with util.Daos {
     val token = tokensDao.create(TestUser, TokenForm(userGuid = TestUser.guid))
     tokensDao.findCleartextByGuid(Authorization.All, token.guid).get.token
   }
-
   private[this] lazy val apiAuth = io.apibuilder.api.v0.Authorization.Basic(apiToken)
 
   lazy val client: Client = newClient(TestUser)

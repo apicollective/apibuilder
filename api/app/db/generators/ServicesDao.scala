@@ -9,7 +9,6 @@ import javax.inject.{Inject, Singleton}
 import lib.{Pager, Validation}
 import anorm._
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
 import io.flow.postgresql.Query
@@ -61,7 +60,7 @@ class ServicesDao @Inject() (
 
     val guid = UUID.randomUUID
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'uri -> form.uri.trim,
@@ -106,7 +105,7 @@ class ServicesDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[GeneratorService] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.generatorServicesFilter(BaseQuery).
         equals("services.guid", guid).
         and(

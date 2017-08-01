@@ -8,7 +8,6 @@ import java.util.UUID
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.db._
-import play.api.Play.current
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
 
@@ -22,6 +21,7 @@ case class PasswordReset(
 @Singleton
 class PasswordResetRequestsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
   userPasswordsDao: UserPasswordsDao,
   usersDao: UsersDao
 ) {
@@ -46,7 +46,7 @@ class PasswordResetRequestsDao @Inject() (
 
   def create(createdBy: Option[User], user: User): PasswordReset = {
     val guid = UUID.randomUUID
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'user_guid -> user.guid,
@@ -104,7 +104,7 @@ class PasswordResetRequestsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[PasswordReset] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("password_resets.guid", guid).
         equals("password_resets.user_guid", userGuid).

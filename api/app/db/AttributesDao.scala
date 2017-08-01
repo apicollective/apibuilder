@@ -6,11 +6,12 @@ import lib.{Validation, UrlKey}
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
 @Singleton
-class AttributesDao @Inject() () {
+class AttributesDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val BaseQuery = Query(s"""
     select attributes.guid,
@@ -58,7 +59,7 @@ class AttributesDao @Inject() () {
 
     val guid = UUID.randomUUID()
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'name -> form.name.trim,
@@ -91,7 +92,7 @@ class AttributesDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Attribute] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("attributes.guid", guid).
         and(
