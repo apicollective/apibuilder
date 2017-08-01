@@ -1,8 +1,7 @@
 package controllers
 
-import db.ApplicationsDao
-import io.apibuilder.api.v0.models.{Application, ApplicationForm, MoveForm, Organization, Visibility}
-import io.apibuilder.api.v0.errors.{ErrorsResponse, UnitResponse}
+import io.apibuilder.api.v0.models.{Application, MoveForm, Organization}
+import io.apibuilder.api.v0.errors.ErrorsResponse
 import java.util.UUID
 
 import org.scalatest.Matchers
@@ -32,18 +31,18 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
   "POST /:orgKey validates key is valid" in new WithServer(port=defaultPort) {
     expectErrors {
-      createApplication(org, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a")))
+      client.applications.post(org.key, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a")))
     }.errors.map(_.message) must beEqualTo(Seq(s"Key must be at least 3 characters"))
 
     expectErrors {
-      createApplication(org, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
+      client.applications.post(org.key, createApplicationForm(name = UUID.randomUUID.toString, key = Some("a bad key")))
     }.errors.map(_.message) must beEqualTo(Seq(s"Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: a-bad-key"))
   }
 
   "DELETE /:org/:key" in new WithServer(port=defaultPort) {
     val application = createApplication(org)
     await(client.applications.deleteByApplicationKey(org.key, application.key)) must beEqualTo(())
-    getByKey(org, application.key) must beEqualTo(None)
+    getByKey(org, application.key) must beNone
   }
 
   "GET /:orgKey by application name" in new WithServer(port=defaultPort) {
@@ -88,7 +87,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
     val key = UUID.randomUUID.toString
 
     expectErrors {
-      await(client.applications.postMoveByApplicationKey(org.key, application.key, MoveForm(orgKey = key)))
+      client.applications.postMoveByApplicationKey(org.key, application.key, MoveForm(orgKey = key))
     }.errors.map(_.message) must beEqualTo(Seq(s"Organization[$key] not found"))
   }
 
@@ -102,7 +101,7 @@ class ApplicationsSpec extends PlaySpecification with MockClient {
 
     // Test validation if org key already defined for the org to which we are moving the app
     expectErrors {
-      await(client.applications.postMoveByApplicationKey(org.key, application.key, MoveForm(orgKey = org2.key)))
+      client.applications.postMoveByApplicationKey(org.key, application.key, MoveForm(orgKey = org2.key))
     }.errors.map(_.message) must beEqualTo(Seq(s"Organization[${org2.key}] already has an application[${application.key}]]"))
   }
 
