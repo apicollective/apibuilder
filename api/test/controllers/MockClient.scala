@@ -5,7 +5,6 @@ import java.util.UUID
 import db.Authorization
 import io.apibuilder.api.v0.Client
 import io.apibuilder.api.v0.models._
-import org.scalatestplus.play._
 import play.api.test.Helpers._
 import util.SessionHelper
 
@@ -13,7 +12,8 @@ trait MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val port: Int = 9010
+  val defaultPort: Int = 9010
+
   private[this] def app = play.api.Play.current
 
   def applicationsDao = app.injector.instanceOf[db.ApplicationsDao]
@@ -62,7 +62,7 @@ trait MockClient {
 
   def newSessionClient(sessionId: String): Client = {
     new io.apibuilder.api.v0.Client(
-      s"http://localhost:$port",
+      s"http://localhost:$defaultPort",
       Some(apiAuth),
       defaultHeaders = Seq("Authorization" -> s"Session $sessionId")
     )

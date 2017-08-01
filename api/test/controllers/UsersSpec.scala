@@ -7,7 +7,7 @@ class UsersSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "POST /users/authenticate" in new WithServer(port = port) {
+  "POST /users/authenticate" in new WithServer(port = defaultPort) {
     val form = createUserForm()
     val user = createUser(form)
 
