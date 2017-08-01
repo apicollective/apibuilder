@@ -1,25 +1,19 @@
 package controllers
 
-import akka.util.Timeout
 import io.apibuilder.api.v0.models.UserUpdateForm
 import play.api.test._
-import play.api.test.Helpers._
 
-import scala.concurrent.duration._
-
-class UsersSpec extends BaseSpec {
+class UsersSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "POST /users/authenticate" in new WithServer {
+  "POST /users/authenticate" in new WithServer(port = port) {
     val form = createUserForm()
     val user = createUser(form)
 
     val auth = await(
       client.users.postAuthenticate(form.email, form.password)
-    )(Timeout(FiniteDuration(3, SECONDS)))
-
-    println(auth)
+    )
 
     val updatedUser = await(
       newSessionClient(auth.session.id).users.putByGuid(
@@ -31,7 +25,7 @@ class UsersSpec extends BaseSpec {
         )
       )
     )
-    updatedUser.name must equal(Some("joseph"))
+    updatedUser.name must beSome("joseph")
   }
 
 }

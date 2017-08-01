@@ -1,15 +1,11 @@
 import play.PlayImport.PlayKeys._
 import play.sbt.PlayImport._
-import scoverage.ScoverageKeys
 
 name := "apibuilder"
 
 organization := "io.apibuilder"
 
 scalaVersion in ThisBuild := "2.11.11"
-
-// required because of issue between scoverage & sbt
-parallelExecution in Test in ThisBuild := true
 
 lazy val lib = project
   .in(file("lib"))
@@ -133,8 +129,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   ),
   scalacOptions += "-feature",
   sources in (Compile,doc) := Seq.empty,
-  publishArtifact in (Compile, packageDoc) := false,
-  coverageHighlighting := true
+  publishArtifact in (Compile, packageDoc) := false
 ) ++ publishSettings
 
 lazy val publishSettings: Seq[Setting[_]] = Seq(

@@ -1,20 +1,20 @@
 package controllers
 
-import io.apibuilder.api.v0.models._
-import db.Authorization
 import java.util.UUID
 
+import db.Authorization
 import io.apibuilder.api.v0.Client
-import play.api.test._
-import play.api.test.Helpers._
+import io.apibuilder.api.v0.models._
 import org.scalatestplus.play._
+import play.api.test.Helpers._
 import util.SessionHelper
 
-class BaseSpec extends PlaySpec with OneServerPerSuite {
+trait MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit override lazy val port = 9010
+  val port: Int = 9010
+  private[this] def app = play.api.Play.current
 
   def applicationsDao = app.injector.instanceOf[db.ApplicationsDao]
   def attributesDao = app.injector.instanceOf[db.AttributesDao]
