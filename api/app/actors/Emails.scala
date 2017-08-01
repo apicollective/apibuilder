@@ -1,12 +1,10 @@
 package actors
 
-import akka.actor._
-import io.apibuilder.api.v0.models.{Application, Organization, Publication, Subscription, User, Visibility}
+import io.apibuilder.api.v0.models.{Organization, Publication, Subscription, User, Visibility}
 import db.{ApplicationsDao, Authorization, MembershipsDao, SubscriptionsDao}
 import javax.inject.{Inject, Singleton}
 import lib.{Config, Email, Pager, Person}
 import play.api.Logger
-import play.api.Play.current
 
 object Emails {
 

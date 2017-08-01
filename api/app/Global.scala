@@ -1,6 +1,3 @@
-import io.apibuilder.api.v0.models.json._
-import actors.MainActor
-import db.VersionsDao
 import lib.Validation
 import play.api._
 import play.api.mvc._
@@ -46,10 +43,10 @@ object Global extends WithFilters(LoggingFilter) {
 
   private[this] def ensureServices() {
     Logger.info("Starting ensureServices()")
-    val versionsDao = play.api.Play.current.injector.instanceOf[VersionsDao]
+
     Try {
       Logger.warn("Migration disabled")
-      //versionsDao.migrate()
+      //play.api.Play.current.injector.instanceOf[VersionsDao].migrate()
     } match {
       case Success(result) => Logger.info("ensureServices() completed: " + result)
       case Failure(ex) => Logger.error(s"Error migrating versions: ${ex.getMessage}")
