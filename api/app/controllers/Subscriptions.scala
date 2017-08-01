@@ -1,8 +1,8 @@
 package controllers
 
-import db.{Authorization, SubscriptionsDao}
+import db.SubscriptionsDao
 import lib.Validation
-import io.apibuilder.api.v0.models.{Publication, Subscription, SubscriptionForm, User}
+import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 import io.apibuilder.api.v0.models.json._
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
@@ -62,7 +62,7 @@ class Subscriptions @Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Authenticated { request =>
-    subscriptionsDao.findByUserAndGuid(request.user, guid).map { subscription =>
+    subscriptionsDao.findByUserAndGuid(request.user, guid).foreach { subscription =>
       subscriptionsDao.softDelete(request.user, subscription)
     }
     NoContent

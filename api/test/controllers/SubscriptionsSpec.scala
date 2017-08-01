@@ -1,6 +1,5 @@
 package controllers
 
-import db.Util
 import io.apibuilder.api.v0.models.{Publication, SubscriptionForm}
 import java.util.UUID
 import play.api.test._
@@ -8,17 +7,17 @@ import play.api.test._
 class SubscriptionsSpec extends PlaySpecification with MockClient {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val org = createOrganization()
+  private[this] lazy val org = createOrganization()
 
   "POST /subscriptions" in new WithServer {
     val user = createUser()
-    val subscription = createSubscription(
+    val subscription = await(client.subscriptions.post(
       SubscriptionForm(
         organizationKey = org.key,
         userGuid = user.guid,
         publication = Publication.MembershipRequestsCreate
       )
-    )
+    ))
 
     subscription.organization.key must be(org.key)
     subscription.user.guid must be(user.guid)
@@ -28,24 +27,24 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   "POST /subscriptions handles user already subscribed" in new WithServer {
     val user = createUser()
     val form = createSubscriptionForm(org, user)
-    val subscription = createSubscription(form)
+    val subscription = await(client.subscriptions.post(form))
 
-    intercept[ErrorsResponse] {
-      createSubscription(form)
-    }.errors.map(_.message) must be(Seq("User is already subscribed to this publication for this organization"))
+    expectErrors {
+      client.subscriptions.post(form)
+    }
   }
 
   "POST /subscriptions allows user to subscribe to a different organization" in new WithServer {
     val user = createUser()
     val form = createSubscriptionForm(org, user)
-    val subscription1 = createSubscription(form)
+    val subscription1 = await(client.subscriptions.post(form))
 
     subscription1.organization.key must be(org.key)
     subscription1.user.guid must be(user.guid)
     subscription1.publication must be(Publication.MembershipRequestsCreate)
 
     val org2 = createOrganization()
-    val subscription2 = createSubscription(form.copy(organizationKey = org2.key))
+    val subscription2 = await(client.subscriptions.post(form.copy(organizationKey = org2.key)))
     subscription2.organization.key must be(org2.key)
     subscription2.user.guid must be(user.guid)
     subscription2.publication must be(Publication.MembershipRequestsCreate)
@@ -54,8 +53,8 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   "POST /subscriptions validates org key" in new WithServer {
     val user = createUser()
 
-    intercept[ErrorsResponse] {
-      createSubscription(
+    expectErrors {
+      client.subscriptions.post(
         SubscriptionForm(
           organizationKey = UUID.randomUUID.toString,
           userGuid = user.guid,
@@ -66,8 +65,8 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   }
 
   "POST /subscriptions validates user guid" in new WithServer {
-    intercept[ErrorsResponse] {
-      createSubscription(
+    expectErrors {
+      client.subscriptions.post(
         SubscriptionForm(
           organizationKey = org.key,
           userGuid = UUID.randomUUID,
@@ -80,8 +79,8 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   "POST /subscriptions validates publication" in new WithServer {
     val user = createUser()
 
-    intercept[ErrorsResponse] {
-      createSubscription(
+    expectErrors {
+      client.subscriptions.post(
         SubscriptionForm(
           organizationKey = org.key,
           userGuid = user.guid,
@@ -92,26 +91,28 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
   }
 
   "DELETE /subscriptions/:guid" in new WithServer {
-    val subscription = createSubscription(createSubscriptionForm(org))
-    await(client.subscriptions.deleteByGuid(subscription.guid)) must be(())
-    await(client.subscriptions.deleteByGuid(subscription.guid)) must be(()) // test idempotence
-    intercept[UnitResponse] {
-      await(client.subscriptions.getByGuid(subscription.guid))
-    }.status must be(404)
+    val subscription = await(client.subscriptions.post(createSubscriptionForm(org)))
+    expectStatus(204) {
+      client.subscriptions.deleteByGuid(subscription.guid)
+    }
+    await(client.subscriptions.deleteByGuid(subscription.guid)) must beEqualTo(()) // test idempotence
+    expectNotFound {
+      client.subscriptions.getByGuid(subscription.guid)
+    }
 
     // now recreate
-    val subscription2 = createSubscription(createSubscriptionForm(org))
+    val subscription2 = await(client.subscriptions.post(createSubscriptionForm(org)))
     await(client.subscriptions.getByGuid(subscription2.guid)) must be(subscription2)
   }
 
 
   "GET /subscriptions/:guid" in new WithServer {
-    val subscription = createSubscription(createSubscriptionForm(org))
+    val subscription = await(client.subscriptions.post(createSubscriptionForm(org)))
     await(client.subscriptions.getByGuid(subscription.guid)) must be(subscription)
 
-    intercept[UnitResponse] {
-      await(client.subscriptions.getByGuid(UUID.randomUUID))
-    }.status must be(404)
+    expectNotFound {
+      client.subscriptions.getByGuid(UUID.randomUUID)
+    }
   }
 
   "GET /subscriptions filters" in new WithServer {
@@ -119,21 +120,21 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
     val user2 = createUser()
     val org1 = createOrganization()
     val org2 = createOrganization()
-    val subscription1 = createSubscription(
+    val subscription1 = await(client.subscriptions.post(
       SubscriptionForm(
         organizationKey = org1.key,
         userGuid = user1.guid,
         publication = Publication.MembershipRequestsCreate
       )
-    )
+    ))
 
-    val subscription2 = createSubscription(
+    val subscription2 = await(client.subscriptions.post(
       SubscriptionForm(
         organizationKey = org2.key,
         userGuid = user2.guid,
         publication = Publication.ApplicationsCreate
       )
-    )
+    ))
 
     await(client.subscriptions.get(organizationKey = Some(UUID.randomUUID.toString))) must be(Nil)
     await(client.subscriptions.get(organizationKey = Some(org1.key))).map(_.guid) must be(Seq(subscription1.guid))
@@ -146,13 +147,13 @@ class SubscriptionsSpec extends PlaySpecification with MockClient {
     await(client.subscriptions.get(userGuid = Some(user1.guid), publication = Some(Publication.MembershipRequestsCreate))).map(_.guid) must be(Seq(subscription1.guid))
     await(client.subscriptions.get(userGuid = Some(user2.guid), publication = Some(Publication.ApplicationsCreate))).map(_.guid) must be(Seq(subscription2.guid))
 
-    intercept[FailedRequest] {
-      await(client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))) must be(Nil)
-    }.responseCode must be(400)
+    expectStatus(400) {
+      client.subscriptions.get(publication = Some(Publication(UUID.randomUUID.toString)))
+    }
   }
 
   "GET /subscriptions authorizes user" in new WithServer {
-    val subscription = createSubscription(createSubscriptionForm(org))
+    val subscription = await(client.subscriptions.post(createSubscriptionForm(org)))
     val randomUser = createUser()
 
     await(client.subscriptions.get(guid = Some(subscription.guid))).map(_.guid) must be(Seq(subscription.guid))
