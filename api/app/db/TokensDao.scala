@@ -90,7 +90,7 @@ class TokensDao @Inject() (
   def findCleartextByGuid(authorization: Authorization, guid: UUID): Option[CleartextToken] = {
     db.withConnection { implicit c =>
       authorization.
-        tokenFilter(FindCleartextQuery).withDebugging().
+        tokenFilter(FindCleartextQuery).
         isNull("tokens.deleted_at").
         equals("tokens.guid", guid).
         anormSql.as(SqlParser.str("token").*).headOption.map(CleartextToken)
