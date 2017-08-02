@@ -5,21 +5,28 @@ import io.flow.postgresql.Query
 import anorm._
 import lib.Validation
 import javax.inject.{Inject, Singleton}
+
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
+
+import play.api.inject.Injector
 
 object SubscriptionsDao {
   val PublicationsRequiredAdmin = Seq(Publication.MembershipRequestsCreate, Publication.MembershipsCreate)
 }
 
 @Singleton
-class SubscriptionsDao @Inject() () {
+class SubscriptionsDao @Inject() (
+  @NamedDatabase("default") db: Database,
+  injector: Injector
+) {
+
+  private[this] val dbHelpers = DbHelpers(db, "subscriptions")
 
   // TODO: resolve cicrular dependency
-  private[this] def organizationsDao = play.api.Play.current.injector.instanceOf[OrganizationsDao]
-  private[this] def subscriptionsDao = play.api.Play.current.injector.instanceOf[SubscriptionsDao]
-  private[this] def usersDao = play.api.Play.current.injector.instanceOf[UsersDao]
+  private[this] def organizationsDao = injector.instanceOf[OrganizationsDao]
+  private[this] def subscriptionsDao = injector.instanceOf[SubscriptionsDao]
+  private[this] def usersDao = injector.instanceOf[UsersDao]
 
   private[this] val BaseQuery = Query(s"""
     select subscriptions.guid,
@@ -99,7 +106,7 @@ class SubscriptionsDao @Inject() () {
 
     val guid = UUID.randomUUID
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> org.guid,
@@ -115,7 +122,7 @@ class SubscriptionsDao @Inject() () {
   }
 
   def softDelete(deletedBy: User, subscription: Subscription) {
-    SoftDelete.delete("subscriptions", deletedBy, subscription.guid)
+    dbHelpers.delete(deletedBy, subscription.guid)
   }
 
   def deleteSubscriptionsRequiringAdmin(deletedBy: User, organization: Organization, user: User) {
@@ -150,7 +157,7 @@ class SubscriptionsDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Subscription] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.subscriptionFilter(BaseQuery).
         equals("subscriptions.guid", guid).
         equals("subscriptions.organization_guid", organization.map(_.guid)).

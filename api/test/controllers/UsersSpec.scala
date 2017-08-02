@@ -1,23 +1,19 @@
 package controllers
 
-import io.apibuilder.api.v0.errors.{ErrorsResponse, FailedRequest}
 import io.apibuilder.api.v0.models.UserUpdateForm
-
 import play.api.test._
-import play.api.test.Helpers._
 
-class UsersSpec extends BaseSpec {
+class UsersSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "POST /users/authenticate" in new WithServer {
+  "POST /users/authenticate" in new WithServer(port = defaultPort) {
     val form = createUserForm()
     val user = createUser(form)
 
-    val auth = await {
+    val auth = await(
       client.users.postAuthenticate(form.email, form.password)
-    }
-    println(auth)
+    )
 
     val updatedUser = await(
       newSessionClient(auth.session.id).users.putByGuid(
@@ -29,7 +25,7 @@ class UsersSpec extends BaseSpec {
         )
       )
     )
-    updatedUser.name must equal(Some("joseph"))
+    updatedUser.name must beSome("joseph")
   }
 
 }

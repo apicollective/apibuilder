@@ -9,15 +9,17 @@ import lib.{UrlKey, Validation}
 import anorm._
 import play.api.db._
 import play.api.libs.json._
-import play.api.Play.current
 import java.util.UUID
 
 @Singleton
 class ApplicationsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
   organizationsDao: OrganizationsDao,
   tasksDao: TasksDao
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "applications")
 
   private[this] val BaseQuery = Query(
     s"""
@@ -264,7 +266,7 @@ class ApplicationsDao @Inject() (
 
   def softDelete(deletedBy: User, application: Application) {
     withTasks(deletedBy, application.guid, { c =>
-      SoftDelete.delete(c, "applications", deletedBy, application.guid)
+      dbHelpers.delete(c, deletedBy.guid, application.guid)
     })
   }
 
@@ -299,7 +301,7 @@ class ApplicationsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Application] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery).
         equals("applications.guid", guid).
         equals("organizations.key", orgKey).
@@ -342,7 +344,7 @@ class ApplicationsDao @Inject() (
     guid: UUID,
     f: java.sql.Connection => Unit
   ) {
-    val taskGuid = DB.withTransaction { implicit c =>
+    val taskGuid = db.withTransaction { implicit c =>
       f(c)
       tasksDao.insert(c, user, TaskDataIndexApplication(guid))
     }

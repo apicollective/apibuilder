@@ -6,17 +6,17 @@ import lib.Role
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
 @Singleton
 class MembershipRequestsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
   membershipsDao: MembershipsDao,
-  organizationsDao: OrganizationsDao,
-  organizationLogsDao: OrganizationLogsDao,
-  usersDao: UsersDao
+  organizationLogsDao: OrganizationLogsDao
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "membership_requests")
 
   // TODO: Properly select domains
   private[this] val BaseQuery = Query(s"""
@@ -49,7 +49,7 @@ class MembershipRequestsDao @Inject() (
   """
 
   def upsert(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
-    findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
+    findByOrganizationAndUserGuidAndRole(Authorization.All, organization, user.guid, role) match {
       case Some(r: MembershipRequest) => r
       case None => {
         create(createdBy, organization, user, role)
@@ -59,7 +59,7 @@ class MembershipRequestsDao @Inject() (
 
   private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): MembershipRequest = {
     val guid = UUID.randomUUID
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> organization.guid,
@@ -86,24 +86,24 @@ class MembershipRequestsDao @Inject() (
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
-    doAccept(createdBy, request, s"Accepted membership request for ${request.user.email} to join as ${r.name}")
+    doAccept(createdBy.guid, request, s"Accepted membership request for ${request.user.email} to join as ${r.name}")
   }
 
-  private[db] def acceptViaEmailVerification(createdBy: User, request: MembershipRequest, email: String) {
+  private[db] def acceptViaEmailVerification(createdBy: UUID, request: MembershipRequest, email: String) {
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
     doAccept(createdBy, request, s"$email joined as ${r.name} by verifying their email address")
   }
 
-  private[this] def doAccept(createdBy: User, request: MembershipRequest, message: String) {
+  private[this] def doAccept(createdBy: UUID, request: MembershipRequest, message: String) {
     val r = Role.fromString(request.role).getOrElse {
       sys.error(s"Invalid role[${request.role}]")
     }
 
-    DB.withTransaction { implicit conn =>
+    db.withTransaction { implicit conn =>
       organizationLogsDao.create(createdBy, request.organization, message)
-      softDelete(createdBy, request)
+      dbHelpers.delete(conn, createdBy, request.guid)
       membershipsDao.upsert(createdBy, request.organization, request.user, r)
     }
 
@@ -121,8 +121,8 @@ class MembershipRequestsDao @Inject() (
     }
 
     val message = s"Declined membership request for ${request.user.email} to join as ${r.name}"
-    DB.withTransaction { implicit conn =>
-      organizationLogsDao.create(createdBy, request.organization, message)
+    db.withTransaction { implicit conn =>
+      organizationLogsDao.create(createdBy.guid, request.organization, message)
       softDelete(createdBy, request)
     }
 
@@ -136,20 +136,20 @@ class MembershipRequestsDao @Inject() (
     )
   }
 
-  def softDelete(user: User, membershipRequest: MembershipRequest) {
-    SoftDelete.delete("membership_requests", user, membershipRequest.guid)
+  def softDelete(user: User, membershipRequest: MembershipRequest): Unit = {
+    dbHelpers.delete(user, membershipRequest.guid)
   }
 
-  private[db] def findByOrganizationAndUserAndRole(
+  private[db] def findByOrganizationAndUserGuidAndRole(
     authorization: Authorization,
     org: Organization,
-    user: User,
+    userGuid: UUID,
     role: Role
   ): Option[MembershipRequest] = {
     findAll(
       authorization,
       organizationGuid = Some(org.guid),
-      userGuid = Some(user.guid),
+      userGuid = Some(userGuid),
       role = Some(role.key),
       limit = 1
     ).headOption
@@ -172,7 +172,7 @@ class MembershipRequestsDao @Inject() (
   ): Seq[MembershipRequest] = {
     // TODO Implement authorization
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("membership_requests.guid", guid).
         equals("membership_requests.organization_guid", organizationGuid).

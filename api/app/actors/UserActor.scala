@@ -20,7 +20,7 @@ class UserActor @javax.inject.Inject() (
   usersDao: UsersDao
 ) extends Actor with ActorLogging with ErrorHandler {
 
-  implicit val ec = system.dispatchers.lookup("user-actor-context")
+  private[this] implicit val ec = system.dispatchers.lookup("user-actor-context")
 
   def receive = {
 

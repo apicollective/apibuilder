@@ -8,21 +8,21 @@ import java.util.UUID
 import play.api.test._
 import play.api.test.Helpers._
 
-class PasswordResetRequestsSpec extends BaseSpec {
+class PasswordResetRequestsSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "POST /password_reset_requests" in new WithServer {
+  "POST /password_reset_requests" in new WithServer(port=defaultPort) {
     val user = createUser()
-    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must be(Nil)
+    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must beEqualTo(Nil)
     val pr = createPasswordRequest(user.email)
-    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must be(Seq(user.guid))
+    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must beEqualTo(Seq(user.guid))
   }
 
-  "POST /password_reset_requests does not reveal whether or not email exists" in new WithServer {
+  "POST /password_reset_requests does not reveal whether or not email exists" in new WithServer(port=defaultPort) {
     val user = createUser()
     val pr = createPasswordRequest("other-" + user.email)
-    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must be(Nil)
+    passwordResetRequestsDao.findAll(userGuid = Some(user.guid)).map(_.userGuid) must beEqualTo(Nil)
   }
 
 }

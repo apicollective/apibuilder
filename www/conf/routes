@@ -4,6 +4,7 @@ GET     /                                                         controllers.Ap
 
 GET     /login                                                    controllers.LoginController.redirect
 GET     /login/                                                   controllers.LoginController.index(return_url: Option[String] ?= None)
+GET     /login/dev                                                controllers.LoginController.developmentLogin
 GET     /login/legacy                                             controllers.LoginController.legacy(return_url: Option[String] ?= None)
 POST    /login/legacy                                             controllers.LoginController.legacyPost
 GET     /login/forgotPassword                                     controllers.LoginController.forgotPassword

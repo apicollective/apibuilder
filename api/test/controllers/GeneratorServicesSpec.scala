@@ -1,16 +1,10 @@
 package controllers
 
-import db.Authorization
-import db.generators.ServicesDao
 import io.apibuilder.api.v0.models.{GeneratorService, GeneratorServiceForm}
-import io.apibuilder.api.v0.errors.UnitResponse
 import java.util.UUID
-
 import play.api.test._
-import play.api.test.Helpers._
-import scala.util.{Failure, Success, Try}
 
-class GeneratorServicesSpec extends BaseSpec {
+class GeneratorServicesSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -34,29 +28,30 @@ class GeneratorServicesSpec extends BaseSpec {
     )
   }
 
-  "POST /generator_services" in new WithServer {
+  "POST /generator_services" in new WithServer(port=defaultPort) {
     val form = createGeneratorServiceForm()
     val service = createGeneratorService(form)
-    service.uri must be(form.uri)
+    service.uri must beEqualTo(form.uri)
   }
 
-  "GET /generator_services/:guid" in new WithServer {
+  "GET /generator_services/:guid" in new WithServer(port=defaultPort) {
     val service = createGeneratorService()
-    await(client.generatorServices.getByGuid(service.guid)) must be(service)
-    intercept[UnitResponse] {
-      await(client.generatorServices.getByGuid(UUID.randomUUID))
+    await(client.generatorServices.getByGuid(service.guid)) must beEqualTo(service)
+
+    expectNotFound {
+      client.generatorServices.getByGuid(UUID.randomUUID)
     }
   }
 
-  "DELETE /generator_services/:guid" in new WithServer {
+  "DELETE /generator_services/:guid" in new WithServer(port=defaultPort) {
     val service = createGeneratorService()
 
-    await(client.generatorServices.deleteByGuid(service.guid)) must be(())
-    intercept[UnitResponse] {
-      await(client.generatorServices.getByGuid(service.guid))
+    await(client.generatorServices.deleteByGuid(service.guid)) must beEqualTo(())
+    expectNotFound {
+      client.generatorServices.getByGuid(service.guid)
     }
-    intercept[UnitResponse] {
-      await(client.generatorServices.deleteByGuid(service.guid))
+    expectNotFound {
+      client.generatorServices.deleteByGuid(service.guid)
     }
 
   }

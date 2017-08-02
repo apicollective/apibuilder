@@ -1,11 +1,10 @@
 package db
 
-import io.apibuilder.api.v0.models.{Organization, User}
+import io.apibuilder.api.v0.models.Organization
 import io.flow.postgresql.Query
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
 case class OrganizationLog(guid: UUID, organizationGuid: UUID, message: String)
@@ -14,7 +13,9 @@ case class OrganizationLog(guid: UUID, organizationGuid: UUID, message: String)
  * Journal of changes to organizations
  */
 @Singleton
-class OrganizationLogsDao @Inject() () {
+class OrganizationLogsDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val BaseQuery = Query("""
     select guid::text, organization_guid, message
@@ -28,13 +29,13 @@ class OrganizationLogsDao @Inject() () {
     ({guid}::uuid, {organization_guid}::uuid, {message}, {created_by_guid}::uuid)
   """
 
-  def create(createdBy: User, organization: Organization, message: String): OrganizationLog = {
-    DB.withConnection { implicit c =>
+  def create(createdBy: UUID, organization: Organization, message: String): OrganizationLog = {
+    db.withConnection { implicit c =>
       create(c, createdBy, organization, message)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, message: String): OrganizationLog = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, message: String): OrganizationLog = {
     val log = OrganizationLog(
       guid = UUID.randomUUID,
       organizationGuid = organization.guid,
@@ -45,7 +46,7 @@ class OrganizationLogsDao @Inject() () {
       'guid -> log.guid,
       'organization_guid -> log.organizationGuid,
       'message -> log.message,
-      'created_by_guid -> createdBy.guid
+      'created_by_guid -> createdBy
     ).execute()
 
     log
@@ -57,7 +58,7 @@ class OrganizationLogsDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[OrganizationLog] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.organizationFilter(BaseQuery).
         equals("organization_logs.organization_guid", organization.map(_.guid)).
         orderBy("organization_logs.created_at desc").

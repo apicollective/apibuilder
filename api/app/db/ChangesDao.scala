@@ -7,7 +7,6 @@ import anorm.JodaParameterMetaData._
 import javax.inject.{Inject, Singleton}
 
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 
 import io.flow.postgresql.Query
@@ -18,7 +17,9 @@ import org.postgresql.util.PSQLException
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class ChangesDao @Inject() () {
+class ChangesDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val BaseQuery = Query(
     s"""
@@ -70,7 +71,7 @@ class ChangesDao @Inject() () {
       "Versions must belong to same application"
     )
 
-    DB.withTransaction { implicit c =>
+    db.withTransaction { implicit c =>
 
       differences.map {
         case DiffBreaking(desc) => ("breaking", desc)
@@ -132,7 +133,7 @@ class ChangesDao @Inject() () {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Change] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery).
         equals("changes.guid", guid).
         equals("organizations.guid", organizationGuid).
