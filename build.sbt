@@ -79,7 +79,7 @@ lazy val api = project
       ws,
       jdbc,
       filters,
-      "org.postgresql"    %  "postgresql"    % "42.1.3",
+      "org.postgresql"    %  "postgresql"    % "42.1.4",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
       "com.sendgrid"      %  "sendgrid-java" % "4.0.1",
       "io.flow"           %% "lib-postgresql-play" % "0.0.97",
