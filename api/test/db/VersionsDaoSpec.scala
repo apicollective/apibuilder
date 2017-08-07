@@ -61,8 +61,8 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
   it("sorts properly") {
     val app = createApplication()
     val service = Util.createService(app)
-    val version1 = versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
-    val version2 = versionsDao.create(Util.createdBy, app, "1.0.2-dev", Original, service)
+    versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
+    versionsDao.create(Util.createdBy, app, "1.0.2-dev", Original, service)
 
     versionsDao.findAll(
       Authorization.All,
@@ -88,7 +88,7 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
       },
       fetcher = DatabaseServiceFetcher(Authorization.All)
     )
-    validator.validate match {
+    validator.validate() match {
       case Left(errors) => fail(errors.mkString("\n"))
       case Right(_) => {}
     }
@@ -101,4 +101,15 @@ class VersionsDaoSpec extends FunSpec with Matchers with util.TestApplication {
     version.version should be("1.0.2")
   }
 
+  it("findAllVersions") {
+    val app = createApplication()
+    val service = Util.createService(app)
+    versionsDao.create(Util.createdBy, app, "1.0.1", Original, service)
+    versionsDao.create(Util.createdBy, app, "1.0.2", Original, service)
+
+    versionsDao.findAllVersions(
+      Authorization.All,
+      applicationGuid = Some(app.guid)
+    ).map(_.version) should be(Seq("1.0.2", "1.0.1"))
+  }
 }

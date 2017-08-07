@@ -1,23 +1,20 @@
 package db
 
-import lib.{DatabaseServiceFetcher, ServiceConfiguration}
-import core.VersionMigration
-import builder.OriginalValidator
-import io.apibuilder.api.v0.models.{Application, Original, User, Version}
+import anorm._
+import io.apibuilder.api.v0.models.{Application, ApplicationMetadataVersion, Original, User, Version}
 import io.apibuilder.internal.v0.models.{TaskDataDiffVersion, TaskDataIndexApplication}
 import io.apibuilder.spec.v0.models.Service
 import io.apibuilder.spec.v0.models.json._
-import lib.VersionTag
-import anorm._
+import io.flow.postgresql.Query
+import builder.OriginalValidator
+import core.VersionMigration
+import lib.{DatabaseServiceFetcher, ServiceConfiguration, VersionTag}
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.db._
 import play.api.Logger
 import play.api.libs.json._
 import java.util.UUID
-
-import io.flow.postgresql.Query
-
 import scala.annotation.tailrec
 
 case class MigrationStats(good: Long, bad: Long)
@@ -229,6 +226,34 @@ class VersionsDao @Inject() (
     }
   }
 
+  def findAllVersions(
+    authorization: Authorization,
+    applicationGuid: Option[UUID] = None,
+    isDeleted: Option[Boolean] = Some(false),
+    limit: Long = 25,
+    offset: Long = 0
+  ): Seq[ApplicationMetadataVersion] = {
+    db.withConnection { implicit c =>
+      authorization.applicationFilter(BaseQuery).
+        isNotNull("services.guid").
+        equals("versions.application_guid", applicationGuid).
+        and(isDeleted.map(Filters.isDeleted("versions", _))).
+        orderBy("versions.version_sort_key desc, versions.created_at desc").
+        limit(limit).
+        offset(offset).
+        as(applicationMetadataParser().*
+      )
+    }
+  }  
+
+  private[this] def applicationMetadataParser(): RowParser[ApplicationMetadataVersion] = {
+    SqlParser.str("version") map { version =>
+      ApplicationMetadataVersion(
+        version = version
+      )
+    }
+  }
+  
   private[this] def parser(): RowParser[Version] = {
     SqlParser.get[_root_.java.util.UUID]("guid") ~
       io.apibuilder.common.v0.anorm.parsers.Reference.parserWithPrefix("organization") ~
