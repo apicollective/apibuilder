@@ -23,12 +23,18 @@ class ApplicationMetadataSpec extends PlaySpecification with MockClient {
     )
   }
 
-  "GET /:orgKey/metadata/:applicationKey/versions/latest" in new WithServer(port = defaultPort) {
+  "GET /:orgKey/metadata/:applicationKey/versions/latest.txt" in new WithServer(port = defaultPort) {
     val ws = app.injector.instanceOf[WSClient]
-    await(
+    val auth = sessionHelper.createAuthentication(TestUser)
+
+    val result = await(
       ws.url(
-        s"http://localhost:$defaultPort/${org.key}/metadata/${application.key}/versions/latest"
+        s"http://localhost:$defaultPort/${org.key}/metadata/${application.key}/versions/latest.txt"
+      ).withHeaders(
+        "Authorization" -> s"Session ${auth.session.id}"
       ).get()
-    ).body must beEqualTo("2.0.0")
+    )
+    result.status must beEqualTo(200)
+    result.body must beEqualTo("2.0.0")
   }
 }

@@ -41,6 +41,7 @@ class ApplicationMetadata @Inject() (
     applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey) match {
       case None => NotFound
       case Some(application) => {
+        println(s"app: $application")
         versionsDao.findAllVersions(
           request.authorization,
           applicationGuid = Some(application.guid),
