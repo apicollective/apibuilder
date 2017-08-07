@@ -1,5 +1,6 @@
 package controllers
 
+import play.api.libs.ws.WSClient
 import play.api.test._
 
 class ApplicationMetadataSpec extends PlaySpecification with MockClient {
@@ -7,9 +8,12 @@ class ApplicationMetadataSpec extends PlaySpecification with MockClient {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] lazy val org = createOrganization()
-  private[this] lazy val application = createApplication(org)
-  private[this] lazy val version1 = createVersion(application, version = "1.0.0")
-  private[this] lazy val version2 = createVersion(application, version = "2.0.0")
+  private[this] lazy val application = {
+    val a = createApplication(org)
+    createVersion(a, version = "1.0.0")
+    createVersion(a, version = "2.0.0")
+    a
+  }
 
   "GET /:orgKey/metadata/:applicationKey/versions" in new WithServer(port = defaultPort) {
     await(
@@ -20,8 +24,11 @@ class ApplicationMetadataSpec extends PlaySpecification with MockClient {
   }
 
   "GET /:orgKey/metadata/:applicationKey/versions/latest" in new WithServer(port = defaultPort) {
+    val ws = app.injector.instanceOf[WSClient]
     await(
-      client.applicationMetadata.getVersionsAndLatestTxt(org.key, application.key)
-    ) must beEqualTo("2.0.0")
+      ws.url(
+        s"http://localhost:$defaultPort/${org.key}/metadata/${application.key}/versions/latest"
+      ).get()
+    ).body must beEqualTo("2.0.0")
   }
 }
