@@ -5,8 +5,6 @@ import play.api.test._
 class TokensSpec extends PlaySpecification with MockClient {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] lazy val org = createOrganization()
-
   "POST /tokens" in new WithServer(port=defaultPort) {
     val user = createUser()
     val form = createTokenForm(user).copy(description = Some("testing"))
