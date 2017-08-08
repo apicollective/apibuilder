@@ -121,7 +121,7 @@ lazy val spec = project
 
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
-  name <<= name("apibuilder-" + _),
+  name ~= ("apibuilder-" + _),
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.2",
