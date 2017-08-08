@@ -88,8 +88,8 @@ lazy val api = project
     )
   )
 
-lazy val www = project
-  .in(file("www"))
+lazy val app = project
+  .in(file("app"))
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .enablePlugins(PlayScala)
