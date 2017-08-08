@@ -12,8 +12,8 @@ lib/target/
 lib/logs/
 api/target/
 api/logs/
-www/target/
-www/logs/
+app/target/
+app/logs/
 project/target/
 .git
 .ivy2
