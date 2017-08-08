@@ -3124,12 +3124,12 @@ package io.apibuilder.api.v0 {
         }
       }
 
-      override def getMetadataAndVersionslatestTxtByApplicationKey(
+      override def getMetadataAndVersionsAndLatestTxtByApplicationKey(
         orgKey: String,
         applicationKey: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/metadata/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/versionslatest.txt", requestHeaders = requestHeaders).map {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/metadata/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/versions/latest.txt", requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("String", r, _.validate[String])
           case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
@@ -4084,7 +4084,7 @@ package io.apibuilder.api.v0 {
     /**
      * Returns the latest version number as a string
      */
-    def getMetadataAndVersionslatestTxtByApplicationKey(
+    def getMetadataAndVersionsAndLatestTxtByApplicationKey(
       orgKey: String,
       applicationKey: String,
       requestHeaders: Seq[(String, String)] = Nil

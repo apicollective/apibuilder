@@ -1032,7 +1032,7 @@
         {
           "method": "GET",
           "description": "Returns the latest version number as a string",
-	  "path": "/metadata/:applicationKey/versionslatest.txt",
+	  "path": "/metadata/:applicationKey/versions/latest.txt",
           "responses": {
             "200": { "type": "string" },
             "401": { "type": "unit" },
