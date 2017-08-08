@@ -226,7 +226,7 @@ class Versions @Inject() (
     }
   }
 
-  def getMetadataAndVersionslatestTxtByApplicationKey(
+  def getMetadataAndVersionsAndLatestTxtByApplicationKey(
     orgKey: String,
     applicationKey: String,
     limit: Long = 25,
