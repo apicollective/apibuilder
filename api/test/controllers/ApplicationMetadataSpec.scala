@@ -17,7 +17,7 @@ class ApplicationMetadataSpec extends PlaySpecification with MockClient {
 
   "GET /:orgKey/metadata/:applicationKey/versions" in new WithServer(port = defaultPort) {
     await(
-      client.applicationMetadata.getVersions(org.key, application.key)
+      client.versions.getMetadataAndVersionsByApplicationKey(org.key, application.key)
     ).map(_.version) must beEqualTo(
       Seq("2.0.0", "1.0.0")
     )

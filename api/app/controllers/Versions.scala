@@ -206,6 +206,47 @@ class Versions @Inject() (
     NoContent
   }
 
+  def getMetadataAndVersionsByApplicationKey(
+    orgKey: String,
+    applicationKey: String,
+    limit: Long = 25,
+    offset: Long = 0
+  ) = AnonymousRequest { request =>
+    applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey) match {
+      case None => NotFound
+      case Some(application) => {
+        val versions = versionsDao.findAllVersions(
+          request.authorization,
+          applicationGuid = Some(application.guid),
+          limit = limit,
+          offset = offset
+        )
+        Ok(Json.toJson(versions))
+      }
+    }
+  }
+
+  def getMetadataAndVersionslatestTxtByApplicationKey(
+    orgKey: String,
+    applicationKey: String,
+    limit: Long = 25,
+    offset: Long = 0
+  ) = AnonymousRequest { request =>
+    applicationsDao.findByOrganizationKeyAndApplicationKey(request.authorization, orgKey, applicationKey) match {
+      case None => NotFound
+      case Some(application) => {
+        versionsDao.findAllVersions(
+          request.authorization,
+          applicationGuid = Some(application.guid),
+          limit = 1
+        ).headOption match {
+          case None => NotFound
+          case Some(v) => Ok(v.version)
+        }
+      }
+    }
+  }
+
   private[this] def upsertVersion(
     user: User,
     org: Organization,
