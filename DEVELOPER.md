@@ -25,7 +25,7 @@ api
 apibuilder REST service itself. See spec/apibuilder-api.json contains the description
 of the API.
 
-www
+app
 ===
 Actual UI for apibuilder.
 
@@ -72,7 +72,7 @@ One way to do this is to run a screen session, and in one screen do:
 ...then in another screen, do:
 
     $ sbt
-    sbt> project www
+    sbt> project app
     sbt> run
 
 Goto http://localhost:9000/login/dev in your browser to login automatically as the dev user.
