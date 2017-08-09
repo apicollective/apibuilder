@@ -270,7 +270,7 @@ class UsersDao @Inject() (
     nickname: Option[String] = None,
     sessionId: Option[String] = None,
     token: Option[String] = None,
-    isDeleted: Option[Boolean] = None
+    isDeleted: Option[Boolean] = Some(false)
   ): Seq[User] = {
     require(
       guid.isDefined || email.isDefined || token.isDefined || sessionId.isDefined || nickname.isDefined,
