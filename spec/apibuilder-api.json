@@ -933,6 +933,31 @@
       "operations": [
         {
           "method": "GET",
+          "description": "Returns the versions assocoated with the specified application. The latest version is the first result returned.",
+	  "path": "/metadata/:applicationKey/versions",
+          "parameters": [
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+          ],
+          "responses": {
+            "200": { "type": "[application_metadata_version]" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        },
+        {
+          "method": "GET",
+          "description": "Returns the latest version number as a string",
+	  "path": "/metadata/:applicationKey/versions/latest.txt",
+          "responses": {
+            "200": { "type": "string" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "GET",
           "description": "Search all applications. Results are always paginated.",
           "parameters": [
             { "name": "orgKey", "type": "string", "description": "The organization key for which to search applications" },
@@ -1015,31 +1040,6 @@
       "path": "/:orgKey",
 
       "operations": [
-        {
-          "method": "GET",
-          "description": "Returns the versions assocoated with the specified application. The latest version is the first result returned.",
-	  "path": "/metadata/:applicationKey/versions",
-          "parameters": [
-            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
-            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-          ],
-          "responses": {
-            "200": { "type": "[application_metadata_version]" },
-            "401": { "type": "unit" },
-            "404": { "type": "unit" }
-          }
-        },
-        {
-          "method": "GET",
-          "description": "Returns the latest version number as a string",
-	  "path": "/metadata/:applicationKey/versions/latest.txt",
-          "responses": {
-            "200": { "type": "string" },
-            "401": { "type": "unit" },
-            "404": { "type": "unit" }
-          }
-        },
-
         {
           "method": "GET",
 	  "path": "/:applicationKey",

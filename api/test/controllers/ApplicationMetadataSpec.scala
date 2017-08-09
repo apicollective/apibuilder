@@ -15,15 +15,15 @@ class ApplicationMetadataSpec extends PlaySpecification with MockClient {
     a
   }
 
-  "GET /:orgKey/metadata/:applicationKey/versions" in new WithServer(port = defaultPort) {
+  "GET /:orgKey/:applicationKey/metadata/versions" in new WithServer(port = defaultPort) {
     await(
-      client.versions.getMetadataAndVersionsByApplicationKey(org.key, application.key)
+      client.applications.getMetadataAndVersionsByApplicationKey(org.key, application.key)
     ).map(_.version) must beEqualTo(
       Seq("2.0.0", "1.0.0")
     )
   }
 
-  "GET /:orgKey/metadata/:applicationKey/versions/latest.txt" in new WithServer(port = defaultPort) {
+  "GET /:orgKey/:applicationKey/metadata/versions/latest.txt" in new WithServer(port = defaultPort) {
     val ws = app.injector.instanceOf[WSClient]
     val auth = sessionHelper.createAuthentication(TestUser)
 

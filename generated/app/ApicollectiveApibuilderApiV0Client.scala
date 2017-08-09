@@ -2213,6 +2213,39 @@ package io.apibuilder.api.v0 {
     def watches: Watches = Watches
 
     object Applications extends Applications {
+      override def getMetadataAndVersionsByApplicationKey(
+        orgKey: String,
+        applicationKey: String,
+        limit: Long = 25,
+        offset: Long = 0,
+        requestHeaders: Seq[(String, String)] = Nil
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.apibuilder.api.v0.models.ApplicationMetadataVersion]] = {
+        val queryParameters = Seq(
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/metadata/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/versions", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
+          case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("Seq[io.apibuilder.api.v0.models.ApplicationMetadataVersion]", r, _.validate[Seq[io.apibuilder.api.v0.models.ApplicationMetadataVersion]])
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
+      override def getMetadataAndVersionsAndLatestTxtByApplicationKey(
+        orgKey: String,
+        applicationKey: String,
+        requestHeaders: Seq[(String, String)] = Nil
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String] = {
+        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/metadata/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/versions/latest.txt", requestHeaders = requestHeaders).map {
+          case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("String", r, _.validate[String])
+          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
+          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
       override def get(
         orgKey: String,
         name: _root_.scala.Option[String] = None,
@@ -3104,39 +3137,6 @@ package io.apibuilder.api.v0 {
     }
 
     object Versions extends Versions {
-      override def getMetadataAndVersionsByApplicationKey(
-        orgKey: String,
-        applicationKey: String,
-        limit: Long = 25,
-        offset: Long = 0,
-        requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.apibuilder.api.v0.models.ApplicationMetadataVersion]] = {
-        val queryParameters = Seq(
-          Some("limit" -> limit.toString),
-          Some("offset" -> offset.toString)
-        ).flatten
-
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/metadata/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/versions", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("Seq[io.apibuilder.api.v0.models.ApplicationMetadataVersion]", r, _.validate[Seq[io.apibuilder.api.v0.models.ApplicationMetadataVersion]])
-          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
-        }
-      }
-
-      override def getMetadataAndVersionsAndLatestTxtByApplicationKey(
-        orgKey: String,
-        applicationKey: String,
-        requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String] = {
-        _executeRequest("GET", s"/${play.utils.UriEncoding.encodePathSegment(orgKey, "UTF-8")}/metadata/${play.utils.UriEncoding.encodePathSegment(applicationKey, "UTF-8")}/versions/latest.txt", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.apibuilder.api.v0.Client.parseJson("String", r, _.validate[String])
-          case r if r.status == 401 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.apibuilder.api.v0.errors.UnitResponse(r.status)
-          case r => throw io.apibuilder.api.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
-        }
-      }
-
       override def getByApplicationKey(
         orgKey: String,
         applicationKey: String,
@@ -3439,6 +3439,30 @@ package io.apibuilder.api.v0 {
   }
 
   trait Applications {
+    /**
+     * Returns the versions assocoated with the specified application. The latest
+     * version is the first result returned.
+     * 
+     * @param limit The number of records to return
+     * @param offset Used to paginate. First page of results is 0.
+     */
+    def getMetadataAndVersionsByApplicationKey(
+      orgKey: String,
+      applicationKey: String,
+      limit: Long = 25,
+      offset: Long = 0,
+      requestHeaders: Seq[(String, String)] = Nil
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.apibuilder.api.v0.models.ApplicationMetadataVersion]]
+
+    /**
+     * Returns the latest version number as a string
+     */
+    def getMetadataAndVersionsAndLatestTxtByApplicationKey(
+      orgKey: String,
+      applicationKey: String,
+      requestHeaders: Seq[(String, String)] = Nil
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String]
+
     /**
      * Search all applications. Results are always paginated.
      * 
@@ -4066,30 +4090,6 @@ package io.apibuilder.api.v0 {
   }
 
   trait Versions {
-    /**
-     * Returns the versions assocoated with the specified application. The latest
-     * version is the first result returned.
-     * 
-     * @param limit The number of records to return
-     * @param offset Used to paginate. First page of results is 0.
-     */
-    def getMetadataAndVersionsByApplicationKey(
-      orgKey: String,
-      applicationKey: String,
-      limit: Long = 25,
-      offset: Long = 0,
-      requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.apibuilder.api.v0.models.ApplicationMetadataVersion]]
-
-    /**
-     * Returns the latest version number as a string
-     */
-    def getMetadataAndVersionsAndLatestTxtByApplicationKey(
-      orgKey: String,
-      applicationKey: String,
-      requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[String]
-
     /**
      * Search all versions of this application. Results are always paginated.
      * 
