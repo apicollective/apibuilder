@@ -2,7 +2,6 @@ package controllers
 
 import io.apibuilder.api.v0.models.UserUpdateForm
 import play.api.test._
-import play.api.test.Helpers._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -40,7 +39,7 @@ class UsersSpec extends BaseSpec {
         )
       )
     )
-    updatedUser.name must equal(Some("joseph"))
+    updatedUser.name must beSome("joseph")
   }
 
 }

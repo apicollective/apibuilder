@@ -2,6 +2,7 @@ package db
 
 import io.flow.postgresql.Query
 import java.util.UUID
+import io.apibuilder.api.v0.models.User
 import play.api.db.Database
 
 /**
@@ -26,6 +27,10 @@ case class DbHelpers(
          and deleted_at is null
   """)
 
+  def delete(user: User, guid: UUID) {
+    delete(user.guid, guid)
+  }
+
   def delete(deletedBy: UUID, guid: UUID) {
     db.withConnection { implicit c =>
       delete(c, deletedBy, guid)
@@ -41,6 +46,10 @@ case class DbHelpers(
       bind("deleted_by_guid", deletedBy).
       bind("guid", guid).
       anormSql().execute()
+  }
+
+  def delete(user: User, id: String) {
+    delete(user.guid, id)
   }
 
   def delete(deletedBy: UUID, id: String) {

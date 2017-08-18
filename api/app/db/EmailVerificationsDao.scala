@@ -7,7 +7,6 @@ import anorm._
 import anorm.JodaParameterMetaData._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 import org.joda.time.DateTime
 
@@ -22,11 +21,13 @@ case class EmailVerification(
 @Singleton
 class EmailVerificationsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
   emailVerificationConfirmationsDao: EmailVerificationConfirmationsDao,
   membershipRequestsDao: MembershipRequestsDao,
-  organizationsDao: OrganizationsDao,
-  usersDao: UsersDao
+  organizationsDao: OrganizationsDao
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "email_verifications")
 
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 168
@@ -55,7 +56,7 @@ class EmailVerificationsDao @Inject() (
 
   def create(createdBy: User, user: User, email: String): EmailVerification = {
     val guid = UUID.randomUUID
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'user_guid -> user.guid,
@@ -77,28 +78,24 @@ class EmailVerificationsDao @Inject() (
     verification.expiresAt.isBeforeNow
   }
 
-  def confirm(user: Option[User], verification: EmailVerification) = {
+  def confirm(user: Option[User], verification: EmailVerification): Unit = {
     assert(
       !isExpired(verification),
       "Token for verificationGuid[${verification.guid}] is expired"
     )
 
-    val verificationUser = usersDao.findByGuid(verification.userGuid).getOrElse {
-      sys.error(s"User guid[${verification.userGuid}] does not exist for verification[${verification.guid}]")
-    }
+    val updatingUserGuid = user.map(_.guid).getOrElse(verification.userGuid)
 
-    val updatingUser = user.getOrElse(verificationUser)
-
-    emailVerificationConfirmationsDao.upsert(updatingUser, verification)
+    emailVerificationConfirmationsDao.upsert(updatingUserGuid, verification)
     organizationsDao.findByEmailDomain(verification.email).foreach { org =>
-      membershipRequestsDao.findByOrganizationAndUserAndRole(Authorization.All, org, verificationUser, Role.Member).map { request =>
-        membershipRequestsDao.acceptViaEmailVerification(updatingUser, request, verification.email)
+      membershipRequestsDao.findByOrganizationAndUserGuidAndRole(Authorization.All, org, verification.userGuid, Role.Member).foreach { request =>
+        membershipRequestsDao.acceptViaEmailVerification(updatingUserGuid, request, verification.email)
       }
     }
   }
 
   def softDelete(deletedBy: User, verification: EmailVerification) {
-    SoftDelete.delete("email_verifications", deletedBy, verification.guid)
+    dbHelpers.delete(deletedBy.guid, verification.guid)
   }
 
   def findByGuid(guid: UUID): Option[EmailVerification] = {
@@ -119,7 +116,7 @@ class EmailVerificationsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[EmailVerification] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("email_verifications.guid", guid).
         equals("email_verifications.user_guid", userGuid).

@@ -3,21 +3,28 @@ package db
 import io.apibuilder.api.v0.models._
 import io.apibuilder.common.v0.models.{Audit, ReferenceGuid}
 import io.flow.postgresql.Query
-import lib.{Misc, Role, Validation, UrlKey}
+import lib.{Misc, Role, UrlKey, Validation}
 import anorm._
 import javax.inject.{Inject, Singleton}
+
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
+
 import org.joda.time.DateTime
+import play.api.inject.Injector
 
 @Singleton
 class OrganizationsDao @Inject() (
+  @NamedDatabase("default") db: Database,
+  injector: Injector,
   organizationDomainsDao: OrganizationDomainsDao,
   organizationLogsDao: OrganizationLogsDao
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "organizations")
+
   // TODO: resolve cicrular dependency
-  private[this] def membershipsDao = play.api.Play.current.injector.instanceOf[MembershipsDao]
+  private[this] def membershipsDao = injector.instanceOf[MembershipsDao]
 
   private[this] val MinNameLength = 3
 
@@ -136,10 +143,10 @@ class OrganizationsDao @Inject() (
    * Creates the org and assigns the user as its administrator.
    */
   def createWithAdministrator(user: User, form: OrganizationForm): Organization = {
-    DB.withTransaction { implicit c =>
+    db.withTransaction { implicit c =>
       val org = create(c, user, form)
-      membershipsDao.create(c, user, org, user, Role.Admin)
-      organizationLogsDao.create(c, user, org, s"Created organization and joined as ${Role.Admin.name}")
+      membershipsDao.create(c, user.guid, org, user, Role.Admin)
+      organizationLogsDao.create(c, user.guid, org, s"Created organization and joined as ${Role.Admin.name}")
       org
     }
   }
@@ -156,7 +163,7 @@ class OrganizationsDao @Inject() (
     val errors = validate(form, Some(existing))
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(UpdateQuery).on(
         'guid -> existing.guid,
         'name -> form.name.trim,
@@ -211,7 +218,7 @@ class OrganizationsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, org: Organization) {
-    SoftDelete.delete("organizations", deletedBy, org.guid)
+    dbHelpers.delete(deletedBy, org.guid)
   }
 
   def findByGuid(authorization: Authorization, guid: UUID): Option[Organization] = {
@@ -242,7 +249,7 @@ class OrganizationsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Organization] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.organizationFilter(BaseQuery).
         equals("organizations.guid", guid).
         equals("organizations.key", key).

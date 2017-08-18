@@ -7,7 +7,7 @@ import java.util.UUID
 import play.api.test._
 import play.api.test.Helpers._
 
-class WatchesSpec extends BaseSpec {
+class WatchesSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -29,7 +29,7 @@ class WatchesSpec extends BaseSpec {
     applicationKey = application.getOrElse(createApplication(org)).key
   )
 
-  "POST /watches" in new WithServer {
+  "POST /watches" in new WithServer(port=defaultPort) {
     val user = createUser()
     val application = createApplication(org)
     val watch = createWatch(
@@ -40,12 +40,12 @@ class WatchesSpec extends BaseSpec {
       )
     )
 
-    watch.user.guid must be(user.guid)
-    watch.organization.key must be(org.key)
-    watch.application.key must be(application.key)
+    watch.user.guid must beEqualTo(user.guid)
+    watch.organization.key must beEqualTo(org.key)
+    watch.application.key must beEqualTo(application.key)
   }
 
-  "POST /watches is idempotent" in new WithServer {
+  "POST /watches is idempotent" in new WithServer(port=defaultPort) {
     val user = createUser()
     val application = createApplication(org)
 
@@ -59,7 +59,7 @@ class WatchesSpec extends BaseSpec {
     createWatch(form)
   }
 
-  "GET /watches by application key" in new WithServer {
+  "GET /watches by application key" in new WithServer(port=defaultPort) {
     val org1 = createOrganization()
     val application1 = createApplication(org1)
 
@@ -73,9 +73,9 @@ class WatchesSpec extends BaseSpec {
     createWatch(WatchForm(user.guid, org2.key, application2.key))
     createWatch(WatchForm(user.guid, org2.key, application3.key))
 
-    await(client.watches.get(userGuid = Some(user.guid))).map(_.application.key).sorted must be(Seq(application1.key, application2.key, application3.key).sorted)
-    await(client.watches.get(userGuid = Some(user.guid), applicationKey = Some(application1.key))).map(_.application.key).sorted must be(Seq(application1.key, application2.key).sorted)
-    await(client.watches.get(userGuid = Some(user.guid), organizationKey = Some(org1.key), applicationKey = Some(application1.key))).map(_.application.key).sorted must be(Seq(application1.key).sorted)
+    await(client.watches.get(userGuid = Some(user.guid))).map(_.application.key).sorted must beEqualTo(Seq(application1.key, application2.key, application3.key).sorted)
+    await(client.watches.get(userGuid = Some(user.guid), applicationKey = Some(application1.key))).map(_.application.key).sorted must beEqualTo(Seq(application1.key, application2.key).sorted)
+    await(client.watches.get(userGuid = Some(user.guid), organizationKey = Some(org1.key), applicationKey = Some(application1.key))).map(_.application.key).sorted must beEqualTo(Seq(application1.key).sorted)
   }
 
 }

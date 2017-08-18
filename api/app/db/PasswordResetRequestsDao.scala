@@ -8,7 +8,6 @@ import java.util.UUID
 import javax.inject.{Inject, Named, Singleton}
 
 import play.api.db._
-import play.api.Play.current
 import io.flow.postgresql.Query
 import org.joda.time.DateTime
 
@@ -22,12 +21,15 @@ case class PasswordReset(
 @Singleton
 class PasswordResetRequestsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
   userPasswordsDao: UserPasswordsDao,
   usersDao: UsersDao
 ) {
 
   private[this] val TokenLength = 80
   private[this] val HoursUntilTokenExpires = 72
+
+  private[this] val dbHelpers = DbHelpers(db, "password_resets")
 
   private[this] val BaseQuery = Query("""
     select password_resets.guid,
@@ -46,7 +48,7 @@ class PasswordResetRequestsDao @Inject() (
 
   def create(createdBy: Option[User], user: User): PasswordReset = {
     val guid = UUID.randomUUID
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'user_guid -> user.guid,
@@ -84,7 +86,7 @@ class PasswordResetRequestsDao @Inject() (
   }
 
   def softDelete(deletedBy: User, pr: PasswordReset) {
-    SoftDelete.delete("password_resets", deletedBy, pr.guid)
+    dbHelpers.delete(deletedBy, pr.guid)
   }
 
   def findByGuid(guid: UUID): Option[PasswordReset] = {
@@ -104,7 +106,7 @@ class PasswordResetRequestsDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[PasswordReset] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("password_resets.guid", guid).
         equals("password_resets.user_guid", userGuid).

@@ -3,13 +3,13 @@ builds:
       dockerfile: api/Dockerfile
       initial.number.instances: 2
       instance.type: t2.medium
-      memory: 3500
       port.container: 9000
       port.host: 7071
-  - www:
-      dockerfile: www/Dockerfile
+      version: 1.2
+  - app:
+      dockerfile: app/Dockerfile
       initial.number.instances: 2
       instance.type: t2.medium
-      memory: 3500
       port.container: 9000
       port.host: 7070
+      version: 1.2

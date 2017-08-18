@@ -1,12 +1,13 @@
 package util
 
 import javax.inject.Inject
+
+import db.UsersDao
 import io.apibuilder.api.v0.models.{Authentication, User}
 import org.joda.time.DateTime
 
 class SessionHelper @Inject() (
-  sessionsDao: db.generated.SessionsDao,
-  usersDao: db.UsersDao
+  sessionsDao: db.generated.SessionsDao
 ) {
 
   private[this] val DefaultSessionExpirationHours = 24 * 30
@@ -16,7 +17,7 @@ class SessionHelper @Inject() (
     val ts = DateTime.now
 
     sessionsDao.insert(
-      usersDao.AdminUser.guid,
+      UsersDao.AdminUserGuid,
       _root_.db.generated.SessionForm(
         id = id,
         userGuid = u.guid,

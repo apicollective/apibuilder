@@ -476,8 +476,21 @@
       "fields": [
         { "name": "org_key", "type": "string", "description": "The key of the organization to which we are moving this item" }
       ]
+    },
+
+    "application_metadata": {
+      "fields": [
+        { "name": "guid", "type": "uuid", "description": "Internal unique identifier for this application." },
+        { "name": "key", "type": "string", "description": "Used as a unique key in the URL path. Key is automatically derived from the application name." }
+      ]
+    },
+
+    "application_metadata_version": {
+      "description": "Describes the versions associated with a given application",
+      "fields": [
+        { "name": "version", "type": "string", "example": "0.2.5" }
+      ]
     }
-    
   },
 
   "resources": {
@@ -920,6 +933,31 @@
       "operations": [
         {
           "method": "GET",
+          "description": "Returns the versions assocoated with the specified application. The latest version is the first result returned.",
+	  "path": "/metadata/:applicationKey/versions",
+          "parameters": [
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+          ],
+          "responses": {
+            "200": { "type": "[application_metadata_version]" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        },
+        {
+          "method": "GET",
+          "description": "Returns the latest version number as a string",
+	  "path": "/metadata/:applicationKey/versions/latest.txt",
+          "responses": {
+            "200": { "type": "string" },
+            "401": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+        },
+
+        {
+          "method": "GET",
           "description": "Search all applications. Results are always paginated.",
           "parameters": [
             { "name": "orgKey", "type": "string", "description": "The organization key for which to search applications" },
@@ -997,7 +1035,6 @@
         }
       ]
     },
-
 
     "version": {
       "path": "/:orgKey",
@@ -1356,7 +1393,6 @@
 
       ]
     }
-
   }
 
 }

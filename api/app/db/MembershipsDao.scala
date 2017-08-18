@@ -7,17 +7,17 @@ import lib.Role
 import anorm._
 import javax.inject.{Inject, Named, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 import org.joda.time.DateTime
 
 @Singleton
 class MembershipsDao @Inject() (
   @Named("main-actor") mainActor: akka.actor.ActorRef,
-  organizationsDao: OrganizationsDao,
-  subscriptionsDao: SubscriptionsDao,
-  usersDao: UsersDao
+  @NamedDatabase("default") db: Database,
+  subscriptionsDao: SubscriptionsDao
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "memberships")
 
   private[this] val InsertQuery = """
     insert into memberships
@@ -48,7 +48,7 @@ class MembershipsDao @Inject() (
       join users on users.guid = memberships.user_guid
   """)
 
-  def upsert(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+  def upsert(createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
     val membership = findByOrganizationAndUserAndRole(Authorization.All, organization, user, role) match {
       case Some(r) => r
       case None => create(createdBy, organization, user, role)
@@ -66,13 +66,13 @@ class MembershipsDao @Inject() (
     membership
   }
 
-  private[db] def create(createdBy: User, organization: Organization, user: User, role: Role): Membership = {
-    DB.withConnection { implicit c =>
+  private[db] def create(createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
+    db.withConnection { implicit c =>
       create(c, createdBy, organization, user, role)
     }
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, organization: Organization, user: User, role: Role): Membership = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: UUID, organization: Organization, user: User, role: Role): Membership = {
     val membership = Membership(
       guid = UUID.randomUUID,
       organization = organization,
@@ -91,7 +91,7 @@ class MembershipsDao @Inject() (
       'organization_guid -> membership.organization.guid,
       'user_guid -> membership.user.guid,
       'role -> membership.role,
-      'created_by_guid -> createdBy.guid
+      'created_by_guid -> createdBy
     ).execute()
 
     mainActor ! actors.MainActor.Messages.MembershipCreated(membership.guid)
@@ -106,7 +106,7 @@ class MembershipsDao @Inject() (
     */
   def softDelete(user: User, membership: Membership) {
     subscriptionsDao.deleteSubscriptionsRequiringAdmin(user, membership.organization, membership.user)
-    SoftDelete.delete("memberships", user, membership.guid)
+    dbHelpers.delete(user, membership.guid)
   }
 
   def isUserAdmin(
@@ -159,7 +159,7 @@ class MembershipsDao @Inject() (
     offset: Long = 0
   ): Seq[Membership] = {
     // TODO Implement authorization
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("memberships.guid", guid).
         equals("memberships.organization_guid", organizationGuid).

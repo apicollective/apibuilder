@@ -8,7 +8,6 @@ import io.flow.postgresql.Query
 import javax.inject.{Inject, Named, Singleton}
 import org.joda.time.DateTime
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
@@ -34,8 +33,11 @@ import java.util.UUID
   */
 @Singleton
 class TasksDao @Inject() (
+  @NamedDatabase("default") db: Database,
   @Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "tasks")
 
   private[this] val BaseQuery = Query("""
     select tasks.guid,
@@ -71,7 +73,7 @@ class TasksDao @Inject() (
   """
 
   def create(createdBy: User, data: TaskData): UUID = {
-    val taskGuid = DB.withConnection { implicit c =>
+    val taskGuid = db.withConnection { implicit c =>
       insert(c, createdBy, data)
     }
     mainActor ! actors.MainActor.Messages.TaskCreated(taskGuid)
@@ -92,17 +94,17 @@ class TasksDao @Inject() (
   }
 
   def softDelete(deletedBy: User, task: Task) {
-    SoftDelete.delete("tasks", deletedBy, task.guid)
+    dbHelpers.delete(deletedBy, task.guid)
   }
 
   def purge(deletedBy: User, task: Task) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(PurgeQuery).on('guid -> task.guid).execute()
     }
   }
 
   def incrementNumberAttempts(user: User, task: Task) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(IncrementNumberAttemptsQuery).on(
         'guid -> task.guid,
         'updated_by_guid -> user.guid
@@ -117,7 +119,7 @@ class TasksDao @Inject() (
   }
 
   def recordError(user: User, task: Task, error: String) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(RecordErrorQuery).on(
         'guid -> task.guid,
         'last_error -> error,
@@ -148,7 +150,7 @@ class TasksDao @Inject() (
       }
     }
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("tasks.guid", guid).
         lessThanOrEquals("tasks.number_attempts", nOrFewerAttempts).

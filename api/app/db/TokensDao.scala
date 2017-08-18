@@ -6,14 +6,16 @@ import lib.TokenGenerator
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 import lib.Validation
 
 @Singleton
 class TokensDao @Inject() (
+  @NamedDatabase("default") db: Database,
   usersDao: UsersDao
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "tokens")
 
   private[this] val BaseQuery = Query(s"""
     select tokens.guid,
@@ -29,9 +31,7 @@ class TokensDao @Inject() (
       join users on users.guid = tokens.user_guid and users.deleted_at is null
   """)
 
-  private[this] val FindCleartextQuery = Query(s"""
-    select token from tokens where guid = {guid}::uuid and deleted_at is null
-  """)
+  private[this] val FindCleartextQuery = Query("select token from tokens")
 
   private[this] val InsertQuery = """
     insert into tokens
@@ -64,7 +64,7 @@ class TokensDao @Inject() (
 
     val guid = UUID.randomUUID
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'user_guid -> form.userGuid,
@@ -80,7 +80,7 @@ class TokensDao @Inject() (
   }
 
   def softDelete(deletedBy: User, token: Token) {
-    SoftDelete.delete("tokens", deletedBy, token.guid)
+    dbHelpers.delete(deletedBy, token.guid)
   }
 
   def findByToken(token: String): Option[Token] = {
@@ -88,10 +88,11 @@ class TokensDao @Inject() (
   }
 
   def findCleartextByGuid(authorization: Authorization, guid: UUID): Option[CleartextToken] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.
         tokenFilter(FindCleartextQuery).
-        bind("guid", guid).
+        isNull("tokens.deleted_at").
+        equals("tokens.guid", guid).
         anormSql.as(SqlParser.str("token").*).headOption.map(CleartextToken)
     }
   }
@@ -109,7 +110,7 @@ class TokensDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Token] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       authorization.tokenFilter(BaseQuery).
         equals("tokens.guid", guid).
         equals("tokens.user_guid", userGuid).

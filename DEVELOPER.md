@@ -25,7 +25,7 @@ api
 apibuilder REST service itself. See spec/apibuilder-api.json contains the description
 of the API.
 
-www
+app
 ===
 Actual UI for apibuilder.
 
@@ -72,10 +72,10 @@ One way to do this is to run a screen session, and in one screen do:
 ...then in another screen, do:
 
     $ sbt
-    sbt> project www
+    sbt> project app
     sbt> run
 
-Goto http://localhost:9000 in your browser
+Goto http://localhost:9000/login/dev in your browser to login automatically as the dev user.
 
 If you want to run the standard code generators service locally you can clone it from [apibuilder-generator](https://github.com/apicollective/apibuilder-generator)
 
@@ -83,7 +83,11 @@ If you want to run the standard code generators service locally you can clone it
     sbt> project generator
     sbt> run 9002
 
-Goto http://localhost:9002/generators in your browser
+To configure generators in local api builder instance:
+
+  1. Goto http://localhost:9000/generators
+  2. Click 'Add generator'
+  3. Enter 'http://localhost:9002' for service URI
 
 Now both should be running and able to talk to each other, and should recompile
 in situ for a nice development experience.

@@ -1,15 +1,11 @@
 import play.PlayImport.PlayKeys._
 import play.sbt.PlayImport._
-import scoverage.ScoverageKeys
 
 name := "apibuilder"
 
 organization := "io.apibuilder"
 
 scalaVersion in ThisBuild := "2.11.11"
-
-// required because of issue between scoverage & sbt
-parallelExecution in Test in ThisBuild := true
 
 lazy val lib = project
   .in(file("lib"))
@@ -83,7 +79,7 @@ lazy val api = project
       ws,
       jdbc,
       filters,
-      "org.postgresql"    %  "postgresql"    % "42.1.3",
+      "org.postgresql"    %  "postgresql"    % "42.1.4",
       "org.mindrot"       %  "jbcrypt"       % "0.4",
       "com.sendgrid"      %  "sendgrid-java" % "4.0.1",
       "io.flow"           %% "lib-postgresql-play" % "0.0.97",
@@ -92,8 +88,8 @@ lazy val api = project
     )
   )
 
-lazy val www = project
-  .in(file("www"))
+lazy val app = project
+  .in(file("app"))
   .dependsOn(generated, lib)
   .aggregate(generated, lib)
   .enablePlugins(PlayScala)
@@ -125,7 +121,7 @@ lazy val spec = project
 
 
 lazy val commonSettings: Seq[Setting[_]] = Seq(
-  name <<= name("apibuilder-" + _),
+  name ~= ("apibuilder-" + _),
   organization := "io.apibuilder",
   libraryDependencies ++= Seq(
     "org.atteo" % "evo-inflector" % "1.2.2",
@@ -133,8 +129,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   ),
   scalacOptions += "-feature",
   sources in (Compile,doc) := Seq.empty,
-  publishArtifact in (Compile, packageDoc) := false,
-  coverageHighlighting := true
+  publishArtifact in (Compile, packageDoc) := false
 ) ++ publishSettings
 
 lazy val publishSettings: Seq[Setting[_]] = Seq(
@@ -166,4 +161,4 @@ lazy val publishSettings: Seq[Setting[_]] = Seq(
 )
 
 publishSettings
-version := "0.12.52"
+version := "0.12.61"

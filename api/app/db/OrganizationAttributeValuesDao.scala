@@ -7,14 +7,16 @@ import lib.Validation
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
 @Singleton
 class OrganizationAttributeValuesDao @Inject() (
+  @NamedDatabase("default") db: Database,
   attributesDao: AttributesDao
 ) {
+
+  private[this] val dbHelpers = DbHelpers(db, "organization_attribute_values")
 
   private[this] val BaseQuery = Query(s"""
     select organization_attribute_values.guid,
@@ -82,7 +84,7 @@ class OrganizationAttributeValuesDao @Inject() (
 
     val guid = UUID.randomUUID()
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> organization.guid,
@@ -101,7 +103,7 @@ class OrganizationAttributeValuesDao @Inject() (
     val errors = validate(organization, existing.attribute, form, Some(existing))
     assert(errors.isEmpty, errors.map(_.message).mkString("\n"))
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(UpdateQuery).on(
         'guid -> existing.guid,
         'value -> form.value.trim,
@@ -115,7 +117,7 @@ class OrganizationAttributeValuesDao @Inject() (
   }
 
   def softDelete(deletedBy: User, org: AttributeValue) {
-    SoftDelete.delete("organization_attribute_values", deletedBy, org.guid)
+    dbHelpers.delete(deletedBy, org.guid)
   }
 
   def findByGuid(guid: UUID): Option[AttributeValue] = {
@@ -135,7 +137,7 @@ class OrganizationAttributeValuesDao @Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[AttributeValue] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("organization_attribute_values.guid", guid).
         equals("organization_attribute_values.organization_guid", organizationGuid).

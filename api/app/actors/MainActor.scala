@@ -1,12 +1,8 @@
 package actors
 
-import lib.{Role}
-import play.api.libs.concurrent.Akka
+import lib.Role
 import akka.actor._
-import play.api.Logger
-import play.api.Play.current
 import java.util.UUID
-import scala.concurrent.duration._
 
 object MainActor {
 

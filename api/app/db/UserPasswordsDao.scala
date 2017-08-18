@@ -6,7 +6,6 @@ import anorm._
 import javax.inject.{Inject, Singleton}
 
 import play.api.db._
-import play.api.Play.current
 import java.util.UUID
 import java.sql.Connection
 
@@ -87,7 +86,9 @@ object PasswordAlgorithm {
 case class UserPassword(guid: UUID, userGuid: UUID, algorithm: PasswordAlgorithm, hash: String)
 
 @Singleton
-class UserPasswordsDao @Inject() () {
+class UserPasswordsDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val MinLength = 5
 
@@ -124,7 +125,7 @@ class UserPasswordsDao @Inject() () {
   }
 
   def create(user: User, userGuid: UUID, cleartextPassword: String) {
-    DB.withTransaction { implicit c =>
+    db.withTransaction { implicit c =>
       softDeleteByUserGuid(c, user, userGuid)
       doCreate(c, user.guid, userGuid, cleartextPassword)
     }
@@ -165,12 +166,12 @@ class UserPasswordsDao @Inject() () {
   }
 
   private[db] def findByUserGuid(userGuid: UUID): Option[UserPassword] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         isNull("user_passwords.deleted_at").
         equals("user_passwords.user_guid", userGuid).
         limit(1).
-        anormSql().as(parser().*).headOption
+        as(parser().*).headOption
     }
   }
 

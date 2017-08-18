@@ -5,7 +5,7 @@ import io.apibuilder.api.v0.models.json._
 import lib.Validation
 import util.SessionHelper
 import db.{UserPasswordsDao, UsersDao}
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 
 import play.api.mvc._
 import play.api.libs.json.{JsArray, JsBoolean, JsError, JsObject, JsString, JsSuccess, Json}
@@ -17,7 +17,6 @@ import play.api.libs.ws.WSClient
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-@Singleton
 class Users @Inject() (
   sessionHelper: SessionHelper,
   usersDao: UsersDao,

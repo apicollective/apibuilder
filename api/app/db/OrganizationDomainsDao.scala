@@ -6,14 +6,17 @@ import lib.{Role, UrlKey}
 import anorm._
 import javax.inject.{Inject, Singleton}
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
 case class OrganizationDomain(guid: UUID, organizationGuid: UUID, domain: Domain)
 
 @Singleton
-class OrganizationDomainsDao @Inject() () {
+class OrganizationDomainsDao @Inject() (
+  @NamedDatabase("default") db: Database
+) {
+
+  private[this] val dbHelpers = DbHelpers(db, "organization_domains")
 
   private[this] val BaseQuery = Query("""
     select guid, organization_guid, domain
@@ -28,7 +31,7 @@ class OrganizationDomainsDao @Inject() () {
   """  
 
   def create(createdBy: User, org: Organization, domainName: String): OrganizationDomain = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       create(c, createdBy, org, domainName)
     }
   }
@@ -51,7 +54,7 @@ class OrganizationDomainsDao @Inject() () {
   }
 
   def softDelete(deletedBy: User, domain: OrganizationDomain) {
-    SoftDelete.delete("organization_domains", deletedBy, domain.guid)
+    dbHelpers.delete(deletedBy, domain.guid)
   }
 
   def findAll(
@@ -60,7 +63,7 @@ class OrganizationDomainsDao @Inject() () {
     domain: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false)
   ): Seq[OrganizationDomain] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         equals("organization_domains.guid", guid).
         equals("organization_domains.organization_guid", organizationGuid).

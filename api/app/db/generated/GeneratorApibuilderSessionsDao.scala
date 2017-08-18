@@ -108,7 +108,7 @@ class SessionsDao @Inject() (
       insert(c, updatedBy, form)
     }
   }
-  
+
   def insert(implicit c: Connection, updatedBy: UUID, form: SessionForm) {
     bindQuery(InsertQuery, form).
       bind("id", form.id).
@@ -120,13 +120,13 @@ class SessionsDao @Inject() (
       updateById(updatedBy, id, form)
     }
   }
-  
+
   def updateById(updatedBy: UUID, id: String, form: SessionForm) {
     db.withConnection { implicit c =>
       updateById(c, updatedBy, id, form)
     }
   }
-  
+
   def updateById(implicit c: Connection, updatedBy: UUID, id: String, form: SessionForm) {
     bindQuery(UpdateQuery, form).
       bind("id", id).
@@ -138,7 +138,7 @@ class SessionsDao @Inject() (
       update(c, updatedBy, existing, form)
     }
   }
-  
+
   def update(implicit c: Connection, updatedBy: UUID, existing: Session, form: SessionForm) {
     updateById(c, updatedBy, existing.id, form)
   }
@@ -146,19 +146,25 @@ class SessionsDao @Inject() (
   def delete(deletedBy: UUID, session: Session) {
     dbHelpers.delete(deletedBy, session.id)
   }
-  
+
   def deleteById(deletedBy: UUID, id: String) {
     db.withConnection { implicit c =>
       deleteById(c, deletedBy, id)
     }
   }
-  
+
   def deleteById(c: java.sql.Connection, deletedBy: UUID, id: String) {
     dbHelpers.delete(c, deletedBy, id)
   }
 
   def findById(id: String): Option[Session] = {
-    findAll(ids = Some(Seq(id)), limit = 1).headOption
+    db.withConnection { implicit c =>
+      findByIdWithConnection(c, id)
+    }
+  }
+
+  def findByIdWithConnection(c: java.sql.Connection, id: String): Option[Session] = {
+    findAllWithConnection(c, ids = Some(Seq(id)), limit = 1).headOption
   }
 
   def findAll(
@@ -171,14 +177,34 @@ class SessionsDao @Inject() (
     implicit customQueryModifier: Query => Query = { q => q }
   ): Seq[Session] = {
     db.withConnection { implicit c =>
-      customQueryModifier(BaseQuery).
-        optionalIn("sessions.id", ids).
-        equals("sessions.user_guid", userGuid).
-        limit(limit).
-        offset(offset).
-        orderBy(orderBy.sql).
-        as(SessionsDao.parser().*)
+      findAllWithConnection(
+        c,
+        ids = ids,
+        userGuid = userGuid,
+        limit = limit,
+        offset = offset,
+        orderBy = orderBy
+      )(customQueryModifier)
     }
+  }
+
+  def findAllWithConnection(
+    c: java.sql.Connection,
+    ids: Option[Seq[String]] = None,
+    userGuid: Option[UUID] = None,
+    limit: Long,
+    offset: Long = 0,
+    orderBy: OrderBy = OrderBy("sessions.id")
+  ) (
+    implicit customQueryModifier: Query => Query = { q => q }
+  ): Seq[Session] = {
+    customQueryModifier(BaseQuery).
+      optionalIn("sessions.id", ids).
+      equals("sessions.user_guid", userGuid).
+      limit(limit).
+      offset(offset).
+      orderBy(orderBy.sql).
+      as(SessionsDao.parser().*)(c)
   }
 
 }
