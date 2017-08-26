@@ -160,27 +160,22 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
   }
 */
-  it("validates that path parameters are actually specified") {
+  it("passes correctly specified path parameters") {
     val baseJson = """
     {
       "name": "Api Doc",
 
       "models": {
-        "user": {
-          "fields": [
-            { "name": "id", "type": "long" }
-          ]
-        }
+        "user": { "fields": [ { "name": "id", "type": "long" } ] }
       },
 
       "resources": {
         "user": {
+          "path": "/foo/:id/bar",
           "operations": [
             {
               "method": "GET",
-              "parameters": [
-                { "name": "id", "type": "long", "location": "path" }
-              ]
+              "parameters": [ { "name": "id", "type": "long", "location": "path" } ]
             }
           ]
         }
@@ -190,8 +185,89 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
     val json = baseJson.format("age")
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("Resource[user] GET /users path parameter[id] is missing from the path[/users]")
-
+    validator.errors shouldBe List.empty
   }
 
+  it("fails missing path parameters") {
+    val baseJson = """
+    {
+      "name": "Api Doc",
+
+      "models": {
+        "user": { "fields": [ { "name": "id", "type": "long" } ] }
+      },
+
+      "resources": {
+        "user": {
+          "operations": [
+            {
+              "method": "GET",
+              "parameters": [ { "name": "id", "type": "long", "location": "path" } ]
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val json = baseJson.format("age")
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString("") shouldBe "Resource[user] GET /users path parameter[id] is missing from the path[/users]"
+  }
+
+  it("fails incorrectly named path parameters in the middle of the path") {
+    val baseJson = """
+    {
+      "name": "Api Doc",
+
+      "models": {
+        "user": { "fields": [ { "name": "id", "type": "long" } ] }
+      },
+
+      "resources": {
+        "user": {
+          "path": "/foo/:ids/bar",
+          "operations": [
+            {
+              "method": "GET",
+              "parameters": [ { "name": "id", "type": "long", "location": "path" } ]
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val json = baseJson.format("age")
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString("") shouldBe "Resource[user] GET /foo/:ids/bar path parameter[id] is missing from the path[/foo/:ids/bar]"
+  }
+
+  it("fails incorrectly named path parameters at the end of the path") {
+    val baseJson = """
+    {
+      "name": "Api Doc",
+
+      "models": {
+        "user": { "fields": [ { "name": "id", "type": "long" } ] }
+      },
+
+      "resources": {
+        "user": {
+          "path": "/foo/:ids",
+          "operations": [
+            {
+              "method": "GET",
+              "parameters": [ { "name": "id", "type": "long", "location": "path" } ]
+            }
+          ]
+        }
+      }
+    }
+    """
+
+    val json = baseJson.format("age")
+    val validator = TestHelper.serviceValidatorFromApiJson(json)
+    validator.errors.mkString("") shouldBe "Resource[user] GET /foo/:ids path parameter[id] is missing from the path[/foo/:ids]"
+  }
 }

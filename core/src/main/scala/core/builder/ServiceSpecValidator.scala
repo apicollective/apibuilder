@@ -58,8 +58,7 @@ case class ServiceSpecValidator(
     validateParameterBodies() ++
     validateParameterDefaults() ++
     validateParameters() ++
-    validateResponses() ++
-    validatePathParameters()
+    validateResponses()
   }
 
   private def validateApidoc(): Seq[String] = {
@@ -525,16 +524,24 @@ case class ServiceSpecValidator(
                 case ParameterLocation.Query | ParameterLocation.Header => {
                   // Query and Header parameters can only be primitives or enums
                   kind match {
-                    case Kind.Primitive(_) | Kind.Enum(_) => {
+                    case Kind.Enum(_) => {
                       None
                     }
 
-                    case Kind.List(Kind.Primitive(_) | Kind.Enum(_)) => {
+                    case Kind.Primitive(_) if isValidInUrl(kind) => {
+                      None
+                    }
+
+                    case Kind.Primitive(_) => {
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid types for ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
+                    }
+
+                    case Kind.List(nested) if isValidInUrl(nested) => {
                       None
                     }
 
                     case Kind.List(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Parameters that are lists must be lists of primitive types or enums."))
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Valid nested types for lists in ${p.location.toString.toLowerCase} parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}."))
                     }
 
                     case Kind.Model(_) | Kind.Union(_) => {
@@ -542,7 +549,7 @@ case class ServiceSpecValidator(
                     }
 
                     case Kind.Map(_) => {
-                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as query parameters."))
+                      Some(opLabel(resource, op, s"Parameter[${p.name}] has an invalid type[${p.`type`}]. Maps are not supported as ${p.location.toString.toLowerCase} parameters."))
                     }
 
                   }
@@ -553,11 +560,14 @@ case class ServiceSpecValidator(
                   // Path parameters are required
                   if (p.required) {
                     // Verify that path parameter is actually in the path
-                    val index = op.path.indexOf(s"${p.name}")
-                    if ((index < 0)) {
+                    val index = op.path.indexOf(s":${p.name}/")
+                    if (index < 0  && !op.path.endsWith(s":${p.name}")) {
                       Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
-                    } else {
+                    } else if (isValidInUrl(kind)) {
                       None
+                    } else {
+                      val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: enum, ${Primitives.ValidInPath.mkString(", ")}.")
+                      Some(errorTemplate.format(kind.toString))
                     }
                   } else {
                     Some(opLabel(resource, op, s"path parameter[${p.name}] is specified as optional. All path parameters are required"))
@@ -575,33 +585,10 @@ case class ServiceSpecValidator(
     }
   }
 
-  private def validatePathParameters(): Seq[String] = {
-    service.resources.flatMap { resource =>
-      resource.operations.flatMap { op =>
-        op.parameters.filter(_.location == ParameterLocation.Path).flatMap { p =>
-          val errorTemplate = opLabel(resource, op, s"path parameter[${p.name}] has an invalid type[%s]. Valid types for path parameters are: ${Primitives.ValidInPath.mkString(", ")}")
-
-          typeResolver.parse(p.`type`) match {
-            case None => {
-              Some(errorTemplate.format(p.`type`))
-            }
-            case Some(kind) => {
-              if (isValidInPath(kind)) {
-                None
-              } else {
-                Some(errorTemplate.format(kind.toString))
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private def isValidInPath(kind: Kind): Boolean = {
+  private def isValidInUrl(kind: Kind): Boolean = {
     kind match {
       case Kind.Primitive(name) => {
-        Primitives.validInPath(name)
+        Primitives.validInUrl(name)
       }
       case Kind.Enum(_) => {
         // Serializes as a string

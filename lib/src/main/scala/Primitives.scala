@@ -20,7 +20,7 @@ object Primitives {
 
   val ValidInPath = All.filter(p => p != Unit && p != Object)
 
-  def validInPath(name: String): Boolean = {
+  def validInUrl(name: String): Boolean = {
     Primitives(name) match {
       case None => false
       case Some(p) => ValidInPath.contains(p)
