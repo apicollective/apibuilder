@@ -1,6 +1,7 @@
 package controllers
 
 import io.apibuilder.api.v0.models.UserUpdateForm
+import java.util.UUID
 import play.api.test._
 
 class UsersSpec extends PlaySpecification with MockClient {
@@ -28,4 +29,20 @@ class UsersSpec extends PlaySpecification with MockClient {
     updatedUser.name must beSome("joseph")
   }
 
+  "GET /users by bickname" in new WithServer(port = defaultPort) {
+    val user1 = createUser()
+    val user2 = createUser()
+
+    await(
+      client.users.get(nickname = Some(user1.nickname))
+    ).map(_.guid) must beEqualTo(Seq(user1.guid))
+
+    await(
+      client.users.get(nickname = Some(user2.nickname))
+    ).map(_.guid) must beEqualTo(Seq(user2.guid))
+
+    await(
+      client.users.get(nickname = Some(UUID.randomUUID.toString))
+    ).map(_.guid) must be(Nil)
+  }
 }

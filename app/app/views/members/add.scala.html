@@ -17,8 +17,14 @@
 
           @helper.inputText(
               addForm("email"),
-              '_label -> "Email address of user to add",
+              '_label -> "Email address",
               '_error -> addForm.error("email")
+          )
+
+          @helper.inputText(
+              addForm("nickname"),
+              '_label -> "Or nickname",
+              '_error -> addForm.error("nickname")
           )
 
           @select(

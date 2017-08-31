@@ -45,15 +45,15 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
 
   def add(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireMember()
-    val filledForm = Members.addMemberForm.fill(Members.AddMemberData(role = Role.Member.key, email = ""))
+    val filledForm = Members.addMemberForm.fill(Members.AddMemberData(role = Role.Member.key, email = "", nickname = ""))
 
-    Ok(views.html.members.add(request.mainTemplate(Some("Add member")),
-                              filledForm))
+    val tpl = request.mainTemplate(Some("Add Member")).copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
+    Ok(views.html.members.add(tpl, filledForm))
   }
 
   def addPost(orgKey: String) = AuthenticatedOrg { implicit request =>
     request.requireMember()
-    val tpl = request.mainTemplate(Some("Add member"))
+    val tpl = request.mainTemplate(Some("Add Member")).copy(settings = Some(SettingsMenu(section = Some(SettingSection.Members))))
 
     Members.addMemberForm.bindFromRequest.fold (
 
@@ -62,18 +62,25 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
       },
 
       valid => {
-        Await.result(request.api.Users.get(email = Some(valid.email)), 1500.millis).headOption match {
+        val filledForm = Members.addMemberForm.fill(valid)
+        val email = toOption(valid.email)
+        val nickname = toOption(valid.nickname)
 
-          case None => {
-            val filledForm = Members.addMemberForm.fill(valid)
-            Ok(views.html.members.add(tpl, filledForm, Some("No user found")))
-          }
+        if (email.isDefined || nickname.isDefined) {
+          Await.result(request.api.Users.get(email = email, nickname = nickname), 1500.millis).headOption match {
 
-          case Some(user: User) => {
-            val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis)
-            val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
-            Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"${valid.role} added")
+            case None => {
+              Ok(views.html.members.add(tpl, filledForm, Some("No user found")))
+            }
+
+            case Some(user: User) => {
+              val membershipRequest = Await.result(request.api.MembershipRequests.post(request.org.guid, user.guid, valid.role), 1500.millis)
+              val review = Await.result(request.api.MembershipRequests.postAcceptByGuid(membershipRequest.guid), 1500.millis)
+              Redirect(routes.Members.show(request.org.key)).flashing("success" -> s"${valid.role} added")
+            }
           }
+        } else {
+          Ok(views.html.members.add(tpl, filledForm, Some("Please enter either an email address or nickname")))
         }
       }
 
@@ -166,15 +173,22 @@ class Members @Inject() (val messagesApi: MessagesApi) extends Controller with I
     )
   }
 
+  private[this] def toOption(value: String): Option[String] = {
+    value.trim match {
+      case "" => None
+      case v => Some(v)
+    }
+  }
 }
 
 object Members {
 
-  case class AddMemberData(role: String, email: String)
+  case class AddMemberData(role: String, email: String, nickname: String)
   private[controllers] val addMemberForm = Form(
     mapping(
       "role" -> nonEmptyText,
-      "email" -> nonEmptyText
+      "email" -> text,
+      "nickname" -> text
     )(AddMemberData.apply)(AddMemberData.unapply)
   )
 
