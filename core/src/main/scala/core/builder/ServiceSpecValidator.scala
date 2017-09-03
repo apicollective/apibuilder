@@ -1,6 +1,6 @@
 package builder
 
-import core.{TypeValidator, TypesProvider}
+import core.{TypeValidator, TypesProvider, Util}
 import io.apibuilder.spec.v0.models.{ResponseCodeInt, Header, Method, Operation, ParameterLocation, ResponseCode}
 import io.apibuilder.spec.v0.models.{ResponseCodeUndefinedType, ResponseCodeOption, Resource, Service, Union}
 import lib.{DatatypeResolver, Kind, Methods, Primitives, Text, VersionTag}
@@ -559,9 +559,8 @@ case class ServiceSpecValidator(
                 case ParameterLocation.Path => {
                   // Path parameters are required
                   if (p.required) {
-                    // Verify that path parameter is actually in the path
-                    val index = op.path.indexOf(s":${p.name}/")
-                    if (index < 0  && !op.path.endsWith(s":${p.name}")) {
+                    // Verify that path parameter is actually in the path and immediately before or after a '/'
+                    if (!Util.namedParametersInPath(op.path).contains(p.name)) {
                       Some(opLabel(resource, op, s"path parameter[${p.name}] is missing from the path[${op.path}]"))
                     } else if (isValidInUrl(kind)) {
                       None
