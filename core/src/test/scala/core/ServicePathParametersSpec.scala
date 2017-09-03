@@ -4,7 +4,7 @@ import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FunSpec}
 import org.scalatest.Matchers
 
 class ServicePathParametersSpec extends FunSpec with Matchers {
-/*
+
   describe("with a service") {
     val baseJson = """
     {
@@ -85,12 +85,16 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
 
     it("other models cannot be path parameters") {
       val json = baseJson.format("GET", "/:tag")
-      TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be("Resource[user] GET /users/:tag path parameter[tag] has an invalid type[tag]. Valid types for path parameters are: boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid")
+      TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be(
+        "Resource[user] GET /users/:tag path parameter[tag] has an invalid type[tag]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
+      )
     }
 
     it("unsupported types declared as parameters are validated") {
       val json = baseJson.format("POST", "/:tags")
-      TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be("Resource[user] POST /users/:tags path parameter[tags] has an invalid type[map]. Valid types for path parameters are: boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid")
+      TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be(
+        "Resource[user] POST /users/:tags path parameter[tags] has an invalid type[map[string]]. Valid types for path parameters are: enum, boolean, decimal, integer, double, long, string, date-iso8601, date-time-iso8601, uuid."
+      )
     }
 
   }
@@ -159,7 +163,7 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
     }
 
   }
-*/
+
   it("passes correctly specified path parameters") {
     val baseJson = """
     {
