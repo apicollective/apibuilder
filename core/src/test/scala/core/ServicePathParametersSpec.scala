@@ -63,6 +63,11 @@ class ServicePathParametersSpec extends FunSpec with Matchers {
       TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be("")
     }
 
+    it("supports file extensions") {
+      val json = baseJson.format("GET", "/:id.html")
+      TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be("")
+    }
+
     it("parameters not defined on the model are accepted (assumed strings)") {
       val json = baseJson.format("GET", "/:some_string")
       TestHelper.serviceValidatorFromApiJson(json).errors.mkString("") should be("")
