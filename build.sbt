@@ -100,7 +100,7 @@ lazy val app = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       "org.apache.commons" % "commons-compress" % "1.14",
-      "com.github.tototoshi" %% "scala-csv" % "1.3.4",
+      "com.github.tototoshi" %% "scala-csv" % "1.3.5",
       "org.pegdown" % "pegdown" % "1.6.0",
       "org.webjars" %% "webjars-play" % "2.6.0-M1",
       "org.webjars" % "bootstrap" % "3.3.7",
