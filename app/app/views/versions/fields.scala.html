@@ -20,7 +20,7 @@
      <tr>
        <td>@field.name</td>
        <td>@{datatype(org, app, version, service, field.`type`)}</td>
-       <td>@if(field.required && field.default.isEmpty) { Yes } else { No }</td>
+       <td>@if(field.required) { Yes } else { No }</td>
        <td>@field.default.getOrElse("-")</td>
        <td>@Html(lib.Markdown(field.description))
            <p>

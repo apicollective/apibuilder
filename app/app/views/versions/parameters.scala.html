@@ -22,7 +22,7 @@
        <td>@param.name</td>
        <td>@datatype(org, app, version, service, param.`type`)</td>
        <td>@param.location</td>
-       <td>@if(param.required && param.default.isEmpty) { Yes } else { No }</td>
+       <td>@if(param.required) { Yes } else { No }</td>
        <td>@param.default.getOrElse("-")</td>
        <td>@Html(lib.Markdown(param.description))
            <p>
