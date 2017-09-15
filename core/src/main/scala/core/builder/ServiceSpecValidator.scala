@@ -57,6 +57,7 @@ case class ServiceSpecValidator(
     validateParameterLocations() ++
     validateParameterBodies() ++
     validateParameterDefaults() ++
+    validateParameterNames() ++
     validateParameters() ++
     validateResponses()
   }
@@ -345,7 +346,7 @@ case class ServiceSpecValidator(
     }
 
     val duplicateFieldErrors = service.models.flatMap { model =>
-      dupsError(s"Model[${model.name}] field", model.fields.filter(!_.name.isEmpty).map(_.name.trim.toLowerCase))
+      dupsError(s"Model[${model.name}] field", model.fields.filterNot(_.name.isEmpty).map(_.name))
     }
 
     val typeErrors = service.models.flatMap { model =>
@@ -507,6 +508,17 @@ case class ServiceSpecValidator(
             }
           }
         }
+      }
+    }
+  }
+
+  private def validateParameterNames(): Seq[String] = {
+    service.resources.flatMap { resource =>
+      resource.operations.flatMap { op =>
+        dupsError(
+          opLabel(resource, op, "Parameter"),
+          op.parameters.map(_.name)
+        )
       }
     }
   }
@@ -716,7 +728,7 @@ case class ServiceSpecValidator(
   }
 
   private def dups(values: Iterable[String]): Iterable[String] = {
-    values.groupBy(_.toLowerCase).filter { _._2.size > 1 }.keys
+    values.groupBy(Text.camelCaseToUnderscore(_).toLowerCase.trim).filter { _._2.size > 1 }.keys
   }
 
   private def opLabel(
