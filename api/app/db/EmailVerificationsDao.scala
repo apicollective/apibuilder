@@ -87,7 +87,7 @@ class EmailVerificationsDao @Inject() (
     val updatingUserGuid = user.map(_.guid).getOrElse(verification.userGuid)
 
     emailVerificationConfirmationsDao.upsert(updatingUserGuid, verification)
-    organizationsDao.findByEmailDomain(verification.email).foreach { org =>
+    organizationsDao.findAllByEmailDomain(verification.email).foreach { org =>
       membershipRequestsDao.findByOrganizationAndUserGuidAndRole(Authorization.All, org, verification.userGuid, Role.Member).foreach { request =>
         membershipRequestsDao.acceptViaEmailVerification(updatingUserGuid, request, verification.email)
       }

@@ -151,10 +151,13 @@ class OrganizationsDao @Inject() (
     }
   }
 
-  def findByEmailDomain(email: String): Option[Organization] = {
-    Misc.emailDomain(email).flatMap { domain =>
-      organizationDomainsDao.findAll(domain = Some(domain)).headOption.flatMap { domain =>
-        findByGuid(Authorization.All, domain.organizationGuid)
+  def findAllByEmailDomain(email: String): Seq[Organization] = {
+    Misc.emailDomain(email) match {
+      case None => Nil
+      case Some(domain) => {
+        organizationDomainsDao.findAll(domain = Some(domain)).flatMap { domain =>
+          findByGuid(Authorization.All, domain.organizationGuid)
+        }
       }
     }
   }
