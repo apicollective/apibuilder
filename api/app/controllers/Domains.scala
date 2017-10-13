@@ -25,7 +25,10 @@ class Domains @Inject() (
           case None => NotFound
           case Some(org) => {
             request.requireAdmin(org)
-            organizationDomainsDao.findAll(domain = Some(form.name)).headOption match {
+            organizationDomainsDao.findAll(
+              organizationGuid = Some(org.guid),
+              domain = Some(form.name)
+            ).headOption match {
               case None => {
                 val od = organizationDomainsDao.create(request.user, org, form.name)
                 Ok(Json.toJson(od.domain))
