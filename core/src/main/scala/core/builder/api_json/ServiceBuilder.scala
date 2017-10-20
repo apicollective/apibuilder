@@ -444,7 +444,8 @@ case class ServiceBuilder(
           case headers => Some(headers)
         },
         description = internal.description,
-        deprecation = internal.deprecation.map(DeprecationBuilder(_))
+        deprecation = internal.deprecation.map(DeprecationBuilder(_)),
+        attributes = internal.attributes.map { AttributeBuilder(_) }
       )
     }
 
