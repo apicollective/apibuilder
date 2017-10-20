@@ -693,25 +693,7 @@ package io.apibuilder.spec.v0.anorm.parsers {
       description: String = "description",
       deprecationPrefix: String = "deprecation",
       attributes: String = "attributes"
-    ): RowParser[io.apibuilder.spec.v0.models.Response] = {
-      io.apibuilder.spec.v0.anorm.parsers.ResponseCode.parserWithPrefix(codePrefix) ~
-      SqlParser.str(`type`) ~
-      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Header]](headers).? ~
-      SqlParser.str(description).? ~
-      io.apibuilder.spec.v0.anorm.parsers.Deprecation.parserWithPrefix(deprecationPrefix).? ~
-      SqlParser.get[Seq[io.apibuilder.spec.v0.models.Attribute]](attributes) map {
-        case code ~ typeInstance ~ headers ~ description ~ deprecation ~ attributes => {
-          io.apibuilder.spec.v0.models.Response(
-            code = code,
-            `type` = typeInstance,
-            headers = headers,
-            description = description,
-            deprecation = deprecation,
-            attributes = attributes
-          )
-        }
-      }
-    }
+    ): RowParser[io.apibuilder.spec.v0.models.Response] = ???
 
   }
 
@@ -877,15 +859,8 @@ package io.apibuilder.spec.v0.anorm.parsers {
 
   object ResponseCode {
 
-    def parserWithPrefix(prefix: String, sep: String = "_") = {
-      io.apibuilder.spec.v0.anorm.parsers.Integer.parserWithPrefix(prefix, sep) |
-      io.apibuilder.spec.v0.anorm.parsers.ResponseCodeOption.parserWithPrefix(prefix, sep)
-    }
-
-    def parser() = {
-      io.apibuilder.spec.v0.anorm.parsers.Integer.parser() |
-      io.apibuilder.spec.v0.anorm.parsers.ResponseCodeOption.parser()
-    }
+    def parserWithPrefix(prefix: String, sep: String = "_") = ???
+    def parser() = ???
 
   }
 
