@@ -218,7 +218,8 @@
 	{ "name": "type", "type": "string" },
 	{ "name": "headers", "type": "[header]", "required": false },
 	{ "name": "description", "type": "string", "required": false },
-	{ "name": "deprecation", "type": "deprecation", "required": false }
+	{ "name": "deprecation", "type": "deprecation", "required": false },
+	{ "name": "attributes", "type": "[attribute]", "required": false }
       ]
     },
 
