@@ -1,6 +1,7 @@
 package core
 
 import org.scalatest.{FunSpec, Matchers}
+import play.api.libs.json._
 
 class ServiceResponsesSpec extends FunSpec with Matchers {
 
@@ -94,6 +95,31 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       validator.errors.mkString(" ") should be(s"Response code[$code] must be >= 100")
     }
+  }
+
+  it("allows attributes in a response") {
+      val json = baseJson.format("GET",
+        s""",
+           |"responses": {
+           |  "422": {
+           |    "type": "unit",
+           |    "attributes": [
+           |      {
+           |        "name": "user_errors",
+           |        "value": {
+           |          "user_error_1" : {},
+           |          "user_error_2" : {}
+           |        }
+           |      }
+           |    ]
+           |  }
+           |}""".stripMargin)
+      val validator = TestHelper.serviceValidatorFromApiJson(json)
+      val response = validator.service.resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "422").get
+      response.`type` should be("unit")
+      response.attributes.get.head.name should be("user_errors")
+      response.attributes.get.head.value shouldBe a [JsObject]
+
   }
 
 }
