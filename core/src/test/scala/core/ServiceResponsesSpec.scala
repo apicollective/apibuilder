@@ -117,8 +117,8 @@ class ServiceResponsesSpec extends FunSpec with Matchers {
       val validator = TestHelper.serviceValidatorFromApiJson(json)
       val response = validator.service.resources.head.operations.head.responses.find(r => TestHelper.responseCode(r.code) == "422").get
       response.`type` should be("unit")
-      response.attributes.head.name should be("user_errors")
-      response.attributes.head.value shouldBe a [JsObject]
+      response.attributes.get.head.name should be("user_errors")
+      response.attributes.get.head.value shouldBe a [JsObject]
 
   }
 
