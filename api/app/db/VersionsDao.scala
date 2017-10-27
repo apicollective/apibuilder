@@ -43,9 +43,13 @@ class VersionsDao @Inject() (
            organizations.namespace as organization_namespace,
            applications.guid as application_guid,
            applications.key as application_key,
-           services.json::text as service_json
+           (select services.json::text
+              from cache.services
+             where services.deleted_at is null
+               and services.version_guid = versions.guid
+             order by services.created_at desc
+              limit 1) as service_json
      from versions
-     left join cache.services on services.deleted_at is null and services.version_guid = versions.guid and services.version = '$ServiceVersionNumber'
      left join originals on originals.version_guid = versions.guid and originals.deleted_at is null
      join applications on applications.deleted_at is null and applications.guid = versions.application_guid
      join organizations on organizations.deleted_at is null and organizations.guid = applications.organization_guid
@@ -213,7 +217,7 @@ class VersionsDao @Inject() (
     db.withConnection { implicit c =>
 
       authorization.applicationFilter(BaseQuery).
-        isNotNull("services.guid").
+        //isNotNull("service_json").
         equals("versions.guid", guid).
         equals("versions.application_guid", applicationGuid).
         equals("versions.version", version).
@@ -235,7 +239,7 @@ class VersionsDao @Inject() (
   ): Seq[ApplicationMetadataVersion] = {
     db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery).
-        isNotNull("services.guid").
+        //isNotNull("service_json").
         equals("versions.application_guid", applicationGuid).
         and(isDeleted.map(Filters.isDeleted("versions", _))).
         orderBy("versions.version_sort_key desc, versions.created_at desc").
@@ -304,8 +308,18 @@ class VersionsDao @Inject() (
 
     val processed = db.withConnection { implicit c =>
       val records = BaseQuery.
-        isNull("deleted_at").
-        isNull("services.guid").
+        isNull("versions.deleted_at").
+        and(
+          """
+            |not exists (
+            |  select 1
+            |    from cache.services
+            |    where services.deleted_at is null
+            |      and services.version_guid = versions.guid
+            |      and services.version = {latest_version}
+            |)
+          """.stripMargin
+        ).bind("latest_version", ServiceVersionNumber).
         isNotNull("originals.data").
         orderBy("versions.created_at desc").
         limit(limit).
