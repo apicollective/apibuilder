@@ -269,7 +269,6 @@ case class InternalResponseForm(
   headers: Seq[InternalHeaderForm] = Nil,
   description: Option[String] = None,
   deprecation: Option[InternalDeprecationForm] = None,
-  attributes: Seq[InternalAttributeForm] = Nil,
   warnings: Seq[String] = Seq.empty
 ) {
 
@@ -665,12 +664,11 @@ object InternalResponseForm {
       headers = InternalHeaderForm(json),
       description = JsonUtil.asOptString(json \ "description"),
       deprecation = InternalDeprecationForm.fromJsValue(json),
-      attributes = InternalAttributeForm.attributesFromJson((json \ "attributes").asOpt[JsArray]),
       warnings = JsonUtil.validate(
         json,
         strings = Seq("type"),
         optionalStrings = Seq("description"),
-        optionalArraysOfObjects = Seq("headers", "attributes"),
+        optionalArraysOfObjects = Seq("headers"),
         optionalObjects = Seq("deprecation")
       )
     )
