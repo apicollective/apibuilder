@@ -33,6 +33,16 @@ class VersionsDao @Inject() (
 
   private[this] val ServiceVersionNumber: String = io.apibuilder.spec.v0.Constants.Version.toLowerCase
 
+  private[this] val HasServiceJsonClause: String =
+    """
+      |exists (
+      |  select 1
+      |    from cache.services
+      |   where services.deleted_at is null
+      |     and services.version_guid = versions.guid
+      |)
+    """.stripMargin
+
   private[this] val BaseQuery = Query(s"""
     select versions.guid, versions.version,
            ${AuditsDao.queryCreationDefaultingUpdatedAt("versions")},
@@ -217,7 +227,7 @@ class VersionsDao @Inject() (
     db.withConnection { implicit c =>
 
       authorization.applicationFilter(BaseQuery).
-        //isNotNull("service_json").
+        and(HasServiceJsonClause).
         equals("versions.guid", guid).
         equals("versions.application_guid", applicationGuid).
         equals("versions.version", version).
@@ -239,7 +249,7 @@ class VersionsDao @Inject() (
   ): Seq[ApplicationMetadataVersion] = {
     db.withConnection { implicit c =>
       authorization.applicationFilter(BaseQuery).
-        //isNotNull("service_json").
+        and(HasServiceJsonClause).
         equals("versions.application_guid", applicationGuid).
         and(isDeleted.map(Filters.isDeleted("versions", _))).
         orderBy("versions.version_sort_key desc, versions.created_at desc").
