@@ -52,8 +52,8 @@ package io.apibuilder.generator.v0.anorm.conversions {
 
   object Types {
     import io.apibuilder.generator.v0.models.json._
-    implicit val columnToSeqApibuildergeneratorFileType: Column[Seq[_root_.io.apibuilder.generator.v0.models.FileType]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.FileType]] }
-    implicit val columnToMapApibuildergeneratorFileType: Column[Map[String, _root_.io.apibuilder.generator.v0.models.FileType]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.generator.v0.models.FileType]] }
+    implicit val columnToSeqApibuildergeneratorFileFlag: Column[Seq[_root_.io.apibuilder.generator.v0.models.FileFlag]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.FileFlag]] }
+    implicit val columnToMapApibuildergeneratorFileFlag: Column[Map[String, _root_.io.apibuilder.generator.v0.models.FileFlag]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.generator.v0.models.FileFlag]] }
     implicit val columnToSeqApibuildergeneratorAttribute: Column[Seq[_root_.io.apibuilder.generator.v0.models.Attribute]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.Attribute]] }
     implicit val columnToMapApibuildergeneratorAttribute: Column[Map[String, _root_.io.apibuilder.generator.v0.models.Attribute]] = Util.parser { _.as[Map[String, _root_.io.apibuilder.generator.v0.models.Attribute]] }
     implicit val columnToSeqApibuildergeneratorError: Column[Seq[_root_.io.apibuilder.generator.v0.models.Error]] = Util.parser { _.as[Seq[_root_.io.apibuilder.generator.v0.models.Error]] }

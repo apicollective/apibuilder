@@ -22,8 +22,8 @@
   ],
 
   "enums": {
-    "file_type": {
-      "description": "Allows generator authors to flag special files. It is up to the client (i.e. the cli) to decide how to interpret them.",
+    "file_flag": {
+      "description": "Allows generator authors to flag files with special characteristics. It is up to the client (i.e. the cli) to decide how to interpret them.",
       "values": [
         { "name": "editable", "description": "The end user may edit these files - consider not overwriting these files when code is re-generated." }
       ]
@@ -48,7 +48,7 @@
         { "name": "name", "type": "string", "description": "The recommended name for the file.", "example": "ApiCollectiveApiBuilderApiClient.scala" },
 	    { "name": "dir", "type": "string", "description": "The recommended directory path for the file where appropriate.", "example": "io/apicollective/apibuilder", "required": false },
         { "name": "contents", "type": "string", "description": "The actual source code." },
-        { "name": "file_type", "type": "file_type", "required": false }
+        { "name": "flags", "type": "[file_flag]", "required": false }
       ]
     },
 

@@ -35,7 +35,7 @@ package io.apibuilder.generator.v0.models {
     name: String,
     dir: _root_.scala.Option[String] = None,
     contents: String,
-    fileType: _root_.scala.Option[io.apibuilder.generator.v0.models.FileType] = None
+    flags: _root_.scala.Option[Seq[io.apibuilder.generator.v0.models.FileFlag]] = None
   )
 
   /**
@@ -81,18 +81,18 @@ package io.apibuilder.generator.v0.models {
   )
 
   /**
-   * Allows generator authors to flag special files. It is up to the client (i.e. the
-   * cli) to decide how to interpret them.
+   * Allows generator authors to flag files with special characteristics. It is up to
+   * the client (i.e. the cli) to decide how to interpret them.
    */
-  sealed trait FileType extends _root_.scala.Product with _root_.scala.Serializable
+  sealed trait FileFlag extends _root_.scala.Product with _root_.scala.Serializable
 
-  object FileType {
+  object FileFlag {
 
     /**
      * The end user may edit these files - consider not overwriting these files when
      * code is re-generated.
      */
-    case object Editable extends FileType { override def toString = "editable" }
+    case object Editable extends FileFlag { override def toString = "editable" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -103,21 +103,21 @@ package io.apibuilder.generator.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends FileType
+    case class UNDEFINED(override val toString: String) extends FileFlag
 
     /**
      * all returns a list of all the valid, known values. We use
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: scala.List[FileType] = scala.List(Editable)
+    val all: scala.List[FileFlag] = scala.List(Editable)
 
     private[this]
-    val byName: Map[String, FileType] = all.map(x => x.toString.toLowerCase -> x).toMap
+    val byName: Map[String, FileFlag] = all.map(x => x.toString.toLowerCase -> x).toMap
 
-    def apply(value: String): FileType = fromString(value).getOrElse(UNDEFINED(value))
+    def apply(value: String): FileFlag = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): _root_.scala.Option[FileType] = byName.get(value.toLowerCase)
+    def fromString(value: String): _root_.scala.Option[FileFlag] = byName.get(value.toLowerCase)
 
   }
 
@@ -153,13 +153,13 @@ package io.apibuilder.generator.v0.models {
       }
     }
 
-    implicit val jsonReadsApibuildergeneratorFileType = new play.api.libs.json.Reads[io.apibuilder.generator.v0.models.FileType] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.generator.v0.models.FileType] = {
+    implicit val jsonReadsApibuildergeneratorFileFlag = new play.api.libs.json.Reads[io.apibuilder.generator.v0.models.FileFlag] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.apibuilder.generator.v0.models.FileFlag] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.generator.v0.models.FileType(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.apibuilder.generator.v0.models.FileFlag(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.generator.v0.models.FileType(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.apibuilder.generator.v0.models.FileFlag(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -167,18 +167,18 @@ package io.apibuilder.generator.v0.models {
       }
     }
 
-    def jsonWritesApibuildergeneratorFileType(obj: io.apibuilder.generator.v0.models.FileType) = {
+    def jsonWritesApibuildergeneratorFileFlag(obj: io.apibuilder.generator.v0.models.FileFlag) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectFileType(obj: io.apibuilder.generator.v0.models.FileType) = {
+    def jsObjectFileFlag(obj: io.apibuilder.generator.v0.models.FileFlag) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
-    implicit def jsonWritesApibuildergeneratorFileType: play.api.libs.json.Writes[FileType] = {
-      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.FileType] {
-        def writes(obj: io.apibuilder.generator.v0.models.FileType) = {
-          jsonWritesApibuildergeneratorFileType(obj)
+    implicit def jsonWritesApibuildergeneratorFileFlag: play.api.libs.json.Writes[FileFlag] = {
+      new play.api.libs.json.Writes[io.apibuilder.generator.v0.models.FileFlag] {
+        def writes(obj: io.apibuilder.generator.v0.models.FileFlag) = {
+          jsonWritesApibuildergeneratorFileFlag(obj)
         }
       }
     }
@@ -232,7 +232,7 @@ package io.apibuilder.generator.v0.models {
         (__ \ "name").read[String] and
         (__ \ "dir").readNullable[String] and
         (__ \ "contents").read[String] and
-        (__ \ "file_type").readNullable[io.apibuilder.generator.v0.models.FileType]
+        (__ \ "flags").readNullable[Seq[io.apibuilder.generator.v0.models.FileFlag]]
       )(File.apply _)
     }
 
@@ -244,9 +244,9 @@ package io.apibuilder.generator.v0.models {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("dir" -> play.api.libs.json.JsString(x))
       }) ++
-      (obj.fileType match {
+      (obj.flags match {
         case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("file_type" -> play.api.libs.json.JsString(x.toString))
+        case Some(x) => play.api.libs.json.Json.obj("flags" -> play.api.libs.json.Json.toJson(x))
       })
     }
 
@@ -386,15 +386,15 @@ package io.apibuilder.generator.v0 {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
-    // Enum: FileType
-    private[this] val enumFileTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.apibuilder.generator.v0.models.FileType.all.mkString(", ")}"
+    // Enum: FileFlag
+    private[this] val enumFileFlagNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.apibuilder.generator.v0.models.FileFlag.all.mkString(", ")}"
 
-    implicit val pathBindableEnumFileType = new PathBindable.Parsing[io.apibuilder.generator.v0.models.FileType] (
-      FileType.fromString(_).get, _.toString, enumFileTypeNotFound
+    implicit val pathBindableEnumFileFlag = new PathBindable.Parsing[io.apibuilder.generator.v0.models.FileFlag] (
+      FileFlag.fromString(_).get, _.toString, enumFileFlagNotFound
     )
 
-    implicit val queryStringBindableEnumFileType = new QueryStringBindable.Parsing[io.apibuilder.generator.v0.models.FileType](
-      FileType.fromString(_).get, _.toString, enumFileTypeNotFound
+    implicit val queryStringBindableEnumFileFlag = new QueryStringBindable.Parsing[io.apibuilder.generator.v0.models.FileFlag](
+      FileFlag.fromString(_).get, _.toString, enumFileFlagNotFound
     )
 
   }

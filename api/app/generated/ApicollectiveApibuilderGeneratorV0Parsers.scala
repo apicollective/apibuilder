@@ -12,13 +12,13 @@ package io.apibuilder.generator.v0.anorm.parsers {
   import io.apibuilder.generator.v0.anorm.conversions.Types._
   import io.apibuilder.spec.v0.anorm.conversions.Types._
 
-  object FileType {
+  object FileFlag {
 
-    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.generator.v0.models.FileType] = parser(prefixOpt = Some(s"$prefix$sep"))
+    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.apibuilder.generator.v0.models.FileFlag] = parser(prefixOpt = Some(s"$prefix$sep"))
 
-    def parser(name: String = "file_type", prefixOpt: Option[String] = None): RowParser[io.apibuilder.generator.v0.models.FileType] = {
+    def parser(name: String = "file_flag", prefixOpt: Option[String] = None): RowParser[io.apibuilder.generator.v0.models.FileFlag] = {
       SqlParser.str(prefixOpt.getOrElse("") + name) map {
-        case value => io.apibuilder.generator.v0.models.FileType(value)
+        case value => io.apibuilder.generator.v0.models.FileFlag(value)
       }
     }
 
@@ -76,19 +76,19 @@ package io.apibuilder.generator.v0.anorm.parsers {
       name: String = "name",
       dir: String = "dir",
       contents: String = "contents",
-      fileType: String = "file_type",
+      flags: String = "flags",
       prefixOpt: Option[String] = None
     ): RowParser[io.apibuilder.generator.v0.models.File] = {
       SqlParser.str(prefixOpt.getOrElse("") + name) ~
       SqlParser.str(prefixOpt.getOrElse("") + dir).? ~
       SqlParser.str(prefixOpt.getOrElse("") + contents) ~
-      io.apibuilder.generator.v0.anorm.parsers.FileType.parser(prefixOpt.getOrElse("") + fileType).? map {
-        case name ~ dir ~ contents ~ fileType => {
+      SqlParser.get[Seq[io.apibuilder.generator.v0.models.FileFlag]](prefixOpt.getOrElse("") + flags).? map {
+        case name ~ dir ~ contents ~ flags => {
           io.apibuilder.generator.v0.models.File(
             name = name,
             dir = dir,
             contents = contents,
-            fileType = fileType
+            flags = flags
           )
         }
       }
