@@ -25,7 +25,7 @@
     "file_flag": {
       "description": "Allows generator authors to flag files with special characteristics. It is up to the client (i.e. the cli) to decide how to interpret them.",
       "values": [
-        { "name": "editable", "description": "The end user may edit these files - consider not overwriting these files when code is re-generated." }
+        { "name": "scaffolding", "description": "Indicates files that an end user starts from but should edit. Not intended to be the final product (see: https://stackoverflow.com/questions/235018/what-is-scaffolding-is-it-a-term-for-a-particular-platform). Consider not overwriting these files when code is re-generated." }
       ]
     }
   },

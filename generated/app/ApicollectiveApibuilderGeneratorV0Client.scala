@@ -89,10 +89,12 @@ package io.apibuilder.generator.v0.models {
   object FileFlag {
 
     /**
-     * The end user may edit these files - consider not overwriting these files when
-     * code is re-generated.
+     * Indicates files that an end user starts from but should edit. Not intended to be
+     * the final product (see:
+     * https://stackoverflow.com/questions/235018/what-is-scaffolding-is-it-a-term-for-a-particular-platform).
+     * Consider not overwriting these files when code is re-generated.
      */
-    case object Editable extends FileFlag { override def toString = "editable" }
+    case object Scaffolding extends FileFlag { override def toString = "scaffolding" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -110,7 +112,7 @@ package io.apibuilder.generator.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all: scala.List[FileFlag] = scala.List(Editable)
+    val all: scala.List[FileFlag] = scala.List(Scaffolding)
 
     private[this]
     val byName: Map[String, FileFlag] = all.map(x => x.toString.toLowerCase -> x).toMap
