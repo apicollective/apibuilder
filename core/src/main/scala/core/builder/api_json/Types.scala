@@ -5,7 +5,7 @@ import lib.{DatatypeResolver, Kind}
 
 private[api_json] case class InternalServiceFormTypesProvider(internal: InternalServiceForm) extends TypesProvider {
 
-  override def enums = internal.enums.map { enum =>
+  override def enums: Seq[TypesProviderEnum] = internal.enums.map { enum =>
     TypesProviderEnum(
       namespace = internal.namespace.getOrElse(""),
       name = enum.name,
@@ -14,21 +14,21 @@ private[api_json] case class InternalServiceFormTypesProvider(internal: Internal
     )
   }
 
-  override def unions = internal.unions.map { u =>
+  override def unions: Seq[TypesProviderUnion] = internal.unions.map { u =>
     TypesProviderUnion(
       namespace = internal.namespace.getOrElse(""),
       name = u.name,
       plural = u.plural,
-      types = u.types.flatMap(_.datatype).map(_.name).map { core.TypesProviderUnionType(_) }
+      types = u.types.flatMap(_.datatype).map(_.name).map { core.TypesProviderUnionType }
     )
   }
 
-  override def models = internal.models.map { m =>
+  override def models: Seq[TypesProviderModel] = internal.models.map { m =>
     TypesProviderModel(
       namespace = internal.namespace.getOrElse(""),
       name = m.name,
       plural = m.plural,
-      fields = m.fields.filter(!_.name.isEmpty).filter(!_.datatype.isEmpty) map { f =>
+      fields = m.fields.filter(_.name.isDefined).filter(_.datatype.isDefined) map { f =>
         TypesProviderField(
           name = f.name.get,
           `type` = f.datatype.get.label
@@ -49,11 +49,11 @@ private[api_json] case class RecursiveTypesProvider(
   internal: InternalServiceForm
 ) extends TypesProvider {
 
-  override def enums = providers.map(_.enums).flatten
+  override def enums: Seq[TypesProviderEnum] = providers.flatMap(_.enums)
 
-  override def unions = providers.map(_.unions).flatten
+  override def unions: Seq[TypesProviderUnion] = providers.flatMap(_.unions)
 
-  override def models = providers.map(_.models).flatten
+  override def models: Seq[TypesProviderModel] = providers.flatMap(_.models)
 
   private lazy val providers = Seq(InternalServiceFormTypesProvider(internal)) ++ resolve(internal.imports.flatMap(_.uri))
 
