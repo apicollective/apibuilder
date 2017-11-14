@@ -1,6 +1,6 @@
 package builder
 
-import play.api.libs.json.{Json, JsArray, JsBoolean, JsLookupResult, JsNumber, JsObject, JsString, JsValue}
+import play.api.libs.json.{JsArray, JsBoolean, JsLookupResult, JsNumber, JsObject, JsString, JsValue}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -43,14 +43,14 @@ object JsonUtil {
     } ++
     optionalStrings.flatMap { field =>
       (json \ field).toOption match {
-        case Some(o: JsString) => None
+        case Some(_: JsString) => None
         case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be a string"))
         case None => None
       }
     } ++
     optionalBooleans.flatMap { field =>
       (json \ field).toOption match {
-        case Some(o: JsBoolean) => None
+        case Some(_: JsBoolean) => None
         case Some(o: JsString) => {
           parseBoolean(o.value) match {
             case None => Some(withPrefix(prefix, s"$field, if present, must be a boolean or the string 'true' or 'false'"))
@@ -63,7 +63,7 @@ object JsonUtil {
     } ++
     optionalNumbers.flatMap { field =>
       (json \ field).toOption match {
-        case Some(o: JsNumber) => None
+        case Some(_: JsNumber) => None
         case Some(o: JsString) => {
           parseLong(o.value) match {
             case None => Some(withPrefix(prefix, s"$field, if present, must be a number"))
@@ -90,14 +90,14 @@ object JsonUtil {
     } ++
     optionalObjects.flatMap { field =>
       (json \ field).toOption match {
-        case Some(o: JsObject) => None
+        case Some(_: JsObject) => None
         case Some(_) => Some(withPrefix(prefix, s"$field, if present, must be an object"))
         case None => None
       }
     } ++
     objects.flatMap { field =>
       (json \ field).toOption match {
-        case Some(o: JsObject) => None
+        case Some(_: JsObject) => None
         case Some(_) => Some(withPrefix(prefix, s"$field, must be an object"))
         case None => Some(withPrefix(prefix, s"Missing $field"))
       }
@@ -112,7 +112,7 @@ object JsonUtil {
       case None => None
       case Some(o) => {
         o match {
-          case o: JsObject => None
+          case _: JsObject => None
           case _ => Some(s"${prefix} must be objects")
         }
       }
@@ -124,7 +124,7 @@ object JsonUtil {
     fields: Seq[String],
     prefix: Option[String] = None
   ): Seq[String] = {
-    val keys = json.value map { case (key, value) => key }
+    val keys = json.value map { case (key, _) => key }
 
     keys.filter { k => !fields.contains(k) }.toList match {
       case Nil => Nil
@@ -141,15 +141,15 @@ object JsonUtil {
   }
 
   def asOptString(value: JsLookupResult): Option[String] = {
-    value.toOption.flatMap { asOptString(_) }
+    value.toOption.flatMap { asOptString }
   }
 
   def asOptBoolean(value: JsValue): Option[Boolean] = {
-    asOptString(value).flatMap { parseBoolean(_) }
+    asOptString(value).flatMap { parseBoolean }
   }
 
   def asOptBoolean(value: JsLookupResult): Option[Boolean] = {
-    value.toOption.flatMap { asOptBoolean(_) }
+    value.toOption.flatMap { asOptBoolean }
   }
 
   def parseBoolean(value: String): Option[Boolean] = {
@@ -170,17 +170,17 @@ object JsonUtil {
   }
   
   def asOptLong(value: JsValue): Option[Long] = {
-    asOptString(value).flatMap { parseLong(_) }
+    asOptString(value).flatMap { parseLong }
   }
 
   def asOptLong(value: JsLookupResult): Option[Long] = {
-    value.toOption.flatMap { asOptLong(_) }
+    value.toOption.flatMap { asOptLong }
   }
 
   private def parseLong(value: String): Option[Long] = {
     Try(value.toLong) match {
       case Success(v) => Some(v)
-      case Failure(e) => None
+      case Failure(_) => None
     }
   }
 
@@ -192,10 +192,7 @@ object JsonUtil {
   }
 
   private def parseString(value: String): Option[String] = {
-    value.trim.isEmpty match {
-      case true => None
-      case false => Some(value.trim)
-    }
+    Some(value.trim).filter(_.nonEmpty)
   }
 
   private def withPrefix(prefix: Option[String], message: String): String = {
