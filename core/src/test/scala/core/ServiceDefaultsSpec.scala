@@ -19,9 +19,9 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("")
+    validator.errors().mkString("") should be("")
 
-    val createdAt = validator.service.models.head.fields.find { _.name == "created_at" }.get
+    val createdAt = validator.service().models.head.fields.find { _.name == "created_at" }.get
     createdAt.default should be(Some("2014-01-01"))
   }
 
@@ -41,13 +41,13 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("")
+    validator.errors().mkString("") should be("")
 
-    val isActiveField = validator.service.models.head.fields.find { _.name == "is_active" }.get
+    val isActiveField = validator.service().models.head.fields.find { _.name == "is_active" }.get
     isActiveField.default should be(Some("true"))
     isActiveField.required should be(true)
 
-    val isAthleteField = validator.service.models.head.fields.find { _.name == "is_athlete" }.get
+    val isAthleteField = validator.service().models.head.fields.find { _.name == "is_athlete" }.get
     isAthleteField.default should be(Some("false"))
     isAthleteField.required should be(true)
   }
@@ -67,7 +67,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("user.is_active Value[1] is not a valid boolean. Must be one of: true, false")
+    validator.errors().mkString("") should be("user.is_active Value[1] is not a valid boolean. Must be one of: true, false")
   }
 
   it("fields with defaults must be marked required") {
@@ -86,14 +86,14 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     }
     """
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("user.created_at has a default specified. It must be marked required")
+    validator.errors().mkString("") should be("user.created_at has a default specified. It must be marked required")
   }
 
   def buildMinMaxErrors(
     default: Number,
     min: Option[Long] = None,
     max: Option[Long] = None
-  ) = {
+  ): Seq[String] = {
     val props = Seq(
       Some(s""""default": "$default""""),
       min.map { v => s""""minimum": "$v"""" },
@@ -112,8 +112,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
       }
     }
     """
-    TestHelper.serviceValidatorFromApiJson(json).errors
-
+    TestHelper.serviceValidatorFromApiJson(json).errors()
   }
 
   it("numeric default is in between min, max") {
@@ -126,7 +125,7 @@ class ServiceDefaultsSpec extends FunSpec with Matchers {
     buildMinMaxErrors(1, max = Some(2)) should be(Nil)
   }
   
-  it("numeric default ourside of min, max") {
+  it("numeric default ourtide of min, max") {
     buildMinMaxErrors(1, min = Some(2)) should be(
       Seq("user.age default[1] must be >= specified minimum[2]")
     )

@@ -282,8 +282,8 @@ case class ServiceBuilder(
 
     def apply(ib: InternalBodyForm): Body = {
       ib.datatype match {
-        case None => sys.error("Body missing type: " + ib)
-        case Some(datatype) => Body(
+        case Left(errs) => sys.error("Body missing type: " + errs.mkString(", "))
+        case Right(datatype) => Body(
           `type` = datatype.label,
           description = ib.description,
           deprecation = ib.deprecation.map(DeprecationBuilder(_)),
@@ -334,7 +334,7 @@ case class ServiceBuilder(
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         types = internal.types.map { it =>
           UnionType(
-            `type` = it.datatype.get.label,
+            `type` = rightOrError(it.datatype).label,
             description = it.description,
             deprecation = it.deprecation.map(DeprecationBuilder(_)),
             default = it.default
@@ -351,7 +351,7 @@ case class ServiceBuilder(
     def apply(resolver: TypeResolver, ih: InternalHeaderForm): Header = {
       Header(
         name = ih.name.get,
-        `type` = resolver.parseWithError(ih.datatype.get).toString,
+        `type` = resolver.parseWithError(rightOrError(ih.datatype)).toString,
         required = ih.required,
         description = ih.description,
         deprecation = ih.deprecation.map(DeprecationBuilder(_)),
@@ -438,7 +438,7 @@ case class ServiceBuilder(
           case Success(code) => ResponseCodeInt(code)
           case Failure(_) => ResponseCodeOption(internal.code)
         },
-        `type` = internal.datatype.get.label,
+        `type` = rightOrError(internal.datatype).label,
         headers = internal.headers.map { HeaderBuilder(resolver, _) }.toList match {
           case Nil => None
           case headers => Some(headers)
@@ -465,7 +465,7 @@ case class ServiceBuilder(
     def apply(internal: InternalParameterForm, defaultLocation: ParameterLocation): Parameter = {
       Parameter(
         name = internal.name.get,
-        `type` = internal.datatype.get.label,
+        `type` = rightOrError(internal.datatype).label,
         location = internal.location.map(ParameterLocation(_)).getOrElse(defaultLocation),
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
@@ -492,7 +492,7 @@ case class ServiceBuilder(
     ): Field = {
       Field(
         name = internal.name.get,
-        `type` = internal.datatype.get.label,
+        `type` = rightOrError(internal.datatype).label,
         description = internal.description,
         deprecation = internal.deprecation.map(DeprecationBuilder(_)),
         default = internal.default,
@@ -525,6 +525,13 @@ case class ServiceBuilder(
       )
     }
 
+  }
+
+  private[this] def rightOrError[T](value: Either[Seq[String], T]): T = {
+    value match {
+      case Left(errors) => sys.error("Unexpected errors: " + errors.mkString(", "))
+      case Right(v) => v
+    }
   }
 
 }

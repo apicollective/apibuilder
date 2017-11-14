@@ -30,7 +30,7 @@ class ServiceMethodsSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString("") should be("Resource[user] /users Missing method")
+    validator.errors().mkString("") should be("Resource[user] /users Missing method")
   }
 
 }

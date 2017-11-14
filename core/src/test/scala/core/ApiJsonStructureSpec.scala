@@ -13,7 +13,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("Missing name")
+    validator.errors().mkString should be("Missing name")
   }
 
   it("name must be a string") {
@@ -25,7 +25,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("name must be a string")
+    validator.errors().mkString should be("name must be a string")
   }
 
   it("base_url must be a string") {
@@ -38,7 +38,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("base_url, if present, must be a string")
+    validator.errors().mkString should be("base_url, if present, must be a string")
   }
 
   it("description must be a string") {
@@ -51,7 +51,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("description, if present, must be a string")
+    validator.errors().mkString should be("description, if present, must be a string")
   }
 
   it("imports, headers must be arrays") {
@@ -65,7 +65,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
 
     Seq("imports", "headers").foreach { field =>
       val validator = TestHelper.serviceValidatorFromApiJson(json.format(field))
-      validator.errors.mkString("") should be(s"$field, if present, must be an array")
+      validator.errors().mkString("") should be(s"$field, if present, must be an array")
     }
   }
 
@@ -80,7 +80,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
 
     Seq("enums", "models", "unions", "resources").foreach { field =>
       val validator = TestHelper.serviceValidatorFromApiJson(json.format(field))
-      validator.errors.mkString should be(s"$field, if present, must be an object")
+      validator.errors().mkString should be(s"$field, if present, must be an object")
     }
   }
 
@@ -94,7 +94,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("Unrecognized element[resource]")
+    validator.errors().mkString should be("Unrecognized element[resource]")
   }
 
   it("validates multiple unknown keys") {
@@ -108,7 +108,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString should be("Unrecognized elements[foo, resource]")
+    validator.errors().mkString should be("Unrecognized elements[foo, resource]")
   }
 
   it("validates models") {
@@ -125,7 +125,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Model[user] description, if present, must be a string Model[user] Missing fields")
+    validator.errors().mkString(" ") should be("Model[user] description, if present, must be a string Model[user] Missing fields")
   }
 
   it("validates model fields are objects") {
@@ -142,7 +142,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Model[user] elements of fields must be objects")
+    validator.errors().mkString(" ") should be("Model[user] elements of fields must be objects")
   }
 
   it("validates enums") {
@@ -159,7 +159,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Enum[user] description, if present, must be a string Enum[user] Missing values")
+    validator.errors().mkString(" ") should be("Enum[user] description, if present, must be a string Enum[user] Missing values")
   }
 
   it("validates enum values are objects") {
@@ -176,7 +176,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Enum[user] elements of values must be objects")
+    validator.errors().mkString(" ") should be("Enum[user] elements of values must be objects")
   }
 
   it("validates unions") {
@@ -193,7 +193,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Union[user] description, if present, must be a string Union[user] Missing types")
+    validator.errors().mkString(" ") should be("Union[user] description, if present, must be a string Union[user] Missing types")
   }
 
   it("validates union types are objects") {
@@ -210,7 +210,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Union[user] elements of types must be objects")
+    validator.errors().mkString(" ") should be("Union[user] elements of types must be objects")
   }
 
   it("validates responses") {
@@ -241,7 +241,7 @@ class ApiJsonStructureSpec extends FunSpec with Matchers {
     """
 
     val validator = TestHelper.serviceValidatorFromApiJson(json)
-    validator.errors.mkString(" ") should be("Resource[user] GET /users Unrecognized element[response]")
+    validator.errors().mkString(" ") should be("Resource[user] GET /users Unrecognized element[response]")
   }
 
 }

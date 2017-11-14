@@ -13,7 +13,7 @@ class UtilSpec extends FunSpec with Matchers {
   }
 
   it("isValidEnumValue") {
-    val service = TestHelper.parseFile(s"spec/apibuilder-api.json").service
+    val service = TestHelper.parseFile(s"spec/apibuilder-api.json").service()
     val visibilityEnum = service.enums.find(_.name == "visibility").getOrElse {
       sys.error("No visibility enum found")
     }
